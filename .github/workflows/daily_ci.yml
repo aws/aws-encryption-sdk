@@ -11,13 +11,13 @@ jobs:
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
     uses: ./.github/workflows/library_codegen.yml
     with:
-      dafny: '4.2.0'
+      dafny: '4.8.0'
   daily-ci-verification:
     # Don't run the cron builds on forks
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
     uses: ./.github/workflows/library_dafny_verification.yml
     with:
-      dafny: '4.7.0'
+      dafny: '4.8.0'
   # daily-ci-java:
   #   if: github.event_name != 'schedule' || github.repository_owner == 'aws'
   #   uses: ./.github/workflows/library_java_tests.yml
@@ -27,10 +27,10 @@ jobs:
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
     uses: ./.github/workflows/library_net_tests.yml
     with:
-      dafny: '4.2.0'
+      dafny: '4.8.0'
 
   daily-ci-interop-tests:
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
     uses: ./.github/workflows/library_interop_tests.yml
     with:
-      dafny: '4.2.0'
+      dafny: '4.8.0'
