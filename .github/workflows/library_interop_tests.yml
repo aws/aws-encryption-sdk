@@ -76,6 +76,14 @@ jobs:
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_net CORES=$CORES
+
+      - name: Compile MPL TestVectors implementation
+        shell: bash
+        working-directory: ./mpl/TestVectorsAwsCryptographicMaterialProviders
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_net CORES=$CORES
       
       - name: Fetch Python 2.3.0 Test Vectors
         working-directory: ./
@@ -162,6 +170,15 @@ jobs:
       - name: Compile AwsEncryptionSDK implementation
         shell: bash
         working-directory: ./AwsEncryptionSDK
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_net CORES=$CORES
+
+    
+      - name: Compile MPL TestVectors implementation
+        shell: bash
+        working-directory: ./mpl/TestVectorsAwsCryptographicMaterialProviders
         run: |
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')

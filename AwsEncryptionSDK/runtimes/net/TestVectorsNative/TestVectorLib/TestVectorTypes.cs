@@ -25,6 +25,12 @@ namespace TestVectors
         public string? Encoding { get; set; }
         [JsonProperty("material")]
         public string? Material { get; set; }
+        [JsonProperty("branchKeyVersion")]
+        public string? BranchKeyVersion { get; set; }
+        [JsonProperty("branchKey")]
+        public string? BranchKey { get; set; }
+        [JsonProperty("beaconKey")]
+        public string? BeaconKey { get; set; }
     }
 
     public class KeyManifest

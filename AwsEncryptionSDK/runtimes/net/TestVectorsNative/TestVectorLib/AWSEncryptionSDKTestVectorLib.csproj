@@ -10,6 +10,9 @@
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
         <ProjectReference Include="../../ESDK.csproj" />
+        
+        <!-- TODO: Reference published MPL TestVectors project -->
+        <ProjectReference Include="../../../../../mpl/TestVectorsAwsCryptographicMaterialProviders/runtimes/net/TestVectors.csproj" />
     </ItemGroup>
 
 </Project>

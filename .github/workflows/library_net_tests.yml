@@ -92,6 +92,15 @@ jobs:
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_net CORES=$CORES
 
+    
+      - name: Compile MPL TestVectors implementation
+        shell: bash
+        working-directory: ./mpl/TestVectorsAwsCryptographicMaterialProviders
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_net CORES=$CORES
+
       - name: Test .NET Framework net48
         working-directory: ./AwsEncryptionSDK
         if: matrix.os == 'windows-latest' 

@@ -2,9 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 using System.Diagnostics;
+using Newtonsoft.Json;
 using Amazon;
+using Amazon.DynamoDBv2;
 using Amazon.KeyManagementService;
+using AWS.Cryptography.KeyStore;
 using AWS.Cryptography.MaterialProviders;
+using AWS.Cryptography.MaterialProvidersTestVectorKeys;
 
 using RSAEncryption;
 
@@ -18,6 +22,7 @@ namespace TestVectors
     public static class MaterialProviderFactory
     {
         private static readonly MaterialProviders materialProviders = new(new MaterialProvidersConfig());
+        private static KeyVectors singletonKeyVectors;
 
         public static ICryptographicMaterialsManager CreateDecryptCmm(
             DecryptVector vector,
@@ -160,6 +165,57 @@ namespace TestVectors
                 return materialProviders.CreateAwsKmsMrkDiscoveryKeyring(createKeyringInput);
             }
 
+            if (keyInfo.Type == "aws-kms-hierarchy") {
+                // Lazily create a singleton KeyVectors client.
+                // A KeyVectors manifest is only required if a test vector specifies a hierarchy keyring.
+                // This specification can only be determined at runtime while reading the test vector manifest.
+                if (singletonKeyVectors == null) {
+                    string manifestPath;
+                    try
+                    {
+                        manifestPath = Utils.GetEnvironmentVariableOrError("DAFNY_AWS_ESDK_TEST_VECTOR_MANIFEST_PATH");
+                    }
+                    catch (ArgumentException e)
+                    {
+                        throw new ArgumentException("Hierarchy keyring test vectors must supply a KeyVectors manifest", e);
+                    }
+                    DecryptManifest manifest = Utils.LoadObjectFromPath<DecryptManifest>(manifestPath);
+                    KeyVectorsConfig keyVectorsConfig = new KeyVectorsConfig
+                    {
+                        KeyManifestPath = Utils.ManifestUriToPath(manifest.KeysUri, manifestPath)
+                    };
+                    singletonKeyVectors = new(keyVectorsConfig);
+                }
+
+                // Convert JSON to bytes for KeyVectors input
+                string jsonString = JsonConvert.SerializeObject(keyInfo);
+
+                var stream = new MemoryStream();
+                var writer = new StreamWriter(stream);
+                writer.Write(jsonString);
+                writer.Flush();
+                stream.Position = 0;
+
+                // Create KeyVectors keyring
+                var getKeyDescriptionInput = new GetKeyDescriptionInput
+                {
+                    Json = stream
+                };
+
+                var desc = singletonKeyVectors.GetKeyDescription(getKeyDescriptionInput);
+
+                var testVectorKeyringInput = new TestVectorKeyringInput
+                {
+                    KeyDescription = desc.KeyDescription
+                };
+
+                var keyring = singletonKeyVectors.CreateTestVectorKeyring(
+                    testVectorKeyringInput
+                );
+
+                return keyring!;
+            }
+
             if (keyInfo.Type == "raw" && keyInfo.EncryptionAlgorithm == "aes") {
                 CreateRawAesKeyringInput createKeyringInput = new CreateRawAesKeyringInput
                 {
@@ -209,7 +265,7 @@ namespace TestVectors
             // string operationStr = operation == CryptoOperation.ENCRYPT
             //     ? "encryption"
             //     : "decryption";
-            throw new Exception($"Unsupported keyring type for {operation}");
+            throw new Exception($"Unsupported keyring {keyInfo.Type} type for {operation}");
         }
 
         private static AesWrappingAlg AesAlgorithmFromBits(ushort bits) {
