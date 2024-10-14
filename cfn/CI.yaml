@@ -54,3 +54,111 @@ Resources:
             }
           ]
         }
+
+  GithubCIRoleOnlyUsEast1Keys:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub "GitHub-CI-${ProjectName}-Role-only-us-east-1-KMS-keys"
+      Description: "Access KMS Resources for CI from GitHub. Only grants access to use keys in us-east-1 region. Created for use by CI while executing Custom Client Supplier Example."
+      ManagedPolicyArns:
+        - !Ref KMSUsageOnlyUsEast1Keys
+      AssumeRolePolicyDocument: !Sub |
+        {
+          "Version": "2012-10-17",   
+          "Statement": [
+          {
+              "Effect": "Allow",
+              "Principal": { "AWS": "arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2" },
+              "Action": "sts:AssumeRole"
+            },
+            {
+              "Effect": "Allow",
+              "Principal": { "Federated": "arn:aws:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com" },
+              "Action": "sts:AssumeRoleWithWebIdentity",
+              "Condition": {
+                "StringEquals": {
+                  "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+                },
+                "StringLike": {
+                  "token.actions.githubusercontent.com:sub": "repo:${GitHubRepo}:*"
+                }
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Principal": { "AWS": "arn:aws:iam::${AWS::AccountId}:role/ToolsDevelopment" },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+
+  GithubCIRoleOnlyEuWest1Keys:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub "GitHub-CI-${ProjectName}-Role-only-eu-west-1-KMS-keys"
+      Description: "Access KMS Resources for CI from GitHub. Only grants access to use keys in eu-west-1 region. Created for use by CI while executing Custom Client Supplier Example."
+      ManagedPolicyArns:
+        - !Ref KMSUsageOnlyEuWest1Keys
+      AssumeRolePolicyDocument: !Sub |
+        {
+          "Version": "2012-10-17",   
+          "Statement": [
+          {
+              "Effect": "Allow",
+              "Principal": { "AWS": "arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2" },
+              "Action": "sts:AssumeRole"
+            },
+            {
+              "Effect": "Allow",
+              "Principal": { "Federated": "arn:aws:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com" },
+              "Action": "sts:AssumeRoleWithWebIdentity",
+              "Condition": {
+                "StringEquals": {
+                  "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+                },
+                "StringLike": {
+                  "token.actions.githubusercontent.com:sub": "repo:${GitHubRepo}:*"
+                }
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Principal": { "AWS": "arn:aws:iam::${AWS::AccountId}:role/ToolsDevelopment" },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        }
+
+  KMSUsageOnlyUsEast1Keys:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      ManagedPolicyName: !Sub "${ProjectName}-KMS-only-us-east-1"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:GenerateDataKey
+              - kms:GetPublicKey
+            Resource:
+              - !Sub "arn:aws:kms:us-east-1:658956600833:key/*"
+              - !Sub "arn:aws:kms:us-east-1:658956600833:alias/*"
+
+  KMSUsageOnlyEuWest1Keys:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      ManagedPolicyName: !Sub "${ProjectName}-KMS-only-eu-west-1"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:GenerateDataKey
+              - kms:GetPublicKey
+            Resource:
+              - !Sub "arn:aws:kms:eu-west-1:658956600833:key/*"
+              - !Sub "arn:aws:kms:eu-west-1:658956600833:alias/*"
