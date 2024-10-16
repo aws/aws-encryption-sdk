@@ -5,3 +5,5 @@ TestsFromDafny.cs
 bin/
 obj/
 
+# Ignore *-cs.dtr files
+*-cs.dtr

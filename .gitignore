@@ -5,7 +5,7 @@
 build/*
 test/**/Output/*
 /package-lock.json
-/node_modules
+**/node_modules
 
 # Duvet output
 specification_compliance_report.html
