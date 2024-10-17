@@ -66,9 +66,14 @@ Resources:
         {
           "Version": "2012-10-17",   
           "Statement": [
-          {
+            {
               "Effect": "Allow",
               "Principal": { "AWS": "arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2" },
+              "Action": "sts:AssumeRole"
+            },
+            {
+              "Effect": "Allow",
+              "Principal": { "AWS": "arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2" },
               "Action": "sts:AssumeRole"
             },
             {
@@ -103,9 +108,14 @@ Resources:
         {
           "Version": "2012-10-17",   
           "Statement": [
-          {
+            {
               "Effect": "Allow",
               "Principal": { "AWS": "arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2" },
+              "Action": "sts:AssumeRole"
+            },
+            {
+              "Effect": "Allow",
+              "Principal": { "AWS": "arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2" },
               "Action": "sts:AssumeRole"
             },
             {
