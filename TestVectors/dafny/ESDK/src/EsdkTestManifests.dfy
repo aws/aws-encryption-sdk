@@ -95,67 +95,67 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     manifest := Success([]);
   }
 
-  // method StartEncryptVectors(
-  //   op: EsdkManifestOptions.ManifestOptions
-  // )
-  //   returns (output: Result<seq<EsdkDecryptTestVector>, string>)
-  //   requires op.Encrypt?
-  //   requires 0 < |op.manifestPath|
-  // {
+  method StartEncryptVectors(
+    op: EsdkManifestOptions.ManifestOptions
+  )
+    returns (output: Result<seq<EsdkDecryptTestVector>, string>)
+    requires op.Encrypt?
+    requires 0 < |op.manifestPath|
+  {
+    return Failure("Implment me");
+    // var encryptManifest :- GetManifest(op.manifestPath, op.manifest);
+    // :- Need(encryptManifest.EncryptManifest?, "Not a encrypt manifest");
 
-  //   var encryptManifest :- GetManifest(op.manifestPath, op.manifest);
-  //   :- Need(encryptManifest.EncryptManifest?, "Not a encrypt manifest");
+    // var encryptVectors :- ParseEsdkJsonManifest.BuildEncryptTestVector(
+    //   op,
+    //   encryptManifest.version,
+    //   encryptManifest.keys,
+    //   encryptManifest.jsonTests
+    // );
 
-  //   var encryptVectors :- ParseEsdkJsonManifest.BuildEncryptTestVector(
-  //     op,
-  //     encryptManifest.version,
-  //     encryptManifest.keys,
-  //     encryptManifest.jsonTests
-  //   );
+    // var keysJsonFileName := "keys.json";
+    // // Write the keys to disk
+    // var keysJsonBytes :- API.Serialize(encryptManifest.keys.config.keysJson)
+    // .MapFailure(( e: Errors.SerializationError ) => e.ToString());
+    // var _ :- WriteVectorsFile(op.decryptManifestOutput + keysJsonFileName, keysJsonBytes);
 
-  //   var keysJsonFileName := "keys.json";
-  //   // Write the keys to disk
-  //   var keysJsonBytes :- API.Serialize(encryptManifest.keys.config.keysJson)
-  //   .MapFailure(( e: Errors.SerializationError ) => e.ToString());
-  //   var _ :- WriteVectorsFile(op.decryptManifestOutput + keysJsonFileName, keysJsonBytes);
+    // var p :- expect Primitives.AtomicPrimitives();
+    // var plaintext := map[];
+    // for i := 0 to |encryptManifest.plaintext|
+    // {
+    //   var (name, length) := encryptManifest.plaintext[i];
+    //   var data :- expect p.GenerateRandomBytes(
+    //     Primitives.Types.GenerateRandomBytesInput(
+    //       length := length
+    //     ));
+    //   // Write the plaintext to disk.
+    //   print op.decryptManifestOutput + plaintextPathRoot + name, "\n\n";
+    //   var _ :- WriteVectorsFile(op.decryptManifestOutput + plaintextPathRoot + name, data);
+    //   plaintext := plaintext + map[ name := data ];
+    // }
 
-  //   var p :- expect Primitives.AtomicPrimitives();
-  //   var plaintext := map[];
-  //   for i := 0 to |encryptManifest.plaintext|
-  //   {
-  //     var (name, length) := encryptManifest.plaintext[i];
-  //     var data :- expect p.GenerateRandomBytes(
-  //       Primitives.Types.GenerateRandomBytesInput(
-  //         length := length
-  //       ));
-  //     // Write the plaintext to disk.
-  //     print op.decryptManifestOutput + plaintextPathRoot + name, "\n\n";
-  //     var _ :- WriteVectorsFile(op.decryptManifestOutput + plaintextPathRoot + name, data);
-  //     plaintext := plaintext + map[ name := data ];
-  //   }
+    // output := TestEncrypts(plaintext, encryptManifest.keys, encryptVectors);
 
-  //   output := TestEncrypts(plaintext, encryptManifest.keys, encryptVectors);
+    // if output.Success? {
+    //   var testsJson :- Seq.MapWithResult(v => ParseEsdkJsonManifest.DecryptVectorToJson(encryptManifest.keys, v), output.value);
+    //   var decryptManifestJson := Values.Object([
+    //                                              ("manifest", Values.Object([
+    //                                               ("type", Values.String("awses-decrypt")),
+    //                                               ("version", Values.Number(Values.Int(2)))
+    //                                               ])),
+    //                                              ("client", Values.Object([
+    //                                               ("name", Values.String("aws/aws-encryption-sdk-dafny")),
+    //                                               ("version", Values.String("need-some-way-to-get-version"))
+    //                                               ])),
+    //                                              ("keys", Values.String(ParseEsdkJsonManifest.FILE_PREPEND + keysJsonFileName)),
+    //                                              ("tests", Values.Object(testsJson))
+    //                                            ]);
+    //   var decryptManifestJsonBytes :- API.Serialize(decryptManifestJson)
+    //   .MapFailure(( e: Errors.SerializationError ) => e.ToString());
+    //   var _ :- WriteVectorsFile(op.decryptManifestOutput + "manifest.json", decryptManifestJsonBytes);
+    // }
 
-  //   if output.Success? {
-  //     var testsJson :- Seq.MapWithResult(v => ParseEsdkJsonManifest.DecryptVectorToJson(encryptManifest.keys, v), output.value);
-  //     var decryptManifestJson := Values.Object([
-  //                                                ("manifest", Values.Object([
-  //                                                 ("type", Values.String("awses-decrypt")),
-  //                                                 ("version", Values.Number(Values.Int(2)))
-  //                                                 ])),
-  //                                                ("client", Values.Object([
-  //                                                 ("name", Values.String("aws/aws-encryption-sdk-dafny")),
-  //                                                 ("version", Values.String("need-some-way-to-get-version"))
-  //                                                 ])),
-  //                                                ("keys", Values.String(ParseEsdkJsonManifest.FILE_PREPEND + keysJsonFileName)),
-  //                                                ("tests", Values.Object(testsJson))
-  //                                              ]);
-  //     var decryptManifestJsonBytes :- API.Serialize(decryptManifestJson)
-  //     .MapFailure(( e: Errors.SerializationError ) => e.ToString());
-  //     var _ :- WriteVectorsFile(op.decryptManifestOutput + "manifest.json", decryptManifestJsonBytes);
-  //   }
-
-  // }
+  }
 
   // predicate TestEncryptVector?(vector: EsdkEncryptTestVector)
   // {

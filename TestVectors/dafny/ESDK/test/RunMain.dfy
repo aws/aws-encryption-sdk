@@ -7,7 +7,7 @@
 // it is easy to kick off a test run.
 include "../src/Index.dfy"
 
-module TestWrappedESDKMain {
+module {:extern} TestWrappedESDKMain {
   import WrappedESDKMain
   import EsdkTestManifests
   import EsdkManifestOptions
@@ -69,15 +69,15 @@ module TestWrappedESDKMain {
   
   method {:test} RunManifestTests() {
     TestGenerateEncryptManifest();
-    // TestEncryptManifest();
+    TestEncryptManifest();
     // TestDecryptManifest();
   }
   
   method TestGenerateEncryptManifest() {
-    // var directory := GetTestVectorExecutionDirectory();
+    var directory := GetTestVectorExecutionDirectory();
     var result := WriteVectors.WritetestVectors(
       EsdkManifestOptions.EncryptManifest(
-        encryptManifestOutput := "" + "dafny/ESDK/test/",
+        encryptManifestOutput := directory + "dafny/TestVectors/test/",
         version := 4
       ));
     if result.Failure? {
@@ -85,4 +85,20 @@ module TestWrappedESDKMain {
     }
     expect result.Success?;
   }
+  
+  method TestEncryptManifest() {
+    var directory := GetTestVectorExecutionDirectory();
+    var result := EsdkTestManifests.StartEncryptVectors(
+      EsdkManifestOptions.Encrypt(
+        manifestPath := directory + "dafny/TestVectors/test/",
+        manifest := "manifest.json",
+        decryptManifestOutput := directory + "dafny/TestVectors/"
+      )
+    );
+    if result.Failure? {
+      print result.error;
+    }
+    expect result.Success?;
+  }
+
 }
