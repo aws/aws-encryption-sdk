@@ -44,16 +44,19 @@ module {:options "/functionSyntax:4" } AllEsdkV4NoReqEc {
   
   const frameSize: int64 := 512
 
-  const AllPositiveKeyDescriptions
+  const AllPositiveKeyringTests
   := {}
-      + AllHierarchy.KeyDescriptions
-      + AllKms.KeyDescriptions
-      + AllKmsMrkAware.KeyDescriptions
-      + AllKmsMrkAwareDiscovery.KeyDescriptions
-      + AllKmsRsa.KeyDescriptions
-      + AllRawAES.KeyDescriptions
-      + AllRawRSA.KeyDescriptions
-      + AllMulti.KeyDescriptions
+  + AllHierarchy.Tests
+  + AllKms.Tests
+  + AllKmsMrkAware.Tests
+  + AllKmsMrkAwareDiscovery.Tests
+  + AllRawAES.Tests
+  + AllRawRSA.Tests
+  + AllMulti.Tests
+  + AllRawECDH.Tests
+  + AllKmsEcdh.Tests
+
+  const AwsKmsRsaTests := AllKmsRsa.Tests
 
   function keyDescriptionToName(keyDescription: keyVectorKeyTypes.KeyDescription): (output: string)
   {
@@ -71,149 +74,47 @@ module {:options "/functionSyntax:4" } AllEsdkV4NoReqEc {
       case Multi => "MultiKeyring"
       case RequiredEncryptionContext => "RequiredEncryptionContext"
   }
+  // AwsKmsRsaKeyring cannot be used with an Algorithm Suite with asymmetric signing
+  const algorithmSuitesKmsRsa := set suite <- AllAlgorithmSuites.ESDKAlgorithmSuites
+                               | !suite.signature.ECDSA? :: suite
 
-  // All these tests will use a defualt CMM no ECDH
-  const AllPostiveKeyringTestsNoDBESuiteNoReqECNoEcdh :=
+  // All these tests will use a defualt CMM 
+  const AllPostiveKeyringTestsNoDBESuiteNoReqEC :=
   set
-    postiveKeyDescription <- AllPositiveKeyDescriptions,
+    keyringConfig <- AllPositiveKeyringTests,
     algorithmSuite <-
       AllAlgorithmSuites.ESDKAlgorithmSuites
     ::
-      var name := keyDescriptionToName(postiveKeyDescription);
       EsdkTestVectors.PositiveEncryptTestVector(
-        name := name,
+        name := keyringConfig.name,
         version := 4,
         manifestPath := "",
         decryptManifestPath := "",
         plaintextPath := "",
-        encryptDescriptions := [postiveKeyDescription],
-        decryptDescriptions := [postiveKeyDescription],
-        encryptionContext := None,
-        decryptEncryptionContext := None,
+        encryptDescriptions := keyringConfig.encryptDescription,
+        decryptDescriptions := keyringConfig.decryptDescription,
         frameLength := Some(frameSize),
         algorithmSuiteId := Some(algorithmSuite)
       )
   
-  // All these tests will use a defualt CMM only Raw ECDH
-  const AllPostiveKeyringTestsNoDBESuiteNoReqECWithEphemeralRawEcdh :=
+  const AllPositiveKeyringTestsNoDBEKmsRsa :=
   set
-    encryptKeyDescription <- AllRawECDH.EphemeralKeyDescriptionsEncrypt,
-    decryptKeyDescription <- AllRawECDH.DiscoveryKeyDescriptionsDecrypt | decryptKeyDescription.ECDH.curveSpec == encryptKeyDescription.ECDH.curveSpec,
-    algorithmSuite <-
-      AllAlgorithmSuites.ESDKAlgorithmSuites
+    keyringConfig <- AwsKmsRsaTests,
+    algorithmSuite <- algorithmSuitesKmsRsa
     ::
-      var name := keyDescriptionToName(encryptKeyDescription);
       EsdkTestVectors.PositiveEncryptTestVector(
-        name := name,
-        version := 5,
+        name := keyringConfig.name,
+        version := 4,
         manifestPath := "",
         decryptManifestPath := "",
         plaintextPath := "",
-        encryptDescriptions := [encryptKeyDescription],
-        decryptDescriptions := [decryptKeyDescription],
-        encryptionContext := None,
-        decryptEncryptionContext := None,
+        encryptDescriptions := keyringConfig.encryptDescription,
+        decryptDescriptions := keyringConfig.decryptDescription,
         frameLength := Some(frameSize),
         algorithmSuiteId := Some(algorithmSuite)
       )
-  
-  const AllPostiveKeyringTestsNoDBESuiteNoReqECWithStaticRawEcdh :=
-  set
-      encryptKeyDescription <- AllRawECDH.SenderKeyDescriptions,
-      decryptKeyDescription <- AllRawECDH.RecipientKeyDescriptions | decryptKeyDescription.ECDH.curveSpec == encryptKeyDescription.ECDH.curveSpec,
-    algorithmSuite <-
-      AllAlgorithmSuites.ESDKAlgorithmSuites
-    ::
-      var name := keyDescriptionToName(encryptKeyDescription);
-      EsdkTestVectors.PositiveEncryptTestVector(
-        name := name,
-        version := 5,
-        manifestPath := "",
-        decryptManifestPath := "",
-        plaintextPath := "",
-        encryptDescriptions := [encryptKeyDescription],
-        decryptDescriptions := [decryptKeyDescription],
-        encryptionContext := None,
-        decryptEncryptionContext := None,
-        frameLength := Some(frameSize),
-        algorithmSuiteId := Some(algorithmSuite)
-      )
-  
-  const AllPostiveKeyringTestsNoDBESuiteNoReqECWithStaticDiscoveryRawEcdh :=
-  set
-      encryptKeyDescription <- AllRawECDH.SenderKeyDescriptions,
-      decryptKeyDescription <- AllRawECDH.DiscoveryKeyDescriptionsDecrypt | decryptKeyDescription.ECDH.curveSpec == encryptKeyDescription.ECDH.curveSpec,
-    algorithmSuite <-
-      AllAlgorithmSuites.ESDKAlgorithmSuites
-    ::
-      var name := keyDescriptionToName(encryptKeyDescription);
-      EsdkTestVectors.PositiveEncryptTestVector(
-        name := name,
-        version := 5,
-        manifestPath := "",
-        decryptManifestPath := "",
-        plaintextPath := "",
-        encryptDescriptions := [encryptKeyDescription],
-        decryptDescriptions := [decryptKeyDescription],
-        encryptionContext := None,
-        decryptEncryptionContext := None,
-        frameLength := Some(frameSize),
-        algorithmSuiteId := Some(algorithmSuite)
-      )
-  
-  // All these tests will use a defualt CMM only Kms ECDH
-  
-  const AllPostiveKeyringTestsNoDBESuiteNoReqECWithStaticKmsEcdh :=
-  set
-      encryptKeyDescription <- AllKmsEcdh.StaticKmsDescriptionsEncryptSender,
-      decryptKeyDescription <- AllKmsEcdh.StaticKmsDescriptionsEncryptRecipient | decryptKeyDescription.KmsECDH.curveSpec == encryptKeyDescription.KmsECDH.curveSpec,
-    algorithmSuite <-
-      AllAlgorithmSuites.ESDKAlgorithmSuites
-    ::
-      var name := keyDescriptionToName(encryptKeyDescription);
-      EsdkTestVectors.PositiveEncryptTestVector(
-        name := name,
-        version := 5,
-        manifestPath := "",
-        decryptManifestPath := "",
-        plaintextPath := "",
-        encryptDescriptions := [encryptKeyDescription],
-        decryptDescriptions := [decryptKeyDescription],
-        encryptionContext := None,
-        decryptEncryptionContext := None,
-        frameLength := Some(frameSize),
-        algorithmSuiteId := Some(algorithmSuite)
-      )
-
-  const AllPostiveKeyringTestsNoDBESuiteNoReqECWithDiscoveryKmsEcdh :=
-  set
-      encryptKeyDescription <- AllKmsEcdh.StaticKmsDescriptionsEncryptSender,
-      decryptKeyDescription <- AllKmsEcdh.DiscoveryKeyDescriptionsDecrypt | decryptKeyDescription.KmsECDH.curveSpec == encryptKeyDescription.KmsECDH.curveSpec,
-    algorithmSuite <-
-      AllAlgorithmSuites.ESDKAlgorithmSuites
-    ::
-      var name := keyDescriptionToName(encryptKeyDescription);
-      EsdkTestVectors.PositiveEncryptTestVector(
-        name := name,
-        version := 5,
-        manifestPath := "",
-        decryptManifestPath := "",
-        plaintextPath := "",
-        encryptDescriptions := [encryptKeyDescription],
-        decryptDescriptions := [decryptKeyDescription],
-        encryptionContext := None,
-        decryptEncryptionContext := None,
-        frameLength := Some(frameSize),
-        algorithmSuiteId := Some(algorithmSuite)
-      )
-    
   
   const Tests := 
-    AllPostiveKeyringTestsNoDBESuiteNoReqECNoEcdh 
-    // + AllPostiveKeyringTestsNoDBESuiteNoReqECWithEphemeralRawEcdh 
-    // + AllPostiveKeyringTestsNoDBESuiteNoReqECWithStaticRawEcdh
-    // + AllPostiveKeyringTestsNoDBESuiteNoReqECWithStaticDiscoveryRawEcdh
-    // + AllPostiveKeyringTestsNoDBESuiteNoReqECWithStaticKmsEcdh
-    // + AllPostiveKeyringTestsNoDBESuiteNoReqECWithDiscoveryKmsEcdh
-    
+    AllPostiveKeyringTestsNoDBESuiteNoReqEC
+    + AllPositiveKeyringTestsNoDBEKmsRsa 
 }

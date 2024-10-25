@@ -54,7 +54,7 @@ module {:options "-functionSyntax:4"} WriteVectors {
       mplTypes.CommitmentPolicy.ESDK(mplTypes.ESDKCommitmentPolicy.REQUIRE_ENCRYPT_REQUIRE_DECRYPT)
   }
 
-  method WritetestVectors(op: EsdkManifestOptions.ManifestOptions)
+  method {:vcs_split_on_every_assert} WritetestVectors(op: EsdkManifestOptions.ManifestOptions)
     returns (output: Result<(), string>)
     requires op.EncryptManifest?
   {
@@ -68,20 +68,19 @@ module {:options "-functionSyntax:4"} WriteVectors {
     for i := 0 to |tests|
     {
       :- Need(
-        && tests[i].algorithmSuiteId.Some?
-        && tests[i].cmm.Some?, 
-        "No cmm or algorithm suite defined in test"
+        && tests[i].algorithmSuiteId.Some?,
+        "No algorithm suite defined in test"
       );
 
       var id := AllAlgorithmSuites.ToHex(tests[i].algorithmSuiteId.value);
       var uuid :- expect UUID.GenerateUUID();
-      var name := id + "-" + tests[i].name + "-" + tests[i].cmm.value + "-" + uuid;
+      var name := id + "-" + tests[i].name + "-" + uuid;
       var test :- WriteEsdkJsonManifests.EncryptTestVectorToJson(tests[i]);
       testsJSON := testsJSON + [(name, test)];
     }
     
     var manifestJson := Object([
-          ("type", String("awses-decrypt-generate")),
+          ("type", String("awses-encrypt")),
           ("version", Number(Int(4)))]);
 
     var plaintexts := Object([("small", Number(Int(10240)))]);
@@ -89,7 +88,7 @@ module {:options "-functionSyntax:4"} WriteVectors {
     var esdkEncryptManifests := Object(
       [
         ("manifest", manifestJson),
-        ("keys", String("keys.json")),
+        ("keys", String("file://keys.json")),
         ("plaintexts", plaintexts),
         ("tests", Object(testsJSON))
       ]
@@ -109,7 +108,7 @@ module {:options "-functionSyntax:4"} WriteVectors {
   function getVersionTests(version: nat): (ret: Result<set<EsdkTestVectors.EsdkEncryptTestVector>, string>)
   {
     match version
-      case 4 => Success(AllEsdkV4WithReqEc.Tests + AllEsdkV4NoReqEc.Tests)
+      case 4 => Success(AllEsdkV4NoReqEc.Tests + AllEsdkV4WithReqEc.Tests)
       case _ => Failure("Only version 4 of generate manifest is supported\n")
   }
 }

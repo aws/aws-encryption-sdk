@@ -59,10 +59,8 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
   {
     :- Need(
       && test.algorithmSuiteId.Some?
-      && test.cmm.Some?
-      && test.frameLength.Some?
-      && |test.encryptDescriptions| >= 1,
-      "test is missing algorithmSuite ID, cmm, or frameLength"
+      && test.frameLength.Some?,
+      "test is missing algorithmSuite ID, or frameLength"
     );
     var id := AllAlgorithmSuites.ToHex(test.algorithmSuiteId.value);
 
@@ -78,40 +76,26 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
       "Error parsing encryption context"
     );
 
+    var requiredEncryptionContextKeys :- EncryptionContextKeysToJson(test.requiredEncryptionContextKeys);
+    var optionalValues := requiredEncryptionContextKeys + encryptionContext;
+
     match test
-    case PositiveEncryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_) =>
-      var encryptDescription := test.encryptDescriptions[0];
-      var encrypt :- KeyDescription.ToJson(encryptDescription, 3);
+    case PositiveEncryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_,_) =>
+      var encrypt :- KeyDescription.ToJson(test.encryptDescriptions, 3);
+      var decrypt :- KeyDescription.ToJson(test.decryptDescriptions, 3);
       var scenario := Object([
+                                ("type", String("positive-esdk")),
                                 ("plaintext", String("small")),
-                                ("algorithm", String(id)),
-                                ("frame-size", String(StandardLibrary.String.Base10Int2String(test.frameLength.value as int))),
-                                ("encryption-context", encryptionContext[0].1),
-                                ("master-keys", encrypt),
-                                ("cmm", String(test.cmm.value))
-                              ]);
+                                ("algorithmSuiteId", String(id)),
+                                ("frame-size", Number(Int(test.frameLength.value as int))),
+                                ("encryptKeyDescription", encrypt),
+                                ("decryptKeyDescription", decrypt)
+                              ] + optionalValues);
       Success(Object([
                         ("encryption-scenario", scenario)
                       ]))
     case _ => 
       Failure("Only Positive Tests supported :(")
-
-    // var maxPlaintextL
-    //   := if test.maxPlaintextLength.Some? then
-    //        [("maxPlaintextLength",
-    //          Number(Int(test.maxPlaintextLength.value as int)))]
-    //      else
-    //        [];
-    // var requiredEncryptionContextKeys :- EncryptionContextKeysToJson(test.requiredEncryptionContextKeys);
-    // var reproducedEc
-    //   :- if
-    //        && !test.NegativeEncryptKeyringVector?
-    //        && test.reproducedEncryptionContext.Some?
-    //      then
-    //        EncryptionContextToJson("reproducedEncryptionContext", test.reproducedEncryptionContext.value)
-    //      else
-    //        Success([]);
-    // var optionalValues := reproducedEc + maxPlaintextL + requiredEncryptionContextKeys + encryptionContext;
 
     // match test
     // case PositiveEncryptKeyringVector(_,_,_,_,_,_,_,_,_,_) =>

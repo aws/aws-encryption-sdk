@@ -44,8 +44,14 @@ dependencies {
 }
 
 tasks.register<JavaExec>("runTests") {
+    dependsOn("copyKeysJSON")
     mainClass.set("TestsFromDafny")
     classpath = sourceSets["test"].runtimeClasspath
+}
+
+tasks.register<Copy>("copyKeysJSON") {
+    from(layout.projectDirectory.file("../../dafny/ESDK/test/keys.json"))
+    into(layout.projectDirectory.dir("dafny/TestVectors/test"))
 }
 
 application {

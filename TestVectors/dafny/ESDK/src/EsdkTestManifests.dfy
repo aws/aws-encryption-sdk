@@ -95,47 +95,41 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     manifest := Success([]);
   }
 
-  method StartEncryptVectors(
+  method {:vcs_split_on_every_assert} StartEncryptVectors(
     op: EsdkManifestOptions.ManifestOptions
   )
     returns (output: Result<seq<EsdkDecryptTestVector>, string>)
     requires op.Encrypt?
     requires 0 < |op.manifestPath|
   {
-    return Failure("Implment me");
-    // var encryptManifest :- GetManifest(op.manifestPath, op.manifest);
-    // :- Need(encryptManifest.EncryptManifest?, "Not a encrypt manifest");
+    var encryptManifest :- GetManifest(op.manifestPath, op.manifest);
+    :- Need(encryptManifest.EncryptManifest?, "Not a encrypt manifest");
 
-    // var encryptVectors :- ParseEsdkJsonManifest.BuildEncryptTestVector(
-    //   op,
-    //   encryptManifest.version,
-    //   encryptManifest.keys,
-    //   encryptManifest.jsonTests
-    // );
+    var encryptVectors :- ParseEsdkJsonManifest.BuildEncryptTestVector(
+      op,
+      encryptManifest.version,
+      encryptManifest.keys,
+      encryptManifest.jsonTests
+    );
 
-    // var keysJsonFileName := "keys.json";
-    // // Write the keys to disk
-    // var keysJsonBytes :- API.Serialize(encryptManifest.keys.config.keysJson)
-    // .MapFailure(( e: Errors.SerializationError ) => e.ToString());
-    // var _ :- WriteVectorsFile(op.decryptManifestOutput + keysJsonFileName, keysJsonBytes);
+    var p :- expect Primitives.AtomicPrimitives();
+    var plaintext := map[];
+    for i := 0 to |encryptManifest.plaintext|
+    {
+      var (name, length) := encryptManifest.plaintext[i];
+      var data :- expect p.GenerateRandomBytes(
+        Primitives.Types.GenerateRandomBytesInput(
+          length := length
+        ));
+      // Write the plaintext to disk.
+      print op.decryptManifestOutput + plaintextPathRoot + name, "\n\n";
+      var _ :- WriteVectorsFile(op.decryptManifestOutput + plaintextPathRoot + name, data);
+      plaintext := plaintext + map[ name := data ];
+    }
 
-    // var p :- expect Primitives.AtomicPrimitives();
-    // var plaintext := map[];
-    // for i := 0 to |encryptManifest.plaintext|
-    // {
-    //   var (name, length) := encryptManifest.plaintext[i];
-    //   var data :- expect p.GenerateRandomBytes(
-    //     Primitives.Types.GenerateRandomBytesInput(
-    //       length := length
-    //     ));
-    //   // Write the plaintext to disk.
-    //   print op.decryptManifestOutput + plaintextPathRoot + name, "\n\n";
-    //   var _ :- WriteVectorsFile(op.decryptManifestOutput + plaintextPathRoot + name, data);
-    //   plaintext := plaintext + map[ name := data ];
-    // }
-
-    // output := TestEncrypts(plaintext, encryptManifest.keys, encryptVectors);
-
+    var encryptTests? := ToEncryptTests(encryptManifest.keys, encryptVectors);
+    var encryptTests :- encryptTests?.MapFailure((e: KeyVectorsTypes.Error) => var _ := MplVectorPrintErr(e); "Cmm failure");
+    var decryptVectors :- TestEncrypts(plaintext, encryptManifest.keys, encryptTests);
     // if output.Success? {
     //   var testsJson :- Seq.MapWithResult(v => ParseEsdkJsonManifest.DecryptVectorToJson(encryptManifest.keys, v), output.value);
     //   var decryptManifestJson := Values.Object([
@@ -154,55 +148,98 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     //   .MapFailure(( e: Errors.SerializationError ) => e.ToString());
     //   var _ :- WriteVectorsFile(op.decryptManifestOutput + "manifest.json", decryptManifestJsonBytes);
     // }
-
+    return Failure("Implement me");
   }
 
-  // predicate TestEncryptVector?(vector: EsdkEncryptTestVector)
-  // {
-  //   && (vector.frameLength.Some? ==> Types.IsValid_FrameLength(vector.frameLength.value))
-  // }
 
-  // method TestEncrypts(
-  //   plaintexts: map<string, seq<uint8>>,
-  //   keys: KeyVectors.KeyVectorsClient,
-  //   vectors: seq<EsdkEncryptTestVector>
-  // )
-  //   returns (manifest: Result<seq<EsdkDecryptTestVector>, string>)
-  //   requires keys.ValidState()
-  //   modifies keys.Modifies
-  //   ensures keys.ValidState()
-  // {
-  //   print "\n=================== Starting ", |vectors|, " Encrypt Tests =================== \n\n";
+  predicate TestEncryptVector?(vector: EsdkEncryptTestVector)
+  {
+    && (vector.frameLength.Some? ==> Types.IsValid_FrameLength(vector.frameLength.value))
+  }
 
-  //   var hasFailure := false;
-  //   var skipped := [];
-  //   var decryptVectors := [];
+  method ToEncryptTests(keys: KeyVectors.KeyVectorsClient, vectors: seq<EsdkEncryptTestVector>)
+    returns (output: Result<seq<EsdkTestVectors.EncryptTest>, KeyVectorsTypes.Error>)
+    requires keys.ValidState()
+    modifies keys.Modifies
+    ensures keys.ValidState()
+    ensures output.Success? ==>
+              && forall t <- output.value ::
+                && t.ValidState()
+                && fresh(t.cmm.Modifies) && fresh(t.client.Modifies)
+  {
+    var encryptTests: seq<EsdkTestVectors.EncryptTest> := [];
+    for i := 0 to |vectors|
+      invariant forall t <- encryptTests ::
+          && t.ValidState()
+          && fresh(t.cmm.Modifies) && fresh(t.client.Modifies)
+    {
+      var test :- EsdkTestVectors.EncryptVectorToEncryptTest(keys, vectors[i]);
+      encryptTests := encryptTests + [test];
+    }
 
-  //   for i := 0 to |vectors|
-  //   {
-  //     var vector := vectors[i];
-  //     if TestEncryptVector?(vector) {
-  //       var pass := EsdkTestVectors.TestEncrypt(plaintexts, keys, vector);
-  //       if !pass.output {
-  //         hasFailure := true;
-  //       } else if pass.vector.Some? {
-  //         decryptVectors := decryptVectors + [pass.vector.value];
-  //       }
-  //     } else {
-  //       skipped := skipped + [vector.name + "\n"];
-  //       print "\nSKIP===> ", vector.name, "\n";
-  //     }
-  //   }
-  //   print "\n=================== Completed ", |vectors|, " Encrypt Tests =================== \n\n";
+    return Success(encryptTests);
+  }
 
-  //   if 0 < |skipped| {
-  //     print "Skipped: ", skipped, "\n";
-  //   }
+  method TestEncrypts(
+    plaintexts: map<string, seq<uint8>>,
+    keys: KeyVectors.KeyVectorsClient,
+    tests: seq<EsdkTestVectors.EncryptTest>
+  )
+    returns (manifest: Result<seq<EsdkDecryptTestVector>, string>)
+    requires keys.ValidState()
+    modifies keys.Modifies
+    ensures keys.ValidState()
+    requires forall t <- tests :: t.ValidState()
+    modifies set t <- tests, o | o in t.cmm.Modifies :: o
+    modifies set t <- tests, o | o in t.client.Modifies :: o
+    ensures forall t <- tests :: t.ValidState()
+  {
+    print "\n=================== Starting ", |tests|, " Encrypt Tests =================== \n\n";
 
-  //   expect !hasFailure;
+    var hasFailure := false;
+    var decryptVectors := [];
 
-  //   manifest := Success(decryptVectors);
-  // }
+    for i := 0 to |tests|
+      invariant forall t <- tests ::
+          && t.ValidState()
+    {
+      var test := tests[i];
+      if TestEncryptVector?(test.vector) {
+        :- Need(
+          && test.vector.algorithmSuiteId.Some? 
+          && test.vector.algorithmSuiteId.value.id.ESDK?,
+          "Vector is using an algorithm suite other than ESDK"
+        );
+        var pass := EsdkTestVectors.TestEncrypt(plaintexts, keys, test);
+
+
+
+      }
+
+      // if TestEncryptVector?(vector) {
+      //   :- Need(
+      //     && vector.algorithmSuiteId.Some? 
+      //     && vector.algorithmSuiteId.value.id.ESDK?,
+      //     "Vector is using an algorithm suite other than ESDK"
+      //   );
+
+      //   var pass := EsdkTestVectors.TestEncrypt(plaintexts, keys, vector);
+      //   if !pass.output {
+      //     hasFailure := true;
+      //   } else if pass.vector.Some? {
+      //     decryptVectors := decryptVectors + [pass.vector.value];
+      //   }
+      // } else {
+      //   skipped := skipped + [vector.name + "\n"];
+      //   print "\nSKIP===> ", vector.name, "\n";
+      // }
+    }
+    print "\n=================== Completed ", |tests|, " Encrypt Tests =================== \n\n";
+
+    expect !hasFailure;
+
+    manifest := Success(decryptVectors);
+  }
 
   datatype ManifestData =
     | DecryptManifest(

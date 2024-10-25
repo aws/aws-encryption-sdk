@@ -88,15 +88,15 @@ public class TestESDK implements IAwsEncryptionSdkClient {
       if (Objects.isNull(nativeInput.materialsManager())) {
         // Call decrypt with keyring
         if (Objects.isNull(nativeInput.encryptionContext())) {
-          encryptResult = this._impl.encryptData(nativeInput.materialsManager(), nativeInput.plaintext().array());
-        } else {
-          encryptResult = this._impl.encryptData(nativeInput.materialsManager(), nativeInput.plaintext().array(), nativeInput.encryptionContext());
-        }
-      } else {
-        if (Objects.isNull(nativeInput.encryptionContext())) {
           encryptResult = this._impl.encryptData(nativeInput.keyring(), nativeInput.plaintext().array());
         } else {
           encryptResult = this._impl.encryptData(nativeInput.keyring(), nativeInput.plaintext().array(), nativeInput.encryptionContext());
+        }
+      } else {
+        if (Objects.isNull(nativeInput.encryptionContext())) {
+          encryptResult = this._impl.encryptData(nativeInput.materialsManager(), nativeInput.plaintext().array());
+        } else {
+          encryptResult = this._impl.encryptData(nativeInput.materialsManager(), nativeInput.plaintext().array(), nativeInput.encryptionContext());
         }
       }
       dafny.DafnySequence<? extends Byte> ciphertext = Simple.ByteSequence(encryptResult.getResult());
