@@ -85,6 +85,9 @@ jobs:
           distribution: "corretto"
           java-version: "17"
 
+      - name: Setup NASM for Windows (aws-lc-sys)
+        uses: ilammy/setup-nasm@v1
+
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
 
