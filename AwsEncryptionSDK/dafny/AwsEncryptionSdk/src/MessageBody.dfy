@@ -964,17 +964,16 @@ module MessageBody {
     :(res: ReadCorrect<FramedMessage>)
     requires forall frame: Frames.Frame | frame in regularFrames :: frame.header == header
     requires buffer.bytes == continuation.bytes
-    requires buffer.start <= continuation.start 
+    requires buffer.start <= continuation.start
     requires 0 <= continuation.start <= |buffer.bytes|
     requires CorrectlyReadRange(buffer, continuation, buffer.bytes[buffer.start..continuation.start])
     requires CorrectlyRead(buffer, Success(SuccessfulRead(regularFrames, continuation)), WriteMessageRegularFrames)
     decreases ENDFRAME_SEQUENCE_NUMBER as nat - |regularFrames|
     ensures CorrectlyRead(buffer, res, WriteFramedMessageBody)
     ensures res.Success?
-    ==>
-      && res.value.data.finalFrame.header == header
+            ==>
+              && res.value.data.finalFrame.header == header
   {
-    reveal CorrectlyReadRange();
     var sequenceNumber :- ReadUInt32(continuation);
 
     //= compliance/client-apis/decrypt.txt#2.7.4
@@ -984,8 +983,6 @@ module MessageBody {
     //# (../data-format/message-body.md#final-frame) or regular frame
     //# (../fata-format/message-body/md#regular-frame).
     if (sequenceNumber.data != ENDFRAME_SEQUENCE_NUMBER) then
-    
-      assert {:split_here} true;
 
       //= compliance/client-apis/decrypt.txt#2.7.4
       //# Otherwise, this MUST
@@ -993,10 +990,7 @@ module MessageBody {
       //# header.md#sequence-number) and the following bytes according to the
       //# regular frame spec (../data-format/message-body.md#regular-frame).
       var regularFrame :- Frames.ReadRegularFrame(continuation, header);
-      assert buffer.bytes == continuation.bytes;
-      assert buffer.bytes == regularFrame.tail.bytes by {
-        reveal CorrectlyReadRange();
-      }
+
       //= compliance/client-apis/decrypt.txt#2.7.4
       //# If this is framed data and the first
       //# frame sequentially, this value MUST be 1.
@@ -1008,19 +1002,15 @@ module MessageBody {
       //# of the previous frame.
       :- Need(regularFrame.data.seqNum as nat == |regularFrames| + 1, Error("Sequence number out of order."));
 
-      assert {:split_here} true;
       LemmaAddingNextRegularFrame(regularFrames, regularFrame.data);
 
       var nextRegularFrames: MessageRegularFrames := regularFrames + [regularFrame.data];
 
-      assert {:split_here} true;
-      assert CorrectlyRead(continuation, Success(regularFrame), Frames.WriteRegularFrame);
-      assert continuation.bytes == regularFrame.tail.bytes by {
+      CorrectlyReadByteRange(buffer, continuation, WriteMessageRegularFrames(regularFrames));
+      AppendToCorrectlyReadByteRange(buffer, continuation, regularFrame.tail, Frames.WriteRegularFrame(regularFrame.data));
+      assert buffer.bytes == continuation.bytes == regularFrame.tail.bytes by {
         reveal CorrectlyReadRange();
       }
-
-      assert {:split_here} true;
-
       // This method recursively reads all the frames in the buffer,
       // instead of reading one frame a time, so this requirement cannot be met
       //= compliance/client-apis/decrypt.txt#2.7.4
@@ -1031,13 +1021,20 @@ module MessageBody {
       //# (../framework/algorithm-suites.md#encryption-algorithm) specified by
       //# the algorithm suite (../framework/algorithm-suites.md), with the
       //# following inputs:
-      var res := Success(SuccessfulRead(nextRegularFrames, regularFrame.tail));
-      assert CorrectlyRead(buffer, res, WriteMessageRegularFrames) by {
-
-        AppendToCorrectlyReadByteRange(buffer, continuation, regularFrame.tail, Frames.WriteRegularFrame(regularFrame.data));
-
-        assert buffer.bytes[buffer.start..continuation.start] == WriteMessageRegularFrames(regularFrames);
-        assert buffer.bytes[buffer.start..regularFrame.tail.start] == WriteMessageRegularFrames(nextRegularFrames);
+      assert CorrectlyRead(
+        buffer,
+        Success(SuccessfulRead(nextRegularFrames, regularFrame.tail)),
+        WriteMessageRegularFrames
+      ) by {
+        calc {
+          buffer.bytes[buffer.start..continuation.start] + Frames.WriteRegularFrame(regularFrame.data);
+        == {CorrectlyReadByteRange(buffer, continuation, WriteMessageRegularFrames(regularFrames));}
+          WriteMessageRegularFrames(regularFrames) + Frames.WriteRegularFrame(regularFrame.data);
+        == // By definition of WriteMessageRegularFrames
+          WriteMessageRegularFrames(regularFrames + [regularFrame.data]);
+        == {assert nextRegularFrames == regularFrames + [regularFrame.data];}
+          WriteMessageRegularFrames(nextRegularFrames);
+        }
       }
 
       ReadFramedMessageBody(
@@ -1054,26 +1051,34 @@ module MessageBody {
       //# number-end) and the following bytes according to the final frame spec
       //# (../data-format/message-body.md#final-frame).
       assert sequenceNumber.data == ENDFRAME_SEQUENCE_NUMBER;
-      
-      assert {:split_here} true;
+
       var finalFrame :- Frames.ReadFinalFrame(continuation, header);
       :- Need(
-        finalFrame.data.seqNum as nat == |regularFrames| + 1,
-        Error("Sequence number out of order.")
-      );
+           finalFrame.data.seqNum as nat == |regularFrames| + 1,
+           Error("Sequence number out of order.")
+         );
 
-      assert {:split_here} true;
       assert MessageFramesAreMonotonic(regularFrames + [finalFrame.data]);
       assert MessageFramesAreForTheSameMessage(regularFrames + [finalFrame.data]);
 
       var body: FramedMessage := FramedMessageBody(
-        regularFrames := regularFrames,
-        finalFrame := finalFrame.data
-      );
+                                   regularFrames := regularFrames,
+                                   finalFrame := finalFrame.data
+                                 );
 
-      assert {:split_here} true;
-      assert CorrectlyRead(continuation, Success(finalFrame), Frames.WriteFinalFrame);
-      assert {:split_here} true;
+      assert CorrectlyRead(buffer, Success(SuccessfulRead(body, finalFrame.tail)), WriteFramedMessageBody) by {
+        AppendToCorrectlyReadByteRange(buffer, continuation, finalFrame.tail, Frames.WriteFinalFrame(finalFrame.data));
+        calc {
+          buffer.bytes[buffer.start..finalFrame.tail.start];
+        ==
+          buffer.bytes[buffer.start..continuation.start] + Frames.WriteFinalFrame(finalFrame.data);
+        == {CorrectlyReadByteRange(buffer, continuation, WriteMessageRegularFrames(regularFrames));}
+          WriteMessageRegularFrames(regularFrames) + Frames.WriteFinalFrame(finalFrame.data);
+        == // By definition of WriteMessageRegularFrames
+          WriteFramedMessageBody(body);
+        }
+      }
+
       Success(SuccessfulRead(body, finalFrame.tail))
   }
 
