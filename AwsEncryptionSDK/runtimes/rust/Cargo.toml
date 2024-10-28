@@ -16,20 +16,20 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-aws-config = "1.5.6"
-aws-lc-rs = "1.9.0"
-aws-lc-sys = "0.21.2"
-aws-sdk-dynamodb = "1.47.0"
-aws-sdk-kms = "1.44.0"
+aws-config = "1.5.9"
+aws-lc-rs = "1.10.0"
+aws-lc-sys = "0.22.0"
+aws-sdk-dynamodb = "1.51.0"
+aws-sdk-kms = "1.48.0"
 aws-smithy-runtime-api = {version = "1.7.2", features = ["client"] }
-aws-smithy-types = "1.2.6"
+aws-smithy-types = "1.2.8"
 chrono = "0.4.38"
 dafny_runtime = { path = "dafny_runtime_rust"}
 dashmap = "6.1.0"
 pem = "3.0.4"
 rand = "0.8.5"
-tokio = {version = "1.40.0", features = ["full"] }
-uuid = { version = "1.10.0", features = ["v4"] }
+tokio = {version = "1.41.0", features = ["full"] }
+uuid = { version = "1.11.0", features = ["v4"] }
 
 [lib]
 path = "src/implementation_from_dafny.rs"
