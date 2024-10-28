@@ -35,24 +35,24 @@ pub fn to_dafny(
     value: crate::deps::aws_cryptography_materialProviders::types::error::Error,
 ) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error> {
     ::std::rc::Rc::new(match value {
-        crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidEncryptionMaterialsTransition { message } =>
-    crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidEncryptionMaterialsTransition {
+        crate::deps::aws_cryptography_materialProviders::types::error::Error::AwsCryptographicMaterialProvidersException { message } =>
+    crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::AwsCryptographicMaterialProvidersException {
         message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&message),
     },
 crate::deps::aws_cryptography_materialProviders::types::error::Error::EntryAlreadyExists { message } =>
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::EntryAlreadyExists {
         message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&message),
     },
-crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidEncryptionMaterials { message } =>
-    crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidEncryptionMaterials {
-        message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&message),
-    },
-crate::deps::aws_cryptography_materialProviders::types::error::Error::AwsCryptographicMaterialProvidersException { message } =>
-    crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::AwsCryptographicMaterialProvidersException {
-        message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&message),
-    },
 crate::deps::aws_cryptography_materialProviders::types::error::Error::EntryDoesNotExist { message } =>
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::EntryDoesNotExist {
+        message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&message),
+    },
+crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidAlgorithmSuiteInfo { message } =>
+    crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidAlgorithmSuiteInfo {
+        message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&message),
+    },
+crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidAlgorithmSuiteInfoOnDecrypt { message } =>
+    crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidAlgorithmSuiteInfoOnDecrypt {
         message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&message),
     },
 crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidAlgorithmSuiteInfoOnEncrypt { message } =>
@@ -63,16 +63,16 @@ crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidDec
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidDecryptionMaterials {
         message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&message),
     },
-crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidAlgorithmSuiteInfo { message } =>
-    crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidAlgorithmSuiteInfo {
-        message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&message),
-    },
 crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidDecryptionMaterialsTransition { message } =>
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidDecryptionMaterialsTransition {
         message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&message),
     },
-crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidAlgorithmSuiteInfoOnDecrypt { message } =>
-    crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidAlgorithmSuiteInfoOnDecrypt {
+crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidEncryptionMaterials { message } =>
+    crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidEncryptionMaterials {
+        message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&message),
+    },
+crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidEncryptionMaterialsTransition { message } =>
+    crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidEncryptionMaterialsTransition {
         message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&message),
     },
 crate::deps::aws_cryptography_materialProviders::types::error::Error::AwsCryptographicPrimitivesError { error } =>
@@ -126,24 +126,24 @@ pub fn from_dafny(
     >,
 ) -> crate::deps::aws_cryptography_materialProviders::types::error::Error {
     match ::std::borrow::Borrow::borrow(&dafny_value) {
-        crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidEncryptionMaterialsTransition { message } =>
-    crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidEncryptionMaterialsTransition {
+        crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::AwsCryptographicMaterialProvidersException { message } =>
+    crate::deps::aws_cryptography_materialProviders::types::error::Error::AwsCryptographicMaterialProvidersException {
         message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(&message),
     },
 crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::EntryAlreadyExists { message } =>
     crate::deps::aws_cryptography_materialProviders::types::error::Error::EntryAlreadyExists {
         message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(&message),
     },
-crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidEncryptionMaterials { message } =>
-    crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidEncryptionMaterials {
-        message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(&message),
-    },
-crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::AwsCryptographicMaterialProvidersException { message } =>
-    crate::deps::aws_cryptography_materialProviders::types::error::Error::AwsCryptographicMaterialProvidersException {
-        message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(&message),
-    },
 crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::EntryDoesNotExist { message } =>
     crate::deps::aws_cryptography_materialProviders::types::error::Error::EntryDoesNotExist {
+        message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(&message),
+    },
+crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidAlgorithmSuiteInfo { message } =>
+    crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidAlgorithmSuiteInfo {
+        message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(&message),
+    },
+crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidAlgorithmSuiteInfoOnDecrypt { message } =>
+    crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidAlgorithmSuiteInfoOnDecrypt {
         message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(&message),
     },
 crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidAlgorithmSuiteInfoOnEncrypt { message } =>
@@ -154,16 +154,16 @@ crate::r#software::amazon::cryptography::materialproviders::internaldafny::types
     crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidDecryptionMaterials {
         message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(&message),
     },
-crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidAlgorithmSuiteInfo { message } =>
-    crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidAlgorithmSuiteInfo {
-        message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(&message),
-    },
 crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidDecryptionMaterialsTransition { message } =>
     crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidDecryptionMaterialsTransition {
         message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(&message),
     },
-crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidAlgorithmSuiteInfoOnDecrypt { message } =>
-    crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidAlgorithmSuiteInfoOnDecrypt {
+crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidEncryptionMaterials { message } =>
+    crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidEncryptionMaterials {
+        message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(&message),
+    },
+crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::InvalidEncryptionMaterialsTransition { message } =>
+    crate::deps::aws_cryptography_materialProviders::types::error::Error::InvalidEncryptionMaterialsTransition {
         message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(&message),
     },
 crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::AwsCryptographyPrimitives { AwsCryptographyPrimitives } =>

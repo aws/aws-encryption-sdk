@@ -4,7 +4,7 @@
 #[derive(::std::clone::Clone, ::std::fmt::Debug, ::std::cmp::PartialEq)]
 pub enum Error {
     #[allow(missing_docs)]
-InvalidEncryptionMaterialsTransition {
+AwsCryptographicMaterialProvidersException {
     message: ::std::string::String,
 },
 
@@ -14,17 +14,17 @@ EntryAlreadyExists {
 },
 
 #[allow(missing_docs)]
-InvalidEncryptionMaterials {
-    message: ::std::string::String,
-},
-
-#[allow(missing_docs)]
-AwsCryptographicMaterialProvidersException {
-    message: ::std::string::String,
-},
-
-#[allow(missing_docs)]
 EntryDoesNotExist {
+    message: ::std::string::String,
+},
+
+#[allow(missing_docs)]
+InvalidAlgorithmSuiteInfo {
+    message: ::std::string::String,
+},
+
+#[allow(missing_docs)]
+InvalidAlgorithmSuiteInfoOnDecrypt {
     message: ::std::string::String,
 },
 
@@ -39,17 +39,17 @@ InvalidDecryptionMaterials {
 },
 
 #[allow(missing_docs)]
-InvalidAlgorithmSuiteInfo {
-    message: ::std::string::String,
-},
-
-#[allow(missing_docs)]
 InvalidDecryptionMaterialsTransition {
     message: ::std::string::String,
 },
 
 #[allow(missing_docs)]
-InvalidAlgorithmSuiteInfoOnDecrypt {
+InvalidEncryptionMaterials {
+    message: ::std::string::String,
+},
+
+#[allow(missing_docs)]
+InvalidEncryptionMaterialsTransition {
     message: ::std::string::String,
 },
 
