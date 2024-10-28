@@ -58,25 +58,8 @@ module {:options "/functionSyntax:4" } AllEsdkV4NoReqEc {
 
   const AwsKmsRsaTests := AllKmsRsa.Tests
 
-  function keyDescriptionToName(keyDescription: keyVectorKeyTypes.KeyDescription): (output: string)
-  {
-    match keyDescription
-      case Kms => "KMS"
-      case KmsMrk => "KMS-MRK"
-      case KmsMrkDiscovery => "KMS-MRK-Discovery"
-      case RSA => "Raw RSA"
-      case AES => "Raw AES"
-      case ECDH => "Raw ECDH"
-      case Static => "Static Keyring"
-      case KmsRsa => "KMS RSA"
-      case KmsECDH => "KMS ECDH"
-      case Hierarchy => "Hierarchy"
-      case Multi => "MultiKeyring"
-      case RequiredEncryptionContext => "RequiredEncryptionContext"
-  }
-  // AwsKmsRsaKeyring cannot be used with an Algorithm Suite with asymmetric signing
-  const algorithmSuitesKmsRsa := set suite <- AllAlgorithmSuites.ESDKAlgorithmSuites
-                               | !suite.signature.ECDSA? :: suite
+  const esdkAlgorithmSuitesKmsRsa := set suite <- AllAlgorithmSuites.AllAlgorithmSuites
+                               | !suite.signature.ECDSA? && suite.id.ESDK?:: suite
 
   // All these tests will use a defualt CMM 
   const AllPostiveKeyringTestsNoDBESuiteNoReqEC :=
@@ -100,7 +83,7 @@ module {:options "/functionSyntax:4" } AllEsdkV4NoReqEc {
   const AllPositiveKeyringTestsNoDBEKmsRsa :=
   set
     keyringConfig <- AwsKmsRsaTests,
-    algorithmSuite <- algorithmSuitesKmsRsa
+    algorithmSuite <- esdkAlgorithmSuitesKmsRsa
     ::
       EsdkTestVectors.PositiveEncryptTestVector(
         name := keyringConfig.name,

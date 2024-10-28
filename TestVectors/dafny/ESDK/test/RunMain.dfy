@@ -69,7 +69,7 @@ module {:extern} TestWrappedESDKMain {
   
   method {:test} RunManifestTests() {
     TestGenerateEncryptManifest();
-    // TestEncryptManifest();
+    TestEncryptManifest();
     // TestDecryptManifest();
   }
   

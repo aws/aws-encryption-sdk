@@ -73,6 +73,8 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
 
   const ciphertextJsonKey := "ciphertext"
   const masterKeysJsonKey := "master-keys"
+  const encryptKeyDescription := "encryptKeyDescription"
+  const decryptKeyDescription := "decryptKeyDescription"
   const decryptionMethodJsonKey := "decryption-method"
 
   function ToDecryptTestVectors(
@@ -258,22 +260,22 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
     var algorithmSuite :- ParseJsonManifests.GetAlgorithmSuiteInfo(scenario);
     :- Need(algorithmSuite.id.ESDK?, "Unsupported algorithmSuiteId");
     var frameLength :- GetOptionalPositiveLong(frameSizeJsonKey, scenario);
-    var cmm :- GetString("cmm", scenario);
     
     var encryptionContextStrings :- SmallObjectToStringStringMap(encryptionContextJsonKey, scenario);
     var encryptionContext :- utf8EncodeMap(encryptionContextStrings);
 
     match typ
     case "positive-esdk" =>
-      var keyDescriptions :- ParseJsonManifests.GetKeyDescription(keys, masterKeysJsonKey, scenario);
+      var encryptKeyDescription :- ParseJsonManifests.GetKeyDescription(keys, encryptKeyDescription, scenario);
+      var decryptKeyDescription :- ParseJsonManifests.GetKeyDescription(keys, decryptKeyDescription, scenario);
       Success(PositiveEncryptTestVector(
         name := name,
         version := version,
         manifestPath := op.manifestPath,
         decryptManifestPath := op.decryptManifestOutput,
         plaintextPath := plaintextLoc,
-        encryptDescriptions := keyDescriptions,
-        decryptDescriptions := keyDescriptions,
+        encryptDescriptions := encryptKeyDescription,
+        decryptDescriptions := decryptKeyDescription,
         encryptionContext := Some(encryptionContext),
         commitmentPolicy := mplTypes.FORBID_ENCRYPT_ALLOW_DECRYPT,
         frameLength := frameLength,

@@ -19,6 +19,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
   import KeyVectors
   import KeyVectorsTypes = AwsCryptographyMaterialProvidersTestVectorKeysTypes
   import TestVectors
+  import AllAlgorithmSuites
 
   datatype EncryptTest = EncryptTest(
     cmm: mplTypes.ICryptographicMaterialsManager,
@@ -293,28 +294,28 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     );
     var result := test.client.Encrypt(input);
 
-    // if
-    //   && result.Success?
-    //   && (
-    //         || test.vector.PositiveEncryptTestVector?
-    //         || test.vector.PositiveEncryptNegativeDecryptTestVector?
-    //       )
-    // {
-    //   var name :- expect UUID.GenerateUUID();
-    //   var decryptVector := EncryptTestToDecryptVector(name, test, result.value);
-    //   output := EncryptTestOutput(
-    //     vector := Some(decryptVector),
-    //     output := true
-    //   );
-    // } else if result.Failure? && test.vector.NegativeEncryptTestVector? {
-    //   output := EncryptTestOutput( output := true );
-    // } else {
-    //   output := EncryptTestOutput( output := false );
-    //   if !test.vector.NegativeEncryptTestVector? && result.Failure? {
-    //     print result.error;
-    //   }
-    //   print "\nFAILED! <-----------\n";
-    // }
+    if
+      && result.Success?
+      && (
+            || test.vector.PositiveEncryptTestVector?
+            || test.vector.PositiveEncryptNegativeDecryptTestVector?
+          )
+    {
+      var name :- expect UUID.GenerateUUID();
+      var decryptVector := EncryptTestToDecryptVector(name, test, result.value);
+      output := EncryptTestOutput(
+        // vector := Some(decryptVector),
+        output := true
+      );
+    } else if result.Failure? && test.vector.NegativeEncryptTestVector? {
+      output := EncryptTestOutput( output := true );
+    } else {
+      output := EncryptTestOutput( output := false );
+      if !test.vector.NegativeEncryptTestVector? && result.Failure? {
+        print result.error;
+      }
+      print "\nFAILED! <-----------\n";
+    }
   }
 
   method EncryptVectorToEncryptTest(
@@ -345,8 +346,12 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
         forOperation := KeyVectorsTypes.ENCRYPT
       ));
 
+    :- Need(vector.algorithmSuiteId.Some?, KeyVectorsTypes.KeyVectorException(message := "Missing AlgorithmSuiteId in test vector"));
+    var commitmentPolicy := AllAlgorithmSuites.GetCompatibleCommitmentPolicy(vector.algorithmSuiteId.value);
+    :- Need(commitmentPolicy.ESDK?, KeyVectorsTypes.KeyVectorException(message := "Compatible commitment policy is not for ESDK"));
+
     var config := WrappedESDK.WrappedAwsEncryptionSdkConfigWithSuppliedCommitment(
-      commitmentPolicy := vector.commitmentPolicy
+      commitmentPolicy := commitmentPolicy.ESDK
     );
 
     var client :- expect WrappedESDK.WrappedESDK(config := config);
@@ -360,46 +365,45 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     output := Success(test);
   }
 
-  // method EncryptTestToDecryptVector(
-  //   name: string,
-  //   test: EncryptTest,
-  //   result: Types.EncryptOutput
-  // ) returns (output: EsdkDecryptTestVector)
-  //   requires
-  //     || test.vector.PositiveEncryptTestVector?
-  //     || test.vector.PositiveEncryptNegativeDecryptTestVector?
-  // {
-  //   output := match test.vector
-  //     case PositiveEncryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_) =>
-  //       PositiveDecryptTestVector(
-  //         name := name,
-  //         version := 2,
-  //         manifestPath := test.vector.decryptManifestPath,
-  //         ciphertextPath := ciphertextPathPathRoot + name,
-  //         plaintextPath := plaintextPathRoot + test.vector.plaintextPath,
-  //         encryptionContext := test.vector.decryptEncryptionContext,
-  //         decryptDescriptions := [test.vector.decryptDescriptions],
-  //         commitmentPolicy := test.vector.commitmentPolicy,
-  //         decryptionMethod := DecryptionMethod.OneShot
-  //       )
+  method EncryptTestToDecryptVector(
+    name: string,
+    test: EncryptTest,
+    result: Types.EncryptOutput
+  ) returns (output: EsdkDecryptTestVector)
+    requires
+      || test.vector.PositiveEncryptTestVector?
+      || test.vector.PositiveEncryptNegativeDecryptTestVector?
+  {
+    output := match test.vector
+      case PositiveEncryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_,_) =>
+        PositiveDecryptTestVector(
+          name := name,
+          version := 2,
+          manifestPath := test.vector.decryptManifestPath,
+          ciphertextPath := ciphertextPathPathRoot + name,
+          plaintextPath := plaintextPathRoot + test.vector.plaintextPath,
+          encryptionContext := test.vector.encryptionContext,
+          decryptDescriptions := [test.vector.decryptDescriptions],
+          commitmentPolicy := test.vector.commitmentPolicy,
+          decryptionMethod := DecryptionMethod.OneShot
+        )
+      case PositiveEncryptNegativeDecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_,_,_) =>
+        NegativeDecryptTestVector(
+          name := name,
+          version := 2,
+          manifestPath := test.vector.decryptManifestPath,
+          ciphertextPath := ciphertextPathPathRoot + name,
+          errorDescription := test.vector.decryptErrorDescription,
+          encryptionContext := test.vector.encryptionContext,
+          decryptDescriptions := [test.vector.decryptDescriptions],
+          commitmentPolicy := test.vector.commitmentPolicy,
+          decryptionMethod := DecryptionMethod.OneShot
+        );
 
-  //     case PositiveEncryptNegativeDecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_,_) =>
-  //       NegativeDecryptTestVector(
-  //         name := name,
-  //         version := 2,
-  //         manifestPath := test.vector.decryptManifestPath,
-  //         ciphertextPath := ciphertextPathPathRoot + name,
-  //         errorDescription := test.vector.decryptErrorDescription,
-  //         encryptionContext := test.vector.decryptEncryptionContext,
-  //         decryptDescriptions := [test.vector.decryptDescriptions],
-  //         commitmentPolicy := test.vector.commitmentPolicy,
-  //         decryptionMethod := DecryptionMethod.OneShot
-  //       );
-
-  //   var decryptManifestCiphertext := test.vector.decryptManifestPath + ciphertextPathPathRoot + name;
-  //   // Side effect, to avoid thousands of ciphertext in memory...
-  //   var _ :- expect WriteVectorsFile(decryptManifestCiphertext, result.ciphertext);
-  // }
+    var decryptManifestCiphertext := test.vector.decryptManifestPath + ciphertextPathPathRoot + name;
+    // Side effect, to avoid thousands of ciphertext in memory...
+    var _ :- expect WriteVectorsFile(decryptManifestCiphertext, result.ciphertext);
+  }
 
 
   function MplPrintErr(e: mplTypes.Error) : (){()} by method {print e, "\n", "\n"; return ();}

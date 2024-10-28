@@ -112,13 +112,13 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
       encryptManifest.jsonTests
     );
 
-    var p :- expect Primitives.AtomicPrimitives();
+    var p :- expect AtomicPrimitives.AtomicPrimitives();
     var plaintext := map[];
     for i := 0 to |encryptManifest.plaintext|
     {
       var (name, length) := encryptManifest.plaintext[i];
       var data :- expect p.GenerateRandomBytes(
-        Primitives.Types.GenerateRandomBytesInput(
+        AtomicPrimitives.Types.GenerateRandomBytesInput(
           length := length
         ));
       // Write the plaintext to disk.
@@ -198,6 +198,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
 
     var hasFailure := false;
     var decryptVectors := [];
+    var skipped := [];
 
     for i := 0 to |tests|
       invariant forall t <- tests ::
@@ -211,28 +212,15 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
           "Vector is using an algorithm suite other than ESDK"
         );
         var pass := EsdkTestVectors.TestEncrypt(plaintexts, keys, test);
-
-
-
+        if !pass.output {
+          hasFailure := true;
+        } else if pass.vector.Some? {
+          decryptVectors := decryptVectors + [pass.vector.value];
+        }
+      } else {
+        skipped := skipped + [test.vector.name + "\n"];
+        print "\nSKIP===> ", test.vector.name, "\n";
       }
-
-      // if TestEncryptVector?(vector) {
-      //   :- Need(
-      //     && vector.algorithmSuiteId.Some? 
-      //     && vector.algorithmSuiteId.value.id.ESDK?,
-      //     "Vector is using an algorithm suite other than ESDK"
-      //   );
-
-      //   var pass := EsdkTestVectors.TestEncrypt(plaintexts, keys, vector);
-      //   if !pass.output {
-      //     hasFailure := true;
-      //   } else if pass.vector.Some? {
-      //     decryptVectors := decryptVectors + [pass.vector.value];
-      //   }
-      // } else {
-      //   skipped := skipped + [vector.name + "\n"];
-      //   print "\nSKIP===> ", vector.name, "\n";
-      // }
     }
     print "\n=================== Completed ", |tests|, " Encrypt Tests =================== \n\n";
 

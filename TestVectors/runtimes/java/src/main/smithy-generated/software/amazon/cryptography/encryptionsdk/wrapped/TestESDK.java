@@ -4,6 +4,7 @@
 package software.amazon.cryptography.encryptionsdk.wrapped;
 
 import Wrappers_Compile.Result;
+import com.amazonaws.encryptionsdk.CryptoAlgorithm;
 import com.amazonaws.encryptionsdk.CryptoResult;
 import dafny.DafnyMap;
 import dafny.DafnySequence;
@@ -85,6 +86,11 @@ public class TestESDK implements IAwsEncryptionSdkClient {
         ToNative.EncryptInput(dafnyInput);
       final CryptoResult<byte[], ?> encryptResult;
 
+      // Java ESDK is special and you have to set the algorithm suite both in the keyring which the
+      // test vectors do, but also in the client itself.
+      CryptoAlgorithm cryptoAlgorithm = _getAlgorithmSuite(nativeInput.algorithmSuiteId());
+      this._impl.setEncryptionAlgorithm(cryptoAlgorithm);
+
       if (Objects.isNull(nativeInput.materialsManager())) {
         // Call decrypt with keyring
         if (Objects.isNull(nativeInput.encryptionContext())) {
@@ -118,6 +124,35 @@ public class TestESDK implements IAwsEncryptionSdkClient {
         Error._typeDescriptor(),
         ToDafny.Error(ex)
       );
+    }
+  }
+
+  private CryptoAlgorithm _getAlgorithmSuite(software.amazon.cryptography.materialproviders.model.ESDKAlgorithmSuiteId esdkAlgorithmSuiteId) {
+    switch (esdkAlgorithmSuiteId) {
+      case ALG_AES_128_GCM_IV12_TAG16_NO_KDF:
+        return CryptoAlgorithm.ALG_AES_128_GCM_IV12_TAG16_NO_KDF;
+      case ALG_AES_192_GCM_IV12_TAG16_NO_KDF:
+        return CryptoAlgorithm.ALG_AES_192_GCM_IV12_TAG16_NO_KDF;
+      case ALG_AES_256_GCM_IV12_TAG16_NO_KDF:
+        return CryptoAlgorithm.ALG_AES_256_GCM_IV12_TAG16_NO_KDF;
+      case ALG_AES_128_GCM_IV12_TAG16_HKDF_SHA256:
+        return CryptoAlgorithm.ALG_AES_128_GCM_IV12_TAG16_HKDF_SHA256;
+      case ALG_AES_192_GCM_IV12_TAG16_HKDF_SHA256:
+        return CryptoAlgorithm.ALG_AES_192_GCM_IV12_TAG16_HKDF_SHA256;
+      case ALG_AES_256_GCM_IV12_TAG16_HKDF_SHA256:
+        return CryptoAlgorithm.ALG_AES_256_GCM_IV12_TAG16_HKDF_SHA256;
+      case ALG_AES_128_GCM_IV12_TAG16_HKDF_SHA256_ECDSA_P256:
+        return CryptoAlgorithm.ALG_AES_128_GCM_IV12_TAG16_HKDF_SHA256_ECDSA_P256;
+      case ALG_AES_192_GCM_IV12_TAG16_HKDF_SHA384_ECDSA_P384:
+        return CryptoAlgorithm.ALG_AES_192_GCM_IV12_TAG16_HKDF_SHA384_ECDSA_P384;
+      case ALG_AES_256_GCM_IV12_TAG16_HKDF_SHA384_ECDSA_P384:
+        return CryptoAlgorithm.ALG_AES_256_GCM_IV12_TAG16_HKDF_SHA384_ECDSA_P384;
+      case ALG_AES_256_GCM_HKDF_SHA512_COMMIT_KEY:
+        return CryptoAlgorithm.ALG_AES_256_GCM_HKDF_SHA512_COMMIT_KEY;
+      case ALG_AES_256_GCM_HKDF_SHA512_COMMIT_KEY_ECDSA_P384:
+        return CryptoAlgorithm.ALG_AES_256_GCM_HKDF_SHA512_COMMIT_KEY_ECDSA_P384;
+      default:
+        throw new IllegalArgumentException("Unrecognized ESDK algorithmSuiteId: " + esdkAlgorithmSuiteId);
     }
   }
 
