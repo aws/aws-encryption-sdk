@@ -75,7 +75,7 @@ module {:options "/functionSyntax:4" } AllEsdkV4WithReqEc {
   const AllPositveReqEcEsdkTests :=
     set 
      config <- AllPositiveReqEcTests,
-    algorithmSuite <-
+     algorithmSuite <-
       AllAlgorithmSuites.ESDKAlgorithmSuites
      ::
         EsdkTestVectors.PositiveEncryptTestVector(

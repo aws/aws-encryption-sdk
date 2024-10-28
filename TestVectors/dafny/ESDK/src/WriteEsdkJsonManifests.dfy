@@ -153,45 +153,53 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
                    ]))
   }
 
+  // function DecryptTestVectorToJson(
+  //   test: TestVectors.DecryptTestVector
+  // ): Result<JSON, string>
+  // {
+  //   var id := AllAlgorithmSuites.ToHex(test.algorithmSuite);
+  //   var description := test.name + " " + id;
+
+  //   var encryptionContext :- EncryptionContextToJson("encryptionContext", test.encryptionContext);
+  //   var reproducedEc
+  //     :- if test.reproducedEncryptionContext.Some? then
+  //          EncryptionContextToJson("reproducedEncryptionContext", test.reproducedEncryptionContext.value)
+  //        else
+  //          Success([]);
+  //   var keyDescription :- KeyDescription.ToJson(test.keyDescription, 3);
+  //   var encryptedDataKeys :- Seq.MapWithResult(edk => EncryptedDataKey(edk), test.encryptedDataKeys);
+
+  //   match test
+  //   case PositiveDecryptKeyringTest(_,_,_,_,_,_,_,_,_) =>
+  //     var plaintextDataKey := OptionalBytes("plaintextDataKey", test.expectedResult.plaintextDataKey);
+  //     var symmetricSigningKey := OptionalBytes("symmetricSigningKey", test.expectedResult.symmetricSigningKey);
+  //     var requiredEncryptionContextKeys :- EncryptionContextKeysToJson(Some(test.expectedResult.requiredEncryptionContextKeys));
+  //     Success(Object([
+  //                      ("type", String("positive-keyring")),
+  //                      ("description", String(description)),
+  //                      ("algorithmSuiteId", String(id)),
+  //                      ("keyDescription", keyDescription),
+  //                      ("encryptedDataKeys", Array(encryptedDataKeys)),
+  //                      ("result", Object(
+  //                       plaintextDataKey + symmetricSigningKey + requiredEncryptionContextKeys
+  //                       ))
+  //                    ] + reproducedEc + encryptionContext))
+  //   case NegativeDecryptKeyringTest(_,_,_,_,_,_,_,_,_) =>
+  //     Success(Object([
+  //                      ("type", String("negative-keyring")),
+  //                      ("description", String(description)),
+  //                      ("errorDescription", String(test.errorDescription)),
+  //                      ("algorithmSuiteId", String(id)),
+  //                      ("keyDescription", keyDescription),
+  //                      ("encryptedDataKeys", Array(encryptedDataKeys))
+  //                    ] + reproducedEc + encryptionContext))
+  // }
+  
   function DecryptTestVectorToJson(
-    test: TestVectors.DecryptTestVector
+    test: EsdkTestVectors.EsdkDecryptTestVector
   ): Result<JSON, string>
   {
-    var id := AllAlgorithmSuites.ToHex(test.algorithmSuite);
-    var description := test.name + " " + id;
-
-    var encryptionContext :- EncryptionContextToJson("encryptionContext", test.encryptionContext);
-    var reproducedEc
-      :- if test.reproducedEncryptionContext.Some? then
-           EncryptionContextToJson("reproducedEncryptionContext", test.reproducedEncryptionContext.value)
-         else
-           Success([]);
-    var keyDescription :- KeyDescription.ToJson(test.keyDescription, 3);
-    var encryptedDataKeys :- Seq.MapWithResult(edk => EncryptedDataKey(edk), test.encryptedDataKeys);
-
-    match test
-    case PositiveDecryptKeyringTest(_,_,_,_,_,_,_,_,_) =>
-      var plaintextDataKey := OptionalBytes("plaintextDataKey", test.expectedResult.plaintextDataKey);
-      var symmetricSigningKey := OptionalBytes("symmetricSigningKey", test.expectedResult.symmetricSigningKey);
-      var requiredEncryptionContextKeys :- EncryptionContextKeysToJson(Some(test.expectedResult.requiredEncryptionContextKeys));
-      Success(Object([
-                       ("type", String("positive-keyring")),
-                       ("description", String(description)),
-                       ("algorithmSuiteId", String(id)),
-                       ("keyDescription", keyDescription),
-                       ("encryptedDataKeys", Array(encryptedDataKeys)),
-                       ("result", Object(
-                        plaintextDataKey + symmetricSigningKey + requiredEncryptionContextKeys
-                        ))
-                     ] + reproducedEc + encryptionContext))
-    case NegativeDecryptKeyringTest(_,_,_,_,_,_,_,_,_) =>
-      Success(Object([
-                       ("type", String("negative-keyring")),
-                       ("description", String(description)),
-                       ("errorDescription", String(test.errorDescription)),
-                       ("algorithmSuiteId", String(id)),
-                       ("keyDescription", keyDescription),
-                       ("encryptedDataKeys", Array(encryptedDataKeys))
-                     ] + reproducedEc + encryptionContext))
+    // var id := AllAlgorithmSuites.ToHex(test);
+    Failure("whelp")
   }
 }

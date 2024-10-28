@@ -17,27 +17,27 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
   import EsdkManifestOptions
   import Seq
 
-  method Main2(args: seq<string>) {
-    // The expectation is that the first argument
-    // is the filename or runtime
-    expect 0 < |args|;
-    var op? := ParseCommandLineOptions(args[1..]);
+  // method Main2(args: seq<string>) {
+  //   // The expectation is that the first argument
+  //   // is the filename or runtime
+  //   expect 0 < |args|;
+  //   var op? := ParseCommandLineOptions(args[1..]);
 
-    if op?.Success? {
-      // Do the work
-      var op := op?.value;
-      if
-      case op.Decrypt? =>
-        var _ :- expect EsdkTestManifests.StartDecryptVectors(op);
-      case op.Encrypt? =>
-        print "not supported";
-      case op.DecryptSingle? =>
-        print "not supported";
-    } else {
-      print op?.error;
-      print "help";
-    }
-  }
+  //   if op?.Success? {
+  //     // Do the work
+  //     var op := op?.value;
+  //     if
+  //     case op.Decrypt? =>
+  //       var _ :- expect EsdkTestManifests.StartDecryptVectors(op);
+  //     case op.Encrypt? =>
+  //       print "not supported";
+  //     case op.DecryptSingle? =>
+  //       print "not supported";
+  //   } else {
+  //     print op?.error;
+  //     print "help";
+  //   }
+  // }
 
   function ParseCommandLineOptions(args: seq<string>)
     : (output: Result<EsdkManifestOptions.ManifestOptions, string>)

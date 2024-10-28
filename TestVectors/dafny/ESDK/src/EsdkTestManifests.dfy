@@ -27,78 +27,79 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
 
   import EsdkManifestOptions
   import opened EsdkTestVectors
+  import WriteVectors
 
-  method StartDecryptVectors(
-    op: EsdkManifestOptions.ManifestOptions
-  )
-    returns (output: Result<seq<BoundedInts.byte>, string>)
-    requires op.Decrypt?
-    requires 0 < |op.manifestPath|
-    requires Seq.Last(op.manifestPath) == '/'
-  {
-    var decryptManifest :- expect GetManifest(op.manifestPath, "manifest.json");
-    :- Need(decryptManifest.DecryptManifest?, "Not a decrypt manifest");
+  // method StartDecryptVectors(
+  //   op: EsdkManifestOptions.ManifestOptions
+  // )
+  //   returns (output: Result<seq<BoundedInts.byte>, string>)
+  //   requires op.Decrypt?
+  //   requires 0 < |op.manifestPath|
+  //   requires Seq.Last(op.manifestPath) == '/'
+  // {
+  //   var decryptManifest :- expect GetManifest(op.manifestPath, "manifest.json");
+  //   :- Need(decryptManifest.DecryptManifest?, "Not a decrypt manifest");
 
-    var decryptVectors :- ParseEsdkJsonManifest.BuildDecryptTestVector(
-      op,
-      decryptManifest.version,
-      decryptManifest.keys,
-      decryptManifest.jsonTests
-    );
-    output := TestDecrypts(decryptManifest.keys, decryptVectors);
-  }
+  //   var decryptVectors :- ParseEsdkJsonManifest.BuildDecryptTestVector(
+  //     op,
+  //     decryptManifest.version,
+  //     decryptManifest.keys,
+  //     decryptManifest.jsonTests
+  //   );
+  //   output := TestDecrypts(decryptManifest.keys, decryptVectors);
+  // }
 
   predicate TestDecryptVector?(v: EsdkDecryptTestVector)
   {
     && v.decryptionMethod.OneShot?
   }
 
-  method TestDecrypts(
-    keys: KeyVectors.KeyVectorsClient,
-    vectors: seq<EsdkDecryptTestVector>
-  )
-    returns (manifest: Result<seq<BoundedInts.byte>, string>)
-    requires keys.ValidState()
-    modifies keys.Modifies
-    ensures keys.ValidState()
-  {
-    print "\n=================== Starting ", |vectors|, " Decrypt Tests =================== \n\n";
+  // method TestDecrypts(
+  //   keys: KeyVectors.KeyVectorsClient,
+  //   vectors: seq<EsdkDecryptTestVector>
+  // )
+  //   returns (manifest: Result<seq<BoundedInts.byte>, string>)
+  //   requires keys.ValidState()
+  //   modifies keys.Modifies
+  //   ensures keys.ValidState()
+  // {
+  //   print "\n=================== Starting ", |vectors|, " Decrypt Tests =================== \n\n";
 
-    var hasFailure := false;
-    var skipped := 0;
+  //   var hasFailure := false;
+  //   var skipped := 0;
 
-    for i := 0 to |vectors|
-    {
-      var vector := vectors[i];
-      if TestDecryptVector?(vector) {
+  //   for i := 0 to |vectors|
+  //   {
+  //     var vector := vectors[i];
+  //     if TestDecryptVector?(vector) {
 
-        var pass := EsdkTestVectors.TestDecrypt(keys, vector);
-        if !pass {
-          hasFailure := true;
-        }
-      } else {
-        skipped := skipped + 1;
-        print "\nSKIP===> ", vector.name, "\n";
-      }
+  //       var pass := EsdkTestVectors.TestDecrypt(keys, vector);
+  //       if !pass {
+  //         hasFailure := true;
+  //       }
+  //     } else {
+  //       skipped := skipped + 1;
+  //       print "\nSKIP===> ", vector.name, "\n";
+  //     }
 
-    }
-    print "\n=================== Completed ", |vectors|, " Decrypt Tests =================== \n\n";
+  //   }
+  //   print "\n=================== Completed ", |vectors|, " Decrypt Tests =================== \n\n";
 
-    if 0 < skipped {
-      print "Skipped: ", skipped, "\n";
-    }
+  //   if 0 < skipped {
+  //     print "Skipped: ", skipped, "\n";
+  //   }
 
-    expect !hasFailure;
+  //   expect !hasFailure;
 
-    // var maybeManifest := ToJSONEsdkDecryptManifest(tests);
+  //   // var maybeManifest := ToJSONEsdkDecryptManifest(tests);
 
-    manifest := Success([]);
-  }
+  //   manifest := Success([]);
+  // }
 
   method {:vcs_split_on_every_assert} StartEncryptVectors(
     op: EsdkManifestOptions.ManifestOptions
   )
-    returns (output: Result<seq<EsdkDecryptTestVector>, string>)
+    returns (output: Result<(), string>)
     requires op.Encrypt?
     requires 0 < |op.manifestPath|
   {
@@ -130,25 +131,10 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     var encryptTests? := ToEncryptTests(encryptManifest.keys, encryptVectors);
     var encryptTests :- encryptTests?.MapFailure((e: KeyVectorsTypes.Error) => var _ := MplVectorPrintErr(e); "Cmm failure");
     var decryptVectors :- TestEncrypts(plaintext, encryptManifest.keys, encryptTests);
-    // if output.Success? {
-    //   var testsJson :- Seq.MapWithResult(v => ParseEsdkJsonManifest.DecryptVectorToJson(encryptManifest.keys, v), output.value);
-    //   var decryptManifestJson := Values.Object([
-    //                                              ("manifest", Values.Object([
-    //                                               ("type", Values.String("awses-decrypt")),
-    //                                               ("version", Values.Number(Values.Int(2)))
-    //                                               ])),
-    //                                              ("client", Values.Object([
-    //                                               ("name", Values.String("aws/aws-encryption-sdk-dafny")),
-    //                                               ("version", Values.String("need-some-way-to-get-version"))
-    //                                               ])),
-    //                                              ("keys", Values.String(ParseEsdkJsonManifest.FILE_PREPEND + keysJsonFileName)),
-    //                                              ("tests", Values.Object(testsJson))
-    //                                            ]);
-    //   var decryptManifestJsonBytes :- API.Serialize(decryptManifestJson)
-    //   .MapFailure(( e: Errors.SerializationError ) => e.ToString());
-    //   var _ :- WriteVectorsFile(op.decryptManifestOutput + "manifest.json", decryptManifestJsonBytes);
-    // }
-    return Failure("Implement me");
+
+    var _ :- WriteVectors.WriteDecryptManifest(op, encryptManifest.keys, decryptVectors);
+    
+    output := Success(());
   }
 
 
@@ -211,7 +197,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
           && test.vector.algorithmSuiteId.value.id.ESDK?,
           "Vector is using an algorithm suite other than ESDK"
         );
-        var pass := EsdkTestVectors.TestEncrypt(plaintexts, keys, test);
+        var pass :- EsdkTestVectors.TestEncrypt(plaintexts, keys, test);
         if !pass.output {
           hasFailure := true;
         } else if pass.vector.Some? {

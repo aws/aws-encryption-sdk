@@ -78,7 +78,7 @@ module {:extern} TestWrappedESDKMain {
     var result := WriteVectors.WritetestVectors(
       EsdkManifestOptions.EncryptManifest(
         encryptManifestOutput := directory + "dafny/TestVectors/test/",
-        version := 4
+        version := 5
       ));
     if result.Failure? {
       print result.error;

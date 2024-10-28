@@ -119,6 +119,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
   {
     || v == 1
     || v == 2
+    || v == 3
   }
 
   datatype EsdkDecryptTestVector =
@@ -129,8 +130,11 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
         ciphertextPath: string,
         plaintextPath: string,
         encryptionContext: Option<mplTypes.EncryptionContext> := None,
-        decryptDescriptions: seq<KeyVectorsTypes.KeyDescription>,
+        requiredEncryptionContextKeys: Option<mplTypes.EncryptionContextKeys> := None,
+        decryptDescriptions: KeyVectorsTypes.KeyDescription,
         commitmentPolicy: mplTypes.ESDKCommitmentPolicy := mplTypes.FORBID_ENCRYPT_ALLOW_DECRYPT,
+        frameLength: Option<int64>,
+        algorithmSuiteId: Option<mplTypes.AlgorithmSuiteInfo>,
         decryptionMethod: DecryptionMethod
       )
     | NegativeDecryptTestVector(
@@ -140,7 +144,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
         ciphertextPath: string,
         errorDescription: string,
         encryptionContext: Option<mplTypes.EncryptionContext> := None,
-        decryptDescriptions: seq<KeyVectorsTypes.KeyDescription>,
+        decryptDescriptions: KeyVectorsTypes.KeyDescription,
         commitmentPolicy: mplTypes.ESDKCommitmentPolicy := mplTypes.FORBID_ENCRYPT_ALLOW_DECRYPT,
         decryptionMethod: DecryptionMethod
       )
@@ -149,106 +153,106 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     | StreamingUnsignedOnly
     | OneShot
 
-  method TestDecrypt(
-    keys: KeyVectors.KeyVectorsClient,
-    vector: EsdkDecryptTestVector
-  )
-    returns (output: bool)
-    requires keys.ValidState()
-    modifies keys.Modifies
-    ensures keys.ValidState()
-  {
-    print "\nTEST===> ", vector.name, "\n";
+  // method TestDecrypt(
+  //   keys: KeyVectors.KeyVectorsClient,
+  //   vector: EsdkDecryptTestVector
+  // )
+  //   returns (output: bool)
+  //   requires keys.ValidState()
+  //   modifies keys.Modifies
+  //   ensures keys.ValidState()
+  // {
+  //   print "\nTEST===> ", vector.name, "\n";
 
-    // The decrypt test vectors also test initialization
-    // This is because they were developed when the MPL
-    // was still part of the ESDK
-    var maybeTest := DecryptVectorToDecryptTest(keys, vector);
-    if maybeTest.Success? {
-      var test := maybeTest.value;
+  //   // The decrypt test vectors also test initialization
+  //   // This is because they were developed when the MPL
+  //   // was still part of the ESDK
+  //   var maybeTest := DecryptVectorToDecryptTest(keys, vector);
+  //   if maybeTest.Success? {
+  //     var test := maybeTest.value;
 
-      var ciphertext :- expect ReadVectorsFile(test.vector.manifestPath + test.vector.ciphertextPath);
-      var plaintext;
-      if test.vector.PositiveDecryptTestVector? {
-        plaintext :- expect ReadVectorsFile(test.vector.manifestPath + test.vector.plaintextPath);
-      }
+  //     var ciphertext :- expect ReadVectorsFile(test.vector.manifestPath + test.vector.ciphertextPath);
+  //     var plaintext;
+  //     if test.vector.PositiveDecryptTestVector? {
+  //       plaintext :- expect ReadVectorsFile(test.vector.manifestPath + test.vector.plaintextPath);
+  //     }
 
-      var input := Types.DecryptInput(
-        ciphertext := ciphertext,
-        encryptionContext := test.vector.encryptionContext,
-        materialsManager := Some(test.cmm),
-        keyring := None
-      );
+  //     var input := Types.DecryptInput(
+  //       ciphertext := ciphertext,
+  //       encryptionContext := test.vector.encryptionContext,
+  //       materialsManager := Some(test.cmm),
+  //       keyring := None
+  //     );
 
-      var result := test.client.Decrypt(input);
+  //     var result := test.client.Decrypt(input);
 
-      output := match test.vector
-        case PositiveDecryptTestVector(_,_,_,_,_,_,_,_,_)
-          =>
-          && result.Success?
-          && result.value.plaintext == plaintext
-        case NegativeDecryptTestVector(_,_,_,_,_,_,_,_,_)
-          =>
-          && result.Failure?;
-      if !output {
-        if test.vector.PositiveDecryptTestVector? && result.Failure? {
-          print result.error, "\n";
-          if
-            && result.error.AwsCryptographyMaterialProviders?
-            && result.error.AwsCryptographyMaterialProviders.CollectionOfErrors?
-          {
-            print "list:", result.error.AwsCryptographyMaterialProviders.list, "\n";
-          }
-        }
-        print "\nFAILED! <-----------\n";
-      }
-    } else {
-      output := match vector
-        case PositiveDecryptTestVector(_,_,_,_,_,_,_,_,_)
-          => false
-        case NegativeDecryptTestVector(_,_,_,_,_,_,_,_,_)
-          => true;
+  //     output := match test.vector
+  //       case PositiveDecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_)
+  //         =>
+  //         && result.Success?
+  //         && result.value.plaintext == plaintext
+  //       case NegativeDecryptTestVector(_,_,_,_,_,_,_,_,_)
+  //         =>
+  //         && result.Failure?;
+  //     if !output {
+  //       if test.vector.PositiveDecryptTestVector? && result.Failure? {
+  //         print result.error, "\n";
+  //         if
+  //           && result.error.AwsCryptographyMaterialProviders?
+  //           && result.error.AwsCryptographyMaterialProviders.CollectionOfErrors?
+  //         {
+  //           print "list:", result.error.AwsCryptographyMaterialProviders.list, "\n";
+  //         }
+  //       }
+  //       print "\nFAILED! <-----------\n";
+  //     }
+  //   } else {
+  //     output := match vector
+  //       case PositiveDecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_)
+  //         => false
+  //       case NegativeDecryptTestVector(_,_,_,_,_,_,_,_,_)
+  //         => true;
 
-      if !output {
-        if vector.PositiveDecryptTestVector? && maybeTest.Failure? {
-          print maybeTest.error;
-        }
-        print "\nFAILED! <-----------\n";
-      }
-    }
-  }
+  //     if !output {
+  //       if vector.PositiveDecryptTestVector? && maybeTest.Failure? {
+  //         print maybeTest.error;
+  //       }
+  //       print "\nFAILED! <-----------\n";
+  //     }
+  //   }
+  // }
 
-  method DecryptVectorToDecryptTest(
-    keys: KeyVectors.KeyVectorsClient,
-    vector: EsdkDecryptTestVector
-  )
-    returns (output: Result<DecryptTest, KeyVectorsTypes.Error>)
-    requires keys.ValidState()
-    modifies keys.Modifies
-    ensures keys.ValidState()
+  // method DecryptVectorToDecryptTest(
+  //   keys: KeyVectors.KeyVectorsClient,
+  //   vector: EsdkDecryptTestVector
+  // )
+  //   returns (output: Result<DecryptTest, KeyVectorsTypes.Error>)
+  //   requires keys.ValidState()
+  //   modifies keys.Modifies
+  //   ensures keys.ValidState()
 
-    ensures output.Success?
-            ==>
-              && output.value.ValidState()
-              && fresh(output.value.cmm.Modifies - keys.Modifies)
-              && fresh(output.value.client.Modifies)
-  {
-    var cmm :- KeyDescriptionToCmm(keys, vector.decryptDescriptions);
+  //   ensures output.Success?
+  //           ==>
+  //             && output.value.ValidState()
+  //             && fresh(output.value.cmm.Modifies - keys.Modifies)
+  //             && fresh(output.value.client.Modifies)
+  // {
+  //   var cmm :- KeyDescriptionToCmm(keys, vector.decryptDescriptions);
 
-    var config := WrappedESDK.WrappedAwsEncryptionSdkConfigWithSuppliedCommitment(
-      commitmentPolicy := vector.commitmentPolicy
-    );
+  //   var config := WrappedESDK.WrappedAwsEncryptionSdkConfigWithSuppliedCommitment(
+  //     commitmentPolicy := vector.commitmentPolicy
+  //   );
 
-    var client :- expect WrappedESDK.WrappedESDK(config := config);
+  //   var client :- expect WrappedESDK.WrappedESDK(config := config);
 
-    var test := DecryptTest(
-      cmm := cmm,
-      client := client,
-      vector := vector
-    );
+  //   var test := DecryptTest(
+  //     cmm := cmm,
+  //     client := client,
+  //     vector := vector
+  //   );
 
-    output := Success(test);
-  }
+  //   output := Success(test);
+  // }
 
   const plaintextPathRoot := "plaintexts/"
   const ciphertextPathPathRoot := "ciphertexts/"
@@ -263,7 +267,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     keys: KeyVectors.KeyVectorsClient,
     test: EncryptTest
   )
-    returns (output: EncryptTestOutput)
+    returns (output: Result<EncryptTestOutput, string>)
     requires keys.ValidState() && test.ValidState()
     modifies keys.Modifies
     modifies test.cmm.Modifies
@@ -302,15 +306,15 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
           )
     {
       var name :- expect UUID.GenerateUUID();
-      var decryptVector := EncryptTestToDecryptVector(name, test, result.value);
-      output := EncryptTestOutput(
-        // vector := Some(decryptVector),
+      var decryptVector :- EncryptTestToDecryptVector(name, test, result.value);
+      output := Success(EncryptTestOutput(
+        vector := Some(decryptVector),
         output := true
-      );
+      ));
     } else if result.Failure? && test.vector.NegativeEncryptTestVector? {
-      output := EncryptTestOutput( output := true );
+      output := Success(EncryptTestOutput( output := true ));
     } else {
-      output := EncryptTestOutput( output := false );
+      output := Success(EncryptTestOutput( output := false ));
       if !test.vector.NegativeEncryptTestVector? && result.Failure? {
         print result.error;
       }
@@ -369,37 +373,42 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     name: string,
     test: EncryptTest,
     result: Types.EncryptOutput
-  ) returns (output: EsdkDecryptTestVector)
+  ) returns (output: Result<EsdkDecryptTestVector, string>)
     requires
       || test.vector.PositiveEncryptTestVector?
       || test.vector.PositiveEncryptNegativeDecryptTestVector?
+    requires test.vector.algorithmSuiteId.Some?
   {
     output := match test.vector
       case PositiveEncryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_,_) =>
-        PositiveDecryptTestVector(
+        Success(PositiveDecryptTestVector(
           name := name,
-          version := 2,
+          version := 3,
           manifestPath := test.vector.decryptManifestPath,
           ciphertextPath := ciphertextPathPathRoot + name,
           plaintextPath := plaintextPathRoot + test.vector.plaintextPath,
           encryptionContext := test.vector.encryptionContext,
-          decryptDescriptions := [test.vector.decryptDescriptions],
+          requiredEncryptionContextKeys := test.vector.requiredEncryptionContextKeys,
+          decryptDescriptions := test.vector.decryptDescriptions,
           commitmentPolicy := test.vector.commitmentPolicy,
+          frameLength := test.vector.frameLength,
+          algorithmSuiteId := test.vector.algorithmSuiteId,
           decryptionMethod := DecryptionMethod.OneShot
-        )
-      case PositiveEncryptNegativeDecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_,_,_) =>
-        NegativeDecryptTestVector(
-          name := name,
-          version := 2,
-          manifestPath := test.vector.decryptManifestPath,
-          ciphertextPath := ciphertextPathPathRoot + name,
-          errorDescription := test.vector.decryptErrorDescription,
-          encryptionContext := test.vector.encryptionContext,
-          decryptDescriptions := [test.vector.decryptDescriptions],
-          commitmentPolicy := test.vector.commitmentPolicy,
-          decryptionMethod := DecryptionMethod.OneShot
-        );
-
+        ))
+      case _ =>
+        Failure("Only postive tests supported");
+      // case PositiveEncryptNegativeDecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_,_,_) =>
+      //   NegativeDecryptTestVector(
+      //     name := name,
+      //     version := 2,
+      //     manifestPath := test.vector.decryptManifestPath,
+      //     ciphertextPath := ciphertextPathPathRoot + name,
+      //     errorDescription := test.vector.decryptErrorDescription,
+      //     encryptionContext := test.vector.encryptionContext,
+      //     decryptDescriptions := [test.vector.decryptDescriptions],
+      //     commitmentPolicy := test.vector.commitmentPolicy,
+      //     decryptionMethod := DecryptionMethod.OneShot
+      //   );
     var decryptManifestCiphertext := test.vector.decryptManifestPath + ciphertextPathPathRoot + name;
     // Side effect, to avoid thousands of ciphertext in memory...
     var _ :- expect WriteVectorsFile(decryptManifestCiphertext, result.ciphertext);

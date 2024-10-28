@@ -81,7 +81,7 @@ module {:options "-functionSyntax:4"} WriteVectors {
     
     var manifestJson := Object([
           ("type", String("awses-encrypt")),
-          ("version", Number(Int(4)))]);
+          ("version", Number(Int(5)))]);
 
     var plaintexts := Object([("small", Number(Int(10240)))]);
 
@@ -105,11 +105,32 @@ module {:options "-functionSyntax:4"} WriteVectors {
     output := Success(());
   }
 
+  method {:vcs_split_on_every_assert} WriteDecryptManifest(
+    op: EsdkManifestOptions.ManifestOptions,
+    keys: KeyVectors.KeyVectorsClient,
+    tests: seq<EsdkTestVectors.EsdkDecryptTestVector> 
+  )
+    returns (output: Result<(), string>)
+    requires op.Encrypt?
+    requires keys.ValidState()
+    ensures keys.ValidState()
+  {
+    var testsJSON: seq<(string, JSON)> := [];
+
+    for i := 0 to |tests|
+    {
+      var name :- UUID.GenerateUUID();
+      var test :- WriteEsdkJsonManifests.DecryptTestVectorToJson(tests[i]);
+      testsJSON := testsJSON + [(name, test)];
+    }
+    
+    return Failure("Whelp");
+  }
+
   function getVersionTests(version: nat): (ret: Result<set<EsdkTestVectors.EsdkEncryptTestVector>, string>)
   {
     match version
-    // AllEsdkV4NoReqEc.Tests +
-      case 4 => Success(AllEsdkV4WithReqEc.Tests)
+      case 5 => Success(AllEsdkV4NoReqEc.Tests + AllEsdkV4WithReqEc.Tests)
       case _ => Failure("Only version 4 of generate manifest is supported\n")
   }
 }
