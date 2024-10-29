@@ -1,0 +1,13 @@
+diff --git a/AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/awscryptographyencryptionsdksmithygenerated/api_client.go b/AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/awscryptographyencryptionsdksmithygenerated/api_client.go
+index 83ce94f..519bcf0 100644
+--- a/AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/awscryptographyencryptionsdksmithygenerated/api_client.go
++++ b/AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/awscryptographyencryptionsdksmithygenerated/api_client.go
+@@ -6,7 +6,7 @@ import (
+ 	"context"
+ 
+ 	"github.com/aws/aws-encryption-sdk/AwsCryptographyEncryptionSdkTypes"
+-	"github.com/aws/aws-encryption-sdk/ESDK"
++	ESDK "github.com/aws/aws-encryption-sdk/EncryptionSdk"
+ 	"github.com/aws/aws-encryption-sdk/awscryptographyencryptionsdksmithygeneratedtypes"
+ )
+ 

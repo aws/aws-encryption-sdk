@@ -6,7 +6,7 @@ import (
 	"context"
 
 	"github.com/aws/aws-encryption-sdk/AwsCryptographyEncryptionSdkTypes"
-	"github.com/aws/aws-encryption-sdk/ESDK"
+	ESDK "github.com/aws/aws-encryption-sdk/EncryptionSdk"
 	"github.com/aws/aws-encryption-sdk/awscryptographyencryptionsdksmithygeneratedtypes"
 )
 
