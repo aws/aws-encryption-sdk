@@ -14,10 +14,6 @@ on:
         default: false
         type: boolean
 
-# env:
-  # Used for Test Vectors
-  # VECTORS_URL: https://github.com/awslabs/aws-encryption-sdk-test-vectors/raw/master/vectors/awses-decrypt/python-2.3.0.zip
-
 jobs:
   testRust:
     strategy:
@@ -61,19 +57,12 @@ jobs:
       # TODO - uncomment this after Rust formatter works
       # - name: Rustfmt Check
       #   uses: actions-rust-lang/rustfmt@v1
-
+      
+      # TODO: Use setup-dafny-actions with correct version when Dafny releases 4.8.2
       - name: Setup Dafny
-        # TODO: Use setup-dafny-actions@v1.7.0 for Rust instead of rust-unsound branch
-        # uses: dafny-lang/setup-dafny-action@v1.7.0
-        # with:
-        #   dafny-version: ${{ inputs.dafny }}
-        shell: bash
-        run: |
-          git clone https://github.com/dafny-lang/dafny.git --recurse-submodules
-          cd dafny/
-          make exe
-
-          echo $PWD/Scripts >> $GITHUB_PATH
+        uses: dafny-lang/setup-dafny-action@v1.7.0
+        with:
+          dafny-version: nightly-latest
 
       # TODO: Remove this after the formatting in Rust starts working
       - name: smithy-dafny Rust hacks
@@ -90,6 +79,9 @@ jobs:
         with:
           distribution: "corretto"
           java-version: "17"
+
+      - name: Setup NASM for Windows (aws-lc-sys)
+        uses: ilammy/setup-nasm@v1
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
@@ -118,7 +110,7 @@ jobs:
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_rust TRANSPILE_TESTS_IN_RUST=1 CORES=$CORES
 
-      # Remove Rust hacks
+      # Remove Rust hacks once Dafny fixes this
       - name: Update implementation_from_dafny.rs to add deps
         shell: bash
         working-directory: ./AwsEncryptionSDK/runtimes/rust/src
@@ -136,14 +128,6 @@ jobs:
             pub use crate::deps::com_amazonaws_kms;
             ' implementation_from_dafny.rs
           fi
-
-      # - name: Compile MPL TestVectors implementation
-      #   shell: bash
-      #   working-directory: ./mpl/TestVectorsAwsCryptographicMaterialProviders
-      #   run: |
-      #     # This works because `node` is installed by default on GHA runners
-      #     CORES=$(node -e 'console.log(os.cpus().length)')
-      #     make transpile_rust CORES=$CORES
 
       - name: Test Rust
         working-directory: ./AwsEncryptionSDK

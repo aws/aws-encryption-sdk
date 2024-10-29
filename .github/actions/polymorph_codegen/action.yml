@@ -109,6 +109,13 @@ runs:
       run: |
         make polymorph_dotnet ${{ steps.dependencies.outputs.PROJECT_DEPENDENCIES }}
 
+    # TODO: Uncomment when checking in polymorph_rust code
+    # - name: Regenerate Rust code using smithy-dafny
+    #   working-directory: ./${{ inputs.library }}
+    #   shell: bash
+    #   run: |
+    #     make polymorph_rust ${{ steps.dependencies.outputs.PROJECT_DEPENDENCIES }}
+
     - name: Check regenerated code against commited code
       # Composite action inputs seem to not actually support booleans properly for some reason
       if: inputs.diff-generated-code == 'true'
