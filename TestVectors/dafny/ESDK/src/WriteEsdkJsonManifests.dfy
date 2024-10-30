@@ -228,8 +228,10 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
       var scenario := Object([
                                 ("type", String("positive-esdk")),
                                 ("ciphertext", String("file://ciphertexts/" + test.name)),
+                                ("result", String("file://" + test.plaintextPath)),
                                 ("algorithmSuiteId", String(id)),
                                 ("frame-size", Number(Int(test.frameLength.value as int))),
+                                ("description", String(test.description)),
                                 ("decryptKeyDescription", decrypt)
                               ] + optionalValues);
       Success(Object([

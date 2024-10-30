@@ -40,14 +40,14 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     var decryptManifest :- expect GetManifest(op.manifestPath, "decrypt-manifest.json");
     :- Need(decryptManifest.DecryptManifest?, "Not a decrypt manifest");
 
-    // var decryptVectors :- ParseEsdkJsonManifest.BuildDecryptTestVector(
-    //   op,
-    //   decryptManifest.version,
-    //   decryptManifest.keys,
-    //   decryptManifest.jsonTests
-    // );
-    // output := TestDecrypts(decryptManifest.keys, decryptVectors);
-    return Failure("Implement me!");
+    var decryptVectors :- ParseEsdkJsonManifest.BuildDecryptTestVector(
+      op,
+      decryptManifest.version,
+      decryptManifest.keys,
+      decryptManifest.jsonTests
+    );
+
+    output := TestDecrypts(decryptManifest.keys, decryptVectors);
   }
 
   predicate TestDecryptVector?(v: EsdkDecryptTestVector)
@@ -55,47 +55,45 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     && v.decryptionMethod.OneShot?
   }
 
-  // method TestDecrypts(
-  //   keys: KeyVectors.KeyVectorsClient,
-  //   vectors: seq<EsdkDecryptTestVector>
-  // )
-  //   returns (manifest: Result<seq<BoundedInts.byte>, string>)
-  //   requires keys.ValidState()
-  //   modifies keys.Modifies
-  //   ensures keys.ValidState()
-  // {
-  //   print "\n=================== Starting ", |vectors|, " Decrypt Tests =================== \n\n";
+  method TestDecrypts(
+    keys: KeyVectors.KeyVectorsClient,
+    vectors: seq<EsdkDecryptTestVector>
+  )
+    returns (manifest: Result<seq<BoundedInts.byte>, string>)
+    requires keys.ValidState()
+    modifies keys.Modifies
+    ensures keys.ValidState()
+  {
+    print "\n=================== Starting ", |vectors|, " Decrypt Tests =================== \n\n";
 
-  //   var hasFailure := false;
-  //   var skipped := 0;
+    var hasFailure := false;
+    var skipped := 0;
 
-  //   for i := 0 to |vectors|
-  //   {
-  //     var vector := vectors[i];
-  //     if TestDecryptVector?(vector) {
+    for i := 0 to |vectors|
+    {
+      var vector := vectors[i];
+      if TestDecryptVector?(vector) {
 
-  //       var pass := EsdkTestVectors.TestDecrypt(keys, vector);
-  //       if !pass {
-  //         hasFailure := true;
-  //       }
-  //     } else {
-  //       skipped := skipped + 1;
-  //       print "\nSKIP===> ", vector.name, "\n";
-  //     }
+        var pass := EsdkTestVectors.TestDecrypt(keys, vector);
+        if !pass {
+          hasFailure := true;
+        }
+      } else {
+        skipped := skipped + 1;
+        print "\nSKIP===> ", vector.name, "\n";
+      }
 
-  //   }
-  //   print "\n=================== Completed ", |vectors|, " Decrypt Tests =================== \n\n";
+    }
+    print "\n=================== Completed ", |vectors|, " Decrypt Tests =================== \n\n";
 
-  //   if 0 < skipped {
-  //     print "Skipped: ", skipped, "\n";
-  //   }
+    if 0 < skipped {
+      print "Skipped: ", skipped, "\n";
+    }
 
-  //   expect !hasFailure;
+    expect !hasFailure;
 
-  //   // var maybeManifest := ToJSONEsdkDecryptManifest(tests);
-
-  //   manifest := Success([]);
-  // }
+    manifest := Success([]);
+  }
 
   method {:vcs_split_on_every_assert} StartEncryptVectors(
     op: EsdkManifestOptions.ManifestOptions
@@ -267,7 +265,6 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
 
     match typ
     case "awses-decrypt" =>
-      print version;
       :- Need(SupportedDecryptVersion?(version), "Unsupported manifest version");
       var client :- Get("client", manifestJson.obj);
       manifestData := Success(DecryptManifest(

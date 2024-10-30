@@ -35,30 +35,6 @@ module {:extern} TestWrappedESDKMain {
   //   );
   // }
 
-  // method {:test} TestEncryptVectors() {
-  //   var result := EsdkTestManifests.StartEncryptVectors(
-  //     EsdkManifestOptions.Encrypt(
-  //       manifestPath := "./dafny/ESDK/test/",
-  //       manifest := "manifest.json",
-  //       decryptManifestOutput := "decrypt-manifest/"
-  //     )
-  //   );
-
-  //   if result.Failure? {
-  //     print result.error, "\n";
-  //   }
-
-  //   expect result.Success?;
-  // }
-
-  // method {:test} TestDecryptVectors() {
-  //   var _ :- expect EsdkTestManifests.StartDecryptVectors(
-  //     EsdkManifestOptions.Decrypt(
-  //       manifestPath := "decrypt-manifest/"
-  //     )
-  //   );
-  // }
-
   // method {:test} TestV2Vectors() {
   //   TestEsdkManifests.StartV1Vectors(
   //     "dafny/ESDK/test/python-2.3.0/manifest.json",
@@ -92,7 +68,7 @@ module {:extern} TestWrappedESDKMain {
       EsdkManifestOptions.Encrypt(
         manifestPath := directory + "dafny/TestVectors/test/",
         manifest := "encrypt-manifest.json",
-        decryptManifestOutput := directory + "dafny/TestVectors/test"
+        decryptManifestOutput := directory + "dafny/TestVectors/test/"
       )
     );
     if result.Failure? {
@@ -106,7 +82,7 @@ module {:extern} TestWrappedESDKMain {
     var directory := GetTestVectorExecutionDirectory();
     var result := EsdkTestManifests.StartDecryptVectors(
       EsdkManifestOptions.Decrypt(
-        manifestPath := directory + "dafny/TestVectors/"
+        manifestPath := directory + "dafny/TestVectors/test/"
       )
     );
 

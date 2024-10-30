@@ -26,124 +26,120 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
   import AlgorithmSuites
   import opened EsdkTestVectors
   import EsdkManifestOptions
-
-  // function BuildDecryptTestVector(
-  //   op: EsdkManifestOptions.ManifestOptions,
-  //   version: SupportedDecryptVersion,
-  //   keys: KeyVectors.KeyVectorsClient,
-  //   obj: seq<(string, JSON)>
-  // ) : Result<seq<EsdkDecryptTestVector>, string>
-  //   requires op.Decrypt?
-  // {
-  //   if |obj| == 0 then
-  //     Success([])
-  //   else
-  //     var tail :- BuildDecryptTestVector(op, version, keys, obj[1..]);
-  //     var encryptVector :- ToDecryptTestVectors(op, version, keys, obj[0].0, obj[0].1);
-  //     Success([ encryptVector ] + tail)
-  // } by method {
-  //   // This function ideally would be`{:tailrecursion}`
-  //   // but it is not simple to here is a method
-  //   // so that it does not explode with huge numbers of tests.
-  //   var i: nat := |obj|;
-  //   var vectors := [];
-
-  //   while i != 0
-  //     decreases i
-  //     invariant Success(vectors) == BuildDecryptTestVector(op, version, keys, obj[i..])
-  //   {
-  //     i := i - 1;
-  //     var test := ToDecryptTestVectors(op, version, keys, obj[i].0, obj[i].1);
-  //     if test.Failure? {
-  //       ghost var j := i;
-  //       while j != 0
-  //         decreases j
-  //         invariant Failure(test.error) == BuildDecryptTestVector(op, version, keys, obj[j..])
-  //       {
-  //         j := j - 1;
-  //       }
-  //       return Failure(test.error);
-  //     }
-
-  //     vectors := [test.value] + vectors;
-  //   }
-
-  //   return Success(vectors);
-  // }
-
+  
   const ciphertextJsonKey := "ciphertext"
   const masterKeysJsonKey := "master-keys"
   const encryptKeyDescription := "encryptKeyDescription"
   const decryptKeyDescription := "decryptKeyDescription"
   const decryptionMethodJsonKey := "decryption-method"
+  const plaintextJsonKey := "plaintext"
+  const frameSizeJsonKey := "frame-size"
+  const encryptionContextJsonKey := "encryption-context"
 
-  // function ToDecryptTestVectors(
-  //   op: EsdkManifestOptions.ManifestOptions,
-  //   version: SupportedDecryptVersion,
-  //   keys: KeyVectors.KeyVectorsClient,
-  //   name: string,
-  //   json: JSON
-  // ) : Result<EsdkDecryptTestVector, string>
-  //   requires op.Decrypt?
-  // {
-  //   :- Need(json.Object?, "Vector is not an object");
-  //   var obj := json.obj;
-  //   var ciphertextPath :- GetPath(ciphertextJsonKey, obj);
-  //   var masterKeyArray :- GetArray(masterKeysJsonKey, obj);
-  //   var decryptDescriptions :- GetKeyDescriptions(masterKeyArray, keys);
-  //   var decryptionMethodOption :- GetOptionalString(decryptionMethodJsonKey, obj);
-  //   var decryptionMethod :- if decryptionMethodOption.Some? && decryptionMethodOption.value == "streaming-unsigned-only" then
-  //                             Success(StreamingUnsignedOnly)
-  //                           else if decryptionMethodOption.None? then
-  //                             Success(OneShot)
-  //                           else
-  //                             Failure("Unsupported option:" + decryptionMethodOption.value);
+  function BuildDecryptTestVector(
+    op: EsdkManifestOptions.ManifestOptions,
+    version: SupportedDecryptVersion,
+    keys: KeyVectors.KeyVectorsClient,
+    obj: seq<(string, JSON)>
+  ) : Result<seq<EsdkDecryptTestVector>, string>
+    requires op.Decrypt?
+  {
+    if |obj| == 0 then
+      Success([])
+    else
+      var tail :- BuildDecryptTestVector(op, version, keys, obj[1..]);
+      var encryptVector :- ToDecryptTestVectors(op, version, keys, obj[0].0, obj[0].1);
+      Success([ encryptVector ] + tail)
+  } by method {
+    // This function ideally would be`{:tailrecursion}`
+    // but it is not simple to here is a method
+    // so that it does not explode with huge numbers of tests.
+    var i: nat := |obj|;
+    var vectors := [];
+
+    while i != 0
+      decreases i
+      invariant Success(vectors) == BuildDecryptTestVector(op, version, keys, obj[i..])
+    {
+      i := i - 1;
+      var test := ToDecryptTestVectors(op, version, keys, obj[i].0, obj[i].1);
+      if test.Failure? {
+        ghost var j := i;
+        while j != 0
+          decreases j
+          invariant Failure(test.error) == BuildDecryptTestVector(op, version, keys, obj[j..])
+        {
+          j := j - 1;
+        }
+        return Failure(test.error);
+      }
+
+      vectors := [test.value] + vectors;
+    }
+
+    return Success(vectors);
+  }
 
 
-  //   match version
-  //   case 1 =>
-  //     var plaintextPath :- GetPath(ciphertextJsonKey, obj);
-  //     Success(PositiveDecryptTestVector(
-  //               name := name,
-  //               version := version,
-  //               manifestPath := op.manifestPath,
-  //               plaintextPath := plaintextPath,
-  //               ciphertextPath := ciphertextPath,
-  //               decryptDescriptions := decryptDescriptions,
-  //               decryptionMethod := decryptionMethod
-  //             ))
-  //   case 2 =>
-  //     var result :- GetObject("result", obj);
-  //     :- Need(|result| == 1 && Result?(result[0].0), "Unexpected result");
-  //     match result[0].0
-  //     case "output" =>
-  //       var output :- GetObject("output", result);
-  //       var plaintextPath :- GetPath("plaintext", output);
+  function ToDecryptTestVectors(
+    op: EsdkManifestOptions.ManifestOptions,
+    version: SupportedDecryptVersion,
+    keys: KeyVectors.KeyVectorsClient,
+    name: string,
+    json: JSON
+  ) : Result<EsdkDecryptTestVector, string>
+    requires op.Decrypt?
+  {
+    :- Need(json.Object?, "Vector is not an object");
+    var obj := json.obj;
 
-  //       Success(PositiveDecryptTestVector(
-  //                 name := name,
-  //                 version := version,
-  //                 manifestPath := op.manifestPath,
-  //                 plaintextPath := plaintextPath,
-  //                 ciphertextPath := ciphertextPath,
-  //                 decryptDescriptions := decryptDescriptions,
-  //                 decryptionMethod := decryptionMethod
-  //               ))
-  //     case "error" =>
-  //       var output :- GetObject("error", result);
-  //       var errorDescription :- GetString("error-description", output);
+    match version
+    case 3 => V3ToDecryptTestVector(op, keys, name, obj, version)
+    case _ => Failure("Version not supported")
 
-  //       Success(NegativeDecryptTestVector(
-  //                 name := name,
-  //                 version := version,
-  //                 manifestPath := op.manifestPath,
-  //                 errorDescription := errorDescription,
-  //                 ciphertextPath := ciphertextPath,
-  //                 decryptDescriptions := decryptDescriptions,
-  //                 decryptionMethod := decryptionMethod
-  //               ))
+    // case 1 =>
+    //   var plaintextPath :- GetPath(ciphertextJsonKey, obj);
+    //   Success(PositiveDecryptTestVector(
+    //             name := name,
+    //             version := version,
+    //             manifestPath := op.manifestPath,
+    //             plaintextPath := plaintextPath,
+    //             ciphertextPath := ciphertextPath,
+    //             decryptDescriptions := decryptDescriptions,
+    //             decryptionMethod := decryptionMethod
+    //           ))
+    // case 2 =>
+    //   var result :- GetObject("result", obj);
+    //   :- Need(|result| == 1 && Result?(result[0].0), "Unexpected result");
+    //   match result[0].0
+    //   case "output" =>
+    //     var output :- GetObject("output", result);
+    //     var plaintextPath :- GetPath("plaintext", output);
 
-  // }
+    //     Success(PositiveDecryptTestVector(
+    //               name := name,
+    //               version := version,
+    //               manifestPath := op.manifestPath,
+    //               plaintextPath := plaintextPath,
+    //               ciphertextPath := ciphertextPath,
+    //               decryptDescriptions := decryptDescriptions,
+    //               decryptionMethod := decryptionMethod
+    //             ))
+    //   case "error" =>
+    //     var output :- GetObject("error", result);
+    //     var errorDescription :- GetString("error-description", output);
+
+    //     Success(NegativeDecryptTestVector(
+    //               name := name,
+    //               version := version,
+    //               manifestPath := op.manifestPath,
+    //               errorDescription := errorDescription,
+    //               ciphertextPath := ciphertextPath,
+    //               decryptDescriptions := decryptDescriptions,
+    //               decryptionMethod := decryptionMethod
+    //             ))
+
+  }
 
   function BuildEncryptTestVector(
     op: EsdkManifestOptions.ManifestOptions,
@@ -189,9 +185,6 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
     return Success(vectors);
   }
 
-  const plaintextJsonKey := "plaintext"
-  const frameSizeJsonKey := "frame-size"
-  const encryptionContextJsonKey := "encryption-context"
 
   function ToEncryptTestVector(
     op: EsdkManifestOptions.ManifestOptions,
@@ -284,6 +277,55 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
       ))
     case _ => Failure("Unsupported ESDK TestVector type: " + typ)
 
+  }
+  
+  function V3ToDecryptTestVector(
+    op: EsdkManifestOptions.ManifestOptions,
+    keys: KeyVectors.KeyVectorsClient,
+    name: string,
+    obj: seq<(string, JSON)>,
+    version: SupportedDecryptVersion
+  ) : Result<EsdkDecryptTestVector, string>
+    requires op.Decrypt?
+  {
+    var scenarioString := "decryption-scenario";
+    var scenario :- GetObject(scenarioString, obj);
+
+    var typeString := "type";
+    var typ :- GetString(typeString, scenario);
+
+    var ciphertextLoc :- GetString(ciphertextJsonKey, scenario);
+    var algorithmSuite :- ParseJsonManifests.GetAlgorithmSuiteInfo(scenario);
+    :- Need(algorithmSuite.id.ESDK?, "Unsupported algorithmSuiteId");
+    var frameLength :- GetOptionalPositiveLong(frameSizeJsonKey, scenario);
+    
+    var encryptionContextStrings :- SmallObjectToStringStringMap(encryptionContextJsonKey, scenario);
+    var encryptionContext :- utf8EncodeMap(encryptionContextStrings);
+    var description :- GetString("description", scenario);
+    var result :- GetString("result", scenario);
+    :- Need(
+      && "file://" < ciphertextLoc
+      && "file://" < result,
+      "Invalid file prefix in test vector"
+    );
+
+    match typ
+    case "positive-esdk" =>
+      var decryptKeyDescription :- ParseJsonManifests.GetKeyDescription(keys, decryptKeyDescription, scenario);
+      Success(PositiveDecryptTestVector(
+        name := name,
+        version := version,
+        manifestPath := op.manifestPath,
+        ciphertextPath := ciphertextLoc[|FILE_PREPEND|..],
+        plaintextPath := result[|FILE_PREPEND|..],
+        encryptionContext := Some(encryptionContext),
+        decryptDescriptions := decryptKeyDescription,
+        frameLength := frameLength,
+        algorithmSuiteId := Some(algorithmSuite),
+        description := description,
+        decryptionMethod := DecryptionMethod.OneShot
+      ))
+    case _ => Failure("Unsupported ESDK TestVector type: " + typ)
   }
 
   function GetKeyDescriptions(keyArray: seq<JSON>, keys: KeyVectors.KeyVectorsClient)
