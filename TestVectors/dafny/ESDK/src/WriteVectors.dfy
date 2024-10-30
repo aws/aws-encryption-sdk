@@ -74,9 +74,8 @@ module {:options "-functionSyntax:4"} WriteVectors {
 
       var id := AllAlgorithmSuites.ToHex(tests[i].algorithmSuiteId.value);
       var uuid :- expect UUID.GenerateUUID();
-      var name := id + "-" + tests[i].name + "-" + uuid;
       var test :- WriteEsdkJsonManifests.EncryptTestVectorToJson(tests[i]);
-      testsJSON := testsJSON + [(name, test)];
+      testsJSON := testsJSON + [(uuid, test)];
     }
     
     var manifestJson := Object([
@@ -98,7 +97,7 @@ module {:options "-functionSyntax:4"} WriteVectors {
     var esdkEncryptManifestBv := JSONHelpers.BytesBv(esdkEncryptManifestBytes);
 
     var _ :- expect FileIO.WriteBytesToFile(
-      op.encryptManifestOutput + "manifest.json",
+      op.encryptManifestOutput + "encrypt-manifest.json",
       esdkEncryptManifestBv
     );
     
@@ -119,12 +118,34 @@ module {:options "-functionSyntax:4"} WriteVectors {
 
     for i := 0 to |tests|
     {
-      var name :- UUID.GenerateUUID();
+      var name := tests[i].name; 
       var test :- WriteEsdkJsonManifests.DecryptTestVectorToJson(tests[i]);
       testsJSON := testsJSON + [(name, test)];
     }
     
-    return Failure("Whelp");
+    var manifestJson := Object([
+          ("type", String("awses-decrypt")),
+          ("version", Number(Int(3)))]);
+
+    var esdkDecryptManifest := Object(
+      [
+        ("manifest", manifestJson),
+        // TODO create an extern that gets that runtimes namespace and latest version
+        ("client", String("aws-encryption-sdk-dafny")),
+        ("keys", String("file://keys.json")),
+        ("tests", Object(testsJSON))
+      ]
+    );
+    
+    var esdkDecryptManifestBytes :- expect API.Serialize(esdkDecryptManifest);
+    var esdkDecryptManifestBv := JSONHelpers.BytesBv(esdkDecryptManifestBytes);
+
+    var _ :- expect FileIO.WriteBytesToFile(
+      op.decryptManifestOutput + "decrypt-manifest.json",
+      esdkDecryptManifestBv
+    );
+
+    output := Success(());
   }
 
   function getVersionTests(version: nat): (ret: Result<set<EsdkTestVectors.EsdkEncryptTestVector>, string>)

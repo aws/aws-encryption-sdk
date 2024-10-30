@@ -80,12 +80,13 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
     var optionalValues := requiredEncryptionContextKeys + encryptionContext;
 
     match test
-    case PositiveEncryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_,_) =>
+    case PositiveEncryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_,_,_) =>
       var encrypt :- KeyDescription.ToJson(test.encryptDescriptions, 3);
       var decrypt :- KeyDescription.ToJson(test.decryptDescriptions, 3);
       var scenario := Object([
                                 ("type", String("positive-esdk")),
                                 ("plaintext", String("small")),
+                                ("description", String(test.description)),
                                 ("algorithmSuiteId", String(id)),
                                 ("frame-size", Number(Int(test.frameLength.value as int))),
                                 ("encryptKeyDescription", encrypt),
@@ -195,11 +196,46 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
   //                    ] + reproducedEc + encryptionContext))
   // }
   
-  function DecryptTestVectorToJson(
+  function {:vcs_split_on_every_assert} DecryptTestVectorToJson(
     test: EsdkTestVectors.EsdkDecryptTestVector
   ): Result<JSON, string>
   {
-    // var id := AllAlgorithmSuites.ToHex(test);
-    Failure("whelp")
+    :- Need(
+      && test.algorithmSuiteId.Some?
+      && test.frameLength.Some?,
+      "test is missing algorithmSuite ID, or frameLength"
+    );
+    var id := AllAlgorithmSuites.ToHex(test.algorithmSuiteId.value);
+    var description := test.name + " " + id;
+
+    var encryptionContext 
+      :- if test.encryptionContext.Some? then
+          EncryptionContextToJson("encryption-context", test.encryptionContext.value)
+        else
+          EncryptionContextToJson("encryption-context", map[]);
+    
+    :- Need(
+      |encryptionContext| == 1,
+      "Error parsing encryption context"
+    );
+
+    var requiredEncryptionContextKeys :- EncryptionContextKeysToJson(test.requiredEncryptionContextKeys);
+    var optionalValues := requiredEncryptionContextKeys + encryptionContext;
+
+    match test
+    case PositiveDecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_) =>
+      var decrypt :- KeyDescription.ToJson(test.decryptDescriptions, 3);
+      var scenario := Object([
+                                ("type", String("positive-esdk")),
+                                ("ciphertext", String("file://ciphertexts/" + test.name)),
+                                ("algorithmSuiteId", String(id)),
+                                ("frame-size", Number(Int(test.frameLength.value as int))),
+                                ("decryptKeyDescription", decrypt)
+                              ] + optionalValues);
+      Success(Object([
+                      ("decryption-scenario", scenario)
+                      ]))
+    case _ =>
+      Failure("Only Positive Tests supported :(")
   }
 }

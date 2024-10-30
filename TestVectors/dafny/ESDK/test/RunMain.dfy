@@ -70,7 +70,7 @@ module {:extern} TestWrappedESDKMain {
   method {:test} RunManifestTests() {
     TestGenerateEncryptManifest();
     TestEncryptManifest();
-    // TestDecryptManifest();
+    TestDecryptManifest();
   }
   
   method TestGenerateEncryptManifest() {
@@ -91,8 +91,8 @@ module {:extern} TestWrappedESDKMain {
     var result := EsdkTestManifests.StartEncryptVectors(
       EsdkManifestOptions.Encrypt(
         manifestPath := directory + "dafny/TestVectors/test/",
-        manifest := "manifest.json",
-        decryptManifestOutput := directory + "dafny/TestVectors/"
+        manifest := "encrypt-manifest.json",
+        decryptManifestOutput := directory + "dafny/TestVectors/test"
       )
     );
     if result.Failure? {
@@ -101,4 +101,18 @@ module {:extern} TestWrappedESDKMain {
     expect result.Success?;
   }
 
+  method TestDecryptManifest()
+  {
+    var directory := GetTestVectorExecutionDirectory();
+    var result := EsdkTestManifests.StartDecryptVectors(
+      EsdkManifestOptions.Decrypt(
+        manifestPath := directory + "dafny/TestVectors/"
+      )
+    );
+
+    if result.Failure? {
+      print result.error;
+    }
+    expect result.Success?;
+  }
 }

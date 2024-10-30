@@ -77,7 +77,8 @@ module {:options "/functionSyntax:4" } AllEsdkV4NoReqEc {
         encryptDescriptions := keyringConfig.encryptDescription,
         decryptDescriptions := keyringConfig.decryptDescription,
         frameLength := Some(frameSize),
-        algorithmSuiteId := Some(algorithmSuite)
+        algorithmSuiteId := Some(algorithmSuite),
+        description := keyringConfig.name
       )
   
   const AllPositiveKeyringTestsNoDBEKmsRsa :=
@@ -94,7 +95,8 @@ module {:options "/functionSyntax:4" } AllEsdkV4NoReqEc {
         encryptDescriptions := keyringConfig.encryptDescription,
         decryptDescriptions := keyringConfig.decryptDescription,
         frameLength := Some(frameSize),
-        algorithmSuiteId := Some(algorithmSuite)
+        algorithmSuiteId := Some(algorithmSuite),
+        description := keyringConfig.name
       )
   
   const Tests := 

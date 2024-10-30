@@ -29,25 +29,26 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
   import opened EsdkTestVectors
   import WriteVectors
 
-  // method StartDecryptVectors(
-  //   op: EsdkManifestOptions.ManifestOptions
-  // )
-  //   returns (output: Result<seq<BoundedInts.byte>, string>)
-  //   requires op.Decrypt?
-  //   requires 0 < |op.manifestPath|
-  //   requires Seq.Last(op.manifestPath) == '/'
-  // {
-  //   var decryptManifest :- expect GetManifest(op.manifestPath, "manifest.json");
-  //   :- Need(decryptManifest.DecryptManifest?, "Not a decrypt manifest");
+  method StartDecryptVectors(
+    op: EsdkManifestOptions.ManifestOptions
+  )
+    returns (output: Result<seq<BoundedInts.byte>, string>)
+    requires op.Decrypt?
+    requires 0 < |op.manifestPath|
+    requires Seq.Last(op.manifestPath) == '/'
+  {
+    var decryptManifest :- expect GetManifest(op.manifestPath, "decrypt-manifest.json");
+    :- Need(decryptManifest.DecryptManifest?, "Not a decrypt manifest");
 
-  //   var decryptVectors :- ParseEsdkJsonManifest.BuildDecryptTestVector(
-  //     op,
-  //     decryptManifest.version,
-  //     decryptManifest.keys,
-  //     decryptManifest.jsonTests
-  //   );
-  //   output := TestDecrypts(decryptManifest.keys, decryptVectors);
-  // }
+    // var decryptVectors :- ParseEsdkJsonManifest.BuildDecryptTestVector(
+    //   op,
+    //   decryptManifest.version,
+    //   decryptManifest.keys,
+    //   decryptManifest.jsonTests
+    // );
+    // output := TestDecrypts(decryptManifest.keys, decryptVectors);
+    return Failure("Implement me!");
+  }
 
   predicate TestDecryptVector?(v: EsdkDecryptTestVector)
   {

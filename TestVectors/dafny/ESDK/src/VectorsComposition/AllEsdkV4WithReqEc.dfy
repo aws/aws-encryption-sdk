@@ -90,7 +90,8 @@ module {:options "/functionSyntax:4" } AllEsdkV4WithReqEc {
           requiredEncryptionContextKeys := config.requiredEncryptionContextKeys,
           requiredECDescription := Some(config.name),
           frameLength := Some(frameSize),
-          algorithmSuiteId := Some(algorithmSuite)
+          algorithmSuiteId := Some(algorithmSuite),
+          description := config.name
         )
   
   const Tests := 

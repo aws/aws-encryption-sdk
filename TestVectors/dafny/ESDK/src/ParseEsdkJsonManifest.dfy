@@ -262,6 +262,7 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
     
     var encryptionContextStrings :- SmallObjectToStringStringMap(encryptionContextJsonKey, scenario);
     var encryptionContext :- utf8EncodeMap(encryptionContextStrings);
+    var description :- GetString("description", scenario);
 
     match typ
     case "positive-esdk" =>
@@ -278,7 +279,8 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
         encryptionContext := Some(encryptionContext),
         commitmentPolicy := mplTypes.FORBID_ENCRYPT_ALLOW_DECRYPT,
         frameLength := frameLength,
-        algorithmSuiteId := Some(algorithmSuite)
+        algorithmSuiteId := Some(algorithmSuite),
+        description := description
       ))
     case _ => Failure("Unsupported ESDK TestVector type: " + typ)
 
