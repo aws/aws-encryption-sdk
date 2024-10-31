@@ -1,0 +1,114 @@
+# This workflow performs interoperability tests across the supported runtimes of the ESDK Dafny
+name: Library Interoperability Dafny TestVectors
+
+on:
+  workflow_call:
+    inputs:
+      dafny:
+        description: "The Dafny version to use"
+        required: true
+        type: string
+      regenerate-code:
+        description: "Regenerate code using smithy-dafny"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  generateEncryptVectors:
+    strategy:
+      matrix:
+        library: [TestVectors]
+        os: [
+            # https://taskei.amazon.dev/tasks/CrypTool-5283
+            # windows-latest,
+            ubuntu-latest,
+            macos-12,
+          ]
+        language: [java, net]
+        # https://taskei.amazon.dev/tasks/CrypTool-5284
+        dotnet-version: ["6.0.x"]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      contents: read
+      
+    steps:
+        - name: Support longpaths on Git checkout
+          run: |
+            git config --global core.longpaths true
+
+        - uses: actions/checkout@v3
+        #  Not all submodules are needed.
+        # We manually pull the submodule we DO need.
+        - run: git submodule update --init libraries
+        - run: git submodule update --init --recursive mpl
+
+        # Set up runtimes
+        - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+          if: matrix.language == 'net'
+          uses: actions/setup-dotnet@v3
+          with:
+            dotnet-version: ${{ matrix.dotnet-version }}
+
+        - name: Setup Java 17
+          if: matrix.language == 'java'
+          uses: actions/setup-java@v3
+          with:
+            distribution: "corretto"
+            java-version: 17
+
+        - name: Setup Dafny
+          uses: dafny-lang/setup-dafny-action@v1.6.1
+          with:
+            dafny-version: ${{ inputs.dafny }}
+
+        - name: Regenerate code using smithy-dafny if necessary
+          if: ${{ inputs.regenerate-code }}
+          uses: ./.github/actions/polymorph_codegen
+          with:
+            dafny: ${{ inputs.dafny }}
+            library: ${{ matrix.library }}
+            diff-generated-code: false
+        
+        # Build implementation for each runtime
+        - name: Build ${{ matrix.library }} implementation in Java
+          if: matrix.language == 'java'
+          shell: bash
+          working-directory: ./${{ matrix.library }}
+          run: |
+            # This works because `node` is installed by default on GHA runners
+            CORES=$(node -e 'console.log(os.cpus().length)')
+            make build_java CORES=$CORES
+            make write_correct_main_java
+
+        - name: Build ${{ matrix.library }} implementation in .NET
+          if: matrix.language == 'net'
+          shell: bash
+          working-directory: ./${{ matrix.library }}
+          run: |
+            # This works because `node` is installed by default on GHA runners
+            CORES=$(node -e 'console.log(os.cpus().length)')
+            make transpile_net
+            make write_correct_main_net
+        - name: Setup gradle
+          if: matrix.language == 'java'
+          uses: gradle/gradle-build-action@v2
+          with:
+            gradle-version: 7.2
+
+        # TestVectors will call KMS
+        - name: Configure AWS Credentials
+          uses: aws-actions/configure-aws-credentials@v2
+          with:
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2 
+            role-session-name: NetTests
+        
+        - name: Create Manifests
+          working-directory: ./${{ matrix.library }}
+          run: make test_generate_vectors_${{ matrix.language }}
+
+        - name: Create Encrypt Manifests
+          working-directory: ./${{ matrix.library }}
+          run: make test_encrypt_vectors_${{ matrix.language }}
