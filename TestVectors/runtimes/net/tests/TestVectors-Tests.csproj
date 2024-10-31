@@ -23,6 +23,7 @@
     <ItemGroup>
       <ProjectReference Include="../ESDKTestVectors.csproj" />
       <Compile Include="TestsFromDafny.cs" />
+      <Compile Include="Extern/**" />
     </ItemGroup>
 
     
