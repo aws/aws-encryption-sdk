@@ -6,3 +6,7 @@ TestsFromDafny-cs.dtr
 **/bin
 **/obj
 /runtimes/java/dafny
+dafny/TestVectors/test/ciphertexts
+dafny/TestVectors/test/plaintexts
+dafny/TestVectors/test/test.json
+dafny/TestVectors/test/decrypt-manifest.json
