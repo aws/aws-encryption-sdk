@@ -55,7 +55,7 @@ tasks.register<Copy>("copyKeysJSON") {
 }
 
 tasks.register<Copy>("copyKeysJSONCurr") {
-    from(layout.projectDirectory.file("../../dafny/ESDK/TestVectors/keys.json"))
+    from(layout.projectDirectory.file("../../dafny/TestVectors/test/keys.json"))
     into(layout.projectDirectory.dir("."))
 }
 
