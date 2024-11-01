@@ -11,9 +11,9 @@ PROJECT_SERVICES := \
 	TestVectors \
 
 SMITHY_MODEL_ROOT := $(PROJECT_ROOT)/AwsEncryptionSDK/dafny/AwsEncryptionSdk/Model
-OUTPUT_LOCAL_SERVICE_ESDK := --local-service-test
+OUTPUT_LOCAL_SERVICE_TestVectors:= --local-service-test
 
-SERVICE_NAMESPACE_ESDK=aws.cryptography.encryptionSdk
+SERVICE_NAMESPACE_TestVectors=aws.cryptography.encryptionSdk
 
 MAX_RESOURCE_COUNT=10000000
 # Order is important
@@ -46,7 +46,7 @@ SMITHY_DEPS=mpl/model
 
 
 # Dependencies for each local service
-SERVICE_DEPS_ESDK := \
+SERVICE_DEPS_TestVectors := \
 	mpl/AwsCryptographyPrimitives \
 	mpl/ComAmazonawsKms \
 	mpl/ComAmazonawsDynamodb \
@@ -95,3 +95,7 @@ test_decrypt_encrypt_vectors_net:
 	dotnet restore runtimes/net
 	dotnet build runtimes/net
 	dotnet run --project runtimes/net --framework $(FRAMEWORK) decrypt --manifest-path runtimes/net
+
+_polymorph_dependencies:
+	@echo "No polymorphing of dependency"
+
