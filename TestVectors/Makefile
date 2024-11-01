@@ -8,9 +8,9 @@ include ../SharedMakefileV2.mk
 DIR_STRUCTURE_V2=V2
 
 PROJECT_SERVICES := \
-	ESDK \
+	TestVectors \
 
-MAIN_SERVICE_FOR_RUST := ESDK
+MAIN_SERVICE_FOR_RUST := TestVectors
 
 RUST_OTHER_FILES := \
 	runtimes/rust/src/aes_gcm.rs \
