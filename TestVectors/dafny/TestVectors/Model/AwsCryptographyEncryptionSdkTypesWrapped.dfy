@@ -2,6 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 // Do not modify this file. This file is machine generated, and any changes to it will be overwritten.
 include "../../../../mpl/StandardLibrary/src/Index.dfy"
+  // BEGIN MANUAL EDIT
+include "../../../../AwsEncryptionSDK/dafny/AwsEncryptionSdk/src/Index.dfy"
+include "../../../../mpl/TestVectorsAwsCryptographicMaterialProviders/dafny/KeyVectors/src/Index.dfy"
+  // END MANUAL EDIT
 include "../src/Index.dfy"
 abstract module WrappedAbstractAwsCryptographyEncryptionSdkService {
   import opened Wrappers
