@@ -30,12 +30,13 @@ RUST_OTHER_FILES := \
 	runtimes/rust/src/software_externs.rs \
 	runtimes/rust/src/storm_tracker.rs \
 	runtimes/rust/src/time.rs \
-	runtimes/rust/src/uuid.rs
+	runtimes/rust/src/uuid.rs \
+	runtimes/rust/src/get_test_directory.rs
 
 SMITHY_MODEL_ROOT := $(PROJECT_ROOT)/AwsEncryptionSDK/dafny/AwsEncryptionSdk/Model
-OUTPUT_LOCAL_SERVICE_ESDK := --local-service-test
+OUTPUT_LOCAL_SERVICE_TestVectors:= --local-service-test
 
-SERVICE_NAMESPACE_ESDK=aws.cryptography.encryptionSdk
+SERVICE_NAMESPACE_TestVectors=aws.cryptography.encryptionSdk
 
 MAX_RESOURCE_COUNT=10000000
 # Order is important
@@ -68,7 +69,7 @@ SMITHY_DEPS=mpl/model
 
 
 # Dependencies for each local service
-SERVICE_DEPS_ESDK := \
+SERVICE_DEPS_TestVectors := \
 	mpl/AwsCryptographyPrimitives \
 	mpl/ComAmazonawsKms \
 	mpl/ComAmazonawsDynamodb \
@@ -80,3 +81,40 @@ SERVICE_DEPS_ESDK := \
 
 format_net:
 	pushd runtimes/net && dotnet format && popd
+
+write_correct_main_java:
+	sed -i "" "s/dafny.Helpers.withHaltHandling(() -> { WrappedMaterialProvidersMain_Compile.__default.__Main(dafny.Helpers.FromMainArguments(args)); } );/dafny.Helpers.withHaltHandling(() -> { WrappedESDKMain_Compile.__default.Main2(dafny.Helpers.FromMainArguments(args)); } );/g" runtimes/java/src/main/dafny-generated/ImplementationFromDafny.java
+
+write_correct_main_net:
+	sed -i "" "s/Dafny.Helpers.WithHaltHandling(() => WrappedMaterialProvidersMain_Compile.__default._Main(Dafny.Sequence<Dafny.ISequence<char>>.FromMainArguments(args)));/Dafny.Helpers.WithHaltHandling(() => WrappedESDKMain_Compile.__default.Main2(Dafny.Sequence<Dafny.ISequence<char>>.FromMainArguments(args)));/g" runtimes/net/ImplementationFromDafny.cs
+
+
+# Commands to generate and test test vectors
+test_generate_vectors_java:
+	gradle -p runtimes/java run --args="encrypt-manifest --encrypt-manifest-output ."
+	gradle -p runtimes/java copyKeysJSONCurr
+
+test_generate_vectors_net: FRAMEWORK=net6.0
+test_generate_vectors_net:
+	dotnet restore runtimes/net
+	dotnet build runtimes/net
+	dotnet run --project runtimes/net --framework $(FRAMEWORK) encrypt-manifest --encrypt-manifest-output runtimes/net
+	cp dafny/TestVectors/test/keys.json runtimes/net
+
+test_encrypt_vectors_java:
+	gradle -p runtimes/java run --args="encrypt --manifest-path . --decrypt-manifest-path ."
+
+test_encrypt_vectors_net: FRAMEWORK=net6.0
+test_encrypt_vectors_net:
+	dotnet restore runtimes/net
+	dotnet build runtimes/net
+	dotnet run --project runtimes/net --framework $(FRAMEWORK) encrypt --manifest-path runtimes/net --decrypt-manifest-path runtimes/net
+
+test_decrypt_encrypt_vectors_java:
+	gradle -p runtimes/java run --args="decrypt --manifest-path ."
+
+test_decrypt_encrypt_vectors_net: FRAMEWORK=net6.0
+test_decrypt_encrypt_vectors_net:
+	dotnet restore runtimes/net
+	dotnet build runtimes/net
+	dotnet run --project runtimes/net --framework $(FRAMEWORK) decrypt --manifest-path runtimes/net
