@@ -80,7 +80,6 @@ jobs:
             # This works because `node` is installed by default on GHA runners
             CORES=$(node -e 'console.log(os.cpus().length)')
             make build_java CORES=$CORES
-            make write_correct_main_java
 
         - name: Build ${{ matrix.library }} implementation in .NET
           if: matrix.language == 'net'
@@ -90,7 +89,6 @@ jobs:
             # This works because `node` is installed by default on GHA runners
             CORES=$(node -e 'console.log(os.cpus().length)')
             make transpile_net
-            make write_correct_main_net
             
         - name: Setup gradle
           if: matrix.language == 'java'
@@ -162,13 +160,13 @@ jobs:
 
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
-        if: matrix.decrypting_language == 'net'
+        if: matrix.language == 'net'
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
       - name: Setup Java 17
-        if: matrix.decrypting_language == 'java'
+        if: matrix.language == 'java'
         uses: actions/setup-java@v3
         with:
           distribution: "corretto"
@@ -196,7 +194,6 @@ jobs:
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
           make build_java CORES=$CORES
-          make write_correct_main_java
 
       - name: Build ${{ matrix.library }} implementation in .NET
         if: matrix.language == 'net'
@@ -206,8 +203,7 @@ jobs:
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_net
-          make write_correct_main_net
-          
+
       - name: Download Encrypt Manifest Artifact
         uses: actions/download-artifact@v4
         with:
