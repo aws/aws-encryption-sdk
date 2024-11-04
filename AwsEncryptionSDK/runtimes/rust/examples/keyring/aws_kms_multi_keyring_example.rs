@@ -88,10 +88,10 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     // 4. Encrypt the data with the encryptionContext
-    let plaintext = example_data;
+    let plaintext = example_data.as_bytes();
 
     let encryption_response = esdk_client.encrypt()
-        .plaintext(plaintext.clone())
+        .plaintext(plaintext)
         .keyring(kms_multi_keyring.clone())
         .encryption_context(encryption_context.clone())
         .send()
@@ -103,7 +103,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 5. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, plaintext,
+    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
         "Ciphertext and plaintext data are the same. Invalid encryption");
 
     // 6a. Decrypt your encrypted data using the same multi_keyring you used on encrypt.
@@ -122,7 +122,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 6b. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext_multi_keyring, plaintext,
+    assert_eq!(decrypted_plaintext_multi_keyring, aws_smithy_types::Blob::new(plaintext),
         "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
 
     // Because you used a multi_keyring on Encrypt, you can use either of the two
@@ -163,7 +163,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 7d. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext_default_region_kms_keyring, plaintext,
+    assert_eq!(decrypted_plaintext_default_region_kms_keyring, aws_smithy_types::Blob::new(plaintext),
         "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
 
     // 8. Demonstrate that you can also successfully decrypt data using a KMS keyring with just the
@@ -200,7 +200,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 8d. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext_second_region_kms_keyring, plaintext,
+    assert_eq!(decrypted_plaintext_second_region_kms_keyring, aws_smithy_types::Blob::new(plaintext),
         "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
 
     println!("KMS Multi Keyring Example Completed Successfully");

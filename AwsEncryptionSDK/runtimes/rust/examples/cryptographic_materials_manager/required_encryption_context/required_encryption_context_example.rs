@@ -84,10 +84,10 @@ pub async fn encrypt_and_decrypt_with_cmm(
     // NOTE: the keys "requiredKey1", and "requiredKey2"
     // WILL NOT be stored in the message header, but "encryption", "is not",
     // "but adds", "that can help you", and "the data you are handling" WILL be stored.
-    let plaintext = example_data;
+    let plaintext = example_data.as_bytes();
 
     let encryption_response = esdk_client.encrypt()
-        .plaintext(plaintext.clone())
+        .plaintext(plaintext)
         .materials_manager(required_ec_cmm.clone())
         .encryption_context(encryption_context.clone())
         .send()
@@ -99,7 +99,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
 
     // 8. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, plaintext,
+    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
         "Ciphertext and plaintext data are the same. Invalid encryption");
 
     // 9. Decrypt your encrypted data using the same keyring you used on encrypt.
@@ -117,7 +117,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
 
     // 10. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext, plaintext,
+    assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
         "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
 
     // 11. Attempt to decrypt your encrypted data using the same cryptographic material manager
@@ -159,7 +159,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
 
     // Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext_with_reproduced_ec, plaintext,
+    assert_eq!(decrypted_plaintext_with_reproduced_ec, aws_smithy_types::Blob::new(plaintext),
         "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
 
     // 13. You can decrypt the ciphertext using the underlying cmm, but not providing the
@@ -181,7 +181,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
 
     // Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext_with_ec_underlying_cmm, plaintext,
+    assert_eq!(decrypted_plaintext_with_ec_underlying_cmm, aws_smithy_types::Blob::new(plaintext),
         "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
 
     // This will fail

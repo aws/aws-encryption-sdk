@@ -63,17 +63,17 @@ pub async fn encrypt_and_decrypt_with_keyring(
     let kms_rsa_keyring = mpl
         .create_aws_kms_rsa_keyring()
         .kms_key_id(kms_rsa_key_id)
-        .public_key(kms_rsa_public_key)
+        .public_key(aws_smithy_types::Blob::new(kms_rsa_public_key))
         .encryption_algorithm(aws_sdk_kms::types::EncryptionAlgorithmSpec::RsaesOaepSha256)
         .kms_client(kms_client)
         .send()
         .await?;
 
     // 5. Encrypt the data with the encryption_context
-    let plaintext = example_data;
+    let plaintext = example_data.as_bytes();
 
     let encryption_response = esdk_client.encrypt()
-        .plaintext(plaintext.clone())
+        .plaintext(plaintext)
         .keyring(kms_rsa_keyring.clone())
         .encryption_context(encryption_context.clone())
         .algorithm_suite_id(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey)
@@ -86,7 +86,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 6. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, plaintext,
+    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
         "Ciphertext and plaintext data are the same. Invalid encryption");
 
     // 7. Decrypt your encrypted data using the same keyring you used on encrypt.
@@ -104,7 +104,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 8. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext, plaintext,
+    assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
         "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
 
     println!("KMS RSA Keyring Example Completed Successfully");

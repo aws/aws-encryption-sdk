@@ -126,10 +126,10 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     // 7. Encrypt the data with the encryptionContext
-    let plaintext = example_data;
+    let plaintext = example_data.as_bytes();
 
     let encryption_response = esdk_client.encrypt()
-        .plaintext(plaintext.clone())
+        .plaintext(plaintext)
         .keyring(raw_rsa_keyring.clone())
         .encryption_context(encryption_context.clone())
         .send()
@@ -141,7 +141,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 8. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, plaintext,
+    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
         "Ciphertext and plaintext data are the same. Invalid encryption");
 
     // 9. Decrypt your encrypted data using the same keyring you used on encrypt.
@@ -159,7 +159,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 10. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext, plaintext,
+    assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
         "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
 
     println!("Raw RSA Keyring Example Completed Successfully");
