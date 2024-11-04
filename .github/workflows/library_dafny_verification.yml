@@ -38,6 +38,13 @@ jobs:
             git submodule update --init --recursive mpl
             git submodule update --init smithy-dafny
 
+      # dafny-reportgenerator requires next6
+      # but only 7.0 is installed on macos-13-large
+      - name: Setup .NET Core SDK '6.0.x'
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "6.0.x"
+
       - name: Setup Dafny
         uses: dafny-lang/setup-dafny-action@v1.7.0
         with:
