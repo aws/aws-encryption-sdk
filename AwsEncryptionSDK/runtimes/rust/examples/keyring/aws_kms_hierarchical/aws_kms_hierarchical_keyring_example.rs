@@ -139,7 +139,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     ]);
 
     // 8. Encrypt the data with encryptionContextA & encryptionContextB
-    let plaintext = aws_smithy_types::Blob::new(example_data);
+    let plaintext = example_data;
 
     let encryption_response_a = esdk_client.encrypt()
         .plaintext(plaintext.clone())

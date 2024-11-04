@@ -86,7 +86,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     //   }
     // By default for ForbidEncryptAllowDecrypt, the algorithm used is
     // AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384 which is a non-committing algorithm.
-    let plaintext = aws_smithy_types::Blob::new(example_data);
+    let plaintext = example_data;
 
     let encryption_response = esdk_client.encrypt()
         .plaintext(plaintext.clone())

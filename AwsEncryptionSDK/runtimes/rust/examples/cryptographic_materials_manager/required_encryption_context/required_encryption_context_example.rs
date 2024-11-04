@@ -84,7 +84,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
     // NOTE: the keys "requiredKey1", and "requiredKey2"
     // WILL NOT be stored in the message header, but "encryption", "is not",
     // "but adds", "that can help you", and "the data you are handling" WILL be stored.
-    let plaintext = aws_smithy_types::Blob::new(example_data);
+    let plaintext = example_data;
 
     let encryption_response = esdk_client.encrypt()
         .plaintext(plaintext.clone())

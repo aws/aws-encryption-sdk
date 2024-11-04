@@ -92,13 +92,13 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .create_raw_aes_keyring()
         .key_name(key_name)
         .key_namespace(key_namespace)
-        .wrapping_key(aws_smithy_types::Blob::new(aes_key_bytes))
+        .wrapping_key(aes_key_bytes)
         .wrapping_alg(AesWrappingAlg::AlgAes256GcmIv12Tag16)
         .send()
         .await?;
 
     // 6. Encrypt the data with the encryptionContext
-    let plaintext = aws_smithy_types::Blob::new(example_data);
+    let plaintext = example_data;
 
     // This is the important step in this example where we specify the algorithm suite
     // you want to use for encrypting your data

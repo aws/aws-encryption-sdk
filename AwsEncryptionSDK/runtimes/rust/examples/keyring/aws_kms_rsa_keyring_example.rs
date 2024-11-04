@@ -63,14 +63,14 @@ pub async fn encrypt_and_decrypt_with_keyring(
     let kms_rsa_keyring = mpl
         .create_aws_kms_rsa_keyring()
         .kms_key_id(kms_rsa_key_id)
-        .public_key(aws_smithy_types::Blob::new(kms_rsa_public_key))
+        .public_key(kms_rsa_public_key)
         .encryption_algorithm(aws_sdk_kms::types::EncryptionAlgorithmSpec::RsaesOaepSha256)
         .kms_client(kms_client)
         .send()
         .await?;
 
     // 5. Encrypt the data with the encryption_context
-    let plaintext = aws_smithy_types::Blob::new(example_data);
+    let plaintext = example_data;
 
     let encryption_response = esdk_client.encrypt()
         .plaintext(plaintext.clone())
