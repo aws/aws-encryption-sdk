@@ -115,7 +115,7 @@ jobs:
         - name: Upload Encrypt Manifest and keys.json files
           uses: actions/upload-artifact@v4
           with:
-            name: ${{matrix.os}}_vector_artifact_${{matrix.language}}
+            name: ${{matrix.os}}_vector_artifact_${{matrix.language}}_${{github.sha}}
             path: |
               ./${{matrix.library}}/runtimes/${{matrix.language}}/*.json
               ./${{matrix.library}}/runtimes/${{matrix.language}}/plaintexts
@@ -207,7 +207,7 @@ jobs:
       - name: Download Encrypt Manifest Artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{matrix.os}}_vector_artifact_${{matrix.encrypting_language}}
+          name: ${{matrix.os}}_vector_artifact_${{matrix.encrypting_language}}_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
 
       - name: Decrypt Encrypt Manifest
