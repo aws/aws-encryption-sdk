@@ -132,7 +132,8 @@ jobs:
             ubuntu-latest,
             macos-13,
           ]
-        language: [java, net]
+        encrypting_language: [java, net]
+        decrypting_language: [java, net]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
     runs-on: ${{ matrix.os }}
@@ -158,15 +159,14 @@ jobs:
       - run: git submodule update --init libraries
       - run: git submodule update --init --recursive mpl
 
-      # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
-        if: matrix.language == 'net'
+        if: matrix.decrypting_language == 'net'
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
       - name: Setup Java 17
-        if: matrix.language == 'java'
+        if: matrix.decrypting_language == 'java'
         uses: actions/setup-java@v3
         with:
           distribution: "corretto"
@@ -187,18 +187,18 @@ jobs:
 
       # Build implementation for each runtime
       - name: Build ${{ matrix.library }} implementation in Java
-        if: matrix.language == 'java'
-        shell: bash
+        if: matrix.decrypting_language == 'java'
         working-directory: ./${{ matrix.library }}
+        shell: bash
         run: |
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
           make build_java CORES=$CORES
 
       - name: Build ${{ matrix.library }} implementation in .NET
-        if: matrix.language == 'net'
-        shell: bash
+        if: matrix.decrypting_language == 'net'
         working-directory: ./${{ matrix.library }}
+        shell: bash
         run: |
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
