@@ -45,12 +45,19 @@ impl<T: std::fmt::Debug> From<T> for BoxError {
 #[tokio::main]
 pub async fn main() -> Result<(), BoxError2> {
     use example_utils::utils;
+    use aws_esdk::aws_cryptography_primitives::types::EcdhCurveSpec;
 
-    // Example use of KMS Keyring
-    keyring::aws_kms_keyring_example::encrypt_and_decrypt_with_keyring(
+    keyring::raw_ecdh_keyring_example::encrypt_and_decrypt_with_keyring(
         utils::TEST_EXAMPLE_DATA,
-        utils::TEST_DEFAULT_KMS_KEY_ID
+        EcdhCurveSpec::EccNistP256
     ).await?;
+    // Example use of KMS Keyring
+    // keyring::aws_kms_keyring_example::encrypt_and_decrypt_with_keyring(
+    //     utils::TEST_EXAMPLE_DATA,
+    //     utils::TEST_DEFAULT_KMS_KEY_ID
+    // ).await?;
+
+
 
     Ok(())
 }

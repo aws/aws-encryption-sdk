@@ -10,4 +10,5 @@ pub mod aws_kms_rsa_keyring_example;
 pub mod multi_keyring_example;
 pub mod raw_aes_keyring_example;
 pub mod raw_rsa_keyring_example;
+pub mod raw_ecdh_keyring_example;
 pub mod aws_kms_hierarchical;
