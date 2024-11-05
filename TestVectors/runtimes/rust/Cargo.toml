@@ -39,3 +39,7 @@ aws-esdk-test-vectors = { path = ".", features = ["wrapped-client"] }
 
 [lib]
 path = "src/implementation_from_dafny.rs"
+
+[[bin]]
+name = "test-vectors"
+path = "src/implementation_from_dafny.rs"
