@@ -73,7 +73,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     {
       var vector := vectors[i];
       if TestDecryptVector?(vector) {
-
+        :- Need(vector.algorithmSuiteId.Some?, "Vector without algorithm suite defined.");
         var pass := EsdkTestVectors.TestDecrypt(keys, vector);
         if !pass {
           hasFailure := true;

@@ -169,6 +169,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     requires keys.ValidState()
     modifies keys.Modifies
     ensures keys.ValidState()
+    requires vector.algorithmSuiteId.Some?
   {
     var id := AllAlgorithmSuites.ToHex(vector.algorithmSuiteId.value);
     print "\nTEST-DECRYPT===> ", vector.name, "\n", id, " ", vector.description, "\n";
@@ -178,7 +179,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     // was still part of the ESDK
     var test? := DecryptVectorToDecryptTest(keys, vector);
 
-    if test?.Failure? && vector.PositiveDecryptTestVector? {
+    if test?.Failure? {
       print test?.error, "\n", "\nFAILED! <-----------\n";
       return false;
     }

@@ -10,139 +10,141 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
   import WrappedESDK
   import WriteVectors
 
-  // Import from Wrapped MPL
-  import WrappedMaterialProviders
-  import CompleteVectors
   import EsdkTestManifests
   import EsdkManifestOptions
   import Seq
+  import opened GetOpt
 
-  // method Main2(args: seq<string>) {
-  //   // The expectation is that the first argument
-  //   // is the filename or runtime
-  //   expect 0 < |args|;
-  //   var op? := ParseCommandLineOptions(args[1..]);
+  method Main2(args: seq<string>) {
+    var vectorOptions := Options("test-vectors", "?",
+                                 [
+                                   Param.Command(Options("decrypt", "decrypt command for test-vectors",
+                                                         [
+                                                           Param.Opt("manifest-path", "relative path to the location of the manifest", unused := Required),
+                                                           Param.Opt("test-name", "id of the test to run")
+                                                         ])),
+                                   Param.Command(Options("encrypt", "encrypt command for test-vectors",
+                                                         [
+                                                           Param.Opt("manifest-path", "relative path to the location of the manifest", unused := Required),
+                                                           Param.Opt("decrypt-manifest-path", "relative path to the location where the decrypted manifest will be written to.", unused := Required),
+                                                           Param.Opt("test-name", "id of the test to run")
+                                                         ])),
+                                   Param.Command(Options("encrypt-manifest", "encryp manifest command for test-vectors",
+                                                         [
+                                                           Param.Opt("encrypt-manifest-output", "relative path of where to store the encrypt-manifest produced", unused := Required)
+                                                         ]))
+                                 ]);
+    // The expectation is that the first argument
+    // is the filename or runtime
+    expect 0 < |args|;
+    var parsedOptions? := GetOptions(vectorOptions, args);
 
-  //   if op?.Success? {
-  //     // Do the work
-  //     var op := op?.value;
-  //     if
-  //     case op.Decrypt? =>
-  //       var _ :- expect EsdkTestManifests.StartDecryptVectors(op);
-  //     case op.Encrypt? =>
-  //       print "not supported";
-  //     case op.DecryptSingle? =>
-  //       print "not supported";
-  //   } else {
-  //     print op?.error;
-  //     print "help";
-  //   }
-  // }
+    if parsedOptions?.Success? {
+      var h := NeedsHelp(vectorOptions, parsedOptions?.value);
+      if h.Some? {
+        print h.value;
+        return;
+      }
+      var op? := ParseCommandLineOptions(parsedOptions?.value);
 
-  function ParseCommandLineOptions(args: seq<string>)
+      if op?.Success? {
+        var op := op?.value;
+        match op
+        case Decrypt(_, _) =>
+          var result := EsdkTestManifests.StartDecryptVectors(op);
+          if result.Failure? {
+            print result.error;
+          }
+          expect result.Success?;
+        case Encrypt(_, _, _, _) =>
+          var result := EsdkTestManifests.StartEncryptVectors(op);
+          if result.Failure? {
+            print result.error;
+          }
+          expect result.Success?;
+        case EncryptManifest(_, _) =>
+          var result := WriteVectors.WritetestVectors(op);
+          if result.Failure? {
+            print result.error;
+          }
+          expect result.Success?;
+      } else {
+        print op?.error + "\n";
+        print "help\n";
+      }
+    } else {
+      print parsedOptions?.error + "\n";
+    }
+
+  }
+
+  function ParseCommandLineOptions(parsedOptions: Parsed)
     : (output: Result<EsdkManifestOptions.ManifestOptions, string>)
   {
-    :- Need(1 < |args|, "Not enough arguments.");
-    :- Need(CommandOption?(args[0]), "Unknown argument:" + args[0]);
+    :- Need(parsedOptions.subcommand.Some?, "Must supply subcommand\n");
 
-    var op
-      := if (|args| - 1) % 2 == 0 then
-           Options2Map(args[1..])
-         else
-           Options2Map(args[1..|args| - 1]);
-
-    match args[0]
-    case "decrypt" => ParseDecryptOptions(op)
-    case "encrypt" => ParseEncryptOptions(op)
-    case "decrypt-single" => ParseDecryptSingleOptions(op)
+    match parsedOptions.subcommand.value.command
+    case "decrypt" => ParseDecryptCmd(parsedOptions.subcommand.value.params)
+    case "encrypt" => ParseEncryptCmd(parsedOptions.subcommand.value.params)
+    case "encrypt-manifest" => ParseEncryptManifestCmd(parsedOptions.subcommand.value.params)
+    // GetOpt GetOptions actually takes care of this for us but Dafny doesn't know so we must have default case.
+    case _ => Failure("Received unknown subcommand")
   }
-  function ParseDecryptOptions(op: map<string, string>)
+
+  function ParseDecryptCmd(params: seq<OneArg>)
     : (output: Result<EsdkManifestOptions.ManifestOptions, string>)
     ensures output.Success? ==> output.value.Decrypt?
   {
-    :- Need(DecryptOptions?(op), "Incorrect arguments");
+    var manifestPath? := OptValue(params, "manifest-path");
+    var testName? := OptValue(params, "test-name");
+
+    var manifestPath := if manifestPath?.Some? then manifestPath?.value else ".";
+    :- Need(0 < |manifestPath|, "Invalid manifest path length\n");
 
     Success(EsdkManifestOptions.Decrypt(
-              manifestPath := if Seq.Last(op["-manifest-path"]) == '/' then op["-manifest-path"] else op["-manifest-path"] + "/",
-              testName := if "-test-name" in op then Some(op["-test-name"]) else None
+              manifestPath := if Seq.Last(manifestPath) == '/' then manifestPath else manifestPath + "/",
+              testName := if testName?.Some? then testName?  else None
             ))
   }
 
-  function ParseEncryptOptions(op: map<string, string>)
+  function ParseEncryptCmd(params: seq<OneArg>)
     : (output: Result<EsdkManifestOptions.ManifestOptions, string>)
     ensures output.Success? ==> output.value.Encrypt?
   {
-    :- Need(EncryptOptions?(op), "Incorrect arguments");
+    var manifestPath? := OptValue(params, "manifest-path");
+    var manifestName? := OptValue(params, "manifest");
+    var decryptManifestPath? := OptValue(params, "decrypt-manifest-path");
+    var testName? := OptValue(params, "test-name");
+
+    var manifestPath := if manifestPath?.Some? then manifestPath?.value else ".";
+    var manifestName := if manifestName?.Some? then manifestName?.value else "encrypt-manifest.json";
+    var decryptManifestPath := if decryptManifestPath?.Some? then decryptManifestPath?.value else ".";
+    :- Need(
+         && 0 < |manifestPath|
+         && 0 < |decryptManifestPath|,
+         "Invalid manifest or decrypt manifest path length\n"
+       );
 
     Success(EsdkManifestOptions.Encrypt(
-              manifestPath := if Seq.Last(op["-manifest-path"]) == '/' then op["-manifest-path"] else op["-manifest-path"] + "/",
-              manifest := if Seq.Last(op["-manifest"]) == '/' then op["-manifest"] else op["-manifest"] + "/",
-              decryptManifestOutput := op["-decrypt-manifest-output"],
-              testName := if "-test-name" in op then Some(op["-test-name"]) else None
+              manifestPath := if Seq.Last(manifestPath) == '/' then manifestPath else manifestPath + "/",
+              manifest := manifestName,
+              decryptManifestOutput := if Seq.Last(decryptManifestPath) == '/' then decryptManifestPath else decryptManifestPath + "/",
+              testName := if testName?.Some? then testName? else None
             ))
   }
 
-  function ParseDecryptSingleOptions(op: map<string, string>)
+  function ParseEncryptManifestCmd(params: seq<OneArg>)
     : (output: Result<EsdkManifestOptions.ManifestOptions, string>)
-    ensures output.Success? ==> output.value.DecryptSingle?
+    ensures output.Success? ==> output.value.EncryptManifest?
   {
-    :- Need(DecryptSingleOptions?(op), "Incorrect arguments");
+    var encryptManifestOutput? := OptValue(params, "encrypt-manifest-output");
+    var encryptManifestOutput := if encryptManifestOutput?.Some? then encryptManifestOutput?.value else ".";
+    :- Need(0 < |encryptManifestOutput|, "Invalid encrypt manifest output length");
 
-    Success(EsdkManifestOptions.DecryptSingle(
-              keysPath := op["-keys-path"],
-              keyDescription := op["-key-description"],
-              base64Bytes := op["-base64-bytes"]
-            ))
-  }
-
-  predicate CommandOption?(s: string)
-  {
-    || s == "decrypt"
-    || s == "encrypt"
-    || s == "decrypt-single"
-  }
-
-  predicate DecryptOptions?(op: map<string, string>)
-  {
-    && 1 <= |op| <= 2
-    && "-manifest-path" in op
-    && 0 < |op["-manifest-path"]|
-    && (|op| == 2 ==> "-test-name" in op)
-  }
-
-  predicate EncryptOptions?(op: map<string, string>)
-  {
-    && 3 <= |op| <= 4
-    && "-manifest-path" in op
-    && 0 < |op["-manifest-path"]|
-    && "-manifest" in op
-    && 0 < |op["-manifest"]|
-    && "-decrypt-manifest-output" in op
-    && (|op| == 4 ==> "-test-name" in op)
-  }
-
-  predicate DecryptSingleOptions?(op: map<string, string>)
-  {
-    && 3 == |op|
-    && "-keys-path" in op
-    && "-key-description" in op
-    && "-base64-bytes" in op
-  }
-
-  predicate DecryptRequiredOptions?(s: string)
-  {
-    || s == "manifest-path"
-  }
-
-  function Options2Map(args: seq<string>)
-    : (map<string, string>)
-    requires |args| % 2 == 0
-  {
-    if |args| == 0 then
-      map[]
-    else
-      var key, value := args[0], args[1];
-      map[key := value] + Options2Map(args[2..])
+    Success(EsdkManifestOptions.EncryptManifest(
+      encryptManifestOutput := if Seq.Last(encryptManifestOutput) == '/' then encryptManifestOutput else encryptManifestOutput + "/",
+      version := 5
+    ))
   }
 
 }

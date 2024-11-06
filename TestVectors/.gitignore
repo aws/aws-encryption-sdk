@@ -5,7 +5,13 @@ ImplementationFromDafny-cs.dtr
 TestsFromDafny-cs.dtr
 **/bin
 **/obj
-/runtimes/java/dafny
+runtimes/java/dafny
+runtimes/**/encrypt-manifest.json
+runtimes/**/decrypt-manifest.json
+runtimes/**/keys.json
+runtimes/**/ciphertexts/
+runtimes/**/plaintexts/
+
 dafny/TestVectors/test/ciphertexts
 dafny/TestVectors/test/plaintexts
 dafny/TestVectors/test/test.json
