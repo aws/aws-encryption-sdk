@@ -7,7 +7,6 @@ import (
 
 	"github.com/aws/aws-encryption-sdk/AwsCryptographyEncryptionSdkTypes"
 	"github.com/aws/aws-encryption-sdk/awscryptographyencryptionsdksmithygenerated"
-	"github.com/dafny-lang/DafnyRuntimeGo/v4/dafny"
 	"github.com/dafny-lang/DafnyStandardLibGo/Wrappers"
 )
 
@@ -20,7 +19,7 @@ func (_static *CompanionStruct_Default___) WrappedESDK(inputConfig AwsCryptograp
 	var nativeConfig = awscryptographyencryptionsdksmithygenerated.AwsEncryptionSdkConfig_FromDafny(inputConfig)
 	var nativeClient, nativeError = awscryptographyencryptionsdksmithygenerated.NewClient(nativeConfig)
 	if nativeError != nil {
-		return Wrappers.Companion_Result_.Create_Failure_(AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_Opaque_(nativeError, dafny.SeqOfChars([]dafny.Char(nativeError.Error())...)))
+		return Wrappers.Companion_Result_.Create_Failure_(AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_Opaque_(nativeError))
 	}
 	return Wrappers.Companion_Result_.Create_Success_(&Shim{client: nativeClient})
 }
