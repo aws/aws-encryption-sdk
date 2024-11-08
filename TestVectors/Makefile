@@ -123,6 +123,11 @@ test_generate_vectors_net:
 	dotnet run --project runtimes/net --framework $(FRAMEWORK) encrypt-manifest --encrypt-manifest-output runtimes/net
 	cp dafny/TestVectors/test/keys.json runtimes/net
 
+test_generate_vectors_rust:
+	cd runtimes/rust && cargo run --bin test-vectors --features="wrapped-client" --release -- encrypt-manifest --encrypt-manifest-output test && cd ../../
+	cp dafny/TestVectors/test/keys.json runtimes/rust/test/
+	# TODO: Add jq to remove AES-192 key and algo
+
 test_encrypt_vectors_java:
 	gradle -p runtimes/java run --args="encrypt --manifest-path . --decrypt-manifest-path ."
 
@@ -132,6 +137,9 @@ test_encrypt_vectors_net:
 	dotnet build runtimes/net
 	dotnet run --project runtimes/net --framework $(FRAMEWORK) encrypt --manifest-path runtimes/net --decrypt-manifest-path runtimes/net
 
+test_encrypt_vectors_rust:
+	cargo run --bin test-vectors --features="wrapped-client" --release -- encrypt --manifest-path test --decrypt-manifest-path test
+
 test_decrypt_encrypt_vectors_java:
 	gradle -p runtimes/java run --args="decrypt --manifest-path ."
 
@@ -140,6 +148,9 @@ test_decrypt_encrypt_vectors_net:
 	dotnet restore runtimes/net
 	dotnet build runtimes/net
 	dotnet run --project runtimes/net --framework $(FRAMEWORK) decrypt --manifest-path runtimes/net
+
+# test_decrypt_encrypt_vectors_rust:
+# 	TODO:
 
 _polymorph_dependencies:
 	@echo "No polymorphing of dependency"
