@@ -56,7 +56,7 @@ impl AES_GCM {
             Ok(&aws_lc_rs::aead::AES_128_GCM)
         } else {
             Err(format!(
-                "Key length of {} not supported in Rust. Tag length must be 16 or 32.",
+                "Key length of {} not supported in Rust. Key length must be 16 or 32.",
                 self.keyLength()
             ))
         }
