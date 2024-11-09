@@ -142,9 +142,9 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
     :- Need(0 < |encryptManifestOutput|, "Invalid encrypt manifest output length");
 
     Success(EsdkManifestOptions.EncryptManifest(
-      encryptManifestOutput := if Seq.Last(encryptManifestOutput) == '/' then encryptManifestOutput else encryptManifestOutput + "/",
-      version := 5
-    ))
+              encryptManifestOutput := if Seq.Last(encryptManifestOutput) == '/' then encryptManifestOutput else encryptManifestOutput + "/",
+              version := 5
+            ))
   }
 
 }

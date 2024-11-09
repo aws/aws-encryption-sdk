@@ -24,60 +24,22 @@ module {:options "/functionSyntax:4" } AllEsdkV4WithReqEc {
   import JSON.API
   import SortedSets
   import FileIO
-  
+
   // This is a HACK!
   // This is *ONLY* because this is wrapping the MPL
   import AlgorithmSuites
 
-  datatype PositiveESDKDescriptionJSON = PositiveESDKDescriptionJSON(
-    description: string,
-    inputEncryptionContext: string,
-    requiredEncryptionContextKeys: string,
-    reproducedEncryptionContext: string,
-    encrypt: JSON,
-    decrypt: JSON
-  )
-
-  datatype SmallEncryptionContextVariation = Empty | A | AB | BA
-
-  const AllSmallEncryptionContextVariants := ["A", "AB", "BA"]
-  const RequiredEncryptionContextKeys := ["A", "B"]
-
-  const AllReqECCmmInfo :=
-    set
-      ec <- AllSmallEncryptionContextVariants,
-      requiredKeys <- RequiredEncryptionContextKeys
-      ::
-        var cmmOnEncryptDescription := Object([
-                                                ("type", String("Required Encryption Context CMM")),
-                                                ("Input Encryption Context", String(ec)),
-                                                ("Required Encryption Context Keys", String(requiredKeys))
-                                              ]);
-        var cmmOnDecryptDescription := Object([
-                                                ("type", String("Required Encryption Context CMM")),
-                                                ("Reproduced Encryption Context", String(ec)),
-                                                ("Required Encryption Context Keys", String(requiredKeys))
-                                              ]);
-        PositiveESDKDescriptionJSON(
-          description := "Generated with Required Encryption Context Keys " + requiredKeys,
-          inputEncryptionContext := ec,
-          requiredEncryptionContextKeys := requiredKeys,
-          reproducedEncryptionContext := ec,
-          encrypt := cmmOnEncryptDescription,
-          decrypt := cmmOnDecryptDescription
-        )
-  
   const frameSize: int64 := 512
 
   const AllPositiveReqEcTests := AllRequiredEncryptionContextCmm.SuccessTestingRequiredEncryptionContextKeysReproducedEncryptionContext
 
   // These are only required encryption context vectors with static aes keyrings
   const AllPositveReqEcEsdkTests :=
-    set 
-     config <- AllPositiveReqEcTests,
-     algorithmSuite <-
-      AllAlgorithmSuites.ESDKAlgorithmSuites
-     ::
+    set
+      config <- AllPositiveReqEcTests,
+      algorithmSuite <-
+        AllAlgorithmSuites.ESDKAlgorithmSuites
+      ::
         EsdkTestVectors.PositiveEncryptTestVector(
           name := config.name,
           version := 4,
@@ -87,14 +49,14 @@ module {:options "/functionSyntax:4" } AllEsdkV4WithReqEc {
           encryptDescriptions := config.encryptDescription,
           decryptDescriptions := config.decryptDescription,
           encryptionContext := Some(config.encryptionContext),
+          reproducedEncryptionContext := config.reproducedEncryptionContext,
           requiredEncryptionContextKeys := config.requiredEncryptionContextKeys,
           requiredECDescription := Some(config.name),
           frameLength := Some(frameSize),
           algorithmSuiteId := Some(algorithmSuite),
           description := config.name
         )
-  
-  const Tests := 
-    AllPositveReqEcEsdkTests 
-    
+
+  const Tests :=
+    AllPositveReqEcEsdkTests
 }

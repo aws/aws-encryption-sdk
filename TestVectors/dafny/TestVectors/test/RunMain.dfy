@@ -14,7 +14,7 @@ module {:extern} TestWrappedESDKMain {
   import WriteVectors
   import opened Wrappers
 
-  
+
   // Test execution directory is different for different runtimes.
   // Runtime should define an extern to return the expected test execution directory.
   method {:extern} GetTestVectorExecutionDirectory() returns (res: string)
@@ -42,13 +42,13 @@ module {:extern} TestWrappedESDKMain {
   //   );
 
   // }
-  
+
   method {:test} RunManifestTests() {
     TestGenerateEncryptManifest();
     TestEncryptManifest();
     TestDecryptManifest();
   }
-  
+
   method TestGenerateEncryptManifest() {
     var directory := GetTestVectorExecutionDirectory();
     var result := WriteVectors.WritetestVectors(
@@ -61,7 +61,7 @@ module {:extern} TestWrappedESDKMain {
     }
     expect result.Success?;
   }
-  
+
   method TestEncryptManifest() {
     var directory := GetTestVectorExecutionDirectory();
     var result := EsdkTestManifests.StartEncryptVectors(

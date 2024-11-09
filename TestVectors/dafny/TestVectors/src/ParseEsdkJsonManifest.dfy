@@ -26,7 +26,7 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
   import AlgorithmSuites
   import opened EsdkTestVectors
   import EsdkManifestOptions
-  
+
   const ciphertextJsonKey := "ciphertext"
   const masterKeysJsonKey := "master-keys"
   const encryptKeyDescription := "encryptKeyDescription"
@@ -35,6 +35,7 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
   const plaintextJsonKey := "plaintext"
   const frameSizeJsonKey := "frame-size"
   const encryptionContextJsonKey := "encryption-context"
+  const reproducedEncryptionContextJsonKey := "reproduced-encryption-context"
 
   function BuildDecryptTestVector(
     op: EsdkManifestOptions.ManifestOptions,
@@ -252,9 +253,11 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
     var algorithmSuite :- ParseJsonManifests.GetAlgorithmSuiteInfo(scenario);
     :- Need(algorithmSuite.id.ESDK?, "Unsupported algorithmSuiteId");
     var frameLength :- GetOptionalPositiveLong(frameSizeJsonKey, scenario);
-    
+
     var encryptionContextStrings :- SmallObjectToStringStringMap(encryptionContextJsonKey, scenario);
     var encryptionContext :- utf8EncodeMap(encryptionContextStrings);
+    var reproducedEncryptionContextString :- SmallObjectToStringStringMap(reproducedEncryptionContextJsonKey, scenario);
+    var reproducedEncryptionContext :- utf8EncodeMap(reproducedEncryptionContextString);
     var description :- GetString("description", scenario);
 
     match typ
@@ -262,23 +265,24 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
       var encryptKeyDescription :- ParseJsonManifests.GetKeyDescription(keys, encryptKeyDescription, scenario);
       var decryptKeyDescription :- ParseJsonManifests.GetKeyDescription(keys, decryptKeyDescription, scenario);
       Success(PositiveEncryptTestVector(
-        name := name,
-        version := version,
-        manifestPath := op.manifestPath,
-        decryptManifestPath := op.decryptManifestOutput,
-        plaintextPath := plaintextLoc,
-        encryptDescriptions := encryptKeyDescription,
-        decryptDescriptions := decryptKeyDescription,
-        encryptionContext := Some(encryptionContext),
-        commitmentPolicy := mplTypes.FORBID_ENCRYPT_ALLOW_DECRYPT,
-        frameLength := frameLength,
-        algorithmSuiteId := Some(algorithmSuite),
-        description := description
-      ))
+                name := name,
+                version := version,
+                manifestPath := op.manifestPath,
+                decryptManifestPath := op.decryptManifestOutput,
+                plaintextPath := plaintextLoc,
+                encryptDescriptions := encryptKeyDescription,
+                decryptDescriptions := decryptKeyDescription,
+                encryptionContext := Some(encryptionContext),
+                reproducedEncryptionContext := Some(reproducedEncryptionContext),
+                commitmentPolicy := mplTypes.FORBID_ENCRYPT_ALLOW_DECRYPT,
+                frameLength := frameLength,
+                algorithmSuiteId := Some(algorithmSuite),
+                description := description
+              ))
     case _ => Failure("Unsupported ESDK TestVector type: " + typ)
 
   }
-  
+
   function V3ToDecryptTestVector(
     op: EsdkManifestOptions.ManifestOptions,
     keys: KeyVectors.KeyVectorsClient,
@@ -298,33 +302,33 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
     var algorithmSuite :- ParseJsonManifests.GetAlgorithmSuiteInfo(scenario);
     :- Need(algorithmSuite.id.ESDK?, "Unsupported algorithmSuiteId");
     var frameLength :- GetOptionalPositiveLong(frameSizeJsonKey, scenario);
-    
-    var encryptionContextStrings :- SmallObjectToStringStringMap(encryptionContextJsonKey, scenario);
-    var encryptionContext :- utf8EncodeMap(encryptionContextStrings);
+
+    var reproducedEncryptionContextStrings :- SmallObjectToStringStringMap(reproducedEncryptionContextJsonKey, scenario);
+    var reproducedEncryptionContext :- utf8EncodeMap(reproducedEncryptionContextStrings);
     var description :- GetString("description", scenario);
     var result :- GetString("result", scenario);
     :- Need(
-      && "file://" < ciphertextLoc
-      && "file://" < result,
-      "Invalid file prefix in test vector"
-    );
+         && "file://" < ciphertextLoc
+         && "file://" < result,
+         "Invalid file prefix in test vector"
+       );
 
     match typ
     case "positive-esdk" =>
       var decryptKeyDescription :- ParseJsonManifests.GetKeyDescription(keys, decryptKeyDescription, scenario);
       Success(PositiveDecryptTestVector(
-        name := name,
-        version := version,
-        manifestPath := op.manifestPath,
-        ciphertextPath := ciphertextLoc[|FILE_PREPEND|..],
-        plaintextPath := result[|FILE_PREPEND|..],
-        encryptionContext := Some(encryptionContext),
-        decryptDescriptions := decryptKeyDescription,
-        frameLength := frameLength,
-        algorithmSuiteId := Some(algorithmSuite),
-        description := description,
-        decryptionMethod := DecryptionMethod.OneShot
-      ))
+                name := name,
+                version := version,
+                manifestPath := op.manifestPath,
+                ciphertextPath := ciphertextLoc[|FILE_PREPEND|..],
+                plaintextPath := result[|FILE_PREPEND|..],
+                reproducedEncryptionContext := Some(reproducedEncryptionContext),
+                decryptDescriptions := decryptKeyDescription,
+                frameLength := frameLength,
+                algorithmSuiteId := Some(algorithmSuite),
+                description := description,
+                decryptionMethod := DecryptionMethod.OneShot
+              ))
     case _ => Failure("Unsupported ESDK TestVector type: " + typ)
   }
 
