@@ -98,9 +98,13 @@ IMPLEMENTATION_FROM_DAFNY_TV_RUST_ESDK_MAIN= \
 	let dafny_args = dafny_runtime::Sequence::from_array_owned(dafny_strings);\
 	r\#_WrappedESDKMain_Compile::_default::Main2(\&dafny_args);"
 
+IMPLEMENTATION_FROM_DAFNY_AES_192_REMOVE_RUST_FILE=runtimes/rust/src/implementation_from_dafny.rs
+IMPLEMENTATION_FROM_DAFNY_AES_192_REMOVE_RUST_BEFORE="seq!\[string_utf16_of(\"aes-128\"), string_utf16_of(\"aes-192\"), string_utf16_of(\"aes-256\")\]"
+IMPLEMENTATION_FROM_DAFNY_AES_192_REMOVE_RUST_AFTER="seq!\[string_utf16_of(\"aes-128\"), string_utf16_of(\"aes-256\")\]"
+
 transpile_implementation_java: _replace_main_method_name_java
 transpile_implementation_net: _replace_main_method_name_net
-transpile_implementation_rust: _replace_main_method_name_rust
+transpile_implementation_rust: _replace_main_method_name_rust _remove_aes_192_test_vectors
 
 _replace_main_method_name_java:
 	$(MAKE) _sed_file SED_FILE_PATH=$(IMPLEMENTATION_FROM_DAFNY_TV_JAVA_FILE) SED_BEFORE_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_JAVA_MPL_MAIN) SED_AFTER_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_JAVA_ESDK_MAIN)
@@ -110,6 +114,11 @@ _replace_main_method_name_net:
 
 _replace_main_method_name_rust:
 	$(MAKE) _sed_file SED_FILE_PATH=$(IMPLEMENTATION_FROM_DAFNY_TV_RUST_FILE) SED_BEFORE_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_RUST_MPL_MAIN) SED_AFTER_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_RUST_ESDK_MAIN)
+
+_remove_aes_192_test_vectors:
+#	First AES-192 hack for Rust
+#	Don't generate test vectors with wrapping key AES-192
+	$(MAKE) _sed_file SED_FILE_PATH=$(IMPLEMENTATION_FROM_DAFNY_AES_192_REMOVE_RUST_FILE) SED_BEFORE_STRING=$(IMPLEMENTATION_FROM_DAFNY_AES_192_REMOVE_RUST_BEFORE) SED_AFTER_STRING=$(IMPLEMENTATION_FROM_DAFNY_AES_192_REMOVE_RUST_AFTER)
 
 # Commands to generate and test test vectors
 test_generate_vectors_java:
@@ -124,9 +133,17 @@ test_generate_vectors_net:
 	cp dafny/TestVectors/test/keys.json runtimes/net
 
 test_generate_vectors_rust:
-	cd runtimes/rust && cargo run --bin test-vectors --features="wrapped-client" --release -- encrypt-manifest --encrypt-manifest-output test && cd ../../
+	cd runtimes/rust && \
+	cargo run --bin test-vectors --features="wrapped-client" --release -- encrypt-manifest --encrypt-manifest-output test && \
+	cd ../../
+#	Second AES-192 hack for Rust
+#	Remove the test vectors with algorithm suite ids for AES-192
+	cd runtimes/rust/test/ && \
+	jq 'del(.tests[] | select(.["encryption-scenario"].algorithmSuiteId as $$id | $$id == "0046" or $$id == "0146" or $$id == "0346"))' encrypt-manifest.json > temp.json && \
+	mv temp.json encrypt-manifest.json && \
+	cd ../../../
+
 	cp dafny/TestVectors/test/keys.json runtimes/rust/test/
-	# TODO: Add jq to remove AES-192 key and algo
 
 test_encrypt_vectors_java:
 	gradle -p runtimes/java run --args="encrypt --manifest-path . --decrypt-manifest-path ."
@@ -138,7 +155,9 @@ test_encrypt_vectors_net:
 	dotnet run --project runtimes/net --framework $(FRAMEWORK) encrypt --manifest-path runtimes/net --decrypt-manifest-path runtimes/net
 
 test_encrypt_vectors_rust:
-	cargo run --bin test-vectors --features="wrapped-client" --release -- encrypt --manifest-path test --decrypt-manifest-path test
+	cd runtimes/rust && \
+	cargo run --bin test-vectors --features="wrapped-client" --release -- encrypt --manifest-path test --decrypt-manifest-path test && \
+	cd ../../
 
 test_decrypt_encrypt_vectors_java:
 	gradle -p runtimes/java run --args="decrypt --manifest-path ."
@@ -149,8 +168,10 @@ test_decrypt_encrypt_vectors_net:
 	dotnet build runtimes/net
 	dotnet run --project runtimes/net --framework $(FRAMEWORK) decrypt --manifest-path runtimes/net
 
-# test_decrypt_encrypt_vectors_rust:
-# 	TODO:
+test_decrypt_encrypt_vectors_rust:
+	cd runtimes/rust && \
+	cargo run --bin test-vectors --features="wrapped-client" --release -- decrypt --manifest-path test && \
+	cd ../../
 
 _polymorph_dependencies:
 	@echo "No polymorphing of dependency"

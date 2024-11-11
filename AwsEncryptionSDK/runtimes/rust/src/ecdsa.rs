@@ -163,9 +163,12 @@ pub mod Signature {
             key: &[u8],
             msg: &[u8],
         ) -> Result<Vec<u8>, String> {
+            // This loop can in theory run forever, but the chances of that are negligible.
+            // We may want to consider failing, after some number of loops, if we can do so in a way consistent with other ESDKs.
             loop {
                 let result = ecdsa_sign_inner(alg, key, msg)?;
-                if result.len() == 103 {
+                if (get_alg(alg) == &aws_lc_rs::signature::ECDSA_P384_SHA384_ASN1_SIGNING && result.len() == 103)
+                    || (get_alg(alg) == &aws_lc_rs::signature::ECDSA_P256_SHA256_ASN1_SIGNING && result.len() == 71) {
                     return Ok(result);
                 }
             }
