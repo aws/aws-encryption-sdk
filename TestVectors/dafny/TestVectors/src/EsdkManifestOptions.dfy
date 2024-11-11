@@ -11,6 +11,10 @@ module {:options "-functionSyntax:4"} EsdkManifestOptions {
         nameonly manifestPath: string,
         nameonly testName: Option<string> := None
       )
+    | V1Decrypt(
+        nameonly manifestPath: string,
+        nameonly keyPath: string
+      )
     | Encrypt(
         nameonly manifestPath: string,
         nameonly manifest: string,

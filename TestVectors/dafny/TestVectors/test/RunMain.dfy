@@ -19,12 +19,20 @@ module {:extern} TestWrappedESDKMain {
   // Runtime should define an extern to return the expected test execution directory.
   method {:extern} GetTestVectorExecutionDirectory() returns (res: string)
 
-  // method {:test} TestV1Vectors() {
-  //   var _ :- expect EsdkTestManifests.StartV1DecryptVectors(
-  //     "aws-encryption-sdk-test-vectors/vectors/awses-decrypt/python-1.3.5/decrypt_message.json",
-  //     "aws-encryption-sdk-test-vectors/vectors/awses-decrypt/python-1.3.5/keys.json"
-  //   );
-  // }
+  method {:test} TestV1Vectors() {
+    var directory := GetTestVectorExecutionDirectory();
+    var result := EsdkTestManifests.StartV1DecryptVectors(
+      EsdkManifestOptions.V1Decrypt(
+        manifestPath := directory + "../../aws-encryption-sdk-test-vectors/vectors/awses-decrypt/python-1.3.5/",
+        keyPath := directory + "../../aws-encryption-sdk-test-vectors/vectors/awses-decrypt/python-1.3.5/"
+      )
+    );
+    
+    if result.Failure? {
+      print result.error;
+    }
+    expect result.Success?;
+  }
 
 
   // method {:test} TestV2Vectors() {
@@ -35,19 +43,11 @@ module {:extern} TestWrappedESDKMain {
   //   );
   // }
 
-  // method {:test} TestV2Vectors() {
-  //   TestEsdkManifests.StartV1Vectors(
-  //     "dafny/ESDK/test/python-2.3.0/manifest.json",
-  //     "dafny/ESDK/test/python-2.3.0/keys.json"
-  //   );
-
+  // method {:test} RunManifestTests() {
+  //   TestGenerateEncryptManifest();
+  //   TestEncryptManifest();
+  //   TestDecryptManifest();
   // }
-
-  method {:test} RunManifestTests() {
-    TestGenerateEncryptManifest();
-    TestEncryptManifest();
-    TestDecryptManifest();
-  }
 
   method TestGenerateEncryptManifest() {
     var directory := GetTestVectorExecutionDirectory();
