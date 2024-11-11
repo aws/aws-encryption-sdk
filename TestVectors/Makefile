@@ -98,9 +98,18 @@ IMPLEMENTATION_FROM_DAFNY_TV_RUST_ESDK_MAIN= \
 	let dafny_args = dafny_runtime::Sequence::from_array_owned(dafny_strings);\
 	r\#_WrappedESDKMain_Compile::_default::Main2(\&dafny_args);"
 
+# TODO: Remove after wrapped client issue is fixed in Rust
+REMOVE_WRAPPED_CLIENT_AFTER_POLYMORPH_RUST_PRIMITIVES=runtimes/rust/src/deps/aws_cryptography_primitives.rs
+REMOVE_WRAPPED_CLIENT_AFTER_POLYMORPH_RUST_KEYSTORE=runtimes/rust/src/deps/aws_cryptography_keyStore.rs
+REMOVE_WRAPPED_CLIENT_AFTER_POLYMORPH_RUST_FROM := 'pub mod wrapped;'
+REMOVE_WRAPPED_CLIENT_AFTER_POLYMORPH_RUST_TO := '\/\/ removed wrapped module using sed;'
+
 transpile_implementation_java: _replace_main_method_name_java
 transpile_implementation_net: _replace_main_method_name_net
 transpile_implementation_rust: _replace_main_method_name_rust
+
+# TODO: Remove after wrapped client issue is fixed in Rust
+_polymorph_rust: _remove_wrapped_client_rust
 
 _replace_main_method_name_java:
 	$(MAKE) _sed_file SED_FILE_PATH=$(IMPLEMENTATION_FROM_DAFNY_TV_JAVA_FILE) SED_BEFORE_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_JAVA_MPL_MAIN) SED_AFTER_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_JAVA_ESDK_MAIN)
@@ -110,6 +119,11 @@ _replace_main_method_name_net:
 
 _replace_main_method_name_rust:
 	$(MAKE) _sed_file SED_FILE_PATH=$(IMPLEMENTATION_FROM_DAFNY_TV_RUST_FILE) SED_BEFORE_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_RUST_MPL_MAIN) SED_AFTER_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_RUST_ESDK_MAIN)
+
+# TODO: Remove after wrapped client issue is fixed in Rust
+_remove_wrapped_client_rust:
+	$(MAKE) _sed_file SED_FILE_PATH=$(REMOVE_WRAPPED_CLIENT_AFTER_POLYMORPH_RUST_PRIMITIVES) SED_BEFORE_STRING=$(REMOVE_WRAPPED_CLIENT_AFTER_POLYMORPH_RUST_FROM) SED_AFTER_STRING=$(REMOVE_WRAPPED_CLIENT_AFTER_POLYMORPH_RUST_TO)
+	$(MAKE) _sed_file SED_FILE_PATH=$(REMOVE_WRAPPED_CLIENT_AFTER_POLYMORPH_RUST_KEYSTORE) SED_BEFORE_STRING=$(REMOVE_WRAPPED_CLIENT_AFTER_POLYMORPH_RUST_FROM) SED_AFTER_STRING=$(REMOVE_WRAPPED_CLIENT_AFTER_POLYMORPH_RUST_TO)
 
 # Commands to generate and test test vectors
 test_generate_vectors_java:
