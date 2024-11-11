@@ -26,5 +26,3 @@ runtimes/rust/test/plaintexts/*
 
 !runtimes/rust/test/plaintexts/.gitkeep
 !runtimes/rust/test/ciphertexts/.gitkeep
-
-!runtimes/rust/test/keys.json

@@ -21,11 +21,11 @@ jobs:
     uses: ./.github/workflows/library_net_tests.yml
     with:
       dafny: '4.8.1'
-  pr-ci-rust:
-    uses: ./.github/workflows/library_rust_tests.yml
-    with:
-      dafny: '4.8.1'
   pr-test-vectors:
     uses: ./.github/workflows/library_interop_tests.yml
+    with:
+      dafny: '4.8.1'
+  pr-dafny-test-vectors:
+    uses: ./.github/workflows/library_interop_test_vectors.yml
     with:
       dafny: '4.8.1'
