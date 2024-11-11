@@ -3,7 +3,7 @@
 
 include "../LibraryIndex.dfy"
 
-module {:options "/functionSyntax:4" } AllEsdkV4NoReqEc {
+module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
   import Types = AwsCryptographyEncryptionSdkTypes
   import mplTypes = AwsCryptographyMaterialProvidersTypes
   import keyVectorKeyTypes = AwsCryptographyMaterialProvidersTestVectorKeysTypes
@@ -44,7 +44,7 @@ module {:options "/functionSyntax:4" } AllEsdkV4NoReqEc {
 
   const frameSize: int64 := 512
 
-  const AllKeyringTestsNoReqCmm
+  const AllPositiveKeyringTestsNoReqCmmNoKmsRsa
   := {}
   + AllHierarchy.Tests
   + AllKms.Tests
@@ -55,28 +55,72 @@ module {:options "/functionSyntax:4" } AllEsdkV4NoReqEc {
   + AllMulti.Tests
   + AllRawECDH.Tests
   + AllKmsEcdh.Tests
-  + AllKmsRsa.Tests
 
-  // All these tests will use a defualt CMM
+  const AwsKmsRsaTests := AllKmsRsa.Tests
+
+  const esdkAlgorithmSuitesKmsRsa := set suite <- AllAlgorithmSuites.AllAlgorithmSuites
+                               | !suite.signature.ECDSA? && suite.id.ESDK?:: suite
+
+  // All these tests will use a defualt CMM 
   const AllPostiveKeyringTestsNoDBESuiteNoReqEC :=
-    set
-      keyringConfig <- AllKeyringTestsNoReqCmm,
-      algorithmSuite <-
-        AllAlgorithmSuites.ESDKAlgorithmSuites | keyringConfig in AllKmsRsa.Tests ==> !algorithmSuite.signature.ECDSA?
-      ::
-        EsdkTestVectors.PositiveEncryptTestVector(
-          name := keyringConfig.name,
-          version := 4,
-          manifestPath := "",
-          decryptManifestPath := "",
-          plaintextPath := "",
-          encryptDescriptions := keyringConfig.encryptDescription,
-          decryptDescriptions := keyringConfig.decryptDescription,
-          frameLength := Some(frameSize),
-          algorithmSuiteId := Some(algorithmSuite),
-          description := keyringConfig.name
-        )
+  set
+    keyringConfig <- AllPositiveKeyringTestsNoReqCmmNoKmsRsa,
+    algorithmSuite <-
+      AllAlgorithmSuites.ESDKAlgorithmSuites
+    ::
+      EsdkTestVectors.PositiveEncryptTestVector(
+        name := keyringConfig.name,
+        version := 4,
+        manifestPath := "",
+        decryptManifestPath := "",
+        plaintextPath := "",
+        encryptDescriptions := keyringConfig.encryptDescription,
+        decryptDescriptions := keyringConfig.decryptDescription,
+        frameLength := Some(frameSize),
+        algorithmSuiteId := Some(algorithmSuite),
+        description := keyringConfig.name
+      )
+
+  const AllPositiveKeyringTestsNoDBEKmsRsa :=
+  set
+    keyringConfig <- AwsKmsRsaTests,
+    algorithmSuite <- esdkAlgorithmSuitesKmsRsa
+    ::
+      EsdkTestVectors.PositiveEncryptTestVector(
+        name := keyringConfig.name,
+        version := 4,
+        manifestPath := "",
+        decryptManifestPath := "",
+        plaintextPath := "",
+        encryptDescriptions := keyringConfig.encryptDescription,
+        decryptDescriptions := keyringConfig.decryptDescription,
+        frameLength := Some(frameSize),
+        algorithmSuiteId := Some(algorithmSuite),
+        description := keyringConfig.name
+      )
+
+    
+  // All these tests will use a defualt CMM
+  // const AllPostiveKeyringTestsNoDBESuiteNoReqEC :=
+  //   set
+  //     keyringConfig <- AllKeyringTestsNoReqCmm,
+  //     algorithmSuite <-
+  //       AllAlgorithmSuites.ESDKAlgorithmSuites | keyringConfig in AllKmsRsa.Tests ==> !algorithmSuite.signature.ECDSA?
+  //     ::
+  //       EsdkTestVectors.PositiveEncryptTestVector(
+  //         name := keyringConfig.name,
+  //         version := 4,
+  //         manifestPath := "",
+  //         decryptManifestPath := "",
+  //         plaintextPath := "",
+  //         encryptDescriptions := keyringConfig.encryptDescription,
+  //         decryptDescriptions := keyringConfig.decryptDescription,
+  //         frameLength := Some(frameSize),
+  //         algorithmSuiteId := Some(algorithmSuite),
+  //         description := keyringConfig.name
+  //       )
 
   const Tests :=
     AllPostiveKeyringTestsNoDBESuiteNoReqEC
+    + AllPositiveKeyringTestsNoDBEKmsRsa
 }
