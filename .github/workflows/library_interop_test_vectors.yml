@@ -68,7 +68,7 @@ jobs:
         #   uses: actions-rust-lang/rustfmt@v1
 
         - name: Setup Dafny
-          uses: dafny-lang/setup-dafny-action@v1.6.1
+          uses: dafny-lang/setup-dafny-action@v1.7.0
           with:
             dafny-version: ${{ inputs.dafny }}
         
