@@ -22,6 +22,7 @@ jobs:
         os: [
             # https://taskei.amazon.dev/tasks/CrypTool-5283
             # windows-latest,
+            ubuntu-latest,
             macos-13,
           ]
         language: [java, net, rust]
@@ -113,10 +114,6 @@ jobs:
             CORES=$(node -e 'console.log(os.cpus().length)')
             make transpile_net
         
-        - name: Install Smithy-Dafny codegen dependencies
-          if: matrix.language == 'rust'
-          uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
-    
         # TODO: Remove this after checking in Rust polymorph code
         - name: Run make polymorph_rust
           if: matrix.language == 'rust'
@@ -172,6 +169,7 @@ jobs:
         os: [
             # https://taskei.amazon.dev/tasks/CrypTool-5283
             # windows-latest,
+            ubuntu-latest,
             macos-13,
           ]
         encrypting_language: [java, net, rust]
