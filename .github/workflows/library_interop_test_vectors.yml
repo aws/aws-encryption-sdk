@@ -52,7 +52,7 @@ jobs:
             dotnet-version: ${{ matrix.dotnet-version }}
 
         - name: Setup Java 17
-          if: matrix.language == 'java'
+          if: matrix.language == 'java' || matrix.language == 'rust'
           uses: actions/setup-java@v3
           with:
             distribution: "corretto"
@@ -84,7 +84,7 @@ jobs:
             fi
             
         - name: Setup NASM for Windows in Rust (aws-lc-sys)
-          if: matrix.language == 'rust'
+          if: matrix.language == 'rust' && matrix.os == 'windows-latest'
           uses: ilammy/setup-nasm@v1
 
         - name: Regenerate code using smithy-dafny if necessary
