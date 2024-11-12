@@ -114,6 +114,10 @@ jobs:
             CORES=$(node -e 'console.log(os.cpus().length)')
             make transpile_net
         
+        - name: Install Smithy-Dafny codegen dependencies
+          if: matrix.language == 'rust'
+          uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+    
         # TODO: Remove this after checking in Rust polymorph code
         - name: Run make polymorph_rust
           if: matrix.language == 'rust'
