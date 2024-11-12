@@ -3,7 +3,7 @@
 
 include "../LibraryIndex.dfy"
 
-module {:options "/functionSyntax:4" } AllEsdkV4NoReqEc {
+module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
   import Types = AwsCryptographyEncryptionSdkTypes
   import mplTypes = AwsCryptographyMaterialProvidersTypes
   import keyVectorKeyTypes = AwsCryptographyMaterialProvidersTestVectorKeysTypes
@@ -18,7 +18,7 @@ module {:options "/functionSyntax:4" } AllEsdkV4NoReqEc {
   import JSONHelpers
   import EsdkManifestOptions
   import EsdkTestVectors
-  
+
   import AllHierarchy
   import AllKms
   import AllKmsMrkAware
@@ -37,14 +37,14 @@ module {:options "/functionSyntax:4" } AllEsdkV4NoReqEc {
   import JSON.API
   import SortedSets
   import FileIO
-  
+
   // This is a HACK!
   // This is *ONLY* because this is wrapping the MPL
   import AlgorithmSuites
-  
+
   const frameSize: int64 := 512
 
-  const AllPositiveKeyringTests
+  const AllPositiveKeyringTestsNoReqCmmNoKmsRsa
   := {}
   + AllHierarchy.Tests
   + AllKms.Tests
@@ -64,7 +64,7 @@ module {:options "/functionSyntax:4" } AllEsdkV4NoReqEc {
   // All these tests will use a defualt CMM 
   const AllPostiveKeyringTestsNoDBESuiteNoReqEC :=
   set
-    keyringConfig <- AllPositiveKeyringTests,
+    keyringConfig <- AllPositiveKeyringTestsNoReqCmmNoKmsRsa,
     algorithmSuite <-
       AllAlgorithmSuites.ESDKAlgorithmSuites
     ::
@@ -80,7 +80,7 @@ module {:options "/functionSyntax:4" } AllEsdkV4NoReqEc {
         algorithmSuiteId := Some(algorithmSuite),
         description := keyringConfig.name
       )
-  
+
   const AllPositiveKeyringTestsNoDBEKmsRsa :=
   set
     keyringConfig <- AwsKmsRsaTests,
@@ -98,8 +98,29 @@ module {:options "/functionSyntax:4" } AllEsdkV4NoReqEc {
         algorithmSuiteId := Some(algorithmSuite),
         description := keyringConfig.name
       )
-  
-  const Tests := 
+
+    
+  // All these tests will use a defualt CMM
+  // const AllPostiveKeyringTestsNoDBESuiteNoReqEC :=
+  //   set
+  //     keyringConfig <- AllKeyringTestsNoReqCmm,
+  //     algorithmSuite <-
+  //       AllAlgorithmSuites.ESDKAlgorithmSuites | keyringConfig in AllKmsRsa.Tests ==> !algorithmSuite.signature.ECDSA?
+  //     ::
+  //       EsdkTestVectors.PositiveEncryptTestVector(
+  //         name := keyringConfig.name,
+  //         version := 4,
+  //         manifestPath := "",
+  //         decryptManifestPath := "",
+  //         plaintextPath := "",
+  //         encryptDescriptions := keyringConfig.encryptDescription,
+  //         decryptDescriptions := keyringConfig.decryptDescription,
+  //         frameLength := Some(frameSize),
+  //         algorithmSuiteId := Some(algorithmSuite),
+  //         description := keyringConfig.name
+  //       )
+
+  const Tests :=
     AllPostiveKeyringTestsNoDBESuiteNoReqEC
-    + AllPositiveKeyringTestsNoDBEKmsRsa 
+    + AllPositiveKeyringTestsNoDBEKmsRsa
 }
