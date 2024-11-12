@@ -22,7 +22,6 @@ jobs:
         os: [
             # https://taskei.amazon.dev/tasks/CrypTool-5283
             # windows-latest,
-            ubuntu-latest,
             macos-13,
           ]
         language: [java, net, rust]
@@ -173,7 +172,6 @@ jobs:
         os: [
             # https://taskei.amazon.dev/tasks/CrypTool-5283
             # windows-latest,
-            ubuntu-latest,
             macos-13,
           ]
         encrypting_language: [java, net, rust]
