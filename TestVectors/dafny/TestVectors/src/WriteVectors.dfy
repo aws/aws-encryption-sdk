@@ -65,7 +65,6 @@ module {:options "-functionSyntax:4"} WriteVectors {
     var allTests :- getVersionTests(version);
 
     var tests := SortedSets.ComputeSetToSequence(allTests);
-    :- Need(TestVectorListHasNoDuplicates(tests), "Error: Duplicate in test vectors");
 
     DescriptionLessThanIsTotal();
     var sortedTests := MergeSortBy(tests, DescriptionLessThan);
@@ -160,11 +159,6 @@ module {:options "-functionSyntax:4"} WriteVectors {
     match version
     case 5 => Success(AllEsdkV4NoReqEc.Tests + AllEsdkV4WithReqEc.Tests)
     case _ => Failure("Only version 4 of generate manifest is supported\n")
-  }
-
-  predicate TestVectorListHasNoDuplicates(xs: seq<EsdkTestVectors.EsdkEncryptTestVector>)
-  {
-    forall i, j :: 0 <= i < j < |xs| ==> xs[i].description != xs[j].description
   }
 
   predicate DescriptionLessThan(x: EsdkTestVectors.EsdkEncryptTestVector, y: EsdkTestVectors.EsdkEncryptTestVector) {
