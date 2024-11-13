@@ -8,7 +8,7 @@ of the Encryption SDK and runtimes.
 
 ### Development Requirements
 
-* Dafny 4.8.1: https://github.com/dafny-lang/dafny
+* Dafny 4.9.0: https://github.com/dafny-lang/dafny
   
   The code that executes the test vectors is written in Dafny. 
   You must install the Dafny runtime to compile the Dafny tests into Java.
