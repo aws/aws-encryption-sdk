@@ -24,15 +24,12 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
     : Result<seq<(string, JSON)>, string>
   {
     if keys.Some? then
-
       var tmp :- Seq.MapWithResult(
                    bytes =>
                      var key :- UTF8.Decode(bytes);
                      Success(String(key)),
                    keys.value);
-
       Success([("requiredEncryptionContextKeys", Array(tmp))])
-
     else
       Success([])
   }
@@ -84,7 +81,7 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
     var optionalValues := encryptionContext + reproducedEncryptionContext;
 
     match test
-    case PositiveEncryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_) =>
+    case PositiveEncryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_,_) =>
       var encrypt :- KeyDescription.ToJson(test.encryptDescriptions, 3);
       var decrypt :- KeyDescription.ToJson(test.decryptDescriptions, 3);
       var scenario := Object([
@@ -102,6 +99,7 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
     case _ =>
       Failure("Only Positive Tests supported :(")
 
+    // Left here for future reference on how you would start to add negative test vectors
     // match test
     // case PositiveEncryptKeyringVector(_,_,_,_,_,_,_,_,_,_) =>
     //   var encrypt :- KeyDescription.ToJson(test.encryptDescription, 3);
@@ -145,61 +143,6 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
       []
   }
 
-  function EncryptedDataKey(
-    encryptedDataKey: Types.EncryptedDataKey
-  )
-    : Result<JSON, string>
-  {
-    var keyProviderId :- UTF8.Decode(encryptedDataKey.keyProviderId);
-    Success(Object([
-                     ("keyProviderId", String(keyProviderId)),
-                     ("keyProviderInfo", String(Base64.Encode(encryptedDataKey.keyProviderInfo))),
-                     ("ciphertext", String(Base64.Encode(encryptedDataKey.ciphertext)))
-                   ]))
-  }
-
-  // function DecryptTestVectorToJson(
-  //   test: TestVectors.DecryptTestVector
-  // ): Result<JSON, string>
-  // {
-  //   var id := AllAlgorithmSuites.ToHex(test.algorithmSuite);
-  //   var description := test.name + " " + id;
-
-  //   var encryptionContext :- EncryptionContextToJson("encryptionContext", test.encryptionContext);
-  //   var reproducedEc
-  //     :- if test.reproducedEncryptionContext.Some? then
-  //          EncryptionContextToJson("reproducedEncryptionContext", test.reproducedEncryptionContext.value)
-  //        else
-  //          Success([]);
-  //   var keyDescription :- KeyDescription.ToJson(test.keyDescription, 3);
-  //   var encryptedDataKeys :- Seq.MapWithResult(edk => EncryptedDataKey(edk), test.encryptedDataKeys);
-
-  //   match test
-  //   case PositiveDecryptKeyringTest(_,_,_,_,_,_,_,_,_) =>
-  //     var plaintextDataKey := OptionalBytes("plaintextDataKey", test.expectedResult.plaintextDataKey);
-  //     var symmetricSigningKey := OptionalBytes("symmetricSigningKey", test.expectedResult.symmetricSigningKey);
-  //     var requiredEncryptionContextKeys :- EncryptionContextKeysToJson(Some(test.expectedResult.requiredEncryptionContextKeys));
-  //     Success(Object([
-  //                      ("type", String("positive-keyring")),
-  //                      ("description", String(description)),
-  //                      ("algorithmSuiteId", String(id)),
-  //                      ("keyDescription", keyDescription),
-  //                      ("encryptedDataKeys", Array(encryptedDataKeys)),
-  //                      ("result", Object(
-  //                       plaintextDataKey + symmetricSigningKey + requiredEncryptionContextKeys
-  //                       ))
-  //                    ] + reproducedEc + encryptionContext))
-  //   case NegativeDecryptKeyringTest(_,_,_,_,_,_,_,_,_) =>
-  //     Success(Object([
-  //                      ("type", String("negative-keyring")),
-  //                      ("description", String(description)),
-  //                      ("errorDescription", String(test.errorDescription)),
-  //                      ("algorithmSuiteId", String(id)),
-  //                      ("keyDescription", keyDescription),
-  //                      ("encryptedDataKeys", Array(encryptedDataKeys))
-  //                    ] + reproducedEc + encryptionContext))
-  // }
-
   function {:vcs_split_on_every_assert} DecryptTestVectorToJson(
     test: EsdkTestVectors.EsdkDecryptTestVector
   ): Result<JSON, string>
@@ -210,7 +153,7 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
          "test is missing algorithmSuite ID, or frameLength"
        );
     var id := AllAlgorithmSuites.ToHex(test.algorithmSuiteId.value);
-    var description := test.name + " " + id;
+    var description := test.description + " " + id;
 
     var reproducedEncryptionContext
       :- if test.reproducedEncryptionContext.Some? then
@@ -226,11 +169,11 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
     var optionalValues := reproducedEncryptionContext;
 
     match test
-    case PositiveDecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_) =>
+    case PositiveDecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_) =>
       var decrypt :- KeyDescription.ToJson(test.decryptDescriptions, 3);
       var scenario := Object([
                                ("type", String("positive-esdk")),
-                               ("ciphertext", String("file://ciphertexts/" + test.name)),
+                               ("ciphertext", String("file://ciphertexts/" + test.id)),
                                ("result", String("file://" + test.plaintextPath)),
                                ("algorithmSuiteId", String(id)),
                                ("frame-size", Number(Int(test.frameLength.value as int))),

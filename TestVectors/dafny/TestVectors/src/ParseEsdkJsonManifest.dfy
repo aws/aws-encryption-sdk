@@ -265,7 +265,7 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
       var encryptKeyDescription :- ParseJsonManifests.GetKeyDescription(keys, encryptKeyDescription, scenario);
       var decryptKeyDescription :- ParseJsonManifests.GetKeyDescription(keys, decryptKeyDescription, scenario);
       Success(PositiveEncryptTestVector(
-                name := name,
+                id := Some(name),
                 version := version,
                 manifestPath := op.manifestPath,
                 decryptManifestPath := op.decryptManifestOutput,
@@ -317,7 +317,7 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
     case "positive-esdk" =>
       var decryptKeyDescription :- ParseJsonManifests.GetKeyDescription(keys, decryptKeyDescription, scenario);
       Success(PositiveDecryptTestVector(
-                name := name,
+                id := name,
                 version := version,
                 manifestPath := op.manifestPath,
                 ciphertextPath := ciphertextLoc[|FILE_PREPEND|..],

@@ -41,7 +41,6 @@ module {:options "/functionSyntax:4" } AllEsdkV4WithReqEc {
         AllAlgorithmSuites.ESDKAlgorithmSuites
       ::
         EsdkTestVectors.PositiveEncryptTestVector(
-          name := config.name,
           version := 4,
           manifestPath := "",
           decryptManifestPath := "",
@@ -50,8 +49,6 @@ module {:options "/functionSyntax:4" } AllEsdkV4WithReqEc {
           decryptDescriptions := config.decryptDescription,
           encryptionContext := Some(config.encryptionContext),
           reproducedEncryptionContext := config.reproducedEncryptionContext,
-          requiredEncryptionContextKeys := config.requiredEncryptionContextKeys,
-          requiredECDescription := Some(config.name),
           frameLength := Some(frameSize),
           algorithmSuiteId := Some(algorithmSuite),
           description := config.name

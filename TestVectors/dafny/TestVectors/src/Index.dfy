@@ -63,7 +63,7 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
           }
           expect result.Success?;
         case EncryptManifest(_, _) =>
-          var result := WriteVectors.WritetestVectors(op);
+          var result := WriteVectors.WriteTestVectors(op);
           if result.Failure? {
             print result.error;
           }
