@@ -80,7 +80,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
         }
       } else {
         skipped := skipped + 1;
-        print "\nSKIP===> ", vector.name, "\n";
+        print "\nSKIP===> ", vector.id, "\n";
       }
 
     }
@@ -190,6 +190,10 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
           && t.ValidState()
     {
       var test := tests[i];
+      :- Need(
+        test.vector.id.Some?,
+        "Vector is missing uuid"
+      );
       if TestEncryptVector?(test.vector) {
         :- Need(
           && test.vector.algorithmSuiteId.Some?
@@ -203,8 +207,8 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
           decryptVectors := decryptVectors + [pass.vector.value];
         }
       } else {
-        skipped := skipped + [test.vector.name + "\n"];
-        print "\nSKIP===> ", test.vector.name, "\n";
+        skipped := skipped + [test.vector.id.value + "\n"];
+        print "\nSKIP===> ", test.vector.id.value, "\n";
       }
     }
     print "\n=================== Completed ", |tests|, " Encrypt Tests =================== \n\n";

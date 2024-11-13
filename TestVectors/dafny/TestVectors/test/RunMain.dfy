@@ -51,7 +51,7 @@ module {:extern} TestWrappedESDKMain {
 
   method TestGenerateEncryptManifest() {
     var directory := GetTestVectorExecutionDirectory();
-    var result := WriteVectors.WritetestVectors(
+    var result := WriteVectors.WriteTestVectors(
       EsdkManifestOptions.EncryptManifest(
         encryptManifestOutput := directory + "dafny/TestVectors/test/",
         version := 5
