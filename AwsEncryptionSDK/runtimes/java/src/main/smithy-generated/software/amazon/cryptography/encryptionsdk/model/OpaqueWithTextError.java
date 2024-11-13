@@ -3,16 +3,22 @@
 // Do not modify this file. This file is machine generated, and any changes to it will be overwritten.
 package software.amazon.cryptography.encryptionsdk.model;
 
-public class OpaqueError extends RuntimeException {
+public class OpaqueWithTextError extends RuntimeException {
 
   /**
    * The unexpected object encountered. It MIGHT BE an Exception, but that is not guaranteed.
    */
   private final Object obj;
 
-  protected OpaqueError(BuilderImpl builder) {
+  /**
+   * The text equivalent of obj.
+   */
+  private final String objMessage;
+
+  protected OpaqueWithTextError(BuilderImpl builder) {
     super(messageFromBuilder(builder), builder.cause());
     this.obj = builder.obj();
+    this.objMessage = builder.objMessage();
   }
 
   private static String messageFromBuilder(Builder builder) {
@@ -44,6 +50,13 @@ public class OpaqueError extends RuntimeException {
    */
   public Object obj() {
     return this.obj;
+  }
+
+  /**
+   * @return The text equivalent of obj.
+   */
+  public String objMessage() {
+    return this.objMessage;
   }
 
   public Builder toBuilder() {
@@ -85,7 +98,17 @@ public class OpaqueError extends RuntimeException {
      */
     Object obj();
 
-    OpaqueError build();
+    /**
+     * @param objMessage The text equivalent of obj.
+     */
+    Builder objMessage(String objMessage);
+
+    /**
+     * @return The text equivalent of obj.
+     */
+    String objMessage();
+
+    OpaqueWithTextError build();
   }
 
   static class BuilderImpl implements Builder {
@@ -96,12 +119,15 @@ public class OpaqueError extends RuntimeException {
 
     protected Object obj;
 
+    protected String objMessage;
+
     protected BuilderImpl() {}
 
-    protected BuilderImpl(OpaqueError model) {
+    protected BuilderImpl(OpaqueWithTextError model) {
       this.cause = model.getCause();
       this.message = model.getMessage();
       this.obj = model.obj();
+      this.objMessage = model.objMessage();
     }
 
     public Builder message(String message) {
@@ -131,7 +157,16 @@ public class OpaqueError extends RuntimeException {
       return this.obj;
     }
 
-    public OpaqueError build() {
+    public Builder objMessage(String objMessage) {
+      this.objMessage = objMessage;
+      return this;
+    }
+
+    public String objMessage() {
+      return this.objMessage;
+    }
+
+    public OpaqueWithTextError build() {
       if (
         this.obj != null && this.cause == null && this.obj instanceof Throwable
       ) {
@@ -139,7 +174,7 @@ public class OpaqueError extends RuntimeException {
       } else if (this.obj == null && this.cause != null) {
         this.obj = this.cause;
       }
-      return new OpaqueError(this);
+      return new OpaqueWithTextError(this);
     }
   }
 }

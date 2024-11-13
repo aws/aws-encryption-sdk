@@ -48,12 +48,12 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
       && cmm.Modifies !! {client.History}
     }
   }
-  
+
   type SupportedGenerateManifestVersion = v: nat | SupportedGenerateManifestVersion?(v) witness 4
   predicate SupportedGenerateManifestVersion?(v: nat)
   {
     || v == 4
-  } 
+  }
 
   type SupportedEncryptVersion = v: nat | SupportedEncryptVersion?(v)  witness 1
   predicate SupportedEncryptVersion?(v: nat)
@@ -74,6 +74,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
         encryptDescriptions: KeyVectorsTypes.KeyDescription,
         decryptDescriptions: KeyVectorsTypes.KeyDescription,
         encryptionContext: Option<mplTypes.EncryptionContext> := None,
+        reproducedEncryptionContext: Option<mplTypes.EncryptionContext> := None,
         requiredEncryptionContextKeys: Option<mplTypes.EncryptionContextKeys> := None,
         requiredECDescription: Option<string> := None,
         commitmentPolicy: mplTypes.ESDKCommitmentPolicy := mplTypes.FORBID_ENCRYPT_ALLOW_DECRYPT,
@@ -91,6 +92,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
         encryptDescriptions: KeyVectorsTypes.KeyDescription,
         decryptDescriptions: KeyVectorsTypes.KeyDescription,
         encryptionContext: Option<mplTypes.EncryptionContext> := None,
+        reproducedEncryptionContext: Option<mplTypes.EncryptionContext> := None,
         requiredEncryptionContextKeys: Option<mplTypes.EncryptionContextKeys> := None,
         requiredECDescription: Option<string> := None,
         commitmentPolicy: mplTypes.ESDKCommitmentPolicy := mplTypes.FORBID_ENCRYPT_ALLOW_DECRYPT,
@@ -107,6 +109,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
         plaintextPath: string,
         encryptDescriptions: KeyVectorsTypes.KeyDescription,
         encryptionContext: Option<mplTypes.EncryptionContext> := None,
+        reproducedEncryptionContext: Option<mplTypes.EncryptionContext> := None,
         requiredEncryptionContextKeys: Option<mplTypes.EncryptionContextKeys> := None,
         requiredECDescription: Option<string> := None,
         commitmentPolicy: mplTypes.ESDKCommitmentPolicy := mplTypes.FORBID_ENCRYPT_ALLOW_DECRYPT,
@@ -132,7 +135,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
         manifestPath: string,
         ciphertextPath: string,
         plaintextPath: string,
-        encryptionContext: Option<mplTypes.EncryptionContext> := None,
+        reproducedEncryptionContext: Option<mplTypes.EncryptionContext> := None,
         requiredEncryptionContextKeys: Option<mplTypes.EncryptionContextKeys> := None,
         decryptDescriptions: KeyVectorsTypes.KeyDescription,
         commitmentPolicy: mplTypes.ESDKCommitmentPolicy := mplTypes.FORBID_ENCRYPT_ALLOW_DECRYPT,
@@ -147,7 +150,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
         manifestPath: string,
         ciphertextPath: string,
         errorDescription: string,
-        encryptionContext: Option<mplTypes.EncryptionContext> := None,
+        reproducedEncryptionContext: Option<mplTypes.EncryptionContext> := None,
         requiredEncryptionContextKeys: Option<mplTypes.EncryptionContextKeys> := None,
         decryptDescriptions: KeyVectorsTypes.KeyDescription,
         commitmentPolicy: mplTypes.ESDKCommitmentPolicy := mplTypes.FORBID_ENCRYPT_ALLOW_DECRYPT,
@@ -194,7 +197,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
 
     var input := Types.DecryptInput(
       ciphertext := ciphertext,
-      encryptionContext := test.vector.encryptionContext,
+      encryptionContext := test.vector.reproducedEncryptionContext,
       materialsManager := Some(test.cmm),
       keyring := None
     );
@@ -311,15 +314,15 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     if
       && result.Success?
       && (
-            || test.vector.PositiveEncryptTestVector?
-            || test.vector.PositiveEncryptNegativeDecryptTestVector?
-          )
+           || test.vector.PositiveEncryptTestVector?
+           || test.vector.PositiveEncryptNegativeDecryptTestVector?
+         )
     {
       var decryptVector :- EncryptTestToDecryptVector(test, result.value);
       output := Success(EncryptTestOutput(
-        vector := Some(decryptVector),
-        output := true
-      ));
+                          vector := Some(decryptVector),
+                          output := true
+                        ));
     } else if result.Failure? && test.vector.NegativeEncryptTestVector? {
       output := Success(EncryptTestOutput( output := true ));
     } else {
@@ -346,7 +349,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
               && fresh(output.value.client.Modifies)
     ensures output.Success?
             ==>
-            output.value.vector == vector
+              output.value.vector == vector
   {
     var cmm :- keys.CreateWrappedTestVectorCmm(
       KeyVectorsTypes.TestVectorCmmInput(
@@ -388,25 +391,25 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     requires test.vector.algorithmSuiteId.Some?
   {
     output := match test.vector
-      case PositiveEncryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_,_,_) =>
+      case PositiveEncryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_) =>
         Success(PositiveDecryptTestVector(
-          name := test.vector.name,
-          version := 3,
-          manifestPath := test.vector.decryptManifestPath,
-          ciphertextPath := ciphertextPathPathRoot + test.vector.name,
-          plaintextPath := plaintextPathRoot + test.vector.plaintextPath,
-          encryptionContext := test.vector.encryptionContext,
-          requiredEncryptionContextKeys := test.vector.requiredEncryptionContextKeys,
-          decryptDescriptions := test.vector.decryptDescriptions,
-          commitmentPolicy := test.vector.commitmentPolicy,
-          frameLength := test.vector.frameLength,
-          algorithmSuiteId := test.vector.algorithmSuiteId,
-          description := test.vector.description,
-          decryptionMethod := DecryptionMethod.OneShot
-        ))
+                  name := test.vector.name,
+                  version := 3,
+                  manifestPath := test.vector.decryptManifestPath,
+                  ciphertextPath := ciphertextPathPathRoot + test.vector.name,
+                  plaintextPath := plaintextPathRoot + test.vector.plaintextPath,
+                  reproducedEncryptionContext := test.vector.reproducedEncryptionContext,
+                  requiredEncryptionContextKeys := test.vector.requiredEncryptionContextKeys,
+                  decryptDescriptions := test.vector.decryptDescriptions,
+                  commitmentPolicy := test.vector.commitmentPolicy,
+                  frameLength := test.vector.frameLength,
+                  algorithmSuiteId := test.vector.algorithmSuiteId,
+                  description := test.vector.description,
+                  decryptionMethod := DecryptionMethod.OneShot
+                ))
       case _ =>
         Failure("Only postive tests supported");
-    
+
     var decryptManifestCiphertext := test.vector.decryptManifestPath + ciphertextPathPathRoot + test.vector.name;
     // Side effect, to avoid thousands of ciphertext in memory...
     var _ :- expect WriteVectorsFile(decryptManifestCiphertext, result.ciphertext);

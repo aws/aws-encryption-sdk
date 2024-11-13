@@ -77,10 +77,10 @@ module {:options "-functionSyntax:4"} WriteVectors {
       var test :- WriteEsdkJsonManifests.EncryptTestVectorToJson(tests[i]);
       testsJSON := testsJSON + [(uuid, test)];
     }
-    
+
     var manifestJson := Object([
-          ("type", String("awses-encrypt")),
-          ("version", Number(Int(5)))]);
+                                 ("type", String("awses-encrypt")),
+                                 ("version", Number(Int(5)))]);
 
     var plaintexts := Object([("small", Number(Int(10240)))]);
 
@@ -100,14 +100,14 @@ module {:options "-functionSyntax:4"} WriteVectors {
       op.encryptManifestOutput + "encrypt-manifest.json",
       esdkEncryptManifestBv
     );
-    
+
     output := Success(());
   }
 
   method {:vcs_split_on_every_assert} WriteDecryptManifest(
     op: EsdkManifestOptions.ManifestOptions,
     keys: KeyVectors.KeyVectorsClient,
-    tests: seq<EsdkTestVectors.EsdkDecryptTestVector> 
+    tests: seq<EsdkTestVectors.EsdkDecryptTestVector>
   )
     returns (output: Result<(), string>)
     requires op.Encrypt?
@@ -118,14 +118,14 @@ module {:options "-functionSyntax:4"} WriteVectors {
 
     for i := 0 to |tests|
     {
-      var name := tests[i].name; 
+      var name := tests[i].name;
       var test :- WriteEsdkJsonManifests.DecryptTestVectorToJson(tests[i]);
       testsJSON := testsJSON + [(name, test)];
     }
-    
+
     var manifestJson := Object([
-          ("type", String("awses-decrypt")),
-          ("version", Number(Int(3)))]);
+                                 ("type", String("awses-decrypt")),
+                                 ("version", Number(Int(3)))]);
 
     var esdkDecryptManifest := Object(
       [
@@ -136,7 +136,7 @@ module {:options "-functionSyntax:4"} WriteVectors {
         ("tests", Object(testsJSON))
       ]
     );
-    
+
     var esdkDecryptManifestBytes :- expect API.Serialize(esdkDecryptManifest);
     var esdkDecryptManifestBv := JSONHelpers.BytesBv(esdkDecryptManifestBytes);
 
@@ -151,7 +151,7 @@ module {:options "-functionSyntax:4"} WriteVectors {
   function getVersionTests(version: nat): (ret: Result<set<EsdkTestVectors.EsdkEncryptTestVector>, string>)
   {
     match version
-      case 5 => Success(AllEsdkV4NoReqEc.Tests + AllEsdkV4WithReqEc.Tests)
-      case _ => Failure("Only version 4 of generate manifest is supported\n")
+    case 5 => Success(AllEsdkV4NoReqEc.Tests + AllEsdkV4WithReqEc.Tests)
+    case _ => Failure("Only version 4 of generate manifest is supported\n")
   }
 }

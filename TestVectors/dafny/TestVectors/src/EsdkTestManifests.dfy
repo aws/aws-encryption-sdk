@@ -132,7 +132,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     var decryptVectors :- TestEncrypts(plaintext, encryptManifest.keys, encryptTests);
 
     var _ :- WriteVectors.WriteDecryptManifest(op, encryptManifest.keys, decryptVectors);
-    
+
     output := Success(());
   }
 
@@ -192,7 +192,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
       var test := tests[i];
       if TestEncryptVector?(test.vector) {
         :- Need(
-          && test.vector.algorithmSuiteId.Some? 
+          && test.vector.algorithmSuiteId.Some?
           && test.vector.algorithmSuiteId.value.id.ESDK?,
           "Vector is using an algorithm suite other than ESDK"
         );

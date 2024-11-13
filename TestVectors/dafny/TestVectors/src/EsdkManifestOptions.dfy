@@ -23,8 +23,8 @@ module {:options "-functionSyntax:4"} EsdkManifestOptions {
         nameonly base64Bytes: string
       )
     | EncryptManifest(
-        nameonly encryptManifestOutput: string, 
-        nameonly version: nat 
-    )
+        nameonly encryptManifestOutput: string,
+        nameonly version: nat
+      )
 
 }

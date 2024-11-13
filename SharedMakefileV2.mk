@@ -10,10 +10,6 @@ SMITHY_DAFNY_ROOT := $(PROJECT_ROOT)/mpl/smithy-dafny
 GRADLEW := ./runtimes/java/gradlew
 
 VERIFY_TIMEOUT := 150
-PYTHON_MODULE_NAME=aws_encryption_sdk_python_dafny
-
-TRANSLATION_RECORD_PYTHON := \
-    --translation-record mpl/StandardLibrary/runtimes/python/src/smithy_dafny_standard_library/internaldafny/generated/dafny_src-py.dtr
 
 include $(SMITHY_DAFNY_ROOT)/SmithyDafnyMakefile.mk
 
