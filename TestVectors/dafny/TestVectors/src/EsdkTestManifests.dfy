@@ -29,6 +29,29 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
   import opened EsdkTestVectors
   import WriteVectors
 
+
+  method StartV1DecryptVectors(
+    op: EsdkManifestOptions.ManifestOptions
+  )
+    returns (output: Result<seq<BoundedInts.byte>, string>)
+    requires op.V1Decrypt?
+    requires 0 < |op.manifestPath| && 0 < |op.keyPath|
+    requires Seq.Last(op.manifestPath) == '/'
+    requires Seq.Last(op.keyPath) == '/'
+  {
+    var decryptManifest :- expect GetManifest(op.manifestPath, "decrypt_message.json");
+    :- Need(decryptManifest.DecryptManifest?, "Not a decrypt manifest");
+
+    var decryptVectors :- ParseEsdkJsonManifest.BuildV1DecryptTestVector(
+      op,
+      decryptManifest.version,
+      decryptManifest.keys,
+      decryptManifest.jsonTests
+    );
+
+    output := TestDecrypts(decryptManifest.keys, decryptVectors);
+  }
+
   method StartDecryptVectors(
     op: EsdkManifestOptions.ManifestOptions
   )

@@ -55,7 +55,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     || v == 4
   }
 
-  type SupportedEncryptVersion = v: nat | SupportedEncryptVersion?(v)  witness 4
+  type SupportedEncryptVersion = v: nat | SupportedEncryptVersion?(v)  witness 1
   predicate SupportedEncryptVersion?(v: nat)
   {
     || v == 1
@@ -151,6 +151,21 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
         description: string,
         decryptionMethod: DecryptionMethod
       )
+    | PositiveV1DecryptTestVector(
+        id: string,
+        version: SupportedDecryptVersion,
+        manifestPath: string,
+        ciphertextPath: string,
+        plaintextPath: string,
+        reproducedEncryptionContext: Option<mplTypes.EncryptionContext> := None,
+        requiredEncryptionContextKeys: Option<mplTypes.EncryptionContextKeys> := None,
+        decryptDescriptions: KeyVectorsTypes.KeyDescription,
+        commitmentPolicy: mplTypes.ESDKCommitmentPolicy := mplTypes.FORBID_ENCRYPT_ALLOW_DECRYPT,
+        frameLength: Option<int64>,
+        algorithmSuiteId: Option<mplTypes.AlgorithmSuiteInfo>,
+        description: string,
+        decryptionMethod: DecryptionMethod
+      )
 
   datatype DecryptionMethod =
     | StreamingUnsignedOnly
@@ -183,7 +198,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
 
     var ciphertext :- expect ReadVectorsFile(test.vector.manifestPath + test.vector.ciphertextPath);
     var plaintext;
-    if test.vector.PositiveDecryptTestVector? {
+    if test.vector.PositiveDecryptTestVector? || test.vector.PositiveV1DecryptTestVector? {
       plaintext :- expect ReadVectorsFile(test.vector.manifestPath + test.vector.plaintextPath);
     }
 
@@ -203,9 +218,13 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
         && result.value.plaintext == plaintext
       case NegativeDecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_)
         =>
-        && result.Failure?;
+        && result.Failure?
+      case PositiveV1DecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_)
+        =>
+        && result.Success?
+        && result.value.plaintext == plaintext;
     if !output {
-      if test.vector.PositiveDecryptTestVector? && result.Failure? {
+      if (test.vector.PositiveDecryptTestVector? || test.vector.PositiveV1DecryptTestVector?) && result.Failure? {
         print result.error, "\n";
         if
           && result.error.AwsCryptographyMaterialProviders?
@@ -218,7 +237,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     }
   }
 
-  method DecryptVectorToDecryptTest(
+  method {:vcs_split_on_every_assert} DecryptVectorToDecryptTest(
     keys: KeyVectors.KeyVectorsClient,
     vector: EsdkDecryptTestVector
   )
@@ -233,14 +252,23 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
               && fresh(output.value.cmm.Modifies - keys.Modifies)
               && fresh(output.value.client.Modifies)
   {
+    :- Need(
+      !vector.NegativeDecryptTestVector?,
+      KeyVectorsTypes.KeyVectorException(message := "Negative Test Vectors not supported at this time")
+    );
     var cmm :- keys.CreateWrappedTestVectorCmm(
       KeyVectorsTypes.TestVectorCmmInput(
         keyDescription := vector.decryptDescriptions,
         forOperation := KeyVectorsTypes.DECRYPT
       ));
 
-    :- Need(vector.algorithmSuiteId.Some?, KeyVectorsTypes.KeyVectorException(message := "Missing AlgorithmSuiteId in test vector"));
-    var commitmentPolicy := AllAlgorithmSuites.GetCompatibleCommitmentPolicy(vector.algorithmSuiteId.value);
+    var commitmentPolicy := if vector.algorithmSuiteId.Some? then
+      AllAlgorithmSuites.GetCompatibleCommitmentPolicy(vector.algorithmSuiteId.value)
+    else
+      // If the manifest does not contain a field for the algorithm suite then we default the
+      // commitment policy to FORBID_ENCRYPT_ALLOW_DECRYPT. This is currently only triggered
+      // when we read v1 manifests.
+      mplTypes.CommitmentPolicy.ESDK(mplTypes.ESDKCommitmentPolicy.FORBID_ENCRYPT_ALLOW_DECRYPT);
     :- Need(commitmentPolicy.ESDK?, KeyVectorsTypes.KeyVectorException(message := "Compatible commitment policy is not for ESDK"));
 
     var config := WrappedESDK.WrappedAwsEncryptionSdkConfigWithSuppliedCommitment(
