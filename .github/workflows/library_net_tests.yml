@@ -52,7 +52,6 @@ jobs:
         run: |
           git submodule update --init libraries
           git submodule update --init --recursive mpl
-          git submodule update --init smithy-dafny
           
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2

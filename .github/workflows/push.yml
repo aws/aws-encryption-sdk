@@ -10,11 +10,11 @@ jobs:
   pr-ci-codegen:
     uses: ./.github/workflows/library_codegen.yml
     with:
-      dafny: '4.8.0'
+      dafny: '4.8.1'
   push-ci-verification:
     uses: ./.github/workflows/library_dafny_verification.yml
     with:
-      dafny: '4.8.0'
+      dafny: '4.8.1'
   # push-ci-java:
   #   uses: ./.github/workflows/library_java_tests.yml
   #   with:
@@ -22,8 +22,12 @@ jobs:
   push-ci-net:
     uses: ./.github/workflows/library_net_tests.yml
     with:
-      dafny: '4.8.0'
+      dafny: '4.8.1'
+  push-ci-rust:
+    uses: ./.github/workflows/library_rust_tests.yml
+    with:
+      dafny: '4.8.1'
   pr-test-vectors:
     uses: ./.github/workflows/library_interop_tests.yml
     with:
-      dafny: '4.8.0'
+      dafny: '4.8.1'

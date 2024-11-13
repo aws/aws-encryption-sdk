@@ -31,6 +31,12 @@ jobs:
     with:
       dafny: 'nightly-latest'
       regenerate-code: true
+  dafny-nightly-rust:
+    if: github.event_name != 'schedule' || github.repository_owner == 'aws'
+    uses: ./.github/workflows/library_rust_tests.yml
+    with:
+      dafny: 'nightly-latest'
+      regenerate-code: true
   
   cut-issue-on-failure:
     runs-on: ubuntu-latest

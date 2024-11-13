@@ -19,7 +19,8 @@ jobs:
     strategy:
       matrix:
         library: [
-          AwsEncryptionSDK
+          AwsEncryptionSDK,
+          TestVectors
         ]
         os: [ macos-13 ]
     runs-on: ${{ matrix.os }}
@@ -36,7 +37,6 @@ jobs:
         run: |
             git submodule update --init libraries
             git submodule update --init --recursive mpl
-            git submodule update --init smithy-dafny
 
       # dafny-reportgenerator requires next6
       # but only 7.0 is installed on macos-13-large
