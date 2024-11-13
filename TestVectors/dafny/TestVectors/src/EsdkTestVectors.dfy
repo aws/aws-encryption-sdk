@@ -55,7 +55,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     || v == 4
   }
 
-  type SupportedEncryptVersion = v: nat | SupportedEncryptVersion?(v)  witness 1
+  type SupportedEncryptVersion = v: nat | SupportedEncryptVersion?(v)  witness 4
   predicate SupportedEncryptVersion?(v: nat)
   {
     || v == 1

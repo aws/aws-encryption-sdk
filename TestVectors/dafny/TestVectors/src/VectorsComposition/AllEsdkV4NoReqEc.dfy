@@ -64,9 +64,8 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
   // All these tests will use a defualt CMM
   const AllPostiveKeyringTestsNoDBESuiteNoReqEC :=
     set
-      keyringConfig <- AllPositiveKeyringTestsNoReqCmmNoKmsRsa,
-      algorithmSuite <-
-        AllAlgorithmSuites.ESDKAlgorithmSuites
+      keyringConfig <- AllPositiveKeyringTestsNoReqCmmNoKmsRsa | !keyringConfig.NegativeEncryptKeyringVector?,
+      algorithmSuite <- AllAlgorithmSuites.ESDKAlgorithmSuites
       ::
         EsdkTestVectors.PositiveEncryptTestVector(
           version := 4,
@@ -82,7 +81,7 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
 
   const AllPositiveKeyringTestsNoDBEKmsRsa :=
     set
-      keyringConfig <- AwsKmsRsaTests,
+      keyringConfig <- AwsKmsRsaTests | !keyringConfig.NegativeEncryptKeyringVector?,
       algorithmSuite <- esdkAlgorithmSuitesKmsRsa
       ::
         EsdkTestVectors.PositiveEncryptTestVector(
