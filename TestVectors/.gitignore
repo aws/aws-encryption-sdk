@@ -18,11 +18,11 @@ dafny/TestVectors/test/test.json
 dafny/TestVectors/test/decrypt-manifest.json
 
 # Include directory structure for Rust TestVectors
-!runtimes/rust/test/ciphertexts/
-!runtimes/rust/test/plaintexts/
+!runtimes/rust/ciphertexts/
+!runtimes/rust/plaintexts/
 
-runtimes/rust/test/ciphertexts/*
-runtimes/rust/test/plaintexts/*
+runtimes/rust/ciphertexts/*
+runtimes/rust/plaintexts/*
 
-!runtimes/rust/test/plaintexts/.gitkeep
-!runtimes/rust/test/ciphertexts/.gitkeep
+!runtimes/rust/plaintexts/.gitkeep
+!runtimes/rust/ciphertexts/.gitkeep

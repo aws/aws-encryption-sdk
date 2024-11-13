@@ -143,9 +143,9 @@ test_generate_vectors_net:
 
 test_generate_vectors_rust:
 	cd runtimes/rust && \
-	cargo run --bin test-vectors --features="wrapped-client" --release -- encrypt-manifest --encrypt-manifest-output test && \
+	cargo run --bin test-vectors --features="wrapped-client" --release -- encrypt-manifest --encrypt-manifest-output . && \
 	cd ../../
-	cp dafny/TestVectors/test/keys.json runtimes/rust/test/
+	cp dafny/TestVectors/test/keys.json runtimes/rust/
 
 test_encrypt_vectors_java:
 	gradle -p runtimes/java run --args="encrypt --manifest-path . --decrypt-manifest-path ."
@@ -158,7 +158,7 @@ test_encrypt_vectors_net:
 
 test_encrypt_vectors_rust:
 	cd runtimes/rust && \
-	cargo run --bin test-vectors --features="wrapped-client" --release -- encrypt --manifest-path test --decrypt-manifest-path test && \
+	cargo run --bin test-vectors --features="wrapped-client" --release -- encrypt --manifest-path . --decrypt-manifest-path . && \
 	cd ../../
 
 test_decrypt_encrypt_vectors_java:
@@ -172,7 +172,7 @@ test_decrypt_encrypt_vectors_net:
 
 test_decrypt_encrypt_vectors_rust:
 	cd runtimes/rust && \
-	cargo run --bin test-vectors --features="wrapped-client" --release -- decrypt --manifest-path test && \
+	cargo run --bin test-vectors --features="wrapped-client" --release -- decrypt --manifest-path . && \
 	cd ../../
 
 _polymorph_dependencies:
