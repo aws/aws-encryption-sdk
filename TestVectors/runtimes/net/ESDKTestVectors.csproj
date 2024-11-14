@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <RootNamespace>Test Vectors for AWS Encryption SDK Library</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <LangVersion>10</LangVersion>
+        <TargetFrameworks>net6.0;net48</TargetFrameworks>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!--
+          System.Collections.Immutable can be removed once dafny.msbuild is updated with
+          https://github.com/dafny-lang/dafny.msbuild/pull/10 and versioned
+        -->
+        <PackageReference Include="System.Collections.Immutable" Version="1.7.0" />
+        <!-- Work around for dafny-lang/dafny/issues/1951; remove once resolved -->
+        <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+
+        <Compile Include="Extern/**/*.cs" />
+        <Compile Include="Generated/**/*.cs" />
+        <Compile Include="ImplementationFromDafny.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\AwsEncryptionSDK\runtimes\net\ESDK.csproj" />
+      <!-- We have to include the mpl test vectors since we are borrowing some functionality from the project -->
+      <ProjectReference Include="..\..\..\mpl\TestVectorsAwsCryptographicMaterialProviders\runtimes\net\TestVectors.csproj" />
+    </ItemGroup>
+
+    <!--
+      TODO .NET assemblies are expected to have an ICON.
+      This MUST be replaced before launch.
+    -->
+    <!-- <ItemGroup>
+      <None Include="..\icon.png" Pack="true" PackagePath="" />
+      <None Include="..\README.md" Pack="true" PackagePath="" />
+    </ItemGroup> -->
+
+</Project>

@@ -1,6 +1,8 @@
 TestResults
 ImplementationFromDafny.cs
 TestsFromDafny.cs
+ImplementationFromDafny-cs.dtr
+TestsFromDafny-cs.dtr
 
 bin/
 obj/

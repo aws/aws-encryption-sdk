@@ -13,22 +13,26 @@ import java.util.Properties
 plugins {
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
+    `maven-publish`
 }
 
 var props = Properties().apply {
     load(FileInputStream(File(rootProject.rootDir, "../../project.properties")))
 }
-var dafnyVersion = props.getProperty("dafnyVersion")
+group = "software.amazon.cryptography"
+version = "1.0.0-SNAPSHOT"
+description = "AwsEncryptionSdk"
 
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
-    implementation("org.dafny:DafnyRuntime:${dafnyVersion}")
+    implementation("org.dafny:DafnyRuntime:4.8.0")
     implementation("software.amazon.smithy.dafny:conversion:0.1")
-    implementation("software.amazon.cryptography:aws-cryptographic-material-providers:1.4.0")
+    implementation("software.amazon.cryptography:aws-cryptographic-material-providers:1.7.0")
 
     // Use JUnit test framework.
     testImplementation("junit:junit:4.13.2")
@@ -63,3 +67,15 @@ fun SourceDirectorySet.mainSourceSet() {
     srcDir("src/main/dafny-generated")
     srcDir("src/main/smithy-generated")
 }
+
+publishing {
+    publications.create<MavenPublication>("mavenLocal") {
+        groupId = "software.amazon.cryptography"
+        artifactId = "aws-encryption-sdk"
+        from(components["java"])
+    }
+    repositories {
+        mavenLocal()
+    }
+}
+
