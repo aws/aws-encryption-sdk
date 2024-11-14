@@ -22,21 +22,17 @@ jobs:
         os: [
           windows-latest,
           ubuntu-latest,
-          macos-12,
+          macos-13,
         ]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
       contents: read
-    env:
-      # TODO: do we need this here?
-      DOTNET_CLI_TELEMETRY_OPTOUT: 1
-      DOTNET_NOLOGO: 1
     steps:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Init Submodules
         shell: bash
         run: |
@@ -81,6 +77,7 @@ jobs:
           java-version: "17"
 
       - name: Setup NASM for Windows (aws-lc-sys)
+        if: matrix.os == 'windows-latest'
         uses: ilammy/setup-nasm@v1
 
       - name: Install Smithy-Dafny codegen dependencies
