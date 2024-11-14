@@ -122,11 +122,12 @@ jobs:
           working-directory: ./${{matrix.library}}
           env:
             MANIFEST_PATH: ${{matrix.legacy_zips}}/
+            MANIFEST_NAME: 
           run: |
-            if [${{matrix.legacy_zips}} == "aws-encryption-sdk-test-vectors/vectors/awses-decrypt/python-1.3.5"]; then
-              MANIFEST_NAME=decrypt_message.json
+            if [${{matrix.legacy_zips}} == aws-encryption-sdk-test-vectors/vectors/awses-decrypt/python-1.3.5]; then
+              export MANIFEST_NAME=decrypt_message.json
             else
-              MANIFEST_NAME=manifest.json
+              export MANIFEST_NAME=manifest.json
             fi
 
             make test_decrypt_encrypt_vectors_net_v1
