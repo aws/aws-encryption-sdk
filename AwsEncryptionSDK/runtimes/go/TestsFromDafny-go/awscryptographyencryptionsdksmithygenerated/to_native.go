@@ -116,12 +116,12 @@ func Error_FromDafny(err AwsCryptographyEncryptionSdkTypes.Error) error {
 	}
 
 	//DependentErrors
-	if err.Is_AtomicPrimitives() {
-		return awscryptographyprimitivessmithygenerated.Error_FromDafny(err.Dtor_AtomicPrimitives())
+	if err.Is_AwsCryptographyPrimitives() {
+		return awscryptographyprimitivessmithygenerated.Error_FromDafny(err.Dtor_AwsCryptographyPrimitives())
 	}
 
-	if err.Is_MaterialProviders() {
-		return awscryptographymaterialproviderssmithygenerated.Error_FromDafny(err.Dtor_MaterialProviders())
+	if err.Is_AwsCryptographyMaterialProviders() {
+		return awscryptographymaterialproviderssmithygenerated.Error_FromDafny(err.Dtor_AwsCryptographyMaterialProviders())
 	}
 
 	//Unmodelled Errors
@@ -135,7 +135,7 @@ func Error_FromDafny(err AwsCryptographyEncryptionSdkTypes.Error) error {
 func AwsEncryptionSdkConfig_FromDafny(dafnyOutput AwsCryptographyEncryptionSdkTypes.AwsEncryptionSdkConfig) awscryptographyencryptionsdksmithygeneratedtypes.AwsEncryptionSdkConfig {
 	return awscryptographyencryptionsdksmithygeneratedtypes.AwsEncryptionSdkConfig{CommitmentPolicy: aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_commitmentPolicy_FromDafny(dafnyOutput.Dtor_commitmentPolicy().UnwrapOr(nil)),
 		MaxEncryptedDataKeys:  aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_maxEncryptedDataKeys_FromDafny(dafnyOutput.Dtor_maxEncryptedDataKeys().UnwrapOr(nil)),
-		NetV4_0_0_RetryPolicy: aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_netV4_0_0_RetryPolicy_FromDafny(dafnyOutput.Dtor_netV4_0_0_RetryPolicy().UnwrapOr(nil)),
+		NetV4_0_0_RetryPolicy: aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_netV4_0_0_RetryPolicy_FromDafny(dafnyOutput.Dtor_netV4__0__0__RetryPolicy().UnwrapOr(nil)),
 	}
 
 }
@@ -215,13 +215,13 @@ func aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_netV4_0_0_RetryPolicy
 		if input == nil {
 			return nil
 		}
-		inputEnum := input.(AwsCryptographyEncryptionSdkTypes.NetV4_0_0_RetryPolicy)
+		inputEnum := input.(AwsCryptographyEncryptionSdkTypes.NetV4__0__0__RetryPolicy)
 		index := -1
-		for allEnums := dafny.Iterate(AwsCryptographyEncryptionSdkTypes.CompanionStruct_NetV4_0_0_RetryPolicy_{}.AllSingletonConstructors()); ; {
+		for allEnums := dafny.Iterate(AwsCryptographyEncryptionSdkTypes.CompanionStruct_NetV4__0__0__RetryPolicy_{}.AllSingletonConstructors()); ; {
 			enum, ok := allEnums()
 			if ok {
 				index++
-				if enum.(AwsCryptographyEncryptionSdkTypes.NetV4_0_0_RetryPolicy).Equals(inputEnum) {
+				if enum.(AwsCryptographyEncryptionSdkTypes.NetV4__0__0__RetryPolicy).Equals(inputEnum) {
 					break
 				}
 			}
@@ -248,7 +248,7 @@ func aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_FromDafny(inp
 func aws_cryptography_encryptionSdk_EncryptOutput_algorithmSuiteId_FromDafny(input interface{}) awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId {
 	return func() awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId {
 		var u awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId
-		inputEnum := input
+		inputEnum := input.(AwsCryptographyMaterialProvidersTypes.ESDKAlgorithmSuiteId)
 		index := -1
 		for allEnums := dafny.Iterate(AwsCryptographyMaterialProvidersTypes.CompanionStruct_ESDKAlgorithmSuiteId_{}.AllSingletonConstructors()); ; {
 			enum, ok := allEnums()
@@ -403,7 +403,7 @@ func aws_cryptography_materialProviders_EncryptionContext_value_FromDafny(input 
 func aws_cryptography_encryptionSdk_DecryptOutput_algorithmSuiteId_FromDafny(input interface{}) awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId {
 	return func() awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId {
 		var u awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId
-		inputEnum := input
+		inputEnum := input.(AwsCryptographyMaterialProvidersTypes.ESDKAlgorithmSuiteId)
 		index := -1
 		for allEnums := dafny.Iterate(AwsCryptographyMaterialProvidersTypes.CompanionStruct_ESDKAlgorithmSuiteId_{}.AllSingletonConstructors()); ; {
 			enum, ok := allEnums()

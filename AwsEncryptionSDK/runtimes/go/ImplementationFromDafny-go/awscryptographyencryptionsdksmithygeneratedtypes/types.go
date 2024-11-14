@@ -41,7 +41,7 @@ func (input DecryptInput) aws_cryptography_encryptionSdk_DecryptInput_encryption
 }
 
 type DecryptOutput struct {
-	AlgorithmSuiteId ESDKAlgorithmSuiteId
+	AlgorithmSuiteId awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId
 
 	EncryptionContext map[string]string
 
@@ -72,7 +72,7 @@ func (input DecryptOutput) aws_cryptography_encryptionSdk_DecryptOutput_encrypti
 type EncryptInput struct {
 	Plaintext []byte
 
-	AlgorithmSuiteId *ESDKAlgorithmSuiteId
+	AlgorithmSuiteId *awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId
 
 	EncryptionContext map[string]string
 
@@ -113,7 +113,7 @@ func (input EncryptInput) aws_cryptography_encryptionSdk_EncryptInput_encryption
 }
 
 type EncryptOutput struct {
-	AlgorithmSuiteId ESDKAlgorithmSuiteId
+	AlgorithmSuiteId awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId
 
 	Ciphertext []byte
 
@@ -141,8 +141,16 @@ func (input EncryptOutput) aws_cryptography_encryptionSdk_EncryptOutput_encrypti
 	return nil
 }
 
+type AtomicPrimitivesReference struct {
+}
+
+func (input AtomicPrimitivesReference) Validate() error {
+
+	return nil
+}
+
 type AwsEncryptionSdkConfig struct {
-	CommitmentPolicy *ESDKCommitmentPolicy
+	CommitmentPolicy *awscryptographymaterialproviderssmithygeneratedtypes.ESDKCommitmentPolicy
 
 	MaxEncryptedDataKeys *int64
 
@@ -155,6 +163,14 @@ func (input AwsEncryptionSdkConfig) Validate() error {
 			return fmt.Errorf("CountingNumbers has a minimum of 1 but has the value of %d.", *input.MaxEncryptedDataKeys)
 		}
 	}
+
+	return nil
+}
+
+type MaterialProvidersReference struct {
+}
+
+func (input MaterialProvidersReference) Validate() error {
 
 	return nil
 }

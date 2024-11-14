@@ -99,10 +99,10 @@ func Error_ToDafny(err error) AwsCryptographyEncryptionSdkTypes.Error {
 
 	//DependentErrors
 	case awscryptographyprimitivessmithygeneratedtypes.AwsCryptographicPrimitivesBaseException:
-		return AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsCryptographicPrimitives_(awscryptographyprimitivessmithygenerated.Error_ToDafny(err))
+		return AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsCryptographyPrimitives_(awscryptographyprimitivessmithygenerated.Error_ToDafny(err))
 
 	case awscryptographymaterialproviderssmithygeneratedtypes.AwsCryptographicMaterialProvidersBaseException:
-		return AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsCryptographicMaterialProviders_(awscryptographymaterialproviderssmithygenerated.Error_ToDafny(err))
+		return AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsCryptographyMaterialProviders_(awscryptographymaterialproviderssmithygenerated.Error_ToDafny(err))
 
 	//Unmodelled Errors
 	case awscryptographyencryptionsdksmithygeneratedtypes.CollectionOfErrors:
@@ -187,14 +187,14 @@ func aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_netV4_0_0_RetryPolicy
 			}
 		}
 		var enum interface{}
-		for allEnums, i := dafny.Iterate(AwsCryptographyEncryptionSdkTypes.CompanionStruct_NetV4_0_0_RetryPolicy_{}.AllSingletonConstructors()), 0; i < index; i++ {
+		for allEnums, i := dafny.Iterate(AwsCryptographyEncryptionSdkTypes.CompanionStruct_NetV4__0__0__RetryPolicy_{}.AllSingletonConstructors()), 0; i < index; i++ {
 			var ok bool
 			enum, ok = allEnums()
 			if !ok {
 				break
 			}
 		}
-		return Wrappers.Companion_Option_.Create_Some_(enum.(AwsCryptographyEncryptionSdkTypes.NetV4_0_0_RetryPolicy))
+		return Wrappers.Companion_Option_.Create_Some_(enum.(AwsCryptographyEncryptionSdkTypes.NetV4__0__0__RetryPolicy))
 	}()
 }
 
