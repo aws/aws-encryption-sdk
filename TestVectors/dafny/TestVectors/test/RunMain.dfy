@@ -20,10 +20,17 @@ module {:extern} TestWrappedESDKMain {
   method {:extern} GetTestVectorExecutionDirectory() returns (res: string)
 
   // method {:test} TestV1Vectors() {
-  //   var _ :- expect EsdkTestManifests.StartV1DecryptVectors(
-  //     "aws-encryption-sdk-test-vectors/vectors/awses-decrypt/python-1.3.5/decrypt_message.json",
-  //     "aws-encryption-sdk-test-vectors/vectors/awses-decrypt/python-1.3.5/keys.json"
+  //   var directory := GetTestVectorExecutionDirectory();
+  //   var result := EsdkTestManifests.StartDecryptVectors(
+  //     EsdkManifestOptions.Decrypt(
+  //       manifestPath := directory + "aws-encryption-sdk-test-vectors/vectors/awses-decrypt/python-1.3.8/",
+  //       manifestFileName := "manifest.json"
+  //     )
   //   );
+  //   if result.Failure? {
+  //     print result.error;
+  //   }
+  //   expect result.Success?;
   // }
 
 
@@ -82,7 +89,8 @@ module {:extern} TestWrappedESDKMain {
     var directory := GetTestVectorExecutionDirectory();
     var result := EsdkTestManifests.StartDecryptVectors(
       EsdkManifestOptions.Decrypt(
-        manifestPath := directory + "dafny/TestVectors/test/"
+        manifestPath := directory + "dafny/TestVectors/test/",
+        manifestFileName := "decrypt-manifest.json"
       )
     );
 

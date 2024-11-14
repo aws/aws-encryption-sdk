@@ -37,50 +37,6 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
   const encryptionContextJsonKey := "encryption-context"
   const reproducedEncryptionContextJsonKey := "reproduced-encryption-context"
 
-  function BuildV1DecryptTestVector(
-    op: EsdkManifestOptions.ManifestOptions,
-    version: SupportedDecryptVersion,
-    keys: KeyVectors.KeyVectorsClient,
-    obj: seq<(string, JSON)>
-  ) : Result<seq<EsdkDecryptTestVector>, string>
-    requires op.V1Decrypt?
-  {
-    if |obj| == 0 then
-      Success([])
-    else
-      var tail :- BuildV1DecryptTestVector(op, version, keys, obj[1..]);
-      var decryptVector :- ToDecryptTestVectors(op, version, keys, obj[0].0, obj[0].1);
-      Success([ decryptVector ] + tail)
-  } by method {
-    // This function ideally would be`{:tailrecursion}`
-    // but it is not simple to here is a method
-    // so that it does not explode with huge numbers of tests.
-    var i: nat := |obj|;
-    var vectors := [];
-
-    while i != 0
-      decreases i
-      invariant Success(vectors) == BuildV1DecryptTestVector(op, version, keys, obj[i..])
-    {
-      i := i - 1;
-      var test := ToDecryptTestVectors(op, version, keys, obj[i].0, obj[i].1);
-      if test.Failure? {
-        ghost var j := i;
-        while j != 0
-          decreases j
-          invariant Failure(test.error) == BuildV1DecryptTestVector(op, version, keys, obj[j..])
-        {
-          j := j - 1;
-        }
-        return Failure(test.error);
-      }
-
-      vectors := [test.value] + vectors;
-    }
-
-    return Success(vectors);
-  }
-
   function BuildDecryptTestVector(
     op: EsdkManifestOptions.ManifestOptions,
     version: SupportedDecryptVersion,
@@ -133,7 +89,7 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
     name: string,
     json: JSON
   ) : Result<EsdkDecryptTestVector, string>
-    requires op.Decrypt? || op.V1Decrypt?
+    requires op.Decrypt?
   {
     :- Need(json.Object?, "Vector is not an object");
     var obj := json.obj;
@@ -142,8 +98,12 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
     case 3 =>
       :- Need(op.Decrypt?, "Err parsing manifest expected Decrypt");
       V3ToDecryptTestVector(op, keys, name, obj, version)
+    // Case 2 Needs negative test vectors..
+    // case 2 =>
+    //   :- Need(op.V1Decrypt?, "Err parsing manifest expected V1Decrypt");
+    //   V2ToDecryptTestVector(op, keys, name, obj, version)
     case 1 =>
-      :- Need(op.V1Decrypt?, "Err parsing manifest expected V1Decrypt");
+      :- Need(op.Decrypt?, "Err parsing manifest expected Decrypt");
       V1ToDecryptTestVector(op, keys, name, obj, version)
     case _ => Failure("Version not supported")
 
@@ -339,7 +299,7 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
     obj: seq<(string, JSON)>,
     version: SupportedDecryptVersion
   ) : Result<EsdkDecryptTestVector, string>
-    requires op.V1Decrypt?
+    requires op.Decrypt?
   {
     var plaintextLoc :- GetString("plaintext", obj);
     var ciphertextLoc :- GetString("ciphertext", obj);
@@ -365,6 +325,42 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
               decryptionMethod := DecryptionMethod.OneShot
             ))
   }
+  
+  // function V2ToDecryptTestVector(
+  //   op: EsdkManifestOptions.ManifestOptions,
+  //   keys: KeyVectors.KeyVectorsClient,
+  //   name: string,
+  //   obj: seq<(string, JSON)>,
+  //   version: SupportedDecryptVersion
+  // ) : Result<EsdkDecryptTestVector, string>
+  //   requires op.V1Decrypt?
+  // {
+  //   var resultLoc :- GetObject("result", obj);
+  //   var outputLoc :- GetObject("output", resultLoc);
+  //   var plaintextLoc :- GetString("plaintext", outputLoc);
+  //   var ciphertextLoc :- GetString("ciphertext", obj);
+  //   :- Need(
+  //        && "file://" < ciphertextLoc
+  //        && "file://" < plaintextLoc,
+  //        "Invalid file prefix in test vector"
+  //      );
+  //   var masterKeys :- GetArray("master-keys", obj);
+  //   var keyDescriptions :- GetKeyDescriptions(masterKeys, keys);
+  //   var keyDescription :- ToMultiKeyDescription(keyDescriptions);
+
+  //   Success(PositiveV1DecryptTestVector(
+  //             id := name,
+  //             version := version,
+  //             manifestPath := op.manifestPath,
+  //             ciphertextPath := ciphertextLoc[|FILE_PREPEND|..],
+  //             plaintextPath := plaintextLoc[|FILE_PREPEND|..],
+  //             decryptDescriptions := keyDescription,
+  //             frameLength := None,
+  //             algorithmSuiteId := None,
+  //             description :=  name,
+  //             decryptionMethod := DecryptionMethod.OneShot
+  //           ))
+  // }
 
   function V3ToDecryptTestVector(
     op: EsdkManifestOptions.ManifestOptions,

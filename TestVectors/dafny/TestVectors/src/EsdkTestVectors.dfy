@@ -179,10 +179,13 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     requires keys.ValidState()
     modifies keys.Modifies
     ensures keys.ValidState()
-    requires vector.algorithmSuiteId.Some?
   {
-    var id := AllAlgorithmSuites.ToHex(vector.algorithmSuiteId.value);
-    print "\nTEST-DECRYPT===> ", vector.id, "\n", id, " ", vector.description, "\n";
+    if vector.algorithmSuiteId.Some? {
+      var id := AllAlgorithmSuites.ToHex(vector.algorithmSuiteId.value);
+      print "\nTEST-DECRYPT===> ", vector.id, "\n", id, " ", vector.description, "\n";
+    } else {
+      print "\nTEST-DECRYPT===> ", vector.id, "\n", vector.description, "\n";
+    }
 
     // The decrypt test vectors also test initialization
     // This is because they were developed when the MPL

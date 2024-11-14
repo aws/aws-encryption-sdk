@@ -21,6 +21,7 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
                                    Param.Command(Options("decrypt", "decrypt command for test-vectors",
                                                          [
                                                            Param.Opt("manifest-path", "relative path to the location of the manifest", unused := Required),
+                                                           Param.Opt("manifest-name", "name of file that contains the decrypt vectors file", unused := Required),
                                                            Param.Opt("test-name", "id of the test to run")
                                                          ])),
                                    Param.Command(Options("encrypt", "encrypt command for test-vectors",
@@ -50,7 +51,7 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
       if op?.Success? {
         var op := op?.value;
         match op
-        case Decrypt(_, _) =>
+        case Decrypt(_, _, _) =>
           var result := EsdkTestManifests.StartDecryptVectors(op);
           if result.Failure? {
             print result.error;
@@ -97,12 +98,17 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
   {
     var manifestPath? := OptValue(params, "manifest-path");
     var testName? := OptValue(params, "test-name");
+    var manifestFileName? := OptValue(params, "manifest-name");
 
     var manifestPath := if manifestPath?.Some? then manifestPath?.value else ".";
     :- Need(0 < |manifestPath|, "Invalid manifest path length\n");
 
+    :- Need(manifestFileName?.Some?, "Must supply manifest file name");
+    var manifestFileName := manifestFileName?.value;
+
     Success(EsdkManifestOptions.Decrypt(
               manifestPath := if Seq.Last(manifestPath) == '/' then manifestPath else manifestPath + "/",
+              manifestFileName := manifestFileName,
               testName := if testName?.Some? then testName?  else None
             ))
   }
