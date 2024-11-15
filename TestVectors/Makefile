@@ -107,8 +107,8 @@ test_decrypt_encrypt_vectors_net:
 	dotnet build runtimes/net
 	dotnet run --project runtimes/net --framework $(FRAMEWORK) decrypt --manifest-path runtimes/net --manifest-name decrypt-manifest.json
 
-test_decrypt_encrypt_vectors_net_v1: FRAMEWORK=net6.0
-test_decrypt_encrypt_vectors_net_v1:
+test_decrypt_encrypt_vectors_net_legacy: FRAMEWORK=net6.0
+test_decrypt_encrypt_vectors_net_legacy:
 	dotnet restore runtimes/net
 	dotnet build runtimes/net
 	dotnet run --project runtimes/net --framework $(FRAMEWORK) decrypt --manifest-path $(MANIFEST_PATH) --manifest-name $(MANIFEST_NAME)
