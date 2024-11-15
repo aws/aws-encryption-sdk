@@ -37,7 +37,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     requires 0 < |op.manifestPath|
     requires Seq.Last(op.manifestPath) == '/'
   {
-    var decryptManifest :- expect GetManifest(op.manifestPath, "decrypt-manifest.json");
+    var decryptManifest :- expect GetManifest(op.manifestPath, op.manifestFileName);
     :- Need(decryptManifest.DecryptManifest?, "Not a decrypt manifest");
 
     var decryptVectors :- ParseEsdkJsonManifest.BuildDecryptTestVector(
@@ -73,7 +73,6 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     {
       var vector := vectors[i];
       if TestDecryptVector?(vector) {
-        :- Need(vector.algorithmSuiteId.Some?, "Vector without algorithm suite defined.");
         var pass := EsdkTestVectors.TestDecrypt(keys, vector);
         if !pass {
           hasFailure := true;
@@ -251,7 +250,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     var decryptManifestBv :- FileIO.ReadBytesFromFile(manifestPath + manifestFileName);
     var decryptManifestBytes := BvToBytes(decryptManifestBv);
     var manifestJson :- API.Deserialize(decryptManifestBytes)
-    .MapFailure(( e: Errors.DeserializationError ) => e.ToString());
+      .MapFailure(( e: Errors.DeserializationError ) => e.ToString());
     :- Need(manifestJson.Object?, "Not a JSON object");
 
     var manifest :- GetObject("manifest", manifestJson.obj);
