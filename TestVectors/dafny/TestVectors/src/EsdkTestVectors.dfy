@@ -151,7 +151,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
         description: string,
         decryptionMethod: DecryptionMethod
       )
-    | PositiveV1DecryptTestVector(
+    | PositiveV1OrV2DecryptTestVector(
         id: string,
         version: SupportedDecryptVersion,
         manifestPath: string,
@@ -201,7 +201,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
 
     var ciphertext :- expect ReadVectorsFile(test.vector.manifestPath + test.vector.ciphertextPath);
     var plaintext;
-    if test.vector.PositiveDecryptTestVector? || test.vector.PositiveV1DecryptTestVector? {
+    if test.vector.PositiveDecryptTestVector? || test.vector.PositiveV1OrV2DecryptTestVector? {
       plaintext :- expect ReadVectorsFile(test.vector.manifestPath + test.vector.plaintextPath);
     }
 
@@ -222,12 +222,12 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
       case NegativeDecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_)
         =>
         && result.Failure?
-      case PositiveV1DecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_)
+      case PositiveV1OrV2DecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_)
         =>
         && result.Success?
         && result.value.plaintext == plaintext;
     if !output {
-      if (test.vector.PositiveDecryptTestVector? || test.vector.PositiveV1DecryptTestVector?) && result.Failure? {
+      if (test.vector.PositiveDecryptTestVector? || test.vector.PositiveV1OrV2DecryptTestVector?) && result.Failure? {
         print result.error, "\n";
         if
           && result.error.AwsCryptographyMaterialProviders?

@@ -253,7 +253,7 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
     var keyDescriptions :- GetKeyDescriptions(masterKeys, keys);
     var keyDescription :- ToMultiKeyDescription(keyDescriptions);
 
-    Success(PositiveV1DecryptTestVector(
+    Success(PositiveV1OrV2DecryptTestVector(
               id := name,
               version := version,
               manifestPath := op.manifestPath,
@@ -298,7 +298,7 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
     var keyDescriptions :- GetKeyDescriptions(masterKeys, keys);
     var keyDescription :- ToMultiKeyDescription(keyDescriptions);
 
-    Success(PositiveV1DecryptTestVector(
+    Success(PositiveV1OrV2DecryptTestVector(
               id := name,
               version := version,
               manifestPath := op.manifestPath,
