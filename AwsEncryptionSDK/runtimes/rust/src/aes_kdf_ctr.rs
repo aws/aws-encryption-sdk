@@ -4,6 +4,7 @@
 #![deny(warnings, unconditional_panic)]
 #![deny(nonstandard_style)]
 #![deny(clippy::all)]
+#![allow(dead_code)]
 
 #[allow(non_snake_case)]
 pub mod AesKdfCtr {
