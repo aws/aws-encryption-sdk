@@ -9,6 +9,7 @@ module {:options "-functionSyntax:4"} EsdkManifestOptions {
   datatype ManifestOptions =
     | Decrypt(
         nameonly manifestPath: string,
+        nameonly manifestFileName: string,
         nameonly testName: Option<string> := None
       )
     | Encrypt(

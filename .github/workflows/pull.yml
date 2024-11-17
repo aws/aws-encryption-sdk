@@ -33,3 +33,7 @@ jobs:
     uses: ./.github/workflows/library_interop_test_vectors.yml
     with:
       dafny: '4.9.0'
+  pr-dafny-legacy-test-vectors:
+    uses: ./.github/workflows/library_legacy_interop_test_vectors.yml
+    with:
+      dafny: '4.9.0'
