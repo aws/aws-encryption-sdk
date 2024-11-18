@@ -6,6 +6,7 @@ deps.rs
 error.rs
 operation.rs
 src/aes_gcm.rs
+src/aes_kdf_ctr.rs
 src/client/
 src/concurrent_call.rs
 src/conversions/

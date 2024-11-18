@@ -5,8 +5,7 @@ cd $( dirname ${BASH_SOURCE[0]} )
 SRC=../../../mpl/AwsCryptographicMaterialProviders/runtimes/rust/src/
 
 cp $SRC/aes_gcm.rs src
-# MPL needs update to add 'allow dead code'
-# cp $SRC/aes_kdf_ctr.rs src
+cp $SRC/aes_kdf_ctr.rs src
 cp $SRC/concurrent_call.rs src
 cp $SRC/dafny_libraries.rs src
 cp $SRC/ddb.rs src

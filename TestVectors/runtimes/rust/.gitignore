@@ -1,5 +1,6 @@
 Cargo.lock
 src/aes_gcm.rs
+src/aes_kdf_ctr.rs
 src/client.rs
 src/client/
 src/concurrent_call.rs
