@@ -46,6 +46,7 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
 
   const AllPositiveKeyringTestsNoReqCmmNoKmsRsa
   := {}
+  + AllDefaultCmm.Tests
   + AllHierarchy.Tests
   + AllKms.Tests
   + AllKmsMrkAware.Tests
