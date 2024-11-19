@@ -12,6 +12,6 @@ impl crate::r#_TestWrappedESDKMain_Compile::_default {
     #[allow(non_snake_case)]
     pub fn GetTestVectorExecutionDirectory() -> Sequence<DafnyCharUTF16>
     {
-        dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string("")
+        dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string("../../")
     }
 }
