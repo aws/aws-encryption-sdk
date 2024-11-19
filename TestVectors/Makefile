@@ -31,7 +31,7 @@ RUST_OTHER_FILES := \
 	runtimes/rust/src/storm_tracker.rs \
 	runtimes/rust/src/time.rs \
 	runtimes/rust/src/uuid.rs \
-	runtimes/rust/src/get_test_directory.rs
+	runtimes/rust/src/test_vec_dir.rs
 
 SMITHY_MODEL_ROOT := $(PROJECT_ROOT)/AwsEncryptionSDK/dafny/AwsEncryptionSdk/Model
 OUTPUT_LOCAL_SERVICE_TestVectors:= --local-service-test
@@ -178,7 +178,7 @@ test_decrypt_encrypt_vectors_net_legacy:
 
 test_decrypt_encrypt_vectors_rust:
 	cd runtimes/rust && \
-	cargo run --bin test-vectors --features="wrapped-client" --release -- decrypt --manifest-path . && \
+	cargo run --bin test-vectors --features="wrapped-client" --release -- decrypt --manifest-path . --manifest-name decrypt-manifest.json && \
 	cd ../../
 
 _polymorph_dependencies:

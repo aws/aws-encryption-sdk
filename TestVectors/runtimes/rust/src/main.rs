@@ -60,7 +60,7 @@ pub mod software_externs;
 pub mod storm_tracker;
 pub mod time;
 pub mod uuid;
-pub mod get_test_directory;
+pub mod test_vec_dir;
 
 fn main() {
   let args: Vec<String> = std::env::args().collect();
