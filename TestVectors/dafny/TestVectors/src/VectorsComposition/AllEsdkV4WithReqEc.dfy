@@ -34,7 +34,7 @@ module {:options "/functionSyntax:4" } AllEsdkV4WithReqEc {
   const AllPositiveReqEcTests := AllRequiredEncryptionContextCmm.SuccessTestingRequiredEncryptionContextKeysReproducedEncryptionContext
 
   // These are only required encryption context vectors with static aes keyrings
-  const AllPositveReqEcEsdkTests :=
+  const AllPositiveReqEcEsdkTests :=
     set
       config <- AllPositiveReqEcTests,
       algorithmSuite <-
@@ -55,5 +55,5 @@ module {:options "/functionSyntax:4" } AllEsdkV4WithReqEc {
         )
 
   const Tests :=
-    AllPositveReqEcEsdkTests
+    AllPositiveReqEcEsdkTests
 }
