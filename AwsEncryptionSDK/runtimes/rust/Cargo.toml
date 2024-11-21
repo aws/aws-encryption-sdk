@@ -24,15 +24,12 @@ aws-sdk-kms = "1.48.0"
 aws-smithy-runtime-api = {version = "1.7.2", features = ["client"] }
 aws-smithy-types = "1.2.8"
 chrono = "0.4.38"
-dafny_runtime = { path = "dafny_runtime_rust"}
+dafny_runtime = { path = "../../../mpl/smithy-dafny/TestModels/dafny-dependencies/dafny_runtime_rust"}
 dashmap = "6.1.0"
 pem = "3.0.4"
 rand = "0.8.5"
 tokio = {version = "1.41.0", features = ["full"] }
 uuid = { version = "1.11.0", features = ["v4"] }
-
-[lib]
-path = "src/implementation_from_dafny.rs"
 
 [[example]]
 name = "main"

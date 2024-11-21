@@ -1,0 +1,308 @@
+# This workflow performs interoperability tests across the supported runtimes of the ESDK Dafny
+name: Library Interoperability Dafny TestVectors
+
+on:
+  workflow_call:
+    inputs:
+      dafny:
+        description: "The Dafny version to use"
+        required: true
+        type: string
+      regenerate-code:
+        description: "Regenerate code using smithy-dafny"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  generateEncryptVectors:
+    strategy:
+      matrix:
+        library: [TestVectors]
+        os: [
+            # https://taskei.amazon.dev/tasks/CrypTool-5283
+            # windows-latest,
+            ubuntu-latest,
+            macos-13,
+          ]
+        language: [java, net, rust]
+        # https://taskei.amazon.dev/tasks/CrypTool-5284
+        dotnet-version: ["6.0.x"]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      contents: read
+      
+    steps:
+        - name: Support longpaths on Git checkout
+          run: |
+            git config --global core.longpaths true
+
+        # TestVectors will call KMS
+        - name: Configure AWS Credentials
+          uses: aws-actions/configure-aws-credentials@v2
+          with:
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2 
+            role-session-name: InterOpTests
+
+        - uses: actions/checkout@v3
+        #  Not all submodules are needed.
+        # We manually pull the submodule we DO need.
+        - run: git submodule update --init libraries
+        - run: git submodule update --init --recursive mpl
+
+        # Set up runtimes
+        - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+          if: matrix.language == 'net'
+          uses: actions/setup-dotnet@v3
+          with:
+            dotnet-version: ${{ matrix.dotnet-version }}
+
+        # Setup Java in Rust is needed for running polymorph
+        - name: Setup Java 17
+          if: matrix.language == 'java' || matrix.language == 'rust'
+          uses: actions/setup-java@v3
+          with:
+            distribution: "corretto"
+            java-version: 17
+
+        - name: Setup Rust Toolchain for GitHub CI
+          if: matrix.language == 'rust'
+          uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
+          with:
+            components: rustfmt
+        # TODO - uncomment this after Rust formatter works
+        # - name: Rustfmt Check
+        #   uses: actions-rust-lang/rustfmt@v1
+        
+        # TODO: Remove this after the formatting in Rust starts working
+        - name: smithy-dafny Rust hacks
+          if: matrix.language == 'rust'
+          shell: bash
+          run: |
+            if [ "$RUNNER_OS" == "macOS" ]; then
+              sed -i '' 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
+            else
+              sed -i 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
+            fi
+
+        - name: Setup NASM for Windows in Rust (aws-lc-sys)
+          if: matrix.language == 'rust' && matrix.os == 'windows-latest'
+          uses: ilammy/setup-nasm@v1
+
+        - name: Setup Dafny
+          uses: dafny-lang/setup-dafny-action@v1.7.0
+          with:
+            dafny-version: ${{ inputs.dafny }}
+
+        - name: Regenerate code using smithy-dafny if necessary
+          if: ${{ inputs.regenerate-code }}
+          uses: ./.github/actions/polymorph_codegen
+          with:
+            dafny: ${{ inputs.dafny }}
+            library: ${{ matrix.library }}
+            diff-generated-code: false
+        
+        # Build implementation for each runtime
+        - name: Build ${{ matrix.library }} implementation in Java
+          if: matrix.language == 'java'
+          shell: bash
+          working-directory: ./${{ matrix.library }}
+          run: |
+            # This works because `node` is installed by default on GHA runners
+            CORES=$(node -e 'console.log(os.cpus().length)')
+            make build_java CORES=$CORES
+
+        - name: Build ${{ matrix.library }} implementation in .NET
+          if: matrix.language == 'net'
+          shell: bash
+          working-directory: ./${{ matrix.library }}
+          run: |
+            # This works because `node` is installed by default on GHA runners
+            CORES=$(node -e 'console.log(os.cpus().length)')
+            make transpile_net
+        
+        - name: Install Smithy-Dafny codegen dependencies
+          if: matrix.language == 'rust'
+          uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+    
+        # TODO: Remove this after checking in Rust polymorph code
+        - name: Run make polymorph_rust
+          if: matrix.language == 'rust'
+          shell: bash
+          working-directory: ./${{ matrix.library }}
+          run: |
+            make polymorph_rust
+        
+        - name: Build ${{ matrix.library }} implementation in Rust
+          if: matrix.language == 'rust'
+          shell: bash
+          working-directory: ./${{ matrix.library }}
+          run: |
+            CORES=$(node -e 'console.log(os.cpus().length)')
+            make transpile_rust TRANSPILE_TESTS_IN_RUST=1 CORES=$CORES
+
+        - name: Setup gradle
+          if: matrix.language == 'java'
+          uses: gradle/gradle-build-action@v2
+          with:
+            gradle-version: 7.2
+
+        - name: Create Manifests
+          working-directory: ./${{ matrix.library }}
+          run: make test_generate_vectors_${{ matrix.language }}
+
+        - name: Create Encrypt Manifests
+          working-directory: ./${{ matrix.library }}
+          run: make test_encrypt_vectors_${{ matrix.language }}
+      
+        - name: Upload Encrypt Manifest and keys.json files
+          uses: actions/upload-artifact@v4
+          with:
+            name: ${{matrix.os}}_vector_artifact_${{matrix.language}}_${{github.sha}}
+            path: |
+              ./${{matrix.library}}/runtimes/${{matrix.language}}/*.json
+              ./${{matrix.library}}/runtimes/${{matrix.language}}/plaintexts
+              ./${{matrix.library}}/runtimes/${{matrix.language}}/ciphertexts
+  
+  testInteroperablity:
+    needs: generateEncryptVectors
+    strategy:
+      matrix:
+        library: [TestVectors]
+        os: [
+            # https://taskei.amazon.dev/tasks/CrypTool-5283
+            # windows-latest,
+            ubuntu-latest,
+            macos-13,
+          ]
+        encrypting_language: [java, net, rust]
+        decrypting_language: [java, net, rust]
+        # https://taskei.amazon.dev/tasks/CrypTool-5284
+        dotnet-version: ["6.0.x"]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      contents: read
+    
+    steps:
+      - name: Support longpaths on Git checkout
+        run: |
+          git config --global core.longpaths true
+
+      # TestVectors will call KMS
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2 
+          role-session-name: InterOpTests
+      
+      - uses: actions/checkout@v3
+      #  Not all submodules are needed.
+      # We manually pull the submodule we DO need.
+      - run: git submodule update --init libraries
+      - run: git submodule update --init --recursive mpl
+
+      # Set up runtimes
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        if: matrix.decrypting_language == 'net'
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      # Setup Java in Rust is needed for running polymorph
+      - name: Setup Java 17
+        if: matrix.decrypting_language == 'java' || matrix.decrypting_language == 'rust'
+        uses: actions/setup-java@v3
+        with:
+          distribution: "corretto"
+          java-version: 17
+
+      - name: Setup Rust Toolchain for GitHub CI
+        if: matrix.decrypting_language == 'rust'
+        uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
+        with:
+          components: rustfmt
+      # TODO - uncomment this after Rust formatter works
+      # - name: Rustfmt Check
+      #   uses: actions-rust-lang/rustfmt@v1
+
+      # TODO: Remove this after the formatting in Rust starts working
+      - name: smithy-dafny Rust hacks
+        if: matrix.decrypting_language == 'rust'
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            sed -i '' 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
+          else
+            sed -i 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
+          fi
+
+      - name: Setup NASM for Windows in Rust (aws-lc-sys)
+        if: matrix.decrypting_language == 'rust' && matrix.os == 'windows-latest'
+        uses: ilammy/setup-nasm@v1
+
+      - name: Setup Dafny
+        uses: dafny-lang/setup-dafny-action@v1.6.1
+        with:
+          dafny-version: ${{ inputs.dafny }}
+
+      - name: Regenerate code using smithy-dafny if necessary
+        if: ${{ inputs.regenerate-code }}
+        uses: ./.github/actions/polymorph_codegen
+        with:
+          dafny: ${{ inputs.dafny }}
+          library: ${{ matrix.library }}
+          diff-generated-code: false
+
+      # Build implementation for each runtime
+      - name: Build ${{ matrix.library }} implementation in Java
+        if: matrix.decrypting_language == 'java'
+        working-directory: ./${{ matrix.library }}
+        shell: bash
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make build_java CORES=$CORES
+
+      - name: Build ${{ matrix.library }} implementation in .NET
+        if: matrix.decrypting_language == 'net'
+        working-directory: ./${{ matrix.library }}
+        shell: bash
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_net
+
+      - name: Install Smithy-Dafny codegen dependencies
+        if: matrix.decrypting_language == 'rust'
+        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+  
+      # TODO: Remove this after checking in Rust polymorph code
+      - name: Run make polymorph_rust
+        if: matrix.decrypting_language == 'rust'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          make polymorph_rust
+
+      - name: Build ${{ matrix.library }} implementation in Rust
+        if: matrix.decrypting_language == 'rust'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_rust TRANSPILE_TESTS_IN_RUST=1 CORES=$CORES
+
+      - name: Download Encrypt Manifest Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{matrix.os}}_vector_artifact_${{matrix.encrypting_language}}_${{github.sha}}
+          path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+
+      - name: Decrypt Encrypt Manifest
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_${{matrix.decrypting_language}}
+

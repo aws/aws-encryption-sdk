@@ -9,6 +9,7 @@ import software.amazon.cryptography.encryptionsdk.internaldafny.types.Error;
 import software.amazon.cryptography.encryptionsdk.internaldafny.types.Error_AwsEncryptionSdkException;
 import software.amazon.cryptography.encryptionsdk.internaldafny.types.Error_CollectionOfErrors;
 import software.amazon.cryptography.encryptionsdk.internaldafny.types.Error_Opaque;
+import software.amazon.cryptography.encryptionsdk.internaldafny.types.Error_OpaqueWithText;
 import software.amazon.cryptography.encryptionsdk.internaldafny.types.IAwsEncryptionSdkClient;
 import software.amazon.cryptography.encryptionsdk.internaldafny.types.NetV4__0__0__RetryPolicy;
 import software.amazon.cryptography.encryptionsdk.model.AwsEncryptionSdkConfig;
@@ -20,12 +21,24 @@ import software.amazon.cryptography.encryptionsdk.model.EncryptInput;
 import software.amazon.cryptography.encryptionsdk.model.EncryptOutput;
 import software.amazon.cryptography.encryptionsdk.model.NetV4_0_0_RetryPolicy;
 import software.amazon.cryptography.encryptionsdk.model.OpaqueError;
+import software.amazon.cryptography.encryptionsdk.model.OpaqueWithTextError;
 
 public class ToNative {
 
   public static OpaqueError Error(Error_Opaque dafnyValue) {
     OpaqueError.Builder nativeBuilder = OpaqueError.builder();
     nativeBuilder.obj(dafnyValue.dtor_obj());
+    return nativeBuilder.build();
+  }
+
+  public static OpaqueWithTextError Error(Error_OpaqueWithText dafnyValue) {
+    OpaqueWithTextError.Builder nativeBuilder = OpaqueWithTextError.builder();
+    nativeBuilder.obj(dafnyValue.dtor_obj());
+    nativeBuilder.objMessage(
+      software.amazon.smithy.dafny.conversion.ToNative.Simple.String(
+        dafnyValue.dtor_objMessage()
+      )
+    );
     return nativeBuilder.build();
   }
 
@@ -64,6 +77,9 @@ public class ToNative {
     }
     if (dafnyValue.is_Opaque()) {
       return ToNative.Error((Error_Opaque) dafnyValue);
+    }
+    if (dafnyValue.is_OpaqueWithText()) {
+      return ToNative.Error((Error_OpaqueWithText) dafnyValue);
     }
     if (dafnyValue.is_CollectionOfErrors()) {
       return ToNative.Error((Error_CollectionOfErrors) dafnyValue);
