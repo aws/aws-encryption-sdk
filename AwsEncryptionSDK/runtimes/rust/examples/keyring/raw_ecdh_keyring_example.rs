@@ -58,6 +58,7 @@ use std::fs::File;
 use std::io::Read;
 use std::io::Write;
 use std::path::Path;
+use pem::parse;
 
 const EXAMPLE_ECC_PRIVATE_KEY_FILENAME_SENDER: &str = "RawEcdhKeyringExamplePrivateKeySender.pem";
 const EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT: &str = "RawEcdhKeyringExamplePrivateKeyRecipient.pem";
@@ -83,9 +84,12 @@ pub async fn encrypt_and_decrypt_with_keyring(
     let mut private_key_sender_utf8_bytes = Vec::new();
     file.read_to_end(&mut private_key_sender_utf8_bytes)?;
 
-    let mut file = File::open(Path::new(EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT))?;
-    let mut public_key_recipient_utf8_bytes = Vec::new();
-    file.read_to_end(&mut public_key_recipient_utf8_bytes)?;
+    // Since public key MUST be a DER-encoded X.509 public key, stored as a
+    // PEM encoded key, it needs to be parsed without the header which is
+    // different than the UTF8 PEM encoded private key.
+    let public_key_file_content = std::fs::read_to_string(Path::new(EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT))?;
+    let parsed_public_key_file_content = parse(public_key_file_content)?;
+    let public_key_recipient_utf8_bytes = parsed_public_key_file_content.contents();
 
     // 3. Create the RawPrivateKeyToStaticPublicKeyInput
     let raw_ecdh_static_configuration_input =
@@ -305,7 +309,6 @@ fn generate_ecc_key_pair(
     _ecdh_curve_spec: EcdhCurveSpec
 ) -> Result<(String, String), crate::BoxError> {
     use aws_lc_rs::encoding::AsDer;
-    use aws_lc_rs::encoding::PublicKeyX509Der;
     use aws_lc_rs::encoding::EcPrivateKeyRfc5915Der;
     use aws_lc_rs::agreement;
 
@@ -329,21 +332,20 @@ fn generate_ecc_key_pair(
 
     // TODO: fix (take in as arg with curve)
     let nid = aws_lc_sys::NID_X9_62_prime256v1;
-        
-    let public_key: Vec<u8> = X962_to_X509(public_key.as_ref(), nid)?;
-    let public_key = AsDer::<PublicKeyX509Der>::as_der(&public_key)?;
-    let public_key = pem::Pem::new("ECDH PUBLIC KEY", public_key.as_ref());
+
+    let public_key: Vec<u8> = x962_to_x509(public_key.as_ref(), nid)?;
+    let public_key = pem::Pem::new("PUBLIC KEY", public_key);
     let public_key = pem::encode(&public_key);
 
     let private_key_der = AsDer::<EcPrivateKeyRfc5915Der>::as_der(&private_key)
         .map_err(|e| format!("{:?}", e))?;
-    let private_key = pem::Pem::new("ECDH PRIVATE KEY", private_key_der.as_ref());
+    let private_key = pem::Pem::new("PRIVATE KEY", private_key_der.as_ref());
     let private_key = pem::encode(&private_key);
 
     Ok((public_key, private_key))
 }
 
-fn X962_to_X509(
+fn x962_to_x509(
     public_key: &[u8],
     nid: i32
 ) -> Result<Vec<u8>, String> {
@@ -419,7 +421,7 @@ pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxErr
 
     encrypt_and_decrypt_with_keyring(
         utils::TEST_EXAMPLE_DATA,
-        EcdhCurveSpec::EccNistP256
+        EcdhCurveSpec::EccNistP521
     ).await?;
 
     Ok(())
