@@ -105,7 +105,7 @@ jobs:
         run: |
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
-          make transpile_rust TRANSPILE_TESTS_IN_RUST=1 CORES=$CORES
+          make transpile_rust CORES=$CORES
 
       # Remove Rust hacks once Dafny fixes this
       - name: Update implementation_from_dafny.rs to add deps

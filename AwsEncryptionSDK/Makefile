@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 CORES=2
 
+TRANSPILE_TESTS_IN_RUST := 1
+
 include ../SharedMakefileV2.mk
 
 DIR_STRUCTURE_V2=V2

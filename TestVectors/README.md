@@ -16,10 +16,21 @@ of the Encryption SDK and runtimes.
 
 ### Building and Running
 
+#### For .NET
+
 1. Start in the root `./TestVectors` directory
 2. Run `make transpile_net`
 3. Run `make test_net_mac_intel` if running on a MacOS environment or
 `make test_net` if running on a Windows or Linux environment.
+
+#### For Rust
+
+1. Start in the root `./TestVectors` directory
+2. Run `make polymorph_rust`
+3. Run `make transpile_rust`
+5. Run `make test_rust`
+
+Note: If you run into a stack overflow error while running `make test_rust`, run `export RUST_MIN_STACK=104857600`, and re-run `make test_rust`.
 
 ## Security
 

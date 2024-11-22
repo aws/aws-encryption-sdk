@@ -141,7 +141,7 @@ jobs:
           working-directory: ./${{ matrix.library }}
           run: |
             CORES=$(node -e 'console.log(os.cpus().length)')
-            make transpile_rust TRANSPILE_TESTS_IN_RUST=1 CORES=$CORES
+            make transpile_rust CORES=$CORES
 
         - name: Setup gradle
           if: matrix.language == 'java'
@@ -294,7 +294,7 @@ jobs:
         working-directory: ./${{ matrix.library }}
         run: |
           CORES=$(node -e 'console.log(os.cpus().length)')
-          make transpile_rust TRANSPILE_TESTS_IN_RUST=1 CORES=$CORES
+          make transpile_rust CORES=$CORES
 
       - name: Download Encrypt Manifest Artifact
         uses: actions/download-artifact@v4
