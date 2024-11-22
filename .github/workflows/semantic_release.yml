@@ -15,7 +15,7 @@ jobs:
     # privileged operation, so we must make sure this list of users is a subset of the users labeled as maintainers of
     # https://github.com/orgs/aws/teams/aws-crypto-tools
     if: contains('["seebees","texastony","ShubhamChaturvedi7","lucasmcdonald3","josecorella","imabhichow","rishav-karanjit","antonf-amzn","justplaz","ajewellamz","RitvikKapila"]', github.actor)
-    runs-on: macos-12
+    runs-on: macos-13
     permissions:
       id-token: write
       contents: write

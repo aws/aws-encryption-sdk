@@ -25,6 +25,7 @@ import software.amazon.cryptography.encryptionsdk.model.AwsEncryptionSdkExceptio
 import software.amazon.cryptography.encryptionsdk.model.CollectionOfErrors;
 import software.amazon.cryptography.encryptionsdk.model.NetV4_0_0_RetryPolicy;
 import software.amazon.cryptography.encryptionsdk.model.OpaqueError;
+import software.amazon.cryptography.encryptionsdk.model.OpaqueWithTextError;
 import software.amazon.cryptography.materialproviders.internaldafny.types.ESDKAlgorithmSuiteId;
 import software.amazon.cryptography.materialproviders.internaldafny.types.ESDKCommitmentPolicy;
 import software.amazon.cryptography.materialproviders.internaldafny.types.ICryptographicMaterialsManager;
@@ -39,27 +40,23 @@ public class ToDafny {
     if (nativeValue instanceof OpaqueError) {
       return ToDafny.Error((OpaqueError) nativeValue);
     }
+    if (nativeValue instanceof OpaqueWithTextError) {
+      return ToDafny.Error((OpaqueWithTextError) nativeValue);
+    }
     if (nativeValue instanceof CollectionOfErrors) {
       return ToDafny.Error((CollectionOfErrors) nativeValue);
     }
-    return Error.create_Opaque(
-      nativeValue,
-      dafny.DafnySequence.asString(
-        java.util.Objects.nonNull(nativeValue.getMessage())
-          ? nativeValue.getMessage()
-          : ""
-      )
-    );
+    return Error.create_Opaque(nativeValue);
   }
 
   public static Error Error(OpaqueError nativeValue) {
-    return Error.create_Opaque(
+    return Error.create_Opaque(nativeValue.obj());
+  }
+
+  public static Error Error(OpaqueWithTextError nativeValue) {
+    return Error.create_OpaqueWithText(
       nativeValue.obj(),
-      dafny.DafnySequence.asString(
-        java.util.Objects.nonNull(nativeValue.altText())
-          ? nativeValue.altText()
-          : ""
-      )
+      dafny.DafnySequence.asString(nativeValue.objMessage())
     );
   }
 
