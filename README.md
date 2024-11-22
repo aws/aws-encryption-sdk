@@ -22,7 +22,8 @@ dotnet build -t:VerifyDafny test
 The tests currently require native implementations of cryptographic primitives and other methods,
 so they can only be run when embedding this library into one of the compilation target languages supported by Dafny:
 
-- [.NET](aws-encryption-sdk-net)
+- [.NET](./AwsEncryptionSDK/runtimes/net/)
+- [Rust](./AwsEncryptionSDK/runtimes/rust/)
 
 ## Generating Code from Smithy Model
 
@@ -39,10 +40,18 @@ To run the code generator, open any of the modules (e.g. AwsCryptographyPrimitiv
 The AWS Encryption SDK for Dafny must be transpiled to a runtime to be used.
 There is no Dafny runtime, so there is no concept of "running the AWS Encryption SDK for Dafny".
 
-To transpile the generated code to a runtime (e.g. Dotnet), open the module, then run:
+To transpile the generated code to a runtime, open the module `AwsEncryptionSDK`, then run:
+
+#### For .NET
 
 ```
 make transpile_net
+```
+
+#### For Rust
+
+```
+make transpile_rust
 ```
 
 ## Generate Duvet Reports
