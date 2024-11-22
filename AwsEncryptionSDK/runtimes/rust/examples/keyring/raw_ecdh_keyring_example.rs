@@ -11,7 +11,7 @@ protect the data keys that encrypt and decrypt example_data.
 
 This example takes in the sender's private key, the recipient's
 public key, and the algorithm definition where the ECC keys lie.
-This parameter takes in the sender's private key as a
+This parameter takes in the sender's private key which is
 UTF8 PEM-encoded (PKCS #8 PrivateKeyInfo structures), the recipient's
 DER-encoded X.509 public key, also known as SubjectPublicKeyInfo (SPKI),
 and the Curve Specification where the keys lie.
@@ -72,7 +72,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // - EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT
     // If these files are not present, this will generate a pair for you
     if should_generate_new_ecc_key_pair()? {
-        generate_ecc_key_pair(ecdh_curve_spec)?;
+        write_ecc_key_pair(ecdh_curve_spec)?;
     }
 
     // 2. Load keys from UTF-8 encoded PEM files.
@@ -261,71 +261,21 @@ fn should_generate_new_ecc_key_pair() -> Result<bool, String> {
     }
 }
 
-fn generate_ecc_key_pair(
+fn write_ecc_key_pair(
     _ecdh_curve_spec: EcdhCurveSpec
 ) -> Result<(), crate::BoxError> {
-    use aws_lc_rs::encoding::AsDer;
-    use aws_lc_rs::encoding::EcPrivateKeyRfc5915Der;
-    use aws_lc_rs::encoding::PublicKeyX509Der;
-    use aws_lc_rs::agreement;
-
     // Safety check: Validate neither file is present
     if exists(EXAMPLE_ECC_PRIVATE_KEY_FILENAME_SENDER)
         || exists(EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT)
         || exists(EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT)
         {
             return Err(crate::BoxError(
-                "generate_ecc_key_pair will not overwrite existing PEM files".to_string(),
+                "write_ecc_key_pair will not overwrite existing PEM files".to_string(),
             ));
         }
 
-    // This code will generate new ECC keys for example use.
-    // The public and private keys will be written to the files:
-    //  - public: EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT
-    //  - private: EXAMPLE_ECC_PRIVATE_KEY_FILENAME_SENDER, EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT
-    // This example uses aws-lc-rs's KeyPairGenerator to generate the key pair.
-    // In practice, you should not generate this in your code, and should instead
-    // retrieve this key from a secure key management system (e.g. HSM)
-    // These examples only demonstrate using the P256 curve while the keyring accepts
-    // P256, P384, or P521.
-    // This key is created here for example purposes only.
-
-    // let private_key =
-    //     agreement::PrivateKey::generate(super::ECCUtils::get_alg(ecdh_curve_spec))
-    //         .map_err(|e| format!("{:?}", e))?;
-
-    // let public_key = private_key
-    //     .compute_public_key()
-    //     .map_err(|e| format!("{:?}", e))?;
-
-    // let public_key: Vec<u8> = super::ECCUtils::X962_to_X509(public_key.as_ref(), alg)?;
-
-    // let private_key_der = AsDer::<EcPrivateKeyRfc5915Der>::as_der(&private_key)
-    //     .map_err(|e| format!("{:?}", e))?;
-    // let private_key = pem::Pem::new("PRIVATE KEY", private_key_der.as_ref());
-    // let private_key = pem::encode(&private_key);
-    // let private_key: Vec<u8> = private_key.into_bytes();
-
-
-    let private_key_sender = agreement::PrivateKey::generate(&agreement::ECDH_P256)?;
-
-    let private_key_sender = AsDer::<EcPrivateKeyRfc5915Der>::as_der(&private_key_sender)?;
-    let private_key_sender = pem::Pem::new("ECDH PRIVATE KEY SENDER", private_key_sender.as_ref());
-    let private_key_sender = pem::encode(&private_key_sender);
-    
-    let private_key_recipient = agreement::PrivateKey::generate(&agreement::ECDH_P256)?;
-    // Make `public_key_recipient` a byte slice containing private_key_recipient. In a real
-    // application, this would be sent to the peer in an encoded protocol
-    // message.
-    let public_key_recipient = private_key_recipient.compute_public_key()?;
-
-    let private_key_recipient = AsDer::<EcPrivateKeyRfc5915Der>::as_der(&private_key_recipient)?;
-    let private_key_recipient = pem::Pem::new("ECDH PRIVATE KEY RECIPIENT", private_key_recipient.as_ref());
-    let private_key_recipient = pem::encode(&private_key_recipient);
-
-    let public_key_recipient = AsDer::<PublicKeyX509Der>::as_der(&public_key_recipient)?;
-    let public_key_recipient = pem::Pem::new("ECDH PUBLIC KEY RECIPIENT", public_key_recipient.as_ref());
-    let public_key_recipient = pem::encode(&public_key_recipient);
+    let (_public_key_sender, private_key_sender) = generate_ecc_key_pair(_ecdh_curve_spec)?;
+    let (public_key_recipient, private_key_recipient) = generate_ecc_key_pair(_ecdh_curve_spec)?;
 
     std::fs::OpenOptions::new()
         .write(true)
@@ -349,6 +299,117 @@ fn generate_ecc_key_pair(
         .write_all(public_key_recipient.as_bytes())?;
 
     Ok(())
+}
+
+fn generate_ecc_key_pair(
+    _ecdh_curve_spec: EcdhCurveSpec
+) -> Result<(String, String), crate::BoxError> {
+    use aws_lc_rs::encoding::AsDer;
+    use aws_lc_rs::encoding::PublicKeyX509Der;
+    use aws_lc_rs::encoding::EcPrivateKeyRfc5915Der;
+    use aws_lc_rs::agreement;
+
+    // This code will generate new ECC keys for example use.
+    // The public and private keys will be written to the files:
+    //  - public: EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT
+    //  - private: EXAMPLE_ECC_PRIVATE_KEY_FILENAME_SENDER, EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT
+    // This example uses aws-lc-rs's KeyPairGenerator to generate the key pair.
+    // In practice, you should not generate this in your code, and should instead
+    // retrieve this key from a secure key management system (e.g. HSM)
+    // These examples only demonstrate using the P256 curve while the keyring accepts
+    // P256, P384, or P521.
+    // This key is created here for example purposes only.
+    let private_key =
+        aws_lc_rs::agreement::PrivateKey::generate(&agreement::ECDH_P256)
+            .map_err(|e| format!("{:?}", e))?;
+
+    let public_key = private_key
+        .compute_public_key()
+        .map_err(|e| format!("{:?}", e))?;
+
+    // TODO: fix (take in as arg with curve)
+    let nid = aws_lc_sys::NID_X9_62_prime256v1;
+        
+    let public_key: Vec<u8> = X962_to_X509(public_key.as_ref(), nid)?;
+    let public_key = AsDer::<PublicKeyX509Der>::as_der(&public_key)?;
+    let public_key = pem::Pem::new("ECDH PUBLIC KEY", public_key.as_ref());
+    let public_key = pem::encode(&public_key);
+
+    let private_key_der = AsDer::<EcPrivateKeyRfc5915Der>::as_der(&private_key)
+        .map_err(|e| format!("{:?}", e))?;
+    let private_key = pem::Pem::new("ECDH PRIVATE KEY", private_key_der.as_ref());
+    let private_key = pem::encode(&private_key);
+
+    Ok((public_key, private_key))
+}
+
+fn X962_to_X509(
+    public_key: &[u8],
+    nid: i32
+) -> Result<Vec<u8>, String> {
+    use aws_lc_sys::EC_POINT_new;
+    use aws_lc_sys::EC_GROUP_new_by_curve_name;
+    use aws_lc_sys::EC_POINT_oct2point;
+    use aws_lc_sys::EC_KEY_new_by_curve_name;
+    use aws_lc_sys::EC_KEY_set_public_key;
+    use aws_lc_sys::EVP_PKEY_new;
+    use aws_lc_sys::EVP_PKEY_assign_EC_KEY;
+    use aws_lc_sys::EVP_PKEY_size;
+    use aws_lc_sys::EVP_marshal_public_key;
+    use aws_lc_sys::CBB_finish;
+    use aws_lc_sys::CBB_init;
+    use aws_lc_sys::CBB;
+    use aws_lc_sys::OPENSSL_free;
+    use aws_lc_sys::EVP_PKEY_free;
+    use aws_lc_sys::EC_POINT_free;
+    use std::ptr::null_mut;
+
+    let ec_group = unsafe { EC_GROUP_new_by_curve_name(nid) };
+    let ec_point = unsafe { EC_POINT_new(ec_group) };
+
+    if 1 != unsafe {
+        EC_POINT_oct2point(
+            ec_group,
+            ec_point,
+            public_key.as_ptr(),
+            public_key.len(),
+            null_mut(),
+        )
+    } {
+        return Err("Error in EC_POINT_oct2point.".to_string());
+    }
+
+    let ec_key = unsafe { EC_KEY_new_by_curve_name(nid) };
+    if 1 != unsafe { EC_KEY_set_public_key(ec_key, ec_point) } {
+        return Err("Error in EC_KEY_set_public_key.".to_string());
+    }
+
+    let evp_pkey = unsafe { EVP_PKEY_new() };
+    if 1 != unsafe { EVP_PKEY_assign_EC_KEY(evp_pkey, ec_key) } {
+        return Err("Error in EVP_PKEY_assign_EC_KEY.".to_string());
+    }
+
+    let key_size_bytes: usize = unsafe { EVP_PKEY_size(evp_pkey) }.try_into().unwrap();
+    let mut cbb: CBB = Default::default();
+    unsafe { CBB_init(&mut cbb as *mut CBB, key_size_bytes * 5) };
+
+    if 1 != unsafe { EVP_marshal_public_key(&mut cbb, evp_pkey) } {
+        return Err("Error in EVP_marshal_public_key in GetPublicKey.".to_string());
+    };
+
+    let mut out_data = null_mut::<u8>();
+    let mut out_len: usize = 0;
+
+    if 1 != unsafe { CBB_finish(&mut cbb, &mut out_data, &mut out_len) } {
+        return Err("Error in CBB_finish in GetPublicKey.".to_string());
+    };
+    let slice = unsafe { std::slice::from_raw_parts(out_data, out_len) };
+    let slice = slice.to_vec();
+
+    unsafe { OPENSSL_free(out_data as *mut ::std::os::raw::c_void) };
+    unsafe { EVP_PKEY_free(evp_pkey) };
+    unsafe { EC_POINT_free(ec_point) };
+    Ok(slice)
 }
 
 #[tokio::test(flavor = "multi_thread")]
