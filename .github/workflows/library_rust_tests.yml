@@ -54,7 +54,6 @@ jobs:
       # - name: Rustfmt Check
       #   uses: actions-rust-lang/rustfmt@v1
       
-      # TODO: Use setup-dafny-actions with correct version when Dafny releases 4.8.2
       - name: Setup Dafny
         uses: dafny-lang/setup-dafny-action@v1.7.0
         with:
