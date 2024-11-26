@@ -78,7 +78,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .send()
         .await?;
 
-    // 4. Encrypt the data with the encryptionContext using the kms_mrk_multi_keyring.
+    // 4. Encrypt the data with the encryption_context using the kms_mrk_multi_keyring.
     let plaintext = example_data.as_bytes();
 
     let encryption_response = esdk_client.encrypt()

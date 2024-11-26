@@ -20,8 +20,9 @@ This example loads ECC keys from PEM files and the ciphertext with paths defined
  - EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT
 
 If you do not provide these files, running this example through this
-class' main method will generate all three files required for all ECDH examples
-(defined in AwsEncryptionSDK/runtimes/rust/examples/keyring/ecdh/ecdh_utils.rs) for you.
+class' main method will generate three files required for all raw ECDH examples
+EXAMPLE_ECC_PRIVATE_KEY_FILENAME_SENDER, EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT
+and EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT for you.
 In practice, users of this library should not generate new key pairs
 like this, and should instead retrieve an existing key from a secure
 key management system (e.g. an HSM).
@@ -34,7 +35,7 @@ already exists, this class' main method will not generate a new key pair.
 This examples creates a RawECDH keyring with the PublicKeyDiscovery key agreement scheme.
 This scheme is only available on decrypt.
 
-This example creates a Raw ECDH Keyring and takes in a ciphertext to decrypt it.
+This example creates a Public Key Discovery Raw ECDH Keyring and takes in a ciphertext to decrypt it.
 This example also includes some sanity checks for demonstration:
 1. Decrypted plaintext value matches EXAMPLE_DATA
 These sanity checks are for demonstration in the example only. You do not need these in your code.
@@ -57,9 +58,10 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use pem::parse;
-use super::ecdh_utils::exists;
-use super::ecdh_utils::EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT;
-use super::ecdh_utils::EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT;
+use crate::example_utils::utils::exists;
+use crate::example_utils::utils::EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT;
+use crate::example_utils::utils::EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT;
+use crate::example_utils::utils::write_raw_ecdh_ecc_keys;
 
 pub async fn decrypt_with_keyring(
     example_data: &str,
@@ -90,10 +92,15 @@ pub async fn decrypt_with_keyring(
 
     // 3. You may provide your own ECC keys in the files located at
     // - EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT
-    // If these files are not present, the main method in this class will generate PEM
-    // files for example use. Do not use these files for any other purpose.
+
+    // If you do not provide these files, running this example through this
+    // class' main method will generate three files required for all raw ECDH examples
+    // EXAMPLE_ECC_PRIVATE_KEY_FILENAME_SENDER, EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT
+    // and EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT for you.
+
+    // Do not use these files for any other purpose.
     if should_generate_new_ecc_key_pair_discovery_raw_ecdh()? {
-        super::ecdh_utils::write_ecc_key_pair_all(ecdh_curve_spec)?;
+        write_raw_ecdh_ecc_keys(ecdh_curve_spec)?;
     }
 
     // 4. Load keys from UTF-8 encoded PEM files.
@@ -220,7 +227,7 @@ async fn get_ciphertext(
         .send()
         .await?;
 
-    // 4. Encrypt the data with the encryptionContext
+    // 4. Encrypt the data with the encryption_context
 
     // A raw ecdh keyring with Ephemeral configuration cannot decrypt data since the key pair
     // used as the sender is ephemeral. This means that at decrypt time it does not have

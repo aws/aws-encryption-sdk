@@ -138,7 +138,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         ("the data you are handling".to_string(), "is what you think it is".to_string()),
     ]);
 
-    // 8. Encrypt the data with encryptionContextA & encryptionContextB
+    // 8. Encrypt the data with encryption_contextA & encryption_contextB
     let plaintext = example_data.as_bytes();
 
     let encryption_response_a = esdk_client.encrypt()

@@ -97,7 +97,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .send()
         .await?;
 
-    // 6. Encrypt the data with the encryptionContext
+    // 6. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
 
     // This is the important step in this example where we specify the algorithm suite

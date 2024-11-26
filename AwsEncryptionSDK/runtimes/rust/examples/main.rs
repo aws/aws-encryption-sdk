@@ -165,6 +165,13 @@ pub async fn main() -> Result<(), BoxError2> {
         EcdhCurveSpec::EccNistP256
     ).await?;
 
+    keyring::ecdh::kms_ecdh_keyring_example::encrypt_and_decrypt_with_keyring(
+        utils::TEST_EXAMPLE_DATA,
+        utils::TEST_KMS_ECDH_KEY_ID_P256_SENDER,
+        EcdhCurveSpec::EccNistP256,
+        Some(utils::TEST_KMS_ECDH_KEY_ID_P256_RECIPIENT)
+    ).await?;
+
     keyring::aws_kms_hierarchical::aws_kms_hierarchical_keyring_example::encrypt_and_decrypt_with_keyring(
         utils::TEST_EXAMPLE_DATA,
         utils::TEST_KEY_STORE_NAME,

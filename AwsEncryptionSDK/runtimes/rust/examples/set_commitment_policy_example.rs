@@ -75,7 +75,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .send()
         .await?;
 
-    // 5. Encrypt the data with the encryptionContext. Make sure you use a non-committing algorithm
+    // 5. Encrypt the data with the encryption_context. Make sure you use a non-committing algorithm
     // with the commitment policy ForbidEncryptAllowDecrypt. Otherwise esdk_client.encrypt() will throw
     // Error: AwsCryptographicMaterialProvidersError
     //   {

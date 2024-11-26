@@ -18,8 +18,9 @@ This example loads ECC keys from PEM files with paths defined in
  - EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT
 
 If you do not provide these files, running this example through this
-class' main method will generate all three files required for all ECDH examples
-(defined in AwsEncryptionSDK/runtimes/rust/examples/keyring/ecdh/ecdh_utils.rs) for you.
+class' main method will generate three files required for all raw ECDH examples
+EXAMPLE_ECC_PRIVATE_KEY_FILENAME_SENDER, EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT
+and EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT for you.
 These files will be generated in the directory where the example is run.
 In practice, users of this library should not generate new key pairs
 like this, and should instead retrieve an existing key from a secure
@@ -58,9 +59,10 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use pem::parse;
-use super::ecdh_utils::exists;
-use super::ecdh_utils::EXAMPLE_ECC_PRIVATE_KEY_FILENAME_SENDER;
-use super::ecdh_utils::EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT;
+use crate::example_utils::utils::exists;
+use crate::example_utils::utils::EXAMPLE_ECC_PRIVATE_KEY_FILENAME_SENDER;
+use crate::example_utils::utils::EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT;
+use crate::example_utils::utils::write_raw_ecdh_ecc_keys;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
@@ -89,10 +91,15 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 3. You may provide your own ECC keys in the files located at
     // - EXAMPLE_ECC_PRIVATE_KEY_FILENAME_SENDER
     // - EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT
-    // If these files are not present, the main method in this class will generate PEM
-    // files for example use. Do not use these files for any other purpose.
+    
+    // If you do not provide these files, running this example through this
+    // class' main method will generate three files required for all raw ECDH examples
+    // EXAMPLE_ECC_PRIVATE_KEY_FILENAME_SENDER, EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT
+    // and EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT for you.
+
+    // Do not use these files for any other purpose.
     if should_generate_new_ecc_key_pair_raw_ecdh()? {
-        super::ecdh_utils::write_ecc_key_pair_all(ecdh_curve_spec)?;
+        write_raw_ecdh_ecc_keys(ecdh_curve_spec)?;
     }
 
     // 4. Load keys from UTF-8 encoded PEM files.
@@ -134,7 +141,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .send()
         .await?;
 
-    // 7. Encrypt the data with the encryptionContext
+    // 7. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
 
     let encryption_response = esdk_client.encrypt()
