@@ -6,11 +6,9 @@ This example sets up the KMS ECDH Keyring.
 
 This example takes in the sender's KMS ECC key ARN, the sender's public key,
 the recipient's public key, and the algorithm definition where the ECC keys lie.
-The eccKeyArn parameter takes in the sender's KMS ECC key ARN,
-the eccPublicKeySenderFileName parameter takes in the sender's public key that corresponds to the
-eccKeyArn, the eccPublicKeyRecipientFileName parameter takes in the recipient's public key,
-and the Curve Specification where the keys lie.
-Both public keys MUST be UTF8 PEM-encoded X.509 public key, also known as SubjectPublicKeyInfo (SPKI),
+
+Both public keys MUST be UTF8 PEM-encoded X.509 public key,
+also known as SubjectPublicKeyInfo (SPKI),
 
 This keyring, depending on its KeyAgreement scheme,
 takes in the sender's KMS ECC Key ARN, and the recipient's ECC Public Key
@@ -64,10 +62,10 @@ pub async fn encrypt_and_decrypt_with_keyring(
     ecdh_curve_spec: EcdhCurveSpec,
     ecc_recipient_key_arn: Option<&str>
 ) -> Result<(), crate::BoxError> {
-    // 0. If ecc_recipient_key_arn is not provided, set the private key for the recipient to TEST_KMS_ECDH_KEY_ID_P256_RECIPIENT
+    // 1. If ecc_recipient_key_arn is not provided, set the private key for the recipient to TEST_KMS_ECDH_KEY_ID_P256_RECIPIENT
     let ecc_recipient_key_arn = ecc_recipient_key_arn.unwrap_or(crate::example_utils::utils::TEST_KMS_ECDH_KEY_ID_P256_RECIPIENT);
 
-    // 1. Instantiate the encryption SDK client.
+    // 2. Instantiate the encryption SDK client.
     // This builds the default client with the RequireEncryptRequireDecrypt commitment policy,
     // which enforces that this client only encrypts using committing algorithm suites and enforces
     // that this client will only decrypt encrypted messages that were created with a committing
@@ -75,7 +73,11 @@ pub async fn encrypt_and_decrypt_with_keyring(
     let esdk_config = AwsEncryptionSdkConfig::builder().build()?;
     let esdk_client = esdk_client::Client::from_conf(esdk_config)?;
 
-    // 2. Create encryption context.
+    // 3. Create a KMS client.
+    let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
+    let kms_client = aws_sdk_kms::Client::new(&sdk_config);
+
+    // 4. Create encryption context.
     // Remember that your encryption context is NOT SECRET.
     // For more information, see
     // https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#encryption-context
@@ -87,12 +89,13 @@ pub async fn encrypt_and_decrypt_with_keyring(
         ("the data you are handling".to_string(), "is what you think it is".to_string()),
         ]);
 
-    // 3. You may provide your own ECC keys in the files located at
+    // 5. You may provide your own ECC keys in the files located at
     // - EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_SENDER
     // - EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_RECIPIENT
 
-    // If you do not provide these files, running this example through this
-    // class' main method will generate these files for you.
+    // If not, the main method in this class will call
+    // the KMS ECC key, retrieve its public key, and store it
+    // in a PEM file for example use.
     if should_generate_new_kms_ecc_public_key(EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_SENDER)? {
         write_kms_ecdh_ecc_public_key(ecc_key_arn, EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_SENDER).await?;
     }
@@ -101,7 +104,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         write_kms_ecdh_ecc_public_key(ecc_recipient_key_arn, EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_RECIPIENT).await?;
     }
 
-    // 4. Load public key from UTF-8 encoded PEM files into a DER encoded public key.
+    // 6. Load public key from UTF-8 encoded PEM files into a DER encoded public key.
     let public_key_file_content_sender = std::fs::read_to_string(Path::new(EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_SENDER))?;
     let parsed_public_key_file_content_sender = parse(public_key_file_content_sender)?;
     let public_key_sender_utf8_bytes = parsed_public_key_file_content_sender.contents();
@@ -110,7 +113,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     let parsed_public_key_file_content_recipient = parse(public_key_file_content_recipient)?;
     let public_key_recipient_utf8_bytes = parsed_public_key_file_content_recipient.contents();
 
-    // 5. Create the KmsPrivateKeyToStaticPublicKeyInput
+    // 7. Create the KmsPrivateKeyToStaticPublicKeyInput
     let kms_ecdh_static_configuration_input =
         KmsPrivateKeyToStaticPublicKeyInput::builder()
             .sender_kms_identifier(ecc_key_arn)
@@ -122,7 +125,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     let kms_ecdh_static_configuration = KmsEcdhStaticConfigurations::KmsPrivateKeyToStaticPublicKey(kms_ecdh_static_configuration_input);
 
-    // 6. Create the KMS ECDH keyring.
+    // 8. Create the KMS ECDH keyring.
     let mpl_config = MaterialProvidersConfig::builder().build()?;
     let mpl = mpl_client::Client::from_conf(mpl_config)?;
 
@@ -145,12 +148,13 @@ pub async fn encrypt_and_decrypt_with_keyring(
     //               key for the key passed into kmsKeyId in DER format
     let kms_ecdh_keyring = mpl
         .create_aws_kms_ecdh_keyring()
+        .kms_client(kms_client)
         .curve_spec(ecdh_curve_spec)
         .key_agreement_scheme(kms_ecdh_static_configuration)
         .send()
         .await?;
 
-    // 7. Encrypt the data with the encryption_context
+    // 9. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
 
     let encryption_response = esdk_client.encrypt()
@@ -164,12 +168,12 @@ pub async fn encrypt_and_decrypt_with_keyring(
                         .ciphertext
                         .expect("Unable to unwrap ciphertext from encryption response");
 
-    // 8. Demonstrate that the ciphertext and plaintext are different.
+    // 10. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
     assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
         "Ciphertext and plaintext data are the same. Invalid encryption");
 
-    // 9. Decrypt your encrypted data using the same keyring you used on encrypt.
+    // 11. Decrypt your encrypted data using the same keyring you used on encrypt.
     let decryption_response = esdk_client.decrypt()
         .ciphertext(ciphertext)
         .keyring(kms_ecdh_keyring)
@@ -182,7 +186,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
                                 .plaintext
                                 .expect("Unable to unwrap plaintext from decryption response");
 
-    // 10. Demonstrate that the decrypted plaintext is identical to the original plaintext.
+    // 12. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
     assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
         "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");

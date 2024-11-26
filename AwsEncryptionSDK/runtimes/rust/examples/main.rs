@@ -165,11 +165,20 @@ pub async fn main() -> Result<(), BoxError2> {
         EcdhCurveSpec::EccNistP256
     ).await?;
 
+    // If you provide the public keys for KMS ECDH Keyring, it MUST
+    // be a key on curve P256 to run the example as is. If you want to provide a key on a
+    // different curve, update the input to encrypt_and_decrypt_with_keyring
     keyring::ecdh::kms_ecdh_keyring_example::encrypt_and_decrypt_with_keyring(
         utils::TEST_EXAMPLE_DATA,
         utils::TEST_KMS_ECDH_KEY_ID_P256_SENDER,
         EcdhCurveSpec::EccNistP256,
         Some(utils::TEST_KMS_ECDH_KEY_ID_P256_RECIPIENT)
+    ).await?;
+
+    keyring::ecdh::kms_ecdh_discovery_keyring_example::decrypt_with_keyring(
+        utils::TEST_EXAMPLE_DATA,
+        EcdhCurveSpec::EccNistP256,
+        utils::TEST_KMS_ECDH_KEY_ID_P256_RECIPIENT
     ).await?;
 
     keyring::aws_kms_hierarchical::aws_kms_hierarchical_keyring_example::encrypt_and_decrypt_with_keyring(

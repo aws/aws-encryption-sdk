@@ -109,7 +109,13 @@ pub async fn decrypt_with_keyring(
     file.read_to_end(&mut private_key_recipient_utf8_bytes)?;
 
     // Generate the ciphertext
-    let ciphertext = get_ciphertext(example_data, ecdh_curve_spec, encryption_context.clone(), esdk_client.clone(), mpl.clone()).await?;
+    let ciphertext = get_ciphertext(
+        example_data,
+        ecdh_curve_spec,
+        encryption_context.clone(),
+        esdk_client.clone(),
+        mpl.clone()
+    ).await?;
 
     // 5. Create the PublicKeyDiscoveryInput
     let discovery_raw_ecdh_static_configuration_input =
@@ -195,8 +201,7 @@ async fn get_ciphertext(
     encryption_context: HashMap<String, String>,
     esdk_client: esdk_client::Client,
     mpl: mpl_client::Client
-) -> Result<Blob, crate::BoxError>
-{
+) -> Result<Blob, crate::BoxError> {
     // 1. Load keys from UTF-8 encoded PEM files.
     
     // Load public key from UTF-8 encoded PEM files into a DER encoded public key.

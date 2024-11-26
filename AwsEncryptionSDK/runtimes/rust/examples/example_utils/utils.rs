@@ -186,7 +186,7 @@ pub(crate) fn write_raw_ecdh_ecc_keys(
     Ok(())
 }
 
-pub(crate) fn generate_raw_ecc_key_pair(
+fn generate_raw_ecc_key_pair(
     ecdh_curve_spec: EcdhCurveSpec
 ) -> Result<(String, String), crate::BoxError> {
     use aws_lc_rs::encoding::AsDer;
@@ -235,6 +235,9 @@ pub(crate) async fn write_kms_ecdh_ecc_public_key (
 
     let public_key = generate_kms_ecc_public_key(ecc_key_arn).await?;
 
+    let public_key = pem::Pem::new("PUBLIC KEY", public_key);
+    let public_key = pem::encode(&public_key);
+
     std::fs::OpenOptions::new()
         .write(true)
         .create(true)
@@ -246,8 +249,8 @@ pub(crate) async fn write_kms_ecdh_ecc_public_key (
 }
 
 pub(crate) async fn generate_kms_ecc_public_key(
-    ecc_key_arn: &str
-) -> Result<String, crate::BoxError> {
+    ecc_key_arn: &str,
+) -> Result<aws_smithy_types::Blob, crate::BoxError> {
     // Create KMS client to get public key
     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
     let kms_client = aws_sdk_kms::Client::new(&sdk_config);
@@ -256,18 +259,15 @@ pub(crate) async fn generate_kms_ecc_public_key(
     // You must have kms:GetPublicKey permissions on the key for this to succeed.
     // The public key generated here will be written to the file EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_SENDER
     // or EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_RECIPIENT.
-    let public_key = kms_client
+    let kms_response = kms_client
         .get_public_key()
         .key_id(ecc_key_arn)
         .send()
-        .await?
+        .await?;
+    
+    let public_key = kms_response
         .public_key
-        .expect("Error generating public key from KMS.");
-
-    let public_key = pem::Pem::new("PUBLIC KEY", public_key);
-    let public_key = pem::encode(&public_key);
-
-    println!("public key: {:?}", public_key);
+        .expect("Error unwrapping public key from KMS response.");
 
     Ok(public_key)
 }
