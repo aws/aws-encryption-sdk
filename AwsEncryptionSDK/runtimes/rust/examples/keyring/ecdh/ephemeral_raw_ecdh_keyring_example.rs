@@ -99,7 +99,7 @@ pub async fn encrypt_with_keyring(
     // 5. Create the EphemeralPrivateKeyToStaticPublicKeyInput
     let ephemeral_raw_ecdh_static_configuration_input =
         EphemeralPrivateKeyToStaticPublicKeyInput::builder()
-            // Must be a DER-encoded X.509 public key
+            // Must be a UTF8 DER-encoded X.509 public key
             .recipient_public_key(public_key_recipient_utf8_bytes)
             .build()?;
 

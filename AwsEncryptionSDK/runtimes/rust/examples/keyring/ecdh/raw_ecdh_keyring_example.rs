@@ -117,7 +117,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         RawPrivateKeyToStaticPublicKeyInput::builder()
             // Must be a UTF8 PEM-encoded private key
             .sender_static_private_key(private_key_sender_utf8_bytes)
-            // Must be a DER-encoded X.509 public key
+            // Must be a UTF8 DER-encoded X.509 public key
             .recipient_public_key(public_key_recipient_utf8_bytes)
             .build()?;
 

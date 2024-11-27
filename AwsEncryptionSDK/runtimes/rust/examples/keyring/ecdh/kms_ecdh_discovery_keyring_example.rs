@@ -100,11 +100,15 @@ pub async fn decrypt_with_keyring(
         .send()
         .await?;
 
-    // 6. Get ciphertext from the KMS ECDH keyring
-    // For getting the ciphertext, we create a KMS ECDH keyring without discovery
-    // because kms_ecdh_discovery_keyring cannot encrypt data.
+    // 6. Get ciphertext by creating a KMS ECDH keyring WITHOUT discovery
+    // because the KMS ECDH keyring WITH discovery CANNOT encrypt data.
     let plaintext = example_data.as_bytes();
 
+    // Get ciphertext by creating a KMS ECDH keyring WITHOUT discovery.
+    // The recipient's public key used in the encrypting KMS ECDH keyring WITHOUT discovery
+    // is a public key generated from ecc_recipient_key_arn, the same ecc key used
+    // when creating the KMS ECDH keyring WITH discovery used for decryption in this example.
+    // We then decrypt this ciphertext using a KMS ECDH keyring WITH discovery
     let ciphertext = get_ciphertext(
         example_data,
         encryption_context.clone(),
@@ -156,9 +160,9 @@ async fn get_ciphertext(
     let kms_ecdh_static_configuration_input =
         KmsPrivateKeyToStaticPublicKeyInput::builder()
             .sender_kms_identifier(TEST_KMS_ECDH_KEY_ID_P256_SENDER)
-            // Must be a DER-encoded X.509 public key
+            // Must be a UTF8 DER-encoded X.509 public key
             .sender_public_key(public_key_sender_utf8_bytes)
-            // Must be a DER-encoded X.509 public key
+            // Must be a UTF8 DER-encoded X.509 public key
             .recipient_public_key(public_key_recipient_utf8_bytes)
             .build()?;
 

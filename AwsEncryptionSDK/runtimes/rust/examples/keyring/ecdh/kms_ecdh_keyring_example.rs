@@ -117,9 +117,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
     let kms_ecdh_static_configuration_input =
         KmsPrivateKeyToStaticPublicKeyInput::builder()
             .sender_kms_identifier(ecc_key_arn)
-            // Must be a DER-encoded X.509 public key
+            // Must be a UTF8 DER-encoded X.509 public key
             .sender_public_key(public_key_sender_utf8_bytes)
-            // Must be a DER-encoded X.509 public key
+            // Must be a UTF8 DER-encoded X.509 public key
             .recipient_public_key(public_key_recipient_utf8_bytes)
             .build()?;
 
