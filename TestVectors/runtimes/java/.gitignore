@@ -1,0 +1,21 @@
+# Ignore Gradle project-specific cache directory
+.gradle
+# For TestMPL, the build.gradle.kts define's the gradle wrapper version.
+# This prevents having ANOTHER copy of gradle in the repo
+gradlew
+gradlew.bat
+gradle/wrapper/gradle-wrapper.jar
+
+# Ignore Gradle build output directory
+build
+
+# JetBrains
+.idea/*
+*.iml
+
+# Mac OS X
+.DS_Store
+
+# Dafny Generated Java
+src/main/dafny-generated/
+src/test/dafny-generated/

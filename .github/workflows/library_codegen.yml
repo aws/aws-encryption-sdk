@@ -38,7 +38,6 @@ jobs:
       # it to verify the Dafny code. Instead we manually pull the submodules we DO need.
       - run: git submodule update --init libraries
       - run: git submodule update --init --recursive mpl
-      - run: git submodule update --init --recursive smithy-dafny
 
       # Only used to format generated code
       # and to translate version strings such as "nightly-latest"

@@ -1,0 +1,142 @@
+# This workflow performs tests in Rust.
+name: Library Rust tests
+
+on:
+  workflow_call:
+    inputs:
+      dafny:
+        description: 'The Dafny version to run'
+        required: true
+        type: string
+      regenerate-code:
+        description: "Regenerate code using smithy-dafny"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  testRust:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [
+          windows-latest,
+          ubuntu-latest,
+          macos-12,
+        ]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      # TODO: do we need this here?
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
+    steps:
+      - name: Support longpaths on Git checkout
+        run: |
+          git config --global core.longpaths true
+      - uses: actions/checkout@v2
+      - name: Init Submodules
+        shell: bash
+        run: |
+          git submodule update --init libraries
+          git submodule update --init --recursive mpl
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+          role-session-name: RustTests
+
+      - name: Setup Rust Toolchain for GitHub CI
+        uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
+        with:
+          components: rustfmt
+      # TODO - uncomment this after Rust formatter works
+      # - name: Rustfmt Check
+      #   uses: actions-rust-lang/rustfmt@v1
+      
+      # TODO: Use setup-dafny-actions with correct version when Dafny releases 4.8.2
+      - name: Setup Dafny
+        uses: dafny-lang/setup-dafny-action@v1.7.0
+        with:
+          dafny-version: nightly-latest
+
+      # TODO: Remove this after the formatting in Rust starts working
+      - name: smithy-dafny Rust hacks
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            sed -i '' 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
+          else
+            sed -i 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
+          fi
+
+      - name: Setup Java 17 for codegen
+        uses: actions/setup-java@v3
+        with:
+          distribution: "corretto"
+          java-version: "17"
+
+      - name: Setup NASM for Windows (aws-lc-sys)
+        uses: ilammy/setup-nasm@v1
+
+      - name: Install Smithy-Dafny codegen dependencies
+        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+
+      - name: Regenerate code using smithy-dafny if necessary
+        if: ${{ inputs.regenerate-code }}
+        uses: ./.github/actions/polymorph_codegen
+        with:
+          dafny: ${{ env.DAFNY_VERSION }}
+          library: AwsEncryptionSDK
+          diff-generated-code: false
+          update-and-regenerate-mpl: true
+
+      # TODO: Remove this after checking in Rust polymorph code
+      - name: Run make polymorph_rust
+        shell: bash
+        working-directory: ./AwsEncryptionSDK
+        run: |
+          make polymorph_rust
+
+      - name: Compile AwsEncryptionSDK implementation
+        shell: bash
+        working-directory: ./AwsEncryptionSDK
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_rust TRANSPILE_TESTS_IN_RUST=1 CORES=$CORES
+
+      # Remove Rust hacks once Dafny fixes this
+      - name: Update implementation_from_dafny.rs to add deps
+        shell: bash
+        working-directory: ./AwsEncryptionSDK/runtimes/rust/src
+        run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            sed -i '' '/pub use types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;/a\
+            pub use crate::deps::aws_cryptography_materialProviders;\
+            pub use crate::deps::aws_cryptography_keyStore;\
+            pub use crate::deps::com_amazonaws_kms;
+            ' implementation_from_dafny.rs
+          else
+            sed -i '/pub use types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;/a\
+            pub use crate::deps::aws_cryptography_materialProviders;\
+            pub use crate::deps::aws_cryptography_keyStore;\
+            pub use crate::deps::com_amazonaws_kms;
+            ' implementation_from_dafny.rs
+          fi
+
+      - name: Test Rust
+        working-directory: ./AwsEncryptionSDK
+        shell: bash
+        run: |
+          make test_rust
+
+      - name: Test Examples for Rust
+        working-directory: ./AwsEncryptionSDK/runtimes/rust
+        shell: bash
+        run: |
+          cargo test --examples
