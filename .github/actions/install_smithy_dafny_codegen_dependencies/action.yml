@@ -12,10 +12,10 @@ runs:
       uses: gradle/gradle-build-action@v2
       with:
         arguments: :codegen-client:pTML :codegen-core:pTML :rust-runtime:pTML
-        build-root-directory: smithy-dafny/smithy-dafny-codegen-modules/smithy-rs
+        build-root-directory: mpl/smithy-dafny/smithy-dafny-codegen-modules/smithy-rs
 
     - name: Install smithy-dafny-codegen Python dependencies locally
       uses: gradle/gradle-build-action@v2
       with:
         arguments: :smithy-python-codegen:pTML
-        build-root-directory: smithy-dafny/codegen/smithy-dafny-codegen-modules/smithy-python/codegen
+        build-root-directory: mpl/smithy-dafny/codegen/smithy-dafny-codegen-modules/smithy-python/codegen
