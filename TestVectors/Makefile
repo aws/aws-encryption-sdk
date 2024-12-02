@@ -67,6 +67,26 @@ IMPLEMENTATION_FROM_DAFNY_TV_NET_FILE=runtimes/net/ImplementationFromDafny.cs
 IMPLEMENTATION_FROM_DAFNY_TV_NET_MPL_MAIN="Dafny.Helpers.WithHaltHandling(() => WrappedMaterialProvidersMain_Compile.__default._Main(Dafny.Sequence<Dafny.ISequence<char>>.FromMainArguments(args)));"
 IMPLEMENTATION_FROM_DAFNY_TV_NET_ESDK_MAIN="Dafny.Helpers.WithHaltHandling(() => WrappedESDKMain_Compile.__default.Main2(Dafny.Sequence<Dafny.ISequence<char>>.FromMainArguments(args)));"
 
+GO_MODULE_NAME="github.com/aws/aws-encryption-sdk"
+
+GO_DEPENDENCY_MODULE_NAMES := \
+	--dependency-library-name=aws.cryptography.encryptionSdk=github.com/aws/aws-encryption-sdk \
+	--dependency-library-name=com.amazonaws.dynamodb=github.com/aws/aws-cryptographic-material-providers-library/dynamodb \
+	--dependency-library-name=com.amazonaws.kms=github.com/aws/aws-cryptographic-material-providers-library/kms \
+	--dependency-library-name=aws.cryptography.keyStore=github.com/aws/aws-cryptographic-material-providers-library/mpl \
+	--dependency-library-name=aws.cryptography.primitives=github.com/aws/aws-cryptographic-material-providers-library/primitives \
+	--dependency-library-name=aws.cryptography.materialProviders=github.com/aws/aws-cryptographic-material-providers-library/mpl \
+    	--dependency-library-name=sdk.com.amazonaws.dynamodb=github.com/aws/aws-sdk-go-v2/service/dynamodb \
+    	--dependency-library-name=sdk.com.amazonaws.kms=github.com/aws/aws-sdk-go-v2/service/kms
+
+TRANSLATION_RECORD_GO := \
+	../AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    ../aws-cryptographic-material-providers-library/StandardLibrary/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    ../aws-cryptographic-material-providers-library/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    ../aws-cryptographic-material-providers-library/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    ../aws-cryptographic-material-providers-library/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    ../aws-cryptographic-material-providers-library/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr
+
 transpile_implementation_java: _replace_main_method_name_java
 transpile_implementation_net: _replace_main_method_name_net
 
@@ -89,6 +109,10 @@ test_generate_vectors_net:
 	dotnet run --project runtimes/net --framework $(FRAMEWORK) encrypt-manifest --encrypt-manifest-output runtimes/net
 	cp dafny/TestVectors/test/keys.json runtimes/net
 
+test_generate_vectors_go:
+	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go encrypt-manifest --encrypt-manifest-output ../
+	cp dafny/TestVectorsAwsCryptographicMaterialProviders/test/keys.json runtimes/go
+
 test_encrypt_vectors_java:
 	gradle -p runtimes/java run --args="encrypt --manifest-path . --decrypt-manifest-path ."
 
@@ -97,6 +121,9 @@ test_encrypt_vectors_net:
 	dotnet restore runtimes/net
 	dotnet build runtimes/net
 	dotnet run --project runtimes/net --framework $(FRAMEWORK) encrypt --manifest-path runtimes/net --decrypt-manifest-path runtimes/net
+
+test_encrypt_vectors_go:
+	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go encrypt --manifest-path=.. --decrypt-manifest-path=..
 
 test_decrypt_encrypt_vectors_java:
 	gradle -p runtimes/java run --args="decrypt --manifest-path . --manifest-name decrypt-manifest.json"
@@ -113,6 +140,9 @@ test_decrypt_encrypt_vectors_net_legacy:
 	dotnet build runtimes/net
 	dotnet run --project runtimes/net --framework $(FRAMEWORK) decrypt --manifest-path $(MANIFEST_PATH) --manifest-name $(MANIFEST_NAME)
 
+test_decrypt_encrypt_vectors_go:
+	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go decrypt --manifest-path=..
+	
 _polymorph_dependencies:
 	@echo "No polymorphing of dependency"
 
