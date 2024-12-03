@@ -124,7 +124,7 @@ pub(crate) fn x962_to_x509(
     Ok(slice)
 }
 
-pub(crate) fn get_nid(x: EcdhCurveSpec) -> i32 {
+fn get_nid(x: EcdhCurveSpec) -> i32 {
     match x {
         EcdhCurveSpec::EccNistP256 {} => aws_lc_sys::NID_X9_62_prime256v1,
         EcdhCurveSpec::EccNistP384 {} => aws_lc_sys::NID_secp384r1,
@@ -133,7 +133,7 @@ pub(crate) fn get_nid(x: EcdhCurveSpec) -> i32 {
     }
 }
 
-pub(crate) fn get_alg(x: EcdhCurveSpec) -> &'static aws_lc_rs::agreement::Algorithm {
+fn get_alg(x: EcdhCurveSpec) -> &'static aws_lc_rs::agreement::Algorithm {
     match x {
         EcdhCurveSpec::EccNistP256 {} => &aws_lc_rs::agreement::ECDH_P256,
         EcdhCurveSpec::EccNistP384 {} => &aws_lc_rs::agreement::ECDH_P384,
