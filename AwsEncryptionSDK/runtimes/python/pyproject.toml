@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "aws-encryption-sdk"
+version = "0.1.0"
+description = ""
+authors = ["AWS Crypto Tools <aws-crypto-tools@amazon.com>"]
+packages = [
+    { include = "aws_encryption_sdk", from = "src" }
+]
+# Include generated internaldafny files in package distributions,
+# even though they are not included in version control
+include = ["**/internaldafny/generated/*.py"]
+
+[tool.poetry.dependencies]
+python = "^3.11.0"
+aws-cryptographic-material-providers = "1.7.4"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
