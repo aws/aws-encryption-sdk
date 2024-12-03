@@ -24,7 +24,7 @@ pub use crate::deps::aws_cryptography_materialProviders;
 pub use crate::deps::aws_cryptography_primitives;
 pub use crate::deps::com_amazonaws_kms;
 
-pub(crate) mod implementation_from_dafny;
+pub mod implementation_from_dafny;
 pub(crate) use crate::implementation_from_dafny::r#_Wrappers_Compile;
 pub(crate) use crate::implementation_from_dafny::software;
 pub(crate) use crate::implementation_from_dafny::AesKdfCtr;
