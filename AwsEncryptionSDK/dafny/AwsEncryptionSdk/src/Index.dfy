@@ -3,9 +3,7 @@
 
 include "AwsEncryptionSdkOperations.dfy"
 
-module 
-  {:extern "software.amazon.cryptography.encryptionsdk.internaldafny" }
-  EncryptionSdk refines AbstractAwsCryptographyEncryptionSdkService {
+module {:extern "software.amazon.cryptography.encryptionsdk.internaldafny" } EncryptionSdk refines AbstractAwsCryptographyEncryptionSdkService {
   import Operations = AwsEncryptionSdkOperations
   import Primitives = AtomicPrimitives
   import MaterialProviders

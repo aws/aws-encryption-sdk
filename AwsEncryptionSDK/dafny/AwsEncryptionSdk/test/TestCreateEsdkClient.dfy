@@ -104,7 +104,7 @@ module TestCreateEsdkClient {
             keyring := Some(rawAesKeyring),
             encryptionContext := None
         ));
-        
+	print decryptOutput;
         expect decryptOutput.Success?;
         expect decryptOutput.value.plaintext == expectedMessage;
     }
