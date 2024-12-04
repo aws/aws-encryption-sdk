@@ -179,10 +179,10 @@ pub async fn encrypt_and_decrypt_with_keyring(
     ]);
 
     // 7. Encrypt the data for encryption_context using keyring1
-    let plaintext = aws_smithy_types::Blob::new(example_data);
+    let plaintext = example_data.as_bytes();
 
     let encryption_response1 = esdk_client.encrypt()
-        .plaintext(plaintext.clone())
+        .plaintext(plaintext)
         .keyring(keyring1.clone())
         .encryption_context(encryption_context.clone())
         .send()
@@ -194,7 +194,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 8. Demonstrate that the ciphertexts and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext1, plaintext,
+    assert_ne!(ciphertext1, aws_smithy_types::Blob::new(plaintext),
         "Ciphertext and plaintext data are the same. Invalid encryption");
 
     // 9. Decrypt your encrypted data using the same keyring HK1 you used on encrypt.
@@ -212,7 +212,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 10. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext1, plaintext,
+    assert_eq!(decrypted_plaintext1, aws_smithy_types::Blob::new(plaintext),
         "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
 
     // 11. Through the above encrypt and decrypt roundtrip, the cache will be populated and
@@ -259,7 +259,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 13. This encrypt-decrypt roundtrip with HK2 will experience Cache HITS from previous HK1 roundtrip
     // Encrypt the data for encryption_context using keyring2
     let encryption_response2 = esdk_client.encrypt()
-        .plaintext(plaintext.clone())
+        .plaintext(plaintext)
         .keyring(keyring2.clone())
         .encryption_context(encryption_context.clone())
         .send()
@@ -271,7 +271,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 14. Demonstrate that the ciphertexts and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext2, plaintext,
+    assert_ne!(ciphertext2, aws_smithy_types::Blob::new(plaintext),
         "Ciphertext and plaintext data are the same. Invalid encryption");
 
     // 15. Decrypt your encrypted data using the same keyring HK2 you used on encrypt.
@@ -289,7 +289,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 10. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext2, plaintext,
+    assert_eq!(decrypted_plaintext2, aws_smithy_types::Blob::new(plaintext),
         "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
 
     println!("Shared Cache Across Hierarchical Keyrings Example Completed Successfully");

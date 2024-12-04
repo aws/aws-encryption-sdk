@@ -120,16 +120,16 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .key_name(key_name)
         .key_namespace(key_namespace)
         .padding_scheme(PaddingScheme::OaepSha256Mgf1)
-        .public_key(aws_smithy_types::Blob::new(public_key_utf8_bytes))
-        .private_key(aws_smithy_types::Blob::new(private_key_utf8_bytes))
+        .public_key(public_key_utf8_bytes)
+        .private_key(private_key_utf8_bytes)
         .send()
         .await?;
 
-    // 7. Encrypt the data with the encryptionContext
-    let plaintext = aws_smithy_types::Blob::new(example_data);
+    // 7. Encrypt the data with the encryption_context
+    let plaintext = example_data.as_bytes();
 
     let encryption_response = esdk_client.encrypt()
-        .plaintext(plaintext.clone())
+        .plaintext(plaintext)
         .keyring(raw_rsa_keyring.clone())
         .encryption_context(encryption_context.clone())
         .send()
@@ -141,7 +141,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 8. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, plaintext,
+    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
         "Ciphertext and plaintext data are the same. Invalid encryption");
 
     // 9. Decrypt your encrypted data using the same keyring you used on encrypt.
@@ -159,7 +159,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 10. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext, plaintext,
+    assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
         "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
 
     println!("Raw RSA Keyring Example Completed Successfully");
@@ -170,6 +170,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 fn exists(f: &str) -> bool {
     Path::new(f).exists()
 }
+
 fn should_generate_new_rsa_key_pair() -> Result<bool, String> {
     // If a key pair already exists: do not overwrite existing key pair
     if exists(EXAMPLE_RSA_PRIVATE_KEY_FILENAME) && exists(EXAMPLE_RSA_PUBLIC_KEY_FILENAME) {
@@ -179,7 +180,6 @@ fn should_generate_new_rsa_key_pair() -> Result<bool, String> {
     else if exists(EXAMPLE_RSA_PRIVATE_KEY_FILENAME) && !exists(EXAMPLE_RSA_PUBLIC_KEY_FILENAME) {
         Err("Missing public key file at ".to_string() + EXAMPLE_RSA_PUBLIC_KEY_FILENAME)
     }
-    // If a key pair already exists: do not overwrite existing key pair
     else if exists(EXAMPLE_RSA_PRIVATE_KEY_FILENAME) && !exists(EXAMPLE_RSA_PUBLIC_KEY_FILENAME) {
         Err("Missing private key file at ".to_string() + EXAMPLE_RSA_PRIVATE_KEY_FILENAME)
     }

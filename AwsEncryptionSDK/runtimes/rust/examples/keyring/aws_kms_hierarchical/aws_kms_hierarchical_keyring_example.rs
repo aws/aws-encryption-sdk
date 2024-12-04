@@ -138,11 +138,11 @@ pub async fn encrypt_and_decrypt_with_keyring(
         ("the data you are handling".to_string(), "is what you think it is".to_string()),
     ]);
 
-    // 8. Encrypt the data with encryptionContextA & encryptionContextB
-    let plaintext = aws_smithy_types::Blob::new(example_data);
+    // 8. Encrypt the data with encryption_contextA & encryption_contextB
+    let plaintext = example_data.as_bytes();
 
     let encryption_response_a = esdk_client.encrypt()
-        .plaintext(plaintext.clone())
+        .plaintext(plaintext)
         .keyring(hierarchical_keyring.clone())
         .encryption_context(encryption_context_a.clone())
         .send()
@@ -153,7 +153,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
                         .expect("Unable to unwrap ciphertext from encryption response");
 
     let encryption_response_b = esdk_client.encrypt()
-        .plaintext(plaintext.clone())
+        .plaintext(plaintext)
         .keyring(hierarchical_keyring.clone())
         .encryption_context(encryption_context_b.clone())
         .send()
@@ -165,10 +165,10 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 9. Demonstrate that the ciphertexts and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext_a, plaintext,
+    assert_ne!(ciphertext_a, aws_smithy_types::Blob::new(plaintext),
         "Ciphertext and plaintext data are the same. Invalid encryption");
 
-    assert_ne!(ciphertext_b, plaintext,
+    assert_ne!(ciphertext_b, aws_smithy_types::Blob::new(plaintext),
         "Ciphertext and plaintext data are the same. Invalid encryption");
 
     // 10. To attest that TenantKeyB cannot decrypt a message written by TenantKeyA,
@@ -244,7 +244,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext_a, plaintext,
+    assert_eq!(decrypted_plaintext_a, aws_smithy_types::Blob::new(plaintext),
         "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
 
     // Similarly for TenantB
@@ -262,7 +262,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext_b, plaintext,
+    assert_eq!(decrypted_plaintext_b, aws_smithy_types::Blob::new(plaintext),
         "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
 
     println!("Hierarchical Keyring Example Completed Successfully");

@@ -78,11 +78,11 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .send()
         .await?;
 
-    // 4. Encrypt the data with the encryptionContext using the encrypt_keyring.
-    let plaintext = aws_smithy_types::Blob::new(example_data);
+    // 4. Encrypt the data with the encryption_context using the encrypt_keyring.
+    let plaintext = example_data.as_bytes();
 
     let encryption_response = esdk_client.encrypt()
-        .plaintext(plaintext.clone())
+        .plaintext(plaintext)
         .keyring(encrypt_kms_keyring)
         .encryption_context(encryption_context.clone())
         .send()
@@ -94,7 +94,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 5. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, plaintext,
+    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
         "Ciphertext and plaintext data are the same. Invalid encryption");
 
     // 6. Create a keyring that will decrypt your data, using the same KMS MRK replicated
@@ -128,7 +128,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 8. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext, plaintext,
+    assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
         "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
 
     println!("KMS MRK Keyring Example Completed Successfully");

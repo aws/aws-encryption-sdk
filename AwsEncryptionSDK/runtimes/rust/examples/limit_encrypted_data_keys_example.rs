@@ -78,7 +78,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
             .create_raw_aes_keyring()
             .key_name(key_name)
             .key_namespace(key_namespace)
-            .wrapping_key(aws_smithy_types::Blob::new(aes_key_bytes))
+            .wrapping_key(aes_key_bytes)
             .wrapping_alg(AesWrappingAlg::AlgAes256GcmIv12Tag16)
             .send()
             .await?;
@@ -97,11 +97,11 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .send()
         .await?;
 
-    // 6. Encrypt the data with the encryptionContext
-    let plaintext = aws_smithy_types::Blob::new(example_data);
+    // 6. Encrypt the data with the encryption_context
+    let plaintext = example_data.as_bytes();
 
     let encryption_response = esdk_client.encrypt()
-        .plaintext(plaintext.clone())
+        .plaintext(plaintext)
         .keyring(multi_keyring.clone())
         .encryption_context(encryption_context.clone())
         .send()
@@ -113,7 +113,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 7. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, plaintext,
+    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
         "Ciphertext and plaintext data are the same. Invalid encryption");
 
     // 8. Decrypt your encrypted data using the same keyring you used on encrypt.
@@ -131,7 +131,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 9. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext, plaintext,
+    assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
         "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
 
     // 10. Demonstrate that an EncryptionSDK with a lower MaxEncryptedDataKeys
