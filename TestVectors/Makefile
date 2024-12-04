@@ -149,13 +149,13 @@ _polymorph_dependencies:
 	@echo "No polymorphing of dependency"
 
 _sed_types_file_remove_extern:
-	@echo "skip"
+	@echo "No extern to process for ESDK TestVectors"
 
 _sed_index_file_remove_extern:
-	@echo "skip"
+	@echo "No extern to process for ESDK TestVectors"
 
 _sed_types_file_add_extern:
-	@echo "skip"
+	@echo "No extern to process for ESDK TestVectors"
 
 _sed_index_file_add_extern:
-	@echo "skip"
+	@echo "No extern to process for ESDK TestVectors"
