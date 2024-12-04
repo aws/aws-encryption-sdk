@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 CORES=2
+ENABLE_EXTERN_PROCESSING=1
 
 include ../SharedMakefileV2.mk
 
@@ -67,7 +68,7 @@ IMPLEMENTATION_FROM_DAFNY_TV_NET_FILE=runtimes/net/ImplementationFromDafny.cs
 IMPLEMENTATION_FROM_DAFNY_TV_NET_MPL_MAIN="Dafny.Helpers.WithHaltHandling(() => WrappedMaterialProvidersMain_Compile.__default._Main(Dafny.Sequence<Dafny.ISequence<char>>.FromMainArguments(args)));"
 IMPLEMENTATION_FROM_DAFNY_TV_NET_ESDK_MAIN="Dafny.Helpers.WithHaltHandling(() => WrappedESDKMain_Compile.__default.Main2(Dafny.Sequence<Dafny.ISequence<char>>.FromMainArguments(args)));"
 
-GO_MODULE_NAME="github.com/aws/aws-encryption-sdk"
+GO_MODULE_NAME="github.com/aws/aws-encryption-sdk/testvectors"
 
 GO_DEPENDENCY_MODULE_NAMES := \
 	--dependency-library-name=aws.cryptography.encryptionSdk=github.com/aws/aws-encryption-sdk \
@@ -80,12 +81,13 @@ GO_DEPENDENCY_MODULE_NAMES := \
     	--dependency-library-name=sdk.com.amazonaws.kms=github.com/aws/aws-sdk-go-v2/service/kms
 
 TRANSLATION_RECORD_GO := \
-	../AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    ../aws-cryptographic-material-providers-library/StandardLibrary/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    ../aws-cryptographic-material-providers-library/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    ../aws-cryptographic-material-providers-library/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    ../aws-cryptographic-material-providers-library/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    ../aws-cryptographic-material-providers-library/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr
+	AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    ../TestVectorMPL/StandardLibrary/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    ../TestVectorMPL/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    ../TestVectorMPL/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    ../TestVectorMPL/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    ../TestVectorMPL/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+	../TestVectorMPL/TestVectorsAwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr
 
 transpile_implementation_java: _replace_main_method_name_java
 transpile_implementation_net: _replace_main_method_name_net
@@ -111,7 +113,7 @@ test_generate_vectors_net:
 
 test_generate_vectors_go:
 	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go encrypt-manifest --encrypt-manifest-output ../
-	cp dafny/TestVectorsAwsCryptographicMaterialProviders/test/keys.json runtimes/go
+	cp dafny/TestVectors/test/keys.json runtimes/go
 
 test_encrypt_vectors_java:
 	gradle -p runtimes/java run --args="encrypt --manifest-path . --decrypt-manifest-path ."
@@ -146,3 +148,14 @@ test_decrypt_encrypt_vectors_go:
 _polymorph_dependencies:
 	@echo "No polymorphing of dependency"
 
+_sed_types_file_remove_extern:
+	@echo "skip"
+
+_sed_index_file_remove_extern:
+	@echo "skip"
+
+_sed_types_file_add_extern:
+	@echo "skip"
+
+_sed_index_file_add_extern:
+	@echo "skip"
