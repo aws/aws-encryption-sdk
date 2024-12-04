@@ -57,7 +57,7 @@ jobs:
       - name: Setup Dafny
         uses: dafny-lang/setup-dafny-action@v1.7.0
         with:
-          dafny-version: 4.9.0
+          dafny-version: nightly-2024-12-03-4954170
 
       # TODO: Remove this after the formatting in Rust starts working
       - name: smithy-dafny Rust hacks

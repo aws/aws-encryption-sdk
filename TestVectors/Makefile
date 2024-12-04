@@ -93,12 +93,8 @@ IMPLEMENTATION_FROM_DAFNY_TV_NET_MPL_MAIN="Dafny.Helpers.WithHaltHandling(() => 
 IMPLEMENTATION_FROM_DAFNY_TV_NET_ESDK_MAIN="Dafny.Helpers.WithHaltHandling(() => WrappedESDKMain_Compile.__default.Main2(Dafny.Sequence<Dafny.ISequence<char>>.FromMainArguments(args)));"
 
 IMPLEMENTATION_FROM_DAFNY_TV_RUST_FILE=runtimes/rust/src/implementation_from_dafny.rs
-IMPLEMENTATION_FROM_DAFNY_TV_RUST_MPL_MAIN="WrappedMaterialProvidersMain::_default::Main();"
-IMPLEMENTATION_FROM_DAFNY_TV_RUST_ESDK_MAIN= \
-	"let args: Vec<String> = std::env::args().collect();\
-	let dafny_strings = args.iter().map(|x| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(\&x)).collect::<Vec<_>>();\
-	let dafny_args = dafny_runtime::Sequence::from_array_owned(dafny_strings);\
-	r\#_WrappedESDKMain_Compile::_default::Main2(\&dafny_args);"
+IMPLEMENTATION_FROM_DAFNY_TV_RUST_MPL_MAIN="crate::implementation_from_dafny::r\#_WrappedMaterialProvidersMain_Compile::_default::Main(\&dafny_args);"
+IMPLEMENTATION_FROM_DAFNY_TV_RUST_ESDK_MAIN="crate::implementation_from_dafny::r\#_WrappedESDKMain_Compile::_default::Main2(\&dafny_args);"
 
 # TODO: Remove after wrapped client issue is fixed in Rust
 REMOVE_WRAPPED_CLIENT_AFTER_POLYMORPH_RUST_PRIMITIVES=runtimes/rust/src/deps/aws_cryptography_primitives.rs

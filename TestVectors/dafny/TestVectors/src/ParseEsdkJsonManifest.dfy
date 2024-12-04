@@ -71,7 +71,7 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
       i := i - 1;
       var test := ToDecryptTestVectors(op, version, keys, obj[i].0, obj[i].1);
       if test.Failure? && test.error != negativeTestVectorFound {
-        assert Failure(buildTestVectorError) == BuildDecryptTestVector(op, version, keys, obj[i..]); 
+        assert Failure(buildTestVectorError) == BuildDecryptTestVector(op, version, keys, obj[i..]);
         ghost var j: nat := i;
         while j != 0
           decreases j
@@ -266,7 +266,7 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
               decryptionMethod := DecryptionMethod.OneShot
             ))
   }
-  
+
   function V2ToDecryptTestVector(
     op: EsdkManifestOptions.ManifestOptions,
     keys: KeyVectors.KeyVectorsClient,
@@ -285,31 +285,31 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
       Failure(negativeTestVectorFound)
     else
 
-    var outputLoc :- GetObject("output", resultLoc);
+      var outputLoc :- GetObject("output", resultLoc);
 
-    var plaintextLoc :- GetString("plaintext", outputLoc);
-    var ciphertextLoc :- GetString("ciphertext", obj);
-    :- Need(
-         && "file://" < ciphertextLoc
-         && "file://" < plaintextLoc,
-         "Invalid file prefix in test vector"
-       );
-    var masterKeys :- GetArray("master-keys", obj);
-    var keyDescriptions :- GetKeyDescriptions(masterKeys, keys);
-    var keyDescription :- ToMultiKeyDescription(keyDescriptions);
+      var plaintextLoc :- GetString("plaintext", outputLoc);
+      var ciphertextLoc :- GetString("ciphertext", obj);
+      :- Need(
+           && "file://" < ciphertextLoc
+           && "file://" < plaintextLoc,
+           "Invalid file prefix in test vector"
+         );
+      var masterKeys :- GetArray("master-keys", obj);
+      var keyDescriptions :- GetKeyDescriptions(masterKeys, keys);
+      var keyDescription :- ToMultiKeyDescription(keyDescriptions);
 
-    Success(PositiveV1OrV2DecryptTestVector(
-              id := name,
-              version := version,
-              manifestPath := op.manifestPath,
-              ciphertextPath := ciphertextLoc[|FILE_PREPEND|..],
-              plaintextPath := plaintextLoc[|FILE_PREPEND|..],
-              decryptDescriptions := keyDescription,
-              frameLength := None,
-              algorithmSuiteId := None,
-              description :=  name,
-              decryptionMethod := DecryptionMethod.OneShot
-            ))
+      Success(PositiveV1OrV2DecryptTestVector(
+                id := name,
+                version := version,
+                manifestPath := op.manifestPath,
+                ciphertextPath := ciphertextLoc[|FILE_PREPEND|..],
+                plaintextPath := plaintextLoc[|FILE_PREPEND|..],
+                decryptDescriptions := keyDescription,
+                frameLength := None,
+                algorithmSuiteId := None,
+                description :=  name,
+                decryptionMethod := DecryptionMethod.OneShot
+              ))
   }
 
   function V3ToDecryptTestVector(

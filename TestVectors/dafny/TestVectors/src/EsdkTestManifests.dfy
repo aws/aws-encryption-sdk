@@ -250,7 +250,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     var decryptManifestBv :- FileIO.ReadBytesFromFile(manifestPath + manifestFileName);
     var decryptManifestBytes := BvToBytes(decryptManifestBv);
     var manifestJson :- API.Deserialize(decryptManifestBytes)
-      .MapFailure(( e: Errors.DeserializationError ) => e.ToString());
+    .MapFailure(( e: Errors.DeserializationError ) => e.ToString());
     :- Need(manifestJson.Object?, "Not a JSON object");
 
     var manifest :- GetObject("manifest", manifestJson.obj);
