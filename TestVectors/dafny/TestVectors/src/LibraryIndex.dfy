@@ -4,7 +4,6 @@
 include "../Model/AwsCryptographyEncryptionSdkTypesWrapped.dfy"
 
 module
-  {:extern "software.amazon.cryptography.encryptionsdk.internaldafny.wrapped" }
   WrappedESDK refines WrappedAbstractAwsCryptographyEncryptionSdkService
 {
   import WrappedService = EncryptionSdk
