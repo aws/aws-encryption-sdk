@@ -12,7 +12,6 @@ replace (
 	github.com/aws/aws-cryptographic-material-providers-library/dynamodb v0.0.0 => ../../../../mpl/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go/
 	github.com/aws/aws-cryptographic-material-providers-library/kms v0.0.0 => ../../../../mpl/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go/
 	github.com/aws/aws-cryptographic-material-providers-library/primitives v0.0.0 => ../../../../mpl/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go/
-	github.com/aws/aws-cryptographic-material-providers-library/testvectors v0.0.0 => ../../../../mpl/TestVectorsAwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/
 	github.com/aws/aws-encryption-sdk v0.0.0 => /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/
 )
 
