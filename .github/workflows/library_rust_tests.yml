@@ -135,4 +135,4 @@ jobs:
         working-directory: ./AwsEncryptionSDK/runtimes/rust
         shell: bash
         run: |
-          cargo test --examples
+          cargo test --release --examples
