@@ -1,0 +1,35 @@
+file_format_version = "1.0"
+dafny_version = "4.9.1.0"
+[options_by_module.WrappedAbstractAwsCryptographyEncryptionSdkService]
+go-module-name = "github.com/aws/aws-encryption-sdk/testvectors"
+legacy-module-names = false
+[options_by_module.WrappedESDK]
+go-module-name = "github.com/aws/aws-encryption-sdk/testvectors"
+legacy-module-names = false
+[options_by_module.EsdkManifestOptions]
+go-module-name = "github.com/aws/aws-encryption-sdk/testvectors"
+legacy-module-names = false
+[options_by_module.EsdkTestVectors]
+go-module-name = "github.com/aws/aws-encryption-sdk/testvectors"
+legacy-module-names = false
+[options_by_module.AllEsdkV4NoReqEc]
+go-module-name = "github.com/aws/aws-encryption-sdk/testvectors"
+legacy-module-names = false
+[options_by_module.AllEsdkV4WithReqEc]
+go-module-name = "github.com/aws/aws-encryption-sdk/testvectors"
+legacy-module-names = false
+[options_by_module.WriteEsdkJsonManifests]
+go-module-name = "github.com/aws/aws-encryption-sdk/testvectors"
+legacy-module-names = false
+[options_by_module.WriteVectors]
+go-module-name = "github.com/aws/aws-encryption-sdk/testvectors"
+legacy-module-names = false
+[options_by_module.ParseEsdkJsonManifest]
+go-module-name = "github.com/aws/aws-encryption-sdk/testvectors"
+legacy-module-names = false
+[options_by_module.EsdkTestManifests]
+go-module-name = "github.com/aws/aws-encryption-sdk/testvectors"
+legacy-module-names = false
+[options_by_module.WrappedESDKMain]
+go-module-name = "github.com/aws/aws-encryption-sdk/testvectors"
+legacy-module-names = false
