@@ -6,6 +6,8 @@ AWS Encryption SDK for Rust
 
 The AWS Encryption SDK is available on [Crates.io](https://www.crates.io/).
 
+For more details about the design and architecture of the AWS Encryption SDK, see the [AWS Encryption SDK Developer Guide](https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/introduction.html).
+
 ## Building the AWS Encryption SDK for Rust
 
 To build, the AWS Encryption SDK requires the most up to date version of [Dafny](https://github.com/dafny-lang/dafny) on your PATH.
