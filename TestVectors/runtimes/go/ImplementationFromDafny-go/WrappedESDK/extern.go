@@ -2,7 +2,7 @@ package WrappedESDK
 
 import (
 	"github.com/aws/aws-encryption-sdk/AwsCryptographyEncryptionSdkTypes"
-	"github.com/aws/aws-encryption-sdk/test/WrappedAwsCryptographyEncryptionSdkService"
+	"github.com/aws/aws-encryption-sdk/testvectors/WrappedAwsCryptographyEncryptionSdkService"
 	"github.com/dafny-lang/DafnyStandardLibGo/Wrappers"
 )
 

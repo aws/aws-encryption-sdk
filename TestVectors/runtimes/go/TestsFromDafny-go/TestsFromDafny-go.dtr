@@ -1,5 +1,0 @@
-file_format_version = "1.0"
-dafny_version = "4.9.1.0"
-[options_by_module.TestWrappedESDKMain]
-go-module-name = "github.com/aws/aws-encryption-sdk/testvectors/test"
-legacy-module-names = false
