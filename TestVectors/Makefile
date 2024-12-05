@@ -82,12 +82,12 @@ GO_DEPENDENCY_MODULE_NAMES := \
 
 TRANSLATION_RECORD_GO := \
 	AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    ../TestVectorMPL/StandardLibrary/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    ../TestVectorMPL/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    ../TestVectorMPL/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    ../TestVectorMPL/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    ../TestVectorMPL/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-	../TestVectorMPL/TestVectorsAwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr
+    mpl/StandardLibrary/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    mpl/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    mpl/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    mpl/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    mpl/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+	mpl/TestVectorsAwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr
 
 transpile_implementation_java: _replace_main_method_name_java
 transpile_implementation_net: _replace_main_method_name_net
@@ -159,3 +159,18 @@ _sed_types_file_add_extern:
 
 _sed_index_file_add_extern:
 	@echo "No extern to process for ESDK TestVectors"
+
+# TODO: Remove these commands once smithy-dafny is fixed
+polymorph_go:
+	find .. -name "api_client.go" -exec sed -i '' 's|"github.com/aws/aws-encryption-sdk/ESDK"|ESDK "github.com/aws/aws-encryption-sdk/EncryptionSdk"|g' {} \;
+	find .. -name "api_client.go" -exec sed -i '' 's|"github.com/aws/aws-encryption-sdk/testvectors/ESDK"|ESDK "github.com/aws/aws-encryption-sdk/testvectors"|g' {} \;
+
+transpile_go:
+	# TODO: Remove this once Dafny bug is fixed. https://t.corp.amazon.com/P176133059
+	find . -name "EsdkTestVectors.go" -exec sed -i '' \
+    -e '/^func (_this \*CompanionStruct_SupportedGenerateManifestVersion_) Is_/,/^}$$/d' \
+    -e '/^func (_this \*CompanionStruct_SupportedEncryptVersion_) Is_/,/^}$$/d' \
+    -e '/^func (_this \*CompanionStruct_SupportedDecryptVersion_) Is_/,/^}$$/d' \
+    {} \;
+	# TODO: Remove this once Dafny bug is fixed. https://t.corp.amazon.com/9a9028fd-2711-4843-b8f0-09965f7e61a7/communication#f03694be-7410-47f9-866d-e43093b018f9 
+	sed -i '' 's/_out0 = m_TestWrappedESDKMain.GetTestVectorExecutionDirectory()/_out0 = GetTestVectorExecutionDirectory()/g' ./runtimes/go/TestsFromDafny-go/TestWrappedESDKMain/TestWrappedESDKMain.go
