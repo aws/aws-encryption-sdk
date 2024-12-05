@@ -1,0 +1,37 @@
+[package]
+name = "aws-esdk-test-vectors"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80.0"
+description = "aws-esdk-test-vectors is a library for testing aws-esdk."
+authors = ["AWS-CryptoTools"]
+autoexamples = false
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+wrapped-client = []
+
+[dependencies]
+aws-config = "1.5.6"
+aws-lc-rs = "1.11.1"
+aws-lc-sys = "0.23.1"
+aws-sdk-dynamodb = "1.55.0"
+aws-sdk-kms = "1.51.0"
+aws-smithy-runtime-api = {version = "1.7.2", features = ["client"] }
+aws-smithy-types = "1.2.6"
+chrono = "0.4.38"
+dafny-runtime = "0.1.1"
+dashmap = "6.1.0"
+pem = "3.0.4"
+rand = "0.8.5"
+tokio = {version = "1.42.0", features = ["full"] }
+uuid = { version = "1.10.0", features = ["v4"] }
+
+[dev-dependencies]
+aws-esdk-test-vectors = { path = ".", features = ["wrapped-client"] }
+
+[[bin]]
+name = "test-vectors"
+path = "src/main.rs"

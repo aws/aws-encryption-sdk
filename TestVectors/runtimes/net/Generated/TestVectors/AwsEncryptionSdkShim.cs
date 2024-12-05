@@ -68,7 +68,7 @@ namespace AWS.Cryptography.EncryptionSDK.Wrapped
                       Dafny.Sequence<char>.FromString(collectionOfErrors.Message)
                     );
                 default:
-                    return new software.amazon.cryptography.encryptionsdk.internaldafny.types.Error_Opaque(error, Dafny.Sequence<char>.FromString(error.ToString()));
+                    return new software.amazon.cryptography.encryptionsdk.internaldafny.types.Error_Opaque(error);
 
             }
         }

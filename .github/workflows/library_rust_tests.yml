@@ -22,21 +22,17 @@ jobs:
         os: [
           windows-latest,
           ubuntu-latest,
-          macos-12,
+          macos-13,
         ]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
       contents: read
-    env:
-      # TODO: do we need this here?
-      DOTNET_CLI_TELEMETRY_OPTOUT: 1
-      DOTNET_NOLOGO: 1
     steps:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Init Submodules
         shell: bash
         run: |
@@ -58,11 +54,10 @@ jobs:
       # - name: Rustfmt Check
       #   uses: actions-rust-lang/rustfmt@v1
       
-      # TODO: Use setup-dafny-actions with correct version when Dafny releases 4.8.2
       - name: Setup Dafny
         uses: dafny-lang/setup-dafny-action@v1.7.0
         with:
-          dafny-version: nightly-latest
+          dafny-version: 4.9.0
 
       # TODO: Remove this after the formatting in Rust starts working
       - name: smithy-dafny Rust hacks
@@ -81,6 +76,7 @@ jobs:
           java-version: "17"
 
       - name: Setup NASM for Windows (aws-lc-sys)
+        if: matrix.os == 'windows-latest'
         uses: ilammy/setup-nasm@v1
 
       - name: Install Smithy-Dafny codegen dependencies
@@ -108,7 +104,7 @@ jobs:
         run: |
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
-          make transpile_rust TRANSPILE_TESTS_IN_RUST=1 CORES=$CORES
+          make transpile_rust CORES=$CORES
 
       # Remove Rust hacks once Dafny fixes this
       - name: Update implementation_from_dafny.rs to add deps
@@ -139,4 +135,4 @@ jobs:
         working-directory: ./AwsEncryptionSDK/runtimes/rust
         shell: bash
         run: |
-          cargo test --examples
+          cargo test --release --examples
