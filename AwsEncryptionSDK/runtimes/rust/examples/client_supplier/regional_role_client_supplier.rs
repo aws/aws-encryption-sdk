@@ -1,3 +1,6 @@
+// Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 use aws_config::Region;
 use aws_esdk::aws_cryptography_materialProviders::types::ClientSupplier;
 use aws_esdk::aws_cryptography_materialProviders::operation::get_client::GetClientInput;

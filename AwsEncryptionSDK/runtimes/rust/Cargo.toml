@@ -3,7 +3,7 @@ name = "aws-esdk"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.80.0"
-keywords = ["crypto", "cryptography", "security", "dynamodb", "ddb", "encryption", "client-side", "clientside"]
+keywords = ["cryptography", "security", "dynamodb", "ddb", "encryption", "client-side"]
 license = "ISC AND (Apache-2.0 OR ISC)"
 description = "aws-esdk is a library for implementing client side encryption."
 homepage = "https://github.com/aws/aws-encryption-sdk-dafny"
@@ -16,19 +16,19 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-aws-config = "1.5.9"
-aws-lc-rs = "1.10.0"
-aws-lc-sys = "0.22.0"
-aws-sdk-dynamodb = "1.51.0"
-aws-sdk-kms = "1.48.0"
-aws-smithy-runtime-api = {version = "1.7.2", features = ["client"] }
-aws-smithy-types = "1.2.8"
+aws-config = "1.5.10"
+aws-lc-rs = "1.11.1"
+aws-lc-sys = "0.23.1"
+aws-sdk-dynamodb = "1.55.0"
+aws-sdk-kms = "1.51.0"
+aws-smithy-runtime-api = {version = "1.7.3", features = ["client"] }
+aws-smithy-types = "1.2.9"
 chrono = "0.4.38"
-dafny_runtime = { path = "../../../mpl/smithy-dafny/TestModels/dafny-dependencies/dafny_runtime_rust"}
+dafny-runtime = "0.1.1"
 dashmap = "6.1.0"
 pem = "3.0.4"
 rand = "0.8.5"
-tokio = {version = "1.41.0", features = ["full"] }
+tokio = {version = "1.42.0", features = ["full"] }
 uuid = { version = "1.11.0", features = ["v4"] }
 
 [[example]]
