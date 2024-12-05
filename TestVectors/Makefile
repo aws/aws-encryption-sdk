@@ -89,6 +89,12 @@ TRANSLATION_RECORD_GO := \
     mpl/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
 	mpl/TestVectorsAwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr
 
+# Constants for languages that drop extern names (Python, Go)
+
+WRAPPED_INDEX_FILE_PATH=dafny/TestVectors/src/LibraryIndex.dfy
+WRAPPED_INDEX_FILE_WITH_EXTERN_STRING="module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny.wrapped\" } WrappedESDK refines WrappedAbstractAwsCryptographyEncryptionSdkService"
+WRAPPED_INDEX_FILE_WITHOUT_EXTERN_STRING="module WrappedESDK refines WrappedAbstractAwsCryptographyEncryptionSdkService"
+
 transpile_implementation_java: _replace_main_method_name_java
 transpile_implementation_net: _replace_main_method_name_net
 
