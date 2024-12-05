@@ -9,7 +9,7 @@ include "WriteEsdkJsonManifests.dfy"
 module {:options "-functionSyntax:4"} WriteVectors {
   import Types = AwsCryptographyEncryptionSdkTypes
   import mplTypes = AwsCryptographyMaterialProvidersTypes
-  import EncryptionSdk
+  import ESDK
   import MaterialProviders
   import opened CompleteVectors
   import opened Wrappers
