@@ -162,6 +162,7 @@ _sed_index_file_add_extern:
 
 # TODO: Remove these commands once smithy-dafny is fixed
 polymorph_go:
+	find .. -name "shim.go" | xargs sed -i "" 's/(_static \*CompanionStruct_Default___)//g'
 	find .. -name "api_client.go" -exec sed -i '' 's|"github.com/aws/aws-encryption-sdk/ESDK"|ESDK "github.com/aws/aws-encryption-sdk/EncryptionSdk"|g' {} \;
 	find .. -name "api_client.go" -exec sed -i '' 's|"github.com/aws/aws-encryption-sdk/testvectors/ESDK"|ESDK "github.com/aws/aws-encryption-sdk/testvectors"|g' {} \;
 
