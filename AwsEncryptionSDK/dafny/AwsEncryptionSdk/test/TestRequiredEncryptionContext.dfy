@@ -63,7 +63,6 @@ module TestRequiredEncryptionContext {
             frameLength := None
         ));
         
-        print(encryptOutput);
         expect encryptOutput.Success?;
         var esdkCiphertext := encryptOutput.value.ciphertext;
         
