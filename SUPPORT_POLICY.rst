@@ -9,9 +9,9 @@ Major Version Lifecycle
 ========================
 The AWS Encryption SDK follows the same major version lifecycle as the AWS SDK. For details on this lifecycle, see  `AWS SDKs and Tools Maintenance Policy`_.
 
-Version Support Matrix
-======================
-This table describes the current support status of each major version of the AWS Encryption SDK for Java. It also shows the next status each major version will transition to, and the date at which that transition will happen.
+Version Support Matrix for .NET
+===============================
+This table describes the current support status of each major version of the AWS Encryption SDK for .NET. It also shows the next status each major version will transition to, and the date at which that transition will happen.
 
 .. list-table::
     :widths: 30 50 50 50
@@ -30,5 +30,26 @@ This table describes the current support status of each major version of the AWS
       -
       - 
 
-.. _AWS SDKs and Tools Maintenance Policy: https://docs.aws.amazon.com/sdkref/latest/guide/maint-policy.html#version-life-cycle
 
+Version Support Matrix for Rust
+===============================
+This table describes the current support status of each major version of the AWS Encryption SDK for Rust. It also shows the next status each major version will transition to, and the date at which that transition will happen.
+
+.. list-table::
+    :widths: 30 50 50 50
+    :header-rows: 1
+
+    * - Major version
+      - Current status
+      - Next status
+      - Next status date
+    * - 0.x
+      - Beta Version
+      - End of Support
+      - 2024-12-14
+    * - 4.x
+      - Generally Available
+      -
+      - 
+
+.. _AWS SDKs and Tools Maintenance Policy: https://docs.aws.amazon.com/sdkref/latest/guide/maint-policy.html#version-life-cycle
