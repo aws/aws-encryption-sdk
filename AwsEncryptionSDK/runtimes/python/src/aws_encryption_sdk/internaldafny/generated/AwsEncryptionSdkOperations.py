@@ -493,6 +493,7 @@ class default__:
                 d_31_plaintext_ = (d_36_decryptRes_)[0]
                 d_32_messageBodyTail_ = (d_36_decryptRes_)[1]
             pass
+        _dafny.print(_dafny.string_of(_dafny.Seq(((d_32_messageBodyTail_).bytes)[(buffer).start:(d_32_messageBodyTail_).start:])))
         d_37_valueOrError12_: Wrappers.Result = Wrappers.Result.default(SerializeFunctions.ReadableBuffer.default())()
         out8_: Wrappers.Result
         out8_ = EncryptDecryptHelpers.default__.VerifySignature(d_32_messageBodyTail_, _dafny.Seq(((d_32_messageBodyTail_).bytes)[(buffer).start:(d_32_messageBodyTail_).start:]), d_9_decMat_, (config).crypto)

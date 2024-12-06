@@ -192,188 +192,188 @@ class default__:
     def Test____Main____(noArgsParameter__):
         d_0_success_: bool
         d_0_success_ = True
-        _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestReprEncryptionContextWithSameECHappyCase: ")))
-        try:
-            if True:
-                TestRequiredEncryptionContext.default__.TestReprEncryptionContextWithSameECHappyCase()
-                if True:
-                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
-        except _dafny.HaltException as e:
-            d_1_haltMessage_ = e.message
-            if True:
-                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
-                _dafny.print(_dafny.string_of(d_1_haltMessage_))
-                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
-                d_0_success_ = False
-        _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestRemoveOnEncryptAndSupplyOnDecryptHappyCase: ")))
-        try:
-            if True:
-                TestRequiredEncryptionContext.default__.TestRemoveOnEncryptAndSupplyOnDecryptHappyCase()
-                if True:
-                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
-        except _dafny.HaltException as e:
-            d_2_haltMessage_ = e.message
-            if True:
-                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
-                _dafny.print(_dafny.string_of(d_2_haltMessage_))
-                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
-                d_0_success_ = False
-        _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestRemoveOnEncryptRemoveAndSupplyOnDecryptHappyCase: ")))
-        try:
-            if True:
-                TestRequiredEncryptionContext.default__.TestRemoveOnEncryptRemoveAndSupplyOnDecryptHappyCase()
-                if True:
-                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
-        except _dafny.HaltException as e:
-            d_3_haltMessage_ = e.message
-            if True:
-                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
-                _dafny.print(_dafny.string_of(d_3_haltMessage_))
-                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
-                d_0_success_ = False
-        _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestRemoveOnDecryptIsBackwardsCompatibleHappyCase: ")))
-        try:
-            if True:
-                TestRequiredEncryptionContext.default__.TestRemoveOnDecryptIsBackwardsCompatibleHappyCase()
-                if True:
-                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
-        except _dafny.HaltException as e:
-            d_4_haltMessage_ = e.message
-            if True:
-                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
-                _dafny.print(_dafny.string_of(d_4_haltMessage_))
-                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
-                d_0_success_ = False
-        _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestDifferentECOnDecryptFailure: ")))
-        try:
-            if True:
-                TestRequiredEncryptionContext.default__.TestDifferentECOnDecryptFailure()
-                if True:
-                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
-        except _dafny.HaltException as e:
-            d_5_haltMessage_ = e.message
-            if True:
-                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
-                _dafny.print(_dafny.string_of(d_5_haltMessage_))
-                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
-                d_0_success_ = False
-        _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestRemoveECAndNotSupplyOnDecryptFailure: ")))
-        try:
-            if True:
-                TestRequiredEncryptionContext.default__.TestRemoveECAndNotSupplyOnDecryptFailure()
-                if True:
-                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
-        except _dafny.HaltException as e:
-            d_6_haltMessage_ = e.message
-            if True:
-                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
-                _dafny.print(_dafny.string_of(d_6_haltMessage_))
-                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
-                d_0_success_ = False
-        _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestRemoveECAndSupplyMismatchedReprECFailure: ")))
-        try:
-            if True:
-                TestRequiredEncryptionContext.default__.TestRemoveECAndSupplyMismatchedReprECFailure()
-                if True:
-                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
-        except _dafny.HaltException as e:
-            d_7_haltMessage_ = e.message
-            if True:
-                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
-                _dafny.print(_dafny.string_of(d_7_haltMessage_))
-                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
-                d_0_success_ = False
-        _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestRemoveECAndSupplyWithMissingRequiredValueDecryptFailure: ")))
-        try:
-            if True:
-                TestRequiredEncryptionContext.default__.TestRemoveECAndSupplyWithMissingRequiredValueDecryptFailure()
-                if True:
-                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
-        except _dafny.HaltException as e:
-            d_8_haltMessage_ = e.message
-            if True:
-                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
-                _dafny.print(_dafny.string_of(d_8_haltMessage_))
-                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
-                d_0_success_ = False
-        _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestReservedEncryptionContextKeyFailure: ")))
-        try:
-            if True:
-                TestRequiredEncryptionContext.default__.TestReservedEncryptionContextKeyFailure()
-                if True:
-                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
-        except _dafny.HaltException as e:
-            d_9_haltMessage_ = e.message
-            if True:
-                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
-                _dafny.print(_dafny.string_of(d_9_haltMessage_))
-                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
-                d_0_success_ = False
-        _dafny.print(_dafny.string_of(_dafny.Seq("TestReproducedEncryptionContext.TestEncryptionContextOnDecrypt: ")))
-        try:
-            if True:
-                TestReproducedEncryptionContext.default__.TestEncryptionContextOnDecrypt()
-                if True:
-                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
-        except _dafny.HaltException as e:
-            d_10_haltMessage_ = e.message
-            if True:
-                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
-                _dafny.print(_dafny.string_of(d_10_haltMessage_))
-                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
-                d_0_success_ = False
-        _dafny.print(_dafny.string_of(_dafny.Seq("TestReproducedEncryptionContext.TestEncryptionContextOnDecryptFailure: ")))
-        try:
-            if True:
-                TestReproducedEncryptionContext.default__.TestEncryptionContextOnDecryptFailure()
-                if True:
-                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
-        except _dafny.HaltException as e:
-            d_11_haltMessage_ = e.message
-            if True:
-                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
-                _dafny.print(_dafny.string_of(d_11_haltMessage_))
-                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
-                d_0_success_ = False
-        _dafny.print(_dafny.string_of(_dafny.Seq("TestReproducedEncryptionContext.TestMismatchedEncryptionContextOnDecrypt: ")))
-        try:
-            if True:
-                TestReproducedEncryptionContext.default__.TestMismatchedEncryptionContextOnDecrypt()
-                if True:
-                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
-        except _dafny.HaltException as e:
-            d_12_haltMessage_ = e.message
-            if True:
-                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
-                _dafny.print(_dafny.string_of(d_12_haltMessage_))
-                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
-                d_0_success_ = False
-        _dafny.print(_dafny.string_of(_dafny.Seq("TestEncryptDecrypt.TestEncryptDecrypt: ")))
-        try:
-            if True:
-                TestEncryptDecrypt.default__.TestEncryptDecrypt()
-                if True:
-                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
-        except _dafny.HaltException as e:
-            d_13_haltMessage_ = e.message
-            if True:
-                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
-                _dafny.print(_dafny.string_of(d_13_haltMessage_))
-                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
-                d_0_success_ = False
-        _dafny.print(_dafny.string_of(_dafny.Seq("TestCreateEsdkClient.TestClientCreation: ")))
-        try:
-            if True:
-                TestCreateEsdkClient.default__.TestClientCreation()
-                if True:
-                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
-        except _dafny.HaltException as e:
-            d_14_haltMessage_ = e.message
-            if True:
-                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
-                _dafny.print(_dafny.string_of(d_14_haltMessage_))
-                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
-                d_0_success_ = False
+        # _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestReprEncryptionContextWithSameECHappyCase: ")))
+        # try:
+        #     if True:
+        #         TestRequiredEncryptionContext.default__.TestReprEncryptionContextWithSameECHappyCase()
+        #         if True:
+        #             _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        # except _dafny.HaltException as e:
+        #     d_1_haltMessage_ = e.message
+        #     if True:
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+        #         _dafny.print(_dafny.string_of(d_1_haltMessage_))
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+        #         d_0_success_ = False
+        # _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestRemoveOnEncryptAndSupplyOnDecryptHappyCase: ")))
+        # try:
+        #     if True:
+        #         TestRequiredEncryptionContext.default__.TestRemoveOnEncryptAndSupplyOnDecryptHappyCase()
+        #         if True:
+        #             _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        # except _dafny.HaltException as e:
+        #     d_2_haltMessage_ = e.message
+        #     if True:
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+        #         _dafny.print(_dafny.string_of(d_2_haltMessage_))
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+        #         d_0_success_ = False
+        # _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestRemoveOnEncryptRemoveAndSupplyOnDecryptHappyCase: ")))
+        # try:
+        #     if True:
+        #         TestRequiredEncryptionContext.default__.TestRemoveOnEncryptRemoveAndSupplyOnDecryptHappyCase()
+        #         if True:
+        #             _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        # except _dafny.HaltException as e:
+        #     d_3_haltMessage_ = e.message
+        #     if True:
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+        #         _dafny.print(_dafny.string_of(d_3_haltMessage_))
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+        #         d_0_success_ = False
+        # _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestRemoveOnDecryptIsBackwardsCompatibleHappyCase: ")))
+        # try:
+        #     if True:
+        #         TestRequiredEncryptionContext.default__.TestRemoveOnDecryptIsBackwardsCompatibleHappyCase()
+        #         if True:
+        #             _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        # except _dafny.HaltException as e:
+        #     d_4_haltMessage_ = e.message
+        #     if True:
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+        #         _dafny.print(_dafny.string_of(d_4_haltMessage_))
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+        #         d_0_success_ = False
+        # _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestDifferentECOnDecryptFailure: ")))
+        # try:
+        #     if True:
+        #         TestRequiredEncryptionContext.default__.TestDifferentECOnDecryptFailure()
+        #         if True:
+        #             _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        # except _dafny.HaltException as e:
+        #     d_5_haltMessage_ = e.message
+        #     if True:
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+        #         _dafny.print(_dafny.string_of(d_5_haltMessage_))
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+        #         d_0_success_ = False
+        # _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestRemoveECAndNotSupplyOnDecryptFailure: ")))
+        # try:
+        #     if True:
+        #         TestRequiredEncryptionContext.default__.TestRemoveECAndNotSupplyOnDecryptFailure()
+        #         if True:
+        #             _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        # except _dafny.HaltException as e:
+        #     d_6_haltMessage_ = e.message
+        #     if True:
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+        #         _dafny.print(_dafny.string_of(d_6_haltMessage_))
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+        #         d_0_success_ = False
+        # _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestRemoveECAndSupplyMismatchedReprECFailure: ")))
+        # try:
+        #     if True:
+        #         TestRequiredEncryptionContext.default__.TestRemoveECAndSupplyMismatchedReprECFailure()
+        #         if True:
+        #             _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        # except _dafny.HaltException as e:
+        #     d_7_haltMessage_ = e.message
+        #     if True:
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+        #         _dafny.print(_dafny.string_of(d_7_haltMessage_))
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+        #         d_0_success_ = False
+        # _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestRemoveECAndSupplyWithMissingRequiredValueDecryptFailure: ")))
+        # try:
+        #     if True:
+        #         TestRequiredEncryptionContext.default__.TestRemoveECAndSupplyWithMissingRequiredValueDecryptFailure()
+        #         if True:
+        #             _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        # except _dafny.HaltException as e:
+        #     d_8_haltMessage_ = e.message
+        #     if True:
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+        #         _dafny.print(_dafny.string_of(d_8_haltMessage_))
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+        #         d_0_success_ = False
+        # _dafny.print(_dafny.string_of(_dafny.Seq("TestRequiredEncryptionContext.TestReservedEncryptionContextKeyFailure: ")))
+        # try:
+        #     if True:
+        #         TestRequiredEncryptionContext.default__.TestReservedEncryptionContextKeyFailure()
+        #         if True:
+        #             _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        # except _dafny.HaltException as e:
+        #     d_9_haltMessage_ = e.message
+        #     if True:
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+        #         _dafny.print(_dafny.string_of(d_9_haltMessage_))
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+        #         d_0_success_ = False
+        # _dafny.print(_dafny.string_of(_dafny.Seq("TestReproducedEncryptionContext.TestEncryptionContextOnDecrypt: ")))
+        # try:
+        #     if True:
+        #         TestReproducedEncryptionContext.default__.TestEncryptionContextOnDecrypt()
+        #         if True:
+        #             _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        # except _dafny.HaltException as e:
+        #     d_10_haltMessage_ = e.message
+        #     if True:
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+        #         _dafny.print(_dafny.string_of(d_10_haltMessage_))
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+        #         d_0_success_ = False
+        # _dafny.print(_dafny.string_of(_dafny.Seq("TestReproducedEncryptionContext.TestEncryptionContextOnDecryptFailure: ")))
+        # try:
+        #     if True:
+        #         TestReproducedEncryptionContext.default__.TestEncryptionContextOnDecryptFailure()
+        #         if True:
+        #             _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        # except _dafny.HaltException as e:
+        #     d_11_haltMessage_ = e.message
+        #     if True:
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+        #         _dafny.print(_dafny.string_of(d_11_haltMessage_))
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+        #         d_0_success_ = False
+        # _dafny.print(_dafny.string_of(_dafny.Seq("TestReproducedEncryptionContext.TestMismatchedEncryptionContextOnDecrypt: ")))
+        # try:
+        #     if True:
+        #         TestReproducedEncryptionContext.default__.TestMismatchedEncryptionContextOnDecrypt()
+        #         if True:
+        #             _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        # except _dafny.HaltException as e:
+        #     d_12_haltMessage_ = e.message
+        #     if True:
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+        #         _dafny.print(_dafny.string_of(d_12_haltMessage_))
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+        #         d_0_success_ = False
+        # _dafny.print(_dafny.string_of(_dafny.Seq("TestEncryptDecrypt.TestEncryptDecrypt: ")))
+        # try:
+        #     if True:
+        #         TestEncryptDecrypt.default__.TestEncryptDecrypt()
+        #         if True:
+        #             _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        # except _dafny.HaltException as e:
+        #     d_13_haltMessage_ = e.message
+        #     if True:
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+        #         _dafny.print(_dafny.string_of(d_13_haltMessage_))
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+        #         d_0_success_ = False
+        # _dafny.print(_dafny.string_of(_dafny.Seq("TestCreateEsdkClient.TestClientCreation: ")))
+        # try:
+        #     if True:
+        #         TestCreateEsdkClient.default__.TestClientCreation()
+        #         if True:
+        #             _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        # except _dafny.HaltException as e:
+        #     d_14_haltMessage_ = e.message
+        #     if True:
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+        #         _dafny.print(_dafny.string_of(d_14_haltMessage_))
+        #         _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+        #         d_0_success_ = False
         _dafny.print(_dafny.string_of(_dafny.Seq("TestCreateEsdkClient.TestNetRetryFlag: ")))
         try:
             if True:

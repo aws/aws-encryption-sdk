@@ -182,6 +182,11 @@ class default__:
         out0_: Wrappers.Result
         out0_ = (crypto).ECDSAVerify(AwsCryptographyPrimitivesTypes.ECDSAVerifyInput_ECDSAVerifyInput(d_2_ecdsaParams_, ((decMat).verificationKey).value, msg, (d_1_signature_).data))
         d_3_maybeSignatureVerifiedResult_ = out0_
+        _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+        _dafny.print(_dafny.string_of(((decMat).verificationKey).value))
+        _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+        _dafny.print(_dafny.string_of((d_1_signature_).data))
+        _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
         d_4_valueOrError1_: Wrappers.Result = Wrappers.Result.default(_dafny.defaults.bool)()
         def lambda0_(d_5_e_):
             return AwsCryptographyEncryptionSdkTypes.Error_AwsCryptographyPrimitives(d_5_e_)
