@@ -130,14 +130,17 @@ module {:options "-functionSyntax:4"} WriteVectors {
     }
 
     var manifestJson := Object([
-                                 ("type", String("awses-decrypt")),
-                                 ("version", Number(Int(3)))]);
+                                ("type", String("awses-decrypt")),
+                                ("version", Number(Int(5)))]);
+    var clientJson := Object([
+                              ("name", String("aws-encryption-sdk-dafny")),
+                              ("version", String("4.1.0"))]);
 
     var esdkDecryptManifest := Object(
       [
         ("manifest", manifestJson),
         // TODO create an extern that gets that runtimes namespace and latest version
-        ("client", String("aws-encryption-sdk-dafny")),
+        ("client", clientJson),
         ("keys", String("file://keys.json")),
         ("tests", Object(testsJSON))
       ]

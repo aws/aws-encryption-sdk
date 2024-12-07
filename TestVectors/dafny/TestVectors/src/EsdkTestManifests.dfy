@@ -42,6 +42,8 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
 
     var decryptVectors :- ParseEsdkJsonManifest.BuildDecryptTestVector(
       op,
+      decryptManifest.clientName, 
+      decryptManifest.clientVersion,
       decryptManifest.version,
       decryptManifest.keys,
       decryptManifest.jsonTests
@@ -221,7 +223,8 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     | DecryptManifest(
         version: nat,
         keys: KeyVectors.KeyVectorsClient,
-        client: Values.JSON,
+        clientName: string,
+        clientVersion: string,
         jsonTests: seq<(string, Values.JSON)>
       )
     | EncryptManifest(
@@ -256,6 +259,10 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     var manifest :- GetObject("manifest", manifestJson.obj);
     var version :- GetNat("version", manifest);
     var typ :- GetString("type", manifest);
+    
+    var client :- GetObject("client", manifestJson.obj);
+    var clientName :- GetString("name", client);
+    var clientVersion :- GetString("version", client);
 
     var keyManifestUri :- GetString("keys", manifestJson.obj);
     :- Need("file://" < keyManifestUri, "Unexpected URI prefix");
@@ -269,11 +276,11 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     match typ
     case "awses-decrypt" =>
       :- Need(SupportedDecryptVersion?(version), "Unsupported manifest version");
-      var client :- Get("client", manifestJson.obj);
       manifestData := Success(DecryptManifest(
                                 version := version,
                                 keys := keys,
-                                client := client,
+                                clientName := clientName,
+                                clientVersion := clientVersion,
                                 jsonTests := jsonTests
                               ));
 

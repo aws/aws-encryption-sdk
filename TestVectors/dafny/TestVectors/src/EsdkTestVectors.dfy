@@ -120,6 +120,8 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     || v == 1
     || v == 2
     || v == 3
+    || v == 4
+    || v == 5
   }
 
   datatype EsdkDecryptTestVector =
@@ -165,6 +167,23 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
         algorithmSuiteId: Option<mplTypes.AlgorithmSuiteInfo>,
         description: string,
         decryptionMethod: DecryptionMethod
+      )
+    | PositiveV4DecryptTestVector(
+        id: string,
+        version: SupportedDecryptVersion,
+        manifestPath: string,
+        ciphertextPath: string,
+        plaintextPath: string,
+        reproducedEncryptionContext: Option<mplTypes.EncryptionContext> := None,
+        requiredEncryptionContextKeys: Option<mplTypes.EncryptionContextKeys> := None,
+        decryptDescriptions: KeyVectorsTypes.KeyDescription,
+        commitmentPolicy: mplTypes.ESDKCommitmentPolicy := mplTypes.FORBID_ENCRYPT_ALLOW_DECRYPT,
+        frameLength: Option<int64>,
+        algorithmSuiteId: Option<mplTypes.AlgorithmSuiteInfo>,
+        description: string,
+        decryptionMethod: DecryptionMethod,
+        cmm: string,
+        encryptionContext: Option<mplTypes.EncryptionContext> := None
       )
 
   datatype DecryptionMethod =

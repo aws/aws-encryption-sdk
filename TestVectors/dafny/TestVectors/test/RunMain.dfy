@@ -25,6 +25,25 @@ module {:extern} TestWrappedESDKMain {
     TestDecryptManifest();
   }
 
+  // Read encrypt manifests for valid ESDK .NET v4.0.0 messages
+  method {:test} TestNetRetryFlagVectorsExpectSuccess() {
+    var directory := GetTestVectorExecutionDirectory();
+    var result := EsdkTestManifests.StartDecryptVectors(
+      EsdkManifestOptions.Decrypt(
+        manifestPath := directory + "dafny/TestVectors/test/valid-Net-4.0.0/",
+        manifestFileName := "manifest.json"
+      )
+    );
+    if result.Failure? {
+      print result.error;
+    }
+    expect result.Success?;
+  }
+
+  method {:test} TestNetRetryFlagVectorsExpectFailure() {
+
+  }
+
   method TestGenerateEncryptManifest() {
     var directory := GetTestVectorExecutionDirectory();
     var result := WriteVectors.WriteTestVectors(

@@ -41,6 +41,8 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
 
   function {:vcs_split_on_every_assert} BuildDecryptTestVector(
     op: EsdkManifestOptions.ManifestOptions,
+    clientName: string,
+    clientVersion: string,
     version: SupportedDecryptVersion,
     keys: KeyVectors.KeyVectorsClient,
     obj: seq<(string, JSON)>
@@ -50,8 +52,8 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
     if |obj| == 0 then
       Success([])
     else
-      var tail :- BuildDecryptTestVector(op, version, keys, obj[1..]);
-      var encryptVector? := ToDecryptTestVectors(op, version, keys, obj[0].0, obj[0].1);
+      var tail :- BuildDecryptTestVector(op, clientName, clientVersion, version, keys, obj[1..]);
+      var encryptVector? := ToDecryptTestVectors(op, clientName, clientVersion, version, keys, obj[0].0, obj[0].1);
       if encryptVector?.Success? then
         Success([ encryptVector?.value ] + tail)
       else
@@ -66,21 +68,21 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
 
     while i != 0
       decreases i
-      invariant Success(vectors) == BuildDecryptTestVector(op, version, keys, obj[i..])
+      invariant Success(vectors) == BuildDecryptTestVector(op, clientName, clientVersion, version, keys, obj[i..])
     {
       i := i - 1;
-      var test := ToDecryptTestVectors(op, version, keys, obj[i].0, obj[i].1);
+      var test := ToDecryptTestVectors(op, clientName, clientVersion, version, keys, obj[i].0, obj[i].1);
       if test.Failure? && test.error != negativeTestVectorFound {
-        assert Failure(buildTestVectorError) == BuildDecryptTestVector(op, version, keys, obj[i..]); 
+        assert Failure(buildTestVectorError) == BuildDecryptTestVector(op, clientName, clientVersion, version, keys, obj[i..]); 
         ghost var j: nat := i;
         while j != 0
           decreases j
-          invariant Failure(buildTestVectorError) == BuildDecryptTestVector(op, version, keys, obj[j..])
+          invariant Failure(buildTestVectorError) == BuildDecryptTestVector(op, clientName, clientVersion, version, keys, obj[j..])
         {
           j := j - 1;
           assert obj[j..][1..] == obj[j+1..];
         }
-        assert Failure(buildTestVectorError) == BuildDecryptTestVector(op, version, keys, obj);
+        assert Failure(buildTestVectorError) == BuildDecryptTestVector(op, clientName, clientVersion, version, keys, obj);
         return Failure(buildTestVectorError);
       }
 
@@ -97,6 +99,8 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
 
   function {:vcs_split_on_every_assert} ToDecryptTestVectors(
     op: EsdkManifestOptions.ManifestOptions,
+    clientName: string,
+    clientVersion: string,
     version: SupportedDecryptVersion,
     keys: KeyVectors.KeyVectorsClient,
     name: string,
@@ -108,9 +112,13 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
     var obj := json.obj;
 
     match version
-    case 3 =>
+    case 5 =>
       :- Need(op.Decrypt?, "Err parsing manifest expected Decrypt");
-      V3ToDecryptTestVector(op, keys, name, obj, version)
+      V5ToDecryptTestVector(op, keys, name, obj, version)
+    case 4 =>
+      :- Need(op.Decrypt?, "Err parsing manifest; expected Decrypt");
+      :- Need(clientName == "ESDK-NET", "Err; Version 4 manifest only supported for NET");
+      V4ToDecryptTestVector(op, keys, name, obj, version)
     case 2 =>
       // Case 2 Needs negative test vectors..
       :- Need(op.Decrypt?, "Err parsing manifest expected Decrypt");
@@ -312,7 +320,7 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
             ))
   }
 
-  function V3ToDecryptTestVector(
+  function V5ToDecryptTestVector(
     op: EsdkManifestOptions.ManifestOptions,
     keys: KeyVectors.KeyVectorsClient,
     name: string,
@@ -359,6 +367,51 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
                 decryptionMethod := DecryptionMethod.OneShot
               ))
     case _ => Failure("Unsupported ESDK TestVector type: " + typ)
+  }
+
+  function V4ToDecryptTestVector(
+    op: EsdkManifestOptions.ManifestOptions,
+    keys: KeyVectors.KeyVectorsClient,
+    name: string,
+    obj: seq<(string, JSON)>,
+    version: SupportedDecryptVersion
+  ) : Result<EsdkDecryptTestVector, string>
+    requires op.Decrypt?
+  {
+    var resultLoc :- GetObject("result", obj);
+
+    var outputLoc :- GetObject("output", resultLoc);
+    var plaintextLoc :- GetString("plaintext", outputLoc);
+
+    var ciphertextLoc :- GetString("ciphertext", obj);
+    :- Need(
+         && "file://" < ciphertextLoc
+         && "file://" < plaintextLoc,
+         "Invalid file prefix in test vector"
+       );
+    
+    var masterKeys :- GetArray("master-keys", obj);
+    var keyDescriptions :- GetKeyDescriptions(masterKeys, keys);
+    var keyDescription :- ToMultiKeyDescription(keyDescriptions);
+    
+    var cmm :- GetString("cmm", obj);
+    var encryptionContextStrings :- SmallObjectToStringStringMap("encryption-context", obj);
+    var encryptionContext :- utf8EncodeMap(encryptionContextStrings);
+    
+    Success(PositiveV4DecryptTestVector(
+              id := name,
+              version := version,
+              manifestPath := op.manifestPath,
+              ciphertextPath := ciphertextLoc[|FILE_PREPEND|..],
+              plaintextPath := plaintextLoc[|FILE_PREPEND|..],
+              decryptDescriptions := keyDescription,
+              frameLength := None,
+              algorithmSuiteId := None,
+              description :=  name,
+              decryptionMethod := DecryptionMethod.OneShot,
+              cmm := cmm,
+              encryptionContext := Some(encryptionContext)
+            ))
   }
 
   function GetKeyDescriptions(keyArray: seq<JSON>, keys: KeyVectors.KeyVectorsClient)
