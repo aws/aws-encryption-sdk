@@ -19,7 +19,7 @@ fi
 
 VERSION=$1
 
-# update examples in test_examples directory
+# Update examples in test_examples directory
 rm -rf test_examples/src
 cp -r examples test_examples/src/
 cd test_examples
