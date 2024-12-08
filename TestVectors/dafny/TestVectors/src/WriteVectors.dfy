@@ -130,11 +130,11 @@ module {:options "-functionSyntax:4"} WriteVectors {
     }
 
     var manifestJson := Object([
-                                ("type", String("awses-decrypt")),
-                                ("version", Number(Int(5)))]);
+                                 ("type", String("awses-decrypt")),
+                                 ("version", Number(Int(5)))]);
     var clientJson := Object([
-                              ("name", String("aws-encryption-sdk-dafny")),
-                              ("version", String("4.1.0"))]);
+                               ("name", String("aws-encryption-sdk-dafny")),
+                               ("version", String("4.1.0"))]);
 
     var esdkDecryptManifest := Object(
       [

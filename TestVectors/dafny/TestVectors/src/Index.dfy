@@ -9,6 +9,7 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
   import opened Wrappers
   import WrappedESDK
   import WriteVectors
+  import Types = AwsCryptographyEncryptionSdkTypes
 
   import EsdkTestManifests
   import EsdkManifestOptions
@@ -51,7 +52,7 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
       if op?.Success? {
         var op := op?.value;
         match op
-        case Decrypt(_, _, _) =>
+        case Decrypt(_, _, _, _) =>
           var result := EsdkTestManifests.StartDecryptVectors(op);
           if result.Failure? {
             print result.error;
@@ -98,7 +99,11 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
   {
     var manifestPath? := OptValue(params, "manifest-path");
     var testName? := OptValue(params, "test-name");
+    var retryPolicy? := OptValue(params, "retry");
     var manifestFileName? := OptValue(params, "manifest-name");
+
+    var retryPolicy := if retryPolicy?.Some? then retryPolicy?.value else "forbid";
+    :- Need(retryPolicy == "allow" || retryPolicy == "forbid", "Invalid retryPolicy. Valid options are allow/forbid. Default is forbid.");
 
     var manifestPath := if manifestPath?.Some? then manifestPath?.value else ".";
     :- Need(0 < |manifestPath|, "Invalid manifest path length\n");
@@ -109,6 +114,7 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
     Success(EsdkManifestOptions.Decrypt(
               manifestPath := if Seq.Last(manifestPath) == '/' then manifestPath else manifestPath + "/",
               manifestFileName := manifestFileName,
+              retryPolicy := if retryPolicy == "allow" then Types.NetV4_0_0_RetryPolicy.ALLOW_RETRY else Types.NetV4_0_0_RetryPolicy.FORBID_RETRY,
               testName := if testName?.Some? then testName?  else None
             ))
   }

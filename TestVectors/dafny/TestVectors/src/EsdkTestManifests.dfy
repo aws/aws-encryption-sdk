@@ -42,7 +42,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
 
     var decryptVectors :- ParseEsdkJsonManifest.BuildDecryptTestVector(
       op,
-      decryptManifest.clientName, 
+      decryptManifest.clientName,
       decryptManifest.clientVersion,
       decryptManifest.version,
       decryptManifest.keys,
@@ -91,9 +91,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
       print "Skipped: ", skipped, "\n";
     }
 
-    expect !hasFailure;
-
-    manifest := Success([]);
+    manifest := if !hasFailure then Success([]) else Failure("Test Vectors failed, see errors above.\n");
   }
 
   method {:vcs_split_on_every_assert} StartEncryptVectors(
@@ -253,13 +251,13 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     var decryptManifestBv :- FileIO.ReadBytesFromFile(manifestPath + manifestFileName);
     var decryptManifestBytes := BvToBytes(decryptManifestBv);
     var manifestJson :- API.Deserialize(decryptManifestBytes)
-      .MapFailure(( e: Errors.DeserializationError ) => e.ToString());
+    .MapFailure(( e: Errors.DeserializationError ) => e.ToString());
     :- Need(manifestJson.Object?, "Not a JSON object");
 
     var manifest :- GetObject("manifest", manifestJson.obj);
     var version :- GetNat("version", manifest);
     var typ :- GetString("type", manifest);
-    
+
     var client :- GetObject("client", manifestJson.obj);
     var clientName :- GetString("name", client);
     var clientVersion :- GetString("version", client);

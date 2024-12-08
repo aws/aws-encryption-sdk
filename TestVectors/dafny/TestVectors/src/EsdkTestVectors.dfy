@@ -183,7 +183,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
         description: string,
         decryptionMethod: DecryptionMethod,
         cmm: string,
-        encryptionContext: Option<mplTypes.EncryptionContext> := None
+        retryPolicy: Types.NetV4_0_0_RetryPolicy
       )
 
   datatype DecryptionMethod =
@@ -220,7 +220,10 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
 
     var ciphertext :- expect ReadVectorsFile(test.vector.manifestPath + test.vector.ciphertextPath);
     var plaintext;
-    if test.vector.PositiveDecryptTestVector? || test.vector.PositiveV1OrV2DecryptTestVector? {
+    if test.vector.PositiveDecryptTestVector?
+       || test.vector.PositiveV1OrV2DecryptTestVector?
+       || test.vector.PositiveV4DecryptTestVector?
+    {
       plaintext :- expect ReadVectorsFile(test.vector.manifestPath + test.vector.plaintextPath);
     }
 
@@ -244,9 +247,13 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
       case PositiveV1OrV2DecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_)
         =>
         && result.Success?
+        && result.value.plaintext == plaintext
+      case PositiveV4DecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_,_,_)
+        =>
+        && result.Success?
         && result.value.plaintext == plaintext;
     if !output {
-      if (test.vector.PositiveDecryptTestVector? || test.vector.PositiveV1OrV2DecryptTestVector?) && result.Failure? {
+      if (test.vector.PositiveDecryptTestVector? || test.vector.PositiveV1OrV2DecryptTestVector? || test.vector.PositiveV4DecryptTestVector?) && result.Failure? {
         print result.error, "\n";
         if
           && result.error.AwsCryptographyMaterialProviders?
@@ -293,9 +300,14 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
       mplTypes.CommitmentPolicy.ESDK(mplTypes.ESDKCommitmentPolicy.FORBID_ENCRYPT_ALLOW_DECRYPT);
     :- Need(commitmentPolicy.ESDK?, KeyVectorsTypes.KeyVectorException(message := "Compatible commitment policy is not for ESDK"));
 
-    var config := WrappedESDK.WrappedAwsEncryptionSdkConfigWithSuppliedCommitment(
-      commitmentPolicy := commitmentPolicy.ESDK
-    );
+    var config := if vector.PositiveV4DecryptTestVector? then
+      WrappedESDK.WrappedAwsEncryptionSdkConfigWithSuppliedCommitmentRetryPolicy(
+        commitmentPolicy := commitmentPolicy.ESDK,
+        netV4_0_0_RetryPolicy := vector.retryPolicy
+      )
+    else
+      WrappedESDK.WrappedAwsEncryptionSdkConfigWithSuppliedCommitment(
+        commitmentPolicy := commitmentPolicy.ESDK);
 
     var client :- expect WrappedESDK.WrappedESDK(config := config);
 
