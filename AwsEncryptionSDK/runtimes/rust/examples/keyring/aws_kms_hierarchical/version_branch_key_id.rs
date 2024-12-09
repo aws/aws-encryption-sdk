@@ -8,6 +8,8 @@ use aws_esdk::aws_cryptography_keyStore::types::KmsConfiguration;
 /*
  This example demonstrates configuring a KeyStore and then
  uses a helper method to version a branch key.
+
+ This example is here for demonstration, but is not actively tested in CI.
 */
 pub async fn version_branch_key_id(
     key_store_table_name: &str,
