@@ -6,18 +6,15 @@ use aws_esdk::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig
 use aws_esdk::aws_cryptography_keyStore::types::KmsConfiguration;
 
 /*
- The Hierarchical Keyring Example relies on the existence
- of a DDB-backed key store with pre-existing
- branch key material.
-
  This example demonstrates configuring a KeyStore and then
- uses a helper method to create a branch key.
+ uses a helper method to version a branch key.
 */
-pub async fn create_branch_key_id(
+pub async fn version_branch_key_id(
     key_store_table_name: &str,
     logical_key_store_name: &str,
-    kms_key_arn: &str
-) -> Result<String, crate::BoxError> {
+    kms_key_arn: &str,
+    branch_key_id: &str
+) -> Result<(), crate::BoxError> {
     // Create a Key Store
     // The KMS Configuration you use in the KeyStore MUST have the right access to the resources in the KeyStore.
     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
@@ -31,7 +28,10 @@ pub async fn create_branch_key_id(
 
     let keystore = keystore_client::Client::from_conf(key_store_config)?;
 
-    // Create a branch key identifier with the AWS KMS Key configured in the KeyStore Configuration.
-    let new_key = keystore.create_key().send().await?;
-    Ok(new_key.branch_key_identifier.unwrap())
+    // To version a branch key you MUST have access to kms:ReEncrypt* and kms:GenerateDataKeyWithoutPlaintext
+    keystore.version_key()
+        .branch_key_identifier(branch_key_id)
+        .send()
+        .await?;
+    Ok(())
 }
