@@ -8,8 +8,6 @@ use aws_esdk::aws_cryptography_keyStore::types::KmsConfiguration;
 /*
  This example demonstrates configuring a KeyStore and then
  uses a helper method to version a branch key.
-
- This example is here for demonstration, but is not actively tested in CI.
 */
 pub async fn version_branch_key_id(
     key_store_table_name: &str,
@@ -35,5 +33,36 @@ pub async fn version_branch_key_id(
         .branch_key_identifier(branch_key_id)
         .send()
         .await?;
+
+    println!("Version Branch Key Example Completed Successfully");
+
+    Ok(())
+}
+
+// Function to test version_branch_key_id in main.rs in examples directory
+pub async fn create_and_version_branch_key_id() -> Result<(), crate::BoxError2> {
+    use crate::example_utils::utils;
+    use super::create_branch_key_id::create_branch_key_id;
+
+    let branch_key_id: String = create_branch_key_id(
+        utils::TEST_KEY_STORE_NAME,
+        utils::TEST_LOGICAL_KEY_STORE_NAME,
+        utils::TEST_KEY_STORE_KMS_KEY_ID
+    ).await?;
+
+    version_branch_key_id(
+        utils::TEST_KEY_STORE_NAME,
+        utils::TEST_LOGICAL_KEY_STORE_NAME,
+        utils::TEST_KEY_STORE_KMS_KEY_ID,
+        &branch_key_id
+    ).await?;
+
+    Ok(())
+}
+
+#[tokio::test(flavor = "multi_thread")]
+pub async fn test_version_branch_key_id() -> Result<(), crate::BoxError2> {
+    // Test function for Version Branch Key example
+    create_and_version_branch_key_id().await?;
     Ok(())
 }
