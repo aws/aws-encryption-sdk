@@ -36,4 +36,4 @@ if [ $MATCH -eq "0" ]; then
 fi
 
 # Run the cargo project
-cargo test --release --examples
+cargo test --release
