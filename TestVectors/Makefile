@@ -179,5 +179,3 @@ transpile_go:
     -e '/^func (_this \*CompanionStruct_SupportedEncryptVersion_) Is_/,/^}$$/d' \
     -e '/^func (_this \*CompanionStruct_SupportedDecryptVersion_) Is_/,/^}$$/d' \
     {} \;
-	# TODO: Remove this once Dafny bug is fixed. https://t.corp.amazon.com/9a9028fd-2711-4843-b8f0-09965f7e61a7/communication#f03694be-7410-47f9-866d-e43093b018f9 
-	sed -i '' 's/_out0 = m_TestWrappedESDKMain.GetTestVectorExecutionDirectory()/_out0 = GetTestVectorExecutionDirectory()/g' ./runtimes/go/TestsFromDafny-go/TestWrappedESDKMain/TestWrappedESDKMain.go
