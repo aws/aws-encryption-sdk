@@ -125,6 +125,13 @@ jobs:
             ' implementation_from_dafny.rs
           fi
 
+      - name: Test Linter for Rust examples and implementation_from_dafny.rs
+        working-directory: ./AwsEncryptionSDK/runtimes/rust
+        shell: bash
+        run: |
+          cargo clippy
+          cargo clippy --example main
+
       - name: Test Rust
         working-directory: ./AwsEncryptionSDK
         shell: bash
