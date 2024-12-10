@@ -11,7 +11,7 @@ use aws_esdk::aws_cryptography_keyStore::types::KmsConfiguration;
  branch key material.
 
  This example demonstrates configuring a KeyStore and then
- using a helper method to create a branch key.
+ uses a helper method to create a branch key.
 */
 pub async fn create_branch_key_id(
     key_store_table_name: &str,
