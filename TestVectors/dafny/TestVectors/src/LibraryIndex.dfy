@@ -26,6 +26,17 @@ module {:extern "software.amazon.cryptography.encryptionsdk.internaldafny.wrappe
       netV4_0_0_RetryPolicy := None
     )
   }
+  function method WrappedAwsEncryptionSdkConfigWithSuppliedCommitmentRetryPolicy(
+    commitmentPolicy: AwsCryptographyMaterialProvidersTypes.ESDKCommitmentPolicy,
+    netV4_0_0_RetryPolicy: NetV4_0_0_RetryPolicy
+  ): AwsEncryptionSdkConfig
+  {
+    AwsEncryptionSdkConfig(
+      commitmentPolicy := Some(commitmentPolicy),
+      maxEncryptedDataKeys := None,
+      netV4_0_0_RetryPolicy := Some(netV4_0_0_RetryPolicy)
+    )
+  }
   function method WrappedAwsEncryptionSdkConfig(
     commitmentPolicy: AwsCryptographyMaterialProvidersTypes.ESDKCommitmentPolicy,
     maxEncryptedDataKeys: CountingNumbers,

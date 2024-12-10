@@ -1,0 +1,17 @@
+file_format_version = "1.0"
+dafny_version = "4.9.1.0"
+[options_by_module.Fixtures]
+go-module-name = "github.com/aws/aws-encryption-sdk/test"
+legacy-module-names = false
+[options_by_module.TestRequiredEncryptionContext]
+go-module-name = "github.com/aws/aws-encryption-sdk/test"
+legacy-module-names = false
+[options_by_module.TestReproducedEncryptionContext]
+go-module-name = "github.com/aws/aws-encryption-sdk/test"
+legacy-module-names = false
+[options_by_module.TestEncryptDecrypt]
+go-module-name = "github.com/aws/aws-encryption-sdk/test"
+legacy-module-names = false
+[options_by_module.TestCreateEsdkClient]
+go-module-name = "github.com/aws/aws-encryption-sdk/test"
+legacy-module-names = false

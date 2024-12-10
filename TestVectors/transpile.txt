@@ -1,0 +1,760 @@
+/Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographyPrimitives _no_extern_pre_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsKms _no_extern_pre_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsDynamodb _no_extern_pre_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographicMaterialProviders _no_extern_pre_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/TestVectorsAwsCryptographicMaterialProviders _no_extern_pre_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/AwsEncryptionSDK _no_extern_pre_transpile;
+if [ -z Model/AwsCryptographyPrimitivesTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" ] || [ -z "module AwsCryptographyPrimitivesTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/AwsCryptographyPrimitivesTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" SED_AFTER_STRING="module AwsCryptographyPrimitivesTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ] || [ -z "module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" SED_AFTER_STRING="module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsKmsTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" ] || [ -z "module ComAmazonawsKmsTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsKmsTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" SED_AFTER_STRING="module ComAmazonawsKmsTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ] || [ -z "module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" SED_AFTER_STRING="module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsDynamodbTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" ] || [ -z "module ComAmazonawsDynamodbTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsDynamodbTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" SED_AFTER_STRING="module ComAmazonawsDynamodbTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ] || [ -z "module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" SED_AFTER_STRING="module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographyPrimitives _no_extern_pre_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsKms _no_extern_pre_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsDynamodb _no_extern_pre_transpile;
+if [ -z Model/AwsCryptographyPrimitivesTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" ] || [ -z "module AwsCryptographyPrimitivesTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/AwsCryptographyPrimitivesTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" SED_AFTER_STRING="module AwsCryptographyPrimitivesTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ] || [ -z "module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" SED_AFTER_STRING="module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsKmsTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" ] || [ -z "module ComAmazonawsKmsTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsKmsTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" SED_AFTER_STRING="module ComAmazonawsKmsTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ] || [ -z "module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" SED_AFTER_STRING="module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsDynamodbTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" ] || [ -z "module ComAmazonawsDynamodbTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsDynamodbTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" SED_AFTER_STRING="module ComAmazonawsDynamodbTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ] || [ -z "module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" SED_AFTER_STRING="module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/Model/AwsCryptographyMaterialProvidersTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.materialproviders.internaldafny.types\" } AwsCryptographyMaterialProvidersTypes" SED_AFTER_STRING="module AwsCryptographyMaterialProvidersTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographyKeyStore/Model/AwsCryptographyKeyStoreTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.keystore.internaldafny.types\" } AwsCryptographyKeyStoreTypes" SED_AFTER_STRING="module AwsCryptographyKeyStoreTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.materialproviders.internaldafny\" } MaterialProviders refines AbstractAwsCryptographyMaterialProvidersService" SED_AFTER_STRING="module MaterialProviders refines AbstractAwsCryptographyMaterialProvidersService"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographyKeyStore/src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.keystore.internaldafny\"} KeyStore refines AbstractAwsCryptographyKeyStoreService" SED_AFTER_STRING="module KeyStore refines AbstractAwsCryptographyKeyStoreService"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/CMCs/SynchronizedLocalCMC.dfy SED_BEFORE_STRING="module {:options \"\/functionSyntax:4\" } {:extern \"software.amazon.cryptography.internaldafny.SynchronizedLocalCMC\" } SynchronizedLocalCMC {" SED_AFTER_STRING="module {:options \"\/functionSyntax:4\" } SynchronizedLocalCMC {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/CMCs/StormTrackingCMC.dfy SED_BEFORE_STRING="module {:options \"\/functionSyntax:4\" } {:extern \"software.amazon.cryptography.internaldafny.StormTrackingCMC\" } StormTrackingCMC {" SED_AFTER_STRING="module {:options \"\/functionSyntax:4\" } StormTrackingCMC {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographyPrimitives _no_extern_pre_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsKms _no_extern_pre_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsDynamodb _no_extern_pre_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographicMaterialProviders _no_extern_pre_transpile;
+if [ -z Model/AwsCryptographyPrimitivesTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" ] || [ -z "module AwsCryptographyPrimitivesTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/AwsCryptographyPrimitivesTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" SED_AFTER_STRING="module AwsCryptographyPrimitivesTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ] || [ -z "module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" SED_AFTER_STRING="module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsKmsTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" ] || [ -z "module ComAmazonawsKmsTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsKmsTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" SED_AFTER_STRING="module ComAmazonawsKmsTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ] || [ -z "module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" SED_AFTER_STRING="module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsDynamodbTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" ] || [ -z "module ComAmazonawsDynamodbTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsDynamodbTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" SED_AFTER_STRING="module ComAmazonawsDynamodbTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ] || [ -z "module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" SED_AFTER_STRING="module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographyPrimitives _no_extern_pre_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsKms _no_extern_pre_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsDynamodb _no_extern_pre_transpile;
+if [ -z Model/AwsCryptographyPrimitivesTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" ] || [ -z "module AwsCryptographyPrimitivesTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/AwsCryptographyPrimitivesTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" SED_AFTER_STRING="module AwsCryptographyPrimitivesTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ] || [ -z "module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" SED_AFTER_STRING="module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsKmsTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" ] || [ -z "module ComAmazonawsKmsTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsKmsTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" SED_AFTER_STRING="module ComAmazonawsKmsTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ] || [ -z "module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" SED_AFTER_STRING="module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsDynamodbTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" ] || [ -z "module ComAmazonawsDynamodbTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsDynamodbTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" SED_AFTER_STRING="module ComAmazonawsDynamodbTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ] || [ -z "module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" SED_AFTER_STRING="module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/Model/AwsCryptographyMaterialProvidersTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.materialproviders.internaldafny.types\" } AwsCryptographyMaterialProvidersTypes" SED_AFTER_STRING="module AwsCryptographyMaterialProvidersTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographyKeyStore/Model/AwsCryptographyKeyStoreTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.keystore.internaldafny.types\" } AwsCryptographyKeyStoreTypes" SED_AFTER_STRING="module AwsCryptographyKeyStoreTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.materialproviders.internaldafny\" } MaterialProviders refines AbstractAwsCryptographyMaterialProvidersService" SED_AFTER_STRING="module MaterialProviders refines AbstractAwsCryptographyMaterialProvidersService"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographyKeyStore/src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.keystore.internaldafny\"} KeyStore refines AbstractAwsCryptographyKeyStoreService" SED_AFTER_STRING="module KeyStore refines AbstractAwsCryptographyKeyStoreService"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/CMCs/SynchronizedLocalCMC.dfy SED_BEFORE_STRING="module {:options \"\/functionSyntax:4\" } {:extern \"software.amazon.cryptography.internaldafny.SynchronizedLocalCMC\" } SynchronizedLocalCMC {" SED_AFTER_STRING="module {:options \"\/functionSyntax:4\" } SynchronizedLocalCMC {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/CMCs/StormTrackingCMC.dfy SED_BEFORE_STRING="module {:options \"\/functionSyntax:4\" } {:extern \"software.amazon.cryptography.internaldafny.StormTrackingCMC\" } StormTrackingCMC {" SED_AFTER_STRING="module {:options \"\/functionSyntax:4\" } StormTrackingCMC {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z dafny/KeyVectors/Model/AwsCryptographyMaterialProvidersTestVectorKeysTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.materialproviderstestvectorkeys.internaldafny.types\" } AwsCryptographyMaterialProvidersTestVectorKeysTypes" ] || [ -z "module AwsCryptographyMaterialProvidersTestVectorKeysTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/KeyVectors/Model/AwsCryptographyMaterialProvidersTestVectorKeysTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.materialproviderstestvectorkeys.internaldafny.types\" } AwsCryptographyMaterialProvidersTestVectorKeysTypes" SED_AFTER_STRING="module AwsCryptographyMaterialProvidersTestVectorKeysTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z dafny/KeyVectors/src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.materialproviderstestvectorkeys.internaldafny\"} KeyVectors refines AbstractAwsCryptographyMaterialProvidersTestVectorKeysService {" ] || [ -z "module KeyVectors refines AbstractAwsCryptographyMaterialProvidersTestVectorKeysService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/KeyVectors/src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.materialproviderstestvectorkeys.internaldafny\"} KeyVectors refines AbstractAwsCryptographyMaterialProvidersTestVectorKeysService {" SED_AFTER_STRING="module KeyVectors refines AbstractAwsCryptographyMaterialProvidersTestVectorKeysService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/TestVectorsAwsCryptographicMaterialProviders/src/LibraryIndex.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.materialproviders.internaldafny.wrapped\" } WrappedMaterialProviders refines WrappedAbstractAwsCryptographyMaterialProvidersService" SED_AFTER_STRING="module WrappedMaterialProviders refines WrappedAbstractAwsCryptographyMaterialProvidersService"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographyPrimitives _no_extern_pre_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsKms _no_extern_pre_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsDynamodb _no_extern_pre_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographicMaterialProviders _no_extern_pre_transpile;
+if [ -z Model/AwsCryptographyPrimitivesTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" ] || [ -z "module AwsCryptographyPrimitivesTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/AwsCryptographyPrimitivesTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" SED_AFTER_STRING="module AwsCryptographyPrimitivesTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ] || [ -z "module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" SED_AFTER_STRING="module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsKmsTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" ] || [ -z "module ComAmazonawsKmsTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsKmsTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" SED_AFTER_STRING="module ComAmazonawsKmsTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ] || [ -z "module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" SED_AFTER_STRING="module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsDynamodbTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" ] || [ -z "module ComAmazonawsDynamodbTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsDynamodbTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" SED_AFTER_STRING="module ComAmazonawsDynamodbTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ] || [ -z "module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" SED_AFTER_STRING="module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographyPrimitives _no_extern_pre_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsKms _no_extern_pre_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsDynamodb _no_extern_pre_transpile;
+if [ -z Model/AwsCryptographyPrimitivesTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" ] || [ -z "module AwsCryptographyPrimitivesTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/AwsCryptographyPrimitivesTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" SED_AFTER_STRING="module AwsCryptographyPrimitivesTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ] || [ -z "module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" SED_AFTER_STRING="module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsKmsTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" ] || [ -z "module ComAmazonawsKmsTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsKmsTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" SED_AFTER_STRING="module ComAmazonawsKmsTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ] || [ -z "module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" SED_AFTER_STRING="module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsDynamodbTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" ] || [ -z "module ComAmazonawsDynamodbTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsDynamodbTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" SED_AFTER_STRING="module ComAmazonawsDynamodbTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ] || [ -z "module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" SED_AFTER_STRING="module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/Model/AwsCryptographyMaterialProvidersTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.materialproviders.internaldafny.types\" } AwsCryptographyMaterialProvidersTypes" SED_AFTER_STRING="module AwsCryptographyMaterialProvidersTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographyKeyStore/Model/AwsCryptographyKeyStoreTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.keystore.internaldafny.types\" } AwsCryptographyKeyStoreTypes" SED_AFTER_STRING="module AwsCryptographyKeyStoreTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.materialproviders.internaldafny\" } MaterialProviders refines AbstractAwsCryptographyMaterialProvidersService" SED_AFTER_STRING="module MaterialProviders refines AbstractAwsCryptographyMaterialProvidersService"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographyKeyStore/src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.keystore.internaldafny\"} KeyStore refines AbstractAwsCryptographyKeyStoreService" SED_AFTER_STRING="module KeyStore refines AbstractAwsCryptographyKeyStoreService"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/CMCs/SynchronizedLocalCMC.dfy SED_BEFORE_STRING="module {:options \"\/functionSyntax:4\" } {:extern \"software.amazon.cryptography.internaldafny.SynchronizedLocalCMC\" } SynchronizedLocalCMC {" SED_AFTER_STRING="module {:options \"\/functionSyntax:4\" } SynchronizedLocalCMC {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/CMCs/StormTrackingCMC.dfy SED_BEFORE_STRING="module {:options \"\/functionSyntax:4\" } {:extern \"software.amazon.cryptography.internaldafny.StormTrackingCMC\" } StormTrackingCMC {" SED_AFTER_STRING="module {:options \"\/functionSyntax:4\" } StormTrackingCMC {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z dafny/AwsEncryptionSdk/Model/AwsCryptographyEncryptionSdkTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny.types\" } AwsCryptographyEncryptionSdkTypes" ] || [ -z "module AwsCryptographyEncryptionSdkTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsEncryptionSdk/Model/AwsCryptographyEncryptionSdkTypes.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny.types\" } AwsCryptographyEncryptionSdkTypes" SED_AFTER_STRING="module AwsCryptographyEncryptionSdkTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z dafny/AwsEncryptionSdk/src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny\" } EncryptionSdk refines AbstractAwsCryptographyEncryptionSdkService {" ] || [ -z "module EncryptionSdk refines AbstractAwsCryptographyEncryptionSdkService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsEncryptionSdk/src/Index.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny\" } EncryptionSdk refines AbstractAwsCryptographyEncryptionSdkService {" SED_AFTER_STRING="module EncryptionSdk refines AbstractAwsCryptographyEncryptionSdkService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+echo "No extern to process for ESDK TestVectors"
+echo "No extern to process for ESDK TestVectors"
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/TestVectors/src/LibraryIndex.dfy SED_BEFORE_STRING="module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny.wrapped\" } WrappedESDK refines WrappedAbstractAwsCryptographyEncryptionSdkService" SED_AFTER_STRING="module WrappedESDK refines WrappedAbstractAwsCryptographyEncryptionSdkService"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/StandardLibrary transpile_implementation_python
+find ./dafny/**/src/ ./src/ -name 'Index.dfy' | sed -e 's/^/include "/' -e 's/$/"/' | dafny \
+	translate py \
+		--stdin \
+		--no-verify \
+		--cores:2 \
+		--optimize-erasable-datatype-wrapper:false \
+		--unicode-char:false \
+		--function-syntax:3 \
+		--output runtimes/python/dafny_src \
+		--allow-warnings --allow-external-contracts \
+		 \
+		--python-module-name=smithy_dafny_standard_library.internaldafny.generated \
+		  \
+		 \
+		
+# Remove any previously generated Dafny code in src/, then copy in newly-generated code
+rm -rf runtimes/python/src/smithy_dafny_standard_library/internaldafny/generated/
+mkdir -p runtimes/python/src/smithy_dafny_standard_library/internaldafny/generated/
+mv runtimes/python/dafny_src-py/* runtimes/python/src/smithy_dafny_standard_library/internaldafny/generated
+rm -rf runtimes/python/dafny_src-py
+/Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographyPrimitives transpile_implementation_python;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsKms transpile_implementation_python;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsDynamodb transpile_implementation_python;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographicMaterialProviders transpile_implementation_python;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/TestVectorsAwsCryptographicMaterialProviders transpile_implementation_python;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/AwsEncryptionSDK transpile_implementation_python;
+find ./dafny/**/src/ ./src/ -name 'Index.dfy' | sed -e 's/^/include "/' -e 's/$/"/' | dafny \
+	translate py \
+		--stdin \
+		--no-verify \
+		--cores:2 \
+		--optimize-erasable-datatype-wrapper:false \
+		--unicode-char:false \
+		--function-syntax:3 \
+		--output runtimes/python/dafny_src \
+		--allow-warnings --allow-external-contracts \
+		 \
+		--python-module-name=aws_cryptography_primitives.internaldafny.generated \
+		 --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/StandardLibrary/src/Index.dfy \
+		--translation-record ../StandardLibrary/runtimes/python/src/smithy_dafny_standard_library/internaldafny/generated/dafny_src-py.dtr \
+		
+# Remove any previously generated Dafny code in src/, then copy in newly-generated code
+rm -rf runtimes/python/src/aws_cryptography_primitives/internaldafny/generated/
+mkdir -p runtimes/python/src/aws_cryptography_primitives/internaldafny/generated/
+mv runtimes/python/dafny_src-py/* runtimes/python/src/aws_cryptography_primitives/internaldafny/generated
+rm -rf runtimes/python/dafny_src-py
+find ./dafny/**/src/ ./src/ -name 'Index.dfy' | sed -e 's/^/include "/' -e 's/$/"/' | dafny \
+	translate py \
+		--stdin \
+		--no-verify \
+		--cores:2 \
+		--optimize-erasable-datatype-wrapper:false \
+		--unicode-char:false \
+		--function-syntax:3 \
+		--output runtimes/python/dafny_src \
+		--allow-warnings --allow-external-contracts \
+		 \
+		--python-module-name=aws_cryptography_internal_kms.internaldafny.generated \
+		 --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/StandardLibrary/src/Index.dfy \
+		--translation-record ../StandardLibrary/runtimes/python/src/smithy_dafny_standard_library/internaldafny/generated/dafny_src-py.dtr \
+		
+# Remove any previously generated Dafny code in src/, then copy in newly-generated code
+rm -rf runtimes/python/src/aws_cryptography_internal_kms/internaldafny/generated/
+mkdir -p runtimes/python/src/aws_cryptography_internal_kms/internaldafny/generated/
+mv runtimes/python/dafny_src-py/* runtimes/python/src/aws_cryptography_internal_kms/internaldafny/generated
+rm -rf runtimes/python/dafny_src-py
+find ./dafny/**/src/ ./src/ -name 'Index.dfy' | sed -e 's/^/include "/' -e 's/$/"/' | dafny \
+	translate py \
+		--stdin \
+		--no-verify \
+		--cores:2 \
+		--optimize-erasable-datatype-wrapper:false \
+		--unicode-char:false \
+		--function-syntax:3 \
+		--output runtimes/python/dafny_src \
+		--allow-warnings --allow-external-contracts \
+		 \
+		--python-module-name=aws_cryptography_internal_dynamodb.internaldafny.generated \
+		 --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/StandardLibrary/src/Index.dfy \
+		--translation-record ../StandardLibrary/runtimes/python/src/smithy_dafny_standard_library/internaldafny/generated/dafny_src-py.dtr \
+		
+# Remove any previously generated Dafny code in src/, then copy in newly-generated code
+rm -rf runtimes/python/src/aws_cryptography_internal_dynamodb/internaldafny/generated/
+mkdir -p runtimes/python/src/aws_cryptography_internal_dynamodb/internaldafny/generated/
+mv runtimes/python/dafny_src-py/* runtimes/python/src/aws_cryptography_internal_dynamodb/internaldafny/generated
+rm -rf runtimes/python/dafny_src-py
+find ./dafny/**/src/ ./src/ -name 'Index.dfy' | sed -e 's/^/include "/' -e 's/$/"/' | dafny \
+	translate py \
+		--stdin \
+		--no-verify \
+		--cores:2 \
+		--optimize-erasable-datatype-wrapper:false \
+		--unicode-char:false \
+		--function-syntax:3 \
+		--output runtimes/python/dafny_src \
+		--allow-warnings --allow-external-contracts \
+		 \
+		--python-module-name=aws_cryptographic_material_providers.internaldafny.generated \
+		 --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/StandardLibrary/src/Index.dfy \
+		--translation-record ../StandardLibrary/runtimes/python/src/smithy_dafny_standard_library/internaldafny/generated/dafny_src-py.dtr --translation-record ../ComAmazonawsKms/runtimes/python/src/aws_cryptography_internal_kms/internaldafny/generated/dafny_src-py.dtr --translation-record ../ComAmazonawsDynamodb/runtimes/python/src/aws_cryptography_internal_dynamodb/internaldafny/generated/dafny_src-py.dtr --translation-record ../AwsCryptographyPrimitives/runtimes/python/src/aws_cryptography_primitives/internaldafny/generated/dafny_src-py.dtr \
+		 --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographyPrimitives/src/Index.dfy  --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsKms/src/Index.dfy  --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsDynamodb/src/Index.dfy
+# Remove any previously generated Dafny code in src/, then copy in newly-generated code
+rm -rf runtimes/python/src/aws_cryptographic_material_providers/internaldafny/generated/
+mkdir -p runtimes/python/src/aws_cryptographic_material_providers/internaldafny/generated/
+mv runtimes/python/dafny_src-py/* runtimes/python/src/aws_cryptographic_material_providers/internaldafny/generated
+rm -rf runtimes/python/dafny_src-py
+find ./dafny/**/src/ ./src/ -name 'Index.dfy' | sed -e 's/^/include "/' -e 's/$/"/' | dafny \
+	translate py \
+		--stdin \
+		--no-verify \
+		--cores:2 \
+		--optimize-erasable-datatype-wrapper:false \
+		--unicode-char:false \
+		--function-syntax:3 \
+		--output runtimes/python/dafny_src \
+		--allow-warnings --allow-external-contracts \
+		 \
+		--python-module-name=aws_cryptography_materialproviders_test_vectors.internaldafny.generated \
+		 --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/StandardLibrary/src/Index.dfy \
+		--translation-record ../StandardLibrary/runtimes/python/src/smithy_dafny_standard_library/internaldafny/generated/dafny_src-py.dtr --translation-record ../ComAmazonawsKms/runtimes/python/src/aws_cryptography_internal_kms/internaldafny/generated/dafny_src-py.dtr --translation-record ../ComAmazonawsDynamodb/runtimes/python/src/aws_cryptography_internal_dynamodb/internaldafny/generated/dafny_src-py.dtr --translation-record ../AwsCryptographyPrimitives/runtimes/python/src/aws_cryptography_primitives/internaldafny/generated/dafny_src-py.dtr --translation-record ../AwsCryptographicMaterialProviders/runtimes/python/src/aws_cryptographic_material_providers/internaldafny/generated/dafny_src-py.dtr \
+		 --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographyPrimitives/src/Index.dfy  --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsKms/src/Index.dfy  --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsDynamodb/src/Index.dfy  --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographicMaterialProviders/dafny/AwsCryptographicMaterialProviders/src/Index.dfy  --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographicMaterialProviders/dafny/AwsCryptographyKeyStore/src/Index.dfy
+# Remove any previously generated Dafny code in src/, then copy in newly-generated code
+rm -rf runtimes/python/src/aws_cryptography_materialproviders_test_vectors/internaldafny/generated/
+mkdir -p runtimes/python/src/aws_cryptography_materialproviders_test_vectors/internaldafny/generated/
+mv runtimes/python/dafny_src-py/* runtimes/python/src/aws_cryptography_materialproviders_test_vectors/internaldafny/generated
+rm -rf runtimes/python/dafny_src-py
+find ./dafny/**/src/ ./src/ -name 'Index.dfy' | sed -e 's/^/include "/' -e 's/$/"/' | dafny \
+	translate py \
+		--stdin \
+		--no-verify \
+		--cores:2 \
+		--optimize-erasable-datatype-wrapper:false \
+		--unicode-char:false \
+		--function-syntax:3 \
+		--output runtimes/python/dafny_src \
+		--allow-warnings --include-test-runner \
+		 \
+		--python-module-name=.internaldafny.generated \
+		 --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/StandardLibrary/src/Index.dfy \
+		 \
+		 --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographyPrimitives/src/Index.dfy  --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsKms/src/Index.dfy  --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsDynamodb/src/Index.dfy  --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographicMaterialProviders/dafny/AwsCryptographicMaterialProviders/src/Index.dfy  --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographicMaterialProviders/dafny/AwsCryptographyKeyStore/src/Index.dfy
+# Remove any previously generated Dafny code in src/, then copy in newly-generated code
+rm -rf runtimes/python/src//internaldafny/generated/
+mkdir -p runtimes/python/src//internaldafny/generated/
+mv runtimes/python/dafny_src-py/* runtimes/python/src//internaldafny/generated
+rm -rf runtimes/python/dafny_src-py
+find ./dafny/**/src/ ./src/ -name 'Index.dfy' | sed -e 's/^/include "/' -e 's/$/"/' | dafny \
+	translate py \
+		--stdin \
+		--no-verify \
+		--cores:2 \
+		--optimize-erasable-datatype-wrapper:false \
+		--unicode-char:false \
+		--function-syntax:3 \
+		--output runtimes/python/dafny_src \
+		--allow-warnings --include-test-runner \
+		 \
+		--python-module-name=.internaldafny.generated \
+		 --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/StandardLibrary/src/Index.dfy \
+		 \
+		 --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographyPrimitives/src/Index.dfy  --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsKms/src/Index.dfy  --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsDynamodb/src/Index.dfy  --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographicMaterialProviders/dafny/AwsCryptographicMaterialProviders/src/Index.dfy  --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographicMaterialProviders/dafny/AwsCryptographyKeyStore/src/Index.dfy  --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/TestVectorsAwsCryptographicMaterialProviders/dafny/KeyVectors/src/Index.dfy  --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/TestVectorsAwsCryptographicMaterialProviders/dafny/TestVectorsAwsCryptographicMaterialProviders/src/LibraryIndex.dfy  --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/AwsEncryptionSDK/dafny/AwsEncryptionSdk/src/Index.dfy
+# Remove any previously generated Dafny code in src/, then copy in newly-generated code
+rm -rf runtimes/python/src//internaldafny/generated/
+mkdir -p runtimes/python/src//internaldafny/generated/
+mv runtimes/python/dafny_src-py/* runtimes/python/src//internaldafny/generated
+rm -rf runtimes/python/dafny_src-py
+find ./dafny/**/test ./test -name "*.dfy" -name '*.dfy' | sed -e 's/^/include "/' -e 's/$/"/' | dafny \
+		translate py \
+		--stdin \
+		--no-verify \
+		--cores:2 \
+		--optimize-erasable-datatype-wrapper:false \
+		--unicode-char:false \
+		--function-syntax:3 \
+		--output runtimes/python/dafny_test \
+		--allow-warnings --include-test-runner \
+		 \
+		 --library:/Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/StandardLibrary/src/Index.dfy \
+		 \
+		--translation-record runtimes/python/src//internaldafny/generated/dafny_src-py.dtr \
+		 \
+		  --library:dafny/TestVectors/src/Index.dfy \
+
+# Remove any previously generated Dafny code in test/, then copy in newly-generated code
+rm -rf runtimes/python/test/internaldafny/generated
+mkdir -p runtimes/python/test/internaldafny/generated
+mv runtimes/python/dafny_test-py/* runtimes/python/test/internaldafny/generated
+rm -rf runtimes/python/dafny_test-py
+/Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographyPrimitives _no_extern_post_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsKms _no_extern_post_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsDynamodb _no_extern_post_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographicMaterialProviders _no_extern_post_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/TestVectorsAwsCryptographicMaterialProviders _no_extern_post_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/AwsEncryptionSDK _no_extern_post_transpile;
+if [ -z Model/AwsCryptographyPrimitivesTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" ] || [ -z "module AwsCryptographyPrimitivesTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/AwsCryptographyPrimitivesTypes.dfy SED_BEFORE_STRING="module AwsCryptographyPrimitivesTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ] || [ -z "module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsKmsTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" ] || [ -z "module ComAmazonawsKmsTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsKmsTypes.dfy SED_BEFORE_STRING="module ComAmazonawsKmsTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ] || [ -z "module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsDynamodbTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" ] || [ -z "module ComAmazonawsDynamodbTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsDynamodbTypes.dfy SED_BEFORE_STRING="module ComAmazonawsDynamodbTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ] || [ -z "module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographyPrimitives _no_extern_post_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsKms _no_extern_post_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsDynamodb _no_extern_post_transpile;
+if [ -z Model/AwsCryptographyPrimitivesTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" ] || [ -z "module AwsCryptographyPrimitivesTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/AwsCryptographyPrimitivesTypes.dfy SED_BEFORE_STRING="module AwsCryptographyPrimitivesTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ] || [ -z "module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsKmsTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" ] || [ -z "module ComAmazonawsKmsTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsKmsTypes.dfy SED_BEFORE_STRING="module ComAmazonawsKmsTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ] || [ -z "module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsDynamodbTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" ] || [ -z "module ComAmazonawsDynamodbTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsDynamodbTypes.dfy SED_BEFORE_STRING="module ComAmazonawsDynamodbTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ] || [ -z "module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/Model/AwsCryptographyMaterialProvidersTypes.dfy SED_BEFORE_STRING="module AwsCryptographyMaterialProvidersTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.materialproviders.internaldafny.types\" } AwsCryptographyMaterialProvidersTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographyKeyStore/Model/AwsCryptographyKeyStoreTypes.dfy SED_BEFORE_STRING="module AwsCryptographyKeyStoreTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.keystore.internaldafny.types\" } AwsCryptographyKeyStoreTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/Index.dfy SED_BEFORE_STRING="module MaterialProviders refines AbstractAwsCryptographyMaterialProvidersService" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.materialproviders.internaldafny\" } MaterialProviders refines AbstractAwsCryptographyMaterialProvidersService"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographyKeyStore/src/Index.dfy SED_BEFORE_STRING="module KeyStore refines AbstractAwsCryptographyKeyStoreService" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.keystore.internaldafny\"} KeyStore refines AbstractAwsCryptographyKeyStoreService"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/CMCs/SynchronizedLocalCMC.dfy SED_BEFORE_STRING="module {:options \"\/functionSyntax:4\" } SynchronizedLocalCMC {" SED_AFTER_STRING="module {:options \"\/functionSyntax:4\" } {:extern \"software.amazon.cryptography.internaldafny.SynchronizedLocalCMC\" } SynchronizedLocalCMC {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/CMCs/StormTrackingCMC.dfy SED_BEFORE_STRING="module {:options \"\/functionSyntax:4\" } StormTrackingCMC {" SED_AFTER_STRING="module {:options \"\/functionSyntax:4\" } {:extern \"software.amazon.cryptography.internaldafny.StormTrackingCMC\" } StormTrackingCMC {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographyPrimitives _no_extern_post_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsKms _no_extern_post_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsDynamodb _no_extern_post_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographicMaterialProviders _no_extern_post_transpile;
+if [ -z Model/AwsCryptographyPrimitivesTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" ] || [ -z "module AwsCryptographyPrimitivesTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/AwsCryptographyPrimitivesTypes.dfy SED_BEFORE_STRING="module AwsCryptographyPrimitivesTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ] || [ -z "module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsKmsTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" ] || [ -z "module ComAmazonawsKmsTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsKmsTypes.dfy SED_BEFORE_STRING="module ComAmazonawsKmsTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ] || [ -z "module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsDynamodbTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" ] || [ -z "module ComAmazonawsDynamodbTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsDynamodbTypes.dfy SED_BEFORE_STRING="module ComAmazonawsDynamodbTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ] || [ -z "module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographyPrimitives _no_extern_post_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsKms _no_extern_post_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsDynamodb _no_extern_post_transpile;
+if [ -z Model/AwsCryptographyPrimitivesTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" ] || [ -z "module AwsCryptographyPrimitivesTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/AwsCryptographyPrimitivesTypes.dfy SED_BEFORE_STRING="module AwsCryptographyPrimitivesTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ] || [ -z "module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsKmsTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" ] || [ -z "module ComAmazonawsKmsTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsKmsTypes.dfy SED_BEFORE_STRING="module ComAmazonawsKmsTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ] || [ -z "module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsDynamodbTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" ] || [ -z "module ComAmazonawsDynamodbTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsDynamodbTypes.dfy SED_BEFORE_STRING="module ComAmazonawsDynamodbTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ] || [ -z "module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/Model/AwsCryptographyMaterialProvidersTypes.dfy SED_BEFORE_STRING="module AwsCryptographyMaterialProvidersTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.materialproviders.internaldafny.types\" } AwsCryptographyMaterialProvidersTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographyKeyStore/Model/AwsCryptographyKeyStoreTypes.dfy SED_BEFORE_STRING="module AwsCryptographyKeyStoreTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.keystore.internaldafny.types\" } AwsCryptographyKeyStoreTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/Index.dfy SED_BEFORE_STRING="module MaterialProviders refines AbstractAwsCryptographyMaterialProvidersService" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.materialproviders.internaldafny\" } MaterialProviders refines AbstractAwsCryptographyMaterialProvidersService"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographyKeyStore/src/Index.dfy SED_BEFORE_STRING="module KeyStore refines AbstractAwsCryptographyKeyStoreService" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.keystore.internaldafny\"} KeyStore refines AbstractAwsCryptographyKeyStoreService"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/CMCs/SynchronizedLocalCMC.dfy SED_BEFORE_STRING="module {:options \"\/functionSyntax:4\" } SynchronizedLocalCMC {" SED_AFTER_STRING="module {:options \"\/functionSyntax:4\" } {:extern \"software.amazon.cryptography.internaldafny.SynchronizedLocalCMC\" } SynchronizedLocalCMC {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/CMCs/StormTrackingCMC.dfy SED_BEFORE_STRING="module {:options \"\/functionSyntax:4\" } StormTrackingCMC {" SED_AFTER_STRING="module {:options \"\/functionSyntax:4\" } {:extern \"software.amazon.cryptography.internaldafny.StormTrackingCMC\" } StormTrackingCMC {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z dafny/KeyVectors/Model/AwsCryptographyMaterialProvidersTestVectorKeysTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.materialproviderstestvectorkeys.internaldafny.types\" } AwsCryptographyMaterialProvidersTestVectorKeysTypes" ] || [ -z "module AwsCryptographyMaterialProvidersTestVectorKeysTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/KeyVectors/Model/AwsCryptographyMaterialProvidersTestVectorKeysTypes.dfy SED_BEFORE_STRING="module AwsCryptographyMaterialProvidersTestVectorKeysTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.materialproviderstestvectorkeys.internaldafny.types\" } AwsCryptographyMaterialProvidersTestVectorKeysTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z dafny/KeyVectors/src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.materialproviderstestvectorkeys.internaldafny\"} KeyVectors refines AbstractAwsCryptographyMaterialProvidersTestVectorKeysService {" ] || [ -z "module KeyVectors refines AbstractAwsCryptographyMaterialProvidersTestVectorKeysService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/KeyVectors/src/Index.dfy SED_BEFORE_STRING="module KeyVectors refines AbstractAwsCryptographyMaterialProvidersTestVectorKeysService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.materialproviderstestvectorkeys.internaldafny\"} KeyVectors refines AbstractAwsCryptographyMaterialProvidersTestVectorKeysService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/TestVectorsAwsCryptographicMaterialProviders/src/LibraryIndex.dfy SED_BEFORE_STRING="module WrappedMaterialProviders refines WrappedAbstractAwsCryptographyMaterialProvidersService" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.materialproviders.internaldafny.wrapped\" } WrappedMaterialProviders refines WrappedAbstractAwsCryptographyMaterialProvidersService"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographyPrimitives _no_extern_post_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsKms _no_extern_post_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsDynamodb _no_extern_post_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographicMaterialProviders _no_extern_post_transpile;
+if [ -z Model/AwsCryptographyPrimitivesTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" ] || [ -z "module AwsCryptographyPrimitivesTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/AwsCryptographyPrimitivesTypes.dfy SED_BEFORE_STRING="module AwsCryptographyPrimitivesTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ] || [ -z "module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsKmsTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" ] || [ -z "module ComAmazonawsKmsTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsKmsTypes.dfy SED_BEFORE_STRING="module ComAmazonawsKmsTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ] || [ -z "module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsDynamodbTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" ] || [ -z "module ComAmazonawsDynamodbTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsDynamodbTypes.dfy SED_BEFORE_STRING="module ComAmazonawsDynamodbTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ] || [ -z "module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/AwsCryptographyPrimitives _no_extern_post_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsKms _no_extern_post_transpile;  /Library/Developer/CommandLineTools/usr/bin/make -C /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/ComAmazonawsDynamodb _no_extern_post_transpile;
+if [ -z Model/AwsCryptographyPrimitivesTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes" ] || [ -z "module AwsCryptographyPrimitivesTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/AwsCryptographyPrimitivesTypes.dfy SED_BEFORE_STRING="module AwsCryptographyPrimitivesTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny.types\" } AwsCryptographyPrimitivesTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ] || [ -z "module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.primitives.internaldafny\" } AtomicPrimitives refines AbstractAwsCryptographyPrimitivesService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsKmsTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes" ] || [ -z "module ComAmazonawsKmsTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsKmsTypes.dfy SED_BEFORE_STRING="module ComAmazonawsKmsTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny.types\" } ComAmazonawsKmsTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ] || [ -z "module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.kms.internaldafny\"} Com.Amazonaws.Kms refines AbstractComAmazonawsKmsService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z Model/ComAmazonawsDynamodbTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes" ] || [ -z "module ComAmazonawsDynamodbTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=Model/ComAmazonawsDynamodbTypes.dfy SED_BEFORE_STRING="module ComAmazonawsDynamodbTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny.types\" } ComAmazonawsDynamodbTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ] || [ -z "module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=src/Index.dfy SED_BEFORE_STRING="module Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.services.dynamodb.internaldafny\"} Com.Amazonaws.Dynamodb refines AbstractComAmazonawsDynamodbService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/Model/AwsCryptographyMaterialProvidersTypes.dfy SED_BEFORE_STRING="module AwsCryptographyMaterialProvidersTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.materialproviders.internaldafny.types\" } AwsCryptographyMaterialProvidersTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographyKeyStore/Model/AwsCryptographyKeyStoreTypes.dfy SED_BEFORE_STRING="module AwsCryptographyKeyStoreTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.keystore.internaldafny.types\" } AwsCryptographyKeyStoreTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/Index.dfy SED_BEFORE_STRING="module MaterialProviders refines AbstractAwsCryptographyMaterialProvidersService" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.materialproviders.internaldafny\" } MaterialProviders refines AbstractAwsCryptographyMaterialProvidersService"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographyKeyStore/src/Index.dfy SED_BEFORE_STRING="module KeyStore refines AbstractAwsCryptographyKeyStoreService" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.keystore.internaldafny\"} KeyStore refines AbstractAwsCryptographyKeyStoreService"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/CMCs/SynchronizedLocalCMC.dfy SED_BEFORE_STRING="module {:options \"\/functionSyntax:4\" } SynchronizedLocalCMC {" SED_AFTER_STRING="module {:options \"\/functionSyntax:4\" } {:extern \"software.amazon.cryptography.internaldafny.SynchronizedLocalCMC\" } SynchronizedLocalCMC {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsCryptographicMaterialProviders/src/CMCs/StormTrackingCMC.dfy SED_BEFORE_STRING="module {:options \"\/functionSyntax:4\" } StormTrackingCMC {" SED_AFTER_STRING="module {:options \"\/functionSyntax:4\" } {:extern \"software.amazon.cryptography.internaldafny.StormTrackingCMC\" } StormTrackingCMC {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z dafny/AwsEncryptionSdk/Model/AwsCryptographyEncryptionSdkTypes.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny.types\" } AwsCryptographyEncryptionSdkTypes" ] || [ -z "module AwsCryptographyEncryptionSdkTypes" ]; then \
+		echo "Error: All variables TYPES_FILE_PATH, TYPES_FILE_WITH_EXTERN_STRING, and TYPES_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsEncryptionSdk/Model/AwsCryptographyEncryptionSdkTypes.dfy SED_BEFORE_STRING="module AwsCryptographyEncryptionSdkTypes" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny.types\" } AwsCryptographyEncryptionSdkTypes"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+if [ -z dafny/AwsEncryptionSdk/src/Index.dfy ] || [ -z "module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny\" } EncryptionSdk refines AbstractAwsCryptographyEncryptionSdkService {" ] || [ -z "module EncryptionSdk refines AbstractAwsCryptographyEncryptionSdkService {" ]; then \
+		echo "Error: All variables INDEX_FILE_PATH, INDEX_FILE_WITH_EXTERN_STRING, and INDEX_FILE_WITHOUT_EXTERN_STRING must be set and non-empty."; \
+		exit 1; \
+	fi
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/AwsEncryptionSdk/src/Index.dfy SED_BEFORE_STRING="module EncryptionSdk refines AbstractAwsCryptographyEncryptionSdkService {" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny\" } EncryptionSdk refines AbstractAwsCryptographyEncryptionSdkService {"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh
+echo "No extern to process for ESDK TestVectors"
+echo "No extern to process for ESDK TestVectors"
+/Library/Developer/CommandLineTools/usr/bin/make _sed_file SED_FILE_PATH=dafny/TestVectors/src/LibraryIndex.dfy SED_BEFORE_STRING="module WrappedESDK refines WrappedAbstractAwsCryptographyEncryptionSdkService" SED_AFTER_STRING="module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny.wrapped\" } WrappedESDK refines WrappedAbstractAwsCryptographyEncryptionSdkService"
+bash /Users/rishavkj/Documents/Storage/Team-Repos/aws-encryption-sdk-dafny/mpl/smithy-dafny/scripts/sed_replace.sh

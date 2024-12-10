@@ -1,0 +1,59 @@
+file_format_version = "1.0"
+dafny_version = "4.9.1.0"
+[options_by_module.AwsCryptographyEncryptionSdkTypes]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.AbstractAwsCryptographyEncryptionSdkOperations]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.AbstractAwsCryptographyEncryptionSdkService]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.SerializableTypes]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.SerializeFunctions]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.EncryptionContext]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.HeaderTypes]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.SharedHeaderFunctions]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.EncryptedDataKeys]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.V1HeaderBody]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.V2HeaderBody]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.HeaderAuth]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.Header]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.Frames]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.MessageBody]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.KeyDerivation]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.EncryptDecryptHelpers]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.AwsEncryptionSdkOperations]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false
+[options_by_module.EncryptionSdk]
+go-module-name = "github.com/aws/aws-encryption-sdk"
+legacy-module-names = false

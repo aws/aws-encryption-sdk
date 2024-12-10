@@ -11,7 +11,7 @@ import (
 )
 
 type Client struct {
-	DafnyClient *ESDK.ESDKClient
+	DafnyClient AwsCryptographyEncryptionSdkTypes.IAwsEncryptionSdkClient
 }
 
 func NewClient(clientConfig awscryptographyencryptionsdksmithygeneratedtypes.AwsEncryptionSdkConfig) (*Client, error) {
@@ -20,7 +20,7 @@ func NewClient(clientConfig awscryptographyencryptionsdksmithygeneratedtypes.Aws
 	if dafny_response.Is_Failure() {
 		panic("Client construction failed. This should never happen")
 	}
-	var dafnyClient = dafny_response.Extract().(*ESDK.ESDKClient)
+	var dafnyClient = dafny_response.Extract().(AwsCryptographyEncryptionSdkTypes.IAwsEncryptionSdkClient)
 	client := &Client{dafnyClient}
 	return client, nil
 }
@@ -33,6 +33,7 @@ func (client *Client) Encrypt(ctx context.Context, params awscryptographyencrypt
 		}
 		return nil, opaqueErr
 	}
+
 	var dafny_request AwsCryptographyEncryptionSdkTypes.EncryptInput = EncryptInput_ToDafny(params)
 	var dafny_response = client.DafnyClient.Encrypt(dafny_request)
 
@@ -40,7 +41,7 @@ func (client *Client) Encrypt(ctx context.Context, params awscryptographyencrypt
 		err := dafny_response.Dtor_error().(AwsCryptographyEncryptionSdkTypes.Error)
 		return nil, Error_FromDafny(err)
 	}
-	var native_response = EncryptOutput_FromDafny(dafny_response.Extract().(AwsCryptographyEncryptionSdkTypes.EncryptOutput))
+	var native_response = EncryptOutput_FromDafny(dafny_response.Dtor_value().(AwsCryptographyEncryptionSdkTypes.EncryptOutput))
 	return &native_response, nil
 
 }
@@ -53,6 +54,7 @@ func (client *Client) Decrypt(ctx context.Context, params awscryptographyencrypt
 		}
 		return nil, opaqueErr
 	}
+
 	var dafny_request AwsCryptographyEncryptionSdkTypes.DecryptInput = DecryptInput_ToDafny(params)
 	var dafny_response = client.DafnyClient.Decrypt(dafny_request)
 
@@ -60,7 +62,7 @@ func (client *Client) Decrypt(ctx context.Context, params awscryptographyencrypt
 		err := dafny_response.Dtor_error().(AwsCryptographyEncryptionSdkTypes.Error)
 		return nil, Error_FromDafny(err)
 	}
-	var native_response = DecryptOutput_FromDafny(dafny_response.Extract().(AwsCryptographyEncryptionSdkTypes.DecryptOutput))
+	var native_response = DecryptOutput_FromDafny(dafny_response.Dtor_value().(AwsCryptographyEncryptionSdkTypes.DecryptOutput))
 	return &native_response, nil
 
 }

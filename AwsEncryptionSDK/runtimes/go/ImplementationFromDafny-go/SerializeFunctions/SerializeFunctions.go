@@ -1,0 +1,791 @@
+// Package SerializeFunctions
+// Dafny module SerializeFunctions compiled into Go
+
+package SerializeFunctions
+
+import (
+	os "os"
+
+	m_ComAmazonawsDynamodbTypes "github.com/aws/aws-cryptographic-material-providers-library/dynamodb/ComAmazonawsDynamodbTypes"
+	m_Com_Amazonaws_Dynamodb "github.com/aws/aws-cryptographic-material-providers-library/dynamodb/Com_Amazonaws_Dynamodb"
+	m_ComAmazonawsKmsTypes "github.com/aws/aws-cryptographic-material-providers-library/kms/ComAmazonawsKmsTypes"
+	m_Com_Amazonaws_Kms "github.com/aws/aws-cryptographic-material-providers-library/kms/Com_Amazonaws_Kms"
+	m_AlgorithmSuites "github.com/aws/aws-cryptographic-material-providers-library/mpl/AlgorithmSuites"
+	m_AwsArnParsing "github.com/aws/aws-cryptographic-material-providers-library/mpl/AwsArnParsing"
+	m_AwsCryptographyKeyStoreOperations "github.com/aws/aws-cryptographic-material-providers-library/mpl/AwsCryptographyKeyStoreOperations"
+	m_AwsCryptographyKeyStoreTypes "github.com/aws/aws-cryptographic-material-providers-library/mpl/AwsCryptographyKeyStoreTypes"
+	m_AwsCryptographyMaterialProvidersOperations "github.com/aws/aws-cryptographic-material-providers-library/mpl/AwsCryptographyMaterialProvidersOperations"
+	m_AwsCryptographyMaterialProvidersTypes "github.com/aws/aws-cryptographic-material-providers-library/mpl/AwsCryptographyMaterialProvidersTypes"
+	m_AwsKmsDiscoveryKeyring "github.com/aws/aws-cryptographic-material-providers-library/mpl/AwsKmsDiscoveryKeyring"
+	m_AwsKmsEcdhKeyring "github.com/aws/aws-cryptographic-material-providers-library/mpl/AwsKmsEcdhKeyring"
+	m_AwsKmsHierarchicalKeyring "github.com/aws/aws-cryptographic-material-providers-library/mpl/AwsKmsHierarchicalKeyring"
+	m_AwsKmsKeyring "github.com/aws/aws-cryptographic-material-providers-library/mpl/AwsKmsKeyring"
+	m_AwsKmsMrkAreUnique "github.com/aws/aws-cryptographic-material-providers-library/mpl/AwsKmsMrkAreUnique"
+	m_AwsKmsMrkDiscoveryKeyring "github.com/aws/aws-cryptographic-material-providers-library/mpl/AwsKmsMrkDiscoveryKeyring"
+	m_AwsKmsMrkKeyring "github.com/aws/aws-cryptographic-material-providers-library/mpl/AwsKmsMrkKeyring"
+	m_AwsKmsMrkMatchForDecrypt "github.com/aws/aws-cryptographic-material-providers-library/mpl/AwsKmsMrkMatchForDecrypt"
+	m_AwsKmsRsaKeyring "github.com/aws/aws-cryptographic-material-providers-library/mpl/AwsKmsRsaKeyring"
+	m_AwsKmsUtils "github.com/aws/aws-cryptographic-material-providers-library/mpl/AwsKmsUtils"
+	m_CMM "github.com/aws/aws-cryptographic-material-providers-library/mpl/CMM"
+	m_CacheConstants "github.com/aws/aws-cryptographic-material-providers-library/mpl/CacheConstants"
+	m_CanonicalEncryptionContext "github.com/aws/aws-cryptographic-material-providers-library/mpl/CanonicalEncryptionContext"
+	m_Commitment "github.com/aws/aws-cryptographic-material-providers-library/mpl/Commitment"
+	m_Constants "github.com/aws/aws-cryptographic-material-providers-library/mpl/Constants"
+	m_CreateKeyStoreTable "github.com/aws/aws-cryptographic-material-providers-library/mpl/CreateKeyStoreTable"
+	m_CreateKeys "github.com/aws/aws-cryptographic-material-providers-library/mpl/CreateKeys"
+	m_DDBKeystoreOperations "github.com/aws/aws-cryptographic-material-providers-library/mpl/DDBKeystoreOperations"
+	m_DefaultCMM "github.com/aws/aws-cryptographic-material-providers-library/mpl/DefaultCMM"
+	m_DefaultClientSupplier "github.com/aws/aws-cryptographic-material-providers-library/mpl/DefaultClientSupplier"
+	m_Defaults "github.com/aws/aws-cryptographic-material-providers-library/mpl/Defaults"
+	m_DiscoveryMultiKeyring "github.com/aws/aws-cryptographic-material-providers-library/mpl/DiscoveryMultiKeyring"
+	m_EcdhEdkWrapping "github.com/aws/aws-cryptographic-material-providers-library/mpl/EcdhEdkWrapping"
+	m_EdkWrapping "github.com/aws/aws-cryptographic-material-providers-library/mpl/EdkWrapping"
+	m_ErrorMessages "github.com/aws/aws-cryptographic-material-providers-library/mpl/ErrorMessages"
+	m_GetKeys "github.com/aws/aws-cryptographic-material-providers-library/mpl/GetKeys"
+	m_IntermediateKeyWrapping "github.com/aws/aws-cryptographic-material-providers-library/mpl/IntermediateKeyWrapping"
+	m_KMSKeystoreOperations "github.com/aws/aws-cryptographic-material-providers-library/mpl/KMSKeystoreOperations"
+	m_KeyStore "github.com/aws/aws-cryptographic-material-providers-library/mpl/KeyStore"
+	m_KeyStoreErrorMessages "github.com/aws/aws-cryptographic-material-providers-library/mpl/KeyStoreErrorMessages"
+	m_Keyring "github.com/aws/aws-cryptographic-material-providers-library/mpl/Keyring"
+	m_KmsArn "github.com/aws/aws-cryptographic-material-providers-library/mpl/KmsArn"
+	m_LocalCMC "github.com/aws/aws-cryptographic-material-providers-library/mpl/LocalCMC"
+	m_MaterialProviders "github.com/aws/aws-cryptographic-material-providers-library/mpl/MaterialProviders"
+	m_MaterialWrapping "github.com/aws/aws-cryptographic-material-providers-library/mpl/MaterialWrapping"
+	m_Materials "github.com/aws/aws-cryptographic-material-providers-library/mpl/Materials"
+	m_MrkAwareDiscoveryMultiKeyring "github.com/aws/aws-cryptographic-material-providers-library/mpl/MrkAwareDiscoveryMultiKeyring"
+	m_MrkAwareStrictMultiKeyring "github.com/aws/aws-cryptographic-material-providers-library/mpl/MrkAwareStrictMultiKeyring"
+	m_MultiKeyring "github.com/aws/aws-cryptographic-material-providers-library/mpl/MultiKeyring"
+	m_RawAESKeyring "github.com/aws/aws-cryptographic-material-providers-library/mpl/RawAESKeyring"
+	m_RawECDHKeyring "github.com/aws/aws-cryptographic-material-providers-library/mpl/RawECDHKeyring"
+	m_RawRSAKeyring "github.com/aws/aws-cryptographic-material-providers-library/mpl/RawRSAKeyring"
+	m_RequiredEncryptionContextCMM "github.com/aws/aws-cryptographic-material-providers-library/mpl/RequiredEncryptionContextCMM"
+	m_StormTracker "github.com/aws/aws-cryptographic-material-providers-library/mpl/StormTracker"
+	m_StormTrackingCMC "github.com/aws/aws-cryptographic-material-providers-library/mpl/StormTrackingCMC"
+	m_StrictMultiKeyring "github.com/aws/aws-cryptographic-material-providers-library/mpl/StrictMultiKeyring"
+	m_Structure "github.com/aws/aws-cryptographic-material-providers-library/mpl/Structure"
+	m_SynchronizedLocalCMC "github.com/aws/aws-cryptographic-material-providers-library/mpl/SynchronizedLocalCMC"
+	m_Utils "github.com/aws/aws-cryptographic-material-providers-library/mpl/Utils"
+	m_AESEncryption "github.com/aws/aws-cryptographic-material-providers-library/primitives/AESEncryption"
+	m_AtomicPrimitives "github.com/aws/aws-cryptographic-material-providers-library/primitives/AtomicPrimitives"
+	m_AwsCryptographyPrimitivesOperations "github.com/aws/aws-cryptographic-material-providers-library/primitives/AwsCryptographyPrimitivesOperations"
+	m_AwsCryptographyPrimitivesTypes "github.com/aws/aws-cryptographic-material-providers-library/primitives/AwsCryptographyPrimitivesTypes"
+	m_Digest "github.com/aws/aws-cryptographic-material-providers-library/primitives/Digest"
+	m_ECDH "github.com/aws/aws-cryptographic-material-providers-library/primitives/ECDH"
+	m_HKDF "github.com/aws/aws-cryptographic-material-providers-library/primitives/HKDF"
+	m_HMAC "github.com/aws/aws-cryptographic-material-providers-library/primitives/HMAC"
+	m_KdfCtr "github.com/aws/aws-cryptographic-material-providers-library/primitives/KdfCtr"
+	m_RSAEncryption "github.com/aws/aws-cryptographic-material-providers-library/primitives/RSAEncryption"
+	m_Random "github.com/aws/aws-cryptographic-material-providers-library/primitives/Random"
+	m_Signature "github.com/aws/aws-cryptographic-material-providers-library/primitives/Signature"
+	m_WrappedHKDF "github.com/aws/aws-cryptographic-material-providers-library/primitives/WrappedHKDF"
+	m_WrappedHMAC "github.com/aws/aws-cryptographic-material-providers-library/primitives/WrappedHMAC"
+	m_AwsCryptographyEncryptionSdkTypes "github.com/aws/aws-encryption-sdk/AwsCryptographyEncryptionSdkTypes"
+	m_SerializableTypes "github.com/aws/aws-encryption-sdk/SerializableTypes"
+	m__System "github.com/dafny-lang/DafnyRuntimeGo/v4/System_"
+	_dafny "github.com/dafny-lang/DafnyRuntimeGo/v4/dafny"
+	m_Actions "github.com/dafny-lang/DafnyStandardLibGo/Actions"
+	m_Base64 "github.com/dafny-lang/DafnyStandardLibGo/Base64"
+	m_Base64Lemmas "github.com/dafny-lang/DafnyStandardLibGo/Base64Lemmas"
+	m_BoundedInts "github.com/dafny-lang/DafnyStandardLibGo/BoundedInts"
+	m_DivInternals "github.com/dafny-lang/DafnyStandardLibGo/DivInternals"
+	m_DivInternalsNonlinear "github.com/dafny-lang/DafnyStandardLibGo/DivInternalsNonlinear"
+	m_DivMod "github.com/dafny-lang/DafnyStandardLibGo/DivMod"
+	m_FileIO "github.com/dafny-lang/DafnyStandardLibGo/FileIO"
+	m_FloatCompare "github.com/dafny-lang/DafnyStandardLibGo/FloatCompare"
+	m_Functions "github.com/dafny-lang/DafnyStandardLibGo/Functions"
+	m_GeneralInternals "github.com/dafny-lang/DafnyStandardLibGo/GeneralInternals"
+	m_GetOpt "github.com/dafny-lang/DafnyStandardLibGo/GetOpt"
+	m_HexStrings "github.com/dafny-lang/DafnyStandardLibGo/HexStrings"
+	m_Logarithm "github.com/dafny-lang/DafnyStandardLibGo/Logarithm"
+	m__Math "github.com/dafny-lang/DafnyStandardLibGo/Math_"
+	m_ModInternals "github.com/dafny-lang/DafnyStandardLibGo/ModInternals"
+	m_ModInternalsNonlinear "github.com/dafny-lang/DafnyStandardLibGo/ModInternalsNonlinear"
+	m_Mul "github.com/dafny-lang/DafnyStandardLibGo/Mul"
+	m_MulInternals "github.com/dafny-lang/DafnyStandardLibGo/MulInternals"
+	m_MulInternalsNonlinear "github.com/dafny-lang/DafnyStandardLibGo/MulInternalsNonlinear"
+	m_Power "github.com/dafny-lang/DafnyStandardLibGo/Power"
+	m_Relations "github.com/dafny-lang/DafnyStandardLibGo/Relations"
+	m_Seq "github.com/dafny-lang/DafnyStandardLibGo/Seq"
+	m_Seq_MergeSort "github.com/dafny-lang/DafnyStandardLibGo/Seq_MergeSort"
+	m_Sorting "github.com/dafny-lang/DafnyStandardLibGo/Sorting"
+	m_StandardLibrary "github.com/dafny-lang/DafnyStandardLibGo/StandardLibrary"
+	m_StandardLibraryInterop "github.com/dafny-lang/DafnyStandardLibGo/StandardLibraryInterop"
+	m_StandardLibrary_Sequence "github.com/dafny-lang/DafnyStandardLibGo/StandardLibrary_Sequence"
+	m_StandardLibrary_String "github.com/dafny-lang/DafnyStandardLibGo/StandardLibrary_String"
+	m_StandardLibrary_UInt "github.com/dafny-lang/DafnyStandardLibGo/StandardLibrary_UInt"
+	m_Streams "github.com/dafny-lang/DafnyStandardLibGo/Streams"
+	m_UnicodeStrings "github.com/dafny-lang/DafnyStandardLibGo/UnicodeStrings"
+	m__Unicode "github.com/dafny-lang/DafnyStandardLibGo/Unicode_"
+	m_Utf16EncodingForm "github.com/dafny-lang/DafnyStandardLibGo/Utf16EncodingForm"
+	m_Utf8EncodingForm "github.com/dafny-lang/DafnyStandardLibGo/Utf8EncodingForm"
+	m_Wrappers "github.com/dafny-lang/DafnyStandardLibGo/Wrappers"
+)
+
+var _ = os.Args
+var _ _dafny.Dummy__
+var _ m__System.Dummy__
+var _ m_Wrappers.Dummy__
+var _ m_BoundedInts.Dummy__
+var _ m_StandardLibrary_UInt.Dummy__
+var _ m_StandardLibrary_Sequence.Dummy__
+var _ m_StandardLibrary_String.Dummy__
+var _ m_StandardLibrary.Dummy__
+var _ m_AwsCryptographyPrimitivesTypes.Dummy__
+var _ m_Random.Dummy__
+var _ m_AESEncryption.Dummy__
+var _ m_Digest.Dummy__
+var _ m_HMAC.Dummy__
+var _ m_WrappedHMAC.Dummy__
+var _ m_HKDF.Dummy__
+var _ m_WrappedHKDF.Dummy__
+var _ m_Signature.Dummy__
+var _ m_KdfCtr.Dummy__
+var _ m_RSAEncryption.Dummy__
+var _ m_ECDH.Dummy__
+var _ m_AwsCryptographyPrimitivesOperations.Dummy__
+var _ m_AtomicPrimitives.Dummy__
+var _ m_ComAmazonawsDynamodbTypes.Dummy__
+var _ m_ComAmazonawsKmsTypes.Dummy__
+var _ m_AwsCryptographyKeyStoreTypes.Dummy__
+var _ m_AwsCryptographyMaterialProvidersTypes.Dummy__
+var _ m_Base64.Dummy__
+var _ m_AlgorithmSuites.Dummy__
+var _ m_Materials.Dummy__
+var _ m_Keyring.Dummy__
+var _ m_Relations.Dummy__
+var _ m_Seq_MergeSort.Dummy__
+var _ m__Math.Dummy__
+var _ m_Seq.Dummy__
+var _ m_MultiKeyring.Dummy__
+var _ m_AwsArnParsing.Dummy__
+var _ m_AwsKmsMrkAreUnique.Dummy__
+var _ m_Actions.Dummy__
+var _ m_AwsKmsMrkMatchForDecrypt.Dummy__
+var _ m_AwsKmsUtils.Dummy__
+var _ m_Constants.Dummy__
+var _ m_MaterialWrapping.Dummy__
+var _ m_CanonicalEncryptionContext.Dummy__
+var _ m_IntermediateKeyWrapping.Dummy__
+var _ m_EdkWrapping.Dummy__
+var _ m_ErrorMessages.Dummy__
+var _ m_AwsKmsKeyring.Dummy__
+var _ m_StrictMultiKeyring.Dummy__
+var _ m_AwsKmsDiscoveryKeyring.Dummy__
+var _ m_Com_Amazonaws_Kms.Dummy__
+var _ m_Com_Amazonaws_Dynamodb.Dummy__
+var _ m_DiscoveryMultiKeyring.Dummy__
+var _ m_AwsKmsMrkDiscoveryKeyring.Dummy__
+var _ m_MrkAwareDiscoveryMultiKeyring.Dummy__
+var _ m_AwsKmsMrkKeyring.Dummy__
+var _ m_MrkAwareStrictMultiKeyring.Dummy__
+var _ m_LocalCMC.Dummy__
+var _ m_SynchronizedLocalCMC.Dummy__
+var _ m_StormTracker.Dummy__
+var _ m_StormTrackingCMC.Dummy__
+var _ m_CacheConstants.Dummy__
+var _ m_AwsKmsHierarchicalKeyring.Dummy__
+var _ m_AwsKmsRsaKeyring.Dummy__
+var _ m_EcdhEdkWrapping.Dummy__
+var _ m_RawECDHKeyring.Dummy__
+var _ m_AwsKmsEcdhKeyring.Dummy__
+var _ m_RawAESKeyring.Dummy__
+var _ m_RawRSAKeyring.Dummy__
+var _ m_CMM.Dummy__
+var _ m_Defaults.Dummy__
+var _ m_Commitment.Dummy__
+var _ m_DefaultCMM.Dummy__
+var _ m_DefaultClientSupplier.Dummy__
+var _ m_Utils.Dummy__
+var _ m_RequiredEncryptionContextCMM.Dummy__
+var _ m_AwsCryptographyMaterialProvidersOperations.Dummy__
+var _ m_MaterialProviders.Dummy__
+var _ m_KeyStoreErrorMessages.Dummy__
+var _ m_KmsArn.Dummy__
+var _ m_Structure.Dummy__
+var _ m_KMSKeystoreOperations.Dummy__
+var _ m_DDBKeystoreOperations.Dummy__
+var _ m_CreateKeys.Dummy__
+var _ m_CreateKeyStoreTable.Dummy__
+var _ m_GetKeys.Dummy__
+var _ m_AwsCryptographyKeyStoreOperations.Dummy__
+var _ m_KeyStore.Dummy__
+var _ m__Unicode.Dummy__
+var _ m_Functions.Dummy__
+var _ m_Utf8EncodingForm.Dummy__
+var _ m_Utf16EncodingForm.Dummy__
+var _ m_UnicodeStrings.Dummy__
+var _ m_FileIO.Dummy__
+var _ m_GeneralInternals.Dummy__
+var _ m_MulInternalsNonlinear.Dummy__
+var _ m_MulInternals.Dummy__
+var _ m_Mul.Dummy__
+var _ m_ModInternalsNonlinear.Dummy__
+var _ m_DivInternalsNonlinear.Dummy__
+var _ m_ModInternals.Dummy__
+var _ m_DivInternals.Dummy__
+var _ m_DivMod.Dummy__
+var _ m_Power.Dummy__
+var _ m_Logarithm.Dummy__
+var _ m_StandardLibraryInterop.Dummy__
+var _ m_Streams.Dummy__
+var _ m_Sorting.Dummy__
+var _ m_HexStrings.Dummy__
+var _ m_GetOpt.Dummy__
+var _ m_FloatCompare.Dummy__
+var _ m_Base64Lemmas.Dummy__
+var _ m_AwsCryptographyEncryptionSdkTypes.Dummy__
+var _ m_SerializableTypes.Dummy__
+
+type Dummy__ struct{}
+
+// Definition of class Default__
+type Default__ struct {
+	dummy byte
+}
+
+func New_Default___() *Default__ {
+	_this := Default__{}
+
+	return &_this
+}
+
+type CompanionStruct_Default___ struct {
+}
+
+var Companion_Default___ = CompanionStruct_Default___{}
+
+func (_this *Default__) Equals(other *Default__) bool {
+	return _this == other
+}
+
+func (_this *Default__) EqualsGeneric(x interface{}) bool {
+	other, ok := x.(*Default__)
+	return ok && _this.Equals(other)
+}
+
+func (*Default__) String() string {
+	return "SerializeFunctions.Default__"
+}
+func (_this *Default__) ParentTraits_() []*_dafny.TraitID {
+	return [](*_dafny.TraitID){}
+}
+
+var _ _dafny.TraitOffspring = &Default__{}
+
+func (_static *CompanionStruct_Default___) Write(data _dafny.Sequence) _dafny.Sequence {
+	return data
+}
+func (_static *CompanionStruct_Default___) Read(buffer ReadableBuffer, length _dafny.Int) m_Wrappers.Result {
+	var _0_end _dafny.Int = ((buffer).Dtor_start()).Plus(length)
+	_ = _0_end
+	var _1_valueOrError0 m_Wrappers.Outcome = m_Wrappers.Companion_Default___.Need((_dafny.IntOfUint32(((buffer).Dtor_bytes()).Cardinality())).Cmp(_0_end) >= 0, Companion_ReadProblems_.Create_MoreNeeded_(_0_end))
+	_ = _1_valueOrError0
+	if (_1_valueOrError0).IsFailure() {
+		return (_1_valueOrError0).PropagateFailure()
+	} else {
+		return m_Wrappers.Companion_Result_.Create_Success_(Companion_SuccessfulRead_.Create_SuccessfulRead_(((buffer).Dtor_bytes()).Subsequence(((buffer).Dtor_start()).Uint32(), (_0_end).Uint32()), func(_pat_let0_0 ReadableBuffer) ReadableBuffer {
+			return func(_2_dt__update__tmp_h0 ReadableBuffer) ReadableBuffer {
+				return func(_pat_let1_0 _dafny.Int) ReadableBuffer {
+					return func(_3_dt__update_hstart_h0 _dafny.Int) ReadableBuffer {
+						return Companion_ReadableBuffer_.Create_ReadableBuffer_((_2_dt__update__tmp_h0).Dtor_bytes(), _3_dt__update_hstart_h0)
+					}(_pat_let1_0)
+				}(_0_end)
+			}(_pat_let0_0)
+		}(buffer)))
+	}
+}
+func (_static *CompanionStruct_Default___) WriteUint16(number uint16) _dafny.Sequence {
+	return Companion_Default___.Write(m_StandardLibrary_UInt.Companion_Default___.UInt16ToSeq(number))
+}
+func (_static *CompanionStruct_Default___) ReadUInt16(buffer ReadableBuffer) m_Wrappers.Result {
+	var _0_valueOrError0 m_Wrappers.Result = Companion_Default___.Read(buffer, _dafny.IntOfInt64(2))
+	_ = _0_valueOrError0
+	if (_0_valueOrError0).IsFailure() {
+		return (_0_valueOrError0).PropagateFailure()
+	} else {
+		var _let_tmp_rhs0 SuccessfulRead = (_0_valueOrError0).Extract().(SuccessfulRead)
+		_ = _let_tmp_rhs0
+		var _1_uint16Bytes _dafny.Sequence = _let_tmp_rhs0.Get_().(SuccessfulRead_SuccessfulRead).Data.(_dafny.Sequence)
+		_ = _1_uint16Bytes
+		var _2_tail ReadableBuffer = _let_tmp_rhs0.Get_().(SuccessfulRead_SuccessfulRead).Tail
+		_ = _2_tail
+		return m_Wrappers.Companion_Result_.Create_Success_(Companion_SuccessfulRead_.Create_SuccessfulRead_(m_StandardLibrary_UInt.Companion_Default___.SeqToUInt16(_1_uint16Bytes), _2_tail))
+	}
+}
+func (_static *CompanionStruct_Default___) WriteUint32(number uint32) _dafny.Sequence {
+	return Companion_Default___.Write(m_StandardLibrary_UInt.Companion_Default___.UInt32ToSeq(number))
+}
+func (_static *CompanionStruct_Default___) ReadUInt32(buffer ReadableBuffer) m_Wrappers.Result {
+	var _0_valueOrError0 m_Wrappers.Result = Companion_Default___.Read(buffer, _dafny.IntOfInt64(4))
+	_ = _0_valueOrError0
+	if (_0_valueOrError0).IsFailure() {
+		return (_0_valueOrError0).PropagateFailure()
+	} else {
+		var _let_tmp_rhs0 SuccessfulRead = (_0_valueOrError0).Extract().(SuccessfulRead)
+		_ = _let_tmp_rhs0
+		var _1_uint32Bytes _dafny.Sequence = _let_tmp_rhs0.Get_().(SuccessfulRead_SuccessfulRead).Data.(_dafny.Sequence)
+		_ = _1_uint32Bytes
+		var _2_tail ReadableBuffer = _let_tmp_rhs0.Get_().(SuccessfulRead_SuccessfulRead).Tail
+		_ = _2_tail
+		return m_Wrappers.Companion_Result_.Create_Success_(Companion_SuccessfulRead_.Create_SuccessfulRead_(m_StandardLibrary_UInt.Companion_Default___.SeqToUInt32(_1_uint32Bytes), _2_tail))
+	}
+}
+func (_static *CompanionStruct_Default___) WriteUint64(number uint64) _dafny.Sequence {
+	return Companion_Default___.Write(m_StandardLibrary_UInt.Companion_Default___.UInt64ToSeq(number))
+}
+func (_static *CompanionStruct_Default___) ReadUInt64(buffer ReadableBuffer) m_Wrappers.Result {
+	var _0_valueOrError0 m_Wrappers.Result = Companion_Default___.Read(buffer, _dafny.IntOfInt64(8))
+	_ = _0_valueOrError0
+	if (_0_valueOrError0).IsFailure() {
+		return (_0_valueOrError0).PropagateFailure()
+	} else {
+		var _let_tmp_rhs0 SuccessfulRead = (_0_valueOrError0).Extract().(SuccessfulRead)
+		_ = _let_tmp_rhs0
+		var _1_uint64Bytes _dafny.Sequence = _let_tmp_rhs0.Get_().(SuccessfulRead_SuccessfulRead).Data.(_dafny.Sequence)
+		_ = _1_uint64Bytes
+		var _2_tail ReadableBuffer = _let_tmp_rhs0.Get_().(SuccessfulRead_SuccessfulRead).Tail
+		_ = _2_tail
+		return m_Wrappers.Companion_Result_.Create_Success_(Companion_SuccessfulRead_.Create_SuccessfulRead_(m_StandardLibrary_UInt.Companion_Default___.SeqToUInt64(_1_uint64Bytes), _2_tail))
+	}
+}
+func (_static *CompanionStruct_Default___) WriteShortLengthSeq(d _dafny.Sequence) _dafny.Sequence {
+	return _dafny.Companion_Sequence_.Concatenate(Companion_Default___.WriteUint16(uint16((d).Cardinality())), Companion_Default___.Write(d))
+}
+func (_static *CompanionStruct_Default___) ReadShortLengthSeq(buffer ReadableBuffer) m_Wrappers.Result {
+	var _0_valueOrError0 m_Wrappers.Result = Companion_Default___.ReadUInt16(buffer)
+	_ = _0_valueOrError0
+	if (_0_valueOrError0).IsFailure() {
+		return (_0_valueOrError0).PropagateFailure()
+	} else {
+		var _1_length SuccessfulRead = (_0_valueOrError0).Extract().(SuccessfulRead)
+		_ = _1_length
+		var _2_valueOrError1 m_Wrappers.Result = Companion_Default___.Read((_1_length).Dtor_tail(), _dafny.IntOfUint16((_1_length).Dtor_data().(uint16)))
+		_ = _2_valueOrError1
+		if (_2_valueOrError1).IsFailure() {
+			return (_2_valueOrError1).PropagateFailure()
+		} else {
+			var _3_d SuccessfulRead = (_2_valueOrError1).Extract().(SuccessfulRead)
+			_ = _3_d
+			return m_Wrappers.Companion_Result_.Create_Success_(_3_d)
+		}
+	}
+}
+func (_static *CompanionStruct_Default___) WriteUint32Seq(d _dafny.Sequence) _dafny.Sequence {
+	return _dafny.Companion_Sequence_.Concatenate(Companion_Default___.WriteUint32(uint32((d).Cardinality())), Companion_Default___.Write(d))
+}
+func (_static *CompanionStruct_Default___) ReadUint32Seq(buffer ReadableBuffer) m_Wrappers.Result {
+	var _0_valueOrError0 m_Wrappers.Result = Companion_Default___.ReadUInt32(buffer)
+	_ = _0_valueOrError0
+	if (_0_valueOrError0).IsFailure() {
+		return (_0_valueOrError0).PropagateFailure()
+	} else {
+		var _1_length SuccessfulRead = (_0_valueOrError0).Extract().(SuccessfulRead)
+		_ = _1_length
+		var _2_valueOrError1 m_Wrappers.Result = Companion_Default___.Read((_1_length).Dtor_tail(), _dafny.IntOfUint32((_1_length).Dtor_data().(uint32)))
+		_ = _2_valueOrError1
+		if (_2_valueOrError1).IsFailure() {
+			return (_2_valueOrError1).PropagateFailure()
+		} else {
+			var _3_d SuccessfulRead = (_2_valueOrError1).Extract().(SuccessfulRead)
+			_ = _3_d
+			return m_Wrappers.Companion_Result_.Create_Success_(_3_d)
+		}
+	}
+}
+func (_static *CompanionStruct_Default___) WriteUint64Seq(d _dafny.Sequence) _dafny.Sequence {
+	return _dafny.Companion_Sequence_.Concatenate(Companion_Default___.WriteUint64(uint64((d).Cardinality())), Companion_Default___.Write(d))
+}
+func (_static *CompanionStruct_Default___) ReadUint64Seq(buffer ReadableBuffer) m_Wrappers.Result {
+	var _0_valueOrError0 m_Wrappers.Result = Companion_Default___.ReadUInt64(buffer)
+	_ = _0_valueOrError0
+	if (_0_valueOrError0).IsFailure() {
+		return (_0_valueOrError0).PropagateFailure()
+	} else {
+		var _1_length SuccessfulRead = (_0_valueOrError0).Extract().(SuccessfulRead)
+		_ = _1_length
+		var _2_valueOrError1 m_Wrappers.Result = Companion_Default___.Read((_1_length).Dtor_tail(), _dafny.IntOfUint64((_1_length).Dtor_data().(uint64)))
+		_ = _2_valueOrError1
+		if (_2_valueOrError1).IsFailure() {
+			return (_2_valueOrError1).PropagateFailure()
+		} else {
+			var _3_d SuccessfulRead = (_2_valueOrError1).Extract().(SuccessfulRead)
+			_ = _3_d
+			return m_Wrappers.Companion_Result_.Create_Success_(_3_d)
+		}
+	}
+}
+
+// End of class Default__
+
+// Definition of datatype ReadProblems
+type ReadProblems struct {
+	Data_ReadProblems_
+}
+
+func (_this ReadProblems) Get_() Data_ReadProblems_ {
+	return _this.Data_ReadProblems_
+}
+
+type Data_ReadProblems_ interface {
+	isReadProblems()
+}
+
+type CompanionStruct_ReadProblems_ struct {
+}
+
+var Companion_ReadProblems_ = CompanionStruct_ReadProblems_{}
+
+type ReadProblems_MoreNeeded struct {
+	Pos _dafny.Int
+}
+
+func (ReadProblems_MoreNeeded) isReadProblems() {}
+
+func (CompanionStruct_ReadProblems_) Create_MoreNeeded_(Pos _dafny.Int) ReadProblems {
+	return ReadProblems{ReadProblems_MoreNeeded{Pos}}
+}
+
+func (_this ReadProblems) Is_MoreNeeded() bool {
+	_, ok := _this.Get_().(ReadProblems_MoreNeeded)
+	return ok
+}
+
+type ReadProblems_Error struct {
+	Message _dafny.Sequence
+}
+
+func (ReadProblems_Error) isReadProblems() {}
+
+func (CompanionStruct_ReadProblems_) Create_Error_(Message _dafny.Sequence) ReadProblems {
+	return ReadProblems{ReadProblems_Error{Message}}
+}
+
+func (_this ReadProblems) Is_Error() bool {
+	_, ok := _this.Get_().(ReadProblems_Error)
+	return ok
+}
+
+func (CompanionStruct_ReadProblems_) Default() ReadProblems {
+	return Companion_ReadProblems_.Create_MoreNeeded_(_dafny.Zero)
+}
+
+func (_this ReadProblems) Dtor_pos() _dafny.Int {
+	return _this.Get_().(ReadProblems_MoreNeeded).Pos
+}
+
+func (_this ReadProblems) Dtor_message() _dafny.Sequence {
+	return _this.Get_().(ReadProblems_Error).Message
+}
+
+func (_this ReadProblems) String() string {
+	switch data := _this.Get_().(type) {
+	case nil:
+		return "null"
+	case ReadProblems_MoreNeeded:
+		{
+			return "SerializeFunctions.ReadProblems.MoreNeeded" + "(" + _dafny.String(data.Pos) + ")"
+		}
+	case ReadProblems_Error:
+		{
+			return "SerializeFunctions.ReadProblems.Error" + "(" + _dafny.String(data.Message) + ")"
+		}
+	default:
+		{
+			return "<unexpected>"
+		}
+	}
+}
+
+func (_this ReadProblems) Equals(other ReadProblems) bool {
+	switch data1 := _this.Get_().(type) {
+	case ReadProblems_MoreNeeded:
+		{
+			data2, ok := other.Get_().(ReadProblems_MoreNeeded)
+			return ok && data1.Pos.Cmp(data2.Pos) == 0
+		}
+	case ReadProblems_Error:
+		{
+			data2, ok := other.Get_().(ReadProblems_Error)
+			return ok && data1.Message.Equals(data2.Message)
+		}
+	default:
+		{
+			return false // unexpected
+		}
+	}
+}
+
+func (_this ReadProblems) EqualsGeneric(other interface{}) bool {
+	typed, ok := other.(ReadProblems)
+	return ok && _this.Equals(typed)
+}
+
+func Type_ReadProblems_() _dafny.TypeDescriptor {
+	return type_ReadProblems_{}
+}
+
+type type_ReadProblems_ struct {
+}
+
+func (_this type_ReadProblems_) Default() interface{} {
+	return Companion_ReadProblems_.Default()
+}
+
+func (_this type_ReadProblems_) String() string {
+	return "SerializeFunctions.ReadProblems"
+}
+func (_this ReadProblems) ParentTraits_() []*_dafny.TraitID {
+	return [](*_dafny.TraitID){}
+}
+
+var _ _dafny.TraitOffspring = ReadProblems{}
+
+// End of datatype ReadProblems
+
+// Definition of class MoreNeeded
+type MoreNeeded struct {
+}
+
+func New_MoreNeeded_() *MoreNeeded {
+	_this := MoreNeeded{}
+
+	return &_this
+}
+
+type CompanionStruct_MoreNeeded_ struct {
+}
+
+var Companion_MoreNeeded_ = CompanionStruct_MoreNeeded_{}
+
+func (*MoreNeeded) String() string {
+	return "SerializeFunctions.MoreNeeded"
+}
+
+// End of class MoreNeeded
+
+func Type_MoreNeeded_() _dafny.TypeDescriptor {
+	return type_MoreNeeded_{}
+}
+
+type type_MoreNeeded_ struct {
+}
+
+func (_this type_MoreNeeded_) Default() interface{} {
+	return Companion_ReadProblems_.Default()
+}
+
+func (_this type_MoreNeeded_) String() string {
+	return "SerializeFunctions.MoreNeeded"
+}
+func (_this *CompanionStruct_MoreNeeded_) Is_(__source ReadProblems) bool {
+	var _0_p ReadProblems = (__source)
+	_ = _0_p
+	return (_0_p).Is_MoreNeeded()
+}
+
+// Definition of datatype ReadableBuffer
+type ReadableBuffer struct {
+	Data_ReadableBuffer_
+}
+
+func (_this ReadableBuffer) Get_() Data_ReadableBuffer_ {
+	return _this.Data_ReadableBuffer_
+}
+
+type Data_ReadableBuffer_ interface {
+	isReadableBuffer()
+}
+
+type CompanionStruct_ReadableBuffer_ struct {
+}
+
+var Companion_ReadableBuffer_ = CompanionStruct_ReadableBuffer_{}
+
+type ReadableBuffer_ReadableBuffer struct {
+	Bytes _dafny.Sequence
+	Start _dafny.Int
+}
+
+func (ReadableBuffer_ReadableBuffer) isReadableBuffer() {}
+
+func (CompanionStruct_ReadableBuffer_) Create_ReadableBuffer_(Bytes _dafny.Sequence, Start _dafny.Int) ReadableBuffer {
+	return ReadableBuffer{ReadableBuffer_ReadableBuffer{Bytes, Start}}
+}
+
+func (_this ReadableBuffer) Is_ReadableBuffer() bool {
+	_, ok := _this.Get_().(ReadableBuffer_ReadableBuffer)
+	return ok
+}
+
+func (CompanionStruct_ReadableBuffer_) Default() ReadableBuffer {
+	return Companion_ReadableBuffer_.Create_ReadableBuffer_(_dafny.EmptySeq, _dafny.Zero)
+}
+
+func (_this ReadableBuffer) Dtor_bytes() _dafny.Sequence {
+	return _this.Get_().(ReadableBuffer_ReadableBuffer).Bytes
+}
+
+func (_this ReadableBuffer) Dtor_start() _dafny.Int {
+	return _this.Get_().(ReadableBuffer_ReadableBuffer).Start
+}
+
+func (_this ReadableBuffer) String() string {
+	switch data := _this.Get_().(type) {
+	case nil:
+		return "null"
+	case ReadableBuffer_ReadableBuffer:
+		{
+			return "SerializeFunctions.ReadableBuffer.ReadableBuffer" + "(" + _dafny.String(data.Bytes) + ", " + _dafny.String(data.Start) + ")"
+		}
+	default:
+		{
+			return "<unexpected>"
+		}
+	}
+}
+
+func (_this ReadableBuffer) Equals(other ReadableBuffer) bool {
+	switch data1 := _this.Get_().(type) {
+	case ReadableBuffer_ReadableBuffer:
+		{
+			data2, ok := other.Get_().(ReadableBuffer_ReadableBuffer)
+			return ok && data1.Bytes.Equals(data2.Bytes) && data1.Start.Cmp(data2.Start) == 0
+		}
+	default:
+		{
+			return false // unexpected
+		}
+	}
+}
+
+func (_this ReadableBuffer) EqualsGeneric(other interface{}) bool {
+	typed, ok := other.(ReadableBuffer)
+	return ok && _this.Equals(typed)
+}
+
+func Type_ReadableBuffer_() _dafny.TypeDescriptor {
+	return type_ReadableBuffer_{}
+}
+
+type type_ReadableBuffer_ struct {
+}
+
+func (_this type_ReadableBuffer_) Default() interface{} {
+	return Companion_ReadableBuffer_.Default()
+}
+
+func (_this type_ReadableBuffer_) String() string {
+	return "SerializeFunctions.ReadableBuffer"
+}
+func (_this ReadableBuffer) ParentTraits_() []*_dafny.TraitID {
+	return [](*_dafny.TraitID){}
+}
+
+var _ _dafny.TraitOffspring = ReadableBuffer{}
+
+// End of datatype ReadableBuffer
+
+// Definition of datatype SuccessfulRead
+type SuccessfulRead struct {
+	Data_SuccessfulRead_
+}
+
+func (_this SuccessfulRead) Get_() Data_SuccessfulRead_ {
+	return _this.Data_SuccessfulRead_
+}
+
+type Data_SuccessfulRead_ interface {
+	isSuccessfulRead()
+}
+
+type CompanionStruct_SuccessfulRead_ struct {
+}
+
+var Companion_SuccessfulRead_ = CompanionStruct_SuccessfulRead_{}
+
+type SuccessfulRead_SuccessfulRead struct {
+	Data interface{}
+	Tail ReadableBuffer
+}
+
+func (SuccessfulRead_SuccessfulRead) isSuccessfulRead() {}
+
+func (CompanionStruct_SuccessfulRead_) Create_SuccessfulRead_(Data interface{}, Tail ReadableBuffer) SuccessfulRead {
+	return SuccessfulRead{SuccessfulRead_SuccessfulRead{Data, Tail}}
+}
+
+func (_this SuccessfulRead) Is_SuccessfulRead() bool {
+	_, ok := _this.Get_().(SuccessfulRead_SuccessfulRead)
+	return ok
+}
+
+func (CompanionStruct_SuccessfulRead_) Default(_default_T interface{}) SuccessfulRead {
+	return Companion_SuccessfulRead_.Create_SuccessfulRead_(_default_T, Companion_ReadableBuffer_.Default())
+}
+
+func (_this SuccessfulRead) Dtor_data() interface{} {
+	return _this.Get_().(SuccessfulRead_SuccessfulRead).Data
+}
+
+func (_this SuccessfulRead) Dtor_tail() ReadableBuffer {
+	return _this.Get_().(SuccessfulRead_SuccessfulRead).Tail
+}
+
+func (_this SuccessfulRead) String() string {
+	switch data := _this.Get_().(type) {
+	case nil:
+		return "null"
+	case SuccessfulRead_SuccessfulRead:
+		{
+			return "SerializeFunctions.SuccessfulRead.SuccessfulRead" + "(" + _dafny.String(data.Data) + ", " + _dafny.String(data.Tail) + ")"
+		}
+	default:
+		{
+			return "<unexpected>"
+		}
+	}
+}
+
+func (_this SuccessfulRead) Equals(other SuccessfulRead) bool {
+	switch data1 := _this.Get_().(type) {
+	case SuccessfulRead_SuccessfulRead:
+		{
+			data2, ok := other.Get_().(SuccessfulRead_SuccessfulRead)
+			return ok && _dafny.AreEqual(data1.Data, data2.Data) && data1.Tail.Equals(data2.Tail)
+		}
+	default:
+		{
+			return false // unexpected
+		}
+	}
+}
+
+func (_this SuccessfulRead) EqualsGeneric(other interface{}) bool {
+	typed, ok := other.(SuccessfulRead)
+	return ok && _this.Equals(typed)
+}
+
+func Type_SuccessfulRead_(Type_T_ _dafny.TypeDescriptor) _dafny.TypeDescriptor {
+	return type_SuccessfulRead_{Type_T_}
+}
+
+type type_SuccessfulRead_ struct {
+	Type_T_ _dafny.TypeDescriptor
+}
+
+func (_this type_SuccessfulRead_) Default() interface{} {
+	Type_T_ := _this.Type_T_
+	_ = Type_T_
+	return Companion_SuccessfulRead_.Default(Type_T_.Default())
+}
+
+func (_this type_SuccessfulRead_) String() string {
+	return "SerializeFunctions.SuccessfulRead"
+}
+func (_this SuccessfulRead) ParentTraits_() []*_dafny.TraitID {
+	return [](*_dafny.TraitID){}
+}
+
+var _ _dafny.TraitOffspring = SuccessfulRead{}
+
+// End of datatype SuccessfulRead

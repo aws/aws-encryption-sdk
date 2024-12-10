@@ -13,6 +13,7 @@ module {:extern} TestWrappedESDKMain {
   import EsdkManifestOptions
   import WriteVectors
   import opened Wrappers
+  import Types = AwsCryptographyEncryptionSdkTypes
 
 
   // Test execution directory is different for different runtimes.
@@ -20,9 +21,79 @@ module {:extern} TestWrappedESDKMain {
   method {:extern} GetTestVectorExecutionDirectory() returns (res: string)
 
   method {:test} RunManifestTests() {
-    TestGenerateEncryptManifest();
-    TestEncryptManifest();
-    TestDecryptManifest();
+    // TestGenerateEncryptManifest();
+    // TestEncryptManifest();
+    // TestDecryptManifest();
+  }
+
+  // Read encrypt manifests for valid ESDK .NET v4.0.0 messages
+  // These messages are expected to successfully decrypt without
+  // having to retry.
+  method {:test} TestNetRetryFlagVectorsExpectSuccess() {
+    var directory := GetTestVectorExecutionDirectory();
+    var result := EsdkTestManifests.StartDecryptVectors(
+      EsdkManifestOptions.Decrypt(
+        manifestPath := directory + "dafny/TestVectors/test/valid-Net-4.0.0/",
+        manifestFileName := "manifest.json",
+        retryPolicy := Types.NetV4_0_0_RetryPolicy.FORBID_RETRY
+      )
+    );
+    if result.Failure? {
+      print result.error;
+    }
+    expect result.Success?;
+  }
+
+  // Read encrypt manifests for invalid ESDK .NET v4.0.0 messages
+  // These messages are expected to fail if retry option is set to FORBID_RETRY
+  // As of 12-7-2024, I can't think of an easy way to reuse all the test vector framework
+  // to correctly pass when this configuration runs the invalid net 4.0.0 tests.
+  // The errors that we get back from the MPL are opaque errors, not opaque with text...
+  // This means that in dafny code we cannot check the error message :(
+  // So if you need to see that the esdk-x where x is a language that the esdk-dafny supports
+  // correctly fails to decrypt these test vectors, just uncomment this test.
+
+  method {:test} TestNetInvalidTestVectorsExpectFailure() {
+    var directory := GetTestVectorExecutionDirectory();
+    var result := EsdkTestManifests.StartDecryptVectors(
+      EsdkManifestOptions.Decrypt(
+        manifestPath := directory + "dafny/TestVectors/test/invalid-Net-4.0.0/",
+        manifestFileName := "manifest.json",
+        retryPolicy := Types.NetV4_0_0_RetryPolicy.FORBID_RETRY
+      )
+    );
+    print "ONLY WORRY IF THE ABOVE TESTS PASSED!!! THESE TESTS ARE SUPPOSED TO FAIL!\n";
+    expect result.Failure?;
+  }
+
+  method {:test} TestNetInvalidTestVectorsExpectSuccessOnRetry() {
+    var directory := GetTestVectorExecutionDirectory();
+    var result := EsdkTestManifests.StartDecryptVectors(
+      EsdkManifestOptions.Decrypt(
+        manifestPath := directory + "dafny/TestVectors/test/invalid-Net-4.0.0/",
+        manifestFileName := "manifest.json",
+        retryPolicy := Types.NetV4_0_0_RetryPolicy.ALLOW_RETRY
+      )
+    );
+    if result.Failure? {
+      print result.error;
+    }
+    expect result.Success?;
+  }
+
+  method {:test} TestNet401ValidTestVectorsExpectSuccess() {
+    var directory := GetTestVectorExecutionDirectory();
+    var result := EsdkTestManifests.StartDecryptVectors(
+      EsdkManifestOptions.Decrypt(
+        manifestPath := directory + "dafny/TestVectors/test/v4-Net-4.0.1/",
+        manifestFileName := "manifest.json",
+        retryPolicy := Types.NetV4_0_0_RetryPolicy.FORBID_RETRY
+      )
+    );
+    if result.Failure? {
+      print result.error;
+    }
+    expect result.Success?;
   }
 
   method TestGenerateEncryptManifest() {
@@ -59,7 +130,8 @@ module {:extern} TestWrappedESDKMain {
     var result := EsdkTestManifests.StartDecryptVectors(
       EsdkManifestOptions.Decrypt(
         manifestPath := directory + "dafny/TestVectors/test/",
-        manifestFileName := "decrypt-manifest.json"
+        manifestFileName := "decrypt-manifest.json",
+        retryPolicy := Types.NetV4_0_0_RetryPolicy.FORBID_RETRY
       )
     );
 

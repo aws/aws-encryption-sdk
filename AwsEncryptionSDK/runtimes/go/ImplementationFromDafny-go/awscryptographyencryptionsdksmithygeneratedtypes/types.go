@@ -49,6 +49,9 @@ type DecryptOutput struct {
 }
 
 func (input DecryptOutput) Validate() error {
+	if input.EncryptionContext == nil {
+		return fmt.Errorf("input.EncryptionContext is required but has a nil value.")
+	}
 	if input.aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_Validate() != nil {
 		return input.aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_Validate()
 	}
@@ -121,6 +124,9 @@ type EncryptOutput struct {
 }
 
 func (input EncryptOutput) Validate() error {
+	if input.EncryptionContext == nil {
+		return fmt.Errorf("input.EncryptionContext is required but has a nil value.")
+	}
 	if input.aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_Validate() != nil {
 		return input.aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_Validate()
 	}

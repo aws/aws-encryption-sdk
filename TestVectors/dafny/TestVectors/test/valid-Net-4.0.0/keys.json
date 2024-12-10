@@ -1,0 +1,18 @@
+{
+  "manifest": {
+    "type": "keys",
+    "version": 3
+  },
+  "keys": {
+    "aes-256": {
+      "decrypt": true,
+      "encrypt": true,
+      "type": "symmetric",
+      "key-id": "aes-256",
+      "algorithm": "aes",
+      "bits": 256,
+      "encoding": "base64",
+      "material": "AAECAwQFBgcICRAREhMUFRYXGBkgISIjJCUmJygpMDE="
+    }
+  }
+}
