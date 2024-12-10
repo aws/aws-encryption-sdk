@@ -6,7 +6,7 @@ include "../LibraryIndex.dfy"
 module {:options "/functionSyntax:4" } AllEsdkV4WithReqEc {
   import Types = AwsCryptographyEncryptionSdkTypes
   import mplTypes = AwsCryptographyMaterialProvidersTypes
-  import EncryptionSdk
+  import ESDK
   import MaterialProviders
   import opened CompleteVectors
   import opened KeyDescription

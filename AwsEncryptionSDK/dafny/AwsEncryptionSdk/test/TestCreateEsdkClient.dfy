@@ -6,7 +6,7 @@ include "../src/Index.dfy"
 module TestCreateEsdkClient {
     import Types = AwsCryptographyEncryptionSdkTypes
     import mplTypes = AwsCryptographyMaterialProvidersTypes
-    import EncryptionSdk
+    import ESDK
     import MaterialProviders
     import opened Wrappers
     import opened UInt = StandardLibrary.UInt
@@ -50,11 +50,11 @@ module TestCreateEsdkClient {
     ];
 
     method {:test} TestClientCreation() {
-        var defaultConfig := EncryptionSdk.DefaultAwsEncryptionSdkConfig();
+        var defaultConfig := ESDK.DefaultAwsEncryptionSdkConfig();
         
-        var esdk: Types.IAwsEncryptionSdkClient :- expect EncryptionSdk.ESDK(config := defaultConfig);
-        expect esdk is EncryptionSdk.ESDKClient;
-        var esdkClient := esdk as EncryptionSdk.ESDKClient;
+        var esdk: Types.IAwsEncryptionSdkClient :- expect ESDK.ESDK(config := defaultConfig);
+        expect esdk is ESDK.ESDKClient;
+        var esdkClient := esdk as ESDK.ESDKClient;
 
         expect esdkClient.config.commitmentPolicy == defaultConfig.commitmentPolicy.value;
         expect esdkClient.config.maxEncryptedDataKeys == defaultConfig.maxEncryptedDataKeys;
@@ -82,7 +82,7 @@ module TestCreateEsdkClient {
             netV4_0_0_RetryPolicy := Some(Types.NetV4_0_0_RetryPolicy.FORBID_RETRY)
         );
         
-        var noRetryEsdk :- expect EncryptionSdk.ESDK(config := esdkConfig);
+        var noRetryEsdk :- expect ESDK.ESDK(config := esdkConfig);
 
         var expectFailureDecryptOutput := noRetryEsdk.Decrypt(Types.DecryptInput(
             ciphertext := ESDK_NET_V400_MESSAGE,
@@ -95,8 +95,8 @@ module TestCreateEsdkClient {
 
         // Decrypt v4.0.0 message with the default configuration which is to retry
         // and expect decryption to pass
-        var defaultConfig := EncryptionSdk.DefaultAwsEncryptionSdkConfig();
-        var esdk :- expect EncryptionSdk.ESDK(config := defaultConfig);
+        var defaultConfig := ESDK.DefaultAwsEncryptionSdkConfig();
+        var esdk :- expect ESDK.ESDK(config := defaultConfig);
 
         var decryptOutput := esdk.Decrypt(Types.DecryptInput(
             ciphertext := ESDK_NET_V400_MESSAGE,
