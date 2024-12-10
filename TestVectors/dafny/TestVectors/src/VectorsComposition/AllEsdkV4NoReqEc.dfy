@@ -7,7 +7,7 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
   import Types = AwsCryptographyEncryptionSdkTypes
   import mplTypes = AwsCryptographyMaterialProvidersTypes
   import keyVectorKeyTypes = AwsCryptographyMaterialProvidersTestVectorKeysTypes
-  import EncryptionSdk
+  import ESDK
   import MaterialProviders
   import opened CompleteVectors
   import opened KeyDescription

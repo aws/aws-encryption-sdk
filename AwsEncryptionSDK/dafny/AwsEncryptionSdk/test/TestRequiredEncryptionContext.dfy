@@ -16,7 +16,7 @@ module TestRequiredEncryptionContext {
     import KMS = Com.Amazonaws.Kms
     import DDB = Com.Amazonaws.Dynamodb
     import DDBTypes = ComAmazonawsDynamodbTypes
-    import EncryptionSdk
+    import ESDK
     import opened Wrappers
     import UTF8
 
@@ -35,8 +35,8 @@ module TestRequiredEncryptionContext {
         // The string "asdf" as bytes
         var asdf := [ 97, 115, 100, 102 ];
         
-        var defaultConfig := EncryptionSdk.DefaultAwsEncryptionSdkConfig();
-        var esdk :- expect EncryptionSdk.ESDK(config := defaultConfig);
+        var defaultConfig := ESDK.DefaultAwsEncryptionSdkConfig();
+        var esdk :- expect ESDK.ESDK(config := defaultConfig);
         var mpl :- expect MaterialProviders.MaterialProviders();
 
         // get keyrings
@@ -120,8 +120,8 @@ module TestRequiredEncryptionContext {
         // The string "asdf" as bytes
         var asdf := [ 97, 115, 100, 102 ];
         
-        var defaultConfig := EncryptionSdk.DefaultAwsEncryptionSdkConfig();
-        var esdk :- expect EncryptionSdk.ESDK(config := defaultConfig);
+        var defaultConfig := ESDK.DefaultAwsEncryptionSdkConfig();
+        var esdk :- expect ESDK.ESDK(config := defaultConfig);
         var mpl :- expect MaterialProviders.MaterialProviders();
 
         // get keyrings
@@ -229,8 +229,8 @@ module TestRequiredEncryptionContext {
         // The string "asdf" as bytes
         var asdf := [ 97, 115, 100, 102 ];
         
-        var defaultConfig := EncryptionSdk.DefaultAwsEncryptionSdkConfig();
-        var esdk :- expect EncryptionSdk.ESDK(config := defaultConfig);
+        var defaultConfig := ESDK.DefaultAwsEncryptionSdkConfig();
+        var esdk :- expect ESDK.ESDK(config := defaultConfig);
         var mpl :- expect MaterialProviders.MaterialProviders();
 
         // get keyrings
@@ -411,8 +411,8 @@ module TestRequiredEncryptionContext {
         // The string "asdf" as bytes
         var asdf := [ 97, 115, 100, 102 ];
         
-        var defaultConfig := EncryptionSdk.DefaultAwsEncryptionSdkConfig();
-        var esdk :- expect EncryptionSdk.ESDK(config := defaultConfig);
+        var defaultConfig := ESDK.DefaultAwsEncryptionSdkConfig();
+        var esdk :- expect ESDK.ESDK(config := defaultConfig);
         var mpl :- expect MaterialProviders.MaterialProviders();
 
         // get keyrings
@@ -586,8 +586,8 @@ module TestRequiredEncryptionContext {
         // The string "asdf" as bytes
         var asdf := [ 97, 115, 100, 102 ];
         
-        var defaultConfig := EncryptionSdk.DefaultAwsEncryptionSdkConfig();
-        var esdk :- expect EncryptionSdk.ESDK(config := defaultConfig);
+        var defaultConfig := ESDK.DefaultAwsEncryptionSdkConfig();
+        var esdk :- expect ESDK.ESDK(config := defaultConfig);
         var mpl :- expect MaterialProviders.MaterialProviders();
 
         // get keyrings
@@ -711,8 +711,8 @@ module TestRequiredEncryptionContext {
         // The string "asdf" as bytes
         var asdf := [ 97, 115, 100, 102 ];
         
-        var defaultConfig := EncryptionSdk.DefaultAwsEncryptionSdkConfig();
-        var esdk :- expect EncryptionSdk.ESDK(config := defaultConfig);
+        var defaultConfig := ESDK.DefaultAwsEncryptionSdkConfig();
+        var esdk :- expect ESDK.ESDK(config := defaultConfig);
         var mpl :- expect MaterialProviders.MaterialProviders();
 
         // get keyrings
@@ -814,8 +814,8 @@ module TestRequiredEncryptionContext {
         // The string "asdf" as bytes
         var asdf := [ 97, 115, 100, 102 ];
         
-        var defaultConfig := EncryptionSdk.DefaultAwsEncryptionSdkConfig();
-        var esdk :- expect EncryptionSdk.ESDK(config := defaultConfig);
+        var defaultConfig := ESDK.DefaultAwsEncryptionSdkConfig();
+        var esdk :- expect ESDK.ESDK(config := defaultConfig);
         var mpl :- expect MaterialProviders.MaterialProviders();
 
         // get keyrings
@@ -918,8 +918,8 @@ module TestRequiredEncryptionContext {
         // The string "asdf" as bytes
         var asdf := [ 97, 115, 100, 102 ];
         
-        var defaultConfig := EncryptionSdk.DefaultAwsEncryptionSdkConfig();
-        var esdk :- expect EncryptionSdk.ESDK(config := defaultConfig);
+        var defaultConfig := ESDK.DefaultAwsEncryptionSdkConfig();
+        var esdk :- expect ESDK.ESDK(config := defaultConfig);
         var mpl :- expect MaterialProviders.MaterialProviders();
 
         // get keyrings
@@ -1018,8 +1018,8 @@ module TestRequiredEncryptionContext {
         // The string "asdf" as bytes
         var asdf := [ 97, 115, 100, 102 ];
         
-        var defaultConfig := EncryptionSdk.DefaultAwsEncryptionSdkConfig();
-        var esdk :- expect EncryptionSdk.ESDK(config := defaultConfig);
+        var defaultConfig := ESDK.DefaultAwsEncryptionSdkConfig();
+        var esdk :- expect ESDK.ESDK(config := defaultConfig);
         var mpl :- expect MaterialProviders.MaterialProviders();
 
         // get keyrings
@@ -1133,8 +1133,8 @@ module TestRequiredEncryptionContext {
         ensures output.ValidState() && fresh(output) && fresh(output.History) && fresh(output.Modifies)
     {
         var kmsKey :=  Fixtures.keyArn;
-        var defaultConfig := EncryptionSdk.DefaultAwsEncryptionSdkConfig();
-        var esdk :- expect EncryptionSdk.ESDK(config := defaultConfig);
+        var defaultConfig := ESDK.DefaultAwsEncryptionSdkConfig();
+        var esdk :- expect ESDK.ESDK(config := defaultConfig);
         var mpl :- expect MaterialProviders.MaterialProviders();
         var clientSupplier :- expect mpl.CreateDefaultClientSupplier(mplTypes.CreateDefaultClientSupplierInput);
         var kmsClient :- expect clientSupplier.GetClient(mplTypes.GetClientInput(region := "us-west-2"));
