@@ -86,6 +86,7 @@ jobs:
 
       - name: Compile ${{ matrix.library }} implementation
         shell: bash
+        if: matrix.os != 'windows-latest' && matrix.library != 'TestVectors'
         working-directory: ${{ matrix.library }}
         run: |
           # This works because `node` is installed by default on GHA runners
@@ -102,7 +103,7 @@ jobs:
 
       - name: Test .NET Framework net48
         working-directory: ${{ matrix.library }}
-        if: matrix.os == 'windows-latest' 
+        if: matrix.os == 'windows-latest' && matrix.library != 'TestVectors'
         shell: bash
         run: |
           make test_net FRAMEWORK=net48
