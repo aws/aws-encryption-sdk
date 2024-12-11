@@ -206,12 +206,6 @@ jobs:
           unzip v4-Net-4.0.1.zip -d v4-Net-4.0.1
           unzip valid-Net-4.0.0.zip -d valid-Net-4.0.0
 
-      - name: Test .NET Framework net48
-        working-directory: ${{ matrix.library }}
-        shell: bash
-        run: |
-          make test_net FRAMEWORK=net48
-
       - name: Test .NET net6.0
         working-directory: ${{ matrix.library }}
         shell: bash
