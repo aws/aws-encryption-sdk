@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        library: [AwsEncryptionSDK, TestVectors]
+        library: [AwsEncryptionSDK]
         os: [
           windows-latest,
           ubuntu-latest,
@@ -86,7 +86,112 @@ jobs:
 
       - name: Compile ${{ matrix.library }} implementation
         shell: bash
-        if: matrix.os != 'windows-latest' && matrix.library != 'TestVectors'
+        working-directory: ${{ matrix.library }}
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_net CORES=$CORES
+
+      - name: Test .NET Framework net48
+        working-directory: ${{ matrix.library }}
+        shell: bash
+        run: |
+          make test_net FRAMEWORK=net48
+
+      - name: Test .NET net6.0
+        working-directory: ${{ matrix.library }}
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            make test_net_mac_intel FRAMEWORK=net6.0
+          else
+            make test_net FRAMEWORK=net6.0
+          fi
+
+      - name: Test Examples on .NET Framework net48
+        working-directory: ${{ matrix.library }}
+        if: matrix.os == 'windows-latest' 
+        shell: bash
+        run: |
+          dotnet test \
+            runtimes/net/Examples \
+            --framework net48
+
+      - name: Test Examples on .NET net6.0
+        working-directory: ${{ matrix.library }}
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            DYLD_LIBRARY_PATH="/usr/local/opt/openssl@1.1/lib" 
+            dotnet test \
+              runtimes/net/Examples \
+              --framework net6.0
+          else
+            dotnet test \
+              runtimes/net/Examples \
+              --framework net6.0
+          fi
+  testVectors:
+    strategy:
+      fail-fast: false
+      matrix:
+        library: [TestVectors]
+        os: [
+          # Sed script doesn't work properly on windows
+          # windows-latest,
+          ubuntu-latest,
+          macos-13,
+        ]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
+    steps:
+      - name: Support longpaths on Git checkout
+        run: |
+          git config --global core.longpaths true
+      - uses: actions/checkout@v2
+      - name: Init Submodules
+        shell: bash
+        run: |
+          git submodule update --init libraries
+          git submodule update --init --recursive mpl
+          
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2 
+          role-session-name: NetTests
+          
+      - name: Setup .NET Core SDK 6
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Setup Dafny
+        uses: dafny-lang/setup-dafny-action@v1.7.0
+        with:
+          dafny-version: ${{ inputs.dafny }}
+
+      - name: Regenerate code using smithy-dafny if necessary
+        if: ${{ inputs.regenerate-code }}
+        uses: ./.github/actions/polymorph_codegen
+        with:
+          dafny: ${{ env.DAFNY_VERSION }}
+          library: ${{ matrix.library }}
+          diff-generated-code: false
+          update-and-regenerate-mpl: true
+
+      - name: Download Dependencies 
+        working-directory: ${{ matrix.library }}
+        run: make setup_net
+
+      - name: Compile ${{ matrix.library }} implementation
+        shell: bash
         working-directory: ${{ matrix.library }}
         run: |
           # This works because `node` is installed by default on GHA runners
@@ -103,7 +208,6 @@ jobs:
 
       - name: Test .NET Framework net48
         working-directory: ${{ matrix.library }}
-        if: matrix.os == 'windows-latest' && matrix.library != 'TestVectors'
         shell: bash
         run: |
           make test_net FRAMEWORK=net48
@@ -116,28 +220,4 @@ jobs:
             make test_net_mac_intel FRAMEWORK=net6.0
           else
             make test_net FRAMEWORK=net6.0
-          fi
-
-      - name: Test Examples on .NET Framework net48
-        working-directory: ./AwsEncryptionSDK
-        if: matrix.os == 'windows-latest' 
-        shell: bash
-        run: |
-          dotnet test \
-            runtimes/net/Examples \
-            --framework net48
-
-      - name: Test Examples on .NET net6.0
-        working-directory: ./AwsEncryptionSDK
-        shell: bash
-        run: |
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            DYLD_LIBRARY_PATH="/usr/local/opt/openssl@1.1/lib" 
-            dotnet test \
-              runtimes/net/Examples \
-              --framework net6.0
-          else
-            dotnet test \
-              runtimes/net/Examples \
-              --framework net6.0
           fi
