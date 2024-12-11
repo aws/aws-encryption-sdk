@@ -39,3 +39,15 @@ jobs:
     uses: ./.github/workflows/library_interop_tests.yml
     with:
       dafny: '4.9.0'
+  
+  daily-dafny-test-vectors:
+    if: github.event_name != 'schedule' || github.repository_owner == 'aws'
+    uses: ./.github/workflows/library_interop_test_vectors.yml
+    with:
+      dafny: '4.9.0'
+  
+  daily-dafny-legacy-test-vectors:
+    if: github.event_name != 'schedule' || github.repository_owner == 'aws'
+    uses: ./.github/workflows/library_legacy_interop_test_vectors.yml
+    with:
+      dafny: '4.9.0'
