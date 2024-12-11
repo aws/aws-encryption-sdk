@@ -36,6 +36,11 @@ jobs:
           ubuntu-latest,
           macos-13,
         ]
+        net_retry_zips: [
+          invalid-Net-4.0.0.zip,
+          v4-Net-4.0.1.zip,
+          valid-Net-4.0.0.zip
+        ]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
@@ -91,6 +96,14 @@ jobs:
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_net CORES=$CORES
+      
+      - name: Unzip .NET Retry Flag Manifests
+        shell: bash
+        working-directory: TestVectors/dafny/TestVectors/test/
+        run: |
+          unzip invalid-Net-4.0.0.zip -d invalid-Net-4.0.0.zip
+          unzip v4-Net-4.0.1.zip -d v4-Net-4.0.1.zip
+          unzip valid-Net-4.0.0.zip -d valid-Net-4.0.0.zip
 
       - name: Test .NET Framework net48
         working-directory: ${{ matrix.library }}

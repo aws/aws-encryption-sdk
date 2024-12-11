@@ -50,9 +50,6 @@ module {:extern} TestWrappedESDKMain {
   // to correctly pass when this configuration runs the invalid net 4.0.0 tests.
   // The errors that we get back from the MPL are opaque errors, not opaque with text...
   // This means that in dafny code we cannot check the error message :(
-  // So if you need to see that the esdk-x where x is a language that the esdk-dafny supports
-  // correctly fails to decrypt these test vectors, just uncomment this test.
-
   method {:test} TestNetInvalidTestVectorsExpectFailure() {
     var directory := GetTestVectorExecutionDirectory();
     var result := EsdkTestManifests.StartDecryptVectors(
@@ -63,6 +60,7 @@ module {:extern} TestWrappedESDKMain {
       )
     );
     print "ONLY WORRY IF THE ABOVE TESTS PASSED!!! THESE TESTS ARE SUPPOSED TO FAIL!\n";
+    print "IF THE TESTS FAIL OTHER THAN A AES GCM TAG VALIDATION EXCEPTION, CUT AN ISSUE.\n";
     expect result.Failure?;
   }
 

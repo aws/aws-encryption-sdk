@@ -87,12 +87,17 @@ module {:options "-functionSyntax:4"} WriteVectors {
     var manifestJson := Object([
                                  ("type", String("awses-encrypt")),
                                  ("version", Number(Int(5)))]);
+    
+    var clientJson := Object([
+                               ("name", String("aws-encryption-sdk-dafny")),
+                               ("version", String("4.1.0"))]);
 
     var plaintexts := Object([("small", Number(Int(10240)))]);
 
     var esdkEncryptManifests := Object(
       [
         ("manifest", manifestJson),
+        ("client", clientJson),
         ("keys", String("file://keys.json")),
         ("plaintexts", plaintexts),
         ("tests", Object(testsJSON))
