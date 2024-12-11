@@ -61,6 +61,7 @@ module {:extern} TestWrappedESDKMain {
     );
     print "ONLY WORRY IF THE ABOVE TESTS PASSED!!! THESE TESTS ARE SUPPOSED TO FAIL!\n";
     print "IF THE TESTS FAIL OTHER THAN A AES GCM TAG VALIDATION EXCEPTION, CUT AN ISSUE.\n";
+    print "IF THE TESTS ALL FAIL IT MEANS THE TEST PASSED!";
     expect result.Failure?;
   }
 
