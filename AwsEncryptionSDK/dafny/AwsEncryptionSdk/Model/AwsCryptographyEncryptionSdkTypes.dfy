@@ -4,7 +4,7 @@
 include "../../../../mpl/StandardLibrary/src/Index.dfy"
 include "../../../../mpl/AwsCryptographicMaterialProviders/dafny/AwsCryptographicMaterialProviders/src/Index.dfy"
 include "../../../../mpl/AwsCryptographyPrimitives/src/Index.dfy"
-module AwsCryptographyEncryptionSdkTypes
+module {:extern "software.amazon.cryptography.encryptionsdk.internaldafny.types" } AwsCryptographyEncryptionSdkTypes
 {
   import opened Wrappers
   import opened StandardLibrary.UInt

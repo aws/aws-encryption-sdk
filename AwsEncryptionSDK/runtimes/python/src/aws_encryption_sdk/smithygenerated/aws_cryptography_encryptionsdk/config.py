@@ -59,8 +59,8 @@ class AwsEncryptionSdkConfig(Config):
 
     def __init__(
         self,
-        commitment_policy: Optional[str] = None,
         max_encrypted_data_keys: int,
+        commitment_policy: Optional[str] = None,
         net_v4_0_0_retry_policy: Optional[str] = None,
     ):
         """Constructor for AwsEncryptionSdkConfig.
