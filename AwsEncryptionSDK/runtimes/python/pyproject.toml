@@ -12,7 +12,7 @@ include = ["**/internaldafny/generated/*.py"]
 
 [tool.poetry.dependencies]
 python = "^3.11.0"
-aws-cryptographic-material-providers = "1.7.4"
+aws-cryptographic-material-providers = { path = "../../../mpl/AwsCryptographicMaterialProviders/runtimes/python", develop = false}
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.0"

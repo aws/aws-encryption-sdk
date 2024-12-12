@@ -9,6 +9,7 @@ import System_ as System_
 import smithy_dafny_standard_library.internaldafny.generated.Wrappers as Wrappers
 import smithy_dafny_standard_library.internaldafny.generated.BoundedInts as BoundedInts
 import smithy_dafny_standard_library.internaldafny.generated.StandardLibrary_UInt as StandardLibrary_UInt
+import smithy_dafny_standard_library.internaldafny.generated.StandardLibrary_Sequence as StandardLibrary_Sequence
 import smithy_dafny_standard_library.internaldafny.generated.StandardLibrary_String as StandardLibrary_String
 import smithy_dafny_standard_library.internaldafny.generated.StandardLibrary as StandardLibrary
 import smithy_dafny_standard_library.internaldafny.generated.UTF8 as UTF8
@@ -230,7 +231,6 @@ class default__:
         out5_: Wrappers.Result
         out5_ = (d_14_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(default__.ESDK__NET__V400__MESSAGE, Wrappers.Option_None(), Wrappers.Option_Some(d_7_rawAesKeyring_), Wrappers.Option_None()))
         d_15_decryptOutput_ = out5_
-        _dafny.print(_dafny.string_of(d_15_decryptOutput_))
         if not((d_15_decryptOutput_).is_Success):
             raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestCreateEsdkClient.dfy(108,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         if not((((d_15_decryptOutput_).value).plaintext) == (d_4_expectedMessage_)):

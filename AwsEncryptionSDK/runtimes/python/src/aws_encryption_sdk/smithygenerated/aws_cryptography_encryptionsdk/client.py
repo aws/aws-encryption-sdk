@@ -26,7 +26,7 @@ Output = TypeVar("Output")
 
 
 class AwsEncryptionSdk:
-    """Client for AwsEncryptionSdk.
+    """Client for AwsEncryptionSdk
 
     :param config: Configuration for the client.
     """

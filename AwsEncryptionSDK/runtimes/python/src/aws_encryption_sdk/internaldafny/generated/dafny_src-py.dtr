@@ -1,5 +1,5 @@
 file_format_version = "1.0"
-dafny_version = "4.8.0.0"
+dafny_version = "4.9.0.0"
 [options_by_module.AwsCryptographyEncryptionSdkTypes]
 legacy-module-names = false
 python-module-name = "aws_encryption_sdk.internaldafny.generated"
