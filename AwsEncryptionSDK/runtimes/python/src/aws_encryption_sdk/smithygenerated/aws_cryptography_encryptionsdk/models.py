@@ -354,18 +354,5 @@ class EncryptOutput:
         return all(getattr(self, a) == getattr(other, a) for a in attributes)
 
 
-class NetV4_0_0_RetryPolicy:
-    """During Decryption, Allow or Forbid ESDK-NET v4.0.0 Behavior if the ESDK
-    Message Header fails the Header Authentication check."""
-
-    FORBID_RETRY = "FORBID_RETRY"
-
-    ALLOW_RETRY = "ALLOW_RETRY"
-
-    # This set contains every possible value known at the time this was generated. New
-    # values may be added in the future.
-    values = frozenset({"FORBID_RETRY", "ALLOW_RETRY"})
-
-
 class Unit:
     pass

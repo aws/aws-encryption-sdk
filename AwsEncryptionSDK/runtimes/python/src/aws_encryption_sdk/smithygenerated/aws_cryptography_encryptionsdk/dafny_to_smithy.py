@@ -4,8 +4,8 @@
 
 import aws_cryptographic_material_providers.smithygenerated.aws_cryptography_materialproviders.dafny_to_smithy
 from aws_encryption_sdk.internaldafny.generated.AwsCryptographyEncryptionSdkTypes import (
-    NetV4__0__0__RetryPolicy_ALLOW__RETRY,
-    NetV4__0__0__RetryPolicy_FORBID__RETRY,
+    NetV4_0_0_RetryPolicy_ALLOW__RETRY,
+    NetV4_0_0_RetryPolicy_FORBID__RETRY,
 )
 import aws_encryption_sdk.internaldafny.generated.module_
 import aws_encryption_sdk.smithygenerated.aws_cryptography_encryptionsdk.dafny_to_smithy
@@ -125,10 +125,10 @@ def aws_cryptography_encryptionsdk_DecryptOutput(dafny_input):
 
 
 def aws_cryptography_encryptionsdk_NetV4_0_0_RetryPolicy(dafny_input):
-    if isinstance(dafny_input, NetV4__0__0__RetryPolicy_FORBID__RETRY):
+    if isinstance(dafny_input, NetV4_0_0_RetryPolicy_FORBID__RETRY):
         return "FORBID_RETRY"
 
-    elif isinstance(dafny_input, NetV4__0__0__RetryPolicy_ALLOW__RETRY):
+    elif isinstance(dafny_input, NetV4_0_0_RetryPolicy_ALLOW__RETRY):
         return "ALLOW_RETRY"
 
     else:

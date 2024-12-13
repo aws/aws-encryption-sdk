@@ -20,7 +20,7 @@ def set_config_impl(config: Config):
     """
     config.dafnyImplInterface = DafnyImplInterface()
     if isinstance(config, AwsEncryptionSdkConfig):
-        from aws_encryption_sdk.internaldafny.generated.EncryptionSdk import default__
+        from aws_encryption_sdk.internaldafny.generated.ESDK import default__
 
         config.dafnyImplInterface.impl = default__.ESDK(
             smithy_config_to_dafny_config(config)

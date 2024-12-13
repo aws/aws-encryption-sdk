@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Do not modify this file. This file is machine generated, and any changes to it will be overwritten.
 
-from aws_encryption_sdk.internaldafny.generated.EncryptionSdk import ESDKClient
+from aws_encryption_sdk.internaldafny.generated.ESDK import ESDKClient
 from .dafny_protocol import DafnyRequest
 
 
