@@ -407,7 +407,7 @@ jobs:
           java-version: 17
 
       - name: Setup Python for running tests
-        if: matrix.decrypting_language == == 'python'
+        if: matrix.decrypting_language == 'python'
         uses: actions/setup-python@v4
         with:
           python-version: 3.11
