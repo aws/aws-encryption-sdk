@@ -184,6 +184,7 @@ jobs:
   testInteroperablity:
     needs: generateEncryptVectors
     strategy:
+      fail-fast: false
       matrix:
         library: [TestVectors]
         os: [
