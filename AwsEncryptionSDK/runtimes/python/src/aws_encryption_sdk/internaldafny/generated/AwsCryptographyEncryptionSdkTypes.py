@@ -139,6 +139,10 @@ class default__:
     def IsValid__FrameLength(x):
         return ((1) <= (x)) and ((x) <= (4294967296))
 
+    @staticmethod
+    def IsDummySubsetType(x):
+        return (0) < (x)
+
 
 class DafnyCallEvent:
     @classmethod
@@ -350,6 +354,9 @@ class Error:
     @property
     def is_Opaque(self) -> bool:
         return isinstance(self, Error_Opaque)
+    @property
+    def is_OpaqueWithText(self) -> bool:
+        return isinstance(self, Error_OpaqueWithText)
 
 class Error_AwsEncryptionSdkException(Error, NamedTuple('AwsEncryptionSdkException', [('message', Any)])):
     def __dafnystr__(self) -> str:
@@ -383,11 +390,19 @@ class Error_CollectionOfErrors(Error, NamedTuple('CollectionOfErrors', [('list',
     def __hash__(self) -> int:
         return super().__hash__()
 
-class Error_Opaque(Error, NamedTuple('Opaque', [('obj', Any), ('alt__text', Any)])):
+class Error_Opaque(Error, NamedTuple('Opaque', [('obj', Any)])):
     def __dafnystr__(self) -> str:
-        return f'AwsCryptographyEncryptionSdkTypes.Error.Opaque({_dafny.string_of(self.obj)}, {_dafny.string_of(self.alt__text)})'
+        return f'AwsCryptographyEncryptionSdkTypes.Error.Opaque({_dafny.string_of(self.obj)})'
     def __eq__(self, __o: object) -> bool:
-        return isinstance(__o, Error_Opaque) and self.obj == __o.obj and self.alt__text == __o.alt__text
+        return isinstance(__o, Error_Opaque) and self.obj == __o.obj
+    def __hash__(self) -> int:
+        return super().__hash__()
+
+class Error_OpaqueWithText(Error, NamedTuple('OpaqueWithText', [('obj', Any), ('objMessage', Any)])):
+    def __dafnystr__(self) -> str:
+        return f'AwsCryptographyEncryptionSdkTypes.Error.OpaqueWithText({_dafny.string_of(self.obj)}, {_dafny.string_of(self.objMessage)})'
+    def __eq__(self, __o: object) -> bool:
+        return isinstance(__o, Error_OpaqueWithText) and self.obj == __o.obj and self.objMessage == __o.objMessage
     def __hash__(self) -> int:
         return super().__hash__()
 
@@ -401,4 +416,15 @@ class OpaqueError:
         return Error.default()()
     def _Is(source__):
         d_2_e_: Error = source__
-        return (d_2_e_).is_Opaque
+        return ((d_2_e_).is_Opaque) or ((d_2_e_).is_OpaqueWithText)
+
+class DummySubsetType:
+    def  __init__(self):
+        pass
+
+    @staticmethod
+    def default():
+        return 1
+    def _Is(source__):
+        d_3_x_: int = source__
+        return default__.IsDummySubsetType(d_3_x_)

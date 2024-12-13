@@ -54,6 +54,6 @@ python-module-name = "aws_encryption_sdk.internaldafny.generated"
 [options_by_module.AwsEncryptionSdkOperations]
 legacy-module-names = false
 python-module-name = "aws_encryption_sdk.internaldafny.generated"
-[options_by_module.EncryptionSdk]
+[options_by_module.ESDK]
 legacy-module-names = false
 python-module-name = "aws_encryption_sdk.internaldafny.generated"

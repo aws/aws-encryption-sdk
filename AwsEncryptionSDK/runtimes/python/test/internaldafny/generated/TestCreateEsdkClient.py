@@ -105,7 +105,7 @@ import aws_encryption_sdk.internaldafny.generated.MessageBody as MessageBody
 import aws_encryption_sdk.internaldafny.generated.KeyDerivation as KeyDerivation
 import aws_encryption_sdk.internaldafny.generated.EncryptDecryptHelpers as EncryptDecryptHelpers
 import aws_encryption_sdk.internaldafny.generated.AwsEncryptionSdkOperations as AwsEncryptionSdkOperations
-import aws_encryption_sdk.internaldafny.generated.EncryptionSdk as EncryptionSdk
+import aws_encryption_sdk.internaldafny.generated.ESDK as ESDK
 import aws_cryptography_primitives.internaldafny.generated.AesKdfCtr as AesKdfCtr
 import aws_cryptographic_material_providers.internaldafny.generated.KeyStoreErrorMessages as KeyStoreErrorMessages
 import aws_cryptographic_material_providers.internaldafny.generated.KmsArn as KmsArn
@@ -155,20 +155,20 @@ class default__:
     @staticmethod
     def TestClientCreation():
         d_0_defaultConfig_: AwsCryptographyEncryptionSdkTypes.AwsEncryptionSdkConfig
-        d_0_defaultConfig_ = EncryptionSdk.default__.DefaultAwsEncryptionSdkConfig()
+        d_0_defaultConfig_ = ESDK.default__.DefaultAwsEncryptionSdkConfig()
         d_1_valueOrError0_: Wrappers.Result = None
         out0_: Wrappers.Result
-        out0_ = EncryptionSdk.default__.ESDK(d_0_defaultConfig_)
+        out0_ = ESDK.default__.ESDK(d_0_defaultConfig_)
         d_1_valueOrError0_ = out0_
         if not(not((d_1_valueOrError0_).IsFailure())):
             raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestCreateEsdkClient.dfy(55,51): " + _dafny.string_of(d_1_valueOrError0_))
         d_2_esdk_: AwsCryptographyEncryptionSdkTypes.IAwsEncryptionSdkClient
         d_2_esdk_ = (d_1_valueOrError0_).Extract()
         def iife0_(_is_0):
-            return isinstance(_is_0, EncryptionSdk.ESDKClient)
+            return isinstance(_is_0, ESDK.ESDKClient)
         if not(iife0_(d_2_esdk_)):
             raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestCreateEsdkClient.dfy(56,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
-        d_3_esdkClient_: EncryptionSdk.ESDKClient
+        d_3_esdkClient_: ESDK.ESDKClient
         d_3_esdkClient_ = d_2_esdk_
         if not((((d_3_esdkClient_).config).commitmentPolicy) == (((d_0_defaultConfig_).commitmentPolicy).value)):
             raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestCreateEsdkClient.dfy(59,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
@@ -205,11 +205,11 @@ class default__:
         d_8_esdkConfig_ = AwsCryptographyEncryptionSdkTypes.AwsEncryptionSdkConfig_AwsEncryptionSdkConfig(Wrappers.Option_Some(AwsCryptographyMaterialProvidersTypes.ESDKCommitmentPolicy_REQUIRE__ENCRYPT__REQUIRE__DECRYPT()), Wrappers.Option_None(), Wrappers.Option_Some(AwsCryptographyEncryptionSdkTypes.NetV4__0__0__RetryPolicy_FORBID__RETRY()))
         d_9_valueOrError2_: Wrappers.Result = None
         out2_: Wrappers.Result
-        out2_ = EncryptionSdk.default__.ESDK(d_8_esdkConfig_)
+        out2_ = ESDK.default__.ESDK(d_8_esdkConfig_)
         d_9_valueOrError2_ = out2_
         if not(not((d_9_valueOrError2_).IsFailure())):
             raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestCreateEsdkClient.dfy(85,27): " + _dafny.string_of(d_9_valueOrError2_))
-        d_10_noRetryEsdk_: EncryptionSdk.ESDKClient
+        d_10_noRetryEsdk_: ESDK.ESDKClient
         d_10_noRetryEsdk_ = (d_9_valueOrError2_).Extract()
         d_11_expectFailureDecryptOutput_: Wrappers.Result
         out3_: Wrappers.Result
@@ -218,14 +218,14 @@ class default__:
         if not((d_11_expectFailureDecryptOutput_).is_Failure):
             raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestCreateEsdkClient.dfy(94,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_12_defaultConfig_: AwsCryptographyEncryptionSdkTypes.AwsEncryptionSdkConfig
-        d_12_defaultConfig_ = EncryptionSdk.default__.DefaultAwsEncryptionSdkConfig()
+        d_12_defaultConfig_ = ESDK.default__.DefaultAwsEncryptionSdkConfig()
         d_13_valueOrError3_: Wrappers.Result = None
         out4_: Wrappers.Result
-        out4_ = EncryptionSdk.default__.ESDK(d_12_defaultConfig_)
+        out4_ = ESDK.default__.ESDK(d_12_defaultConfig_)
         d_13_valueOrError3_ = out4_
         if not(not((d_13_valueOrError3_).IsFailure())):
             raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestCreateEsdkClient.dfy(99,20): " + _dafny.string_of(d_13_valueOrError3_))
-        d_14_esdk_: EncryptionSdk.ESDKClient
+        d_14_esdk_: ESDK.ESDKClient
         d_14_esdk_ = (d_13_valueOrError3_).Extract()
         d_15_decryptOutput_: Wrappers.Result
         out5_: Wrappers.Result
