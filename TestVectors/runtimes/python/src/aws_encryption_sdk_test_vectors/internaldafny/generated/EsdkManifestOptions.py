@@ -180,7 +180,7 @@ import aws_encryption_sdk.internaldafny.generated.MessageBody as MessageBody
 import aws_encryption_sdk.internaldafny.generated.KeyDerivation as KeyDerivation
 import aws_encryption_sdk.internaldafny.generated.EncryptDecryptHelpers as EncryptDecryptHelpers
 import aws_encryption_sdk.internaldafny.generated.AwsEncryptionSdkOperations as AwsEncryptionSdkOperations
-import aws_encryption_sdk.internaldafny.generated.EncryptionSdk as EncryptionSdk
+import aws_encryption_sdk.internaldafny.generated.ESDK as ESDK
 import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.MplManifestOptions as MplManifestOptions
 import smithy_dafny_standard_library.internaldafny.generated.GetOpt as GetOpt
 import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllAlgorithmSuites as AllAlgorithmSuites
@@ -216,7 +216,7 @@ import aws_encryption_sdk_test_vectors.internaldafny.generated.WrappedESDK as Wr
 class ManifestOptions:
     @classmethod
     def default(cls, ):
-        return lambda: ManifestOptions_Decrypt(_dafny.Seq(""), _dafny.Seq(""), Wrappers.Option.default()())
+        return lambda: ManifestOptions_Decrypt(_dafny.Seq(""), _dafny.Seq(""), AwsCryptographyEncryptionSdkTypes.NetV4__0__0__RetryPolicy.default()(), Wrappers.Option.default()())
     def __ne__(self, __o: object) -> bool:
         return not self.__eq__(__o)
     @property
@@ -232,11 +232,11 @@ class ManifestOptions:
     def is_EncryptManifest(self) -> bool:
         return isinstance(self, ManifestOptions_EncryptManifest)
 
-class ManifestOptions_Decrypt(ManifestOptions, NamedTuple('Decrypt', [('manifestPath', Any), ('manifestFileName', Any), ('testName', Any)])):
+class ManifestOptions_Decrypt(ManifestOptions, NamedTuple('Decrypt', [('manifestPath', Any), ('manifestFileName', Any), ('retryPolicy', Any), ('testName', Any)])):
     def __dafnystr__(self) -> str:
-        return f'EsdkManifestOptions.ManifestOptions.Decrypt({_dafny.string_of(self.manifestPath)}, {_dafny.string_of(self.manifestFileName)}, {_dafny.string_of(self.testName)})'
+        return f'EsdkManifestOptions.ManifestOptions.Decrypt({_dafny.string_of(self.manifestPath)}, {_dafny.string_of(self.manifestFileName)}, {_dafny.string_of(self.retryPolicy)}, {_dafny.string_of(self.testName)})'
     def __eq__(self, __o: object) -> bool:
-        return isinstance(__o, ManifestOptions_Decrypt) and self.manifestPath == __o.manifestPath and self.manifestFileName == __o.manifestFileName and self.testName == __o.testName
+        return isinstance(__o, ManifestOptions_Decrypt) and self.manifestPath == __o.manifestPath and self.manifestFileName == __o.manifestFileName and self.retryPolicy == __o.retryPolicy and self.testName == __o.testName
     def __hash__(self) -> int:
         return super().__hash__()
 

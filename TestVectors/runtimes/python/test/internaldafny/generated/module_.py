@@ -105,7 +105,7 @@ import aws_encryption_sdk.internaldafny.generated.MessageBody as MessageBody
 import aws_encryption_sdk.internaldafny.generated.KeyDerivation as KeyDerivation
 import aws_encryption_sdk.internaldafny.generated.EncryptDecryptHelpers as EncryptDecryptHelpers
 import aws_encryption_sdk.internaldafny.generated.AwsEncryptionSdkOperations as AwsEncryptionSdkOperations
-import aws_encryption_sdk.internaldafny.generated.EncryptionSdk as EncryptionSdk
+import aws_encryption_sdk.internaldafny.generated.ESDK as ESDK
 import aws_encryption_sdk_test_vectors.internaldafny.generated.WrappedESDK as WrappedESDK
 import smithy_dafny_standard_library.internaldafny.generated.HexStrings as HexStrings
 import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllAlgorithmSuites as AllAlgorithmSuites
@@ -241,6 +241,58 @@ class default__:
             if True:
                 _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
                 _dafny.print(_dafny.string_of(d_1_haltMessage_))
+                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+                d_0_success_ = False
+        _dafny.print(_dafny.string_of(_dafny.Seq("TestWrappedESDKMain.TestNetRetryFlagVectorsExpectSuccess: ")))
+        try:
+            if True:
+                TestWrappedESDKMain.default__.TestNetRetryFlagVectorsExpectSuccess()
+                if True:
+                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        except _dafny.HaltException as e:
+            d_2_haltMessage_ = e.message
+            if True:
+                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+                _dafny.print(_dafny.string_of(d_2_haltMessage_))
+                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+                d_0_success_ = False
+        _dafny.print(_dafny.string_of(_dafny.Seq("TestWrappedESDKMain.TestNetInvalidTestVectorsExpectFailure: ")))
+        try:
+            if True:
+                TestWrappedESDKMain.default__.TestNetInvalidTestVectorsExpectFailure()
+                if True:
+                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        except _dafny.HaltException as e:
+            d_3_haltMessage_ = e.message
+            if True:
+                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+                _dafny.print(_dafny.string_of(d_3_haltMessage_))
+                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+                d_0_success_ = False
+        _dafny.print(_dafny.string_of(_dafny.Seq("TestWrappedESDKMain.TestNetInvalidTestVectorsExpectSuccessOnRetry: ")))
+        try:
+            if True:
+                TestWrappedESDKMain.default__.TestNetInvalidTestVectorsExpectSuccessOnRetry()
+                if True:
+                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        except _dafny.HaltException as e:
+            d_4_haltMessage_ = e.message
+            if True:
+                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+                _dafny.print(_dafny.string_of(d_4_haltMessage_))
+                _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
+                d_0_success_ = False
+        _dafny.print(_dafny.string_of(_dafny.Seq("TestWrappedESDKMain.TestNet401ValidTestVectorsExpectSuccess: ")))
+        try:
+            if True:
+                TestWrappedESDKMain.default__.TestNet401ValidTestVectorsExpectSuccess()
+                if True:
+                    _dafny.print(_dafny.string_of(_dafny.Seq("PASSED\n")))
+        except _dafny.HaltException as e:
+            d_5_haltMessage_ = e.message
+            if True:
+                _dafny.print(_dafny.string_of(_dafny.Seq("FAILED\n	")))
+                _dafny.print(_dafny.string_of(d_5_haltMessage_))
                 _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
                 d_0_success_ = False
         if not(d_0_success_):

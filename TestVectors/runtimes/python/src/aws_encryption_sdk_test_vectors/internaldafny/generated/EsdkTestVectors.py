@@ -180,7 +180,7 @@ import aws_encryption_sdk.internaldafny.generated.MessageBody as MessageBody
 import aws_encryption_sdk.internaldafny.generated.KeyDerivation as KeyDerivation
 import aws_encryption_sdk.internaldafny.generated.EncryptDecryptHelpers as EncryptDecryptHelpers
 import aws_encryption_sdk.internaldafny.generated.AwsEncryptionSdkOperations as AwsEncryptionSdkOperations
-import aws_encryption_sdk.internaldafny.generated.EncryptionSdk as EncryptionSdk
+import aws_encryption_sdk.internaldafny.generated.ESDK as ESDK
 import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.MplManifestOptions as MplManifestOptions
 import smithy_dafny_standard_library.internaldafny.generated.GetOpt as GetOpt
 import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllAlgorithmSuites as AllAlgorithmSuites
@@ -227,7 +227,7 @@ class default__:
 
     @staticmethod
     def SupportedDecryptVersion_q(v):
-        return (((v) == (1)) or ((v) == (2))) or ((v) == (3))
+        return (((((v) == (1)) or ((v) == (2))) or ((v) == (3))) or ((v) == (4))) or ((v) == (5))
 
     @staticmethod
     def TestDecrypt(keys, vector):
@@ -265,17 +265,17 @@ class default__:
         out1_ = default__.ReadVectorsFile((((d_2_test_).vector).manifestPath) + (((d_2_test_).vector).ciphertextPath))
         d_3_valueOrError0_ = out1_
         if not(not((d_3_valueOrError0_).IsFailure())):
-            raise _dafny.HaltException("dafny/TestVectors/src/EsdkTestVectors.dfy(202,22): " + _dafny.string_of(d_3_valueOrError0_))
+            raise _dafny.HaltException("dafny/TestVectors/src/EsdkTestVectors.dfy(221,22): " + _dafny.string_of(d_3_valueOrError0_))
         d_4_ciphertext_: _dafny.Seq
         d_4_ciphertext_ = (d_3_valueOrError0_).Extract()
         d_5_plaintext_: _dafny.Seq = _dafny.Seq({})
-        if (((d_2_test_).vector).is_PositiveDecryptTestVector) or (((d_2_test_).vector).is_PositiveV1OrV2DecryptTestVector):
+        if ((((d_2_test_).vector).is_PositiveDecryptTestVector) or (((d_2_test_).vector).is_PositiveV1OrV2DecryptTestVector)) or (((d_2_test_).vector).is_PositiveV4DecryptTestVector):
             d_6_valueOrError1_: Wrappers.Result = Wrappers.Result.default(_dafny.Seq)()
             out2_: Wrappers.Result
             out2_ = default__.ReadVectorsFile((((d_2_test_).vector).manifestPath) + (((d_2_test_).vector).plaintextPath))
             d_6_valueOrError1_ = out2_
             if not(not((d_6_valueOrError1_).IsFailure())):
-                raise _dafny.HaltException("dafny/TestVectors/src/EsdkTestVectors.dfy(205,19): " + _dafny.string_of(d_6_valueOrError1_))
+                raise _dafny.HaltException("dafny/TestVectors/src/EsdkTestVectors.dfy(227,19): " + _dafny.string_of(d_6_valueOrError1_))
             d_5_plaintext_ = (d_6_valueOrError1_).Extract()
         d_7_input_: AwsCryptographyEncryptionSdkTypes.DecryptInput
         d_7_input_ = AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_4_ciphertext_, Wrappers.Option_Some((d_2_test_).cmm), Wrappers.Option_None(), ((d_2_test_).vector).reproducedEncryptionContext)
@@ -294,10 +294,14 @@ class default__:
                     output = (True) and ((d_8_result_).is_Failure)
                     raise _dafny.Break("match0")
             if True:
+                if source0_.is_PositiveV1OrV2DecryptTestVector:
+                    output = ((d_8_result_).is_Success) and ((((d_8_result_).value).plaintext) == (d_5_plaintext_))
+                    raise _dafny.Break("match0")
+            if True:
                 output = ((d_8_result_).is_Success) and ((((d_8_result_).value).plaintext) == (d_5_plaintext_))
             pass
         if not(output):
-            if ((((d_2_test_).vector).is_PositiveDecryptTestVector) or (((d_2_test_).vector).is_PositiveV1OrV2DecryptTestVector)) and ((d_8_result_).is_Failure):
+            if (((((d_2_test_).vector).is_PositiveDecryptTestVector) or (((d_2_test_).vector).is_PositiveV1OrV2DecryptTestVector)) or (((d_2_test_).vector).is_PositiveV4DecryptTestVector)) and ((d_8_result_).is_Failure):
                 _dafny.print(_dafny.string_of((d_8_result_).error))
                 _dafny.print(_dafny.string_of(_dafny.Seq("\n")))
                 if (((d_8_result_).error).is_AwsCryptographyMaterialProviders) and ((((d_8_result_).error).AwsCryptographyMaterialProviders).is_CollectionOfErrors):
@@ -335,13 +339,16 @@ class default__:
             output = (d_4_valueOrError2_).PropagateFailure()
             return output
         d_5_config_: AwsCryptographyEncryptionSdkTypes.AwsEncryptionSdkConfig
-        d_5_config_ = WrappedESDK.default__.WrappedAwsEncryptionSdkConfigWithSuppliedCommitment((d_3_commitmentPolicy_).ESDK)
+        if (vector).is_PositiveV4DecryptTestVector:
+            d_5_config_ = WrappedESDK.default__.WrappedAwsEncryptionSdkConfigWithSuppliedCommitmentRetryPolicy((d_3_commitmentPolicy_).ESDK, (vector).retryPolicy)
+        elif True:
+            d_5_config_ = WrappedESDK.default__.WrappedAwsEncryptionSdkConfigWithSuppliedCommitment((d_3_commitmentPolicy_).ESDK)
         d_6_valueOrError3_: Wrappers.Result = None
         out1_: Wrappers.Result
         out1_ = WrappedESDK.default__.WrappedESDK(d_5_config_)
         d_6_valueOrError3_ = out1_
         if not(not((d_6_valueOrError3_).IsFailure())):
-            raise _dafny.HaltException("dafny/TestVectors/src/EsdkTestVectors.dfy(281,18): " + _dafny.string_of(d_6_valueOrError3_))
+            raise _dafny.HaltException("dafny/TestVectors/src/EsdkTestVectors.dfy(312,18): " + _dafny.string_of(d_6_valueOrError3_))
         d_7_client_: AwsCryptographyEncryptionSdkTypes.IAwsEncryptionSdkClient
         d_7_client_ = (d_6_valueOrError3_).Extract()
         d_8_test_: DecryptTest
@@ -364,7 +371,7 @@ class default__:
         d_1_vector_: EsdkEncryptTestVector
         d_1_vector_ = (test).vector
         if not((((test).vector).plaintextPath) in (plaintexts)):
-            raise _dafny.HaltException("dafny/TestVectors/src/EsdkTestVectors.dfy(324,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/TestVectors/src/EsdkTestVectors.dfy(355,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_2_plaintext_: _dafny.Seq
         d_2_plaintext_ = (plaintexts)[((test).vector).plaintextPath]
         d_3_frameLength_: Wrappers.Option
@@ -426,7 +433,7 @@ class default__:
         out1_ = WrappedESDK.default__.WrappedESDK(d_5_config_)
         d_6_valueOrError3_ = out1_
         if not(not((d_6_valueOrError3_).IsFailure())):
-            raise _dafny.HaltException("dafny/TestVectors/src/EsdkTestVectors.dfy(397,18): " + _dafny.string_of(d_6_valueOrError3_))
+            raise _dafny.HaltException("dafny/TestVectors/src/EsdkTestVectors.dfy(428,18): " + _dafny.string_of(d_6_valueOrError3_))
         d_7_client_: AwsCryptographyEncryptionSdkTypes.IAwsEncryptionSdkClient
         d_7_client_ = (d_6_valueOrError3_).Extract()
         d_8_test_: EncryptTest
@@ -453,9 +460,9 @@ class default__:
         out0_ = default__.WriteVectorsFile(d_0_decryptManifestCiphertext_, (result).ciphertext)
         d_1_valueOrError0_ = out0_
         if not(not((d_1_valueOrError0_).IsFailure())):
-            raise _dafny.HaltException("dafny/TestVectors/src/EsdkTestVectors.dfy(439,13): " + _dafny.string_of(d_1_valueOrError0_))
-        d_2___v52_: tuple
-        d_2___v52_ = (d_1_valueOrError0_).Extract()
+            raise _dafny.HaltException("dafny/TestVectors/src/EsdkTestVectors.dfy(470,13): " + _dafny.string_of(d_1_valueOrError0_))
+        d_2___v67_: tuple
+        d_2___v67_ = (d_1_valueOrError0_).Extract()
         return output
 
     @staticmethod
@@ -507,7 +514,7 @@ class default__:
         out1_ = WrappedMaterialProviders.default__.WrappedMaterialProviders(WrappedMaterialProviders.default__.WrappedDefaultMaterialProvidersConfig())
         d_6_valueOrError2_ = out1_
         if not(not((d_6_valueOrError2_).IsFailure())):
-            raise _dafny.HaltException("dafny/TestVectors/src/EsdkTestVectors.dfy(482,15): " + _dafny.string_of(d_6_valueOrError2_))
+            raise _dafny.HaltException("dafny/TestVectors/src/EsdkTestVectors.dfy(513,15): " + _dafny.string_of(d_6_valueOrError2_))
         d_7_mpl_: AwsCryptographyMaterialProvidersTypes.IAwsCryptographicMaterialProvidersClient
         d_7_mpl_ = (d_6_valueOrError2_).Extract()
         d_8_generatorKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
@@ -701,6 +708,9 @@ class EsdkDecryptTestVector:
     @property
     def is_PositiveV1OrV2DecryptTestVector(self) -> bool:
         return isinstance(self, EsdkDecryptTestVector_PositiveV1OrV2DecryptTestVector)
+    @property
+    def is_PositiveV4DecryptTestVector(self) -> bool:
+        return isinstance(self, EsdkDecryptTestVector_PositiveV4DecryptTestVector)
 
 class EsdkDecryptTestVector_PositiveDecryptTestVector(EsdkDecryptTestVector, NamedTuple('PositiveDecryptTestVector', [('id', Any), ('version', Any), ('manifestPath', Any), ('ciphertextPath', Any), ('plaintextPath', Any), ('reproducedEncryptionContext', Any), ('decryptDescriptions', Any), ('commitmentPolicy', Any), ('frameLength', Any), ('algorithmSuiteId', Any), ('description', Any), ('decryptionMethod', Any)])):
     def __dafnystr__(self) -> str:
@@ -723,6 +733,14 @@ class EsdkDecryptTestVector_PositiveV1OrV2DecryptTestVector(EsdkDecryptTestVecto
         return f'EsdkTestVectors.EsdkDecryptTestVector.PositiveV1OrV2DecryptTestVector({_dafny.string_of(self.id)}, {_dafny.string_of(self.version)}, {_dafny.string_of(self.manifestPath)}, {_dafny.string_of(self.ciphertextPath)}, {_dafny.string_of(self.plaintextPath)}, {_dafny.string_of(self.reproducedEncryptionContext)}, {_dafny.string_of(self.requiredEncryptionContextKeys)}, {_dafny.string_of(self.decryptDescriptions)}, {_dafny.string_of(self.commitmentPolicy)}, {_dafny.string_of(self.frameLength)}, {_dafny.string_of(self.algorithmSuiteId)}, {_dafny.string_of(self.description)}, {_dafny.string_of(self.decryptionMethod)})'
     def __eq__(self, __o: object) -> bool:
         return isinstance(__o, EsdkDecryptTestVector_PositiveV1OrV2DecryptTestVector) and self.id == __o.id and self.version == __o.version and self.manifestPath == __o.manifestPath and self.ciphertextPath == __o.ciphertextPath and self.plaintextPath == __o.plaintextPath and self.reproducedEncryptionContext == __o.reproducedEncryptionContext and self.requiredEncryptionContextKeys == __o.requiredEncryptionContextKeys and self.decryptDescriptions == __o.decryptDescriptions and self.commitmentPolicy == __o.commitmentPolicy and self.frameLength == __o.frameLength and self.algorithmSuiteId == __o.algorithmSuiteId and self.description == __o.description and self.decryptionMethod == __o.decryptionMethod
+    def __hash__(self) -> int:
+        return super().__hash__()
+
+class EsdkDecryptTestVector_PositiveV4DecryptTestVector(EsdkDecryptTestVector, NamedTuple('PositiveV4DecryptTestVector', [('id', Any), ('version', Any), ('manifestPath', Any), ('ciphertextPath', Any), ('plaintextPath', Any), ('reproducedEncryptionContext', Any), ('requiredEncryptionContextKeys', Any), ('decryptDescriptions', Any), ('commitmentPolicy', Any), ('frameLength', Any), ('algorithmSuiteId', Any), ('description', Any), ('decryptionMethod', Any), ('cmm', Any), ('retryPolicy', Any)])):
+    def __dafnystr__(self) -> str:
+        return f'EsdkTestVectors.EsdkDecryptTestVector.PositiveV4DecryptTestVector({_dafny.string_of(self.id)}, {_dafny.string_of(self.version)}, {_dafny.string_of(self.manifestPath)}, {_dafny.string_of(self.ciphertextPath)}, {_dafny.string_of(self.plaintextPath)}, {_dafny.string_of(self.reproducedEncryptionContext)}, {_dafny.string_of(self.requiredEncryptionContextKeys)}, {_dafny.string_of(self.decryptDescriptions)}, {_dafny.string_of(self.commitmentPolicy)}, {_dafny.string_of(self.frameLength)}, {_dafny.string_of(self.algorithmSuiteId)}, {_dafny.string_of(self.description)}, {_dafny.string_of(self.decryptionMethod)}, {_dafny.string_of(self.cmm)}, {_dafny.string_of(self.retryPolicy)})'
+    def __eq__(self, __o: object) -> bool:
+        return isinstance(__o, EsdkDecryptTestVector_PositiveV4DecryptTestVector) and self.id == __o.id and self.version == __o.version and self.manifestPath == __o.manifestPath and self.ciphertextPath == __o.ciphertextPath and self.plaintextPath == __o.plaintextPath and self.reproducedEncryptionContext == __o.reproducedEncryptionContext and self.requiredEncryptionContextKeys == __o.requiredEncryptionContextKeys and self.decryptDescriptions == __o.decryptDescriptions and self.commitmentPolicy == __o.commitmentPolicy and self.frameLength == __o.frameLength and self.algorithmSuiteId == __o.algorithmSuiteId and self.description == __o.description and self.decryptionMethod == __o.decryptionMethod and self.cmm == __o.cmm and self.retryPolicy == __o.retryPolicy
     def __hash__(self) -> int:
         return super().__hash__()
 

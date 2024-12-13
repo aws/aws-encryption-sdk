@@ -180,7 +180,7 @@ import aws_encryption_sdk.internaldafny.generated.MessageBody as MessageBody
 import aws_encryption_sdk.internaldafny.generated.KeyDerivation as KeyDerivation
 import aws_encryption_sdk.internaldafny.generated.EncryptDecryptHelpers as EncryptDecryptHelpers
 import aws_encryption_sdk.internaldafny.generated.AwsEncryptionSdkOperations as AwsEncryptionSdkOperations
-import aws_encryption_sdk.internaldafny.generated.EncryptionSdk as EncryptionSdk
+import aws_encryption_sdk.internaldafny.generated.ESDK as ESDK
 import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.MplManifestOptions as MplManifestOptions
 import smithy_dafny_standard_library.internaldafny.generated.GetOpt as GetOpt
 import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllAlgorithmSuites as AllAlgorithmSuites
@@ -222,6 +222,10 @@ class default__:
     @staticmethod
     def WrappedAwsEncryptionSdkConfigWithSuppliedCommitment(commitmentPolicy):
         return AwsCryptographyEncryptionSdkTypes.AwsEncryptionSdkConfig_AwsEncryptionSdkConfig(Wrappers.Option_Some(commitmentPolicy), Wrappers.Option_None(), Wrappers.Option_None())
+
+    @staticmethod
+    def WrappedAwsEncryptionSdkConfigWithSuppliedCommitmentRetryPolicy(commitmentPolicy, netV4__0__0__RetryPolicy):
+        return AwsCryptographyEncryptionSdkTypes.AwsEncryptionSdkConfig_AwsEncryptionSdkConfig(Wrappers.Option_Some(commitmentPolicy), Wrappers.Option_None(), Wrappers.Option_Some(netV4__0__0__RetryPolicy))
 
     @staticmethod
     def WrappedAwsEncryptionSdkConfig(commitmentPolicy, maxEncryptedDataKeys, netV4__0__0__RetryPolicy):

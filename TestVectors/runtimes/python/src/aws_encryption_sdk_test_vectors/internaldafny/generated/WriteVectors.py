@@ -180,7 +180,7 @@ import aws_encryption_sdk.internaldafny.generated.MessageBody as MessageBody
 import aws_encryption_sdk.internaldafny.generated.KeyDerivation as KeyDerivation
 import aws_encryption_sdk.internaldafny.generated.EncryptDecryptHelpers as EncryptDecryptHelpers
 import aws_encryption_sdk.internaldafny.generated.AwsEncryptionSdkOperations as AwsEncryptionSdkOperations
-import aws_encryption_sdk.internaldafny.generated.EncryptionSdk as EncryptionSdk
+import aws_encryption_sdk.internaldafny.generated.ESDK as ESDK
 import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.MplManifestOptions as MplManifestOptions
 import smithy_dafny_standard_library.internaldafny.generated.GetOpt as GetOpt
 import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllAlgorithmSuites as AllAlgorithmSuites
@@ -287,26 +287,28 @@ class default__:
             d_5_testsJSON_ = (d_5_testsJSON_) + (_dafny.Seq([(d_10_uuid_, d_12_test_)]))
         d_13_manifestJson_: JSON_Values.JSON
         d_13_manifestJson_ = JSON_Values.JSON_Object(_dafny.Seq([(_dafny.Seq("type"), JSON_Values.JSON_String(_dafny.Seq("awses-encrypt"))), (_dafny.Seq("version"), JSON_Values.JSON_Number(JSON_Values.default__.Int(5)))]))
-        d_14_plaintexts_: JSON_Values.JSON
-        d_14_plaintexts_ = JSON_Values.JSON_Object(_dafny.Seq([(_dafny.Seq("small"), JSON_Values.JSON_Number(JSON_Values.default__.Int(10240)))]))
-        d_15_esdkEncryptManifests_: JSON_Values.JSON
-        d_15_esdkEncryptManifests_ = JSON_Values.JSON_Object(_dafny.Seq([(_dafny.Seq("manifest"), d_13_manifestJson_), (_dafny.Seq("keys"), JSON_Values.JSON_String(_dafny.Seq("file://keys.json"))), (_dafny.Seq("plaintexts"), d_14_plaintexts_), (_dafny.Seq("tests"), JSON_Values.JSON_Object(d_5_testsJSON_))]))
-        d_16_valueOrError4_: Wrappers.Result = Wrappers.Result.default(_dafny.Seq)()
-        d_16_valueOrError4_ = JSON_API.default__.Serialize(d_15_esdkEncryptManifests_)
-        if not(not((d_16_valueOrError4_).IsFailure())):
-            raise _dafny.HaltException("dafny/TestVectors/src/WriteVectors.dfy(102,36): " + _dafny.string_of(d_16_valueOrError4_))
-        d_17_esdkEncryptManifestBytes_: _dafny.Seq
-        d_17_esdkEncryptManifestBytes_ = (d_16_valueOrError4_).Extract()
-        d_18_esdkEncryptManifestBv_: _dafny.Seq
-        d_18_esdkEncryptManifestBv_ = JSONHelpers.default__.BytesBv(d_17_esdkEncryptManifestBytes_)
-        d_19_valueOrError5_: Wrappers.Result = Wrappers.Result.default(_dafny.defaults.tuple())()
+        d_14_clientJson_: JSON_Values.JSON
+        d_14_clientJson_ = JSON_Values.JSON_Object(_dafny.Seq([(_dafny.Seq("name"), JSON_Values.JSON_String(_dafny.Seq("aws-encryption-sdk-dafny"))), (_dafny.Seq("version"), JSON_Values.JSON_String(_dafny.Seq("4.1.0")))]))
+        d_15_plaintexts_: JSON_Values.JSON
+        d_15_plaintexts_ = JSON_Values.JSON_Object(_dafny.Seq([(_dafny.Seq("small"), JSON_Values.JSON_Number(JSON_Values.default__.Int(10240)))]))
+        d_16_esdkEncryptManifests_: JSON_Values.JSON
+        d_16_esdkEncryptManifests_ = JSON_Values.JSON_Object(_dafny.Seq([(_dafny.Seq("manifest"), d_13_manifestJson_), (_dafny.Seq("client"), d_14_clientJson_), (_dafny.Seq("keys"), JSON_Values.JSON_String(_dafny.Seq("file://keys.json"))), (_dafny.Seq("plaintexts"), d_15_plaintexts_), (_dafny.Seq("tests"), JSON_Values.JSON_Object(d_5_testsJSON_))]))
+        d_17_valueOrError4_: Wrappers.Result = Wrappers.Result.default(_dafny.Seq)()
+        d_17_valueOrError4_ = JSON_API.default__.Serialize(d_16_esdkEncryptManifests_)
+        if not(not((d_17_valueOrError4_).IsFailure())):
+            raise _dafny.HaltException("dafny/TestVectors/src/WriteVectors.dfy(107,36): " + _dafny.string_of(d_17_valueOrError4_))
+        d_18_esdkEncryptManifestBytes_: _dafny.Seq
+        d_18_esdkEncryptManifestBytes_ = (d_17_valueOrError4_).Extract()
+        d_19_esdkEncryptManifestBv_: _dafny.Seq
+        d_19_esdkEncryptManifestBv_ = JSONHelpers.default__.BytesBv(d_18_esdkEncryptManifestBytes_)
+        d_20_valueOrError5_: Wrappers.Result = Wrappers.Result.default(_dafny.defaults.tuple())()
         out2_: Wrappers.Result
-        out2_ = FileIO.default__.WriteBytesToFile(((op).encryptManifestOutput) + (_dafny.Seq("encrypt-manifest.json")), d_18_esdkEncryptManifestBv_)
-        d_19_valueOrError5_ = out2_
-        if not(not((d_19_valueOrError5_).IsFailure())):
-            raise _dafny.HaltException("dafny/TestVectors/src/WriteVectors.dfy(105,13): " + _dafny.string_of(d_19_valueOrError5_))
-        d_20___v2_: tuple
-        d_20___v2_ = (d_19_valueOrError5_).Extract()
+        out2_ = FileIO.default__.WriteBytesToFile(((op).encryptManifestOutput) + (_dafny.Seq("encrypt-manifest.json")), d_19_esdkEncryptManifestBv_)
+        d_20_valueOrError5_ = out2_
+        if not(not((d_20_valueOrError5_).IsFailure())):
+            raise _dafny.HaltException("dafny/TestVectors/src/WriteVectors.dfy(110,13): " + _dafny.string_of(d_20_valueOrError5_))
+        d_21___v2_: tuple
+        d_21___v2_ = (d_20_valueOrError5_).Extract()
         output = Wrappers.Result_Success(())
         return output
 
@@ -328,25 +330,27 @@ class default__:
             d_4_test_ = (d_3_valueOrError0_).Extract()
             d_0_testsJSON_ = (d_0_testsJSON_) + (_dafny.Seq([(d_2_name_, d_4_test_)]))
         d_5_manifestJson_: JSON_Values.JSON
-        d_5_manifestJson_ = JSON_Values.JSON_Object(_dafny.Seq([(_dafny.Seq("type"), JSON_Values.JSON_String(_dafny.Seq("awses-decrypt"))), (_dafny.Seq("version"), JSON_Values.JSON_Number(JSON_Values.default__.Int(3)))]))
-        d_6_esdkDecryptManifest_: JSON_Values.JSON
-        d_6_esdkDecryptManifest_ = JSON_Values.JSON_Object(_dafny.Seq([(_dafny.Seq("manifest"), d_5_manifestJson_), (_dafny.Seq("client"), JSON_Values.JSON_String(_dafny.Seq("aws-encryption-sdk-dafny"))), (_dafny.Seq("keys"), JSON_Values.JSON_String(_dafny.Seq("file://keys.json"))), (_dafny.Seq("tests"), JSON_Values.JSON_Object(d_0_testsJSON_))]))
-        d_7_valueOrError1_: Wrappers.Result = Wrappers.Result.default(_dafny.Seq)()
-        d_7_valueOrError1_ = JSON_API.default__.Serialize(d_6_esdkDecryptManifest_)
-        if not(not((d_7_valueOrError1_).IsFailure())):
-            raise _dafny.HaltException("dafny/TestVectors/src/WriteVectors.dfy(146,36): " + _dafny.string_of(d_7_valueOrError1_))
-        d_8_esdkDecryptManifestBytes_: _dafny.Seq
-        d_8_esdkDecryptManifestBytes_ = (d_7_valueOrError1_).Extract()
-        d_9_esdkDecryptManifestBv_: _dafny.Seq
-        d_9_esdkDecryptManifestBv_ = JSONHelpers.default__.BytesBv(d_8_esdkDecryptManifestBytes_)
-        d_10_valueOrError2_: Wrappers.Result = Wrappers.Result.default(_dafny.defaults.tuple())()
+        d_5_manifestJson_ = JSON_Values.JSON_Object(_dafny.Seq([(_dafny.Seq("type"), JSON_Values.JSON_String(_dafny.Seq("awses-decrypt"))), (_dafny.Seq("version"), JSON_Values.JSON_Number(JSON_Values.default__.Int(5)))]))
+        d_6_clientJson_: JSON_Values.JSON
+        d_6_clientJson_ = JSON_Values.JSON_Object(_dafny.Seq([(_dafny.Seq("name"), JSON_Values.JSON_String(_dafny.Seq("aws-encryption-sdk-dafny"))), (_dafny.Seq("version"), JSON_Values.JSON_String(_dafny.Seq("4.1.0")))]))
+        d_7_esdkDecryptManifest_: JSON_Values.JSON
+        d_7_esdkDecryptManifest_ = JSON_Values.JSON_Object(_dafny.Seq([(_dafny.Seq("manifest"), d_5_manifestJson_), (_dafny.Seq("client"), d_6_clientJson_), (_dafny.Seq("keys"), JSON_Values.JSON_String(_dafny.Seq("file://keys.json"))), (_dafny.Seq("tests"), JSON_Values.JSON_Object(d_0_testsJSON_))]))
+        d_8_valueOrError1_: Wrappers.Result = Wrappers.Result.default(_dafny.Seq)()
+        d_8_valueOrError1_ = JSON_API.default__.Serialize(d_7_esdkDecryptManifest_)
+        if not(not((d_8_valueOrError1_).IsFailure())):
+            raise _dafny.HaltException("dafny/TestVectors/src/WriteVectors.dfy(154,36): " + _dafny.string_of(d_8_valueOrError1_))
+        d_9_esdkDecryptManifestBytes_: _dafny.Seq
+        d_9_esdkDecryptManifestBytes_ = (d_8_valueOrError1_).Extract()
+        d_10_esdkDecryptManifestBv_: _dafny.Seq
+        d_10_esdkDecryptManifestBv_ = JSONHelpers.default__.BytesBv(d_9_esdkDecryptManifestBytes_)
+        d_11_valueOrError2_: Wrappers.Result = Wrappers.Result.default(_dafny.defaults.tuple())()
         out0_: Wrappers.Result
-        out0_ = FileIO.default__.WriteBytesToFile(((op).decryptManifestOutput) + (_dafny.Seq("decrypt-manifest.json")), d_9_esdkDecryptManifestBv_)
-        d_10_valueOrError2_ = out0_
-        if not(not((d_10_valueOrError2_).IsFailure())):
-            raise _dafny.HaltException("dafny/TestVectors/src/WriteVectors.dfy(149,13): " + _dafny.string_of(d_10_valueOrError2_))
-        d_11___v3_: tuple
-        d_11___v3_ = (d_10_valueOrError2_).Extract()
+        out0_ = FileIO.default__.WriteBytesToFile(((op).decryptManifestOutput) + (_dafny.Seq("decrypt-manifest.json")), d_10_esdkDecryptManifestBv_)
+        d_11_valueOrError2_ = out0_
+        if not(not((d_11_valueOrError2_).IsFailure())):
+            raise _dafny.HaltException("dafny/TestVectors/src/WriteVectors.dfy(157,13): " + _dafny.string_of(d_11_valueOrError2_))
+        d_12___v3_: tuple
+        d_12___v3_ = (d_11_valueOrError2_).Extract()
         output = Wrappers.Result_Success(())
         return output
 

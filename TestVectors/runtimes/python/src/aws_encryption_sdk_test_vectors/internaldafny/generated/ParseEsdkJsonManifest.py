@@ -180,7 +180,7 @@ import aws_encryption_sdk.internaldafny.generated.MessageBody as MessageBody
 import aws_encryption_sdk.internaldafny.generated.KeyDerivation as KeyDerivation
 import aws_encryption_sdk.internaldafny.generated.EncryptDecryptHelpers as EncryptDecryptHelpers
 import aws_encryption_sdk.internaldafny.generated.AwsEncryptionSdkOperations as AwsEncryptionSdkOperations
-import aws_encryption_sdk.internaldafny.generated.EncryptionSdk as EncryptionSdk
+import aws_encryption_sdk.internaldafny.generated.ESDK as ESDK
 import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.MplManifestOptions as MplManifestOptions
 import smithy_dafny_standard_library.internaldafny.generated.GetOpt as GetOpt
 import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllAlgorithmSuites as AllAlgorithmSuites
@@ -223,7 +223,7 @@ class default__:
         pass
 
     @staticmethod
-    def BuildDecryptTestVector(op, version, keys, obj):
+    def BuildDecryptTestVector(op, clientName, clientVersion, version, keys, obj):
         hresult_: Wrappers.Result = Wrappers.Result.default(_dafny.Seq)()
         d_0_i_: int
         d_0_i_ = len(obj)
@@ -232,7 +232,7 @@ class default__:
         while (d_0_i_) != (0):
             d_0_i_ = (d_0_i_) - (1)
             d_2_test_: Wrappers.Result
-            d_2_test_ = default__.ToDecryptTestVectors(op, version, keys, ((obj)[d_0_i_])[0], ((obj)[d_0_i_])[1])
+            d_2_test_ = default__.ToDecryptTestVectors(op, clientName, clientVersion, version, keys, ((obj)[d_0_i_])[0], ((obj)[d_0_i_])[1])
             if ((d_2_test_).is_Failure) and (((d_2_test_).error) != (default__.negativeTestVectorFound)):
                 hresult_ = Wrappers.Result_Failure(default__.buildTestVectorError)
                 return hresult_
@@ -245,7 +245,7 @@ class default__:
         return hresult_
 
     @staticmethod
-    def ToDecryptTestVectors(op, version, keys, name, json):
+    def ToDecryptTestVectors(op, clientName, clientVersion, version, keys, name, json):
         d_0_valueOrError0_ = Wrappers.default__.Need((json).is_Object, _dafny.Seq("Vector is not an object"))
         if (d_0_valueOrError0_).IsFailure():
             return (d_0_valueOrError0_).PropagateFailure()
@@ -253,24 +253,35 @@ class default__:
             d_1_obj_ = (json).obj
             source0_ = version
             if True:
-                if (source0_) == (3):
+                if (source0_) == (5):
                     d_2_valueOrError1_ = Wrappers.default__.Need((op).is_Decrypt, _dafny.Seq("Err parsing manifest expected Decrypt"))
                     if (d_2_valueOrError1_).IsFailure():
                         return (d_2_valueOrError1_).PropagateFailure()
                     elif True:
-                        return default__.V3ToDecryptTestVector(op, keys, name, d_1_obj_, version)
+                        return default__.V5ToDecryptTestVector(op, keys, name, d_1_obj_, version)
             if True:
-                if (source0_) == (2):
-                    d_3_valueOrError2_ = Wrappers.default__.Need((op).is_Decrypt, _dafny.Seq("Err parsing manifest expected Decrypt"))
+                if (source0_) == (4):
+                    d_3_valueOrError2_ = Wrappers.default__.Need((op).is_Decrypt, _dafny.Seq("Err parsing manifest; expected Decrypt"))
                     if (d_3_valueOrError2_).IsFailure():
                         return (d_3_valueOrError2_).PropagateFailure()
+                    elif True:
+                        d_4_valueOrError3_ = Wrappers.default__.Need((clientName) == (_dafny.Seq("ESDK-NET")), _dafny.Seq("Err; Version 4 manifest only supported for NET"))
+                        if (d_4_valueOrError3_).IsFailure():
+                            return (d_4_valueOrError3_).PropagateFailure()
+                        elif True:
+                            return default__.V4ToDecryptTestVector(op, keys, name, d_1_obj_, version)
+            if True:
+                if (source0_) == (2):
+                    d_5_valueOrError4_ = Wrappers.default__.Need((op).is_Decrypt, _dafny.Seq("Err parsing manifest expected Decrypt"))
+                    if (d_5_valueOrError4_).IsFailure():
+                        return (d_5_valueOrError4_).PropagateFailure()
                     elif True:
                         return default__.V2ToDecryptTestVector(op, keys, name, d_1_obj_, version)
             if True:
                 if (source0_) == (1):
-                    d_4_valueOrError3_ = Wrappers.default__.Need((op).is_Decrypt, _dafny.Seq("Err parsing manifest expected Decrypt"))
-                    if (d_4_valueOrError3_).IsFailure():
-                        return (d_4_valueOrError3_).PropagateFailure()
+                    d_6_valueOrError5_ = Wrappers.default__.Need((op).is_Decrypt, _dafny.Seq("Err parsing manifest expected Decrypt"))
+                    if (d_6_valueOrError5_).IsFailure():
+                        return (d_6_valueOrError5_).PropagateFailure()
                     elif True:
                         return default__.V1ToDecryptTestVector(op, keys, name, d_1_obj_, version)
             if True:
@@ -465,7 +476,7 @@ class default__:
                                             return Wrappers.Result_Success(EsdkTestVectors.EsdkDecryptTestVector_PositiveV1OrV2DecryptTestVector(name, version, (op).manifestPath, _dafny.Seq((d_8_ciphertextLoc_)[len(default__.FILE__PREPEND)::]), _dafny.Seq((d_6_plaintextLoc_)[len(default__.FILE__PREPEND)::]), Wrappers.Option_None(), Wrappers.Option_None(), d_15_keyDescription_, AwsCryptographyMaterialProvidersTypes.ESDKCommitmentPolicy_FORBID__ENCRYPT__ALLOW__DECRYPT(), Wrappers.Option_None(), Wrappers.Option_None(), name, EsdkTestVectors.DecryptionMethod_OneShot()))
 
     @staticmethod
-    def V3ToDecryptTestVector(op, keys, name, obj, version):
+    def V5ToDecryptTestVector(op, keys, name, obj, version):
         d_0_scenarioString_ = _dafny.Seq("decryption-scenario")
         d_1_valueOrError0_ = JSONHelpers.default__.GetObject(d_0_scenarioString_, obj)
         if (d_1_valueOrError0_).IsFailure():
@@ -532,6 +543,64 @@ class default__:
                                                                 return Wrappers.Result_Success(EsdkTestVectors.EsdkDecryptTestVector_PositiveDecryptTestVector(name, version, (op).manifestPath, _dafny.Seq((d_7_ciphertextLoc_)[len(default__.FILE__PREPEND)::]), _dafny.Seq((d_20_result_)[len(default__.FILE__PREPEND)::]), Wrappers.Option_Some(d_16_reproducedEncryptionContext_), d_23_decryptKeyDescription_, AwsCryptographyMaterialProvidersTypes.ESDKCommitmentPolicy_FORBID__ENCRYPT__ALLOW__DECRYPT(), d_12_frameLength_, Wrappers.Option_Some(d_9_algorithmSuite_), d_18_description_, EsdkTestVectors.DecryptionMethod_OneShot()))
                                                     if True:
                                                         return Wrappers.Result_Failure((_dafny.Seq("Unsupported ESDK TestVector type: ")) + (d_5_typ_))
+
+    @staticmethod
+    def V4ToDecryptTestVector(op, keys, name, obj, version):
+        d_0_valueOrError0_ = JSONHelpers.default__.GetObject(_dafny.Seq("result"), obj)
+        if (d_0_valueOrError0_).IsFailure():
+            return (d_0_valueOrError0_).PropagateFailure()
+        elif True:
+            d_1_resultLoc_ = (d_0_valueOrError0_).Extract()
+            d_2_valueOrError1_ = JSONHelpers.default__.GetObject(_dafny.Seq("output"), d_1_resultLoc_)
+            if (d_2_valueOrError1_).IsFailure():
+                return (d_2_valueOrError1_).PropagateFailure()
+            elif True:
+                d_3_outputLoc_ = (d_2_valueOrError1_).Extract()
+                d_4_valueOrError2_ = JSONHelpers.default__.GetString(_dafny.Seq("plaintext"), d_3_outputLoc_)
+                if (d_4_valueOrError2_).IsFailure():
+                    return (d_4_valueOrError2_).PropagateFailure()
+                elif True:
+                    d_5_plaintextLoc_ = (d_4_valueOrError2_).Extract()
+                    d_6_valueOrError3_ = JSONHelpers.default__.GetString(_dafny.Seq("ciphertext"), obj)
+                    if (d_6_valueOrError3_).IsFailure():
+                        return (d_6_valueOrError3_).PropagateFailure()
+                    elif True:
+                        d_7_ciphertextLoc_ = (d_6_valueOrError3_).Extract()
+                        d_8_valueOrError4_ = Wrappers.default__.Need(((_dafny.Seq("file://")) < (d_7_ciphertextLoc_)) and ((_dafny.Seq("file://")) < (d_5_plaintextLoc_)), _dafny.Seq("Invalid file prefix in test vector"))
+                        if (d_8_valueOrError4_).IsFailure():
+                            return (d_8_valueOrError4_).PropagateFailure()
+                        elif True:
+                            d_9_valueOrError5_ = JSONHelpers.default__.GetArray(_dafny.Seq("master-keys"), obj)
+                            if (d_9_valueOrError5_).IsFailure():
+                                return (d_9_valueOrError5_).PropagateFailure()
+                            elif True:
+                                d_10_masterKeys_ = (d_9_valueOrError5_).Extract()
+                                d_11_valueOrError6_ = default__.GetKeyDescriptions(d_10_masterKeys_, keys)
+                                if (d_11_valueOrError6_).IsFailure():
+                                    return (d_11_valueOrError6_).PropagateFailure()
+                                elif True:
+                                    d_12_keyDescriptions_ = (d_11_valueOrError6_).Extract()
+                                    d_13_valueOrError7_ = default__.ToMultiKeyDescription(d_12_keyDescriptions_)
+                                    if (d_13_valueOrError7_).IsFailure():
+                                        return (d_13_valueOrError7_).PropagateFailure()
+                                    elif True:
+                                        d_14_keyDescription_ = (d_13_valueOrError7_).Extract()
+                                        d_15_valueOrError8_ = JSONHelpers.default__.GetString(_dafny.Seq("cmm"), obj)
+                                        if (d_15_valueOrError8_).IsFailure():
+                                            return (d_15_valueOrError8_).PropagateFailure()
+                                        elif True:
+                                            d_16_cmm_ = (d_15_valueOrError8_).Extract()
+                                            d_17_valueOrError9_ = JSONHelpers.default__.SmallObjectToStringStringMap(_dafny.Seq("encryption-context"), obj)
+                                            if (d_17_valueOrError9_).IsFailure():
+                                                return (d_17_valueOrError9_).PropagateFailure()
+                                            elif True:
+                                                d_18_encryptionContextStrings_ = (d_17_valueOrError9_).Extract()
+                                                d_19_valueOrError10_ = JSONHelpers.default__.utf8EncodeMap(d_18_encryptionContextStrings_)
+                                                if (d_19_valueOrError10_).IsFailure():
+                                                    return (d_19_valueOrError10_).PropagateFailure()
+                                                elif True:
+                                                    d_20_encryptionContext_ = (d_19_valueOrError10_).Extract()
+                                                    return Wrappers.Result_Success(EsdkTestVectors.EsdkDecryptTestVector_PositiveV4DecryptTestVector(name, version, (op).manifestPath, _dafny.Seq((d_7_ciphertextLoc_)[len(default__.FILE__PREPEND)::]), _dafny.Seq((d_5_plaintextLoc_)[len(default__.FILE__PREPEND)::]), Wrappers.Option_Some(d_20_encryptionContext_), Wrappers.Option_None(), d_14_keyDescription_, AwsCryptographyMaterialProvidersTypes.ESDKCommitmentPolicy_FORBID__ENCRYPT__ALLOW__DECRYPT(), Wrappers.Option_None(), Wrappers.Option_None(), name, EsdkTestVectors.DecryptionMethod_OneShot(), d_16_cmm_, (op).retryPolicy))
 
     @staticmethod
     def GetKeyDescriptions(keyArray, keys):

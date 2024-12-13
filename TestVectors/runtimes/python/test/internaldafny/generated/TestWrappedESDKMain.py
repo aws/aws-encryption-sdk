@@ -105,7 +105,7 @@ import aws_encryption_sdk.internaldafny.generated.MessageBody as MessageBody
 import aws_encryption_sdk.internaldafny.generated.KeyDerivation as KeyDerivation
 import aws_encryption_sdk.internaldafny.generated.EncryptDecryptHelpers as EncryptDecryptHelpers
 import aws_encryption_sdk.internaldafny.generated.AwsEncryptionSdkOperations as AwsEncryptionSdkOperations
-import aws_encryption_sdk.internaldafny.generated.EncryptionSdk as EncryptionSdk
+import aws_encryption_sdk.internaldafny.generated.ESDK as ESDK
 import aws_encryption_sdk_test_vectors.internaldafny.generated.WrappedESDK as WrappedESDK
 import smithy_dafny_standard_library.internaldafny.generated.HexStrings as HexStrings
 import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllAlgorithmSuites as AllAlgorithmSuites
@@ -232,6 +232,67 @@ class default__:
         default__.TestDecryptManifest()
 
     @staticmethod
+    def TestNetRetryFlagVectorsExpectSuccess():
+        d_0_directory_: _dafny.Seq
+        out0_: _dafny.Seq
+        out0_ = default__.GetTestVectorExecutionDirectory()
+        d_0_directory_ = out0_
+        d_1_result_: Wrappers.Result
+        out1_: Wrappers.Result
+        out1_ = EsdkTestManifests.default__.StartDecryptVectors(EsdkManifestOptions.ManifestOptions_Decrypt((d_0_directory_) + (_dafny.Seq("dafny/TestVectors/test/valid-Net-4.0.0/")), _dafny.Seq("manifest.json"), AwsCryptographyEncryptionSdkTypes.NetV4__0__0__RetryPolicy_FORBID__RETRY(), Wrappers.Option_None()))
+        d_1_result_ = out1_
+        if (d_1_result_).is_Failure:
+            _dafny.print(_dafny.string_of((d_1_result_).error))
+        if not((d_1_result_).is_Success):
+            raise _dafny.HaltException("dafny/TestVectors/test/RunMain.dfy(44,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+
+    @staticmethod
+    def TestNetInvalidTestVectorsExpectFailure():
+        d_0_directory_: _dafny.Seq
+        out0_: _dafny.Seq
+        out0_ = default__.GetTestVectorExecutionDirectory()
+        d_0_directory_ = out0_
+        d_1_result_: Wrappers.Result
+        out1_: Wrappers.Result
+        out1_ = EsdkTestManifests.default__.StartDecryptVectors(EsdkManifestOptions.ManifestOptions_Decrypt((d_0_directory_) + (_dafny.Seq("dafny/TestVectors/test/invalid-Net-4.0.0/")), _dafny.Seq("manifest.json"), AwsCryptographyEncryptionSdkTypes.NetV4__0__0__RetryPolicy_FORBID__RETRY(), Wrappers.Option_None()))
+        d_1_result_ = out1_
+        _dafny.print(_dafny.string_of(_dafny.Seq("ONLY WORRY IF THE ABOVE TESTS PASSED!!! THESE TESTS ARE SUPPOSED TO FAIL!\n")))
+        _dafny.print(_dafny.string_of(_dafny.Seq("IF THE TESTS FAIL OTHER THAN A AES GCM TAG VALIDATION EXCEPTION, CUT AN ISSUE.\n")))
+        _dafny.print(_dafny.string_of(_dafny.Seq("IF THE TESTS ALL FAIL IT MEANS THE TEST PASSED!")))
+        if not((d_1_result_).is_Failure):
+            raise _dafny.HaltException("dafny/TestVectors/test/RunMain.dfy(65,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+
+    @staticmethod
+    def TestNetInvalidTestVectorsExpectSuccessOnRetry():
+        d_0_directory_: _dafny.Seq
+        out0_: _dafny.Seq
+        out0_ = default__.GetTestVectorExecutionDirectory()
+        d_0_directory_ = out0_
+        d_1_result_: Wrappers.Result
+        out1_: Wrappers.Result
+        out1_ = EsdkTestManifests.default__.StartDecryptVectors(EsdkManifestOptions.ManifestOptions_Decrypt((d_0_directory_) + (_dafny.Seq("dafny/TestVectors/test/invalid-Net-4.0.0/")), _dafny.Seq("manifest.json"), AwsCryptographyEncryptionSdkTypes.NetV4__0__0__RetryPolicy_ALLOW__RETRY(), Wrappers.Option_None()))
+        d_1_result_ = out1_
+        if (d_1_result_).is_Failure:
+            _dafny.print(_dafny.string_of((d_1_result_).error))
+        if not((d_1_result_).is_Success):
+            raise _dafny.HaltException("dafny/TestVectors/test/RunMain.dfy(80,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+
+    @staticmethod
+    def TestNet401ValidTestVectorsExpectSuccess():
+        d_0_directory_: _dafny.Seq
+        out0_: _dafny.Seq
+        out0_ = default__.GetTestVectorExecutionDirectory()
+        d_0_directory_ = out0_
+        d_1_result_: Wrappers.Result
+        out1_: Wrappers.Result
+        out1_ = EsdkTestManifests.default__.StartDecryptVectors(EsdkManifestOptions.ManifestOptions_Decrypt((d_0_directory_) + (_dafny.Seq("dafny/TestVectors/test/v4-Net-4.0.1/")), _dafny.Seq("manifest.json"), AwsCryptographyEncryptionSdkTypes.NetV4__0__0__RetryPolicy_FORBID__RETRY(), Wrappers.Option_None()))
+        d_1_result_ = out1_
+        if (d_1_result_).is_Failure:
+            _dafny.print(_dafny.string_of((d_1_result_).error))
+        if not((d_1_result_).is_Success):
+            raise _dafny.HaltException("dafny/TestVectors/test/RunMain.dfy(95,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+
+    @staticmethod
     def TestGenerateEncryptManifest():
         d_0_directory_: _dafny.Seq
         out0_: _dafny.Seq
@@ -244,7 +305,7 @@ class default__:
         if (d_1_result_).is_Failure:
             _dafny.print(_dafny.string_of((d_1_result_).error))
         if not((d_1_result_).is_Success):
-            raise _dafny.HaltException("dafny/TestVectors/test/RunMain.dfy(38,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/TestVectors/test/RunMain.dfy(108,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
 
     @staticmethod
     def TestEncryptManifest():
@@ -259,7 +320,7 @@ class default__:
         if (d_1_result_).is_Failure:
             _dafny.print(_dafny.string_of((d_1_result_).error))
         if not((d_1_result_).is_Success):
-            raise _dafny.HaltException("dafny/TestVectors/test/RunMain.dfy(53,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/TestVectors/test/RunMain.dfy(123,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
 
     @staticmethod
     def TestDecryptManifest():
@@ -269,10 +330,10 @@ class default__:
         d_0_directory_ = out0_
         d_1_result_: Wrappers.Result
         out1_: Wrappers.Result
-        out1_ = EsdkTestManifests.default__.StartDecryptVectors(EsdkManifestOptions.ManifestOptions_Decrypt((d_0_directory_) + (_dafny.Seq("dafny/TestVectors/test/")), _dafny.Seq("decrypt-manifest.json"), Wrappers.Option_None()))
+        out1_ = EsdkTestManifests.default__.StartDecryptVectors(EsdkManifestOptions.ManifestOptions_Decrypt((d_0_directory_) + (_dafny.Seq("dafny/TestVectors/test/")), _dafny.Seq("decrypt-manifest.json"), AwsCryptographyEncryptionSdkTypes.NetV4__0__0__RetryPolicy_FORBID__RETRY(), Wrappers.Option_None()))
         d_1_result_ = out1_
         if (d_1_result_).is_Failure:
             _dafny.print(_dafny.string_of((d_1_result_).error))
         if not((d_1_result_).is_Success):
-            raise _dafny.HaltException("dafny/TestVectors/test/RunMain.dfy(69,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/TestVectors/test/RunMain.dfy(140,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
 
