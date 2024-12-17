@@ -58,7 +58,7 @@ jobs:
       - name: Setup Dafny
         uses: dafny-lang/setup-dafny-action@v1.7.0
         with:
-          dafny-version: 4.9.0
+          dafny-version: ${{ inputs.dafny }}
 
       # TODO: Remove this after the formatting in Rust starts working
       - name: smithy-dafny Rust hacks
@@ -133,7 +133,8 @@ jobs:
       matrix:
         library: [TestVectors]
         os: [
-          windows-latest,
+          # Sed script doesn't work properly on windows
+          # windows-latest,
           ubuntu-latest,
           macos-13,
         ]
@@ -141,14 +142,11 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    env:
-      DOTNET_CLI_TELEMETRY_OPTOUT: 1
-      DOTNET_NOLOGO: 1
     steps:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Init Submodules
         shell: bash
         run: |
@@ -173,7 +171,7 @@ jobs:
       - name: Setup Dafny
         uses: dafny-lang/setup-dafny-action@v1.7.0
         with:
-          dafny-version: 4.9.0
+          dafny-version: ${{ inputs.dafny }}
 
       # TODO: Remove this after the formatting in Rust starts working
       - name: smithy-dafny Rust hacks
