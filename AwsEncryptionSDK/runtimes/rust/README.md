@@ -15,14 +15,6 @@ The AWS Encryption SDK enables secure client-side encryption. It uses cryptograp
 
 For more details about the design and architecture of the AWS Encryption SDK, see the [AWS Encryption SDK Developer Guide](https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/introduction.html).
 
-## Using the AWS Encryption SDK in Rust
-
-Add the following to your `Cargo.toml` with the correct version number:
-```
-[dependencies]
-aws-esdk = "<version>"
-```
-
 ## Examples for AWS Encryption SDK in Rust
 
 Please look at the Examples on how to use the Encryption SDK in Rust [here](https://github.com/aws/aws-encryption-sdk-dafny/tree/mainline/AwsEncryptionSDK/runtimes/rust/examples).
