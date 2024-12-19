@@ -10,8 +10,8 @@ On decrypt, the client MUST supply the key/value pair(s) that were not stored to
 
 use aws_esdk::client as esdk_client;
 use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
-use aws_esdk::aws_cryptography_materialProviders::client as mpl_client;
-use aws_esdk::aws_cryptography_materialProviders::types::material_providers_config::MaterialProvidersConfig;
+use aws_esdk::material_providers::client as mpl_client;
+use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
 use aws_esdk::types::error::Error::AwsCryptographicMaterialProvidersError;
 use std::collections::HashMap;
 use std::vec::Vec;

@@ -17,7 +17,7 @@ For more details about the design and architecture of the AWS Encryption SDK, se
 
 ## Examples for AWS Encryption SDK in Rust
 
-Please look at the Examples on how to use the Encryption SDK in Rust [here](https://github.com/aws/aws-encryption-sdk-dafny/tree/mainline/AwsEncryptionSDK/runtimes/rust/examples).
+Please look at the Examples on how to use the Encryption SDK in Rust [here](https://github.com/aws/aws-encryption-sdk-dafny/tree/mainline/releases/rust/esdk/examples).
 
 Please note that some examples MAY require internet access and valid AWS credentials, since calls to KMS are made.
 

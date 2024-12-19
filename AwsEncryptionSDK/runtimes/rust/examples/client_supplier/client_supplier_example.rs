@@ -18,10 +18,10 @@
 use super::regional_role_client_supplier::RegionalRoleClientSupplier;
 use aws_esdk::client as esdk_client;
 use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
-use aws_esdk::aws_cryptography_materialProviders::types::error::Error::AwsCryptographicMaterialProvidersException;
-use aws_esdk::aws_cryptography_materialProviders::client as mpl_client;
-use aws_esdk::aws_cryptography_materialProviders::types::material_providers_config::MaterialProvidersConfig;
-use aws_esdk::aws_cryptography_materialProviders::types::DiscoveryFilter;
+use aws_esdk::material_providers::types::error::Error::AwsCryptographicMaterialProvidersException;
+use aws_esdk::material_providers::client as mpl_client;
+use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
+use aws_esdk::material_providers::types::DiscoveryFilter;
 use std::collections::HashMap;
 
 pub async fn encrypt_and_decrypt_with_keyring(

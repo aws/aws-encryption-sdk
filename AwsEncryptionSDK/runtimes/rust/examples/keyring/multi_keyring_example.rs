@@ -43,9 +43,9 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 
 use aws_esdk::client as esdk_client;
 use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
-use aws_esdk::aws_cryptography_materialProviders::client as mpl_client;
-use aws_esdk::aws_cryptography_materialProviders::types::material_providers_config::MaterialProvidersConfig;
-use aws_esdk::aws_cryptography_materialProviders::types::AesWrappingAlg;
+use aws_esdk::material_providers::client as mpl_client;
+use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
+use aws_esdk::material_providers::types::AesWrappingAlg;
 use std::collections::HashMap;
 use rand::RngCore;
 
