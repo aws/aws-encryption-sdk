@@ -30,6 +30,7 @@ src/storm_tracker.rs
 src/time.rs
 src/types/
 src/uuid.rs
+src/validation.rs
 standard_library_conversions.rs
 standard_library_externs.rs
 target
