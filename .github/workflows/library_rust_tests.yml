@@ -233,4 +233,6 @@ jobs:
         working-directory: ${{ matrix.library }}
         shell: bash
         run: |
+          # Without this, running test vectors fails due to `fatal runtime error: stack overflow`
+          export RUST_MIN_STACK=104857600
           make test_rust
