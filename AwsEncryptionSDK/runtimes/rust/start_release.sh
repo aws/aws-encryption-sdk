@@ -40,7 +40,7 @@ cp -r . ../../../releases/rust/esdk
 cd ../../../releases/rust/esdk
 
 # Remove unnecessary files and directories
-rm -rf *~ copy_externs.sh start_release.sh test_published.sh test_examples *.pem RELEASE.md CHANGELOG.md
+rm -rf *~ copy_externs.sh start_release.sh test_published.sh test_examples *.pem RELEASE.md CHANGELOG.md src/README.md
 
 # Create .gitignore file with specified entries
 echo Cargo.lock > .gitignore
