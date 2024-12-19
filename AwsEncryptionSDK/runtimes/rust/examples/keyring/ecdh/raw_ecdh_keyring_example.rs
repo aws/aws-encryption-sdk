@@ -49,10 +49,10 @@ https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-raw-ecdh-k
 
 use aws_esdk::client as esdk_client;
 use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
-use aws_esdk::aws_cryptography_materialProviders::client as mpl_client;
-use aws_esdk::aws_cryptography_materialProviders::types::material_providers_config::MaterialProvidersConfig;
-use aws_esdk::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations;
-use aws_esdk::aws_cryptography_materialProviders::types::RawPrivateKeyToStaticPublicKeyInput;
+use aws_esdk::material_providers::client as mpl_client;
+use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
+use aws_esdk::material_providers::types::RawEcdhStaticConfigurations;
+use aws_esdk::material_providers::types::RawPrivateKeyToStaticPublicKeyInput;
 use aws_esdk::aws_cryptography_primitives::types::EcdhCurveSpec;
 use std::collections::HashMap;
 use std::fs::File;

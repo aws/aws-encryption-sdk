@@ -10,10 +10,10 @@ use super::signing_suite_only_cmm::SigningSuiteOnlyCMM;
 use aws_esdk::client as esdk_client;
 use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use aws_esdk::types::error::Error::AwsCryptographicMaterialProvidersError;
-use aws_esdk::aws_cryptography_materialProviders::client as mpl_client;
-use aws_esdk::aws_cryptography_materialProviders::types::material_providers_config::MaterialProvidersConfig;
-use aws_esdk::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
-use aws_esdk::aws_cryptography_materialProviders::types::EsdkAlgorithmSuiteId;
+use aws_esdk::material_providers::client as mpl_client;
+use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
+use aws_esdk::material_providers::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
+use aws_esdk::material_providers::types::EsdkAlgorithmSuiteId;
 use std::collections::HashMap;
 
 pub async fn encrypt_and_decrypt_with_cmm(
