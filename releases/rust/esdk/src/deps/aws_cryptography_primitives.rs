@@ -8,4 +8,5 @@ pub mod error;
 /// All operations that this crate can perform.
 pub mod operation;
 pub mod conversions;
+pub mod validation;
 pub mod deps;

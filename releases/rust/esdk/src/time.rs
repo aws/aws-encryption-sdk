@@ -6,6 +6,7 @@
 #![deny(clippy::all)]
 
 use crate::*;
+use std::convert::TryFrom;
 use std::time::SystemTime;
 
 impl crate::Time::_default {
@@ -24,6 +25,13 @@ impl crate::Time::_default {
             Ok(n) => n.as_millis() as i64,
             Err(_) => 0,
         }
+    }
+
+    #[allow(non_snake_case)]
+    #[allow(dead_code)]
+    pub fn GetProcessCpuTimeMillis() -> i64 {
+        i64::try_from(cpu_time::ProcessTime::now().as_duration().as_millis())
+            .expect("CPU millisecond didn't fit in an i64")
     }
 
     #[allow(non_snake_case)]

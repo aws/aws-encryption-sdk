@@ -3,6 +3,7 @@
 // Do not modify this file. This file is machine generated, and any changes to it will be overwritten.
 /// Types for the `MaterialProvidersConfig`
 pub mod material_providers_config;
+pub use crate::deps::aws_cryptography_materialProviders::types::material_providers_config::MaterialProvidersConfig;
 
 pub mod builders;
 

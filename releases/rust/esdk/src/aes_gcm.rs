@@ -52,11 +52,13 @@ impl AES_GCM {
             ))
         } else if *self.keyLength() == 32i32 {
             Ok(&aws_lc_rs::aead::AES_256_GCM)
+        } else if *self.keyLength() == 24i32 {
+            Ok(&aws_lc_rs::aead::AES_192_GCM)
         } else if *self.keyLength() == 16i32 {
             Ok(&aws_lc_rs::aead::AES_128_GCM)
         } else {
             Err(format!(
-                "Key length of {} not supported in Rust. Key length must be 16 or 32.",
+                "Key length of {} not supported in Rust. Key length must be 16, 24 or 32.",
                 self.keyLength()
             ))
         }

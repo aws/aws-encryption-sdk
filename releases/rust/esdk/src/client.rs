@@ -13,11 +13,13 @@ impl Client {
     /// Creates a new client from the service [`Config`](crate::Config).
     #[track_caller]
     pub fn from_conf(
-        conf: crate::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig,
+        input: crate::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig,
     ) -> Result<Self, crate::types::error::Error> {
+        crate::validation::validate_aws_Pcryptography_PencryptionSdk_HAwsEncryptionSdkConfig(&input)
+            .map_err(crate::types::error::Error::wrap_validation_err)?;
         let inner =
             crate::software::amazon::cryptography::encryptionsdk::internaldafny::_default::ESDK(
-                &crate::conversions::aws_encryption_sdk_config::_aws_encryption_sdk_config::to_dafny(conf),
+                &crate::conversions::aws_encryption_sdk_config::_aws_encryption_sdk_config::to_dafny(input),
             );
         if matches!(
             inner.as_ref(),

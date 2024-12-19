@@ -18,12 +18,8 @@ impl DeleteCacheEntry {
         (),
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
     > {
-        if input.identifier.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "identifier",
-        "identifier was not specified but it is required when building DeleteCacheEntryInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HDeleteCacheEntryInput_for_CryptographicMaterialsCache_DeleteCacheEntry(&input)
+            .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
         cryptographic_materials_cache.inner.borrow_mut().delete_cache_entry(input)
     }
 }

@@ -18,24 +18,8 @@ impl HMac {
         ::aws_smithy_types::Blob,
         crate::deps::aws_cryptography_primitives::types::error::Error,
     > {
-        if input.digest_algorithm.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "digest_algorithm",
-        "digest_algorithm was not specified but it is required when building HMacInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
-if input.key.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "key",
-        "key was not specified but it is required when building HMacInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
-if input.message.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "message",
-        "message was not specified but it is required when building HMacInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_primitives::validation::validate_aws_Pcryptography_Pprimitives_HHMacInput_for_AwsCryptographicPrimitives_HMac(&input)
+            .map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_primitives::conversions::h_mac::_h_mac_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).HMac(&inner_input);

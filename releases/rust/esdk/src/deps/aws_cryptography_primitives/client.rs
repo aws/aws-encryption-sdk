@@ -13,11 +13,13 @@ impl Client {
     /// Creates a new client from the service [`Config`](crate::Config).
     #[track_caller]
     pub fn from_conf(
-        conf: crate::deps::aws_cryptography_primitives::types::crypto_config::CryptoConfig,
+        input: crate::deps::aws_cryptography_primitives::types::crypto_config::CryptoConfig,
     ) -> Result<Self, crate::deps::aws_cryptography_primitives::types::error::Error> {
+        crate::deps::aws_cryptography_primitives::validation::validate_aws_Pcryptography_Pprimitives_HCryptoConfig(&input)
+            .map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err)?;
         let inner =
             crate::software::amazon::cryptography::primitives::internaldafny::_default::AtomicPrimitives(
-                &crate::deps::aws_cryptography_primitives::conversions::crypto_config::_crypto_config::to_dafny(conf),
+                &crate::deps::aws_cryptography_primitives::conversions::crypto_config::_crypto_config::to_dafny(input),
             );
         if matches!(
             inner.as_ref(),

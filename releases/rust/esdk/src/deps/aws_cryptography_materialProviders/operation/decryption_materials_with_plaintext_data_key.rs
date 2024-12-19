@@ -18,24 +18,8 @@ impl DecryptionMaterialsWithPlaintextDataKey {
         (),
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
     > {
-        if input.algorithm_suite.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "algorithm_suite",
-        "algorithm_suite was not specified but it is required when building DecryptionMaterials",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.encryption_context.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "encryption_context",
-        "encryption_context was not specified but it is required when building DecryptionMaterials",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.required_encryption_context_keys.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "required_encryption_context_keys",
-        "required_encryption_context_keys was not specified but it is required when building DecryptionMaterials",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HDecryptionMaterials_for_AwsCryptographicMaterialProviders_DecryptionMaterialsWithPlaintextDataKey(&input)
+            .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::decryption_materials_with_plaintext_data_key::_decryption_materials_with_plaintext_data_key_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).DecryptionMaterialsWithPlaintextDataKey(&inner_input);

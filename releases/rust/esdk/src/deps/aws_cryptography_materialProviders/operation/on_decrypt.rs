@@ -18,18 +18,8 @@ impl OnDecrypt {
         crate::deps::aws_cryptography_materialProviders::operation::on_decrypt::OnDecryptOutput,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
     > {
-        if input.materials.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "materials",
-        "materials was not specified but it is required when building OnDecryptInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.encrypted_data_keys.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "encrypted_data_keys",
-        "encrypted_data_keys was not specified but it is required when building OnDecryptInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HOnDecryptInput_for_Keyring_OnDecrypt(&input)
+            .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
         keyring.inner.borrow_mut().on_decrypt(input)
     }
 }

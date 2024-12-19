@@ -18,7 +18,8 @@ impl GetKeyStoreInfo {
         crate::deps::aws_cryptography_keyStore::operation::get_key_store_info::GetKeyStoreInfoOutput,
         crate::deps::aws_cryptography_keyStore::types::error::Error,
     > {
-
+        crate::deps::aws_cryptography_keyStore::validation::validate_smithy_Papi_HUnit_for_KeyStore_GetKeyStoreInfo(&input)
+            .map_err(crate::deps::aws_cryptography_keyStore::types::error::Error::wrap_validation_err)?;
                 let inner_input = ();
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).GetKeyStoreInfo();

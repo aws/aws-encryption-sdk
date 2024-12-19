@@ -18,18 +18,8 @@ impl GetBranchKeyVersion {
         crate::deps::aws_cryptography_keyStore::operation::get_branch_key_version::GetBranchKeyVersionOutput,
         crate::deps::aws_cryptography_keyStore::types::error::Error,
     > {
-        if input.branch_key_identifier.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "branch_key_identifier",
-        "branch_key_identifier was not specified but it is required when building GetBranchKeyVersionInput",
-    )).map_err(crate::deps::aws_cryptography_keyStore::types::error::Error::wrap_validation_err);
-}
-if input.branch_key_version.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "branch_key_version",
-        "branch_key_version was not specified but it is required when building GetBranchKeyVersionInput",
-    )).map_err(crate::deps::aws_cryptography_keyStore::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_keyStore::validation::validate_aws_Pcryptography_PkeyStore_HGetBranchKeyVersionInput_for_KeyStore_GetBranchKeyVersion(&input)
+            .map_err(crate::deps::aws_cryptography_keyStore::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_keyStore::conversions::get_branch_key_version::_get_branch_key_version_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).GetBranchKeyVersion(&inner_input);

@@ -12,8 +12,8 @@ pub mod RSAEncryption {
         use crate::_Wrappers_Compile as Wrappers;
         use crate::software::amazon::cryptography::primitives::internaldafny::types::RSAPaddingMode;
         use crate::*;
-        use ::std::rc::Rc;
         use aws_lc_rs::encoding::{AsDer, Pkcs8V1Der, PublicKeyX509Der};
+        use std::rc::Rc;
 
         use aws_lc_rs::rsa::KeySize;
         use aws_lc_rs::rsa::OaepAlgorithm;

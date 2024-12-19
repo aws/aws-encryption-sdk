@@ -1,9 +1,9 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use aws_esdk::aws_cryptography_keyStore::client as keystore_client;
-use aws_esdk::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig;
-use aws_esdk::aws_cryptography_keyStore::types::KmsConfiguration;
+use aws_esdk::key_store::client as keystore_client;
+use aws_esdk::key_store::types::key_store_config::KeyStoreConfig;
+use aws_esdk::key_store::types::KmsConfiguration;
 
 /*
  The Hierarchical Keyring Example relies on the existence
@@ -11,7 +11,7 @@ use aws_esdk::aws_cryptography_keyStore::types::KmsConfiguration;
  branch key material.
 
  This example demonstrates configuring a KeyStore and then
- using a helper method to create a branch key.
+ uses a helper method to create a branch key.
 */
 pub async fn create_branch_key_id(
     key_store_table_name: &str,
