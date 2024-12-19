@@ -66,6 +66,7 @@
 #![allow(clippy::never_loop)]
 #![allow(clippy::absurd_extreme_comparisons)]
 
+/// Client for using encrypt and decrypt operations
 pub mod client;
 /// Errors and error handling utilities.
 pub mod error;
