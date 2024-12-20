@@ -18,7 +18,8 @@ impl CreateAwsKmsMrkMultiKeyring {
         crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
     > {
-
+        crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HCreateAwsKmsMrkMultiKeyringInput_for_AwsCryptographicMaterialProviders_CreateAwsKmsMrkMultiKeyring(&input)
+            .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::create_aws_kms_mrk_multi_keyring::_create_aws_kms_mrk_multi_keyring_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).CreateAwsKmsMrkMultiKeyring(&inner_input);

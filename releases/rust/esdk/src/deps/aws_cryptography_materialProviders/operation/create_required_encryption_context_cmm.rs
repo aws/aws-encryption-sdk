@@ -18,12 +18,8 @@ impl CreateRequiredEncryptionContextCmm {
         crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
     > {
-        if input.required_encryption_context_keys.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "required_encryption_context_keys",
-        "required_encryption_context_keys was not specified but it is required when building CreateRequiredEncryptionContextCmmInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HCreateRequiredEncryptionContextCMMInput_for_AwsCryptographicMaterialProviders_CreateRequiredEncryptionContextCMM(&input)
+            .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::create_required_encryption_context_cmm::_create_required_encryption_context_cmm_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).CreateRequiredEncryptionContextCMM(&inner_input);

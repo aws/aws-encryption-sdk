@@ -18,18 +18,8 @@ impl CreateAwsKmsMrkKeyring {
         crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
     > {
-        if input.kms_key_id.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "kms_key_id",
-        "kms_key_id was not specified but it is required when building CreateAwsKmsMrkKeyringInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.kms_client.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "kms_client",
-        "kms_client was not specified but it is required when building CreateAwsKmsMrkKeyringInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HCreateAwsKmsMrkKeyringInput_for_AwsCryptographicMaterialProviders_CreateAwsKmsMrkKeyring(&input)
+            .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::create_aws_kms_mrk_keyring::_create_aws_kms_mrk_keyring_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).CreateAwsKmsMrkKeyring(&inner_input);

@@ -18,42 +18,8 @@ impl AesDecrypt {
         ::aws_smithy_types::Blob,
         crate::deps::aws_cryptography_primitives::types::error::Error,
     > {
-        if input.enc_alg.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "enc_alg",
-        "enc_alg was not specified but it is required when building AesDecryptInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
-if input.key.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "key",
-        "key was not specified but it is required when building AesDecryptInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
-if input.cipher_txt.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "cipher_txt",
-        "cipher_txt was not specified but it is required when building AesDecryptInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
-if input.auth_tag.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "auth_tag",
-        "auth_tag was not specified but it is required when building AesDecryptInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
-if input.iv.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "iv",
-        "iv was not specified but it is required when building AesDecryptInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
-if input.aad.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "aad",
-        "aad was not specified but it is required when building AesDecryptInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_primitives::validation::validate_aws_Pcryptography_Pprimitives_HAESDecryptInput_for_AwsCryptographicPrimitives_AESDecrypt(&input)
+            .map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_primitives::conversions::aes_decrypt::_aes_decrypt_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).AESDecrypt(&inner_input);

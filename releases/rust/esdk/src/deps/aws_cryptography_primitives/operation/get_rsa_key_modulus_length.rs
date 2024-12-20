@@ -18,12 +18,8 @@ impl GetRsaKeyModulusLength {
         crate::deps::aws_cryptography_primitives::operation::get_rsa_key_modulus_length::GetRsaKeyModulusLengthOutput,
         crate::deps::aws_cryptography_primitives::types::error::Error,
     > {
-        if input.public_key.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "public_key",
-        "public_key was not specified but it is required when building GetRsaKeyModulusLengthInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_primitives::validation::validate_aws_Pcryptography_Pprimitives_HGetRSAKeyModulusLengthInput_for_AwsCryptographicPrimitives_GetRSAKeyModulusLength(&input)
+            .map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_primitives::conversions::get_rsa_key_modulus_length::_get_rsa_key_modulus_length_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).GetRSAKeyModulusLength(&inner_input);

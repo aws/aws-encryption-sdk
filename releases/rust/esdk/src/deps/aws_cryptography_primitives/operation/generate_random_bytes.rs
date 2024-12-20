@@ -18,18 +18,8 @@ impl GenerateRandomBytes {
         ::aws_smithy_types::Blob,
         crate::deps::aws_cryptography_primitives::types::error::Error,
     > {
-        if input.length.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "length",
-        "length was not specified but it is required when building GenerateRandomBytesInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
-if matches!(input.length, Some(x) if !(0..).contains(&x)) {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::invalid_field(
-        "length",
-        "length failed to satisfy constraint: Member must be greater than or equal to 0",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_primitives::validation::validate_aws_Pcryptography_Pprimitives_HGenerateRandomBytesInput_for_AwsCryptographicPrimitives_GenerateRandomBytes(&input)
+            .map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_primitives::conversions::generate_random_bytes::_generate_random_bytes_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).GenerateRandomBytes(&inner_input);

@@ -18,18 +18,8 @@ impl HkdfExtract {
         ::aws_smithy_types::Blob,
         crate::deps::aws_cryptography_primitives::types::error::Error,
     > {
-        if input.digest_algorithm.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "digest_algorithm",
-        "digest_algorithm was not specified but it is required when building HkdfExtractInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
-if input.ikm.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "ikm",
-        "ikm was not specified but it is required when building HkdfExtractInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_primitives::validation::validate_aws_Pcryptography_Pprimitives_HHkdfExtractInput_for_AwsCryptographicPrimitives_HkdfExtract(&input)
+            .map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_primitives::conversions::hkdf_extract::_hkdf_extract_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).HkdfExtract(&inner_input);

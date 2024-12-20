@@ -18,36 +18,8 @@ impl AesEncrypt {
         crate::deps::aws_cryptography_primitives::operation::aes_encrypt::AesEncryptOutput,
         crate::deps::aws_cryptography_primitives::types::error::Error,
     > {
-        if input.enc_alg.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "enc_alg",
-        "enc_alg was not specified but it is required when building AesEncryptInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
-if input.iv.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "iv",
-        "iv was not specified but it is required when building AesEncryptInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
-if input.key.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "key",
-        "key was not specified but it is required when building AesEncryptInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
-if input.msg.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "msg",
-        "msg was not specified but it is required when building AesEncryptInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
-if input.aad.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "aad",
-        "aad was not specified but it is required when building AesEncryptInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_primitives::validation::validate_aws_Pcryptography_Pprimitives_HAESEncryptInput_for_AwsCryptographicPrimitives_AESEncrypt(&input)
+            .map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_primitives::conversions::aes_encrypt::_aes_encrypt_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).AESEncrypt(&inner_input);

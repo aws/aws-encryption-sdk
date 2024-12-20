@@ -18,12 +18,8 @@ impl Decrypt {
         crate::operation::decrypt::DecryptOutput,
         crate::types::error::Error,
     > {
-        if input.ciphertext.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "ciphertext",
-        "ciphertext was not specified but it is required when building DecryptInput",
-    )).map_err(crate::types::error::Error::wrap_validation_err);
-}
+        crate::validation::validate_aws_Pcryptography_PencryptionSdk_HDecryptInput_for_AwsEncryptionSdk_Decrypt(&input)
+            .map_err(crate::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::conversions::decrypt::_decrypt_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).Decrypt(&inner_input);

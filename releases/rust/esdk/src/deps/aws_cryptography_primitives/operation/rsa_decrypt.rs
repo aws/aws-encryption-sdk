@@ -18,24 +18,8 @@ impl RsaDecrypt {
         ::aws_smithy_types::Blob,
         crate::deps::aws_cryptography_primitives::types::error::Error,
     > {
-        if input.padding.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "padding",
-        "padding was not specified but it is required when building RsaDecryptInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
-if input.private_key.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "private_key",
-        "private_key was not specified but it is required when building RsaDecryptInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
-if input.cipher_text.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "cipher_text",
-        "cipher_text was not specified but it is required when building RsaDecryptInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_primitives::validation::validate_aws_Pcryptography_Pprimitives_HRSADecryptInput_for_AwsCryptographicPrimitives_RSADecrypt(&input)
+            .map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_primitives::conversions::rsa_decrypt::_rsa_decrypt_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).RSADecrypt(&inner_input);

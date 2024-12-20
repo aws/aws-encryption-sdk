@@ -18,12 +18,8 @@ impl CreateCryptographicMaterialsCache {
         crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
     > {
-        if input.cache.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "cache",
-        "cache was not specified but it is required when building CreateCryptographicMaterialsCacheInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HCreateCryptographicMaterialsCacheInput_for_AwsCryptographicMaterialProviders_CreateCryptographicMaterialsCache(&input)
+            .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::create_cryptographic_materials_cache::_create_cryptographic_materials_cache_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).CreateCryptographicMaterialsCache(&inner_input);

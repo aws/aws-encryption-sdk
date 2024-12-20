@@ -18,18 +18,8 @@ impl CreateAwsKmsRsaKeyring {
         crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
     > {
-        if input.kms_key_id.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "kms_key_id",
-        "kms_key_id was not specified but it is required when building CreateAwsKmsRsaKeyringInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.encryption_algorithm.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "encryption_algorithm",
-        "encryption_algorithm was not specified but it is required when building CreateAwsKmsRsaKeyringInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HCreateAwsKmsRsaKeyringInput_for_AwsCryptographicMaterialProviders_CreateAwsKmsRsaKeyring(&input)
+            .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::create_aws_kms_rsa_keyring::_create_aws_kms_rsa_keyring_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).CreateAwsKmsRsaKeyring(&inner_input);

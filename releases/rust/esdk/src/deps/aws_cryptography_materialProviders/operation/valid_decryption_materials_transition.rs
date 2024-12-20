@@ -18,18 +18,8 @@ impl ValidDecryptionMaterialsTransition {
         (),
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
     > {
-        if input.start.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "start",
-        "start was not specified but it is required when building ValidDecryptionMaterialsTransitionInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.stop.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "stop",
-        "stop was not specified but it is required when building ValidDecryptionMaterialsTransitionInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HValidDecryptionMaterialsTransitionInput_for_AwsCryptographicMaterialProviders_ValidDecryptionMaterialsTransition(&input)
+            .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::valid_decryption_materials_transition::_valid_decryption_materials_transition_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).ValidDecryptionMaterialsTransition(&inner_input);

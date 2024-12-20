@@ -18,24 +18,8 @@ impl UpdateUsageMetadata {
         (),
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
     > {
-        if input.identifier.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "identifier",
-        "identifier was not specified but it is required when building UpdateUsageMetadataInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.bytes_used.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "bytes_used",
-        "bytes_used was not specified but it is required when building UpdateUsageMetadataInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if matches!(input.bytes_used, Some(x) if !(0..).contains(&x)) {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::invalid_field(
-        "bytes_used",
-        "bytes_used failed to satisfy constraint: Member must be greater than or equal to 0",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HUpdateUsageMetadataInput_for_CryptographicMaterialsCache_UpdateUsageMetadata(&input)
+            .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
         cryptographic_materials_cache.inner.borrow_mut().update_usage_metadata(input)
     }
 }
