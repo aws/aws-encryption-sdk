@@ -15,6 +15,7 @@ cp $SRC/ecdsa.rs src
 cp $SRC/hmac.rs src
 cp $SRC/kms.rs src
 cp $SRC/local_cmc.rs src
+cp $SRC/oslang.rs src
 cp $SRC/random.rs src
 cp $SRC/rsa.rs src
 cp $SRC/sets.rs src

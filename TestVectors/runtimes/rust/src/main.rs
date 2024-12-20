@@ -57,6 +57,7 @@ pub(crate) mod ecdsa;
 pub(crate) mod hmac;
 pub(crate) mod kms;
 pub(crate) mod local_cmc;
+pub(crate) mod oslang;
 pub(crate) mod random;
 pub(crate) mod rsa;
 pub(crate) mod sets;
