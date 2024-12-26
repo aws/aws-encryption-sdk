@@ -18,18 +18,8 @@ impl CompressPublicKey {
         crate::deps::aws_cryptography_primitives::operation::compress_public_key::CompressPublicKeyOutput,
         crate::deps::aws_cryptography_primitives::types::error::Error,
     > {
-        if input.public_key.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "public_key",
-        "public_key was not specified but it is required when building CompressPublicKeyInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
-if input.ecc_curve.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "ecc_curve",
-        "ecc_curve was not specified but it is required when building CompressPublicKeyInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_primitives::validation::validate_aws_Pcryptography_Pprimitives_HCompressPublicKeyInput_for_AwsCryptographicPrimitives_CompressPublicKey(&input)
+            .map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_primitives::conversions::compress_public_key::_compress_public_key_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).CompressPublicKey(&inner_input);

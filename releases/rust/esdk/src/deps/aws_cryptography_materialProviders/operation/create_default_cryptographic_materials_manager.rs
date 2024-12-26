@@ -18,12 +18,8 @@ impl CreateDefaultCryptographicMaterialsManager {
         crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
     > {
-        if input.keyring.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "keyring",
-        "keyring was not specified but it is required when building CreateDefaultCryptographicMaterialsManagerInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HCreateDefaultCryptographicMaterialsManagerInput_for_AwsCryptographicMaterialProviders_CreateDefaultCryptographicMaterialsManager(&input)
+            .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::create_default_cryptographic_materials_manager::_create_default_cryptographic_materials_manager_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).CreateDefaultCryptographicMaterialsManager(&inner_input);

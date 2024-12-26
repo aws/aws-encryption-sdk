@@ -3,6 +3,7 @@
 // Do not modify this file. This file is machine generated, and any changes to it will be overwritten.
 /// Types for the `KeyStoreConfig`
 pub mod key_store_config;
+pub use crate::deps::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig;
 
 pub mod builders;
 

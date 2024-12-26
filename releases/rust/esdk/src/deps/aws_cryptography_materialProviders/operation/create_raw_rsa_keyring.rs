@@ -18,24 +18,8 @@ impl CreateRawRsaKeyring {
         crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
     > {
-        if input.key_namespace.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "key_namespace",
-        "key_namespace was not specified but it is required when building CreateRawRsaKeyringInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.key_name.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "key_name",
-        "key_name was not specified but it is required when building CreateRawRsaKeyringInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.padding_scheme.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "padding_scheme",
-        "padding_scheme was not specified but it is required when building CreateRawRsaKeyringInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HCreateRawRsaKeyringInput_for_AwsCryptographicMaterialProviders_CreateRawRsaKeyring(&input)
+            .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::create_raw_rsa_keyring::_create_raw_rsa_keyring_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).CreateRawRsaKeyring(&inner_input);

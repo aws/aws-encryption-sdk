@@ -1,10 +1,10 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use aws_esdk::aws_cryptography_materialProviders::operation::get_branch_key_id::GetBranchKeyIdInput;
-use aws_esdk::aws_cryptography_materialProviders::operation::get_branch_key_id::GetBranchKeyIdOutput;
-use aws_esdk::aws_cryptography_materialProviders::types::error::Error;
-use aws_esdk::aws_cryptography_materialProviders::types::branch_key_id_supplier::BranchKeyIdSupplier;
+use aws_esdk::material_providers::operation::get_branch_key_id::GetBranchKeyIdInput;
+use aws_esdk::material_providers::operation::get_branch_key_id::GetBranchKeyIdOutput;
+use aws_esdk::material_providers::types::error::Error;
+use aws_esdk::material_providers::types::branch_key_id_supplier::BranchKeyIdSupplier;
 use std::collections::HashMap;
 
 /*

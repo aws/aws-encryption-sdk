@@ -22,6 +22,7 @@ src/implementation_from_dafny.rs
 src/kms.rs
 src/local_cmc.rs
 src/operation/
+src/oslang.rs
 src/random.rs
 src/rsa.rs
 src/sets.rs
@@ -30,6 +31,7 @@ src/storm_tracker.rs
 src/time.rs
 src/types/
 src/uuid.rs
+src/validation.rs
 standard_library_conversions.rs
 standard_library_externs.rs
 target

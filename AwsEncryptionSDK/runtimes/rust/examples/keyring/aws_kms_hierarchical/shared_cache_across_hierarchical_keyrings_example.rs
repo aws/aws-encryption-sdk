@@ -65,14 +65,14 @@
 use super::create_branch_key_id::create_branch_key_id;
 use aws_esdk::client as esdk_client;
 use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
-use aws_esdk::aws_cryptography_materialProviders::types::CacheType;
-use aws_esdk::aws_cryptography_materialProviders::types::DefaultCache;
-use aws_esdk::aws_cryptography_materialProviders::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef;
-use aws_esdk::aws_cryptography_keyStore::types::KmsConfiguration;
-use aws_esdk::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig;
-use aws_esdk::aws_cryptography_keyStore::client as keystore_client;
-use aws_esdk::aws_cryptography_materialProviders::client as mpl_client;
-use aws_esdk::aws_cryptography_materialProviders::types::material_providers_config::MaterialProvidersConfig;
+use aws_esdk::material_providers::types::CacheType;
+use aws_esdk::material_providers::types::DefaultCache;
+use aws_esdk::material_providers::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef;
+use aws_esdk::material_providers::client as mpl_client;
+use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
+use aws_esdk::key_store::types::KmsConfiguration;
+use aws_esdk::key_store::types::key_store_config::KeyStoreConfig;
+use aws_esdk::key_store::client as keystore_client;
 use std::collections::HashMap;
 
 pub async fn encrypt_and_decrypt_with_keyring(

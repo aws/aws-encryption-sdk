@@ -18,12 +18,8 @@ impl GenerateEccKeyPair {
         crate::deps::aws_cryptography_primitives::operation::generate_ecc_key_pair::GenerateEccKeyPairOutput,
         crate::deps::aws_cryptography_primitives::types::error::Error,
     > {
-        if input.ecc_curve.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "ecc_curve",
-        "ecc_curve was not specified but it is required when building GenerateEccKeyPairInput",
-    )).map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_primitives::validation::validate_aws_Pcryptography_Pprimitives_HGenerateECCKeyPairInput_for_AwsCryptographicPrimitives_GenerateECCKeyPair(&input)
+            .map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_primitives::conversions::generate_ecc_key_pair::_generate_ecc_key_pair_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).GenerateECCKeyPair(&inner_input);

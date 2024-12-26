@@ -18,18 +18,8 @@ impl CreateAwsKmsMrkDiscoveryKeyring {
         crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
     > {
-        if input.kms_client.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "kms_client",
-        "kms_client was not specified but it is required when building CreateAwsKmsMrkDiscoveryKeyringInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.region.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "region",
-        "region was not specified but it is required when building CreateAwsKmsMrkDiscoveryKeyringInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HCreateAwsKmsMrkDiscoveryKeyringInput_for_AwsCryptographicMaterialProviders_CreateAwsKmsMrkDiscoveryKeyring(&input)
+            .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::create_aws_kms_mrk_discovery_keyring::_create_aws_kms_mrk_discovery_keyring_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).CreateAwsKmsMrkDiscoveryKeyring(&inner_input);

@@ -18,12 +18,8 @@ impl GetAlgorithmSuiteInfo {
         crate::deps::aws_cryptography_materialProviders::operation::get_algorithm_suite_info::AlgorithmSuiteInfo,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
     > {
-        if input.binary_id.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "binary_id",
-        "binary_id was not specified but it is required when building GetAlgorithmSuiteInfoInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HGetAlgorithmSuiteInfoInput_for_AwsCryptographicMaterialProviders_GetAlgorithmSuiteInfo(&input)
+            .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::standard_library_conversions::blob_to_dafny(&input.binary_id.unwrap());
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).GetAlgorithmSuiteInfo(&inner_input);

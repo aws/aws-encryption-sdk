@@ -18,12 +18,8 @@ impl OnEncrypt {
         crate::deps::aws_cryptography_materialProviders::operation::on_encrypt::OnEncryptOutput,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
     > {
-        if input.materials.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "materials",
-        "materials was not specified but it is required when building OnEncryptInput",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HOnEncryptInput_for_Keyring_OnEncrypt(&input)
+            .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
         keyring.inner.borrow_mut().on_encrypt(input)
     }
 }

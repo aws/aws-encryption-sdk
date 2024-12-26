@@ -13,11 +13,13 @@ impl Client {
     /// Creates a new client from the service [`Config`](crate::Config).
     #[track_caller]
     pub fn from_conf(
-        conf: crate::deps::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig,
+        input: crate::deps::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig,
     ) -> Result<Self, crate::deps::aws_cryptography_keyStore::types::error::Error> {
+        crate::deps::aws_cryptography_keyStore::validation::validate_aws_Pcryptography_PkeyStore_HKeyStoreConfig(&input)
+            .map_err(crate::deps::aws_cryptography_keyStore::types::error::Error::wrap_validation_err)?;
         let inner =
             crate::software::amazon::cryptography::keystore::internaldafny::_default::KeyStore(
-                &crate::deps::aws_cryptography_keyStore::conversions::key_store_config::_key_store_config::to_dafny(conf),
+                &crate::deps::aws_cryptography_keyStore::conversions::key_store_config::_key_store_config::to_dafny(input),
             );
         if matches!(
             inner.as_ref(),

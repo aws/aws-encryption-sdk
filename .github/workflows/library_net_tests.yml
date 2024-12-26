@@ -30,6 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        library: [AwsEncryptionSDK]
         os: [
           windows-latest,
           ubuntu-latest,
@@ -75,40 +76,30 @@ jobs:
         uses: ./.github/actions/polymorph_codegen
         with:
           dafny: ${{ env.DAFNY_VERSION }}
-          library: AwsEncryptionSDK
+          library: ${{ matrix.library }}
           diff-generated-code: false
           update-and-regenerate-mpl: true
 
       - name: Download Dependencies 
-        working-directory: ./AwsEncryptionSDK
+        working-directory: ${{ matrix.library }}
         run: make setup_net
 
-      - name: Compile AwsEncryptionSDK implementation
+      - name: Compile ${{ matrix.library }} implementation
         shell: bash
-        working-directory: ./AwsEncryptionSDK
-        run: |
-          # This works because `node` is installed by default on GHA runners
-          CORES=$(node -e 'console.log(os.cpus().length)')
-          make transpile_net CORES=$CORES
-
-    
-      - name: Compile MPL TestVectors implementation
-        shell: bash
-        working-directory: ./mpl/TestVectorsAwsCryptographicMaterialProviders
+        working-directory: ${{ matrix.library }}
         run: |
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_net CORES=$CORES
 
       - name: Test .NET Framework net48
-        working-directory: ./AwsEncryptionSDK
-        if: matrix.os == 'windows-latest' 
+        working-directory: ${{ matrix.library }}
         shell: bash
         run: |
           make test_net FRAMEWORK=net48
 
       - name: Test .NET net6.0
-        working-directory: ./AwsEncryptionSDK
+        working-directory: ${{ matrix.library }}
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "macOS" ]; then
@@ -118,7 +109,7 @@ jobs:
           fi
 
       - name: Test Examples on .NET Framework net48
-        working-directory: ./AwsEncryptionSDK
+        working-directory: ${{ matrix.library }}
         if: matrix.os == 'windows-latest' 
         shell: bash
         run: |
@@ -127,7 +118,7 @@ jobs:
             --framework net48
 
       - name: Test Examples on .NET net6.0
-        working-directory: ./AwsEncryptionSDK
+        working-directory: ${{ matrix.library }}
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "macOS" ]; then
@@ -140,118 +131,87 @@ jobs:
               runtimes/net/Examples \
               --framework net6.0
           fi
-
-      - name: Unzip ESDK-NET @ v4.0.0 Valid Vectors
-        working-directory: ./AwsEncryptionSDK/runtimes/net/TestVectorsNative/TestVectors/resources
+  testVectors:
+    strategy:
+      fail-fast: false
+      matrix:
+        library: [TestVectors]
+        os: [
+          # Sed script doesn't work properly on windows
+          # windows-latest,
+          ubuntu-latest,
+          macos-13,
+        ]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
+    steps:
+      - name: Support longpaths on Git checkout
+        run: |
+          git config --global core.longpaths true
+      - uses: actions/checkout@v2
+      - name: Init Submodules
         shell: bash
         run: |
-          NET_400_VALID_VECTORS=$GITHUB_WORKSPACE/v4Net400Valid/vectors
-          mkdir -p $NET_400_VALID_VECTORS
-          DOWNLOAD_NAME=valid-Net-4.0.0.zip
-          unzip -o -qq $DOWNLOAD_NAME -d $NET_400_VALID_VECTORS
-
-      - name: Run ESDK-NET @ v4.0.0 Valid Vectors expect success
-        working-directory: ./AwsEncryptionSDK/runtimes/net/TestVectorsNative/TestVectors
-        continue-on-error: true
-        shell: bash
-        run: |
-          NET_400_VALID_VECTORS=$GITHUB_WORKSPACE/v4Net400Valid/vectors
-          ESDK_NET_V400_POLICY="forbid" \
-          DAFNY_AWS_ESDK_TEST_VECTOR_MANIFEST_PATH="$NET_400_VALID_VECTORS/manifest.json" \
-          dotnet test --framework net48
-          ESDK_NET_V400_POLICY="forbid" \
-          DAFNY_AWS_ESDK_TEST_VECTOR_MANIFEST_PATH="$NET_400_VALID_VECTORS/manifest.json" \
-          dotnet test --framework net6.0 --logger "console;verbosity=quiet"
-
-      - name: Unzip ESDK-NET @ v4.0.0 Invalid Vectors
-        working-directory: ./AwsEncryptionSDK/runtimes/net/TestVectorsNative/TestVectors/resources
-        shell: bash
-        run: |
-          NET_400_INVALID_VECTORS=$GITHUB_WORKSPACE/v4Net400Invalid/vectors
-          mkdir -p $NET_400_INVALID_VECTORS
-          DOWNLOAD_NAME=invalid-Net-4.0.0.zip
-          unzip -o -qq $DOWNLOAD_NAME -d $NET_400_INVALID_VECTORS
-
-      - name: Run ESDK-NET @ v4.0.0 Invalid Vectors .NET 48 expect failure
-        working-directory: ./AwsEncryptionSDK/runtimes/net/TestVectorsNative/TestVectors
-        continue-on-error: true
-        shell: bash
-        run: |
-          NET_400_INVALID_VECTORS=$GITHUB_WORKSPACE/v4Net400Invalid/vectors
-          ESDK_NET_V400_POLICY="forbid" \
-          DAFNY_AWS_ESDK_TEST_VECTOR_MANIFEST_PATH="$NET_400_INVALID_VECTORS/manifest.json" \
-          dotnet test --framework net48
-          # Dotnet test returns 1 for failure.
-          TEMP=$?; if [[ "$TEMP" -eq 1 ]]; then true; else false; fi;
-          # We want this to fail, so if it returned 1, step passes, else it fails
-          # TODO Post-#619: Refactor Test Vectors to expect failure,
-          # as I doubt this true false logic works
-
-      - name: Run ESDK-NET @ v4.0.0 Invalid Vectors .NET 6.0 expect failure
-        working-directory: ./AwsEncryptionSDK/runtimes/net/TestVectorsNative/TestVectors
-        continue-on-error: true
-        shell: bash
-        run: |
-          NET_400_INVALID_VECTORS=$GITHUB_WORKSPACE/v4Net400Invalid/vectors
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            ESDK_NET_V400_POLICY="forbid" \
-            DAFNY_AWS_ESDK_TEST_VECTOR_MANIFEST_PATH="$NET_400_INVALID_VECTORS/manifest.json" \
-            DYLD_LIBRARY_PATH="/usr/local/opt/openssl@1.1/lib" \
-            dotnet test --framework net6.0
-          else
-            ESDK_NET_V400_POLICY="forbid" \
-            DAFNY_AWS_ESDK_TEST_VECTOR_MANIFEST_PATH="$NET_400_INVALID_VECTORS/manifest.json" \
-            dotnet test --framework net6.0
-          fi
-          # Dotnet test returns 1 for failure.
-          TEMP=$?; if [[ "$TEMP" -eq 1 ]]; then true; else false; fi;
-          # We want this to fail, so if it returned 1, step passes, else it fails
-          # TODO Post-#619: Refactor Test Vectors to expect failure,
-          # as I doubt this true false logic works
+          git submodule update --init libraries
+          git submodule update --init --recursive mpl
           
-      - name: Run ESDK-NET @ v4.0.0 Invalid Vectors .NET expect Success
-        working-directory: ./AwsEncryptionSDK/runtimes/net/TestVectorsNative/TestVectors
-        shell: bash
-        run: |
-          NET_400_INVALID_VECTORS=$GITHUB_WORKSPACE/v4Net400Invalid/vectors
-          DAFNY_AWS_ESDK_TEST_VECTOR_MANIFEST_PATH="$NET_400_INVALID_VECTORS/manifest.json" \
-          dotnet test --framework net48 --logger "console;verbosity=quiet"
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            DAFNY_AWS_ESDK_TEST_VECTOR_MANIFEST_PATH="$NET_400_INVALID_VECTORS/manifest.json" \
-            DYLD_LIBRARY_PATH="/usr/local/opt/openssl@1.1/lib" \
-            dotnet test --framework net6.0 --logger "console;verbosity=quiet"
-          else
-            DAFNY_AWS_ESDK_TEST_VECTOR_MANIFEST_PATH="$NET_400_INVALID_VECTORS/manifest.json" \
-            dotnet test --framework net6.0 --logger "console;verbosity=quiet"
-          fi
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2 
+          role-session-name: NetTestVectors
+          
+      - name: Setup .NET Core SDK 6
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
 
-      - name: Unzip ESDK-NET @ v4.0.1 Vectors
-        working-directory: ./AwsEncryptionSDK/runtimes/net/TestVectorsNative/TestVectors/resources
-        shell: bash
-        run: |
-          NET_401_VECTORS=$GITHUB_WORKSPACE/v4Net401/vectors
-          mkdir -p $NET_401_VECTORS
-          DOWNLOAD_NAME=v4-Net-4.0.1.zip
-          unzip -o -qq $DOWNLOAD_NAME -d $NET_401_VECTORS
+      - name: Setup Dafny
+        uses: dafny-lang/setup-dafny-action@v1.7.0
+        with:
+          dafny-version: ${{ inputs.dafny }}
 
-      - name: Run ESDK-NET @ v4.0.1 Vectors expect success
-        working-directory: ./AwsEncryptionSDK/runtimes/net/TestVectorsNative/TestVectors
+      - name: Regenerate code using smithy-dafny if necessary
+        if: ${{ inputs.regenerate-code }}
+        uses: ./.github/actions/polymorph_codegen
+        with:
+          dafny: ${{ env.DAFNY_VERSION }}
+          library: ${{ matrix.library }}
+          diff-generated-code: false
+          update-and-regenerate-mpl: true
+
+      - name: Download Dependencies 
+        working-directory: ${{ matrix.library }}
+        run: make setup_net
+
+      - name: Compile ${{ matrix.library }} implementation
+        shell: bash
+        working-directory: ${{ matrix.library }}
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_net CORES=$CORES
+      
+      - name: Unzip .NET Retry Flag Manifests
+        shell: bash
+        working-directory: TestVectors/dafny/TestVectors/test/
+        run: |
+          unzip invalid-Net-4.0.0.zip -d invalid-Net-4.0.0
+          unzip v4-Net-4.0.1.zip -d v4-Net-4.0.1
+          unzip valid-Net-4.0.0.zip -d valid-Net-4.0.0
+
+      - name: Test .NET net6.0
+        working-directory: ${{ matrix.library }}
         shell: bash
         run: |
-          NET_401_VECTORS=$GITHUB_WORKSPACE/v4Net401/vectors
-          # We expect net48 to run only for Windows
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            ESDK_NET_V400_POLICY="forbid" \
-            DAFNY_AWS_ESDK_TEST_VECTOR_MANIFEST_PATH="$NET_401_VECTORS/manifest.json" \
-            dotnet test --framework net48
-          fi
           if [ "$RUNNER_OS" == "macOS" ]; then
-            DYLD_LIBRARY_PATH="/usr/local/opt/openssl@1.1/lib" \
-            ESDK_NET_V400_POLICY="forbid" \
-            DAFNY_AWS_ESDK_TEST_VECTOR_MANIFEST_PATH="$NET_401_VECTORS/manifest.json" \
-            dotnet test --framework net6.0 --logger "console;verbosity=quiet"
+            make test_net_mac_intel FRAMEWORK=net6.0
           else
-            ESDK_NET_V400_POLICY="forbid" \
-            DAFNY_AWS_ESDK_TEST_VECTOR_MANIFEST_PATH="$NET_401_VECTORS/manifest.json" \
-            dotnet test --framework net6.0 --logger "console;verbosity=quiet"
+            make test_net FRAMEWORK=net6.0
           fi

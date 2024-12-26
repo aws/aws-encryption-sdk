@@ -22,7 +22,7 @@ perl -pe "s/^version = .*$/version = \"$1\"/" < Cargo.toml > new_Cargo.toml
 mv new_Cargo.toml Cargo.toml
 
 # Remove all files and directories in src except for specified files
-find src -depth 1 | egrep -v '(lib.rs)' | xargs rm -rf
+find src -depth 1 | egrep -v '(lib.rs|README.md)' | xargs rm -rf
 
 # Change to the parent directory and run make polymorph and transpile commands
 cd ../..
@@ -40,7 +40,7 @@ cp -r . ../../../releases/rust/esdk
 cd ../../../releases/rust/esdk
 
 # Remove unnecessary files and directories
-rm -rf *~ copy_externs.sh start_release.sh test_published.sh test_examples *.pem RELEASE.md CHANGELOG.md
+rm -rf *~ copy_externs.sh start_release.sh test_published.sh test_examples *.pem RELEASE.md CHANGELOG.md src/README.md
 
 # Create .gitignore file with specified entries
 echo Cargo.lock > .gitignore

@@ -18,7 +18,8 @@ impl CreateKeyStore {
         crate::deps::aws_cryptography_keyStore::operation::create_key_store::CreateKeyStoreOutput,
         crate::deps::aws_cryptography_keyStore::types::error::Error,
     > {
-
+        crate::deps::aws_cryptography_keyStore::validation::validate_aws_Pcryptography_PkeyStore_HCreateKeyStoreInput_for_KeyStore_CreateKeyStore(&input)
+            .map_err(crate::deps::aws_cryptography_keyStore::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_keyStore::conversions::create_key_store::_create_key_store_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).CreateKeyStore(&inner_input);

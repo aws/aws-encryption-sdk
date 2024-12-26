@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use aws_config::Region;
-use aws_esdk::aws_cryptography_materialProviders::types::ClientSupplier;
-use aws_esdk::aws_cryptography_materialProviders::operation::get_client::GetClientInput;
-use aws_esdk::aws_cryptography_materialProviders::types::error::Error;
+use aws_esdk::material_providers::types::ClientSupplier;
+use aws_esdk::material_providers::operation::get_client::GetClientInput;
+use aws_esdk::material_providers::types::error::Error;
 use aws_esdk::com_amazonaws_kms::client::Client as kms_client;
 use super::regional_role_client_supplier_config;
 

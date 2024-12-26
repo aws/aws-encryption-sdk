@@ -18,60 +18,8 @@ impl ValidAlgorithmSuiteInfo {
         (),
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
     > {
-        if input.id.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "id",
-        "id was not specified but it is required when building AlgorithmSuiteInfo",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.binary_id.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "binary_id",
-        "binary_id was not specified but it is required when building AlgorithmSuiteInfo",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.message_version.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "message_version",
-        "message_version was not specified but it is required when building AlgorithmSuiteInfo",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.encrypt.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "encrypt",
-        "encrypt was not specified but it is required when building AlgorithmSuiteInfo",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.kdf.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "kdf",
-        "kdf was not specified but it is required when building AlgorithmSuiteInfo",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.commitment.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "commitment",
-        "commitment was not specified but it is required when building AlgorithmSuiteInfo",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.signature.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "signature",
-        "signature was not specified but it is required when building AlgorithmSuiteInfo",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.symmetric_signature.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "symmetric_signature",
-        "symmetric_signature was not specified but it is required when building AlgorithmSuiteInfo",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
-if input.edk_wrapping.is_none() {
-    return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::missing_field(
-        "edk_wrapping",
-        "edk_wrapping was not specified but it is required when building AlgorithmSuiteInfo",
-    )).map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err);
-}
+        crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HAlgorithmSuiteInfo_for_AwsCryptographicMaterialProviders_ValidAlgorithmSuiteInfo(&input)
+            .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
                 let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::valid_algorithm_suite_info::_valid_algorithm_suite_info_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).ValidAlgorithmSuiteInfo(&inner_input);

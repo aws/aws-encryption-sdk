@@ -12,6 +12,7 @@ pub mod error;
 /// All operations that this crate can perform.
 pub mod operation;
 pub mod types;
+pub mod validation;
 
 #[cfg(feature = "wrapped-client")]
 pub mod wrapped;
@@ -56,6 +57,7 @@ pub(crate) mod ecdsa;
 pub(crate) mod hmac;
 pub(crate) mod kms;
 pub(crate) mod local_cmc;
+pub(crate) mod oslang;
 pub(crate) mod random;
 pub(crate) mod rsa;
 pub(crate) mod sets;

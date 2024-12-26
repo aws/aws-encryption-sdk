@@ -42,6 +42,8 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
 
     var decryptVectors :- ParseEsdkJsonManifest.BuildDecryptTestVector(
       op,
+      decryptManifest.clientName,
+      decryptManifest.clientVersion,
       decryptManifest.version,
       decryptManifest.keys,
       decryptManifest.jsonTests
@@ -89,9 +91,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
       print "Skipped: ", skipped, "\n";
     }
 
-    expect !hasFailure;
-
-    manifest := Success([]);
+    manifest := if !hasFailure then Success([]) else Failure("Test Vectors failed, see errors above.\n");
   }
 
   method {:vcs_split_on_every_assert} StartEncryptVectors(
@@ -221,7 +221,8 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     | DecryptManifest(
         version: nat,
         keys: KeyVectors.KeyVectorsClient,
-        client: Values.JSON,
+        clientName: string,
+        clientVersion: string,
         jsonTests: seq<(string, Values.JSON)>
       )
     | EncryptManifest(
@@ -250,12 +251,16 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     var decryptManifestBv :- FileIO.ReadBytesFromFile(manifestPath + manifestFileName);
     var decryptManifestBytes := BvToBytes(decryptManifestBv);
     var manifestJson :- API.Deserialize(decryptManifestBytes)
-      .MapFailure(( e: Errors.DeserializationError ) => e.ToString());
+    .MapFailure(( e: Errors.DeserializationError ) => e.ToString());
     :- Need(manifestJson.Object?, "Not a JSON object");
 
     var manifest :- GetObject("manifest", manifestJson.obj);
     var version :- GetNat("version", manifest);
     var typ :- GetString("type", manifest);
+
+    var client :- GetObject("client", manifestJson.obj);
+    var clientName :- GetString("name", client);
+    var clientVersion :- GetString("version", client);
 
     var keyManifestUri :- GetString("keys", manifestJson.obj);
     :- Need("file://" < keyManifestUri, "Unexpected URI prefix");
@@ -269,11 +274,11 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     match typ
     case "awses-decrypt" =>
       :- Need(SupportedDecryptVersion?(version), "Unsupported manifest version");
-      var client :- Get("client", manifestJson.obj);
       manifestData := Success(DecryptManifest(
                                 version := version,
                                 keys := keys,
-                                client := client,
+                                clientName := clientName,
+                                clientVersion := clientVersion,
                                 jsonTests := jsonTests
                               ));
 

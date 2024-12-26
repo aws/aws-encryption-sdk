@@ -188,6 +188,8 @@ pub async fn main() -> Result<(), BoxError2> {
         utils::TEST_KEY_STORE_KMS_KEY_ID
     ).await?;
 
+    keyring::aws_kms_hierarchical::version_branch_key_id_example::create_and_version_branch_key_id().await?;
+
     keyring::aws_kms_hierarchical::shared_cache_across_hierarchical_keyrings_example::encrypt_and_decrypt_with_keyring(
         utils::TEST_EXAMPLE_DATA,
         utils::TEST_KEY_STORE_NAME,

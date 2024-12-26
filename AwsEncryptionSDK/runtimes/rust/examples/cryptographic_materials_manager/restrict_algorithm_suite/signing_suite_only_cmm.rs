@@ -1,18 +1,18 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use aws_esdk::aws_cryptography_materialProviders::operation::get_encryption_materials::GetEncryptionMaterialsInput;
-use aws_esdk::aws_cryptography_materialProviders::operation::get_encryption_materials::GetEncryptionMaterialsOutput;
-use aws_esdk::aws_cryptography_materialProviders::operation::decrypt_materials::DecryptMaterialsInput;
-use aws_esdk::aws_cryptography_materialProviders::operation::decrypt_materials::DecryptMaterialsOutput;
-use aws_esdk::aws_cryptography_materialProviders::types::error::Error;
-use aws_esdk::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManager;
-use aws_esdk::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
-use aws_esdk::aws_cryptography_materialProviders::types::keyring::KeyringRef;
-use aws_esdk::aws_cryptography_materialProviders::types::EsdkAlgorithmSuiteId;
-use aws_esdk::aws_cryptography_materialProviders::types::AlgorithmSuiteId;
-use aws_esdk::aws_cryptography_materialProviders::client as mpl_client;
-use aws_esdk::aws_cryptography_materialProviders::types::material_providers_config::MaterialProvidersConfig;
+use aws_esdk::material_providers::operation::get_encryption_materials::GetEncryptionMaterialsInput;
+use aws_esdk::material_providers::operation::get_encryption_materials::GetEncryptionMaterialsOutput;
+use aws_esdk::material_providers::operation::decrypt_materials::DecryptMaterialsInput;
+use aws_esdk::material_providers::operation::decrypt_materials::DecryptMaterialsOutput;
+use aws_esdk::material_providers::types::error::Error;
+use aws_esdk::material_providers::types::cryptographic_materials_manager::CryptographicMaterialsManager;
+use aws_esdk::material_providers::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
+use aws_esdk::material_providers::types::keyring::KeyringRef;
+use aws_esdk::material_providers::types::EsdkAlgorithmSuiteId;
+use aws_esdk::material_providers::types::AlgorithmSuiteId;
+use aws_esdk::material_providers::client as mpl_client;
+use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
 use std::vec::Vec;
 
 /*

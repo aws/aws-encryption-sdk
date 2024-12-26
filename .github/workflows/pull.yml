@@ -37,3 +37,19 @@ jobs:
     uses: ./.github/workflows/library_legacy_interop_test_vectors.yml
     with:
       dafny: '4.9.0'
+  pr-ci-all-required:
+    if: always()
+    needs:
+      - pr-ci-codegen
+      - pr-ci-verification
+      - pr-ci-net
+      - pr-ci-rust
+      - pr-test-vectors
+      - pr-dafny-test-vectors
+      - pr-dafny-legacy-test-vectors
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify all required jobs passed
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
