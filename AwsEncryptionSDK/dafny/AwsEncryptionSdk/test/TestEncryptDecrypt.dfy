@@ -9,7 +9,7 @@ module TestEncryptDecrypt {
     import Types = AwsCryptographyEncryptionSdkTypes
     import mplTypes = AwsCryptographyMaterialProvidersTypes
     import MaterialProviders
-    import EncryptionSdk
+    import ESDK
     import opened Wrappers
 
     import Fixtures
@@ -20,8 +20,8 @@ module TestEncryptDecrypt {
         // The string "asdf" as bytes
         var asdf := [ 97, 115, 100, 102 ];
 
-        var defaultConfig := EncryptionSdk.DefaultAwsEncryptionSdkConfig();
-        var esdk :- expect EncryptionSdk.ESDK(config := defaultConfig);
+        var defaultConfig := ESDK.DefaultAwsEncryptionSdkConfig();
+        var esdk :- expect ESDK.ESDK(config := defaultConfig);
         var mpl :- expect MaterialProviders.MaterialProviders();
         var clientSupplier :- expect mpl.CreateDefaultClientSupplier(mplTypes.CreateDefaultClientSupplierInput);
         var kmsClient :- expect clientSupplier.GetClient(mplTypes.GetClientInput(region := "us-west-2"));

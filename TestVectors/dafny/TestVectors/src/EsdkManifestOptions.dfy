@@ -5,11 +5,13 @@ include "LibraryIndex.dfy"
 
 module {:options "-functionSyntax:4"} EsdkManifestOptions {
   import opened Wrappers
+  import Types = AwsCryptographyEncryptionSdkTypes
 
   datatype ManifestOptions =
     | Decrypt(
         nameonly manifestPath: string,
         nameonly manifestFileName: string,
+        nameonly retryPolicy: Types.NetV4_0_0_RetryPolicy,
         nameonly testName: Option<string> := None
       )
     | Encrypt(

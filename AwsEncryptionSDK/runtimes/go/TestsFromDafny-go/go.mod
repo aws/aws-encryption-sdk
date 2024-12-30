@@ -14,7 +14,7 @@ require (
 	github.com/aws/aws-cryptographic-material-providers-library/mpl v0.0.0
 	github.com/aws/aws-cryptographic-material-providers-library/primitives v0.0.0
 	github.com/aws/aws-encryption-sdk v0.0.0
-	github.com/dafny-lang/DafnyRuntimeGo/v4 v4.8.0
+	github.com/dafny-lang/DafnyRuntimeGo/v4 v4.9.1
 
 )
 

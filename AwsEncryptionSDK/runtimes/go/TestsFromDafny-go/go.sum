@@ -32,6 +32,7 @@ github.com/aws/smithy-go v1.21.0 h1:H7L8dtDRk0P1Qm6y0ji7MCYMQObJ5R9CRpyPhRUkLYA=
 github.com/aws/smithy-go v1.21.0/go.mod h1:irrKGvNn1InZwb2d7fkIRNucdfwR8R+Ts3wxYa/cJHg=
 github.com/dafny-lang/DafnyRuntimeGo/v4 v4.8.0 h1:ttdCpTQKspK9A/tqE1qnipvjp9IrURS1kC2w47we6GM=
 github.com/dafny-lang/DafnyRuntimeGo/v4 v4.8.0/go.mod h1:l2Tm4N2DKuq3ljONC2vOATeM9PUpXbIc8SgXdwwqEto=
+github.com/dafny-lang/DafnyRuntimeGo/v4 v4.9.1/go.mod h1:l2Tm4N2DKuq3ljONC2vOATeM9PUpXbIc8SgXdwwqEto=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=

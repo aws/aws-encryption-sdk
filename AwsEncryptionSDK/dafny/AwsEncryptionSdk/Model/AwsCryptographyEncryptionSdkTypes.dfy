@@ -175,8 +175,10 @@ module {:extern "software.amazon.cryptography.encryptionsdk.internaldafny.types"
     // || (!exit(A(I)) && !access(B(I)))
     | CollectionOfErrors(list: seq<Error>, nameonly message: string)
       // The Opaque error, used for native, extern, wrapped or unknown errors
-    | Opaque(obj: object, alt_text : string)
-  type OpaqueError = e: Error | e.Opaque? witness *
+    | Opaque(obj: object)
+      // A better Opaque, with a visible string representation.
+    | OpaqueWithText(obj: object, objMessage : string)
+  type OpaqueError = e: Error | e.Opaque? || e.OpaqueWithText? witness *
   // This dummy subset type is included to make sure Dafny
   // always generates a _ExternBase___default.java class.
   type DummySubsetType = x: int | IsDummySubsetType(x) witness 1

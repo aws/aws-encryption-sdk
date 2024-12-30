@@ -9,7 +9,7 @@ include "WriteEsdkJsonManifests.dfy"
 module {:options "-functionSyntax:4"} WriteVectors {
   import Types = AwsCryptographyEncryptionSdkTypes
   import mplTypes = AwsCryptographyMaterialProvidersTypes
-  import EncryptionSdk
+  import ESDK
   import MaterialProviders
   import opened CompleteVectors
   import opened Wrappers
@@ -87,12 +87,17 @@ module {:options "-functionSyntax:4"} WriteVectors {
     var manifestJson := Object([
                                  ("type", String("awses-encrypt")),
                                  ("version", Number(Int(5)))]);
+    
+    var clientJson := Object([
+                               ("name", String("aws-encryption-sdk-dafny")),
+                               ("version", String("4.1.0"))]);
 
     var plaintexts := Object([("small", Number(Int(10240)))]);
 
     var esdkEncryptManifests := Object(
       [
         ("manifest", manifestJson),
+        ("client", clientJson),
         ("keys", String("file://keys.json")),
         ("plaintexts", plaintexts),
         ("tests", Object(testsJSON))
@@ -131,13 +136,16 @@ module {:options "-functionSyntax:4"} WriteVectors {
 
     var manifestJson := Object([
                                  ("type", String("awses-decrypt")),
-                                 ("version", Number(Int(3)))]);
+                                 ("version", Number(Int(5)))]);
+    var clientJson := Object([
+                               ("name", String("aws-encryption-sdk-dafny")),
+                               ("version", String("4.1.0"))]);
 
     var esdkDecryptManifest := Object(
       [
         ("manifest", manifestJson),
         // TODO create an extern that gets that runtimes namespace and latest version
-        ("client", String("aws-encryption-sdk-dafny")),
+        ("client", clientJson),
         ("keys", String("file://keys.json")),
         ("tests", Object(testsJSON))
       ]

@@ -25,7 +25,7 @@ jobs:
             ubuntu-latest,
             macos-13,
           ]
-        language: [java, net]
+        language: [java, net, rust]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
     runs-on: ${{ matrix.os }}
@@ -37,6 +37,14 @@ jobs:
         - name: Support longpaths on Git checkout
           run: |
             git config --global core.longpaths true
+
+        # TestVectors will call KMS
+        - name: Configure AWS Credentials
+          uses: aws-actions/configure-aws-credentials@v2
+          with:
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: InterOpTests
 
         - uses: actions/checkout@v3
         #  Not all submodules are needed.
@@ -51,15 +59,40 @@ jobs:
           with:
             dotnet-version: ${{ matrix.dotnet-version }}
 
+        # Setup Java in Rust is needed for running polymorph
         - name: Setup Java 17
-          if: matrix.language == 'java'
+          if: matrix.language == 'java' || matrix.language == 'rust'
           uses: actions/setup-java@v3
           with:
             distribution: "corretto"
             java-version: 17
 
+        - name: Setup Rust Toolchain for GitHub CI
+          if: matrix.language == 'rust'
+          uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
+          with:
+            components: rustfmt
+        # TODO - uncomment this after Rust formatter works
+        # - name: Rustfmt Check
+        #   uses: actions-rust-lang/rustfmt@v1
+
+        # TODO: Remove this after the formatting in Rust starts working
+        - name: smithy-dafny Rust hacks
+          if: matrix.language == 'rust'
+          shell: bash
+          run: |
+            if [ "$RUNNER_OS" == "macOS" ]; then
+              sed -i '' 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
+            else
+              sed -i 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
+            fi
+
+        - name: Setup NASM for Windows in Rust (aws-lc-sys)
+          if: matrix.language == 'rust' && matrix.os == 'windows-latest'
+          uses: ilammy/setup-nasm@v1
+
         - name: Setup Dafny
-          uses: dafny-lang/setup-dafny-action@v1.6.1
+          uses: dafny-lang/setup-dafny-action@v1.7.0
           with:
             dafny-version: ${{ inputs.dafny }}
 
@@ -89,21 +122,33 @@ jobs:
             # This works because `node` is installed by default on GHA runners
             CORES=$(node -e 'console.log(os.cpus().length)')
             make transpile_net
-            
+
+        - name: Install Smithy-Dafny codegen dependencies
+          if: matrix.language == 'rust'
+          uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+
+        # TODO: Remove this after checking in Rust polymorph code
+        - name: Run make polymorph_rust
+          if: matrix.language == 'rust'
+          shell: bash
+          working-directory: ./${{ matrix.library }}
+          run: |
+            make polymorph_rust
+
+        - name: Build ${{ matrix.library }} implementation in Rust
+          if: matrix.language == 'rust'
+          shell: bash
+          working-directory: ./${{ matrix.library }}
+          run: |
+            CORES=$(node -e 'console.log(os.cpus().length)')
+            make transpile_rust CORES=$CORES
+
         - name: Setup gradle
           if: matrix.language == 'java'
           uses: gradle/gradle-build-action@v2
           with:
             gradle-version: 7.2
 
-        # TestVectors will call KMS
-        - name: Configure AWS Credentials
-          uses: aws-actions/configure-aws-credentials@v2
-          with:
-            aws-region: us-west-2
-            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2 
-            role-session-name: InterOpTests
-        
         - name: Create Manifests
           working-directory: ./${{ matrix.library }}
           run: make test_generate_vectors_${{ matrix.language }}
@@ -132,8 +177,8 @@ jobs:
             ubuntu-latest,
             macos-13,
           ]
-        encrypting_language: [java, net]
-        decrypting_language: [java, net]
+        encrypting_language: [java, net, rust]
+        decrypting_language: [java, net, rust]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
     runs-on: ${{ matrix.os }}
@@ -145,6 +190,7 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
+
       # TestVectors will call KMS
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -159,18 +205,44 @@ jobs:
       - run: git submodule update --init libraries
       - run: git submodule update --init --recursive mpl
 
+      # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
         if: matrix.decrypting_language == 'net'
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
+      # Setup Java in Rust is needed for running polymorph
       - name: Setup Java 17
-        if: matrix.decrypting_language == 'java'
+        if: matrix.decrypting_language == 'java' || matrix.decrypting_language == 'rust'
         uses: actions/setup-java@v3
         with:
           distribution: "corretto"
           java-version: 17
+
+      - name: Setup Rust Toolchain for GitHub CI
+        if: matrix.decrypting_language == 'rust'
+        uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
+        with:
+          components: rustfmt
+      # TODO - uncomment this after Rust formatter works
+      # - name: Rustfmt Check
+      #   uses: actions-rust-lang/rustfmt@v1
+
+      # TODO: Remove this after the formatting in Rust starts working
+      - name: smithy-dafny Rust hacks
+        if: matrix.decrypting_language == 'rust'
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            sed -i '' 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
+          else
+            sed -i 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
+          fi
+
+      - name: Setup NASM for Windows in Rust (aws-lc-sys)
+        if: matrix.decrypting_language == 'rust' && matrix.os == 'windows-latest'
+        uses: ilammy/setup-nasm@v1
 
       - name: Setup Dafny
         uses: dafny-lang/setup-dafny-action@v1.6.1
@@ -203,6 +275,26 @@ jobs:
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_net
+
+      - name: Install Smithy-Dafny codegen dependencies
+        if: matrix.decrypting_language == 'rust'
+        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+
+      # TODO: Remove this after checking in Rust polymorph code
+      - name: Run make polymorph_rust
+        if: matrix.decrypting_language == 'rust'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          make polymorph_rust
+
+      - name: Build ${{ matrix.library }} implementation in Rust
+        if: matrix.decrypting_language == 'rust'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_rust CORES=$CORES
 
       - name: Download Encrypt Manifest Artifact
         uses: actions/download-artifact@v4

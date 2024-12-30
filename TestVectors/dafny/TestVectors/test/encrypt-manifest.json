@@ -3,6 +3,10 @@
     "type": "awses-encrypt",
     "version": 5
   },
+  "client": {
+    "name": "aws-encryption-sdk-dafny",
+    "version": "4.1.0"
+  },
   "keys": "file://keys.json",
   "plaintexts": {
     "small": 10240
