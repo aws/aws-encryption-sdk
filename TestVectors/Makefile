@@ -3,6 +3,7 @@
 
 CORES=2
 
+ENABLE_EXTERN_PROCESSING=1
 TRANSPILE_TESTS_IN_RUST=1
 
 include ../SharedMakefileV2.mk
@@ -109,9 +110,47 @@ REMOVE_WRAPPED_CLIENT_AFTER_POLYMORPH_RUST_FROM_2 := 'pub mod wrapped;'
 REMOVE_WRAPPED_CLIENT_AFTER_POLYMORPH_RUST_TO_1 := '\/\/ removed wrapped-client feature using sed;'
 REMOVE_WRAPPED_CLIENT_AFTER_POLYMORPH_RUST_TO_2 := '\/\/ removed wrapped module using sed;'
 
+# Go
+
+GO_MODULE_NAME="github.com/aws/aws-encryption-sdk/testvectors"
+
+GO_DEPENDENCY_MODULE_NAMES := \
+	--dependency-library-name=aws.cryptography.encryptionSdk=github.com/aws/aws-encryption-sdk \
+	--dependency-library-name=com.amazonaws.dynamodb=github.com/aws/aws-cryptographic-material-providers-library/dynamodb \
+	--dependency-library-name=com.amazonaws.kms=github.com/aws/aws-cryptographic-material-providers-library/kms \
+	--dependency-library-name=aws.cryptography.keyStore=github.com/aws/aws-cryptographic-material-providers-library/mpl \
+	--dependency-library-name=aws.cryptography.primitives=github.com/aws/aws-cryptographic-material-providers-library/primitives \
+	--dependency-library-name=aws.cryptography.materialProviders=github.com/aws/aws-cryptographic-material-providers-library/mpl \
+    	--dependency-library-name=sdk.com.amazonaws.dynamodb=github.com/aws/aws-sdk-go-v2/service/dynamodb \
+    	--dependency-library-name=sdk.com.amazonaws.kms=github.com/aws/aws-sdk-go-v2/service/kms
+
+TRANSLATION_RECORD_GO := \
+	AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    mpl/StandardLibrary/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    mpl/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    mpl/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    mpl/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    mpl/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+	mpl/TestVectorsAwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr
+
+# Constants for languages that drop extern names (Go)
+
+WRAPPED_INDEX_FILE_PATH=dafny/TestVectors/src/LibraryIndex.dfy
+WRAPPED_INDEX_FILE_WITH_EXTERN_STRING="module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny.wrapped\" } WrappedESDK refines WrappedAbstractAwsCryptographyEncryptionSdkService"
+WRAPPED_INDEX_FILE_WITHOUT_EXTERN_STRING="module WrappedESDK refines WrappedAbstractAwsCryptographyEncryptionSdkService"
+
 transpile_implementation_java: _replace_main_method_name_java
 transpile_implementation_net: _replace_main_method_name_net
 transpile_implementation_rust: _replace_main_method_name_rust
+
+_polymorph_go: purge_polymorph_code
+
+# Smithy-dafny generated shim needs a long term fix. 
+# TODO: Remove this commands once smithy-dafny is fixed
+# This commands does not work on windows
+# https://taskei.amazon.dev/tasks/CrypTool-5283
+purge_polymorph_code:
+	find .. -name "shim.go" | xargs sed -i $(SED_PARAMETER) 's/(_static \*CompanionStruct_Default___)//g'
 
 # TODO: Remove after wrapped client issue is fixed in Rust
 _polymorph_rust: _remove_wrapped_client_rust
@@ -150,6 +189,10 @@ test_generate_vectors_rust:
 	cd ../../
 	cp dafny/TestVectors/test/keys.json runtimes/rust/
 
+test_generate_vectors_go:
+	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go encrypt-manifest --encrypt-manifest-output ../
+	cp dafny/TestVectors/test/keys.json runtimes/go
+
 test_encrypt_vectors_java:
 	gradle -p runtimes/java run --args="encrypt --manifest-path . --decrypt-manifest-path ."
 
@@ -163,6 +206,9 @@ test_encrypt_vectors_rust:
 	cd runtimes/rust && \
 	cargo run --bin test-vectors --features="wrapped-client" --release -- encrypt --manifest-path . --decrypt-manifest-path . && \
 	cd ../../
+
+test_encrypt_vectors_go:
+	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go encrypt --manifest-path=.. --decrypt-manifest-path=..
 
 test_decrypt_encrypt_vectors_java:
 	gradle -p runtimes/java run --args="decrypt --manifest-path . --manifest-name decrypt-manifest.json"
@@ -184,6 +230,20 @@ test_decrypt_encrypt_vectors_rust:
 	cargo run --bin test-vectors --features="wrapped-client" --release -- decrypt --manifest-path . --manifest-name decrypt-manifest.json && \
 	cd ../../
 
+test_decrypt_encrypt_vectors_go:
+	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go decrypt --manifest-path=..
+
 _polymorph_dependencies:
 	@echo "No polymorphing of dependency"
 
+_sed_types_file_remove_extern:
+	@echo "No extern to process for ESDK TestVectors"
+
+_sed_index_file_remove_extern:
+	@echo "No extern to process for ESDK TestVectors"
+
+_sed_types_file_add_extern:
+	@echo "No extern to process for ESDK TestVectors"
+
+_sed_index_file_add_extern:
+	@echo "No extern to process for ESDK TestVectors"
