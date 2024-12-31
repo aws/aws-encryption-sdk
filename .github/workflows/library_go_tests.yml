@@ -1,0 +1,81 @@
+# This workflow performs tests in Go.
+name: Library Go tests
+
+on:
+  workflow_call:
+    inputs:
+      dafny:
+        description: 'The Dafny version to run'
+        required: true
+        type: string
+      regenerate-code:
+        description: "Regenerate code using smithy-dafny"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  testGo:
+    strategy:
+      fail-fast: false
+      matrix:
+        library: [AwsEncryptionSDK]
+        go-version: [ "1.23" ]
+        os: [
+          windows-latest,
+          ubuntu-latest,
+          macos-13,
+        ]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Support longpaths on Git checkout
+        run: |
+          git config --global core.longpaths true
+      - uses: actions/checkout@v3
+      - name: Init Submodules
+        shell: bash
+        run: |
+          git submodule update --init libraries
+          git submodule update --init --recursive mpl
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+          role-session-name: GoTests
+
+      - name: Setup Dafny
+        uses: dafny-lang/setup-dafny-action@v1.7.0
+        with:
+          dafny-version: ${{ inputs.dafny }}
+
+      - name: Setup NASM for Windows (aws-lc-sys)
+        if: matrix.os == 'windows-latest'
+        uses: ilammy/setup-nasm@v1
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Install Go imports
+        run: |
+          go install golang.org/x/tools/cmd/goimports@latest        
+
+      - name: Compile ${{ matrix.library }} implementation
+        shell: bash
+        working-directory: ${{ matrix.library }}
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_go CORES=$CORES
+
+      - name: Test Go
+        working-directory: ${{ matrix.library }}
+        shell: bash
+        run: |
+          make test_go
