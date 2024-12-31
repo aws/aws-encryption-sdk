@@ -37,10 +37,10 @@ require (
 )
 
 replace (
-	github.com/aws/aws-cryptographic-material-providers-library/dynamodb v0.0.0 => ../../../../../aws-cryptographic-material-providers-library/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go/
-	github.com/aws/aws-cryptographic-material-providers-library/kms v0.0.0 => ../../../../../aws-cryptographic-material-providers-library/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go/
-	github.com/aws/aws-cryptographic-material-providers-library/primitives v0.0.0 => ../../../../../aws-cryptographic-material-providers-library/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go/
+	github.com/aws/aws-cryptographic-material-providers-library/dynamodb v0.0.0 => ../../../../mpl/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go/
+	github.com/aws/aws-cryptographic-material-providers-library/kms v0.0.0 => ../../../../mpl/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go/
+	github.com/aws/aws-cryptographic-material-providers-library/primitives v0.0.0 => ../../../../mpl/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go/
 
 )
 
-replace github.com/dafny-lang/DafnyStandardLibGo => ../../../../../aws-cryptographic-material-providers-library/StandardLibrary/runtimes/go/ImplementationFromDafny-go/
+replace github.com/dafny-lang/DafnyStandardLibGo => ../../../../mpl/StandardLibrary/runtimes/go/ImplementationFromDafny-go/

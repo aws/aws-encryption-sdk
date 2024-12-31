@@ -79,11 +79,11 @@ GO_DEPENDENCY_MODULE_NAMES := \
 
 
 TRANSLATION_RECORD_GO := \
-    ../aws-cryptographic-material-providers-library/StandardLibrary/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    ../aws-cryptographic-material-providers-library/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    ../aws-cryptographic-material-providers-library/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    ../aws-cryptographic-material-providers-library/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    ../aws-cryptographic-material-providers-library/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr
+    mpl/StandardLibrary/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    mpl/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    mpl/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    mpl/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    mpl/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr
 
 TYPES_FILE_PATH=dafny/AwsEncryptionSdk/Model/AwsCryptographyEncryptionSdkTypes.dfy
 TYPES_FILE_WITH_EXTERN_STRING="module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny.types\" } AwsCryptographyEncryptionSdkTypes"
