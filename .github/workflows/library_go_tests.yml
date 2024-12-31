@@ -22,7 +22,8 @@ jobs:
         library: [AwsEncryptionSDK]
         go-version: [ "1.23" ]
         os: [
-          windows-latest,
+          # Sed script doesn't work properly on windows
+          # windows-latest,
           ubuntu-latest,
           macos-13,
         ]
