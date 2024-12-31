@@ -1,6 +1,7 @@
 # Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 CORES=2
+ENABLE_EXTERN_PROCESSING=1
 
 TRANSPILE_TESTS_IN_RUST := 1
 
@@ -64,3 +65,30 @@ SERVICE_DEPS_AwsEncryptionSdk := \
 	mpl/ComAmazonawsDynamodb \
 	mpl/AwsCryptographicMaterialProviders/dafny/AwsCryptographicMaterialProviders \
 	mpl/AwsCryptographicMaterialProviders/dafny/AwsCryptographyKeyStore
+
+GO_MODULE_NAME="github.com/aws/aws-encryption-sdk"
+
+GO_DEPENDENCY_MODULE_NAMES := \
+	--dependency-library-name=com.amazonaws.dynamodb=github.com/aws/aws-cryptographic-material-providers-library/dynamodb \
+	--dependency-library-name=com.amazonaws.kms=github.com/aws/aws-cryptographic-material-providers-library/kms \
+	--dependency-library-name=aws.cryptography.keyStore=github.com/aws/aws-cryptographic-material-providers-library/mpl \
+	--dependency-library-name=aws.cryptography.primitives=github.com/aws/aws-cryptographic-material-providers-library/primitives \
+	--dependency-library-name=aws.cryptography.materialProviders=github.com/aws/aws-cryptographic-material-providers-library/mpl \
+    	--dependency-library-name=sdk.com.amazonaws.dynamodb=github.com/aws/aws-sdk-go-v2/service/dynamodb \
+    	--dependency-library-name=sdk.com.amazonaws.kms=github.com/aws/aws-sdk-go-v2/service/kms
+
+
+TRANSLATION_RECORD_GO := \
+    mpl/StandardLibrary/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    mpl/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    mpl/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    mpl/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+    mpl/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr
+
+TYPES_FILE_PATH=dafny/AwsEncryptionSdk/Model/AwsCryptographyEncryptionSdkTypes.dfy
+TYPES_FILE_WITH_EXTERN_STRING="module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny.types\" } AwsCryptographyEncryptionSdkTypes"
+TYPES_FILE_WITHOUT_EXTERN_STRING="module AwsCryptographyEncryptionSdkTypes"
+
+INDEX_FILE_PATH=dafny/AwsEncryptionSdk/src/Index.dfy
+INDEX_FILE_WITH_EXTERN_STRING="module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny\" } ESDK refines AbstractAwsCryptographyEncryptionSdkService {"
+INDEX_FILE_WITHOUT_EXTERN_STRING="module ESDK refines AbstractAwsCryptographyEncryptionSdkService {"
