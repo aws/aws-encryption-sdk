@@ -55,7 +55,7 @@ PROJECT_DEPENDENCIES := \
 	AwsEncryptionSDK \
 
 # Since we are packaging projects differently, we cannot make assumptions
-# about where the files are located. 
+# about where the files are located.
 # This is here to get unblocked but should be removed once we have migrated packages
 # to the new packaging format.
 PROJECT_INDEX := \
