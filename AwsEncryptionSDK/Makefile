@@ -91,4 +91,4 @@ TYPES_FILE_WITHOUT_EXTERN_STRING="module AwsCryptographyEncryptionSdkTypes"
 
 INDEX_FILE_PATH=dafny/AwsEncryptionSdk/src/Index.dfy
 INDEX_FILE_WITH_EXTERN_STRING="module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny\" } ESDK refines AbstractAwsCryptographyEncryptionSdkService {"
-INDEX_FILE_WITHOUT_EXTERN_STRING="module EncryptionSdk refines AbstractAwsCryptographyEncryptionSdkService {"
+INDEX_FILE_WITHOUT_EXTERN_STRING="module ESDK refines AbstractAwsCryptographyEncryptionSdkService {"
