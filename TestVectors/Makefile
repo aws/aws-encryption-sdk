@@ -150,6 +150,12 @@ _polymorph_go: purge_polymorph_code
 # https://taskei.amazon.dev/tasks/CrypTool-5283
 purge_polymorph_code:
 	find .. -name "shim.go" | xargs sed -i $(SED_PARAMETER) 's/(_static \*CompanionStruct_Default___)//g'
+	rm -rf runtimes/go/ImplementationFromDafny-go/awscryptographyencryptionsdksmithygenerated \
+		runtimes/go/ImplementationFromDafny-go/awscryptographyencryptionsdksmithygeneratedtypes \
+		runtimes/go/ImplementationFromDafny-go/WrappedAwsCryptographyEncryptionSdkService \
+		runtimes/go/TestsFromDafny-go/awscryptographyencryptionsdksmithygenerated \
+		runtimes/go/TestsFromDafny-go/awscryptographyencryptionsdksmithygeneratedtypes \
+		runtimes/go/TestsFromDafny-go/WrappedAwsCryptographyEncryptionSdkService
 
 # TODO: Remove after wrapped client issue is fixed in Rust
 _polymorph_rust: _remove_wrapped_client_rust
