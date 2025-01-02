@@ -43,7 +43,7 @@ jobs:
           uses: aws-actions/configure-aws-credentials@v2
           with:
             aws-region: us-west-2
-            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2 
             role-session-name: InterOpTests
 
         - uses: actions/checkout@v3
@@ -75,7 +75,7 @@ jobs:
         # TODO - uncomment this after Rust formatter works
         # - name: Rustfmt Check
         #   uses: actions-rust-lang/rustfmt@v1
-
+        
         # TODO: Remove this after the formatting in Rust starts working
         - name: smithy-dafny Rust hacks
           if: matrix.language == 'rust'
@@ -131,11 +131,11 @@ jobs:
             # This works because `node` is installed by default on GHA runners
             CORES=$(node -e 'console.log(os.cpus().length)')
             make transpile_net
-
+        
         - name: Install Smithy-Dafny codegen dependencies
           if: matrix.language == 'rust'
           uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
-
+    
         # TODO: Remove this after checking in Rust polymorph code
         - name: Run make polymorph_rust
           if: matrix.language == 'rust'
@@ -143,7 +143,7 @@ jobs:
           working-directory: ./${{ matrix.library }}
           run: |
             make polymorph_rust
-
+        
         - name: Build ${{ matrix.library }} implementation in Rust
           if: matrix.language == 'rust'
           shell: bash
@@ -314,7 +314,7 @@ jobs:
       - name: Install Smithy-Dafny codegen dependencies
         if: matrix.decrypting_language == 'rust'
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
-
+  
       # TODO: Remove this after checking in Rust polymorph code
       - name: Run make polymorph_rust
         if: matrix.decrypting_language == 'rust'
