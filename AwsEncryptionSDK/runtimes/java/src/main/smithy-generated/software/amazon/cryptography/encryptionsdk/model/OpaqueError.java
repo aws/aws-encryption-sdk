@@ -10,8 +10,14 @@ public class OpaqueError extends RuntimeException {
    */
   private final Object obj;
 
+  /**
+   * A best effort text representation of obj.
+   */
+  private final String altText;
+
   protected OpaqueError(BuilderImpl builder) {
     super(messageFromBuilder(builder), builder.cause());
+    this.altText = builder.altText();
     this.obj = builder.obj();
   }
 
@@ -44,6 +50,13 @@ public class OpaqueError extends RuntimeException {
    */
   public Object obj() {
     return this.obj;
+  }
+
+  /**
+   * @return A best effort text representation of obj.
+   */
+  public String altText() {
+    return this.altText;
   }
 
   public Builder toBuilder() {
@@ -85,6 +98,16 @@ public class OpaqueError extends RuntimeException {
      */
     Object obj();
 
+    /**
+     * @param altText A best effort text representation of obj.
+     */
+    Builder altText(String altText);
+
+    /**
+     * @return A best effort text representation of obj.
+     */
+    String altText();
+
     OpaqueError build();
   }
 
@@ -95,6 +118,8 @@ public class OpaqueError extends RuntimeException {
     protected Throwable cause;
 
     protected Object obj;
+
+    protected String altText;
 
     protected BuilderImpl() {}
 
@@ -129,6 +154,15 @@ public class OpaqueError extends RuntimeException {
 
     public Object obj() {
       return this.obj;
+    }
+
+    public Builder altText(String altText) {
+      this.altText = altText;
+      return this;
+    }
+
+    public String altText() {
+      return this.altText;
     }
 
     public OpaqueError build() {
