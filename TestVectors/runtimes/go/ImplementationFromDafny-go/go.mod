@@ -2,17 +2,15 @@ module github.com/aws/aws-encryption-sdk/testvectors
 
 go 1.23.2
 
-replace github.com/aws/aws-cryptographic-material-providers-library/mpl v0.0.0 => ../../../../mpl/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/
-
-replace github.com/dafny-lang/DafnyStandardLibGo => ../../../../mpl/StandardLibrary/runtimes/go/ImplementationFromDafny-go/
-
 replace (
 	github.com/aws/aws-cryptographic-material-providers-library/dynamodb v0.0.0 => ../../../../mpl/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go/
 	github.com/aws/aws-cryptographic-material-providers-library/kms v0.0.0 => ../../../../mpl/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go/
+	github.com/aws/aws-cryptographic-material-providers-library/mpl v0.0.0 => ../../../../mpl/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/
 	github.com/aws/aws-cryptographic-material-providers-library/primitives v0.0.0 => ../../../../mpl/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go/
 	github.com/aws/aws-cryptographic-material-providers-library/testvectors v0.0.0 => ../../../../mpl/TestVectorsAwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/
 	github.com/aws/aws-encryption-sdk v0.0.0 => ../../../../AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/
 	github.com/aws/aws-encryption-sdk/test v0.0.0 => ../../../../AwsEncryptionSDK/runtimes/go/TestsFromDafny-go/
+	github.com/dafny-lang/DafnyStandardLibGo v0.0.0 => ../../../../mpl/StandardLibrary/runtimes/go/ImplementationFromDafny-go/
 )
 
 require (
