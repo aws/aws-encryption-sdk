@@ -101,6 +101,10 @@ IMPLEMENTATION_FROM_DAFNY_TV_RUST_ESDK_MAIN= \
 	let dafny_args = dafny_runtime::Sequence::from_array_owned(dafny_strings);\
 	r\#_WrappedESDKMain_Compile::_default::Main2(\&dafny_args);"
 
+IMPLEMENTATION_FROM_DAFNY_TV_GO_FILE=runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny.go
+IMPLEMENTATION_FROM_DAFNY_TV_GO_MPL_MAIN="m_WrappedMaterialProvidersMain.Companion_Default___.Main(_dafny.FromMainArguments(os.Args))"
+IMPLEMENTATION_FROM_DAFNY_TV_GO_ESDK_MAIN="m_WrappedESDKMain.Companion_Default___.Main2(_dafny.FromMainArguments(os.Args))"
+
 # TODO: Remove after wrapped client issue is fixed in Rust
 REMOVE_WRAPPED_CLIENT_AFTER_POLYMORPH_RUST_PRIMITIVES=runtimes/rust/src/deps/aws_cryptography_primitives.rs
 REMOVE_WRAPPED_CLIENT_AFTER_POLYMORPH_RUST_KEYSTORE=runtimes/rust/src/deps/aws_cryptography_keyStore.rs
@@ -141,6 +145,7 @@ WRAPPED_INDEX_FILE_WITHOUT_EXTERN_STRING="module WrappedESDK refines WrappedAbst
 transpile_implementation_java: _replace_main_method_name_java
 transpile_implementation_net: _replace_main_method_name_net
 transpile_implementation_rust: _replace_main_method_name_rust
+transpile_implementation_go: _replace_main_method_name_go
 
 _polymorph_go: purge_polymorph_code
 
@@ -168,6 +173,9 @@ _replace_main_method_name_net:
 
 _replace_main_method_name_rust:
 	$(MAKE) _sed_file SED_FILE_PATH=$(IMPLEMENTATION_FROM_DAFNY_TV_RUST_FILE) SED_BEFORE_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_RUST_MPL_MAIN) SED_AFTER_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_RUST_ESDK_MAIN)
+
+_replace_main_method_name_go:
+	$(MAKE) _sed_file SED_FILE_PATH=$(IMPLEMENTATION_FROM_DAFNY_TV_GO_FILE) SED_BEFORE_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_GO_MPL_MAIN) SED_AFTER_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_GO_ESDK_MAIN)
 
 # TODO: Remove after wrapped client issue is fixed in Rust
 _remove_wrapped_client_rust:
@@ -236,7 +244,7 @@ test_decrypt_encrypt_vectors_rust:
 	cd ../../
 
 test_decrypt_encrypt_vectors_go:
-	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go decrypt --manifest-path=.. --manifest-name decrypt-manifest.json
+	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go decrypt --manifest-path=.. --manifest-name=decrypt-manifest.json
 
 _polymorph_dependencies:
 	@echo "No polymorphing of dependency"
