@@ -237,7 +237,7 @@ test_decrypt_encrypt_vectors_rust:
 
 test_decrypt_encrypt_vectors_go:
 	ls runtimes/go/ && \
-	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go decrypt --manifest-path=..
+	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go decrypt --manifest-path=.. --manifest-name decrypt-manifest.json
 
 _polymorph_dependencies:
 	@echo "No polymorphing of dependency"
