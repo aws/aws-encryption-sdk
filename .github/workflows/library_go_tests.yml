@@ -74,7 +74,15 @@ jobs:
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_go CORES=$CORES
-      
+          
+      - name: Unzip .NET Retry Flag Manifests
+        shell: bash
+        working-directory: TestVectors/dafny/TestVectors/test/
+        run: |
+          unzip invalid-Net-4.0.0.zip -d invalid-Net-4.0.0
+          unzip v4-Net-4.0.1.zip -d v4-Net-4.0.1
+          unzip valid-Net-4.0.0.zip -d valid-Net-4.0.0
+
       # TODO: Remove this after Go polymorph does not generate unwanted duplicate code.
       - name: Purge polymorph code in Go
         if: matrix.library == 'TestVectors'
