@@ -96,3 +96,9 @@ jobs:
         shell: bash
         run: |
           make test_go
+      
+      - name: Test Examples for Go
+        working-directory: ${{ matrix.library }}/runtimes/go/examples
+        shell: bash
+        run: |
+          go run main.go
