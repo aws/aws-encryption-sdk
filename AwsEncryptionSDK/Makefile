@@ -92,3 +92,21 @@ TYPES_FILE_WITHOUT_EXTERN_STRING="module AwsCryptographyEncryptionSdkTypes"
 INDEX_FILE_PATH=dafny/AwsEncryptionSdk/src/Index.dfy
 INDEX_FILE_WITH_EXTERN_STRING="module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny\" } ESDK refines AbstractAwsCryptographyEncryptionSdkService {"
 INDEX_FILE_WITHOUT_EXTERN_STRING="module ESDK refines AbstractAwsCryptographyEncryptionSdkService {"
+
+# Target to restore all directories in a list
+# TODO: remove this once we don't copy all of the directories into implementation and test. This is done by make file target _mv_polymorph_go in smithy-dafny.
+RESTORE_DIRS := examples
+_polymorph_go: restore_directories
+restore_directories:
+	@for dir in $(RESTORE_DIRS); do \
+		if [ -d "runtimes/go/ImplementationFromDafny-go/$$dir" ]; then \
+			cp -Rf runtimes/go/ImplementationFromDafny-go/$$dir runtimes/go/; \
+			rm -rf runtimes/go/ImplementationFromDafny-go/$$dir; \
+			rm -rf runtimes/go/TestsFromDafny-go/$$dir; \
+		else \
+			echo "Directory $$dir not found"; \
+		fi \
+	done
+
+_polymorph_dependencies:
+	@echo "No polymorphing of dependency"
