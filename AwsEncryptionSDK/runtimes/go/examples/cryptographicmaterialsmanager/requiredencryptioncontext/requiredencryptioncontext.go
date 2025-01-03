@@ -18,7 +18,6 @@ import (
 	mpltypes "github.com/aws/aws-cryptographic-material-providers-library/mpl/awscryptographymaterialproviderssmithygeneratedtypes"
 	client "github.com/aws/aws-encryption-sdk/awscryptographyencryptionsdksmithygenerated"
 	esdktypes "github.com/aws/aws-encryption-sdk/awscryptographyencryptionsdksmithygeneratedtypes"
-	"github.com/aws/aws-encryption-sdk/examples/utils"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/kms"
 )
@@ -30,7 +29,7 @@ func RequiredEncryptionContextExample(exampleText, defaultKMSKeyId, defaultKmsKe
 		panic(err)
 	}
 	kmsClient := kms.NewFromConfig(cfg, func(o *kms.Options) {
-		o.Region = utils.GetDefaultKmsKeyRegion()
+		o.Region = defaultKmsKeyRegion
 	})
 	// Step 2: Initialize the mpl client
 	matProv, err := mpl.NewClient(mpltypes.MaterialProvidersConfig{})
@@ -40,7 +39,7 @@ func RequiredEncryptionContextExample(exampleText, defaultKMSKeyId, defaultKmsKe
 	// Step 3: Create the keyring
 	awsKmsKeyringInput := mpltypes.CreateAwsKmsKeyringInput{
 		KmsClient: kmsClient,
-		KmsKeyId:  utils.GetDefaultKMSKeyId(),
+		KmsKeyId:  defaultKMSKeyId,
 	}
 	awsKmsKeyring, err := matProv.CreateAwsKmsKeyring(context.Background(), awsKmsKeyringInput)
 	if err != nil {

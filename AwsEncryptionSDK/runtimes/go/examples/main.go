@@ -30,132 +30,132 @@ func main() {
 	const stringToEncrypt = "Text To encrypt"
 	clientsupplier.ClientSupplierExample(
 		stringToEncrypt,
-		utils.GetDefaultRegionMrkKeyArn(),
-		utils.GetDefaultKMSKeyAccountID(),
+		utils.DefaultRegionMrkKeyArn(),
+		utils.DefaultKMSKeyAccountID(),
 		[]string{"eu-west-1"})
 	misc.CommitmentPolicyExample(
 		stringToEncrypt,
-		utils.GetDefaultKMSKeyId(),
-		utils.GetDefaultKmsKeyRegion())
+		utils.DefaultKMSKeyId(),
+		utils.DefaultKmsKeyRegion())
 	misc.SetEncryptionAlgorithmSuiteExample(stringToEncrypt)
 	var maxEncryptedDataKeys int64 = 3
 	misc.LimitEncryptedDataKeyExample(
 		stringToEncrypt,
-		utils.GetDefaultKMSKeyId(),
-		utils.GetDefaultKmsKeyRegion(),
+		utils.DefaultKMSKeyId(),
+		utils.DefaultKmsKeyRegion(),
 		maxEncryptedDataKeys)
 	requiredencryptioncontext.RequiredEncryptionContextExample(
 		stringToEncrypt,
-		utils.GetDefaultKMSKeyId(),
-		utils.GetDefaultKmsKeyRegion())
+		utils.DefaultKMSKeyId(),
+		utils.DefaultKmsKeyRegion())
 	restrictalgorithmsuite.SigningOnlyExample(
 		stringToEncrypt,
-		utils.GetDefaultKMSKeyId(),
-		utils.GetDefaultKmsKeyRegion())
+		utils.DefaultKMSKeyId(),
+		utils.DefaultKmsKeyRegion())
 	// keyrings
 	ecdh.PublicKeyRawEcdhDiscoveryKeyringExample(
 		stringToEncrypt,
 		primitivestypes.ECDHCurveSpecEccNistP256,
-		utils.GetEccPublicKeyFileNameRecipient(),
-		utils.GetEccPrivateKeyFileNameRecipient())
+		utils.EccPublicKeyFileNameRecipient(),
+		utils.EccPrivateKeyFileNameRecipient())
 	ecdh.EphemeralRawECDHKeyringExample(
 		stringToEncrypt,
 		primitivestypes.ECDHCurveSpecEccNistP256,
-		utils.GetEccPublicKeyFileNameRecipient())
+		utils.EccPublicKeyFileNameRecipient())
 	ecdh.RawECDHKeyringExample(
 		stringToEncrypt,
 		primitivestypes.ECDHCurveSpecEccNistP256,
-		utils.GetEccPublicKeyFileNameRecipient(),
-		utils.GetEccPrivateKeyFileNameSender())
+		utils.EccPublicKeyFileNameRecipient(),
+		utils.EccPrivateKeyFileNameSender())
 	ecdh.AwsKmsEcdhKeyringExample(
 		stringToEncrypt,
 		primitivestypes.ECDHCurveSpecEccNistP256,
-		utils.GetKmsEcdhKeyIdP256RecipientKeyId(),
-		utils.GetKmsEcdhKeyIdP256SenderKeyId(),
-		utils.GetKmsEccPublicKeyFileNameSender(),
-		utils.GetKmsEccPublicKeyFileNameRecipient())
+		utils.KmsEcdhKeyIdP256RecipientKeyId(),
+		utils.KmsEcdhKeyIdP256SenderKeyId(),
+		utils.KmsEccPublicKeyFileNameSender(),
+		utils.KmsEccPublicKeyFileNameRecipient())
 	ecdh.AwsKmsEcdhDiscoveryKeyringExample(
 		stringToEncrypt,
 		primitivestypes.ECDHCurveSpecEccNistP256,
-		utils.GetKmsEcdhKeyIdP256RecipientKeyId(),
-		utils.GetKmsEcdhKeyIdP256SenderKeyId(),
-		utils.GetKmsEccPublicKeyFileNameSender(),
-		utils.GetKmsEccPublicKeyFileNameRecipient())
+		utils.KmsEcdhKeyIdP256RecipientKeyId(),
+		utils.KmsEcdhKeyIdP256SenderKeyId(),
+		utils.KmsEccPublicKeyFileNameSender(),
+		utils.KmsEccPublicKeyFileNameRecipient())
 	awskmskeyring.AwsKmsKeyringExample(
 		stringToEncrypt,
-		utils.GetDefaultKMSKeyId(),
-		utils.GetDefaultKMSKeyAccountID())
+		utils.DefaultKMSKeyId(),
+		utils.DefaultKMSKeyAccountID())
 	awskmsrsakeyring.AwsKmsRsaExample(
 		stringToEncrypt,
-		utils.GetTestKmsRsaKeyID(),
-		utils.GetKmsRSAPublicKey())
+		utils.TestKmsRsaKeyID(),
+		utils.KmsRSAPublicKey())
 	awskmsmultikeyring.AwsKmsMultiKeyringExample(
 		stringToEncrypt,
-		utils.GetDefaultKMSKeyId(),
-		utils.GetAlternateRegionKMSKeyId(),
-		utils.GetAlternateRegionKMSKeyRegion())
+		utils.DefaultKMSKeyId(),
+		utils.AlternateRegionKMSKeyId(),
+		utils.AlternateRegionKMSKeyRegion())
 	awskmsdiscoverykeyring.AwsKmsDiscoveryKeyringExample(
 		stringToEncrypt,
-		utils.GetDefaultKMSKeyId(),
-		utils.GetDefaultKMSKeyAccountID())
+		utils.DefaultKMSKeyId(),
+		utils.DefaultKMSKeyAccountID())
 	awskmsdiscoverymultikeyring.AwsKmsDiscoveryMultiKeyringExample(
 		stringToEncrypt,
-		utils.GetDefaultKMSKeyId(),
-		utils.GetDefaultKMSKeyAccountID(),
-		utils.GetRegions())
+		utils.DefaultKMSKeyId(),
+		utils.DefaultKMSKeyAccountID(),
+		utils.Regions())
 	rawrsakeyring.RawRsaExample(stringToEncrypt)
 	awskmsmrkkeyring.AwsKmsMrkKeyringExample(
 		stringToEncrypt,
-		utils.GetDefaultRegionMrkKeyArn(),
-		utils.GetAlternateRegionMrkKeyArn(),
-		utils.GetDefaultMRKKeyRegion(),
-		utils.GetAlternateRegionMrkKeyRegion())
+		utils.DefaultRegionMrkKeyArn(),
+		utils.AlternateRegionMrkKeyArn(),
+		utils.DefaultMRKKeyRegion(),
+		utils.AlternateRegionMrkKeyRegion())
 	awskmsmrkmultikeyring.AwsKmsMrkMultiKeyringExample(
 		stringToEncrypt,
-		utils.GetDefaultRegionMrkKeyArn(),
-		utils.GetAlternateRegionMrkKeyArn(),
-		utils.GetDefaultKMSKeyId(),
-		utils.GetAlternateRegionMrkKeyRegion())
+		utils.DefaultRegionMrkKeyArn(),
+		utils.AlternateRegionMrkKeyArn(),
+		utils.DefaultKMSKeyId(),
+		utils.AlternateRegionMrkKeyRegion())
 	awskmsmrkdiscoverykeyring.AwsKmsMrkDiscoveryKeyringExample(
 		stringToEncrypt,
-		utils.GetDefaultRegionMrkKeyArn(),
-		utils.GetDefaultMRKKeyRegion(),
-		utils.GetAlternateRegionMrkKeyRegion(),
-		utils.GetDefaultKMSKeyAccountID())
+		utils.DefaultRegionMrkKeyArn(),
+		utils.DefaultMRKKeyRegion(),
+		utils.AlternateRegionMrkKeyRegion(),
+		utils.DefaultKMSKeyAccountID())
 	awskmsmrkdiscoverymultikeyring.AwsKmsMrkDiscoveryMultiKeyringExample(
 		stringToEncrypt,
-		utils.GetDefaultRegionMrkKeyArn(),
-		utils.GetDefaultMRKKeyRegion(),
-		utils.GetDefaultKMSKeyAccountID(),
-		utils.GetRegionsOfMRKKeys(),
+		utils.DefaultRegionMrkKeyArn(),
+		utils.DefaultMRKKeyRegion(),
+		utils.DefaultKMSKeyAccountID(),
+		utils.RegionsOfMRKKeys(),
 	)
 	awskmshierarchicalkeyring.AwsKmsHKeyExample(
 		stringToEncrypt,
-		utils.GetKeyStoreKMSKeyRegion(),
-		utils.GetKeyStoreRegion(),
-		utils.GetKeyStoreKMSKeyID(),
-		utils.GetKeyStoreName(),
-		utils.GetLogicalKeyStoreName(),
+		utils.KeyStoreKMSKeyRegion(),
+		utils.KeyStoreRegion(),
+		utils.KeyStoreKMSKeyID(),
+		utils.KeyStoreName(),
+		utils.LogicalKeyStoreName(),
 	)
 	awskmshierarchicalkeyring.CreateAndVersionBranchKeyId(
-		utils.GetKeyStoreKMSKeyRegion(),
-		utils.GetKeyStoreRegion(),
-		utils.GetKeyStoreKMSKeyID(),
-		utils.GetKeyStoreName(),
-		utils.GetLogicalKeyStoreName(),
+		utils.KeyStoreKMSKeyRegion(),
+		utils.KeyStoreRegion(),
+		utils.KeyStoreKMSKeyID(),
+		utils.KeyStoreName(),
+		utils.LogicalKeyStoreName(),
 	)
 	awskmshierarchicalkeyring.SharedCacheExample(
 		stringToEncrypt,
-		utils.GetKeyStoreKMSKeyRegion(),
-		utils.GetKeyStoreRegion(),
-		utils.GetKeyStoreKMSKeyID(),
-		utils.GetKeyStoreName(),
-		utils.GetLogicalKeyStoreName(),
+		utils.KeyStoreKMSKeyRegion(),
+		utils.KeyStoreRegion(),
+		utils.KeyStoreKMSKeyID(),
+		utils.KeyStoreName(),
+		utils.LogicalKeyStoreName(),
 	)
 	rawaeskeyring.RawAesExample(stringToEncrypt)
 	multikeyring.MultiKeyringExample(
 		stringToEncrypt,
-		utils.GetDefaultKMSKeyId(),
-		utils.GetDefaultKmsKeyRegion(),
+		utils.DefaultKMSKeyId(),
+		utils.DefaultKmsKeyRegion(),
 	)
 }

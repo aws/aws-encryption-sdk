@@ -51,103 +51,103 @@ twIDAQAB
 
 // Getter functions
 
-func GetKmsEcdhKeyIdP256SenderKeyId() string {
+func KmsEcdhKeyIdP256SenderKeyId() string {
 	return testKmsEcdhKeyIdP256SenderKeyId
 }
 
-func GetKmsEcdhKeyIdP256RecipientKeyId() string {
+func KmsEcdhKeyIdP256RecipientKeyId() string {
 	return testKmsEcdhKeyIdP256RecipientKeyId
 }
 
-func GetKmsEccPublicKeyFileNameRecipient() string {
+func KmsEccPublicKeyFileNameRecipient() string {
 	return kmsEccPublicKeyFileNameRecipient
 }
 
-func GetKmsEccPublicKeyFileNameSender() string {
+func KmsEccPublicKeyFileNameSender() string {
 	return kmsEccPublicKeyFileNameSender
 }
 
-func GetEccPrivateKeyFileNameSender() string {
+func EccPrivateKeyFileNameSender() string {
 	return eccPrivateKeyFileNameSender
 }
 
-func GetEccPrivateKeyFileNameRecipient() string {
+func EccPrivateKeyFileNameRecipient() string {
 	return eccPrivateKeyFileNameRecipient
 }
 
-func GetEccPublicKeyFileNameRecipient() string {
+func EccPublicKeyFileNameRecipient() string {
 	return eccPublicKeyFileNameRecipient
 }
 
-func GetRegionsOfMRKKeys() []string {
+func RegionsOfMRKKeys() []string {
 	return []string{defaultMRKKeyRegion, alternateRegionMrkKeyRegion}
 }
 
-func GetRegions() []string {
+func Regions() []string {
 	return []string{defaultKmsKeyRegion, testAlternateRegionKMSKeyRegion}
 }
 
-func GetDefaultKmsKeyRegion() string {
+func DefaultKmsKeyRegion() string {
 	return defaultKmsKeyRegion
 }
 
-func GetDefaultMRKKeyRegion() string {
+func DefaultMRKKeyRegion() string {
 	return defaultMRKKeyRegion
 }
 
-func GetAlternateRegionMrkKeyRegion() string {
+func AlternateRegionMrkKeyRegion() string {
 	return alternateRegionMrkKeyRegion
 }
 
-func GetAlternateRegionMrkKeyArn() string {
+func AlternateRegionMrkKeyArn() string {
 	return testAlternateRegionMrkKeyId
 }
 
-func GetDefaultRegionMrkKeyArn() string {
+func DefaultRegionMrkKeyArn() string {
 	return testDefaultMRKKeyId
 }
 
-func GetAlternateRegionKMSKeyRegion() string {
+func AlternateRegionKMSKeyRegion() string {
 	return testAlternateRegionKMSKeyRegion
 }
 
-func GetAlternateRegionKMSKeyId() string {
+func AlternateRegionKMSKeyId() string {
 	return testAlternateRegionKMSKeyId
 }
 
-func GetDefaultKMSKeyAccountID() string {
+func DefaultKMSKeyAccountID() string {
 	return defaultKMSKeyAccountID
 }
 
-func GetDefaultKMSKeyId() string {
+func DefaultKMSKeyId() string {
 	return testDefaultKMSKeyId
 }
 
-func GetTestKmsRsaKeyID() string {
+func TestKmsRsaKeyID() string {
 	return testKmsRsaKeyID
 }
 
-func GetKmsRSAPublicKey() []byte {
+func KmsRSAPublicKey() []byte {
 	return []byte(testKmsRsaPublicKey)
 }
 
-func GetKeyStoreRegion() string {
+func KeyStoreRegion() string {
 	return testKeyStoreRegion
 }
 
-func GetKeyStoreKMSKeyRegion() string {
+func KeyStoreKMSKeyRegion() string {
 	return testKeyStoreKMSKeyRegion
 }
 
-func GetKeyStoreKMSKeyID() string {
+func KeyStoreKMSKeyID() string {
 	return testKeyStoreKMSKeyID
 }
 
-func GetLogicalKeyStoreName() string {
+func LogicalKeyStoreName() string {
 	return testLogicalKeyStoreName
 }
 
-func GetKeyStoreName() string {
+func KeyStoreName() string {
 	return testKeyStoreName
 }
 
