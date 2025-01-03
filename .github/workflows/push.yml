@@ -27,6 +27,10 @@ jobs:
     uses: ./.github/workflows/library_rust_tests.yml
     with:
       dafny: '4.9.0'
+  push-ci-go:
+    uses: ./.github/workflows/library_go_tests.yml
+    with:
+      dafny: '4.9.0'
   pr-test-vectors:
     uses: ./.github/workflows/library_interop_tests.yml
     with:
