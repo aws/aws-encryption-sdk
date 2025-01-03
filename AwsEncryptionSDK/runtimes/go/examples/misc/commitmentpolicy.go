@@ -119,8 +119,8 @@ func CommitmentPolicyExample(exampleText, defaultKMSKeyId, defaultKmsKeyRegion s
 		Keyring:           awsKmsKeyring,
 		Ciphertext:        res.Ciphertext,
 	})
-	if err != nil {
-		panic(err)
+	if err == nil {
+		panic("err")
 	}
 	// If you do not specify the encryption context on Decrypt, it's recommended to check if the resulting encryption context matches.
 	// The encryption context was specified on decrypt; we are validating the encryption context for demonstration only.
