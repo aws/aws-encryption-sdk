@@ -25,7 +25,7 @@ jobs:
             ubuntu-latest,
             macos-13,
           ]
-        language: [java, net, rust]
+        language: [java, net, rust, go]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
     runs-on: ${{ matrix.os }}
@@ -43,7 +43,7 @@ jobs:
           uses: aws-actions/configure-aws-credentials@v2
           with:
             aws-region: us-west-2
-            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2 
             role-session-name: InterOpTests
 
         - uses: actions/checkout@v3
@@ -75,7 +75,7 @@ jobs:
         # TODO - uncomment this after Rust formatter works
         # - name: Rustfmt Check
         #   uses: actions-rust-lang/rustfmt@v1
-
+        
         # TODO: Remove this after the formatting in Rust starts working
         - name: smithy-dafny Rust hacks
           if: matrix.language == 'rust'
@@ -86,6 +86,15 @@ jobs:
             else
               sed -i 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
             fi
+
+        - name: Setup Go
+          uses: actions/setup-go@v5
+          with:
+            go-version: "1.23"
+    
+        - name: Install Go imports
+          run: |
+            go install golang.org/x/tools/cmd/goimports@latest
 
         - name: Setup NASM for Windows in Rust (aws-lc-sys)
           if: matrix.language == 'rust' && matrix.os == 'windows-latest'
@@ -122,11 +131,11 @@ jobs:
             # This works because `node` is installed by default on GHA runners
             CORES=$(node -e 'console.log(os.cpus().length)')
             make transpile_net
-
+        
         - name: Install Smithy-Dafny codegen dependencies
           if: matrix.language == 'rust'
           uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
-
+    
         # TODO: Remove this after checking in Rust polymorph code
         - name: Run make polymorph_rust
           if: matrix.language == 'rust'
@@ -134,7 +143,7 @@ jobs:
           working-directory: ./${{ matrix.library }}
           run: |
             make polymorph_rust
-
+        
         - name: Build ${{ matrix.library }} implementation in Rust
           if: matrix.language == 'rust'
           shell: bash
@@ -142,6 +151,23 @@ jobs:
           run: |
             CORES=$(node -e 'console.log(os.cpus().length)')
             make transpile_rust CORES=$CORES
+        
+        - name: Build ${{ matrix.library }} implementation in Go
+          if: matrix.language == 'go'
+          shell: bash
+          working-directory: ./${{ matrix.library }}
+          run: |
+            # This works because `node` is installed by default on GHA runners
+            CORES=$(node -e 'console.log(os.cpus().length)')
+            make transpile_go
+
+        # TODO: Remove this after Go polymorph does not generate unwanted duplicate code.
+        - name: Purge polymorph code in Go
+          if: matrix.language == 'go'
+          shell: bash
+          working-directory: ./${{ matrix.library }}
+          run: |
+            make purge_polymorph_code
 
         - name: Setup gradle
           if: matrix.language == 'java'
@@ -177,8 +203,8 @@ jobs:
             ubuntu-latest,
             macos-13,
           ]
-        encrypting_language: [java, net, rust]
-        decrypting_language: [java, net, rust]
+        encrypting_language: [java, net, rust, go]
+        decrypting_language: [java, net, rust, go]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
     runs-on: ${{ matrix.os }}
@@ -240,6 +266,15 @@ jobs:
             sed -i 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
           fi
 
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Install Go imports
+        run: |
+          go install golang.org/x/tools/cmd/goimports@latest
+
       - name: Setup NASM for Windows in Rust (aws-lc-sys)
         if: matrix.decrypting_language == 'rust' && matrix.os == 'windows-latest'
         uses: ilammy/setup-nasm@v1
@@ -279,7 +314,7 @@ jobs:
       - name: Install Smithy-Dafny codegen dependencies
         if: matrix.decrypting_language == 'rust'
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
-
+  
       # TODO: Remove this after checking in Rust polymorph code
       - name: Run make polymorph_rust
         if: matrix.decrypting_language == 'rust'
@@ -295,6 +330,23 @@ jobs:
         run: |
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_rust CORES=$CORES
+      
+      - name: Build ${{ matrix.library }} implementation in Go
+        if: matrix.decrypting_language == 'go'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_go
+          
+      # TODO: Remove this after Go polymorph does not generate unwanted duplicate code.
+      - name: Purge polymorph code in Go
+        if: matrix.decrypting_language == 'go'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          make purge_polymorph_code
 
       - name: Download Encrypt Manifest Artifact
         uses: actions/download-artifact@v4
