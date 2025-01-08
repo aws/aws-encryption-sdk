@@ -12,8 +12,8 @@ encrypted data keys, none of which can be decrypted.
 As a result, the AWS Encryption SDK would attempt to decrypt each
 encrypted data key until it exhausted the encrypted data keys in the message.
 
-For more information on how to use Raw AES keyrings, see
-https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-raw-aes-keyring.html
+For more information on limiting EDKs, see
+https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/configure.html#config-limit-keys
 */
 
 use aws_esdk::client as esdk_client;
