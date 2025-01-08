@@ -107,6 +107,3 @@ restore_directories:
 			echo "Directory $$dir not found"; \
 		fi \
 	done
-
-_polymorph_dependencies:
-	@echo "No polymorphing of dependency"
