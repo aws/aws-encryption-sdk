@@ -55,7 +55,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup .NET Core SDK 6
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '6.0.x'
 
@@ -165,7 +165,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup .NET Core SDK 6
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '6.0.x'
 
