@@ -89,19 +89,19 @@ jobs:
           java-version: 11
 
       - name: Clean for next Java
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           arguments: clean
           build-root-directory: ./${{ matrix.library }}/runtimes/java          
           
       - name: Compile Java 11
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           arguments: build
           build-root-directory: ./${{ matrix.library }}/runtimes/java
 
       - name: Test Java 11
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           arguments: runTests
           build-root-directory: ./${{ matrix.library }}/runtimes/java
@@ -113,19 +113,19 @@ jobs:
           java-version: 16
 
       - name: Clean for next Java
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           arguments: clean
           build-root-directory: ./${{ matrix.library }}/runtimes/java
 
       - name: Compile Java 16
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           arguments: build
           build-root-directory: ./${{ matrix.library }}/runtimes/java
 
       - name: Test Java 16
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           arguments: runTests
           build-root-directory: ./${{ matrix.library }}/runtimes/java     
@@ -137,19 +137,19 @@ jobs:
           java-version: 17
 
       - name: Clean for next Java
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           arguments: clean
           build-root-directory: ./${{ matrix.library }}/runtimes/java
 
       - name: Compile Java 17
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           arguments: build
           build-root-directory: ./${{ matrix.library }}/runtimes/java
 
       - name: Test Java 17
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           arguments: runTests
           build-root-directory: ./${{ matrix.library }}/runtimes/java      
