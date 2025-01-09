@@ -96,3 +96,10 @@ jobs:
         shell: bash
         run: |
           make test_go
+      
+      - name: Test Examples for Go
+        if: matrix.library == 'AwsEncryptionSDK'
+        working-directory: ${{ matrix.library }}/runtimes/go/examples
+        shell: bash
+        run: |
+          go run main.go
