@@ -71,7 +71,7 @@ jobs:
           fi
 
       - name: Setup Java 17 for codegen
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: "corretto"
           java-version: "17"
@@ -184,7 +184,7 @@ jobs:
           fi
 
       - name: Setup Java 17 for codegen
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: "corretto"
           java-version: "17"
