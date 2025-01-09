@@ -48,7 +48,7 @@ We start with AWS KMS examples, then show how to use other wrapping keys.
 
 Keyrings are the most common way for you to configure the AWS Encryption SDK.
 They determine how the AWS Encryption SDK protects your data.
-For more information about keyring see [AWS Developer Guide on using Keyrings](https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/choose-keyring.html).
+For more information about keyrings, see the [AWS Developer Guide on using Keyrings](https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/choose-keyring.html).
 You can find these examples in [`Examples/Keyring`](./Keyring).
 
 ### Cryptographic Materials Managers
@@ -62,6 +62,7 @@ This can include things like
 enforcing the use of certain algorithm suites or encryption context settings,
 reusing data keys across messages,
 or changing how you interact with keyrings.
+For more information about Cryptographic materials manager, see the [AWS Developer Guide on cryptographic materials manager](https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#crypt-materials-manager)
 You can find these examples in
 [`Examples/CryptographicMaterialsManager`](./CryptographicMaterialsManager).
 
