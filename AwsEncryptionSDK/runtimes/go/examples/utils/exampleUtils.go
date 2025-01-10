@@ -324,7 +324,7 @@ func GenerateKmsEccPublicKey(eccKeyArn string, kmsClient *kms.Client) ([]byte, e
 	return response.PublicKey, nil
 }
 
-// generateUUIDTestData creates an array of random UUID strings
+// GenerateUUIDTestData creates an array of random UUID strings
 func GenerateUUIDTestData(count int) []string {
 	testData := make([]string, count)
 	for i := 0; i < count; i++ {
