@@ -120,7 +120,7 @@ func processEncryptionWorker(
 	}
 }
 
-func MultiThreadTest(texts []string, defaultKmsKeyID, defaultKmsKeyRegion string) {
+func AWSKMSMultiThreadTest(texts []string, defaultKmsKeyID, defaultKmsKeyRegion string) {
 	// Create the AWS KMS client
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {

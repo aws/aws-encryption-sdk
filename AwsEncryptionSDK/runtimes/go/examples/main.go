@@ -161,7 +161,7 @@ func main() {
 		utils.DefaultKmsKeyRegion(),
 	)
 	// Example with multithreading
-	multithreading.MultiThreadTest(
+	multithreading.AWSKMSMultiThreadTest(
 		utils.GenerateUUIDTestData(numOfString),
 		utils.DefaultKMSKeyId(),
 		utils.DefaultKmsKeyRegion())
