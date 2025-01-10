@@ -20,6 +20,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.35.1
 	github.com/aws/aws-sdk-go-v2/service/kms v1.36.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.31.1
+	github.com/google/uuid v1.6.0
 )
 
 require (
@@ -38,6 +39,5 @@ require (
 	github.com/aws/smithy-go v1.21.0 // indirect
 	github.com/dafny-lang/DafnyRuntimeGo/v4 v4.9.1 // indirect
 	github.com/dafny-lang/DafnyStandardLibGo v0.0.0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 )
