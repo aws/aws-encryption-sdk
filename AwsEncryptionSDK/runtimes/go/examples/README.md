@@ -62,7 +62,7 @@ This can include things like
 enforcing the use of certain algorithm suites or encryption context settings,
 reusing data keys across messages,
 or changing how you interact with keyrings.
-For more information about cryptographic materials manager, see the [AWS Developer Guide on cryptographic materials manager](https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#crypt-materials-manager)
+For more information about cryptographic materials managers, see the [AWS Developer Guide on cryptographic materials managers](https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#crypt-materials-manager).
 You can find these examples in
 [`examples/cryptographic_materials_manager`](./cryptographicmaterialsmanager).
 
