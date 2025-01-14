@@ -22,7 +22,6 @@ package multithreading
 import (
 	"context"
 	"fmt"
-	"runtime"
 	"sync"
 
 	mpl "github.com/aws/aws-cryptographic-material-providers-library/mpl/awscryptographymaterialproviderssmithygenerated"
@@ -33,29 +32,19 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/kms"
 )
 
-// Structure to hold operation results
-type OperationResult struct {
-	EncryptOutput *esdktypes.EncryptOutput
-	DecryptOutput *esdktypes.DecryptOutput
-	Error         error
-}
-
 // Function to handle encryption
 func encryptData(
 	ctx context.Context,
 	encryptionClient *client.Client,
 	plaintext string,
 	encryptionContext map[string]string,
-	keyring mpltypes.IKeyring) OperationResult {
+	keyring mpltypes.IKeyring) (*esdktypes.EncryptOutput, error) {
 	res, err := encryptionClient.Encrypt(ctx, esdktypes.EncryptInput{
 		Plaintext:         []byte(plaintext),
 		EncryptionContext: encryptionContext,
 		Keyring:           keyring,
 	})
-	return OperationResult{
-		EncryptOutput: res,
-		Error:         err,
-	}
+	return res, err
 }
 
 // Function to handle decryption
@@ -64,19 +53,17 @@ func decryptData(
 	encryptionClient *client.Client,
 	ciphertext []byte,
 	encryptionContext map[string]string,
-	keyring mpltypes.IKeyring) OperationResult {
+	keyring mpltypes.IKeyring) (*esdktypes.DecryptOutput, error) {
 	res, err := encryptionClient.Decrypt(ctx, esdktypes.DecryptInput{
 		EncryptionContext: encryptionContext,
 		Keyring:           keyring,
 		Ciphertext:        ciphertext,
 	})
-	return OperationResult{
-		DecryptOutput: res,
-		Error:         err,
-	}
+	return res, err
 }
 
 func processEncryptionWorker(
+	ctx context.Context,
 	wg *sync.WaitGroup,
 	jobs <-chan string,
 	encryptionClient *client.Client,
@@ -85,36 +72,40 @@ func processEncryptionWorker(
 ) {
 	defer wg.Done()
 	for plaintext := range jobs {
-		ctx := context.Background()
 		// Perform encryption
-		encryptResult := encryptData(ctx, encryptionClient, plaintext, encryptionContext, awsKmsKeyring)
-		if encryptResult.Error != nil {
-			panic(encryptResult.Error)
+		encryptResult, err := encryptData(
+			ctx,
+			encryptionClient,
+			plaintext,
+			encryptionContext,
+			awsKmsKeyring)
+		if err != nil {
+			panic(err)
 		}
 		// Verify ciphertext is different from plaintext
-		if string(encryptResult.EncryptOutput.Ciphertext) == plaintext {
+		if string(encryptResult.Ciphertext) == plaintext {
 			panic("Ciphertext and Plaintext before encryption are the same")
 		}
 		// Perform decryption
-		decryptResult := decryptData(
+		decryptResult, err := decryptData(
 			ctx,
 			encryptionClient,
-			encryptResult.EncryptOutput.Ciphertext,
+			encryptResult.Ciphertext,
 			encryptionContext,
 			awsKmsKeyring,
 		)
-		if decryptResult.Error != nil {
-			panic(decryptResult.Error)
+		if err != nil {
+			panic(err)
 		}
 		// If you do not specify the encryption context on Decrypt, it's recommended to check if the resulting encryption context matches.
 		// The encryption context was specified on decrypt; we are validating the encryption context for demonstration only.
 		// Before your application uses plaintext data, verify that the encryption context that
 		// you used to encrypt the message is included in the encryption context that was used to
 		// decrypt the message. The AWS Encryption SDK can add pairs, so don't require an exact match.
-		if err := validateEncryptionContext(encryptionContext, decryptResult.DecryptOutput.EncryptionContext); err != nil {
+		if err := validateEncryptionContext(encryptionContext, decryptResult.EncryptionContext); err != nil {
 			panic(err)
 		}
-		if string(decryptResult.DecryptOutput.Plaintext) != plaintext {
+		if string(decryptResult.Plaintext) != plaintext {
 			panic("Plaintext after decryption and Plaintext before encryption are NOT the same")
 		}
 	}
@@ -135,11 +126,12 @@ func AWSKMSMultiThreadTest(texts []string, defaultKmsKeyID, defaultKmsKeyRegion 
 		panic(err)
 	}
 	// Create the keyring
+	ctx := context.Background()
 	awsKmsKeyringInput := mpltypes.CreateAwsKmsKeyringInput{
 		KmsClient: kmsClient,
 		KmsKeyId:  defaultKmsKeyID,
 	}
-	awsKmsKeyring, err := matProv.CreateAwsKmsKeyring(context.Background(), awsKmsKeyringInput)
+	awsKmsKeyring, err := matProv.CreateAwsKmsKeyring(ctx, awsKmsKeyringInput)
 	if err != nil {
 		panic(err)
 	}
@@ -163,7 +155,7 @@ func AWSKMSMultiThreadTest(texts []string, defaultKmsKeyID, defaultKmsKeyRegion 
 		"the data you are handling": "is what you think it is",
 	}
 	// Create buffered channels to handle multiple operations
-	numWorkers := runtime.NumCPU() - 1 // Leave one CPU free for system tasks
+	numWorkers := 10
 
 	// Create a wait group to track all goroutines
 	var wg sync.WaitGroup
@@ -174,7 +166,7 @@ func AWSKMSMultiThreadTest(texts []string, defaultKmsKeyID, defaultKmsKeyRegion 
 	// Start worker pool
 	for range numWorkers {
 		wg.Add(1)
-		go processEncryptionWorker(&wg, jobs, encryptionClient, awsKmsKeyring, encryptionContext)
+		go processEncryptionWorker(ctx, &wg, jobs, encryptionClient, awsKmsKeyring, encryptionContext)
 	}
 
 	// Send jobs to workers
