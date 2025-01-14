@@ -155,7 +155,7 @@ func AWSKMSMultiThreadTest(texts []string, defaultKmsKeyID, defaultKmsKeyRegion 
 		"the data you are handling": "is what you think it is",
 	}
 	// Create buffered channels to handle multiple operations
-	// As an example, we will have 10 workers, adjust this number as needed."
+	// As an example, we will have 10 workers, adjust this number as needed.
 	numWorkers := 10
 
 	// Create a wait group to track all goroutines
