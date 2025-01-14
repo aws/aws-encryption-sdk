@@ -29,7 +29,11 @@ import (
 
 func main() {
 	const stringToEncrypt = "Text To encrypt"
-	const numOfString = 10000
+	//const numOfString = 10000
+	multithreading.AWSKMSMultiThreadTest(
+		[]string{"1", "2", "3", "4", "5", "6", "7", "8", "9"},
+		utils.DefaultKMSKeyId(),
+		utils.DefaultKmsKeyRegion())
 	clientsupplier.ClientSupplierExample(
 		stringToEncrypt,
 		utils.DefaultRegionMrkKeyArn(),
@@ -161,8 +165,5 @@ func main() {
 		utils.DefaultKmsKeyRegion(),
 	)
 	// Example with multithreading
-	multithreading.AWSKMSMultiThreadTest(
-		utils.GenerateUUIDTestData(numOfString),
-		utils.DefaultKMSKeyId(),
-		utils.DefaultKmsKeyRegion())
+
 }

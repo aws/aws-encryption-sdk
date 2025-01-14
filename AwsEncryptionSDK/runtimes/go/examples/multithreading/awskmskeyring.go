@@ -72,6 +72,9 @@ func processEncryptionWorker(
 ) {
 	defer wg.Done()
 	for plaintext := range jobs {
+		if plaintext == "5" {
+			panic("Ohh no its 5")
+		}
 		// Perform encryption
 		encryptResult, err := encryptData(
 			ctx,
