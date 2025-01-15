@@ -22,8 +22,8 @@ import (
 	"github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/examples/keyring/multikeyring"
 	"github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/examples/keyring/rawaeskeyring"
 	"github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/examples/keyring/rawrsakeyring"
-	"github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/examples/multithreading"
 	"github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/examples/misc"
+	"github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/examples/multithreading"
 	"github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/examples/utils"
 )
 
