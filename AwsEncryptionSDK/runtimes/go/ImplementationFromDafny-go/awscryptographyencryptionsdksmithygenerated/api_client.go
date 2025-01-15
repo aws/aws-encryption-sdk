@@ -5,9 +5,9 @@ package awscryptographyencryptionsdksmithygenerated
 import (
 	"context"
 
-	"github.com/aws/aws-encryption-sdk/AwsCryptographyEncryptionSdkTypes"
-	"github.com/aws/aws-encryption-sdk/ESDK"
-	"github.com/aws/aws-encryption-sdk/awscryptographyencryptionsdksmithygeneratedtypes"
+	"github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/AwsCryptographyEncryptionSdkTypes"
+	"github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/ESDK"
+	"github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/awscryptographyencryptionsdksmithygeneratedtypes"
 )
 
 type Client struct {
