@@ -32,7 +32,9 @@ jobs:
     permissions:
       id-token: write
       contents: read
-      
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: "sccache"
     steps:
         - name: Support longpaths on Git checkout
           run: |
@@ -75,7 +77,11 @@ jobs:
         # TODO - uncomment this after Rust formatter works
         # - name: Rustfmt Check
         #   uses: actions-rust-lang/rustfmt@v1
-        
+
+        - name: Run sccache-cache for Rust CI
+          if: matrix.language == 'rust'
+          uses: mozilla-actions/sccache-action@v0.0.7
+
         # TODO: Remove this after the formatting in Rust starts working
         - name: smithy-dafny Rust hacks
           if: matrix.language == 'rust'
@@ -211,7 +217,9 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: "sccache"
     steps:
       - name: Support longpaths on Git checkout
         run: |
@@ -254,6 +262,10 @@ jobs:
       # TODO - uncomment this after Rust formatter works
       # - name: Rustfmt Check
       #   uses: actions-rust-lang/rustfmt@v1
+
+      - name: Run sccache-cache for Rust CI
+        if: matrix.decrypting_language == 'rust'
+        uses: mozilla-actions/sccache-action@v0.0.7
 
       # TODO: Remove this after the formatting in Rust starts working
       - name: smithy-dafny Rust hacks
