@@ -6,7 +6,7 @@ package awskmshierarchicalkeyring
 import (
 	"fmt"
 
-	mpltypes "github.com/aws/aws-cryptographic-material-providers-library/mpl/awscryptographymaterialproviderssmithygeneratedtypes"
+	mpltypes "github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl/awscryptographymaterialproviderssmithygeneratedtypes"
 )
 
 /*

@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/aws/aws-cryptographic-material-providers-library/primitives/awscryptographyprimitivessmithygeneratedtypes"
+	"github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives/awscryptographyprimitivessmithygeneratedtypes"
 	"github.com/aws/aws-sdk-go-v2/service/kms"
 )
 
