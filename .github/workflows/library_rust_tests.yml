@@ -57,7 +57,7 @@ jobs:
       # TODO - uncomment this after Rust formatter works
       # - name: Rustfmt Check
       #   uses: actions-rust-lang/rustfmt@v1
-    
+
       - name: Run sccache-cache for Rust CI
         uses: mozilla-actions/sccache-action@v0.0.7
 
