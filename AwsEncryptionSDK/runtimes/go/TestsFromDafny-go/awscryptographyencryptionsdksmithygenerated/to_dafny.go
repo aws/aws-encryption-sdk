@@ -10,39 +10,11 @@ import (
 	"github.com/aws/aws-cryptographic-material-providers-library/mpl/awscryptographymaterialproviderssmithygeneratedtypes"
 	"github.com/aws/aws-cryptographic-material-providers-library/primitives/awscryptographyprimitivessmithygenerated"
 	"github.com/aws/aws-cryptographic-material-providers-library/primitives/awscryptographyprimitivessmithygeneratedtypes"
-	"github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/Wrappers"
 	"github.com/aws/aws-encryption-sdk/AwsCryptographyEncryptionSdkTypes"
 	"github.com/aws/aws-encryption-sdk/awscryptographyencryptionsdksmithygeneratedtypes"
 	"github.com/dafny-lang/DafnyRuntimeGo/v4/dafny"
+	"github.com/dafny-lang/DafnyStandardLibGo/Wrappers"
 )
-
-func DecryptInput_ToDafny(nativeInput awscryptographyencryptionsdksmithygeneratedtypes.DecryptInput) AwsCryptographyEncryptionSdkTypes.DecryptInput {
-
-	return func() AwsCryptographyEncryptionSdkTypes.DecryptInput {
-
-		return AwsCryptographyEncryptionSdkTypes.Companion_DecryptInput_.Create_DecryptInput_(aws_cryptography_encryptionSdk_DecryptInput_ciphertext_ToDafny(nativeInput.Ciphertext), func() Wrappers.Option {
-			if (nativeInput.MaterialsManager) == nil {
-				return Wrappers.Companion_Option_.Create_None_()
-			}
-			return Wrappers.Companion_Option_.Create_Some_(awscryptographymaterialproviderssmithygenerated.CryptographicMaterialsManager_ToDafny(nativeInput.MaterialsManager))
-		}(), func() Wrappers.Option {
-			if (nativeInput.Keyring) == nil {
-				return Wrappers.Companion_Option_.Create_None_()
-			}
-			return Wrappers.Companion_Option_.Create_Some_(awscryptographymaterialproviderssmithygenerated.Keyring_ToDafny(nativeInput.Keyring))
-		}(), aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_ToDafny(nativeInput.EncryptionContext))
-	}()
-
-}
-
-func DecryptOutput_ToDafny(nativeOutput awscryptographyencryptionsdksmithygeneratedtypes.DecryptOutput) AwsCryptographyEncryptionSdkTypes.DecryptOutput {
-
-	return func() AwsCryptographyEncryptionSdkTypes.DecryptOutput {
-
-		return AwsCryptographyEncryptionSdkTypes.Companion_DecryptOutput_.Create_DecryptOutput_(aws_cryptography_encryptionSdk_DecryptOutput_plaintext_ToDafny(nativeOutput.Plaintext), aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_ToDafny(nativeOutput.EncryptionContext), aws_cryptography_encryptionSdk_DecryptOutput_algorithmSuiteId_ToDafny(nativeOutput.AlgorithmSuiteId))
-	}()
-
-}
 
 func EncryptInput_ToDafny(nativeInput awscryptographyencryptionsdksmithygeneratedtypes.EncryptInput) AwsCryptographyEncryptionSdkTypes.EncryptInput {
 
@@ -68,6 +40,34 @@ func EncryptOutput_ToDafny(nativeOutput awscryptographyencryptionsdksmithygenera
 	return func() AwsCryptographyEncryptionSdkTypes.EncryptOutput {
 
 		return AwsCryptographyEncryptionSdkTypes.Companion_EncryptOutput_.Create_EncryptOutput_(aws_cryptography_encryptionSdk_EncryptOutput_ciphertext_ToDafny(nativeOutput.Ciphertext), aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_ToDafny(nativeOutput.EncryptionContext), aws_cryptography_encryptionSdk_EncryptOutput_algorithmSuiteId_ToDafny(nativeOutput.AlgorithmSuiteId))
+	}()
+
+}
+
+func DecryptInput_ToDafny(nativeInput awscryptographyencryptionsdksmithygeneratedtypes.DecryptInput) AwsCryptographyEncryptionSdkTypes.DecryptInput {
+
+	return func() AwsCryptographyEncryptionSdkTypes.DecryptInput {
+
+		return AwsCryptographyEncryptionSdkTypes.Companion_DecryptInput_.Create_DecryptInput_(aws_cryptography_encryptionSdk_DecryptInput_ciphertext_ToDafny(nativeInput.Ciphertext), func() Wrappers.Option {
+			if (nativeInput.MaterialsManager) == nil {
+				return Wrappers.Companion_Option_.Create_None_()
+			}
+			return Wrappers.Companion_Option_.Create_Some_(awscryptographymaterialproviderssmithygenerated.CryptographicMaterialsManager_ToDafny(nativeInput.MaterialsManager))
+		}(), func() Wrappers.Option {
+			if (nativeInput.Keyring) == nil {
+				return Wrappers.Companion_Option_.Create_None_()
+			}
+			return Wrappers.Companion_Option_.Create_Some_(awscryptographymaterialproviderssmithygenerated.Keyring_ToDafny(nativeInput.Keyring))
+		}(), aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_ToDafny(nativeInput.EncryptionContext))
+	}()
+
+}
+
+func DecryptOutput_ToDafny(nativeOutput awscryptographyencryptionsdksmithygeneratedtypes.DecryptOutput) AwsCryptographyEncryptionSdkTypes.DecryptOutput {
+
+	return func() AwsCryptographyEncryptionSdkTypes.DecryptOutput {
+
+		return AwsCryptographyEncryptionSdkTypes.Companion_DecryptOutput_.Create_DecryptOutput_(aws_cryptography_encryptionSdk_DecryptOutput_plaintext_ToDafny(nativeOutput.Plaintext), aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_ToDafny(nativeOutput.EncryptionContext), aws_cryptography_encryptionSdk_DecryptOutput_algorithmSuiteId_ToDafny(nativeOutput.AlgorithmSuiteId))
 	}()
 
 }
@@ -125,101 +125,10 @@ func AwsEncryptionSdkConfig_ToDafny(nativeInput awscryptographyencryptionsdksmit
 
 }
 
-func aws_cryptography_encryptionSdk_DecryptInput_ciphertext_ToDafny(input []byte) dafny.Sequence {
-	return func() dafny.Sequence {
-		var v []interface{}
-		if input == nil {
-			return nil
-		}
-		for _, e := range input {
-			v = append(v, e)
-		}
-		return dafny.SeqOf(v...)
-	}()
-}
-
-func aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_ToDafny(input map[string]string) Wrappers.Option {
-	return func() Wrappers.Option {
-		fieldValue := dafny.NewMapBuilder()
-		for key, val := range input {
-			fieldValue.Add(aws_cryptography_materialProviders_EncryptionContext_key_ToDafny(key), aws_cryptography_materialProviders_EncryptionContext_value_ToDafny(val))
-		}
-		return Wrappers.Companion_Option_.Create_Some_(fieldValue.ToMap())
-	}()
-}
-
-func aws_cryptography_materialProviders_EncryptionContext_key_ToDafny(input string) dafny.Sequence {
+func aws_cryptography_encryptionSdk_AwsEncryptionSdkException_message_ToDafny(input string) dafny.Sequence {
 	return func() dafny.Sequence {
 
-		return dafny.SeqOf(func() []interface{} {
-			utf8.ValidString(input)
-			b := []byte(input)
-			f := make([]interface{}, len(b))
-			for i, v := range b {
-				f[i] = v
-			}
-			return f
-		}()...)
-	}()
-}
-
-func aws_cryptography_materialProviders_EncryptionContext_value_ToDafny(input string) dafny.Sequence {
-	return func() dafny.Sequence {
-
-		return dafny.SeqOf(func() []interface{} {
-			utf8.ValidString(input)
-			b := []byte(input)
-			f := make([]interface{}, len(b))
-			for i, v := range b {
-				f[i] = v
-			}
-			return f
-		}()...)
-	}()
-}
-
-func aws_cryptography_encryptionSdk_DecryptOutput_plaintext_ToDafny(input []byte) dafny.Sequence {
-	return func() dafny.Sequence {
-		var v []interface{}
-		if input == nil {
-			return nil
-		}
-		for _, e := range input {
-			v = append(v, e)
-		}
-		return dafny.SeqOf(v...)
-	}()
-}
-
-func aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_ToDafny(input map[string]string) dafny.Map {
-	return func() dafny.Map {
-		fieldValue := dafny.NewMapBuilder()
-		for key, val := range input {
-			fieldValue.Add(aws_cryptography_materialProviders_EncryptionContext_key_ToDafny(key), aws_cryptography_materialProviders_EncryptionContext_value_ToDafny(val))
-		}
-		return fieldValue.ToMap()
-	}()
-}
-
-func aws_cryptography_encryptionSdk_DecryptOutput_algorithmSuiteId_ToDafny(input awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId) AwsCryptographyMaterialProvidersTypes.ESDKAlgorithmSuiteId {
-	return func() AwsCryptographyMaterialProvidersTypes.ESDKAlgorithmSuiteId {
-
-		var index int
-		for _, enumVal := range input.Values() {
-			index++
-			if enumVal == input {
-				break
-			}
-		}
-		var enum interface{}
-		for allEnums, i := dafny.Iterate(AwsCryptographyMaterialProvidersTypes.CompanionStruct_ESDKAlgorithmSuiteId_{}.AllSingletonConstructors()), 0; i < index; i++ {
-			var ok bool
-			enum, ok = allEnums()
-			if !ok {
-				break
-			}
-		}
-		return enum.(AwsCryptographyMaterialProvidersTypes.ESDKAlgorithmSuiteId)
+		return dafny.SeqOfChars([]dafny.Char(input)...)
 	}()
 }
 
@@ -236,7 +145,16 @@ func aws_cryptography_encryptionSdk_EncryptInput_plaintext_ToDafny(input []byte)
 	}()
 }
 
-func aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_ToDafny(input map[string]string) Wrappers.Option {
+func aws_cryptography_encryptionSdk_EncryptInput_frameLength_ToDafny(input *int64) Wrappers.Option {
+	return func() Wrappers.Option {
+		if input == nil {
+			return Wrappers.Companion_Option_.Create_None_()
+		}
+		return Wrappers.Companion_Option_.Create_Some_(*input)
+	}()
+}
+
+func aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_ToDafny(input map[string]string) Wrappers.Option {
 	return func() Wrappers.Option {
 		fieldValue := dafny.NewMapBuilder()
 		for key, val := range input {
@@ -246,7 +164,17 @@ func aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_ToDafny(input
 	}()
 }
 
-func aws_cryptography_encryptionSdk_EncryptInput_algorithmSuiteId_ToDafny(input *awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId) Wrappers.Option {
+func aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_ToDafny(input map[string]string) dafny.Map {
+	return func() dafny.Map {
+		fieldValue := dafny.NewMapBuilder()
+		for key, val := range input {
+			fieldValue.Add(aws_cryptography_materialProviders_EncryptionContext_key_ToDafny(key), aws_cryptography_materialProviders_EncryptionContext_value_ToDafny(val))
+		}
+		return fieldValue.ToMap()
+	}()
+}
+
+func aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_netV4_0_0_RetryPolicy_ToDafny(input *awscryptographyencryptionsdksmithygeneratedtypes.NetV4_0_0_RetryPolicy) Wrappers.Option {
 	return func() Wrappers.Option {
 		if input == nil {
 			return Wrappers.Companion_Option_.Create_None_()
@@ -259,46 +187,24 @@ func aws_cryptography_encryptionSdk_EncryptInput_algorithmSuiteId_ToDafny(input 
 			}
 		}
 		var enum interface{}
-		for allEnums, i := dafny.Iterate(AwsCryptographyMaterialProvidersTypes.CompanionStruct_ESDKAlgorithmSuiteId_{}.AllSingletonConstructors()), 0; i < index; i++ {
+		for allEnums, i := dafny.Iterate(AwsCryptographyEncryptionSdkTypes.CompanionStruct_NetV4__0__0__RetryPolicy_{}.AllSingletonConstructors()), 0; i < index; i++ {
 			var ok bool
 			enum, ok = allEnums()
 			if !ok {
 				break
 			}
 		}
-		return Wrappers.Companion_Option_.Create_Some_(enum.(AwsCryptographyMaterialProvidersTypes.ESDKAlgorithmSuiteId))
+		return Wrappers.Companion_Option_.Create_Some_(enum.(AwsCryptographyEncryptionSdkTypes.NetV4__0__0__RetryPolicy))
 	}()
 }
 
-func aws_cryptography_encryptionSdk_EncryptInput_frameLength_ToDafny(input *int64) Wrappers.Option {
+func aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_ToDafny(input map[string]string) Wrappers.Option {
 	return func() Wrappers.Option {
-		if input == nil {
-			return Wrappers.Companion_Option_.Create_None_()
-		}
-		return Wrappers.Companion_Option_.Create_Some_(*input)
-	}()
-}
-
-func aws_cryptography_encryptionSdk_EncryptOutput_ciphertext_ToDafny(input []byte) dafny.Sequence {
-	return func() dafny.Sequence {
-		var v []interface{}
-		if input == nil {
-			return nil
-		}
-		for _, e := range input {
-			v = append(v, e)
-		}
-		return dafny.SeqOf(v...)
-	}()
-}
-
-func aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_ToDafny(input map[string]string) dafny.Map {
-	return func() dafny.Map {
 		fieldValue := dafny.NewMapBuilder()
 		for key, val := range input {
 			fieldValue.Add(aws_cryptography_materialProviders_EncryptionContext_key_ToDafny(key), aws_cryptography_materialProviders_EncryptionContext_value_ToDafny(val))
 		}
-		return fieldValue.ToMap()
+		return Wrappers.Companion_Option_.Create_Some_(fieldValue.ToMap())
 	}()
 }
 
@@ -324,10 +230,48 @@ func aws_cryptography_encryptionSdk_EncryptOutput_algorithmSuiteId_ToDafny(input
 	}()
 }
 
-func aws_cryptography_encryptionSdk_AwsEncryptionSdkException_message_ToDafny(input string) dafny.Sequence {
+func aws_cryptography_encryptionSdk_EncryptOutput_ciphertext_ToDafny(input []byte) dafny.Sequence {
 	return func() dafny.Sequence {
+		var v []interface{}
+		if input == nil {
+			return nil
+		}
+		for _, e := range input {
+			v = append(v, e)
+		}
+		return dafny.SeqOf(v...)
+	}()
+}
 
-		return dafny.SeqOfChars([]dafny.Char(input)...)
+func aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_maxEncryptedDataKeys_ToDafny(input *int64) Wrappers.Option {
+	return func() Wrappers.Option {
+		if input == nil {
+			return Wrappers.Companion_Option_.Create_None_()
+		}
+		return Wrappers.Companion_Option_.Create_Some_(*input)
+	}()
+}
+
+func aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_ToDafny(input map[string]string) dafny.Map {
+	return func() dafny.Map {
+		fieldValue := dafny.NewMapBuilder()
+		for key, val := range input {
+			fieldValue.Add(aws_cryptography_materialProviders_EncryptionContext_key_ToDafny(key), aws_cryptography_materialProviders_EncryptionContext_value_ToDafny(val))
+		}
+		return fieldValue.ToMap()
+	}()
+}
+
+func aws_cryptography_encryptionSdk_DecryptOutput_plaintext_ToDafny(input []byte) dafny.Sequence {
+	return func() dafny.Sequence {
+		var v []interface{}
+		if input == nil {
+			return nil
+		}
+		for _, e := range input {
+			v = append(v, e)
+		}
+		return dafny.SeqOf(v...)
 	}()
 }
 
@@ -355,16 +299,22 @@ func aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_commitmentPolicy_ToDa
 	}()
 }
 
-func aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_maxEncryptedDataKeys_ToDafny(input *int64) Wrappers.Option {
-	return func() Wrappers.Option {
-		if input == nil {
-			return Wrappers.Companion_Option_.Create_None_()
-		}
-		return Wrappers.Companion_Option_.Create_Some_(*input)
+func aws_cryptography_materialProviders_EncryptionContext_key_ToDafny(input string) dafny.Sequence {
+	return func() dafny.Sequence {
+
+		return dafny.SeqOf(func() []interface{} {
+			utf8.ValidString(input)
+			b := []byte(input)
+			f := make([]interface{}, len(b))
+			for i, v := range b {
+				f[i] = v
+			}
+			return f
+		}()...)
 	}()
 }
 
-func aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_netV4_0_0_RetryPolicy_ToDafny(input *awscryptographyencryptionsdksmithygeneratedtypes.NetV4_0_0_RetryPolicy) Wrappers.Option {
+func aws_cryptography_encryptionSdk_EncryptInput_algorithmSuiteId_ToDafny(input *awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId) Wrappers.Option {
 	return func() Wrappers.Option {
 		if input == nil {
 			return Wrappers.Companion_Option_.Create_None_()
@@ -377,13 +327,63 @@ func aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_netV4_0_0_RetryPolicy
 			}
 		}
 		var enum interface{}
-		for allEnums, i := dafny.Iterate(AwsCryptographyEncryptionSdkTypes.CompanionStruct_NetV4__0__0__RetryPolicy_{}.AllSingletonConstructors()), 0; i < index; i++ {
+		for allEnums, i := dafny.Iterate(AwsCryptographyMaterialProvidersTypes.CompanionStruct_ESDKAlgorithmSuiteId_{}.AllSingletonConstructors()), 0; i < index; i++ {
 			var ok bool
 			enum, ok = allEnums()
 			if !ok {
 				break
 			}
 		}
-		return Wrappers.Companion_Option_.Create_Some_(enum.(AwsCryptographyEncryptionSdkTypes.NetV4__0__0__RetryPolicy))
+		return Wrappers.Companion_Option_.Create_Some_(enum.(AwsCryptographyMaterialProvidersTypes.ESDKAlgorithmSuiteId))
+	}()
+}
+
+func aws_cryptography_materialProviders_EncryptionContext_value_ToDafny(input string) dafny.Sequence {
+	return func() dafny.Sequence {
+
+		return dafny.SeqOf(func() []interface{} {
+			utf8.ValidString(input)
+			b := []byte(input)
+			f := make([]interface{}, len(b))
+			for i, v := range b {
+				f[i] = v
+			}
+			return f
+		}()...)
+	}()
+}
+
+func aws_cryptography_encryptionSdk_DecryptOutput_algorithmSuiteId_ToDafny(input awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId) AwsCryptographyMaterialProvidersTypes.ESDKAlgorithmSuiteId {
+	return func() AwsCryptographyMaterialProvidersTypes.ESDKAlgorithmSuiteId {
+
+		var index int
+		for _, enumVal := range input.Values() {
+			index++
+			if enumVal == input {
+				break
+			}
+		}
+		var enum interface{}
+		for allEnums, i := dafny.Iterate(AwsCryptographyMaterialProvidersTypes.CompanionStruct_ESDKAlgorithmSuiteId_{}.AllSingletonConstructors()), 0; i < index; i++ {
+			var ok bool
+			enum, ok = allEnums()
+			if !ok {
+				break
+			}
+		}
+		return enum.(AwsCryptographyMaterialProvidersTypes.ESDKAlgorithmSuiteId)
+	}()
+}
+
+func aws_cryptography_encryptionSdk_DecryptInput_ciphertext_ToDafny(input []byte) dafny.Sequence {
+	return func() dafny.Sequence {
+		var v []interface{}
+		if input == nil {
+			return nil
+		}
+		for _, e := range input {
+			v = append(v, e)
+		}
+		return dafny.SeqOf(v...)
 	}()
 }

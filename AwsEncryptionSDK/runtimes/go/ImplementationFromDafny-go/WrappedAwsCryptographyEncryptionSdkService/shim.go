@@ -5,9 +5,9 @@ package WrappedAwsCryptographyEncryptionSdkService
 import (
 	"context"
 
-	"github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/Wrappers"
 	"github.com/aws/aws-encryption-sdk/AwsCryptographyEncryptionSdkTypes"
 	"github.com/aws/aws-encryption-sdk/awscryptographyencryptionsdksmithygenerated"
+	"github.com/dafny-lang/DafnyStandardLibGo/Wrappers"
 )
 
 type Shim struct {
