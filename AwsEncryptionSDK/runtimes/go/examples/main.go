@@ -22,17 +22,19 @@ import (
 	"github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/examples/keyring/multikeyring"
 	"github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/examples/keyring/rawaeskeyring"
 	"github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/examples/keyring/rawrsakeyring"
+	"github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/examples/multithreading"
 	"github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/examples/misc"
 	"github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/examples/utils"
 )
 
 func main() {
 	const stringToEncrypt = "Text To encrypt"
+	const numOfString = 10000
 	clientsupplier.ClientSupplierExample(
 		stringToEncrypt,
 		utils.DefaultRegionMrkKeyArn(),
 		utils.DefaultKMSKeyAccountID(),
-		[]string{"eu-west-1"})
+		[]string{utils.AlternateRegionMrkKeyRegion()})
 	misc.CommitmentPolicyExample(
 		stringToEncrypt,
 		utils.DefaultKMSKeyId(),
@@ -158,4 +160,9 @@ func main() {
 		utils.DefaultKMSKeyId(),
 		utils.DefaultKmsKeyRegion(),
 	)
+	// Example with multithreading
+	multithreading.AWSKMSMultiThreadTest(
+		utils.GenerateUUIDTestData(numOfString),
+		utils.DefaultKMSKeyId(),
+		utils.DefaultKmsKeyRegion())
 }
