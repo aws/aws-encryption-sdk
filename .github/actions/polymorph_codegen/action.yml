@@ -122,6 +122,11 @@ runs:
       run: |
         make polymorph_go
 
+    - name: just print
+      shell: bash
+      run: |
+        cat AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/awscryptographyencryptionsdksmithygenerated/to_dafny.go
+
     - name: Check regenerated code against commited code
       # Composite action inputs seem to not actually support booleans properly for some reason
       if: inputs.diff-generated-code == 'true'
