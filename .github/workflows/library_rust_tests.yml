@@ -29,6 +29,9 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: "sccache"
     steps:
       - name: Support longpaths on Git checkout
         run: |
@@ -145,6 +148,9 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: "sccache"
     steps:
       - name: Support longpaths on Git checkout
         run: |
@@ -170,6 +176,9 @@ jobs:
       # TODO - uncomment this after Rust formatter works
       # - name: Rustfmt Check
       #   uses: actions-rust-lang/rustfmt@v1
+
+      - name: Run sccache-cache for Rust CI
+        uses: mozilla-actions/sccache-action@v0.0.7
 
       - name: Setup Dafny
         uses: dafny-lang/setup-dafny-action@v1.7.0
