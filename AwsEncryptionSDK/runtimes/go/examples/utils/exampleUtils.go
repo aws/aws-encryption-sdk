@@ -1,3 +1,6 @@
+// Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 package utils
 
 import (
@@ -13,6 +16,7 @@ import (
 
 	"github.com/aws/aws-cryptographic-material-providers-library/primitives/awscryptographyprimitivessmithygeneratedtypes"
 	"github.com/aws/aws-sdk-go-v2/service/kms"
+	"github.com/google/uuid"
 )
 
 const (
@@ -318,4 +322,15 @@ func GenerateKmsEccPublicKey(eccKeyArn string, kmsClient *kms.Client) ([]byte, e
 		return nil, errors.New("no public key in KMS response")
 	}
 	return response.PublicKey, nil
+}
+
+// GenerateUUIDTestData creates an array of random UUID strings
+func GenerateUUIDTestData(count int) []string {
+	testData := make([]string, count)
+	for i := 0; i < count; i++ {
+		// Generate a random UUID
+		uuid := uuid.New()
+		testData[i] = uuid.String()
+	}
+	return testData
 }
