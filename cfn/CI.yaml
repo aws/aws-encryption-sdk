@@ -13,7 +13,7 @@ Parameters:
   ProjectName:
     Type: String
     Description: A prefix that will be applied to any names
-    Default: Public-ESDK
+    Default: Public-ESDK-Dafny
   GitHubRepo:
     Type: String
     Description: GitHub Repo that invokes CI
@@ -26,7 +26,7 @@ Resources:
       RoleName: !Sub "GitHub-CI-${ProjectName}-Role-${AWS::Region}"
       Description: "Access DDB, KMS, Resources for CI from GitHub"
       ManagedPolicyArns:
-        - "arn:aws:iam::370957321024:policy/ESDK-DDB-ReadWriteDelete-us-west-2"
+        - "arn:aws:iam::370957321024:policy/ESDK-Dafny-DDB-ReadWriteDelete-us-west-2"
         - "arn:aws:iam::370957321024:policy/Hierarchical-GitHub-KMS-Key-Policy"
         - "arn:aws:iam::370957321024:policy/KMS-Public-CMK-EncryptDecrypt-Key-Access"
         - "arn:aws:iam::370957321024:policy/RSA-GitHub-KMS-Key-Policy"
@@ -69,12 +69,12 @@ Resources:
           "Statement": [
             {
               "Effect": "Allow",
-              "Principal": { "AWS": "arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Role-us-west-2" },
+              "Principal": { "AWS": "arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2" },
               "Action": "sts:AssumeRole"
             },
             {
               "Effect": "Allow",
-              "Principal": { "AWS": "arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Role-us-west-2" },
+              "Principal": { "AWS": "arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2" },
               "Action": "sts:AssumeRole"
             },
             {
@@ -111,12 +111,12 @@ Resources:
           "Statement": [
             {
               "Effect": "Allow",
-              "Principal": { "AWS": "arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Role-us-west-2" },
+              "Principal": { "AWS": "arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2" },
               "Action": "sts:AssumeRole"
             },
             {
               "Effect": "Allow",
-              "Principal": { "AWS": "arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Role-us-west-2" },
+              "Principal": { "AWS": "arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2" },
               "Action": "sts:AssumeRole"
             },
             {
