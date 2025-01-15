@@ -14,7 +14,7 @@ Parameters:
   SourceLocation:
     Type: String
     Description: The https GitHub URL for the project
-    Default: "https://github.com/aws/aws-encryption-sdk-dafny.git"
+    Default: "https://github.com/aws/aws-encryption-sdk.git"
   NumberOfBuildsInBatch:
     Type: Number
     MaxValue: 100
@@ -108,7 +108,7 @@ Resources:
               {
                   "Effect": "Allow",
                   "Action": "sts:AssumeRole",
-                  "Resource": "arn:aws:iam::370957321024:role/GitHub-CI-MPL-Dafny-Role-us-west-2"
+                  "Resource": "arn:aws:iam::370957321024:role/GitHub-CI-MPL-Role-us-west-2"
               }
           ]
         }
