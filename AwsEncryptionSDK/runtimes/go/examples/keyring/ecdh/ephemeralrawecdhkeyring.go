@@ -44,12 +44,12 @@ import (
 	"context"
 	"fmt"
 
-	mpl "github.com/aws/aws-cryptographic-material-providers-library/mpl/awscryptographymaterialproviderssmithygenerated"
-	mpltypes "github.com/aws/aws-cryptographic-material-providers-library/mpl/awscryptographymaterialproviderssmithygeneratedtypes"
-	primitivestypes "github.com/aws/aws-cryptographic-material-providers-library/primitives/awscryptographyprimitivessmithygeneratedtypes"
-	client "github.com/aws/aws-encryption-sdk/awscryptographyencryptionsdksmithygenerated"
-	esdktypes "github.com/aws/aws-encryption-sdk/awscryptographyencryptionsdksmithygeneratedtypes"
-	"github.com/aws/aws-encryption-sdk/examples/utils"
+	mpl "github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl/awscryptographymaterialproviderssmithygenerated"
+	mpltypes "github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl/awscryptographymaterialproviderssmithygeneratedtypes"
+	primitivestypes "github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives/awscryptographyprimitivessmithygeneratedtypes"
+	client "github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/awscryptographyencryptionsdksmithygenerated"
+	esdktypes "github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/awscryptographyencryptionsdksmithygeneratedtypes"
+	"github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk/examples/utils"
 )
 
 func EphemeralRawECDHKeyringExample(
