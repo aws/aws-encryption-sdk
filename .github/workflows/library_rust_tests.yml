@@ -55,6 +55,16 @@ jobs:
       # - name: Rustfmt Check
       #   uses: actions-rust-lang/rustfmt@v1
 
+      - name: Configure sccache
+        run: | 
+            echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+            echo “SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+    
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.2
+        with:
+          version: "v0.0.7"
+
       - name: Setup Dafny
         uses: dafny-lang/setup-dafny-action@v1.7.0
         with:
