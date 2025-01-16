@@ -66,7 +66,7 @@ SERVICE_DEPS_AwsEncryptionSdk := \
 	mpl/AwsCryptographicMaterialProviders/dafny/AwsCryptographicMaterialProviders \
 	mpl/AwsCryptographicMaterialProviders/dafny/AwsCryptographyKeyStore
 
-GO_MODULE_NAME="github.com/aws/aws-encryption-sdk-dafny/releases/go/encryption-sdk"
+GO_MODULE_NAME="github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk"
 
 GO_DEPENDENCY_MODULE_NAMES := \
 	--dependency-library-name=com.amazonaws.dynamodb=github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb \
