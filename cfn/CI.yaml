@@ -17,7 +17,7 @@ Parameters:
   GitHubRepo:
     Type: String
     Description: GitHub Repo that invokes CI
-    Default: aws/aws-encryption-sdk-dafny
+    Default: aws/aws-encryption-sdk
 
 Resources:
   GitHubCIRole:

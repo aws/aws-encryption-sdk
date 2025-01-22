@@ -27,7 +27,7 @@ phases:
       - unzip -qq dafny.zip && rm dafny.zip
       - export PATH="$PWD/dafny:$PATH"
       # Switch back to the main directory
-      - cd aws-encryption-sdk-dafny/AwsEncryptionSDK
+      - cd aws-encryption-sdk/AwsEncryptionSDK
   pre_build:
     commands:
       # UNIQUE_ID should be passed in as an environment variable. It is used to tie
