@@ -58,7 +58,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
     let signing_suite_only_cmm = SigningSuiteOnlyCMM::new(kms_keyring);
 
     let signing_suite_only_cmm_ref: CryptographicMaterialsManagerRef = CryptographicMaterialsManagerRef {
-        inner: ::std::rc::Rc::new(std::cell::RefCell::new(signing_suite_only_cmm)),
+        inner: std::sync::Arc::new(std::sync::Mutex::new(signing_suite_only_cmm)),
     };
 
     // 5. Encrypt the data with the encryption_context
