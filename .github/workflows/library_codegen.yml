@@ -80,3 +80,11 @@ jobs:
           dafny: ${{ env.DAFNY_VERSION }}
           library: ${{ matrix.library }}
           diff-generated-code: true
+      
+      - name: Check format of ${{ matrix.library }} Net code
+        working-directory: ./${{ matrix.library }}
+        run: |
+          dotnet --version
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make format_net-check
