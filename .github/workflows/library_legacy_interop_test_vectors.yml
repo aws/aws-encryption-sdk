@@ -22,7 +22,7 @@ jobs:
         os: [
             # https://taskei.amazon.dev/tasks/CrypTool-5283
             # windows-latest,
-            ubuntu-latest,
+            ubuntu-22.04,
             macos-13,
           ]
         # java struggles with the json parsing

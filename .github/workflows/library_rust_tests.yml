@@ -22,7 +22,7 @@ jobs:
         library: [AwsEncryptionSDK]
         os: [
           windows-latest,
-          ubuntu-latest,
+          ubuntu-22.04,
           macos-13,
         ]
     runs-on: ${{ matrix.os }}
@@ -135,7 +135,7 @@ jobs:
         os: [
           # Sed script doesn't work properly on windows
           # windows-latest,
-          ubuntu-latest,
+          ubuntu-22.04,
           macos-13,
         ]
     runs-on: ${{ matrix.os }}

@@ -51,7 +51,7 @@ jobs:
       - pr-test-vectors
       - pr-dafny-test-vectors
       - pr-dafny-legacy-test-vectors
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Verify all required jobs passed
         uses: re-actors/alls-green@release/v1
