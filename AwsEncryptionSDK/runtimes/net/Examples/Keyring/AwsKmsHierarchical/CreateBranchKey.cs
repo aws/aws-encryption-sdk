@@ -5,9 +5,9 @@ using Amazon.DynamoDBv2;
 using Amazon.KeyManagementService;
 using AWS.Cryptography.KeyStore;
 
-public class CreateBranchKeyId
+public class CreateBranchKey
 {
-    public static string createBranchKeyId()
+    public static string createBranchKey()
     {
         // Create an AWS KMS Configuration to use with your KeyStore.
         // The KMS Configuration MUST have the right access to the resources in the KeyStore.

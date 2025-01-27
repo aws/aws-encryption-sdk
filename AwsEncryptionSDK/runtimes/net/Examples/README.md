@@ -36,6 +36,7 @@ We start with AWS KMS examples, then show how to use other wrapping keys.
     * [How to limit decryption to a single region](./Keyring/AwsKmsMrkDiscoveryKeyringExample.cs)
     * [How to decrypt with a preferred region but failover to others](./Keyring/AwsKmsMrkDiscoveryMultiKeyringExample.cs)
     * [How to reproduce the behavior of an AWS KMS master key provider](./Keyring/AwsKmsMultiKeyringExample.cs)
+    * [How to establish a Key Hierarchy with AWS KMS and Amazon DynamoDB](./Keyring/AwsKmsHierarchical/AwsKmsHierarchicalKeyring.cs)
 * Using raw wrapping keys
     * [How to use a raw AES wrapping key](./Keyring/RawAESKeyringExample.cs)
     * [How to use a raw RSA wrapping key](./Keyring/RawRSAKeyringExample.cs)
