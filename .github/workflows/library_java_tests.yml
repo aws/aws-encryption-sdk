@@ -24,7 +24,7 @@ jobs:
         os: [
           # TODO just test on mac for now
           #windows-latest,
-          #ubuntu-latest,
+          #ubuntu-22.04,
           macos-13
         ]
     runs-on: ${{ matrix.os }}

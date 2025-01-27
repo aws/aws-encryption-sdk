@@ -8,7 +8,7 @@ on:
 
 jobs:
   grep-only-verification-keyword:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       issues: write
       pull-requests: write

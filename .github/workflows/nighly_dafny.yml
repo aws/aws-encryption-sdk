@@ -45,7 +45,7 @@ jobs:
       regenerate-code: true
   
   cut-issue-on-failure:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       id-token: write
       contents: read
