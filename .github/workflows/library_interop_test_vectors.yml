@@ -108,7 +108,7 @@ jobs:
             ref: a928ebf5733dca040cbbb9b0c5861c20fb5bff6d
 
         - name: Setup Dafny Not Rust
-	  if: matrix.language != 'rust'
+          if: matrix.language != 'rust'
           uses: dafny-lang/setup-dafny-action@v1.7.0
           with:
             dafny-version: ${{ inputs.dafny }}
