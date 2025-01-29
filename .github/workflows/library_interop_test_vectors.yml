@@ -288,7 +288,7 @@ jobs:
         uses: ilammy/setup-nasm@v1
 
       - name: Setup Dafny Rust
-        if: matrix.matrix.decrypting_language == 'rust'
+        if: matrix.decrypting_language == 'rust'
         uses: ./mpl/smithy-dafny/.github/actions/build_dafny_from_source
         with:
           dafny-version: 4.9.2
