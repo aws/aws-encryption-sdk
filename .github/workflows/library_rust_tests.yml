@@ -170,9 +170,10 @@ jobs:
       #   uses: actions-rust-lang/rustfmt@v1
 
       - name: Setup Dafny
-        uses: dafny-lang/setup-dafny-action@v1.7.0
+        uses: ./mpl/smithy-dafny/.github/actions/build_dafny_from_source
         with:
-          dafny-version: ${{ inputs.dafny }}
+          dafny-version: 4.9.2
+          ref: a928ebf5733dca040cbbb9b0c5861c20fb5bff6d
 
       # TODO: Remove this after the formatting in Rust starts working
       - name: smithy-dafny Rust hacks
