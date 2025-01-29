@@ -28,6 +28,7 @@ env:
   AWS_ENCRYPTION_SDK_EXAMPLE_LIMITED_ROLE_ARN_EU_WEST_1: arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2
   # Used for Test Vectors
   VECTORS_URL: https://github.com/awslabs/aws-encryption-sdk-test-vectors/raw/master/vectors/awses-decrypt/python-2.3.0.zip
+  RUST_MIN_STACK: 104857600
 
 jobs:
   decrypt_python_vectors:

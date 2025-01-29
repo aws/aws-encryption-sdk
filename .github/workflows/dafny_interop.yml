@@ -20,6 +20,9 @@ on:
         required: true
         type: string
 
+env:
+  RUST_MIN_STACK: 104857600
+
 jobs:
   dafny-interop-net:
     uses: ./.github/workflows/dafny_interop_test_net.yml
