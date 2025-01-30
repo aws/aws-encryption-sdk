@@ -52,7 +52,7 @@ jobs:
 
       # even though we just installed dotnet 6, maybe dotnet 8 is out there somewhere
       - name: Create temporary global.json
-        run: echo '{"sdk":{"rollForward":"latestFeature","version":"6.0.0"}}' > ./global.json
+        run: echo '{"sdk":{"rollForward":"latestFeature","version":"8.0.0"}}' > ./global.json
 
       - name: Setup Java 17 for codegen
         uses: actions/setup-java@v3
