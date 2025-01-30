@@ -1,13 +1,13 @@
 # This workflow performs tests in .NET.
 name: Library net tests
 
-on: 
+on:
   workflow_call:
     inputs:
       dafny:
-        description: 'The Dafny version to run'
+        description: "The Dafny version to run"
         required: true
-        type: string  
+        type: string
       regenerate-code:
         description: "Regenerate code using smithy-dafny"
         required: false
@@ -31,11 +31,7 @@ jobs:
       fail-fast: false
       matrix:
         library: [AwsEncryptionSDK]
-        os: [
-          windows-latest,
-          ubuntu-22.04,
-          macos-13,
-        ]
+        os: [windows-latest, ubuntu-22.04, macos-13]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
@@ -53,18 +49,18 @@ jobs:
         run: |
           git submodule update --init libraries
           git submodule update --init --recursive mpl
-          
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2 
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: NetTests
-          
+
       - name: Setup .NET Core SDK 6
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: "6.0.x"
 
       - name: Setup Dafny
         uses: dafny-lang/setup-dafny-action@v1.7.0
@@ -80,7 +76,7 @@ jobs:
           diff-generated-code: false
           update-and-regenerate-mpl: true
 
-      - name: Download Dependencies 
+      - name: Download Dependencies
         working-directory: ${{ matrix.library }}
         run: make setup_net
 
@@ -110,7 +106,7 @@ jobs:
 
       - name: Test Examples on .NET Framework net48
         working-directory: ${{ matrix.library }}
-        if: matrix.os == 'windows-latest' 
+        if: matrix.os == 'windows-latest'
         shell: bash
         run: |
           dotnet test \
@@ -137,11 +133,11 @@ jobs:
       matrix:
         library: [TestVectors]
         os: [
-          # Sed script doesn't work properly on windows
-          # windows-latest,
-          ubuntu-22.04,
-          macos-13,
-        ]
+            # Sed script doesn't work properly on windows
+            # windows-latest,
+            ubuntu-22.04,
+            macos-13,
+          ]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
@@ -159,18 +155,18 @@ jobs:
         run: |
           git submodule update --init libraries
           git submodule update --init --recursive mpl
-          
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2 
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: NetTestVectors
-          
+
       - name: Setup .NET Core SDK 6
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: "6.0.x"
 
       - name: Setup Dafny
         uses: dafny-lang/setup-dafny-action@v1.7.0
@@ -186,7 +182,7 @@ jobs:
           diff-generated-code: false
           update-and-regenerate-mpl: true
 
-      - name: Download Dependencies 
+      - name: Download Dependencies
         working-directory: ${{ matrix.library }}
         run: make setup_net
 
@@ -197,7 +193,7 @@ jobs:
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_net CORES=$CORES
-      
+
       - name: Unzip .NET Retry Flag Manifests
         shell: bash
         working-directory: TestVectors/dafny/TestVectors/test/

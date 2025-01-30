@@ -81,7 +81,7 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     readRange: seq<uint8>
   )
   {
-    // This predicate defines what it means to correctly read a buffer. 
+    // This predicate defines what it means to correctly read a buffer.
     // `buffer` represents the state of a buffer before a read,
     // `tail` represents the returned buffer after a read,
     // and `readRange` represents the bytes read from that buffer.
@@ -89,17 +89,17 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     // and in order to have read `readRange` we need
     // the following to be true:
     && buffer.bytes == tail.bytes
-    // buffer and tail can start at the same place (i.e the beginning)
-    // as you read more, tail will grow but not larger than the size of the buffer.
+       // buffer and tail can start at the same place (i.e the beginning)
+       // as you read more, tail will grow but not larger than the size of the buffer.
     && buffer.start <= tail.start <= |buffer.bytes|
-    // buffer and tail bytes are the same because when we splice them using buffer.start
-    // as the start all the way to end we have the same sequence
+       // buffer and tail bytes are the same because when we splice them using buffer.start
+       // as the start all the way to end we have the same sequence
     && buffer.bytes[buffer.start..] == tail.bytes[buffer.start..]
-    // the bytes read i.e. the readRange MUST be a subset of the bytes in the buffer.
-    // further it MUST be the the prefix of the bytes sliced from the buffer's start.
+       // the bytes read i.e. the readRange MUST be a subset of the bytes in the buffer.
+       // further it MUST be the the prefix of the bytes sliced from the buffer's start.
     && readRange <= buffer.bytes[buffer.start..]
-    // the start of where we have read up to so far must be equal to where the buffer starts 
-    // and the length of the sequence of what we have read.
+       // the start of where we have read up to so far must be equal to where the buffer starts
+       // and the length of the sequence of what we have read.
     && tail.start == buffer.start + |readRange|
   }
 
@@ -140,7 +140,7 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     readRange: seq<uint8>
   )
     requires buffer.start <= verifiedTail.start <= |buffer.bytes|
-    // We require that we have correctly read up to the point where we have verified we have read to 
+    // We require that we have correctly read up to the point where we have verified we have read to
     requires CorrectlyReadRange(buffer, verifiedTail, buffer.bytes[buffer.start..verifiedTail.start])
     // By moving the pointer to now start at verifiedTail we want to require that packing on the size of
     // readRange we stay within the bounds of the buffer.
@@ -159,7 +159,7 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     reveal CorrectlyReadRange();
     CorrectlyReadByteRange(verifiedTail, tail, readRange);
   }
-  
+
   // This function is trivial,
   // but it lets `Read` have a `Write` function
   // for its `CorrectlyRead` ensures clause.
@@ -357,9 +357,9 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     bytes: seq<uint8>
   )
     ensures CorrectlyReadableByteRange?(buffer, bytes)
-    ==>
-      && buffer.start <= buffer.start + |bytes| <= |buffer.bytes|
-      && CorrectlyReadRange(buffer, buffer, buffer.bytes[buffer.start..buffer.start])
+            ==>
+              && buffer.start <= buffer.start + |bytes| <= |buffer.bytes|
+              && CorrectlyReadRange(buffer, buffer, buffer.bytes[buffer.start..buffer.start])
   {
     reveal CorrectlyReadRange();
     CorrectlyReadRange(buffer, MoveStart(buffer, |bytes|), bytes)
@@ -386,7 +386,7 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     // verfified tail is what we have read and verified we have correctly read
     // require that it is not longer than the length of bytes available
     requires buffer.start <= verifiedTail.start <= |buffer.bytes|
-    // In order to pack on readRange? we MUST require that we have correctly read up to 
+    // In order to pack on readRange? we MUST require that we have correctly read up to
     // verifiedTail. We could get the completeness that packing on verifiedTail succeeded from another
     // lemma, but in order to pack on we MUST be able to read up until the verifiedTail.
     requires CorrectlyReadRange(buffer, verifiedTail, buffer.bytes[buffer.start..verifiedTail.start])
@@ -412,19 +412,19 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     requires
       // Links data to the buffer so we know these bytes are the same
       && Write(data) == bytes
-      // Here we have the buffer and we require that we can correctly read 
-      // up to the length of bytes or what we have written,
+         // Here we have the buffer and we require that we can correctly read
+         // up to the length of bytes or what we have written,
       && CorrectlyReadableByteRange?(buffer, bytes)
     ensures
       && ret.data == data
       && Success(ret) == Read(buffer, |bytes|)
   {
     reveal CorrectlyReadRange();
-    // After we have written data and gotten its length we can read its length from
-    // the buffer and we know we can do this from our precondition.
+           // After we have written data and gotten its length we can read its length from
+           // the buffer and we know we can do this from our precondition.
     ret := Read(buffer, |Write(data)|).value;
     // After we have read what we have writen we need to prove
-    // that we can read the length of the what we wrote 
+    // that we can read the length of the what we wrote
     // In order to satisfy the postcondition
     CorrectlyReadByteRange(buffer, ret.tail, bytes);
   }

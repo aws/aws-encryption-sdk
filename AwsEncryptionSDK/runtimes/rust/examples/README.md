@@ -14,10 +14,10 @@ and streaming APIs.
 You can find examples that demonstrate these APIs
 in the [`examples/`](./) directory.
 
-* [How to encrypt and decrypt](./keyring/aws_kms_keyring_example.rs)
-* [How to change the algorithm suite](./set_encryption_algorithm_suite_example.rs)
-* [How to set the commitment policy](./set_commitment_policy_example.rs)
-* [How to limit the number of encrypted data keys (EDKs)](./limit_encrypted_data_keys_example.rs)
+- [How to encrypt and decrypt](./keyring/aws_kms_keyring_example.rs)
+- [How to change the algorithm suite](./set_encryption_algorithm_suite_example.rs)
+- [How to set the commitment policy](./set_commitment_policy_example.rs)
+- [How to limit the number of encrypted data keys (EDKs)](./limit_encrypted_data_keys_example.rs)
 
 ## Configuration
 
@@ -29,20 +29,20 @@ These examples will show you how to use the configuration tools that we include 
 and how to create some of your own.
 We start with AWS KMS examples, then show how to use other wrapping keys.
 
-* Using AWS Key Management Service (AWS KMS)
-    * [How to use one AWS KMS key](./keyring/aws_kms_keyring_example.rs)
-    * [How to use multiple AWS KMS keys in different regions](./keyring/aws_kms_mrk_discovery_multi_keyring_example.rs)
-    * [How to decrypt when you don't know the AWS KMS key](./keyring/aws_kms_discovery_keyring_example.rs)
-    * [How to limit decryption to a single region](./keyring/aws_kms_mrk_discovery_keyring_example.rs)
-    * [How to decrypt with a preferred region but failover to others](./keyring/aws_kms_mrk_discovery_multi_keyring_example.rs)
-    * [How to reproduce the behavior of an AWS KMS master key provider](./keyring/aws_kms_multi_keyring_example.rs)
-* Using raw wrapping keys
-    * [How to use a raw AES wrapping key](./keyring/raw_aes_keyring_example.rs)
-    * [How to use a raw RSA wrapping key](./keyring/raw_rsa_keyring_example.rs)
-* Combining wrapping keys
-    * [How to combine AWS KMS with an offline escrow key](./keyring/multi_keyring_example.rs)
-* How to restrict algorithm suites
-    * [with a custom cryptographic materials manager](./cryptographic_materials_manager/restrict_algorithm_suite/signing_suite_only_cmm.rs)
+- Using AWS Key Management Service (AWS KMS)
+  - [How to use one AWS KMS key](./keyring/aws_kms_keyring_example.rs)
+  - [How to use multiple AWS KMS keys in different regions](./keyring/aws_kms_mrk_discovery_multi_keyring_example.rs)
+  - [How to decrypt when you don't know the AWS KMS key](./keyring/aws_kms_discovery_keyring_example.rs)
+  - [How to limit decryption to a single region](./keyring/aws_kms_mrk_discovery_keyring_example.rs)
+  - [How to decrypt with a preferred region but failover to others](./keyring/aws_kms_mrk_discovery_multi_keyring_example.rs)
+  - [How to reproduce the behavior of an AWS KMS master key provider](./keyring/aws_kms_multi_keyring_example.rs)
+- Using raw wrapping keys
+  - [How to use a raw AES wrapping key](./keyring/raw_aes_keyring_example.rs)
+  - [How to use a raw RSA wrapping key](./keyring/raw_rsa_keyring_example.rs)
+- Combining wrapping keys
+  - [How to combine AWS KMS with an offline escrow key](./keyring/multi_keyring_example.rs)
+- How to restrict algorithm suites
+  - [with a custom cryptographic materials manager](./cryptographic_materials_manager/restrict_algorithm_suite/signing_suite_only_cmm.rs)
 
 ### Keyrings
 
