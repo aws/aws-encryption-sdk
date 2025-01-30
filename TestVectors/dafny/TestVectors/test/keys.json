@@ -104,7 +104,7 @@
       "material": "-----BEGIN PUBLIC KEY-----\nMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAs7RoNYEPAIws89VV+kra\nrVv/4wbdmUAaAKWgWuxZi5na9GJSmnhCkqyLRm7wPbQY4LCoa5/IMUxkHLsYDPdu\nudY0Qm0GcoxOlvJKHYo4RjF7HyiS34D6dvyO4Gd3aq0mZHoxSGCxW/7hf03wEMzc\niVJXWHXhaI0lD6nrzIEgLrE4L+3V2LeAQjvZsTKd+bYMqeZOL2syiVVIAU8POwAG\nGVBroJoveFm/SUp6lCiN0M2kTeyQA2ax3QTtZSAa8nwrI7U52XOzVmdMicJsy2Pg\nuW98te3MuODdK24yNkHIkYameP/Umf/SJshUJQd5a/TUp3XE+HhOWAumx22tIDlC\nvZS11cuk2fp0WeHUnXaC19N5qWKfvHEKSugzty/z3lGP7ItFhrF2X1qJHeAAsL11\nkjo6Lc48KsE1vKvbnW4VLyB3wdNiVvmUNO29tPXwaR0Q5Gbr3jk3nUzdkEHouHWQ\n41lubOHCCBN3V13mh/MgtNhESHjfmmOnh54ErD9saA1d7CjTf8g2wqmjEqvGSW6N\nq7zhcWR2tp1olflS7oHzul4/I3hnkfL6Kb2xAWWaQKvg3mtsY2OPlzFEP0tR5UcH\nPfp5CeS1Xzg7hN6vRICW6m4l3u2HJFld2akDMm1vnSz8RCbPW7jp7YBxUkWJmypM\ntG7Yv2aGZXGbUtM8o1cZarECAwEAAQ==\n-----END PUBLIC KEY-----",
       "key-id": "rsa-4096"
     },
-    "ecc-256-private":{
+    "ecc-256-private": {
       "encrypt": true,
       "decrypt": true,
       "algorithm": "ecdh",
@@ -118,29 +118,29 @@
       "recipient-material-public-key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWMX/wHhEbtmd1bQ6JKZQ7P2rbhiG1uyBoZJ2ytjD/jVf5m3GsZfF5IvRXoAbJcQmzOuimqDmUdWwsT6Rrm9mkg==",
       "key-id": "ecc-256"
     },
-    "ecc-384-private":{
+    "ecc-384-private": {
       "encrypt": true,
       "decrypt": true,
       "algorithm": "ecdh",
       "type": "ecc-private",
       "bits": 384,
       "encoding": "pem",
-      "sender-material": "-----BEGIN PRIVATE KEY-----\nMIG2AgEAMBAGByqGSM49AgEGBSuBBAAiBIGeMIGbAgEBBDAx0jhFAVQX2zykSLO/\n3VvDDaQJspek3404TtDZupcxi2rThfnxh96u8CYD6XfHikehZANiAAR2W/Cc8slJ\ngYSGi3e+38UUW6dFi1mJBNEZEbJ4vljgEzBo7FecTsCOQH8Zu2nX3eQpuboD8Fb7\nARpqq7rug5jKBMQLUbvridjLBRLuFsfaLpZ07ih4/+VduqQom7D31ik=\n-----END PRIVATE KEY-----", 
-      "recipient-material": "-----BEGIN PRIVATE KEY-----\nMIG2AgEAMBAGByqGSM49AgEGBSuBBAAiBIGeMIGbAgEBBDALwMcT5K2IOUK5Ww5o\nqYrYLzKHuAvFs0VLuKvJOCmWa3NK2WXtUIJ2fPYzp2Y9oTShZANiAATXUn2WMiLB\nbf665ikArOEAOFgruhqAwlxy58BP42nodBZFFf4L7cy7vPLpasp3fFroN57tYfjy\nXL5Wc0vb+xJaTZLBTU/tRGvtjHH0hQgMib2ch6akUJAT6zuMgNNdd7A=\n-----END PRIVATE KEY-----", 
+      "sender-material": "-----BEGIN PRIVATE KEY-----\nMIG2AgEAMBAGByqGSM49AgEGBSuBBAAiBIGeMIGbAgEBBDAx0jhFAVQX2zykSLO/\n3VvDDaQJspek3404TtDZupcxi2rThfnxh96u8CYD6XfHikehZANiAAR2W/Cc8slJ\ngYSGi3e+38UUW6dFi1mJBNEZEbJ4vljgEzBo7FecTsCOQH8Zu2nX3eQpuboD8Fb7\nARpqq7rug5jKBMQLUbvridjLBRLuFsfaLpZ07ih4/+VduqQom7D31ik=\n-----END PRIVATE KEY-----",
+      "recipient-material": "-----BEGIN PRIVATE KEY-----\nMIG2AgEAMBAGByqGSM49AgEGBSuBBAAiBIGeMIGbAgEBBDALwMcT5K2IOUK5Ww5o\nqYrYLzKHuAvFs0VLuKvJOCmWa3NK2WXtUIJ2fPYzp2Y9oTShZANiAATXUn2WMiLB\nbf665ikArOEAOFgruhqAwlxy58BP42nodBZFFf4L7cy7vPLpasp3fFroN57tYfjy\nXL5Wc0vb+xJaTZLBTU/tRGvtjHH0hQgMib2ch6akUJAT6zuMgNNdd7A=\n-----END PRIVATE KEY-----",
       "public-key-encoding": "base64-der",
-      "sender-material-public-key": "MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEdlvwnPLJSYGEhot3vt/FFFunRYtZiQTRGRGyeL5Y4BMwaOxXnE7AjkB/Gbtp193kKbm6A/BW+wEaaqu67oOYygTEC1G764nYywUS7hbH2i6WdO4oeP/lXbqkKJuw99Yp", 
+      "sender-material-public-key": "MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEdlvwnPLJSYGEhot3vt/FFFunRYtZiQTRGRGyeL5Y4BMwaOxXnE7AjkB/Gbtp193kKbm6A/BW+wEaaqu67oOYygTEC1G764nYywUS7hbH2i6WdO4oeP/lXbqkKJuw99Yp",
       "recipient-material-public-key": "MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE11J9ljIiwW3+uuYpAKzhADhYK7oagMJccufAT+Np6HQWRRX+C+3Mu7zy6WrKd3xa6Dee7WH48ly+VnNL2/sSWk2SwU1P7URr7Yxx9IUIDIm9nIempFCQE+s7jIDTXXew",
       "key-id": "ecc-384"
     },
-    "ecc-521-private":{
+    "ecc-521-private": {
       "encrypt": true,
       "decrypt": true,
       "algorithm": "ecdh",
       "type": "ecc-private",
       "bits": 521,
       "encoding": "pem",
-      "sender-material": "-----BEGIN PRIVATE KEY-----\nMIHuAgEAMBAGByqGSM49AgEGBSuBBAAjBIHWMIHTAgEBBEIANn8j3pIu1wiwkz7z\niPKuqj2MEVWKe/UW/8NEtvD9tKQmMlAzwY/QN93k+0TNlXpvJTUvjI2NZDKNoQ2b\n0B44YfyhgYkDgYYABAHfgnF9LoYBRWwXKKEFQa+Xfg+ztDRdTVTqNZ8roUYmNvLL\nLz2F8oEOhDbMJZ5r1B1C9w5uJqeF6tE8a3yzm47R/wAs0k6dY3wfDKD013Wnn+6e\nNw1mtrvTi6+Pej/ukYOuCjCwm8B0AvxBzdHk8Q/nCcspO9pIsRl/I4qNz4tPaGjJ\nTA==\n-----END PRIVATE KEY-----", 
-      "recipient-material": "-----BEGIN PRIVATE KEY-----\nMIHuAgEAMBAGByqGSM49AgEGBSuBBAAjBIHWMIHTAgEBBEIBjhdIxb49QXi4OsOH\n5PNWnp/KePiuICqC+fxJJ6ceUgPr5SMlLxhHcfHSVZBCkGLP0Rjd1D9gi7Va1oxe\nIHmWRu2hgYkDgYYABAAmg0dilFc6FiO9OE8t1el92KdPo9WYu1hXYnjGYT7OuGj3\nbD9lr0KMNCm3wTPCiLjPb4Iqnk+g0SgrsQ4NvU7nygFBlgz8xXLzIXPqVICthcHX\nRWRB8HnXmyzeF0iCs12F/6vYn/uZfxp3IV/KCR4LwSzbiFzxsV9GYoCoUE30LDVb\nXg==\n-----END PRIVATE KEY-----", 
+      "sender-material": "-----BEGIN PRIVATE KEY-----\nMIHuAgEAMBAGByqGSM49AgEGBSuBBAAjBIHWMIHTAgEBBEIANn8j3pIu1wiwkz7z\niPKuqj2MEVWKe/UW/8NEtvD9tKQmMlAzwY/QN93k+0TNlXpvJTUvjI2NZDKNoQ2b\n0B44YfyhgYkDgYYABAHfgnF9LoYBRWwXKKEFQa+Xfg+ztDRdTVTqNZ8roUYmNvLL\nLz2F8oEOhDbMJZ5r1B1C9w5uJqeF6tE8a3yzm47R/wAs0k6dY3wfDKD013Wnn+6e\nNw1mtrvTi6+Pej/ukYOuCjCwm8B0AvxBzdHk8Q/nCcspO9pIsRl/I4qNz4tPaGjJ\nTA==\n-----END PRIVATE KEY-----",
+      "recipient-material": "-----BEGIN PRIVATE KEY-----\nMIHuAgEAMBAGByqGSM49AgEGBSuBBAAjBIHWMIHTAgEBBEIBjhdIxb49QXi4OsOH\n5PNWnp/KePiuICqC+fxJJ6ceUgPr5SMlLxhHcfHSVZBCkGLP0Rjd1D9gi7Va1oxe\nIHmWRu2hgYkDgYYABAAmg0dilFc6FiO9OE8t1el92KdPo9WYu1hXYnjGYT7OuGj3\nbD9lr0KMNCm3wTPCiLjPb4Iqnk+g0SgrsQ4NvU7nygFBlgz8xXLzIXPqVICthcHX\nRWRB8HnXmyzeF0iCs12F/6vYn/uZfxp3IV/KCR4LwSzbiFzxsV9GYoCoUE30LDVb\nXg==\n-----END PRIVATE KEY-----",
       "public-key-encoding": "base64-der",
       "sender-material-public-key": "MIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQB34JxfS6GAUVsFyihBUGvl34Ps7Q0XU1U6jWfK6FGJjbyyy89hfKBDoQ2zCWea9QdQvcObianherRPGt8s5uO0f8ALNJOnWN8Hwyg9Nd1p5/unjcNZra704uvj3o/7pGDrgowsJvAdAL8Qc3R5PEP5wnLKTvaSLEZfyOKjc+LT2hoyUw=",
       "recipient-material-public-key": "MIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQAJoNHYpRXOhYjvThPLdXpfdinT6PVmLtYV2J4xmE+zrho92w/Za9CjDQpt8Ezwoi4z2+CKp5PoNEoK7EODb1O58oBQZYM/MVy8yFz6lSArYXB10VkQfB515ss3hdIgrNdhf+r2J/7mX8adyFfygkeC8Es24hc8bFfRmKAqFBN9Cw1W14=",
@@ -212,7 +212,7 @@
       "sender-material": "arn:aws:kms:us-west-2:370957321024:key/41b502e3-cc9d-442f-bd7b-d67faed0f22e",
       "recipient-material": "arn:aws:kms:us-west-2:370957321024:key/c45f1043-53bb-4f37-adc5-4d25d4a84f9d",
       "encoding": "base64-der",
-      "sender-material-public-key": "MIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQAz86qnfp3s0cl+73PQhlUstfdg9EZDA/jtLjBTWYp/1EB7RHNm8q5hMg5kBfjRDUFhbRBMlUV1xBOTgqzoSWj4oAABnQKiXXGGyu6PMN4D9nVMDsOpJ1pWU7rQexWDahBrK+5hx3beFXUpvvFRQrGAt2icUXm18VO6Qwbp0da9jyGDSY=", 
+      "sender-material-public-key": "MIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQAz86qnfp3s0cl+73PQhlUstfdg9EZDA/jtLjBTWYp/1EB7RHNm8q5hMg5kBfjRDUFhbRBMlUV1xBOTgqzoSWj4oAABnQKiXXGGyu6PMN4D9nVMDsOpJ1pWU7rQexWDahBrK+5hx3beFXUpvvFRQrGAt2icUXm18VO6Qwbp0da9jyGDSY=",
       "recipient-material-public-key": "MIGbMBAGByqGSM49AgEGBSuBBAAjA4GGAAQAxLxcjtYfqc4+4oJZY0gGv2Ehu++CnVFea6uwXgEgLifq4eDSSVmQYvU8majsufpBXQwVjnDlQ7pGRw1j6K4FaLAAgYuMrmrwKtx/ZZtkbXzCwrqJY+sfCk8U5m89DX331cdBAhR2uVSPL2d5hp8up5v+EBpNArtdC5lZMx2ZrwKKYuQ=",
       "key-id": "ecc-521"
     }

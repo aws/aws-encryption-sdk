@@ -155,7 +155,7 @@ module {:options "/functionSyntax:4" } V1HeaderBody {
       assert RESERVED_BYTES == reservedBytes.data;
       assert body.algorithmSuite == suite.data;
       assert GetIvLength(body.algorithmSuite) == headerIvLength.data;
-      // Messages are different if there is an expanded AAD Section 
+      // Messages are different if there is an expanded AAD Section
       if IsV1ExpandedAADSection(buffer) {
         // In order to prove we have the correct construction we throw in the inverse of what we read; which
         // is the write. In the following asserts we are basically saying, "to prove I can read this part of

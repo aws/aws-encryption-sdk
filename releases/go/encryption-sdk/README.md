@@ -1,6 +1,5 @@
 # AWS Encryption SDK for Go
 
-
 This is the official AWS Encryption SDK for Go.
 
 ## [CHANGELOG](https://github.com/aws/aws-encryption-sdk/blob/mainline/AwsEncryptionSDK/releases/go/encryption-sdk/CHANGELOG.md)
@@ -14,7 +13,6 @@ For more details about the design and architecture of the AWS Encryption SDK, se
 ## Installation
 
 `go get github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk@latest`
-
 
 ## Examples for AWS Encryption SDK in Go
 

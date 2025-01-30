@@ -14,10 +14,10 @@ and streaming APIs.
 You can find examples that demonstrate these APIs
 in the [`Examples/`](./) directory.
 
-* [How to encrypt and decrypt](./Keyring/AwsKmsKeyringExample.cs)
-* [How to change the algorithm suite](./NonSigningAlgorithmSuiteExample.cs)
-* [How to set the commitment policy](./CommitmentPolicy.cs)
-* [How to limit the number of encrypted data keys (EDKs)](./LimitEncryptedDataKeysExample.cs)
+- [How to encrypt and decrypt](./Keyring/AwsKmsKeyringExample.cs)
+- [How to change the algorithm suite](./NonSigningAlgorithmSuiteExample.cs)
+- [How to set the commitment policy](./CommitmentPolicy.cs)
+- [How to limit the number of encrypted data keys (EDKs)](./LimitEncryptedDataKeysExample.cs)
 
 ## Configuration
 
@@ -29,20 +29,20 @@ These examples will show you how to use the configuration tools that we include 
 and how to create some of your own.
 We start with AWS KMS examples, then show how to use other wrapping keys.
 
-* Using AWS Key Management Service (AWS KMS)
-    * [How to use one AWS KMS key](./Keyring/AwsKmsKeyringExample.cs)
-    * [How to use multiple AWS KMS keys in different regions](./Keyring/AwsKmsMrkDiscoveryMultiKeyringExample.cs)
-    * [How to decrypt when you don't know the AWS KMS key](./Keyring/AwsKmsDiscoveryKeyringExample.cs)
-    * [How to limit decryption to a single region](./Keyring/AwsKmsMrkDiscoveryKeyringExample.cs)
-    * [How to decrypt with a preferred region but failover to others](./Keyring/AwsKmsMrkDiscoveryMultiKeyringExample.cs)
-    * [How to reproduce the behavior of an AWS KMS master key provider](./Keyring/AwsKmsMultiKeyringExample.cs)
-* Using raw wrapping keys
-    * [How to use a raw AES wrapping key](./Keyring/RawAESKeyringExample.cs)
-    * [How to use a raw RSA wrapping key](./Keyring/RawRSAKeyringExample.cs)
-* Combining wrapping keys
-    * [How to combine AWS KMS with an offline escrow key](./Keyring/MultiKeyringExample.cs)
-* How to restrict algorithm suites
-    * [with a custom cryptographic materials manager](./CryptographicMaterialsManager/RestrictAlgorithmSuite/SigningSuiteOnlyCMM.cs)
+- Using AWS Key Management Service (AWS KMS)
+  - [How to use one AWS KMS key](./Keyring/AwsKmsKeyringExample.cs)
+  - [How to use multiple AWS KMS keys in different regions](./Keyring/AwsKmsMrkDiscoveryMultiKeyringExample.cs)
+  - [How to decrypt when you don't know the AWS KMS key](./Keyring/AwsKmsDiscoveryKeyringExample.cs)
+  - [How to limit decryption to a single region](./Keyring/AwsKmsMrkDiscoveryKeyringExample.cs)
+  - [How to decrypt with a preferred region but failover to others](./Keyring/AwsKmsMrkDiscoveryMultiKeyringExample.cs)
+  - [How to reproduce the behavior of an AWS KMS master key provider](./Keyring/AwsKmsMultiKeyringExample.cs)
+- Using raw wrapping keys
+  - [How to use a raw AES wrapping key](./Keyring/RawAESKeyringExample.cs)
+  - [How to use a raw RSA wrapping key](./Keyring/RawRSAKeyringExample.cs)
+- Combining wrapping keys
+  - [How to combine AWS KMS with an offline escrow key](./Keyring/MultiKeyringExample.cs)
+- How to restrict algorithm suites
+  - [with a custom cryptographic materials manager](./CryptographicMaterialsManager/RestrictAlgorithmSuite/SigningSuiteOnlyCMM.cs)
 
 ### Keyrings
 
@@ -86,7 +86,7 @@ please make sure that it meets the following requirements:
 1. The example MAY be nested arbitrarily deeply.
 1. Each example file MUST contain exactly one example.
 1. Each example filename MUST be descriptive.
-1. Each example file MUST contain a public class matching the filename, 
+1. Each example file MUST contain a public class matching the filename,
    with a method called `Run` that runs the example.
 1. Each example MUST be exercised by a `[Fact]` test method within its class that invokes `Run`,
    providing only the results of methods from the [`ExampleUtils`](./ExampleUtils/ExampleUtils.cs) class.

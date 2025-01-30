@@ -9,9 +9,13 @@ jobs:
     uses: ./.github/workflows/dafny_version.yaml
   getVerifyVersion:
     uses: ./.github/workflows/dafny_verify_version.yaml
-  # not yet used, because we don't actually CI formatting in this project?!?
   getFormatVersion:
     uses: ./.github/workflows/dafny_format_version.yaml
+  pr-ci-format:
+    needs: getFormatVersion
+    uses: ./.github/workflows/library_format.yml
+    with:
+      dafny: ${{needs.getFormatVersion.outputs.version}}
   pr-ci-codegen:
     needs: getVersion
     uses: ./.github/workflows/library_codegen.yml

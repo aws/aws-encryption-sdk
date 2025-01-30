@@ -3,7 +3,7 @@
 # with respect to the specification
 name: Duvet report
 
-on: 
+on:
   pull_request:
   push:
     branches:
@@ -23,10 +23,10 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      
+
       - uses: actions/checkout@v3
         with:
-         submodules: true
+          submodules: true
 
       - name: Install duvet
         shell: bash

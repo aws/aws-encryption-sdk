@@ -1,0 +1,54 @@
+# This workflow performs static analysis checks.
+name: Library format check
+
+on:
+  workflow_call:
+    inputs:
+      dafny:
+        description: "The Dafny version to run"
+        required: true
+        type: string
+      regenerate-code:
+        description: "Regenerate code using smithy-dafny"
+        required: false
+        default: false
+        type: boolean
+jobs:
+  format_projects:
+    # Don't run the nightly build on forks
+    if: github.event_name != 'schedule' || github.repository_owner == 'aws'
+    strategy:
+      matrix:
+        os: [macos-13]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
+    steps:
+      - name: Support longpaths
+        run: |
+          git config --global core.longpaths true
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Dafny
+        uses: dafny-lang/setup-dafny-action@v1.8.0
+        with:
+          dafny-version: ${{ inputs.dafny }}
+
+      - name: Check format of Java code et al
+        run: |
+          make format_java_misc-check
+
+      - name: Check format of Dafny code
+        run: |
+          make format_dafny-check
+
+      - name: Check format of Dotnet code
+        run: |
+          make format_net-check

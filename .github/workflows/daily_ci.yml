@@ -13,6 +13,11 @@ jobs:
   # not yet used, because we don't actually CI formatting in this project?!?
   getFormatVersion:
     uses: ./.github/workflows/dafny_format_version.yaml
+  pr-ci-format:
+    needs: getFormatVersion
+    uses: ./.github/workflows/library_format.yml
+    with:
+      dafny: ${{needs.getFormatVersion.outputs.version}}
   daily-ci-codegen:
     # Don't run the cron builds on forks
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'

@@ -21,7 +21,7 @@ Parameters:
 
 Resources:
   GitHubCIRole:
-    Type: 'AWS::IAM::Role'
+    Type: "AWS::IAM::Role"
     Properties:
       RoleName: !Sub "GitHub-CI-${ProjectName}-Role-${AWS::Region}"
       Description: "Access DDB, KMS, Resources for CI from GitHub"

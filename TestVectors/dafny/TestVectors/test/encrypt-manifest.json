@@ -1942,9 +1942,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -1967,9 +1965,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -1992,9 +1988,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2017,9 +2011,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2042,9 +2034,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2067,9 +2057,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2092,9 +2080,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2117,9 +2103,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2142,9 +2126,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2167,9 +2149,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2192,9 +2172,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2426,9 +2404,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2451,9 +2427,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2476,9 +2450,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2501,9 +2473,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2526,9 +2496,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2551,9 +2519,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2576,9 +2542,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2601,9 +2565,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2626,9 +2588,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2651,9 +2611,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -2676,9 +2634,7 @@
           "default-mrk-region": "us-west-2",
           "aws-kms-discovery-filter": {
             "partition": "aws",
-            "account-ids": [
-              "658956600833"
-            ]
+            "account-ids": ["658956600833"]
           }
         },
         "encryption-context": {},
@@ -12883,9 +12839,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -12895,9 +12849,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -12924,9 +12876,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -12936,9 +12886,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -12964,10 +12912,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -12977,10 +12922,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "encryption-context": {
           "a": "a",
@@ -13007,9 +12949,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13019,9 +12959,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -13048,9 +12986,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13060,9 +12996,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -13088,9 +13022,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13100,9 +13032,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -13129,9 +13059,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13141,9 +13069,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -13169,9 +13095,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13181,9 +13105,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -13210,9 +13132,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13222,9 +13142,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -13250,9 +13168,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13262,9 +13178,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -13291,9 +13205,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13303,9 +13215,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -13331,9 +13241,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13343,9 +13251,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -13372,9 +13278,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13384,9 +13288,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -13412,10 +13314,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13425,10 +13324,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "encryption-context": {
           "a": "a",
@@ -13455,9 +13351,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13467,9 +13361,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -13496,9 +13388,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13508,9 +13398,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -13536,9 +13424,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13548,9 +13434,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -13577,9 +13461,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13589,9 +13471,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -13617,9 +13497,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13629,9 +13507,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -13658,9 +13534,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13670,9 +13544,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -13698,10 +13570,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13711,10 +13580,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "encryption-context": {
           "a": "a",
@@ -13741,9 +13607,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13753,9 +13617,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -13782,9 +13644,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13794,9 +13654,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -13822,9 +13680,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13834,9 +13690,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -13863,9 +13717,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13875,9 +13727,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -13903,9 +13753,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13915,9 +13763,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -13944,9 +13790,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13956,9 +13800,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -13984,10 +13826,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -13997,10 +13836,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "encryption-context": {
           "a": "a",
@@ -14027,10 +13863,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14040,10 +13873,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "encryption-context": {
           "a": "a",
@@ -14070,10 +13900,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14083,10 +13910,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "encryption-context": {
           "a": "a",
@@ -14113,9 +13937,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14125,9 +13947,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -14154,9 +13974,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14166,9 +13984,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -14194,9 +14010,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14206,9 +14020,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -14235,9 +14047,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14247,9 +14057,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -14275,10 +14083,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14288,10 +14093,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "encryption-context": {
           "a": "a",
@@ -14318,9 +14120,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14330,9 +14130,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -14359,9 +14157,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14371,9 +14167,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -14399,9 +14193,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14411,9 +14203,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -14440,9 +14230,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14452,9 +14240,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -14480,10 +14266,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14493,10 +14276,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "encryption-context": {
           "a": "a",
@@ -14523,9 +14303,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14535,9 +14313,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -14564,9 +14340,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14576,9 +14350,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -14604,9 +14376,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14616,9 +14386,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -14645,9 +14413,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14657,9 +14423,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -14685,9 +14449,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14697,9 +14459,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -14726,9 +14486,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14738,9 +14496,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -14766,9 +14522,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14778,9 +14532,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -14807,9 +14559,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14819,9 +14569,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -14847,9 +14595,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14859,9 +14605,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -14888,9 +14632,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14900,9 +14642,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a"
-          ]
+          "requiredEncryptionContextKeys": ["a"]
         },
         "encryption-context": {
           "a": "a",
@@ -14928,10 +14668,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14941,10 +14678,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "encryption-context": {
           "a": "a",
@@ -14971,9 +14705,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -14983,9 +14715,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -15012,9 +14742,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -15024,9 +14752,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["b"]
         },
         "encryption-context": {
           "a": "a",
@@ -15052,10 +14778,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -15065,10 +14788,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "encryption-context": {
           "a": "a",
@@ -15095,10 +14815,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "decryptKeyDescription": {
           "type": "required-encryption-context-cmm",
@@ -15108,10 +14825,7 @@
             "provider-id": "aws-raw-vectors-persistent-aes-256",
             "encryption-algorithm": "aes"
           },
-          "requiredEncryptionContextKeys": [
-            "a",
-            "b"
-          ]
+          "requiredEncryptionContextKeys": ["a", "b"]
         },
         "encryption-context": {
           "a": "a",
