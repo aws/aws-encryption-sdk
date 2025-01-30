@@ -49,6 +49,10 @@ jobs:
         run: |
           make format_dafny-check
 
+      # ensure that we format with dotnet 6
+      - name: Create temporary global.json
+        run: echo '{"sdk":{"rollForward":"latestFeature","version":"6.0.0"}}' > ./global.json
+
       - name: Check format of Dotnet code
         run: |
           make format_net-check
