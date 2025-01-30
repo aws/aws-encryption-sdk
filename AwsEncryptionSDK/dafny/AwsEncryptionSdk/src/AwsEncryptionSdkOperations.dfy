@@ -291,7 +291,7 @@ module AwsEncryptionSdkOperations refines AbstractAwsCryptographyEncryptionSdkOp
 
       var msg :- EncryptDecryptHelpers.SerializeMessageWithoutSignature(framedMessage, materials.algorithmSuite);
       var ecdsaParams := framedMessage.finalFrame.header.suite.signature.ECDSA.curve;
-        // TODO: This should just work, but Proof is difficult
+      // TODO: This should just work, but Proof is difficult
       :- Need(materials.signingKey.Some?,
               Types.AwsEncryptionSdkException( message := "Missing signing key."));
 
@@ -475,7 +475,7 @@ module AwsEncryptionSdkOperations refines AbstractAwsCryptographyEncryptionSdkOp
             ==>
               && var headerBody := Header.ReadHeaderBody(buffer, config.maxEncryptedDataKeys, config.mpl);
               && headerBody.Success?
-              // *  Algorithm Suite (Section 2.6.3)
+                 // *  Algorithm Suite (Section 2.6.3)
               && headerBody.value.data.algorithmSuite.id.ESDK?
               && output.value.algorithmSuiteId == headerBody.value.data.algorithmSuite.id.ESDK
               && old(cmm.History.DecryptMaterials) < cmm.History.DecryptMaterials

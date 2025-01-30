@@ -34,9 +34,9 @@ module {:options "/functionSyntax:4" } EncryptionContext {
   ghost predicate ESDKCanonicalEncryptionContext?(pairs: seq<ESDKEncryptionContextPair>) {
     && HasUint16Len(pairs)
     && LinearLength(pairs) < ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH
-    //= compliance/data-format/message-header.txt#2.5.1.7.2.2
-    //= type=implication
-    //# This sequence MUST NOT contain duplicate entries.
+       //= compliance/data-format/message-header.txt#2.5.1.7.2.2
+       //= type=implication
+       //# This sequence MUST NOT contain duplicate entries.
     && KeysAreUnique(pairs)
   }
 
@@ -375,13 +375,13 @@ module {:options "/functionSyntax:4" } EncryptionContext {
     (ret: seq<uint8>)
     ensures HasUint16Len(ret)
     // To support older versions of the ESDK
-            // |ec| == 0 is encoded as 0 count.
-            // However,
-            // this |ec| == 0 behavior is never invoked,
-            // as this method is protected by
-            // WriteAADSection and WriteEmptyEcOrWriteAAD,
-            // which both handle |ec| == 0 independently
-            // of this method.
+    // |ec| == 0 is encoded as 0 count.
+    // However,
+    // this |ec| == 0 behavior is never invoked,
+    // as this method is protected by
+    // WriteAADSection and WriteEmptyEcOrWriteAAD,
+    // which both handle |ec| == 0 independently
+    // of this method.
     ensures |ec| == 0 ==> ret == WriteUint16(0)
   {
     WriteUint16(|ec| as uint16) + WriteAADPairs(ec)

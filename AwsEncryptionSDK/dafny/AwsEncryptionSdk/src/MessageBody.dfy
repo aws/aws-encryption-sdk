@@ -132,18 +132,18 @@ module MessageBody {
     //# *  The number of frames in a single message MUST be less than or
     //# equal to "2^32 - 1".
     && 0 <= |regularFrames| < ENDFRAME_SEQUENCE_NUMBER as nat
-    // The sequence number MUST be monotonic
-    //
-    //= compliance/data-format/message-body.txt#2.5.2.1.1
-    //= type=implication
-    //# Framed Data MUST start at Sequence Number 1.
-    //
-    //= compliance/data-format/message-body.txt#2.5.2.1.1
-    //= type=implication
-    //# Subsequent frames MUST be in order and MUST contain an increment of 1
-    //# from the previous frame.
+       // The sequence number MUST be monotonic
+       //
+       //= compliance/data-format/message-body.txt#2.5.2.1.1
+       //= type=implication
+       //# Framed Data MUST start at Sequence Number 1.
+       //
+       //= compliance/data-format/message-body.txt#2.5.2.1.1
+       //= type=implication
+       //# Subsequent frames MUST be in order and MUST contain an increment of 1
+       //# from the previous frame.
     && MessageFramesAreMonotonic(regularFrames)
-    // All frames MUST all be from the same messages i.e. the same header
+       // All frames MUST all be from the same messages i.e. the same header
     && MessageFramesAreForTheSameMessage(regularFrames)
   }
 
@@ -384,10 +384,10 @@ module MessageBody {
               //# algorithm) specified by the algorithm suite (../framework/algorithm-
               //# suites.md), with the following inputs:
               && encryptionInput.encAlg == header.suite.encrypt.AES_GCM
-              //= compliance/client-apis/encrypt.txt#2.7.1
-              //= type=implication
-              //# *  The AAD is the serialized message body AAD (../data-format/
-              //#    message-body-aad.md), constructed as follows:
+                 //= compliance/client-apis/encrypt.txt#2.7.1
+                 //= type=implication
+                 //# *  The AAD is the serialized message body AAD (../data-format/
+                 //#    message-body-aad.md), constructed as follows:
               && encryptionInput.aad == BodyAAD(
                                           //= compliance/client-apis/encrypt.txt#2.7.1
                                           //= type=implication
@@ -416,21 +416,21 @@ module MessageBody {
                                           //# being encrypted.
                                           |plaintext| as uint64
                                         )
-              //= compliance/client-apis/encrypt.txt#2.7.1
-              //= type=implication
-              //# *  The IV is the sequence number (../data-format/message-body-
-              //#   aad.md#sequence-number) used in the message body AAD above, padded
-              //#   to the IV length (../data-format/message-header.md#iv-length).
+                 //= compliance/client-apis/encrypt.txt#2.7.1
+                 //= type=implication
+                 //# *  The IV is the sequence number (../data-format/message-body-
+                 //#   aad.md#sequence-number) used in the message body AAD above, padded
+                 //#   to the IV length (../data-format/message-header.md#iv-length).
               && encryptionInput.iv == IVSeq(header.suite, sequenceNumber)
 
               //= compliance/client-apis/encrypt.txt#2.7.1
               //= type=implication
               //# *  The cipherkey is the derived data key
               && encryptionInput.key == key
-              //= compliance/client-apis/encrypt.txt#2.7.1
-              //= type=implication
-              //# *  The plaintext is the next subsequence of consumable plaintext
-              //# bytes that have not yet been encrypted.
+                 //= compliance/client-apis/encrypt.txt#2.7.1
+                 //= type=implication
+                 //# *  The plaintext is the next subsequence of consumable plaintext
+                 //# bytes that have not yet been encrypted.
               && encryptionInput.msg == plaintext
 
               //= compliance/client-apis/encrypt.txt#2.7.1
@@ -438,26 +438,26 @@ module MessageBody {
               //# This operation MUST serialize a regular frame or final frame with the
               //# following specifics:
               && frame.header == header
-              //= compliance/client-apis/encrypt.txt#2.7.1
-              //= type=implication
-              //# *  Sequence Number (../data-format/message-body.md#sequence-number):
-              //# MUST be the sequence number of this frame, as determined above.
+                 //= compliance/client-apis/encrypt.txt#2.7.1
+                 //= type=implication
+                 //# *  Sequence Number (../data-format/message-body.md#sequence-number):
+                 //# MUST be the sequence number of this frame, as determined above.
               && frame.seqNum == sequenceNumber
-              //= compliance/client-apis/encrypt.txt#2.7.1
-              //= type=implication
-              //# *  IV (../data-format/message-body.md#iv): MUST be the IV used when
-              //# calculating the encrypted content above
+                 //= compliance/client-apis/encrypt.txt#2.7.1
+                 //= type=implication
+                 //# *  IV (../data-format/message-body.md#iv): MUST be the IV used when
+                 //# calculating the encrypted content above
               && frame.iv == encryptionInput.iv
-              //= compliance/client-apis/encrypt.txt#2.7.1
-              //= type=implication
-              //# *  Encrypted Content (../data-format/message-body.md#encrypted-
-              //# content): MUST be the encrypted content calculated above.
+                 //= compliance/client-apis/encrypt.txt#2.7.1
+                 //= type=implication
+                 //# *  Encrypted Content (../data-format/message-body.md#encrypted-
+                 //# content): MUST be the encrypted content calculated above.
               && frame.encContent == encryptionOutput.cipherText
-              //= compliance/client-apis/encrypt.txt#2.7.1
-              //= type=implication
-              //# *  Authentication Tag (../data-format/message-body.md#authentication-
-              //# tag): MUST be the authentication tag output when calculating the
-              //# encrypted content above.
+                 //= compliance/client-apis/encrypt.txt#2.7.1
+                 //= type=implication
+                 //# *  Authentication Tag (../data-format/message-body.md#authentication-
+                 //# tag): MUST be the authentication tag output when calculating the
+                 //# encrypted content above.
               && frame.authTag == encryptionOutput.authTag
   {
     var iv := IVSeq(header.suite, sequenceNumber);
@@ -539,10 +539,10 @@ module MessageBody {
               //# algorithm) specified by the algorithm suite (../framework/algorithm-
               //# suites.md), with the following inputs:
               && encryptionInput.encAlg == header.suite.encrypt.AES_GCM
-              //= compliance/client-apis/encrypt.txt#2.7.1
-              //= type=implication
-              //# *  The AAD is the serialized message body AAD (../data-format/
-              //#    message-body-aad.md), constructed as follows:
+                 //= compliance/client-apis/encrypt.txt#2.7.1
+                 //= type=implication
+                 //# *  The AAD is the serialized message body AAD (../data-format/
+                 //#    message-body-aad.md), constructed as follows:
               && encryptionInput.aad == BodyAAD(
                                           //= compliance/client-apis/encrypt.txt#2.7.1
                                           //= type=implication
@@ -571,21 +571,21 @@ module MessageBody {
                                           //# being encrypted.
                                           |plaintext| as uint64
                                         )
-              //= compliance/client-apis/encrypt.txt#2.7.1
-              //= type=implication
-              //# *  The IV is the sequence number (../data-format/message-body-
-              //#   aad.md#sequence-number) used in the message body AAD above, padded
-              //#   to the IV length (../data-format/message-header.md#iv-length).
+                 //= compliance/client-apis/encrypt.txt#2.7.1
+                 //= type=implication
+                 //# *  The IV is the sequence number (../data-format/message-body-
+                 //#   aad.md#sequence-number) used in the message body AAD above, padded
+                 //#   to the IV length (../data-format/message-header.md#iv-length).
               && encryptionInput.iv == IVSeq(header.suite, sequenceNumber)
 
               //= compliance/client-apis/encrypt.txt#2.7.1
               //= type=implication
               //# *  The cipherkey is the derived data key
               && encryptionInput.key == key
-              //= compliance/client-apis/encrypt.txt#2.7.1
-              //= type=implication
-              //# *  The plaintext is the next subsequence of consumable plaintext
-              //# bytes that have not yet been encrypted.
+                 //= compliance/client-apis/encrypt.txt#2.7.1
+                 //= type=implication
+                 //# *  The plaintext is the next subsequence of consumable plaintext
+                 //# bytes that have not yet been encrypted.
               && encryptionInput.msg == plaintext
 
               //= compliance/client-apis/encrypt.txt#2.7.1
@@ -593,26 +593,26 @@ module MessageBody {
               //# This operation MUST serialize a regular frame or final frame with the
               //# following specifics:
               && frame.header == header
-              //= compliance/client-apis/encrypt.txt#2.7.1
-              //= type=implication
-              //# *  Sequence Number (../data-format/message-body.md#sequence-number):
-              //# MUST be the sequence number of this frame, as determined above.
+                 //= compliance/client-apis/encrypt.txt#2.7.1
+                 //= type=implication
+                 //# *  Sequence Number (../data-format/message-body.md#sequence-number):
+                 //# MUST be the sequence number of this frame, as determined above.
               && frame.seqNum == sequenceNumber
-              //= compliance/client-apis/encrypt.txt#2.7.1
-              //= type=implication
-              //# *  IV (../data-format/message-body.md#iv): MUST be the IV used when
-              //# calculating the encrypted content above
+                 //= compliance/client-apis/encrypt.txt#2.7.1
+                 //= type=implication
+                 //# *  IV (../data-format/message-body.md#iv): MUST be the IV used when
+                 //# calculating the encrypted content above
               && frame.iv == encryptionInput.iv
-              //= compliance/client-apis/encrypt.txt#2.7.1
-              //= type=implication
-              //# *  Encrypted Content (../data-format/message-body.md#encrypted-
-              //# content): MUST be the encrypted content calculated above.
+                 //= compliance/client-apis/encrypt.txt#2.7.1
+                 //= type=implication
+                 //# *  Encrypted Content (../data-format/message-body.md#encrypted-
+                 //# content): MUST be the encrypted content calculated above.
               && frame.encContent == encryptionOutput.cipherText
-              //= compliance/client-apis/encrypt.txt#2.7.1
-              //= type=implication
-              //# *  Authentication Tag (../data-format/message-body.md#authentication-
-              //# tag): MUST be the authentication tag output when calculating the
-              //# encrypted content above.
+                 //= compliance/client-apis/encrypt.txt#2.7.1
+                 //= type=implication
+                 //# *  Authentication Tag (../data-format/message-body.md#authentication-
+                 //# tag): MUST be the authentication tag output when calculating the
+                 //# encrypted content above.
               && frame.authTag == encryptionOutput.authTag
   {
 

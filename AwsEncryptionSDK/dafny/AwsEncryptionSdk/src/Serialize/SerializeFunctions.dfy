@@ -89,17 +89,17 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     // and in order to have read `readRange` we need
     // the following to be true:
     && buffer.bytes == tail.bytes
-    // buffer and tail can start at the same place (i.e the beginning)
-    // as you read more, tail will grow but not larger than the size of the buffer.
+       // buffer and tail can start at the same place (i.e the beginning)
+       // as you read more, tail will grow but not larger than the size of the buffer.
     && buffer.start <= tail.start <= |buffer.bytes|
-    // buffer and tail bytes are the same because when we splice them using buffer.start
-    // as the start all the way to end we have the same sequence
+       // buffer and tail bytes are the same because when we splice them using buffer.start
+       // as the start all the way to end we have the same sequence
     && buffer.bytes[buffer.start..] == tail.bytes[buffer.start..]
-    // the bytes read i.e. the readRange MUST be a subset of the bytes in the buffer.
-    // further it MUST be the the prefix of the bytes sliced from the buffer's start.
+       // the bytes read i.e. the readRange MUST be a subset of the bytes in the buffer.
+       // further it MUST be the the prefix of the bytes sliced from the buffer's start.
     && readRange <= buffer.bytes[buffer.start..]
-    // the start of where we have read up to so far must be equal to where the buffer starts
-    // and the length of the sequence of what we have read.
+       // the start of where we have read up to so far must be equal to where the buffer starts
+       // and the length of the sequence of what we have read.
     && tail.start == buffer.start + |readRange|
   }
 
@@ -412,16 +412,16 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     requires
       // Links data to the buffer so we know these bytes are the same
       && Write(data) == bytes
-      // Here we have the buffer and we require that we can correctly read
-      // up to the length of bytes or what we have written,
+         // Here we have the buffer and we require that we can correctly read
+         // up to the length of bytes or what we have written,
       && CorrectlyReadableByteRange?(buffer, bytes)
     ensures
       && ret.data == data
       && Success(ret) == Read(buffer, |bytes|)
   {
     reveal CorrectlyReadRange();
-    // After we have written data and gotten its length we can read its length from
-    // the buffer and we know we can do this from our precondition.
+           // After we have written data and gotten its length we can read its length from
+           // the buffer and we know we can do this from our precondition.
     ret := Read(buffer, |Write(data)|).value;
     // After we have read what we have writen we need to prove
     // that we can read the length of the what we wrote

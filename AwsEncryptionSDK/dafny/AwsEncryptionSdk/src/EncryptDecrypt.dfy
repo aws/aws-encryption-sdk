@@ -134,9 +134,9 @@ module EncryptDecryptHelpers {
 
     ensures
       && |old(crypto.History.ECDSAVerify)| + 1 == |crypto.History.ECDSAVerify|
-      // The verification call succeeded
-      // and the value it returned was false
-      // (indicating invalid signature)
+         // The verification call succeeded
+         // and the value it returned was false
+         // (indicating invalid signature)
       && Seq.Last(crypto.History.ECDSAVerify).output.Success?
       && !Seq.Last(crypto.History.ECDSAVerify).output.value
       ==>
@@ -144,15 +144,15 @@ module EncryptDecryptHelpers {
 
     ensures
       && |old(crypto.History.ECDSAVerify)| + 1 == |crypto.History.ECDSAVerify|
-      // The verification call failed
+         // The verification call failed
       && Seq.Last(crypto.History.ECDSAVerify).output.Failure?
       ==>
         && res.Failure?
 
     ensures
       && |old(crypto.History.ECDSAVerify)| + 1 == |crypto.History.ECDSAVerify|
-      // The verification call succeeded and the value it returned was true
-      // (indicating valid signature)
+         // The verification call succeeded and the value it returned was true
+         // (indicating valid signature)
       && Seq.Last(crypto.History.ECDSAVerify).output.Success?
       && Seq.Last(crypto.History.ECDSAVerify).output.value
       ==>
