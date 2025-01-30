@@ -22,14 +22,14 @@ jobs:
     needs: getVersion
     uses: ./.github/workflows/library_codegen.yml
     with:
-      dafny:
+      dafny: ${{needs.getVersion.outputs.version}}
   push-ci-verification:
     needs: getVerifyVersion
     uses: ./.github/workflows/library_dafny_verification.yml
     with:
       dafny: ${{needs.getVerifyVersion.outputs.version}}
   # push-ci-java:
-  #   needs: getVerifyVersion
+  #   needs: getVersion
   #   uses: ./.github/workflows/library_java_tests.yml
   #   with:
   #     dafny: ${{needs.getVersion.outputs.version}}
