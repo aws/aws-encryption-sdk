@@ -32,7 +32,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-      
+
     steps:
         - name: Support longpaths on Git checkout
           run: |
@@ -219,7 +219,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    
+
     steps:
       - name: Support longpaths on Git checkout
         run: |
@@ -230,9 +230,9 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2 
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: InterOpTests
-      
+
       - uses: actions/checkout@v3
       #  Not all submodules are needed.
       # We manually pull the submodule we DO need.
@@ -330,7 +330,7 @@ jobs:
       - name: Install Smithy-Dafny codegen dependencies
         if: matrix.decrypting_language == 'rust'
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
-  
+
       # TODO: Remove this after checking in Rust polymorph code
       - name: Run make polymorph_rust
         if: matrix.decrypting_language == 'rust'
@@ -346,7 +346,7 @@ jobs:
         run: |
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_rust CORES=$CORES
-      
+
       - name: Build ${{ matrix.library }} implementation in Go
         if: matrix.decrypting_language == 'go'
         shell: bash
@@ -355,7 +355,7 @@ jobs:
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_go
-          
+
       # TODO: Remove this after Go polymorph does not generate unwanted duplicate code.
       - name: Purge polymorph code in Go
         if: matrix.decrypting_language == 'go'
@@ -373,4 +373,3 @@ jobs:
       - name: Decrypt Encrypt Manifest
         working-directory: ./${{ matrix.library }}
         run: make test_decrypt_encrypt_vectors_${{matrix.decrypting_language}}
-

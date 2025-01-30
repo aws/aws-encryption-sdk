@@ -13,10 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        library:
-          [
-            AwsEncryptionSDK,
-          ]
+        library: [AwsEncryptionSDK]
         # Note dotnet is only used for formatting generated code
         # in this workflow
         dotnet-version: ["6.0.x"]
@@ -62,7 +59,7 @@ jobs:
         with:
           distribution: "corretto"
           java-version: "17"
-      
+
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
 

@@ -36,4 +36,3 @@ Resources:
     Properties:
       DomainName: !Ref DomainName
       RepositoryName: !Sub "${RepositoryName}-staging"
-

@@ -22,8 +22,8 @@ const Runtimes = {
   net: {
     "AwsEncryptionSDK/runtimes/net/ESDK.csproj": {
       dependencies: [],
-      assemblyInfo: []
-    }
+      assemblyInfo: [],
+    },
   },
 };
 
@@ -32,57 +32,58 @@ const Runtimes = {
  */
 module.exports = {
   branches: ["mainline"],
-  repositoryUrl:
-    "git@github.com:aws/aws-encryption-sdk-dafny.git",
+  repositoryUrl: "git@github.com:aws/aws-encryption-sdk-dafny.git",
   plugins: [
     // Check the commits since the last release
-    ["@semantic-release/commit-analyzer",
+    [
+      "@semantic-release/commit-analyzer",
       {
-        "preset": "conventionalcommits",
-        "parserOpts": {
-          "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES"]
+        preset: "conventionalcommits",
+        parserOpts: {
+          noteKeywords: ["BREAKING CHANGE", "BREAKING CHANGES"],
         },
-        "presetConfig": {
-          "types": [
-            {"type": "feat", "section": "Features"},
-            {"type": "fix", "section": "Fixes"},
-            {"type": "chore", "section": "Maintenance"},
-            {"type": "docs", "section": "Maintenance"},
-            {"type": "revert", "section": "Fixes"},
-            {"type": "style", "hidden": true},
-            {"type": "refactor", "hidden": true},
-            {"type": "perf", "hidden": true},
-            {"type": "test", "hidden": true}
-          ]
+        presetConfig: {
+          types: [
+            { type: "feat", section: "Features" },
+            { type: "fix", section: "Fixes" },
+            { type: "chore", section: "Maintenance" },
+            { type: "docs", section: "Maintenance" },
+            { type: "revert", section: "Fixes" },
+            { type: "style", hidden: true },
+            { type: "refactor", hidden: true },
+            { type: "perf", hidden: true },
+            { type: "test", hidden: true },
+          ],
         },
-        "releaseRules": [
-          {"type": "docs", "release": "patch"},
-          {"type": "revert", "release": "patch"},
-          {"type": "chore", "release": "patch"}
-        ]
+        releaseRules: [
+          { type: "docs", release: "patch" },
+          { type: "revert", release: "patch" },
+          { type: "chore", release: "patch" },
+        ],
       },
     ],
     // Based on the commits generate release notes
-    ["@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/release-notes-generator",
       {
-        "preset": "conventionalcommits",
-        "parserOpts": {
-          "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES"]
+        preset: "conventionalcommits",
+        parserOpts: {
+          noteKeywords: ["BREAKING CHANGE", "BREAKING CHANGES"],
         },
-        "presetConfig": {
-            "types": [
-                {"type": "feat", "section": "Features"},
-                {"type": "fix", "section": "Fixes"},
-                {"type": "chore", "section": "Maintenance"},
-                {"type": "docs", "section": "Maintenance"},
-                {"type": "revert", "section": "Fixes"},
-                {"type": "style", "hidden": true},
-                {"type": "refactor", "hidden": true},
-                {"type": "perf", "hidden": true},
-                {"type": "test", "hidden": true}
-            ]
-        }
-      }
+        presetConfig: {
+          types: [
+            { type: "feat", section: "Features" },
+            { type: "fix", section: "Fixes" },
+            { type: "chore", section: "Maintenance" },
+            { type: "docs", section: "Maintenance" },
+            { type: "revert", section: "Fixes" },
+            { type: "style", hidden: true },
+            { type: "refactor", hidden: true },
+            { type: "perf", hidden: true },
+            { type: "test", hidden: true },
+          ],
+        },
+      },
     ],
     // Update the change log with the generated release notes
     [

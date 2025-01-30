@@ -17,7 +17,7 @@ namespace AWS.Cryptography.EncryptionSDK
         private static string ListAsString(List<Exception> list)
         {
             if (list.Count < 1) return "";
-            string [] msgArr = new string [list.Count];
+            string[] msgArr = new string[list.Count];
             for (int i = 0; i < list.Count; i++)
                 msgArr[i] = $"{list[i].GetType().Name} :: {list[i].Message}";
             return String.Join("\n\t", msgArr);

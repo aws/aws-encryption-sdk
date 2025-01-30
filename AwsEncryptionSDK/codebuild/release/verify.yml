@@ -3,7 +3,7 @@ version: 0.2
 env:
   variables:
     FILE_NAME: "AWS.Cryptography.EncryptionSDK.dll"
-   
+
 phases:
   install:
     runtime-versions:
@@ -17,7 +17,7 @@ phases:
       - $sig = Get-AuthenticodeSignature -FilePath net48/$Env:FILE_NAME
       - $sig | Format-List -Property *
       # Check signature on net6.0 dll
-      - mkdir net6.0 
+      - mkdir net6.0
       - python AwsEncryptionSDK/codebuild/release/retrieve_signed_assembly.py --target net6.0 --unique-id $Env:UNIQUE_ID --output net6.0
       - $sig = Get-AuthenticodeSignature -FilePath net6.0/$Env:FILE_NAME
       - $sig | Format-List -Property *

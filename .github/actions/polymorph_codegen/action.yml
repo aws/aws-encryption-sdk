@@ -88,7 +88,7 @@ runs:
         make -C mpl/AwsCryptographicMaterialProviders setup_prettier
         make -C mpl/ComAmazonawsKms setup_prettier
         make -C mpl/ComAmazonawsDynamodb setup_prettier
-    
+
     # In the ESDK Dafny it does not make sense to run smithy dafny for java code
     # since the java esdk written natively and not through dafny
     #- name: Regenerate Java code using smithy-dafny
