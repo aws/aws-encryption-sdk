@@ -47,25 +47,11 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
         with:
           components: rustfmt
-      # TODO - uncomment this after Rust formatter works
-      # - name: Rustfmt Check
-      #   uses: actions-rust-lang/rustfmt@v1
 
       - name: Setup Dafny
-        uses: ./mpl/smithy-dafny/.github/actions/build_dafny_from_source
+        uses: dafny-lang/setup-dafny-action@v1.8.0
         with:
-          dafny-version: 4.9.2
-          ref: a928ebf5733dca040cbbb9b0c5861c20fb5bff6d
-
-      # TODO: Remove this after the formatting in Rust starts working
-      - name: smithy-dafny Rust hacks
-        shell: bash
-        run: |
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            sed -i '' 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
-          else
-            sed -i 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
-          fi
+          dafny-version: nightly-2025-01-30-7db1e5f
 
       - name: Setup Java 17 for codegen
         uses: actions/setup-java@v3
@@ -161,25 +147,11 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
         with:
           components: rustfmt
-      # TODO - uncomment this after Rust formatter works
-      # - name: Rustfmt Check
-      #   uses: actions-rust-lang/rustfmt@v1
 
       - name: Setup Dafny
-        uses: ./mpl/smithy-dafny/.github/actions/build_dafny_from_source
+        uses: dafny-lang/setup-dafny-action@v1.8.0
         with:
-          dafny-version: 4.9.2
-          ref: a928ebf5733dca040cbbb9b0c5861c20fb5bff6d
-
-      # TODO: Remove this after the formatting in Rust starts working
-      - name: smithy-dafny Rust hacks
-        shell: bash
-        run: |
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            sed -i '' 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
-          else
-            sed -i 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
-          fi
+          dafny-version: nightly-2025-01-30-7db1e5f
 
       - name: Setup Java 17 for codegen
         uses: actions/setup-java@v3

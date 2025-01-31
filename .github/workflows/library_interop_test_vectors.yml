@@ -72,20 +72,6 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
         with:
           components: rustfmt
-      # TODO - uncomment this after Rust formatter works
-      # - name: Rustfmt Check
-      #   uses: actions-rust-lang/rustfmt@v1
-
-      # TODO: Remove this after the formatting in Rust starts working
-      - name: smithy-dafny Rust hacks
-        if: matrix.language == 'rust'
-        shell: bash
-        run: |
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            sed -i '' 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
-          else
-            sed -i 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
-          fi
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -102,14 +88,13 @@ jobs:
 
       - name: Setup Dafny Rust
         if: matrix.language == 'rust'
-        uses: ./mpl/smithy-dafny/.github/actions/build_dafny_from_source
+        uses: dafny-lang/setup-dafny-action@v1.8.0
         with:
-          dafny-version: 4.9.2
-          ref: a928ebf5733dca040cbbb9b0c5861c20fb5bff6d
+          dafny-version: nightly-2025-01-30-7db1e5f
 
       - name: Setup Dafny Not Rust
         if: matrix.language != 'rust'
-        uses: dafny-lang/setup-dafny-action@v1.7.0
+        uses: dafny-lang/setup-dafny-action@v1.8.0
         with:
           dafny-version: ${{ inputs.dafny }}
 
@@ -259,20 +244,6 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
         with:
           components: rustfmt
-      # TODO - uncomment this after Rust formatter works
-      # - name: Rustfmt Check
-      #   uses: actions-rust-lang/rustfmt@v1
-
-      # TODO: Remove this after the formatting in Rust starts working
-      - name: smithy-dafny Rust hacks
-        if: matrix.decrypting_language == 'rust'
-        shell: bash
-        run: |
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            sed -i '' 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
-          else
-            sed -i 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
-          fi
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -288,15 +259,14 @@ jobs:
         uses: ilammy/setup-nasm@v1
 
       - name: Setup Dafny Rust
-        if: matrix.decrypting_language == 'rust'
-        uses: ./mpl/smithy-dafny/.github/actions/build_dafny_from_source
+        if: matrix.language == 'rust'
+        uses: dafny-lang/setup-dafny-action@v1.8.0
         with:
-          dafny-version: 4.9.2
-          ref: a928ebf5733dca040cbbb9b0c5861c20fb5bff6d
+          dafny-version: nightly-2025-01-30-7db1e5f
 
       - name: Setup Dafny Not Rust
         if: matrix.decrypting_language != 'rust'
-        uses: dafny-lang/setup-dafny-action@v1.6.1
+        uses: dafny-lang/setup-dafny-action@v1.8.0
         with:
           dafny-version: ${{ inputs.dafny }}
 
@@ -312,7 +282,7 @@ jobs:
       - name: Build ${{ matrix.library }} implementation in Java
         if: matrix.decrypting_language == 'java'
         working-directory: ./${{ matrix.library }}
-        shell: bash
+`w        shell: bash
         run: |
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
