@@ -57,7 +57,7 @@ jobs:
           dotnet-version: "6.0.x"
 
       - name: Setup MPL Dafny
-        uses: dafny-lang/setup-dafny-action@v1.7.2
+        uses: dafny-lang/setup-dafny-action@v1.8.0
         with:
           dafny-version: ${{ inputs.mpl-dafny }}
 
@@ -91,7 +91,7 @@ jobs:
           make transpile_net CORES=$CORES
 
       - name: Setup ESDK Dafny
-        uses: dafny-lang/setup-dafny-action@v1.7.2
+        uses: dafny-lang/setup-dafny-action@v1.8.0
         with:
           dafny-version: ${{ inputs.esdk-dafny}}
 
