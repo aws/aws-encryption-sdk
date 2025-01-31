@@ -129,7 +129,6 @@ jobs:
         if: matrix.language == 'rust'
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
 
-      # TODO: Remove this after checking in Rust polymorph code
       - name: Run make polymorph_rust
         if: matrix.language == 'rust'
         shell: bash
@@ -282,7 +281,7 @@ jobs:
       - name: Build ${{ matrix.library }} implementation in Java
         if: matrix.decrypting_language == 'java'
         working-directory: ./${{ matrix.library }}
-`w        shell: bash
+        shell: bash
         run: |
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
@@ -301,7 +300,6 @@ jobs:
         if: matrix.decrypting_language == 'rust'
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
 
-      # TODO: Remove this after checking in Rust polymorph code
       - name: Run make polymorph_rust
         if: matrix.decrypting_language == 'rust'
         shell: bash

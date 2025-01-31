@@ -75,8 +75,6 @@ jobs:
           diff-generated-code: false
           update-and-regenerate-mpl: true
 
-      # TODO: Remove this after checking in Rust polymorph code
-      # Also uncomment rust check_polymorph_diff for Rust in .github/actions/polymorph_codegen/action.yml
       - name: Run make polymorph_rust
         shell: bash
         working-directory: ${{ matrix.library }}
@@ -175,8 +173,6 @@ jobs:
           diff-generated-code: false
           update-and-regenerate-mpl: true
 
-      # TODO: Remove this after checking in Rust polymorph code
-      # Also uncomment rust check_polymorph_diff for Rust in .github/actions/polymorph_codegen/action.yml
       - name: Run make polymorph_rust
         shell: bash
         working-directory: ${{ matrix.library }}
