@@ -100,7 +100,7 @@ jobs:
         working-directory: ${{ matrix.library }}
         shell: bash
         run: |
-          make test_rust
+          make test_rust test_rust_debug
 
       - name: Test Examples for Rust
         working-directory: ${{ matrix.library }}/runtimes/rust
@@ -201,4 +201,4 @@ jobs:
         run: |
           # Without this, running test vectors fails due to `fatal runtime error: stack overflow`
           export RUST_MIN_STACK=104857600
-          make test_rust
+          make test_rust test_rust_debug
