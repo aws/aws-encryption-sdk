@@ -71,6 +71,10 @@ echo target >> .gitignore
 # format the generated code
 cargo fmt
 
+# clippy shuld run clean
+cargo clippy
+cargo clippy --example main
+
 # replace local path with latest dafny-runtime from crates.io
 cargo rm dafny_runtime
 cargo add dafny-runtime -F sync
