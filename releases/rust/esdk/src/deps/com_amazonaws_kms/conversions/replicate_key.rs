@@ -7,7 +7,9 @@ pub fn to_dafny_error(
         aws_sdk_kms::operation::replicate_key::ReplicateKeyError,
         ::aws_smithy_runtime_api::client::orchestrator::HttpResponse,
     >,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Error> {
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Error,
+> {
     match value {
       aws_sdk_kms::error::SdkError::ServiceError(service_error) => match service_error.err() {
                 aws_sdk_kms::operation::replicate_key::ReplicateKeyError::AlreadyExistsException(e) =>
@@ -42,6 +44,6 @@ pub fn to_dafny_error(
    }
 }
 
- pub mod _replicate_key_request;
+pub mod _replicate_key_request;
 
- pub mod _replicate_key_response;
+pub mod _replicate_key_response;

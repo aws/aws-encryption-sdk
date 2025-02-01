@@ -4,10 +4,10 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &crate::deps::aws_cryptography_materialProviders::types::Materials,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Materials,
 > {
-    ::std::rc::Rc::new(match value {
+    ::dafny_runtime::Rc::new(match value {
         crate::deps::aws_cryptography_materialProviders::types::Materials::Encryption(x) =>
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Materials::Encryption {
         Encryption: crate::deps::aws_cryptography_materialProviders::conversions::encryption_materials::to_dafny(&x.clone())
@@ -34,11 +34,11 @@ crate::deps::aws_cryptography_materialProviders::types::Materials::BeaconKey(x) 
 
 #[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Materials,
     >,
 ) -> crate::deps::aws_cryptography_materialProviders::types::Materials {
-    match &::std::rc::Rc::unwrap_or_clone(dafny_value) {
+    match &::dafny_runtime::Rc::unwrap_or_clone(dafny_value) {
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Materials::Encryption {
     Encryption: x @ _,
 } => crate::deps::aws_cryptography_materialProviders::types::Materials::Encryption(crate::deps::aws_cryptography_materialProviders::conversions::encryption_materials::from_dafny(x.clone())

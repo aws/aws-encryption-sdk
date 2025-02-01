@@ -10,7 +10,10 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     /// - On success, responds with [`DigestOutput`](crate::operation::digest::DigestOutput) with field(s):
     ///   - [`digest(Option<::aws_smithy_types::Blob>)`](crate::operation::digest::DigestOutput::digest): (undocumented)
     /// - On failure, responds with [`SdkError<DigestError>`](crate::operation::digest::DigestError)
-    pub fn digest(&self) -> crate::deps::aws_cryptography_primitives::operation::digest::builders::DigestFluentBuilder {
+    pub fn digest(
+        &self,
+    ) -> crate::deps::aws_cryptography_primitives::operation::digest::builders::DigestFluentBuilder
+    {
         crate::deps::aws_cryptography_primitives::operation::digest::builders::DigestFluentBuilder::new(self.clone())
     }
 }

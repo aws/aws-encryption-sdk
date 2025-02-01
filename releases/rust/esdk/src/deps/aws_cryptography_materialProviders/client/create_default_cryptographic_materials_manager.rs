@@ -9,7 +9,7 @@ impl crate::deps::aws_cryptography_materialProviders::client::Client {
     /// - On success, responds with [`CreateCryptographicMaterialsManagerOutput`](crate::operation::create_default_cryptographic_materials_manager::CreateCryptographicMaterialsManagerOutput) with field(s):
     ///   - [`materials_manager(Option<crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef>)`](crate::operation::create_default_cryptographic_materials_manager::CreateCryptographicMaterialsManagerOutput::materials_manager): (undocumented)
     /// - On failure, responds with [`SdkError<CreateDefaultCryptographicMaterialsManagerError>`](crate::operation::create_default_cryptographic_materials_manager::CreateDefaultCryptographicMaterialsManagerError)
-    pub fn create_default_cryptographic_materials_manager(&self) -> crate::deps::aws_cryptography_materialProviders::operation::create_default_cryptographic_materials_manager::builders::CreateDefaultCryptographicMaterialsManagerFluentBuilder {
+    pub fn create_default_cryptographic_materials_manager(&self) -> crate::deps::aws_cryptography_materialProviders::operation::create_default_cryptographic_materials_manager::builders::CreateDefaultCryptographicMaterialsManagerFluentBuilder{
         crate::deps::aws_cryptography_materialProviders::operation::create_default_cryptographic_materials_manager::builders::CreateDefaultCryptographicMaterialsManagerFluentBuilder::new(self.clone())
     }
 }

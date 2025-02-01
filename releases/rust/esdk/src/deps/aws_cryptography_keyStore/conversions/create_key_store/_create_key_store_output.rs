@@ -4,16 +4,16 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_keyStore::operation::create_key_store::CreateKeyStoreOutput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::keystore::internaldafny::types::CreateKeyStoreOutput,
->{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::keystore::internaldafny::types::CreateKeyStoreOutput::CreateKeyStoreOutput {
+> {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::keystore::internaldafny::types::CreateKeyStoreOutput::CreateKeyStoreOutput {
         tableArn: crate::standard_library_conversions::ostring_to_dafny(&value.table_arn) .Extract(),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::keystore::internaldafny::types::CreateKeyStoreOutput,
     >,
 ) -> crate::deps::aws_cryptography_keyStore::operation::create_key_store::CreateKeyStoreOutput {

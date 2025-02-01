@@ -3,7 +3,7 @@
 // Do not modify this file. This file is machine generated, and any changes to it will be overwritten.
 
 #[allow(missing_docs)]
-pub trait CryptographicMaterialsManager {
+pub trait CryptographicMaterialsManager: Send + Sync {
     fn get_encryption_materials(
     &self,
     input: crate::deps::aws_cryptography_materialProviders::operation::get_encryption_materials::GetEncryptionMaterialsInput,
@@ -12,7 +12,7 @@ pub trait CryptographicMaterialsManager {
     crate::deps::aws_cryptography_materialProviders::types::error::Error,
   >;
 
-  fn decrypt_materials(
+    fn decrypt_materials(
     &self,
     input: crate::deps::aws_cryptography_materialProviders::operation::decrypt_materials::DecryptMaterialsInput,
   ) -> Result<
@@ -24,18 +24,20 @@ pub trait CryptographicMaterialsManager {
 #[derive(::std::clone::Clone)]
 /// A reference to a CryptographicMaterialsManager
 pub struct CryptographicMaterialsManagerRef {
-  pub inner: ::std::rc::Rc<std::cell::RefCell<dyn CryptographicMaterialsManager>>
+    pub inner: ::dafny_runtime::Rc<::dafny_runtime::RefCell<dyn CryptographicMaterialsManager>>,
 }
 
-impl<T : CryptographicMaterialsManager + 'static> From<T> for CryptographicMaterialsManagerRef {
+impl<T: CryptographicMaterialsManager + 'static> From<T> for CryptographicMaterialsManagerRef {
     fn from(value: T) -> Self {
-        Self { inner: std::rc::Rc::new(std::cell::RefCell::new(value)) }
+        Self {
+            inner: dafny_runtime::Rc::new(::dafny_runtime::RefCell::new(value)),
+        }
     }
 }
 
 impl ::std::cmp::PartialEq for CryptographicMaterialsManagerRef {
     fn eq(&self, other: &CryptographicMaterialsManagerRef) -> bool {
-        ::std::rc::Rc::ptr_eq(&self.inner, &other.inner)
+        ::dafny_runtime::Rc::ptr_eq(&self.inner, &other.inner)
     }
 }
 

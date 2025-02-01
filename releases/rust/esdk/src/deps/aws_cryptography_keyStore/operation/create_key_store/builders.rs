@@ -36,7 +36,7 @@ impl CreateKeyStoreFluentBuilder {
         }
     }
     /// Access the CreateKeyStore as a reference.
-    pub fn as_input(&self) -> &crate::deps::aws_cryptography_keyStore::operation::create_key_store::builders::CreateKeyStoreInputBuilder {
+    pub fn as_input(&self) -> &crate::deps::aws_cryptography_keyStore::operation::create_key_store::builders::CreateKeyStoreInputBuilder{
         &self.inner
     }
     /// Sends the request and returns the response.
@@ -54,13 +54,16 @@ impl CreateKeyStoreFluentBuilder {
             // and smithy-rs seems to not generate a ValidationError case unless there is.
             // Vanilla smithy-rs uses SdkError::construction_failure, but we aren't using SdkError.
             .map_err(|mut e| {
-	     let msg = format!("{:?}", e);
-             crate::deps::aws_cryptography_keyStore::types::error::Error::OpaqueWithText {
-                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut dyn ::std::any::Any),
-		objMessage: msg
-             }})?;
-        crate::deps::aws_cryptography_keyStore::operation::create_key_store::CreateKeyStore::send(&self.client, input).await
+                let msg = format!("{:?}", e);
+                crate::deps::aws_cryptography_keyStore::types::error::Error::OpaqueWithText {
+                    obj: ::dafny_runtime::Object::from_ref(&mut e as &mut ::dafny_runtime::DynAny),
+                    objMessage: msg,
+                }
+            })?;
+        crate::deps::aws_cryptography_keyStore::operation::create_key_store::CreateKeyStore::send(
+            &self.client,
+            input,
+        )
+        .await
     }
-
-
 }

@@ -4,8 +4,10 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: aws_sdk_kms::types::error::XksProxyIncorrectAuthenticationCredentialException,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Error>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Error,
+> {
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Error::XksProxyIncorrectAuthenticationCredentialException {
       message: crate::standard_library_conversions::ostring_to_dafny(&value.message),
     }

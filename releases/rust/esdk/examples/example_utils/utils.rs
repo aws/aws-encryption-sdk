@@ -39,41 +39,43 @@ pub const TEST_KEY_STORE_KMS_KEY_ID: &str =
 
 // ECDH Utils
 use aws_esdk::aws_cryptography_primitives::types::EcdhCurveSpec;
-use std::path::Path;
 use std::io::Write;
+use std::path::Path;
 
 pub const TEST_KMS_ECDH_KEY_ID_P256_SENDER: &str =
     "arn:aws:kms:us-west-2:370957321024:key/eabdf483-6be2-4d2d-8ee4-8c2583d416e9";
 pub const TEST_KMS_ECDH_KEY_ID_P256_RECIPIENT: &str =
     "arn:aws:kms:us-west-2:370957321024:key/0265c8e9-5b6a-4055-8f70-63719e09fda5";
 
-pub const EXAMPLE_ECC_PRIVATE_KEY_FILENAME_SENDER: &str = "RawEcdhKeyringExamplePrivateKeySender.pem";
-pub const EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT: &str = "RawEcdhKeyringExamplePrivateKeyRecipient.pem";
-pub const EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT: &str = "RawEcdhKeyringExamplePublicKeyRecipient.pem";
-pub const EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_SENDER: &str = "KmsEccKeyringExamplePublicKeySender.pem";
-pub const EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_RECIPIENT: &str = "KmsEccKeyringExamplePublicKeyRecipient.pem";
+pub const EXAMPLE_ECC_PRIVATE_KEY_FILENAME_SENDER: &str =
+    "RawEcdhKeyringExamplePrivateKeySender.pem";
+pub const EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT: &str =
+    "RawEcdhKeyringExamplePrivateKeyRecipient.pem";
+pub const EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT: &str =
+    "RawEcdhKeyringExamplePublicKeyRecipient.pem";
+pub const EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_SENDER: &str =
+    "KmsEccKeyringExamplePublicKeySender.pem";
+pub const EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_RECIPIENT: &str =
+    "KmsEccKeyringExamplePublicKeyRecipient.pem";
 
 // Following are the helper functions for running ECDH examples
 
-pub(crate) fn x962_to_x509(
-    public_key: &[u8],
-    nid: i32
-) -> Result<Vec<u8>, String> {
-    use aws_lc_sys::EC_POINT_new;
-    use aws_lc_sys::EC_GROUP_new_by_curve_name;
-    use aws_lc_sys::EC_POINT_oct2point;
-    use aws_lc_sys::EC_KEY_new_by_curve_name;
-    use aws_lc_sys::EC_KEY_set_public_key;
-    use aws_lc_sys::EVP_PKEY_new;
-    use aws_lc_sys::EVP_PKEY_assign_EC_KEY;
-    use aws_lc_sys::EVP_PKEY_size;
-    use aws_lc_sys::EVP_marshal_public_key;
+pub(crate) fn x962_to_x509(public_key: &[u8], nid: i32) -> Result<Vec<u8>, String> {
     use aws_lc_sys::CBB_finish;
     use aws_lc_sys::CBB_init;
-    use aws_lc_sys::CBB;
-    use aws_lc_sys::OPENSSL_free;
-    use aws_lc_sys::EVP_PKEY_free;
+    use aws_lc_sys::EC_GROUP_new_by_curve_name;
+    use aws_lc_sys::EC_KEY_new_by_curve_name;
+    use aws_lc_sys::EC_KEY_set_public_key;
     use aws_lc_sys::EC_POINT_free;
+    use aws_lc_sys::EC_POINT_new;
+    use aws_lc_sys::EC_POINT_oct2point;
+    use aws_lc_sys::EVP_PKEY_assign_EC_KEY;
+    use aws_lc_sys::EVP_PKEY_free;
+    use aws_lc_sys::EVP_PKEY_new;
+    use aws_lc_sys::EVP_PKEY_size;
+    use aws_lc_sys::EVP_marshal_public_key;
+    use aws_lc_sys::OPENSSL_free;
+    use aws_lc_sys::CBB;
     use std::ptr::null_mut;
 
     let ec_group = unsafe { EC_GROUP_new_by_curve_name(nid) };
@@ -147,17 +149,17 @@ pub(crate) fn exists(f: &str) -> bool {
 }
 
 pub(crate) fn write_raw_ecdh_ecc_keys(
-    ecdh_curve_spec: EcdhCurveSpec
+    ecdh_curve_spec: EcdhCurveSpec,
 ) -> Result<(), crate::BoxError> {
     // Safety check: Validate neither file is present
     if exists(EXAMPLE_ECC_PRIVATE_KEY_FILENAME_SENDER)
         || exists(EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT)
         || exists(EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT)
-        {
-            return Err(crate::BoxError(
-                "write_raw_ecdh_ecc_keys will not overwrite existing PEM files".to_string(),
-            ));
-        }
+    {
+        return Err(crate::BoxError(
+            "write_raw_ecdh_ecc_keys will not overwrite existing PEM files".to_string(),
+        ));
+    }
 
     let (_public_key_sender, private_key_sender) = generate_raw_ecc_key_pair(ecdh_curve_spec)?;
     let (public_key_recipient, private_key_recipient) = generate_raw_ecc_key_pair(ecdh_curve_spec)?;
@@ -187,7 +189,7 @@ pub(crate) fn write_raw_ecdh_ecc_keys(
 }
 
 fn generate_raw_ecc_key_pair(
-    ecdh_curve_spec: EcdhCurveSpec
+    ecdh_curve_spec: EcdhCurveSpec,
 ) -> Result<(String, String), crate::BoxError> {
     use aws_lc_rs::encoding::AsDer;
     use aws_lc_rs::encoding::EcPrivateKeyRfc5915Der;
@@ -202,9 +204,8 @@ fn generate_raw_ecc_key_pair(
     // These examples only demonstrate using the P256 curve while the keyring accepts
     // P256, P384, or P521.
     // This key is created here for example purposes only.
-    let private_key =
-        aws_lc_rs::agreement::PrivateKey::generate(get_alg(ecdh_curve_spec))
-            .map_err(|e| format!("{:?}", e))?;
+    let private_key = aws_lc_rs::agreement::PrivateKey::generate(get_alg(ecdh_curve_spec))
+        .map_err(|e| format!("{:?}", e))?;
 
     let public_key = private_key
         .compute_public_key()
@@ -214,20 +215,19 @@ fn generate_raw_ecc_key_pair(
     let public_key = pem::Pem::new("PUBLIC KEY", public_key);
     let public_key = pem::encode(&public_key);
 
-    let private_key_der = AsDer::<EcPrivateKeyRfc5915Der>::as_der(&private_key)
-        .map_err(|e| format!("{:?}", e))?;
+    let private_key_der =
+        AsDer::<EcPrivateKeyRfc5915Der>::as_der(&private_key).map_err(|e| format!("{:?}", e))?;
     let private_key = pem::Pem::new("PRIVATE KEY", private_key_der.as_ref());
     let private_key = pem::encode(&private_key);
 
     Ok((public_key, private_key))
 }
 
-pub(crate) async fn write_kms_ecdh_ecc_public_key (
+pub(crate) async fn write_kms_ecdh_ecc_public_key(
     ecc_key_arn: &str,
-    public_key_file_path: &str
+    public_key_file_path: &str,
 ) -> Result<(), crate::BoxError> {
-    if exists(public_key_file_path)
-    {
+    if exists(public_key_file_path) {
         return Err(crate::BoxError(
             "write_kms_ecdh_ecc_public_key will not overwrite existing PEM files".to_string(),
         ));
@@ -264,7 +264,7 @@ pub(crate) async fn generate_kms_ecc_public_key(
         .key_id(ecc_key_arn)
         .send()
         .await?;
-    
+
     let public_key = kms_response
         .public_key
         .expect("Error unwrapping public key from KMS response.");

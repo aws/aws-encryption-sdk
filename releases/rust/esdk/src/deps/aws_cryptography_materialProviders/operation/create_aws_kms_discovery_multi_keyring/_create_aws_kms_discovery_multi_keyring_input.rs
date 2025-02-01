@@ -6,35 +6,47 @@
 /// Inputs for for creating an AWS KMS Discovery Multi-Keyring.
 pub struct CreateAwsKmsDiscoveryMultiKeyringInput {
     /// The Client Supplier which will be used to get KMS Clients for use with this Keyring. If not specified on input, a Default Client Supplier is created which creates a KMS Client for each region in the 'regions' input.
-pub client_supplier: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::client_supplier::ClientSupplierRef>,
-/// A filter which restricts which KMS Keys this Keyring may attempt to decrypt with by AWS partition and account.
-pub discovery_filter: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter>,
-/// A list of grant tokens to be used when calling KMS.
-pub grant_tokens: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
-/// The list of regions this Keyring will creates KMS clients for.
-pub regions: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+    pub client_supplier: ::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::client_supplier::ClientSupplierRef,
+    >,
+    /// A filter which restricts which KMS Keys this Keyring may attempt to decrypt with by AWS partition and account.
+    pub discovery_filter: ::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter,
+    >,
+    /// A list of grant tokens to be used when calling KMS.
+    pub grant_tokens: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+    /// The list of regions this Keyring will creates KMS clients for.
+    pub regions: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
 }
 impl CreateAwsKmsDiscoveryMultiKeyringInput {
     /// The Client Supplier which will be used to get KMS Clients for use with this Keyring. If not specified on input, a Default Client Supplier is created which creates a KMS Client for each region in the 'regions' input.
-pub fn client_supplier(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::client_supplier::ClientSupplierRef> {
-    &self.client_supplier
-}
-/// A filter which restricts which KMS Keys this Keyring may attempt to decrypt with by AWS partition and account.
-pub fn discovery_filter(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter> {
-    &self.discovery_filter
-}
-/// A list of grant tokens to be used when calling KMS.
-pub fn grant_tokens(&self) -> &::std::option::Option<::std::vec::Vec<::std::string::String>> {
-    &self.grant_tokens
-}
-/// The list of regions this Keyring will creates KMS clients for.
-pub fn regions(&self) -> &::std::option::Option<::std::vec::Vec<::std::string::String>> {
-    &self.regions
-}
+    pub fn client_supplier(
+        &self,
+    ) -> &::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::client_supplier::ClientSupplierRef,
+    > {
+        &self.client_supplier
+    }
+    /// A filter which restricts which KMS Keys this Keyring may attempt to decrypt with by AWS partition and account.
+    pub fn discovery_filter(
+        &self,
+    ) -> &::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter,
+    > {
+        &self.discovery_filter
+    }
+    /// A list of grant tokens to be used when calling KMS.
+    pub fn grant_tokens(&self) -> &::std::option::Option<::std::vec::Vec<::std::string::String>> {
+        &self.grant_tokens
+    }
+    /// The list of regions this Keyring will creates KMS clients for.
+    pub fn regions(&self) -> &::std::option::Option<::std::vec::Vec<::std::string::String>> {
+        &self.regions
+    }
 }
 impl CreateAwsKmsDiscoveryMultiKeyringInput {
     /// Creates a new builder-style object to manufacture [`CreateAwsKmsDiscoveryMultiKeyringInput`](crate::operation::create_aws_kms_discovery_multi_keyring::builders::CreateAwsKmsDiscoveryMultiKeyringInput).
-    pub fn builder() -> crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_discovery_multi_keyring::builders::CreateAwsKmsDiscoveryMultiKeyringInputBuilder {
+    pub fn builder() -> crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_discovery_multi_keyring::builders::CreateAwsKmsDiscoveryMultiKeyringInputBuilder{
         crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_discovery_multi_keyring::builders::CreateAwsKmsDiscoveryMultiKeyringInputBuilder::default()
     }
 }
@@ -45,75 +57,117 @@ impl CreateAwsKmsDiscoveryMultiKeyringInput {
     ::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug,
 )]
 pub struct CreateAwsKmsDiscoveryMultiKeyringInputBuilder {
-    pub(crate) client_supplier: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::client_supplier::ClientSupplierRef>,
-pub(crate) discovery_filter: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter>,
-pub(crate) grant_tokens: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
-pub(crate) regions: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+    pub(crate) client_supplier: ::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::client_supplier::ClientSupplierRef,
+    >,
+    pub(crate) discovery_filter: ::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter,
+    >,
+    pub(crate) grant_tokens: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+    pub(crate) regions: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
 }
 impl CreateAwsKmsDiscoveryMultiKeyringInputBuilder {
     /// The Client Supplier which will be used to get KMS Clients for use with this Keyring. If not specified on input, a Default Client Supplier is created which creates a KMS Client for each region in the 'regions' input.
-pub fn client_supplier(mut self, input: impl ::std::convert::Into<crate::deps::aws_cryptography_materialProviders::types::client_supplier::ClientSupplierRef>) -> Self {
-    self.client_supplier = ::std::option::Option::Some(input.into());
-    self
-}
-/// The Client Supplier which will be used to get KMS Clients for use with this Keyring. If not specified on input, a Default Client Supplier is created which creates a KMS Client for each region in the 'regions' input.
-pub fn set_client_supplier(mut self, input: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::client_supplier::ClientSupplierRef>) -> Self {
-    self.client_supplier = input;
-    self
-}
-/// The Client Supplier which will be used to get KMS Clients for use with this Keyring. If not specified on input, a Default Client Supplier is created which creates a KMS Client for each region in the 'regions' input.
-pub fn get_client_supplier(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::client_supplier::ClientSupplierRef> {
-    &self.client_supplier
-}
-/// A filter which restricts which KMS Keys this Keyring may attempt to decrypt with by AWS partition and account.
-pub fn discovery_filter(mut self, input: impl ::std::convert::Into<crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter>) -> Self {
-    self.discovery_filter = ::std::option::Option::Some(input.into());
-    self
-}
-/// A filter which restricts which KMS Keys this Keyring may attempt to decrypt with by AWS partition and account.
-pub fn set_discovery_filter(mut self, input: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter>) -> Self {
-    self.discovery_filter = input;
-    self
-}
-/// A filter which restricts which KMS Keys this Keyring may attempt to decrypt with by AWS partition and account.
-pub fn get_discovery_filter(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter> {
-    &self.discovery_filter
-}
-/// A list of grant tokens to be used when calling KMS.
-pub fn grant_tokens(mut self, input: impl ::std::convert::Into<::std::vec::Vec<::std::string::String>>) -> Self {
-    self.grant_tokens = ::std::option::Option::Some(input.into());
-    self
-}
-/// A list of grant tokens to be used when calling KMS.
-pub fn set_grant_tokens(mut self, input: ::std::option::Option<::std::vec::Vec<::std::string::String>>) -> Self {
-    self.grant_tokens = input;
-    self
-}
-/// A list of grant tokens to be used when calling KMS.
-pub fn get_grant_tokens(&self) -> &::std::option::Option<::std::vec::Vec<::std::string::String>> {
-    &self.grant_tokens
-}
-/// The list of regions this Keyring will creates KMS clients for.
-pub fn regions(mut self, input: impl ::std::convert::Into<::std::vec::Vec<::std::string::String>>) -> Self {
-    self.regions = ::std::option::Option::Some(input.into());
-    self
-}
-/// The list of regions this Keyring will creates KMS clients for.
-pub fn set_regions(mut self, input: ::std::option::Option<::std::vec::Vec<::std::string::String>>) -> Self {
-    self.regions = input;
-    self
-}
-/// The list of regions this Keyring will creates KMS clients for.
-pub fn get_regions(&self) -> &::std::option::Option<::std::vec::Vec<::std::string::String>> {
-    &self.regions
-}
+    pub fn client_supplier(
+        mut self,
+        input: impl ::std::convert::Into<crate::deps::aws_cryptography_materialProviders::types::client_supplier::ClientSupplierRef>,
+    ) -> Self {
+        self.client_supplier = ::std::option::Option::Some(input.into());
+        self
+    }
+    /// The Client Supplier which will be used to get KMS Clients for use with this Keyring. If not specified on input, a Default Client Supplier is created which creates a KMS Client for each region in the 'regions' input.
+    pub fn set_client_supplier(
+        mut self,
+        input: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::client_supplier::ClientSupplierRef>,
+    ) -> Self {
+        self.client_supplier = input;
+        self
+    }
+    /// The Client Supplier which will be used to get KMS Clients for use with this Keyring. If not specified on input, a Default Client Supplier is created which creates a KMS Client for each region in the 'regions' input.
+    pub fn get_client_supplier(
+        &self,
+    ) -> &::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::client_supplier::ClientSupplierRef,
+    > {
+        &self.client_supplier
+    }
+    /// A filter which restricts which KMS Keys this Keyring may attempt to decrypt with by AWS partition and account.
+    pub fn discovery_filter(
+        mut self,
+        input: impl ::std::convert::Into<
+            crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter,
+        >,
+    ) -> Self {
+        self.discovery_filter = ::std::option::Option::Some(input.into());
+        self
+    }
+    /// A filter which restricts which KMS Keys this Keyring may attempt to decrypt with by AWS partition and account.
+    pub fn set_discovery_filter(
+        mut self,
+        input: ::std::option::Option<
+            crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter,
+        >,
+    ) -> Self {
+        self.discovery_filter = input;
+        self
+    }
+    /// A filter which restricts which KMS Keys this Keyring may attempt to decrypt with by AWS partition and account.
+    pub fn get_discovery_filter(
+        &self,
+    ) -> &::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter,
+    > {
+        &self.discovery_filter
+    }
+    /// A list of grant tokens to be used when calling KMS.
+    pub fn grant_tokens(
+        mut self,
+        input: impl ::std::convert::Into<::std::vec::Vec<::std::string::String>>,
+    ) -> Self {
+        self.grant_tokens = ::std::option::Option::Some(input.into());
+        self
+    }
+    /// A list of grant tokens to be used when calling KMS.
+    pub fn set_grant_tokens(
+        mut self,
+        input: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+    ) -> Self {
+        self.grant_tokens = input;
+        self
+    }
+    /// A list of grant tokens to be used when calling KMS.
+    pub fn get_grant_tokens(
+        &self,
+    ) -> &::std::option::Option<::std::vec::Vec<::std::string::String>> {
+        &self.grant_tokens
+    }
+    /// The list of regions this Keyring will creates KMS clients for.
+    pub fn regions(
+        mut self,
+        input: impl ::std::convert::Into<::std::vec::Vec<::std::string::String>>,
+    ) -> Self {
+        self.regions = ::std::option::Option::Some(input.into());
+        self
+    }
+    /// The list of regions this Keyring will creates KMS clients for.
+    pub fn set_regions(
+        mut self,
+        input: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+    ) -> Self {
+        self.regions = input;
+        self
+    }
+    /// The list of regions this Keyring will creates KMS clients for.
+    pub fn get_regions(&self) -> &::std::option::Option<::std::vec::Vec<::std::string::String>> {
+        &self.regions
+    }
     /// Consumes the builder and constructs a [`CreateAwsKmsDiscoveryMultiKeyringInput`](crate::operation::operation::CreateAwsKmsDiscoveryMultiKeyringInput).
     pub fn build(
         self,
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_discovery_multi_keyring::CreateAwsKmsDiscoveryMultiKeyringInput,
         ::aws_smithy_types::error::operation::BuildError,
-    > {
+    >{
         ::std::result::Result::Ok(crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_discovery_multi_keyring::CreateAwsKmsDiscoveryMultiKeyringInput {
             client_supplier: self.client_supplier,
 discovery_filter: self.discovery_filter,

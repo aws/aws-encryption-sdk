@@ -10,7 +10,7 @@ impl crate::deps::aws_cryptography_keyStore::client::Client {
     /// - On success, responds with [`CreateKeyOutput`](crate::operation::create_key::CreateKeyOutput) with field(s):
     ///   - [`branch_key_identifier(Option<::std::string::String>)`](crate::operation::create_key::CreateKeyOutput::branch_key_identifier): (undocumented)
     /// - On failure, responds with [`SdkError<CreateKeyError>`](crate::operation::create_key::CreateKeyError)
-    pub fn create_key(&self) -> crate::deps::aws_cryptography_keyStore::operation::create_key::builders::CreateKeyFluentBuilder {
+    pub fn create_key(&self) -> crate::deps::aws_cryptography_keyStore::operation::create_key::builders::CreateKeyFluentBuilder{
         crate::deps::aws_cryptography_keyStore::operation::create_key::builders::CreateKeyFluentBuilder::new(self.clone())
     }
 }

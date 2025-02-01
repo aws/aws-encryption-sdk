@@ -5,8 +5,10 @@
 
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_primitives::types::RsaPaddingMode,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::primitives::internaldafny::types::RSAPaddingMode>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::primitives::internaldafny::types::RSAPaddingMode,
+> {
+    ::dafny_runtime::Rc::new(match value {
         crate::deps::aws_cryptography_primitives::types::RsaPaddingMode::Pkcs1 => crate::r#software::amazon::cryptography::primitives::internaldafny::types::RSAPaddingMode::PKCS1 {},
 crate::deps::aws_cryptography_primitives::types::RsaPaddingMode::OaepSha1 => crate::r#software::amazon::cryptography::primitives::internaldafny::types::RSAPaddingMode::OAEP_SHA1 {},
 crate::deps::aws_cryptography_primitives::types::RsaPaddingMode::OaepSha256 => crate::r#software::amazon::cryptography::primitives::internaldafny::types::RSAPaddingMode::OAEP_SHA256 {},
@@ -15,7 +17,7 @@ crate::deps::aws_cryptography_primitives::types::RsaPaddingMode::OaepSha512 => c
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::primitives::internaldafny::types::RSAPaddingMode,
 ) -> crate::deps::aws_cryptography_primitives::types::RsaPaddingMode {

@@ -4,13 +4,13 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::operation::describe_contributor_insights::DescribeContributorInsightsOutput
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeContributorInsightsOutput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeContributorInsightsOutput::DescribeContributorInsightsOutput {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeContributorInsightsOutput::DescribeContributorInsightsOutput {
         TableName: crate::standard_library_conversions::ostring_to_dafny(&value.table_name),
  IndexName: crate::standard_library_conversions::ostring_to_dafny(&value.index_name),
- ContributorInsightsRuleList: ::std::rc::Rc::new(match &value.contributor_insights_rule_list {
+ ContributorInsightsRuleList: ::dafny_runtime::Rc::new(match &value.contributor_insights_rule_list {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&e),
@@ -19,24 +19,24 @@ pub fn to_dafny(
     None => crate::r#_Wrappers_Compile::Option::None {}
 })
 ,
- ContributorInsightsStatus: ::std::rc::Rc::new(match &value.contributor_insights_status {
+ ContributorInsightsStatus: ::dafny_runtime::Rc::new(match &value.contributor_insights_status {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::contributor_insights_status::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
  LastUpdateDateTime: crate::standard_library_conversions::otimestamp_to_dafny(&value.last_update_date_time),
- FailureException: ::std::rc::Rc::new(match &value.failure_exception {
+ FailureException: ::dafny_runtime::Rc::new(match &value.failure_exception {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::failure_exception::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeContributorInsightsOutput,
-    >
+    >,
 ) -> aws_sdk_dynamodb::operation::describe_contributor_insights::DescribeContributorInsightsOutput {
     aws_sdk_dynamodb::operation::describe_contributor_insights::DescribeContributorInsightsOutput::builder()
           .set_table_name(crate::standard_library_conversions::ostring_from_dafny(dafny_value.TableName().clone()))
@@ -66,6 +66,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
-
 }

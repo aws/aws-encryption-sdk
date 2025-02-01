@@ -5,14 +5,14 @@
 
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_materialProviders::types::DbeAlgorithmSuiteId,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::DBEAlgorithmSuiteId>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::DBEAlgorithmSuiteId>{
+    ::dafny_runtime::Rc::new(match value {
         crate::deps::aws_cryptography_materialProviders::types::DbeAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeySymsigHmacSha384 => crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::DBEAlgorithmSuiteId::ALG_AES_256_GCM_HKDF_SHA512_COMMIT_KEY_SYMSIG_HMAC_SHA384 {},
 crate::deps::aws_cryptography_materialProviders::types::DbeAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384SymsigHmacSha384 => crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::DBEAlgorithmSuiteId::ALG_AES_256_GCM_HKDF_SHA512_COMMIT_KEY_ECDSA_P384_SYMSIG_HMAC_SHA384 {},
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::DBEAlgorithmSuiteId,
 ) -> crate::deps::aws_cryptography_materialProviders::types::DbeAlgorithmSuiteId {

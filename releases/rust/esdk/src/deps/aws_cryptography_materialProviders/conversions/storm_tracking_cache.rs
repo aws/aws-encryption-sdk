@@ -4,16 +4,16 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &crate::deps::aws_cryptography_materialProviders::types::StormTrackingCache,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::StormTrackingCache,
-> {
-    ::std::rc::Rc::new(to_dafny_plain(value.clone()))
+>{
+    ::dafny_runtime::Rc::new(to_dafny_plain(value.clone()))
 }
 
 #[allow(dead_code)]
 pub fn to_dafny_plain(
     value: crate::deps::aws_cryptography_materialProviders::types::StormTrackingCache,
-) -> crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::StormTrackingCache {
+) -> crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::StormTrackingCache{
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::StormTrackingCache::StormTrackingCache {
         entryCapacity: value.entry_capacity.clone().unwrap(),
  entryPruningTailSize: crate::standard_library_conversions::oint_to_dafny(value.entry_pruning_tail_size),
@@ -22,7 +22,7 @@ pub fn to_dafny_plain(
  fanOut: value.fan_out.clone().unwrap(),
  inFlightTTL: value.in_flight_ttl.clone().unwrap(),
  sleepMilli: value.sleep_milli.clone().unwrap(),
- timeUnits: ::std::rc::Rc::new(match &value.time_units {
+ timeUnits: ::dafny_runtime::Rc::new(match &value.time_units {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::aws_cryptography_materialProviders::conversions::time_units::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
@@ -33,20 +33,20 @@ pub fn to_dafny_plain(
 #[allow(dead_code)]
 pub fn option_to_dafny(
   value: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::StormTrackingCache>,
-) -> ::std::rc::Rc<crate::_Wrappers_Compile::Option<::std::rc::Rc<
+) -> ::dafny_runtime::Rc<crate::_Wrappers_Compile::Option<::dafny_runtime::Rc<
   crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::StormTrackingCache,
 >>>{
-    ::std::rc::Rc::new(match value {
+    ::dafny_runtime::Rc::new(match value {
         ::std::option::Option::None => crate::_Wrappers_Compile::Option::None {},
         ::std::option::Option::Some(x) => crate::_Wrappers_Compile::Option::Some {
-            value: ::std::rc::Rc::new(to_dafny_plain(x)),
+            value: ::dafny_runtime::Rc::new(to_dafny_plain(x)),
         },
     })
 }
 
 #[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::StormTrackingCache,
     >,
 ) -> crate::deps::aws_cryptography_materialProviders::types::StormTrackingCache {
@@ -81,10 +81,11 @@ pub fn plain_from_dafny(
 
 #[allow(dead_code)]
 pub fn option_from_dafny(
-    dafny_value: ::std::rc::Rc<crate::_Wrappers_Compile::Option<::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<crate::_Wrappers_Compile::Option<::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::StormTrackingCache,
     >>>,
-) -> ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::StormTrackingCache> {
+) -> ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::StormTrackingCache>
+{
     match &*dafny_value {
         crate::_Wrappers_Compile::Option::Some { value } => {
             ::std::option::Option::Some(plain_from_dafny(value))

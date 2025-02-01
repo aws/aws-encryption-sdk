@@ -6,17 +6,18 @@
 /// Inputs for versioning a Branch Key.
 pub struct VersionKeyInput {
     /// The identifier for the Branch Key to be versioned.
-pub branch_key_identifier: ::std::option::Option<::std::string::String>,
+    pub branch_key_identifier: ::std::option::Option<::std::string::String>,
 }
 impl VersionKeyInput {
     /// The identifier for the Branch Key to be versioned.
-pub fn branch_key_identifier(&self) -> &::std::option::Option<::std::string::String> {
-    &self.branch_key_identifier
-}
+    pub fn branch_key_identifier(&self) -> &::std::option::Option<::std::string::String> {
+        &self.branch_key_identifier
+    }
 }
 impl VersionKeyInput {
     /// Creates a new builder-style object to manufacture [`VersionKeyInput`](crate::deps::aws_cryptography_keyStore::types::VersionKeyInput).
-    pub fn builder() -> crate::deps::aws_cryptography_keyStore::types::builders::VersionKeyInputBuilder {
+    pub fn builder(
+    ) -> crate::deps::aws_cryptography_keyStore::types::builders::VersionKeyInputBuilder {
         crate::deps::aws_cryptography_keyStore::types::builders::VersionKeyInputBuilder::default()
     }
 }
@@ -31,19 +32,25 @@ pub struct VersionKeyInputBuilder {
 }
 impl VersionKeyInputBuilder {
     /// The identifier for the Branch Key to be versioned.
-pub fn branch_key_identifier(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
-    self.branch_key_identifier = ::std::option::Option::Some(input.into());
-    self
-}
-/// The identifier for the Branch Key to be versioned.
-pub fn set_branch_key_identifier(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
-    self.branch_key_identifier = input;
-    self
-}
-/// The identifier for the Branch Key to be versioned.
-pub fn get_branch_key_identifier(&self) -> &::std::option::Option<::std::string::String> {
-    &self.branch_key_identifier
-}
+    pub fn branch_key_identifier(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
+        self.branch_key_identifier = ::std::option::Option::Some(input.into());
+        self
+    }
+    /// The identifier for the Branch Key to be versioned.
+    pub fn set_branch_key_identifier(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
+        self.branch_key_identifier = input;
+        self
+    }
+    /// The identifier for the Branch Key to be versioned.
+    pub fn get_branch_key_identifier(&self) -> &::std::option::Option<::std::string::String> {
+        &self.branch_key_identifier
+    }
     /// Consumes the builder and constructs a [`VersionKeyInput`](crate::deps::aws_cryptography_keyStore::types::VersionKeyInput).
     pub fn build(
         self,
@@ -51,8 +58,10 @@ pub fn get_branch_key_identifier(&self) -> &::std::option::Option<::std::string:
         crate::deps::aws_cryptography_keyStore::types::VersionKeyInput,
         ::aws_smithy_types::error::operation::BuildError,
     > {
-        ::std::result::Result::Ok(crate::deps::aws_cryptography_keyStore::types::VersionKeyInput {
-            branch_key_identifier: self.branch_key_identifier,
-        })
+        ::std::result::Result::Ok(
+            crate::deps::aws_cryptography_keyStore::types::VersionKeyInput {
+                branch_key_identifier: self.branch_key_identifier,
+            },
+        )
     }
 }

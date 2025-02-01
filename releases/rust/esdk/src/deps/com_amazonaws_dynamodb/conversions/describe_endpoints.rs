@@ -7,22 +7,24 @@ pub fn to_dafny_error(
         aws_sdk_dynamodb::operation::describe_endpoints::DescribeEndpointsError,
         ::aws_smithy_runtime_api::client::orchestrator::HttpResponse,
     >,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Error> {
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Error,
+> {
     match value {
-      aws_sdk_dynamodb::error::SdkError::ServiceError(service_error) => match service_error.err() {
-
-        e => {
-          let msg = format!("{:?}", e);
-          crate::deps::com_amazonaws_dynamodb::conversions::error::to_opaque_error(msg)
+        aws_sdk_dynamodb::error::SdkError::ServiceError(service_error) => match service_error.err()
+        {
+            e => {
+                let msg = format!("{:?}", e);
+                crate::deps::com_amazonaws_dynamodb::conversions::error::to_opaque_error(msg)
+            }
+        },
+        _ => {
+            let msg = format!("{:?}", value);
+            crate::deps::com_amazonaws_dynamodb::conversions::error::to_opaque_error(msg)
         }
-      },
-      _ => {
-        let msg = format!("{:?}", value);
-        crate::deps::com_amazonaws_dynamodb::conversions::error::to_opaque_error(msg)
-      }
-   }
+    }
 }
 
- pub mod _describe_endpoints_request;
+pub mod _describe_endpoints_request;
 
- pub mod _describe_endpoints_response;
+pub mod _describe_endpoints_response;

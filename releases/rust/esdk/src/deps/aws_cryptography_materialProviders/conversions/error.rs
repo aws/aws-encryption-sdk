@@ -2,15 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 // Do not modify this file. This file is machine generated, and any changes to it will be overwritten.
 /// Wraps up an arbitrary Rust Error value as a Dafny Error
-pub fn to_opaque_error(value: String) ->
-    ::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error>
-{
+pub fn to_opaque_error(
+    value: String,
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error,
+> {
     let error_msg = value.clone();
-    let error_msg = ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&error_msg);
-    let error_obj: ::dafny_runtime::Object<dyn::std::any::Any> = ::dafny_runtime::Object(Some(
-        ::std::rc::Rc::new(::std::cell::UnsafeCell::new(value)),
-    ));
-    ::std::rc::Rc::new(
+    let error_msg =
+        ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(
+            &error_msg,
+        );
+    let error_obj: ::dafny_runtime::Object<::dafny_runtime::DynAny> =
+        ::dafny_runtime::Object(Some(::dafny_runtime::Rc::new(
+            ::dafny_runtime::UnsafeCell::new(value),
+        )));
+    ::dafny_runtime::Rc::new(
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::OpaqueWithText {
             obj: error_obj,
 	    objMessage: error_msg
@@ -19,22 +25,26 @@ pub fn to_opaque_error(value: String) ->
 }
 
 /// Wraps up an arbitrary Rust Error value as a Dafny Result<T, Error>.Failure
-pub fn to_opaque_error_result<T: ::dafny_runtime::DafnyType>(value: String) ->
-    ::std::rc::Rc<
-        crate::_Wrappers_Compile::Result<
-            T,
-            ::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error>
-        >
-    >
-{
-    ::std::rc::Rc::new(crate::_Wrappers_Compile::Result::Failure {
+pub fn to_opaque_error_result<T: ::dafny_runtime::DafnyType>(
+    value: String,
+) -> ::dafny_runtime::Rc<
+    crate::_Wrappers_Compile::Result<
+        T,
+        ::dafny_runtime::Rc<
+            crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error,
+        >,
+    >,
+> {
+    ::dafny_runtime::Rc::new(crate::_Wrappers_Compile::Result::Failure {
         error: to_opaque_error(value),
     })
 }
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_materialProviders::types::error::Error,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error> {
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error,
+> {
+    ::dafny_runtime::Rc::new(match value {
         crate::deps::aws_cryptography_materialProviders::types::error::Error::AwsCryptographicMaterialProvidersException { message } =>
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::AwsCryptographicMaterialProvidersException {
         message: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&message),
@@ -103,7 +113,7 @@ crate::deps::aws_cryptography_materialProviders::types::error::Error::KeyStoreEr
         crate::deps::aws_cryptography_materialProviders::types::error::Error::ValidationError(inner) =>
             crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error::Opaque {
                 obj: {
-                    let rc = ::std::rc::Rc::new(inner) as ::std::rc::Rc<dyn ::std::any::Any>;
+                    let rc = ::dafny_runtime::Rc::new(inner) as ::dafny_runtime::Rc<::dafny_runtime::DynAny>;
                     // safety: `rc` is new, ensuring it has refcount 1 and is uniquely owned.
                     // we should use `dafny_runtime_conversions::rc_struct_to_dafny_class` once it
                     // accepts unsized types (https://github.com/dafny-lang/dafny/pull/5769)
@@ -124,7 +134,7 @@ crate::deps::aws_cryptography_materialProviders::types::error::Error::KeyStoreEr
 
 #[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error,
     >,
 ) -> crate::deps::aws_cryptography_materialProviders::types::error::Error {

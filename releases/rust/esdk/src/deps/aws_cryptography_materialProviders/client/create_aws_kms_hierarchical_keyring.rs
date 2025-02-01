@@ -14,7 +14,7 @@ impl crate::deps::aws_cryptography_materialProviders::client::Client {
     /// - On success, responds with [`CreateKeyringOutput`](crate::operation::create_aws_kms_hierarchical_keyring::CreateKeyringOutput) with field(s):
     ///   - [`keyring(Option<crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef>)`](crate::operation::create_aws_kms_hierarchical_keyring::CreateKeyringOutput::keyring): (undocumented)
     /// - On failure, responds with [`SdkError<CreateAwsKmsHierarchicalKeyringError>`](crate::operation::create_aws_kms_hierarchical_keyring::CreateAwsKmsHierarchicalKeyringError)
-    pub fn create_aws_kms_hierarchical_keyring(&self) -> crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_hierarchical_keyring::builders::CreateAwsKmsHierarchicalKeyringFluentBuilder {
+    pub fn create_aws_kms_hierarchical_keyring(&self) -> crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_hierarchical_keyring::builders::CreateAwsKmsHierarchicalKeyringFluentBuilder{
         crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_hierarchical_keyring::builders::CreateAwsKmsHierarchicalKeyringFluentBuilder::new(self.clone())
     }
 }

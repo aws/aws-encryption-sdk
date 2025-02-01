@@ -73,9 +73,9 @@ pub mod DafnyLibraries {
     }
 
     impl<K: ::dafny_runtime::DafnyTypeEq, V: ::dafny_runtime::DafnyTypeEq>
-        ::dafny_runtime::UpcastObject<dyn ::std::any::Any> for MutableMap<K, V>
+        ::dafny_runtime::UpcastObject<dafny_runtime::DynAny> for MutableMap<K, V>
     {
-        ::dafny_runtime::UpcastObjectFn!(dyn ::std::any::Any);
+        ::dafny_runtime::UpcastObjectFn!(dafny_runtime::DynAny);
     }
 
     pub mod FileIO {

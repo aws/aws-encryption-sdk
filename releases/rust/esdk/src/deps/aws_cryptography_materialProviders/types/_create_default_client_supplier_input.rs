@@ -4,15 +4,11 @@
 #[non_exhaustive]
 #[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug)]
 #[allow(missing_docs)]
-pub struct CreateDefaultClientSupplierInput {
-
-}
-impl CreateDefaultClientSupplierInput {
-
-}
+pub struct CreateDefaultClientSupplierInput {}
+impl CreateDefaultClientSupplierInput {}
 impl CreateDefaultClientSupplierInput {
     /// Creates a new builder-style object to manufacture [`CreateDefaultClientSupplierInput`](crate::deps::aws_cryptography_materialProviders::types::CreateDefaultClientSupplierInput).
-    pub fn builder() -> crate::deps::aws_cryptography_materialProviders::types::builders::CreateDefaultClientSupplierInputBuilder {
+    pub fn builder() -> crate::deps::aws_cryptography_materialProviders::types::builders::CreateDefaultClientSupplierInputBuilder{
         crate::deps::aws_cryptography_materialProviders::types::builders::CreateDefaultClientSupplierInputBuilder::default()
     }
 }
@@ -22,11 +18,8 @@ impl CreateDefaultClientSupplierInput {
 #[derive(
     ::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug,
 )]
-pub struct CreateDefaultClientSupplierInputBuilder {
-
-}
+pub struct CreateDefaultClientSupplierInputBuilder {}
 impl CreateDefaultClientSupplierInputBuilder {
-
     /// Consumes the builder and constructs a [`CreateDefaultClientSupplierInput`](crate::deps::aws_cryptography_materialProviders::types::CreateDefaultClientSupplierInput).
     pub fn build(
         self,

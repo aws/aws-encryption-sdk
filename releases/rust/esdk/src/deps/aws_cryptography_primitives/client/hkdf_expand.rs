@@ -12,7 +12,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     /// - On success, responds with [`HkdfExpandOutput`](crate::operation::hkdf_expand::HkdfExpandOutput) with field(s):
     ///   - [`okm(Option<::aws_smithy_types::Blob>)`](crate::operation::hkdf_expand::HkdfExpandOutput::okm): (undocumented)
     /// - On failure, responds with [`SdkError<HkdfExpandError>`](crate::operation::hkdf_expand::HkdfExpandError)
-    pub fn hkdf_expand(&self) -> crate::deps::aws_cryptography_primitives::operation::hkdf_expand::builders::HkdfExpandFluentBuilder {
+    pub fn hkdf_expand(&self) -> crate::deps::aws_cryptography_primitives::operation::hkdf_expand::builders::HkdfExpandFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::hkdf_expand::builders::HkdfExpandFluentBuilder::new(self.clone())
     }
 }

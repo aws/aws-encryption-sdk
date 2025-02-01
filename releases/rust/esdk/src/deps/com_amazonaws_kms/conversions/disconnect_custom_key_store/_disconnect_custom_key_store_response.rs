@@ -4,22 +4,19 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_kms::operation::disconnect_custom_key_store::DisconnectCustomKeyStoreOutput
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::kms::internaldafny::types::DisconnectCustomKeyStoreResponse,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::DisconnectCustomKeyStoreResponse::DisconnectCustomKeyStoreResponse {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::DisconnectCustomKeyStoreResponse::DisconnectCustomKeyStoreResponse {
 
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::kms::internaldafny::types::DisconnectCustomKeyStoreResponse,
-    >
+    >,
 ) -> aws_sdk_kms::operation::disconnect_custom_key_store::DisconnectCustomKeyStoreOutput {
     aws_sdk_kms::operation::disconnect_custom_key_store::DisconnectCustomKeyStoreOutput::builder()
-
-          .build()
-
-
+        .build()
 }

@@ -8,9 +8,9 @@
 
 pub fn to_dafny(
     value: &crate::deps::aws_cryptography_keyStore::client::Client,
-) ->
-  ::dafny_runtime::Object<dyn crate::r#software::amazon::cryptography::keystore::internaldafny::types::IKeyStoreClient>
-{
+) -> ::dafny_runtime::Object<
+    dyn crate::r#software::amazon::cryptography::keystore::internaldafny::types::IKeyStoreClient,
+> {
     value.dafny_client.clone()
 }
 
@@ -20,5 +20,7 @@ pub fn from_dafny(
       dyn crate::r#software::amazon::cryptography::keystore::internaldafny::types::IKeyStoreClient
     >,
 ) -> crate::deps::aws_cryptography_keyStore::client::Client {
-  crate::deps::aws_cryptography_keyStore::client::Client { dafny_client: dafny_value }
+    crate::deps::aws_cryptography_keyStore::client::Client {
+        dafny_client: dafny_value,
+    }
 }

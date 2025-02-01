@@ -4,29 +4,31 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::InputFormatOptions,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::InputFormatOptions>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::InputFormatOptions>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::InputFormatOptions::InputFormatOptions {
-        Csv: ::std::rc::Rc::new(match &value.csv {
+        Csv: ::dafny_runtime::Rc::new(match &value.csv {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::csv_options::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::InputFormatOptions,
     >,
 ) -> aws_sdk_dynamodb::types::InputFormatOptions {
     aws_sdk_dynamodb::types::InputFormatOptions::builder()
-          .set_csv(match (*dafny_value.Csv()).as_ref() {
-    crate::r#_Wrappers_Compile::Option::Some { value } =>
-        Some(crate::deps::com_amazonaws_dynamodb::conversions::csv_options::from_dafny(value.clone())),
-    _ => None,
-}
-)
-          .build()
-
+        .set_csv(match (*dafny_value.Csv()).as_ref() {
+            crate::r#_Wrappers_Compile::Option::Some { value } => Some(
+                crate::deps::com_amazonaws_dynamodb::conversions::csv_options::from_dafny(
+                    value.clone(),
+                ),
+            ),
+            _ => None,
+        })
+        .build()
 }

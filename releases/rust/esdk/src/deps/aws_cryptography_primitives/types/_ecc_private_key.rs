@@ -6,17 +6,18 @@
 #[allow(missing_docs)]
 pub struct EccPrivateKey {
     #[allow(missing_docs)]
-pub pem: ::std::option::Option<::aws_smithy_types::Blob>,
+    pub pem: ::std::option::Option<::aws_smithy_types::Blob>,
 }
 impl EccPrivateKey {
     #[allow(missing_docs)]
-pub fn pem(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
-    &self.pem
-}
+    pub fn pem(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
+        &self.pem
+    }
 }
 impl EccPrivateKey {
     /// Creates a new builder-style object to manufacture [`EccPrivateKey`](crate::deps::aws_cryptography_primitives::types::EccPrivateKey).
-    pub fn builder() -> crate::deps::aws_cryptography_primitives::types::builders::EccPrivateKeyBuilder {
+    pub fn builder(
+    ) -> crate::deps::aws_cryptography_primitives::types::builders::EccPrivateKeyBuilder {
         crate::deps::aws_cryptography_primitives::types::builders::EccPrivateKeyBuilder::default()
     }
 }
@@ -31,19 +32,19 @@ pub struct EccPrivateKeyBuilder {
 }
 impl EccPrivateKeyBuilder {
     #[allow(missing_docs)]
-pub fn pem(mut self, input: impl ::std::convert::Into<::aws_smithy_types::Blob>) -> Self {
-    self.pem = ::std::option::Option::Some(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_pem(mut self, input: ::std::option::Option<::aws_smithy_types::Blob>) -> Self {
-    self.pem = input;
-    self
-}
-#[allow(missing_docs)]
-pub fn get_pem(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
-    &self.pem
-}
+    pub fn pem(mut self, input: impl ::std::convert::Into<::aws_smithy_types::Blob>) -> Self {
+        self.pem = ::std::option::Option::Some(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_pem(mut self, input: ::std::option::Option<::aws_smithy_types::Blob>) -> Self {
+        self.pem = input;
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_pem(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
+        &self.pem
+    }
     /// Consumes the builder and constructs a [`EccPrivateKey`](crate::deps::aws_cryptography_primitives::types::EccPrivateKey).
     pub fn build(
         self,
@@ -51,8 +52,8 @@ pub fn get_pem(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
         crate::deps::aws_cryptography_primitives::types::EccPrivateKey,
         ::aws_smithy_types::error::operation::BuildError,
     > {
-        ::std::result::Result::Ok(crate::deps::aws_cryptography_primitives::types::EccPrivateKey {
-            pem: self.pem,
-        })
+        ::std::result::Result::Ok(
+            crate::deps::aws_cryptography_primitives::types::EccPrivateKey { pem: self.pem },
+        )
     }
 }

@@ -3,12 +3,12 @@
 // Do not modify this file. This file is machine generated, and any changes to it will be overwritten.
 #[allow(dead_code)]
 pub fn to_dafny(
-    value: &aws_sdk_dynamodb::operation::scan::ScanOutput
-) -> ::std::rc::Rc<
+    value: &aws_sdk_dynamodb::operation::scan::ScanOutput,
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ScanOutput,
->{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ScanOutput::ScanOutput {
-        Items: ::std::rc::Rc::new(match &value.items {
+> {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ScanOutput::ScanOutput {
+        Items: ::dafny_runtime::Rc::new(match &value.items {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| ::dafny_runtime::dafny_runtime_conversions::hashmap_to_dafny_map(&e.clone(),
@@ -25,7 +25,7 @@ pub fn to_dafny(
  Count: crate::standard_library_conversions::oint_to_dafny(Some(value.count)),
  ScannedCount: crate::standard_library_conversions::oint_to_dafny(Some(value.scanned_count)),
  LastEvaluatedKey:
-::std::rc::Rc::new(match &value.last_evaluated_key {
+::dafny_runtime::Rc::new(match &value.last_evaluated_key {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::hashmap_to_dafny_map(x,
             |k| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&k),
@@ -36,27 +36,27 @@ pub fn to_dafny(
     None => crate::r#_Wrappers_Compile::Option::None {}
 })
 ,
- ConsumedCapacity: ::std::rc::Rc::new(match &value.consumed_capacity {
+ ConsumedCapacity: ::dafny_runtime::Rc::new(match &value.consumed_capacity {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::consumed_capacity::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ScanOutput,
-    >
+    >,
 ) -> aws_sdk_dynamodb::operation::scan::ScanOutput {
     aws_sdk_dynamodb::operation::scan::ScanOutput::builder()
           .set_items(match (*dafny_value.Items()).as_ref() {
     crate::r#_Wrappers_Compile::Option::Some { value } =>
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(value,
-                |e: &::dafny_runtime::dafny_runtime_conversions::DafnyMap<::dafny_runtime::dafny_runtime_conversions::DafnySequence<::dafny_runtime::dafny_runtime_conversions::DafnyCharUTF16>, ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AttributeValue>>| ::dafny_runtime::dafny_runtime_conversions::dafny_map_to_hashmap(&e,
+                |e: &::dafny_runtime::dafny_runtime_conversions::DafnyMap<::dafny_runtime::dafny_runtime_conversions::DafnySequence<::dafny_runtime::dafny_runtime_conversions::DafnyCharUTF16>, ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AttributeValue>>| ::dafny_runtime::dafny_runtime_conversions::dafny_map_to_hashmap(&e,
     |k: &::dafny_runtime::dafny_runtime_conversions::DafnySequence<::dafny_runtime::dafny_runtime_conversions::DafnyCharUTF16>| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(k),
-    |v: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AttributeValue>| crate::deps::com_amazonaws_dynamodb::conversions::attribute_value::from_dafny(v.clone())
+    |v: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AttributeValue>| crate::deps::com_amazonaws_dynamodb::conversions::attribute_value::from_dafny(v.clone())
 ,
 )
 ,
@@ -72,7 +72,7 @@ pub fn from_dafny(
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_map_to_hashmap(value,
                 |k: &::dafny_runtime::dafny_runtime_conversions::DafnySequence<::dafny_runtime::dafny_runtime_conversions::DafnyCharUTF16>| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(k),
-                |v: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AttributeValue>| crate::deps::com_amazonaws_dynamodb::conversions::attribute_value::from_dafny(v.clone())
+                |v: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AttributeValue>| crate::deps::com_amazonaws_dynamodb::conversions::attribute_value::from_dafny(v.clone())
 ,
             )
         ),
@@ -86,6 +86,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
-
 }

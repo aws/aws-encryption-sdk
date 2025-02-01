@@ -5,14 +5,16 @@
 
 pub fn to_dafny(
     value: aws_sdk_dynamodb::types::TableClass,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::TableClass>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::TableClass,
+> {
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_dynamodb::types::TableClass::Standard => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::TableClass::STANDARD {},
 aws_sdk_dynamodb::types::TableClass::StandardInfrequentAccess => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::TableClass::STANDARD_INFREQUENT_ACCESS {},
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::TableClass,
 ) -> aws_sdk_dynamodb::types::TableClass {

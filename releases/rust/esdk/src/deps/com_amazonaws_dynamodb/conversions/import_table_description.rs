@@ -4,11 +4,11 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::ImportTableDescription,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ImportTableDescription>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ImportTableDescription>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ImportTableDescription::ImportTableDescription {
         ImportArn: crate::standard_library_conversions::ostring_to_dafny(&value.import_arn),
- ImportStatus: ::std::rc::Rc::new(match &value.import_status {
+ ImportStatus: ::dafny_runtime::Rc::new(match &value.import_status {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::import_status::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
@@ -16,29 +16,29 @@ pub fn to_dafny(
  TableArn: crate::standard_library_conversions::ostring_to_dafny(&value.table_arn),
  TableId: crate::standard_library_conversions::ostring_to_dafny(&value.table_id),
  ClientToken: crate::standard_library_conversions::ostring_to_dafny(&value.client_token),
- S3BucketSource: ::std::rc::Rc::new(match &value.s3_bucket_source {
+ S3BucketSource: ::dafny_runtime::Rc::new(match &value.s3_bucket_source {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::s3_bucket_source::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
  ErrorCount: crate::standard_library_conversions::olong_to_dafny(&Some(value.error_count)),
  CloudWatchLogGroupArn: crate::standard_library_conversions::ostring_to_dafny(&value.cloud_watch_log_group_arn),
- InputFormat: ::std::rc::Rc::new(match &value.input_format {
+ InputFormat: ::dafny_runtime::Rc::new(match &value.input_format {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::input_format::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- InputFormatOptions: ::std::rc::Rc::new(match &value.input_format_options {
+ InputFormatOptions: ::dafny_runtime::Rc::new(match &value.input_format_options {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::input_format_options::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- InputCompressionType: ::std::rc::Rc::new(match &value.input_compression_type {
+ InputCompressionType: ::dafny_runtime::Rc::new(match &value.input_compression_type {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::input_compression_type::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- TableCreationParameters: ::std::rc::Rc::new(match &value.table_creation_parameters {
+ TableCreationParameters: ::dafny_runtime::Rc::new(match &value.table_creation_parameters {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::table_creation_parameters::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
@@ -52,9 +52,10 @@ pub fn to_dafny(
  FailureMessage: crate::standard_library_conversions::ostring_to_dafny(&value.failure_message),
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ImportTableDescription,
     >,
 ) -> aws_sdk_dynamodb::types::ImportTableDescription {
@@ -112,5 +113,4 @@ pub fn from_dafny(
  .set_failure_code(crate::standard_library_conversions::ostring_from_dafny(dafny_value.FailureCode().clone()))
  .set_failure_message(crate::standard_library_conversions::ostring_from_dafny(dafny_value.FailureMessage().clone()))
           .build()
-
 }

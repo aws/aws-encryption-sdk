@@ -4,30 +4,30 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::operation::enable_kinesis_streaming_destination::EnableKinesisStreamingDestinationOutput
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::EnableKinesisStreamingDestinationOutput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::EnableKinesisStreamingDestinationOutput::EnableKinesisStreamingDestinationOutput {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::EnableKinesisStreamingDestinationOutput::EnableKinesisStreamingDestinationOutput {
         TableName: crate::standard_library_conversions::ostring_to_dafny(&value.table_name),
  StreamArn: crate::standard_library_conversions::ostring_to_dafny(&value.stream_arn),
- DestinationStatus: ::std::rc::Rc::new(match &value.destination_status {
+ DestinationStatus: ::dafny_runtime::Rc::new(match &value.destination_status {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::destination_status::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- EnableKinesisStreamingConfiguration: ::std::rc::Rc::new(match &value.enable_kinesis_streaming_configuration {
+ EnableKinesisStreamingConfiguration: ::dafny_runtime::Rc::new(match &value.enable_kinesis_streaming_configuration {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::enable_kinesis_streaming_configuration::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::EnableKinesisStreamingDestinationOutput,
     >
-) -> aws_sdk_dynamodb::operation::enable_kinesis_streaming_destination::EnableKinesisStreamingDestinationOutput {
+) -> aws_sdk_dynamodb::operation::enable_kinesis_streaming_destination::EnableKinesisStreamingDestinationOutput{
     aws_sdk_dynamodb::operation::enable_kinesis_streaming_destination::EnableKinesisStreamingDestinationOutput::builder()
           .set_table_name(crate::standard_library_conversions::ostring_from_dafny(dafny_value.TableName().clone()))
  .set_stream_arn(crate::standard_library_conversions::ostring_from_dafny(dafny_value.StreamArn().clone()))
@@ -45,6 +45,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
-
 }

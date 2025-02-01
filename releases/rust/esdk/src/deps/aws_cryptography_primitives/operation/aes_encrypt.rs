@@ -20,7 +20,7 @@ impl AesEncrypt {
     > {
         crate::deps::aws_cryptography_primitives::validation::validate_aws_Pcryptography_Pprimitives_HAESEncryptInput_for_AwsCryptographicPrimitives_AESEncrypt(&input)
             .map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err)?;
-                let inner_input = crate::deps::aws_cryptography_primitives::conversions::aes_encrypt::_aes_encrypt_input::to_dafny(input);
+        let inner_input = crate::deps::aws_cryptography_primitives::conversions::aes_encrypt::_aes_encrypt_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).AESEncrypt(&inner_input);
         if matches!(
@@ -31,9 +31,11 @@ impl AesEncrypt {
                 crate::deps::aws_cryptography_primitives::conversions::aes_encrypt::_aes_encrypt_output::from_dafny(inner_result.value().clone()),
             )
         } else {
-            Err(crate::deps::aws_cryptography_primitives::conversions::error::from_dafny(
-                inner_result.error().clone(),
-            ))
+            Err(
+                crate::deps::aws_cryptography_primitives::conversions::error::from_dafny(
+                    inner_result.error().clone(),
+                ),
+            )
         }
     }
 }

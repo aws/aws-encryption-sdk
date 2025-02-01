@@ -4,12 +4,12 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_mrk_multi_keyring::CreateAwsKmsMrkMultiKeyringInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::CreateAwsKmsMrkMultiKeyringInput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::CreateAwsKmsMrkMultiKeyringInput::CreateAwsKmsMrkMultiKeyringInput {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::CreateAwsKmsMrkMultiKeyringInput::CreateAwsKmsMrkMultiKeyringInput {
         generator: crate::standard_library_conversions::ostring_to_dafny(&value.generator),
- kmsKeyIds: ::std::rc::Rc::new(match &value.kms_key_ids {
+ kmsKeyIds: ::dafny_runtime::Rc::new(match &value.kms_key_ids {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&e),
@@ -18,12 +18,12 @@ pub fn to_dafny(
     None => crate::r#_Wrappers_Compile::Option::None {}
 })
 ,
- clientSupplier: ::std::rc::Rc::new(match &value.client_supplier {
+ clientSupplier: ::dafny_runtime::Rc::new(match &value.client_supplier {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::aws_cryptography_materialProviders::conversions::client_supplier::to_dafny(&x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- grantTokens: ::std::rc::Rc::new(match &value.grant_tokens {
+ grantTokens: ::dafny_runtime::Rc::new(match &value.grant_tokens {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&e),
@@ -34,12 +34,12 @@ pub fn to_dafny(
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::CreateAwsKmsMrkMultiKeyringInput,
     >,
-) -> crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_mrk_multi_keyring::CreateAwsKmsMrkMultiKeyringInput {
+) -> crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_mrk_multi_keyring::CreateAwsKmsMrkMultiKeyringInput{
     crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_mrk_multi_keyring::CreateAwsKmsMrkMultiKeyringInput::builder()
         .set_generator(crate::standard_library_conversions::ostring_from_dafny(dafny_value.generator().clone()))
  .set_kms_key_ids(match (*dafny_value.kmsKeyIds()).as_ref() {

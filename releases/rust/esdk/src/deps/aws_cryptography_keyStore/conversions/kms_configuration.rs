@@ -4,10 +4,10 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &crate::deps::aws_cryptography_keyStore::types::KmsConfiguration,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::keystore::internaldafny::types::KMSConfiguration,
 > {
-    ::std::rc::Rc::new(match value {
+    ::dafny_runtime::Rc::new(match value {
         crate::deps::aws_cryptography_keyStore::types::KmsConfiguration::KmsKeyArn(x) =>
     crate::r#software::amazon::cryptography::keystore::internaldafny::types::KMSConfiguration::kmsKeyArn {
         kmsKeyArn: dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&x),
@@ -32,11 +32,11 @@ crate::deps::aws_cryptography_keyStore::types::KmsConfiguration::MrDiscovery(x) 
 
 #[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::keystore::internaldafny::types::KMSConfiguration,
     >,
 ) -> crate::deps::aws_cryptography_keyStore::types::KmsConfiguration {
-    match &::std::rc::Rc::unwrap_or_clone(dafny_value) {
+    match &::dafny_runtime::Rc::unwrap_or_clone(dafny_value) {
         crate::r#software::amazon::cryptography::keystore::internaldafny::types::KMSConfiguration::kmsKeyArn {
     kmsKeyArn: x @ _,
 } => crate::deps::aws_cryptography_keyStore::types::KmsConfiguration::KmsKeyArn(dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(x)),

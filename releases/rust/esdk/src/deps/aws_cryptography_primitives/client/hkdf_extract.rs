@@ -11,7 +11,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     /// - On success, responds with [`HkdfExtractOutput`](crate::operation::hkdf_extract::HkdfExtractOutput) with field(s):
     ///   - [`prk(Option<::aws_smithy_types::Blob>)`](crate::operation::hkdf_extract::HkdfExtractOutput::prk): (undocumented)
     /// - On failure, responds with [`SdkError<HkdfExtractError>`](crate::operation::hkdf_extract::HkdfExtractError)
-    pub fn hkdf_extract(&self) -> crate::deps::aws_cryptography_primitives::operation::hkdf_extract::builders::HkdfExtractFluentBuilder {
+    pub fn hkdf_extract(&self) -> crate::deps::aws_cryptography_primitives::operation::hkdf_extract::builders::HkdfExtractFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::hkdf_extract::builders::HkdfExtractFluentBuilder::new(self.clone())
     }
 }

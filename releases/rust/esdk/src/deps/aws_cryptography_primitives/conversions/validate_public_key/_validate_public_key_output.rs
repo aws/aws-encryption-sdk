@@ -4,19 +4,20 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_primitives::operation::validate_public_key::ValidatePublicKeyOutput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::primitives::internaldafny::types::ValidatePublicKeyOutput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::primitives::internaldafny::types::ValidatePublicKeyOutput::ValidatePublicKeyOutput {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::primitives::internaldafny::types::ValidatePublicKeyOutput::ValidatePublicKeyOutput {
         success: value.success.clone().unwrap(),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::primitives::internaldafny::types::ValidatePublicKeyOutput,
     >,
-) -> crate::deps::aws_cryptography_primitives::operation::validate_public_key::ValidatePublicKeyOutput {
+) -> crate::deps::aws_cryptography_primitives::operation::validate_public_key::ValidatePublicKeyOutput
+{
     crate::deps::aws_cryptography_primitives::operation::validate_public_key::ValidatePublicKeyOutput::builder()
         .set_success(Some( dafny_value.success() .clone() ))
         .build()

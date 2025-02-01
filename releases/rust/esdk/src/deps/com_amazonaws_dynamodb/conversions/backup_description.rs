@@ -4,29 +4,30 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::BackupDescription,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::BackupDescription>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::BackupDescription>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::BackupDescription::BackupDescription {
-        BackupDetails: ::std::rc::Rc::new(match &value.backup_details {
+        BackupDetails: ::dafny_runtime::Rc::new(match &value.backup_details {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::backup_details::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- SourceTableDetails: ::std::rc::Rc::new(match &value.source_table_details {
+ SourceTableDetails: ::dafny_runtime::Rc::new(match &value.source_table_details {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::source_table_details::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- SourceTableFeatureDetails: ::std::rc::Rc::new(match &value.source_table_feature_details {
+ SourceTableFeatureDetails: ::dafny_runtime::Rc::new(match &value.source_table_feature_details {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::source_table_feature_details::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::BackupDescription,
     >,
 ) -> aws_sdk_dynamodb::types::BackupDescription {
@@ -50,5 +51,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
 }

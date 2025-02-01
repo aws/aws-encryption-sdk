@@ -4,10 +4,10 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &crate::deps::aws_cryptography_materialProviders::types::EdkWrappingAlgorithm,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::EdkWrappingAlgorithm,
-> {
-    ::std::rc::Rc::new(match value {
+>{
+    ::dafny_runtime::Rc::new(match value {
         crate::deps::aws_cryptography_materialProviders::types::EdkWrappingAlgorithm::DirectKeyWrapping(x) =>
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::EdkWrappingAlgorithm::DIRECT_KEY_WRAPPING {
         DIRECT_KEY_WRAPPING: crate::deps::aws_cryptography_materialProviders::conversions::direct_key_wrapping::to_dafny(&x.clone())
@@ -24,11 +24,11 @@ crate::deps::aws_cryptography_materialProviders::types::EdkWrappingAlgorithm::In
 
 #[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::EdkWrappingAlgorithm,
     >,
 ) -> crate::deps::aws_cryptography_materialProviders::types::EdkWrappingAlgorithm {
-    match &::std::rc::Rc::unwrap_or_clone(dafny_value) {
+    match &::dafny_runtime::Rc::unwrap_or_clone(dafny_value) {
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::EdkWrappingAlgorithm::DIRECT_KEY_WRAPPING {
     DIRECT_KEY_WRAPPING: x @ _,
 } => crate::deps::aws_cryptography_materialProviders::types::EdkWrappingAlgorithm::DirectKeyWrapping(crate::deps::aws_cryptography_materialProviders::conversions::direct_key_wrapping::from_dafny(x.clone())

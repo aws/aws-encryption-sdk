@@ -7,7 +7,9 @@ pub fn to_dafny_error(
         aws_sdk_dynamodb::operation::put_item::PutItemError,
         ::aws_smithy_runtime_api::client::orchestrator::HttpResponse,
     >,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Error> {
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Error,
+> {
     match value {
       aws_sdk_dynamodb::error::SdkError::ServiceError(service_error) => match service_error.err() {
                 aws_sdk_dynamodb::operation::put_item::PutItemError::ConditionalCheckFailedException(e) =>
@@ -38,6 +40,6 @@ pub fn to_dafny_error(
    }
 }
 
- pub mod _put_item_request;
+pub mod _put_item_request;
 
- pub mod _put_item_response;
+pub mod _put_item_response;

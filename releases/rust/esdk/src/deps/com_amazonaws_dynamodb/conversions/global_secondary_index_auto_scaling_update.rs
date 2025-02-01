@@ -4,20 +4,21 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::GlobalSecondaryIndexAutoScalingUpdate,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::GlobalSecondaryIndexAutoScalingUpdate>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::GlobalSecondaryIndexAutoScalingUpdate>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::GlobalSecondaryIndexAutoScalingUpdate::GlobalSecondaryIndexAutoScalingUpdate {
         IndexName: crate::standard_library_conversions::ostring_to_dafny(&value.index_name),
- ProvisionedWriteCapacityAutoScalingUpdate: ::std::rc::Rc::new(match &value.provisioned_write_capacity_auto_scaling_update {
+ ProvisionedWriteCapacityAutoScalingUpdate: ::dafny_runtime::Rc::new(match &value.provisioned_write_capacity_auto_scaling_update {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::auto_scaling_settings_update::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::GlobalSecondaryIndexAutoScalingUpdate,
     >,
 ) -> aws_sdk_dynamodb::types::GlobalSecondaryIndexAutoScalingUpdate {
@@ -30,5 +31,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
 }

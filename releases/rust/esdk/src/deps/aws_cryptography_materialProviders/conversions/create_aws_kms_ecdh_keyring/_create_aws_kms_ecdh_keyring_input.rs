@@ -4,16 +4,16 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_ecdh_keyring::CreateAwsKmsEcdhKeyringInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::CreateAwsKmsEcdhKeyringInput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::CreateAwsKmsEcdhKeyringInput::CreateAwsKmsEcdhKeyringInput {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::CreateAwsKmsEcdhKeyringInput::CreateAwsKmsEcdhKeyringInput {
         KeyAgreementScheme: crate::deps::aws_cryptography_materialProviders::conversions::kms_ecdh_static_configurations::to_dafny(&value.key_agreement_scheme.clone().unwrap())
 ,
  curveSpec: crate::deps::aws_cryptography_primitives::conversions::ecdh_curve_spec::to_dafny(value.curve_spec.clone().unwrap()),
  kmsClient: crate::deps::com_amazonaws_kms::conversions::client::to_dafny(&value.kms_client.clone().unwrap())
 ,
- grantTokens: ::std::rc::Rc::new(match &value.grant_tokens {
+ grantTokens: ::dafny_runtime::Rc::new(match &value.grant_tokens {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&e),
@@ -24,12 +24,12 @@ pub fn to_dafny(
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::CreateAwsKmsEcdhKeyringInput,
     >,
-) -> crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_ecdh_keyring::CreateAwsKmsEcdhKeyringInput {
+) -> crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_ecdh_keyring::CreateAwsKmsEcdhKeyringInput{
     crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_ecdh_keyring::CreateAwsKmsEcdhKeyringInput::builder()
         .set_key_agreement_scheme(Some( crate::deps::aws_cryptography_materialProviders::conversions::kms_ecdh_static_configurations::from_dafny(dafny_value.KeyAgreementScheme().clone())
  ))
