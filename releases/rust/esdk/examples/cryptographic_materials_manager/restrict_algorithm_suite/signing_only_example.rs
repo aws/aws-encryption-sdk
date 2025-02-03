@@ -8,12 +8,12 @@
 
 use super::signing_suite_only_cmm::SigningSuiteOnlyCMM;
 use aws_esdk::client as esdk_client;
+use aws_esdk::material_providers::client as mpl_client;
+use aws_esdk::material_providers::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
+use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
+use aws_esdk::material_providers::types::EsdkAlgorithmSuiteId;
 use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use aws_esdk::types::error::Error::AwsCryptographicMaterialProvidersError;
-use aws_esdk::material_providers::client as mpl_client;
-use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
-use aws_esdk::material_providers::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
-use aws_esdk::material_providers::types::EsdkAlgorithmSuiteId;
 use std::collections::HashMap;
 
 pub async fn encrypt_and_decrypt_with_cmm(
@@ -40,8 +40,14 @@ pub async fn encrypt_and_decrypt_with_cmm(
         ("encryption".to_string(), "context".to_string()),
         ("is not".to_string(), "secret".to_string()),
         ("but adds".to_string(), "useful metadata".to_string()),
-        ("that can help you".to_string(), "be confident that".to_string()),
-        ("the data you are handling".to_string(), "is what you think it is".to_string()),
+        (
+            "that can help you".to_string(),
+            "be confident that".to_string(),
+        ),
+        (
+            "the data you are handling".to_string(),
+            "is what you think it is".to_string(),
+        ),
     ]);
 
     // 4. Create a custom SigningSuiteOnlyCMM
@@ -57,14 +63,16 @@ pub async fn encrypt_and_decrypt_with_cmm(
 
     let signing_suite_only_cmm = SigningSuiteOnlyCMM::new(kms_keyring);
 
-    let signing_suite_only_cmm_ref: CryptographicMaterialsManagerRef = CryptographicMaterialsManagerRef {
-        inner: ::std::rc::Rc::new(std::cell::RefCell::new(signing_suite_only_cmm)),
-    };
+    let signing_suite_only_cmm_ref: CryptographicMaterialsManagerRef =
+        CryptographicMaterialsManagerRef {
+            inner: ::std::sync::Arc::new(std::sync::Mutex::new(signing_suite_only_cmm)),
+        };
 
     // 5. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
 
-    let encryption_response = esdk_client.encrypt()
+    let encryption_response = esdk_client
+        .encrypt()
         .plaintext(plaintext)
         .materials_manager(signing_suite_only_cmm_ref.clone())
         .encryption_context(encryption_context.clone())
@@ -73,16 +81,20 @@ pub async fn encrypt_and_decrypt_with_cmm(
         .await?;
 
     let ciphertext = encryption_response
-                        .ciphertext
-                        .expect("Unable to unwrap ciphertext from encryption response");
+        .ciphertext
+        .expect("Unable to unwrap ciphertext from encryption response");
 
     // 6. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
-        "Ciphertext and plaintext data are the same. Invalid encryption");
+    assert_ne!(
+        ciphertext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Ciphertext and plaintext data are the same. Invalid encryption"
+    );
 
     // 7. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decryption_response = esdk_client.decrypt()
+    let decryption_response = esdk_client
+        .decrypt()
         .ciphertext(ciphertext)
         .materials_manager(signing_suite_only_cmm_ref.clone())
         // Provide the encryption context that was supplied to the encrypt method
@@ -91,17 +103,21 @@ pub async fn encrypt_and_decrypt_with_cmm(
         .await?;
 
     let decrypted_plaintext = decryption_response
-                                .plaintext
-                                .expect("Unable to unwrap plaintext from decryption response");
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // 8. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        decrypted_plaintext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     // 9. Demonstrate that a Non Signing Algorithm Suite will be rejected
     // by the CMM.
-    let encryption_response_non_signing = esdk_client.encrypt()
+    let encryption_response_non_signing = esdk_client
+        .encrypt()
         .plaintext(plaintext)
         .materials_manager(signing_suite_only_cmm_ref)
         .encryption_context(encryption_context.clone())
@@ -110,8 +126,10 @@ pub async fn encrypt_and_decrypt_with_cmm(
         .await;
 
     match encryption_response_non_signing {
-        Ok(_) => panic!("Encrypt using non signing algorithm suite MUST \
-                            raise AwsCryptographicMaterialProvidersError"),
+        Ok(_) => panic!(
+            "Encrypt using non signing algorithm suite MUST \
+                            raise AwsCryptographicMaterialProvidersError"
+        ),
         Err(AwsCryptographicMaterialProvidersError { error: _e }) => (),
         _ => panic!("Unexpected error type"),
     }
@@ -126,10 +144,7 @@ pub async fn test_encrypt_and_decrypt_with_cmm() -> Result<(), crate::BoxError2>
     // Test function for encrypt and decrypt using the SigningSuiteOnlyCMM example
     use crate::example_utils::utils;
 
-    encrypt_and_decrypt_with_cmm(
-        utils::TEST_EXAMPLE_DATA,
-        utils::TEST_DEFAULT_KMS_KEY_ID
-    ).await?;
+    encrypt_and_decrypt_with_cmm(utils::TEST_EXAMPLE_DATA, utils::TEST_DEFAULT_KMS_KEY_ID).await?;
 
     Ok(())
 }

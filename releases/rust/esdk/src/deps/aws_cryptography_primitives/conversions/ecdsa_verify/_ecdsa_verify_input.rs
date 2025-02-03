@@ -4,19 +4,19 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_primitives::operation::ecdsa_verify::EcdsaVerifyInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::primitives::internaldafny::types::ECDSAVerifyInput,
->{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::primitives::internaldafny::types::ECDSAVerifyInput::ECDSAVerifyInput {
+> {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::primitives::internaldafny::types::ECDSAVerifyInput::ECDSAVerifyInput {
         signatureAlgorithm: crate::deps::aws_cryptography_primitives::conversions::ecdsa_signature_algorithm::to_dafny(value.signature_algorithm.clone().unwrap()),
  verificationKey: crate::standard_library_conversions::blob_to_dafny(&value.verification_key.unwrap()),
  message: crate::standard_library_conversions::blob_to_dafny(&value.message.unwrap()),
  signature: crate::standard_library_conversions::blob_to_dafny(&value.signature.unwrap()),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::primitives::internaldafny::types::ECDSAVerifyInput,
     >,
 ) -> crate::deps::aws_cryptography_primitives::operation::ecdsa_verify::EcdsaVerifyInput {

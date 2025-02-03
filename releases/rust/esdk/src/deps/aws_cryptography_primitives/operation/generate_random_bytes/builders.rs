@@ -35,7 +35,7 @@ impl GenerateRandomBytesFluentBuilder {
         }
     }
     /// Access the GenerateRandomBytes as a reference.
-    pub fn as_input(&self) -> &crate::deps::aws_cryptography_primitives::operation::generate_random_bytes::builders::GenerateRandomBytesInputBuilder {
+    pub fn as_input(&self) -> &crate::deps::aws_cryptography_primitives::operation::generate_random_bytes::builders::GenerateRandomBytesInputBuilder{
         &self.inner
     }
     /// Sends the request and returns the response.
@@ -53,26 +53,27 @@ impl GenerateRandomBytesFluentBuilder {
             // and smithy-rs seems to not generate a ValidationError case unless there is.
             // Vanilla smithy-rs uses SdkError::construction_failure, but we aren't using SdkError.
             .map_err(|mut e| {
-	     let msg = format!("{:?}", e);
-             crate::deps::aws_cryptography_primitives::types::error::Error::OpaqueWithText {
-                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut dyn ::std::any::Any),
-		objMessage: msg
-             }})?;
+                let msg = format!("{:?}", e);
+                crate::deps::aws_cryptography_primitives::types::error::Error::OpaqueWithText {
+                    obj: ::dafny_runtime::Object::from_ref(&mut e as &mut ::dafny_runtime::DynAny),
+                    objMessage: msg,
+                }
+            })?;
         crate::deps::aws_cryptography_primitives::operation::generate_random_bytes::GenerateRandomBytes::send(&self.client, input).await
     }
 
     #[allow(missing_docs)]
-pub fn length(mut self, input: impl ::std::convert::Into<::std::primitive::i32>) -> Self {
-    self.inner = self.inner.length(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_length(mut self, input: ::std::option::Option<::std::primitive::i32>) -> Self {
-    self.inner = self.inner.set_length(input);
-    self
-}
-#[allow(missing_docs)]
-pub fn get_length(&self) -> &::std::option::Option<::std::primitive::i32> {
-    self.inner.get_length()
-}
+    pub fn length(mut self, input: impl ::std::convert::Into<::std::primitive::i32>) -> Self {
+        self.inner = self.inner.length(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_length(mut self, input: ::std::option::Option<::std::primitive::i32>) -> Self {
+        self.inner = self.inner.set_length(input);
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_length(&self) -> &::std::option::Option<::std::primitive::i32> {
+        self.inner.get_length()
+    }
 }

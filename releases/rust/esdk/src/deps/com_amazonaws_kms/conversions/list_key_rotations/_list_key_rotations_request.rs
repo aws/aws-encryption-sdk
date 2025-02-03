@@ -4,25 +4,33 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_kms::operation::list_key_rotations::ListKeyRotationsInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ListKeyRotationsRequest,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ListKeyRotationsRequest::ListKeyRotationsRequest {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ListKeyRotationsRequest::ListKeyRotationsRequest {
         KeyId: crate::standard_library_conversions::ostring_to_dafny(&value.key_id) .Extract(),
  Limit: crate::standard_library_conversions::oint_to_dafny(value.limit),
  Marker: crate::standard_library_conversions::ostring_to_dafny(&value.marker),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ListKeyRotationsRequest,
-    >
+    >,
 ) -> aws_sdk_kms::operation::list_key_rotations::ListKeyRotationsInput {
     aws_sdk_kms::operation::list_key_rotations::ListKeyRotationsInput::builder()
-          .set_key_id(Some( dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(dafny_value.KeyId()) ))
- .set_limit(crate::standard_library_conversions::oint_from_dafny(dafny_value.Limit().clone()))
- .set_marker(crate::standard_library_conversions::ostring_from_dafny(dafny_value.Marker().clone()))
-          .build()
-          .unwrap()
+        .set_key_id(Some(
+            dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(
+                dafny_value.KeyId(),
+            ),
+        ))
+        .set_limit(crate::standard_library_conversions::oint_from_dafny(
+            dafny_value.Limit().clone(),
+        ))
+        .set_marker(crate::standard_library_conversions::ostring_from_dafny(
+            dafny_value.Marker().clone(),
+        ))
+        .build()
+        .unwrap()
 }

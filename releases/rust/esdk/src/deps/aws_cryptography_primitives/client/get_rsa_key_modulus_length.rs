@@ -9,7 +9,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     /// - On success, responds with [`GetRsaKeyModulusLengthOutput`](crate::operation::get_rsa_key_modulus_length::GetRsaKeyModulusLengthOutput) with field(s):
     ///   - [`length(Option<::std::primitive::i32>)`](crate::operation::get_rsa_key_modulus_length::GetRSAKeyModulusLengthOutput::length): (undocumented)
     /// - On failure, responds with [`SdkError<GetRsaKeyModulusLengthError>`](crate::operation::get_rsa_key_modulus_length::GetRsaKeyModulusLengthError)
-    pub fn get_rsa_key_modulus_length(&self) -> crate::deps::aws_cryptography_primitives::operation::get_rsa_key_modulus_length::builders::GetRsaKeyModulusLengthFluentBuilder {
+    pub fn get_rsa_key_modulus_length(&self) -> crate::deps::aws_cryptography_primitives::operation::get_rsa_key_modulus_length::builders::GetRsaKeyModulusLengthFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::get_rsa_key_modulus_length::builders::GetRsaKeyModulusLengthFluentBuilder::new(self.clone())
     }
 }

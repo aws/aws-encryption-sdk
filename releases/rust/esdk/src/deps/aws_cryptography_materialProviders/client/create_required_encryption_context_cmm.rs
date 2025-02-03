@@ -11,7 +11,7 @@ impl crate::deps::aws_cryptography_materialProviders::client::Client {
     /// - On success, responds with [`CreateRequiredEncryptionContextCmmOutput`](crate::operation::create_required_encryption_context_cmm::CreateRequiredEncryptionContextCmmOutput) with field(s):
     ///   - [`materials_manager(Option<crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef>)`](crate::operation::create_required_encryption_context_cmm::CreateRequiredEncryptionContextCMMOutput::materials_manager): (undocumented)
     /// - On failure, responds with [`SdkError<CreateRequiredEncryptionContextCmmError>`](crate::operation::create_required_encryption_context_cmm::CreateRequiredEncryptionContextCmmError)
-    pub fn create_required_encryption_context_cmm(&self) -> crate::deps::aws_cryptography_materialProviders::operation::create_required_encryption_context_cmm::builders::CreateRequiredEncryptionContextCmmFluentBuilder {
+    pub fn create_required_encryption_context_cmm(&self) -> crate::deps::aws_cryptography_materialProviders::operation::create_required_encryption_context_cmm::builders::CreateRequiredEncryptionContextCmmFluentBuilder{
         crate::deps::aws_cryptography_materialProviders::operation::create_required_encryption_context_cmm::builders::CreateRequiredEncryptionContextCmmFluentBuilder::new(self.clone())
     }
 }

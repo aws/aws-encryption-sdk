@@ -5,14 +5,14 @@
 
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::primitives::internaldafny::types::ECDSASignatureAlgorithm>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::primitives::internaldafny::types::ECDSASignatureAlgorithm>{
+    ::dafny_runtime::Rc::new(match value {
         crate::deps::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm::EcdsaP384 => crate::r#software::amazon::cryptography::primitives::internaldafny::types::ECDSASignatureAlgorithm::ECDSA_P384 {},
 crate::deps::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm::EcdsaP256 => crate::r#software::amazon::cryptography::primitives::internaldafny::types::ECDSASignatureAlgorithm::ECDSA_P256 {},
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::primitives::internaldafny::types::ECDSASignatureAlgorithm,
 ) -> crate::deps::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm {

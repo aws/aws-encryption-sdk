@@ -27,23 +27,23 @@ For more information on this configuration see:
 https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-kms-ecdh-keyring.html#kms-ecdh-discovery
 */
 
+use crate::example_utils::utils::generate_kms_ecc_public_key;
+use crate::example_utils::utils::TEST_KMS_ECDH_KEY_ID_P256_SENDER;
+use aws_esdk::aws_cryptography_primitives::types::EcdhCurveSpec;
 use aws_esdk::client as esdk_client;
-use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use aws_esdk::material_providers::client as mpl_client;
 use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
 use aws_esdk::material_providers::types::KmsEcdhStaticConfigurations;
 use aws_esdk::material_providers::types::KmsPrivateKeyToStaticPublicKeyInput;
 use aws_esdk::material_providers::types::KmsPublicKeyDiscoveryInput;
-use aws_esdk::aws_cryptography_primitives::types::EcdhCurveSpec;
+use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use aws_smithy_types::Blob;
 use std::collections::HashMap;
-use crate::example_utils::utils::TEST_KMS_ECDH_KEY_ID_P256_SENDER;
-use crate::example_utils::utils::generate_kms_ecc_public_key;
 
 pub async fn decrypt_with_keyring(
     example_data: &str,
     ecdh_curve_spec: EcdhCurveSpec,
-    ecc_recipient_key_arn: &str
+    ecc_recipient_key_arn: &str,
 ) -> Result<(), crate::BoxError> {
     // 1. Instantiate the encryption SDK client.
     // This builds the default client with the RequireEncryptRequireDecrypt commitment policy,
@@ -65,17 +65,25 @@ pub async fn decrypt_with_keyring(
         ("encryption".to_string(), "context".to_string()),
         ("is not".to_string(), "secret".to_string()),
         ("but adds".to_string(), "useful metadata".to_string()),
-        ("that can help you".to_string(), "be confident that".to_string()),
-        ("the data you are handling".to_string(), "is what you think it is".to_string()),
-        ]);
+        (
+            "that can help you".to_string(),
+            "be confident that".to_string(),
+        ),
+        (
+            "the data you are handling".to_string(),
+            "is what you think it is".to_string(),
+        ),
+    ]);
 
     // 4. Create the KmsPublicKeyDiscoveryInput
-    let kms_ecdh_discovery_static_configuration_input =
-        KmsPublicKeyDiscoveryInput::builder()
-            .recipient_kms_identifier(ecc_recipient_key_arn)
-            .build()?;
+    let kms_ecdh_discovery_static_configuration_input = KmsPublicKeyDiscoveryInput::builder()
+        .recipient_kms_identifier(ecc_recipient_key_arn)
+        .build()?;
 
-    let kms_ecdh_discovery_static_configuration = KmsEcdhStaticConfigurations::KmsPublicKeyDiscovery(kms_ecdh_discovery_static_configuration_input);
+    let kms_ecdh_discovery_static_configuration =
+        KmsEcdhStaticConfigurations::KmsPublicKeyDiscovery(
+            kms_ecdh_discovery_static_configuration_input,
+        );
 
     // 5. Create the KMS ECDH keyring.
     let mpl_config = MaterialProvidersConfig::builder().build()?;
@@ -115,12 +123,13 @@ pub async fn decrypt_with_keyring(
         ecc_recipient_key_arn,
         ecdh_curve_spec,
         kms_client,
-        esdk_client.clone()
+        esdk_client.clone(),
     )
     .await?;
 
     // 7. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decryption_response = esdk_client.decrypt()
+    let decryption_response = esdk_client
+        .decrypt()
         .ciphertext(ciphertext)
         .keyring(kms_ecdh_discovery_keyring)
         // Provide the encryption context that was supplied to the encrypt method
@@ -129,14 +138,17 @@ pub async fn decrypt_with_keyring(
         .await?;
 
     let decrypted_plaintext = decryption_response
-                                .plaintext
-                                .expect("Unable to unwrap plaintext from decryption response");
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // 8. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
-    
+    assert_eq!(
+        decrypted_plaintext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
+
     println!("KMS ECDH Discovery Keyring Example Completed Successfully");
 
     Ok(())
@@ -148,25 +160,28 @@ async fn get_ciphertext(
     ecc_recipient_key_arn: &str,
     ecdh_curve_spec: EcdhCurveSpec,
     kms_client: aws_sdk_kms::Client,
-    esdk_client: esdk_client::Client
+    esdk_client: esdk_client::Client,
 ) -> Result<Blob, crate::BoxError> {
     // 1. Create the public keys for sender and recipient
     // Recipient keys are taken as input for this example
     // Sender ECC key used in this example is TEST_KMS_ECDH_KEY_ID_P256_SENDER
-    let public_key_sender_utf8_bytes = generate_kms_ecc_public_key(TEST_KMS_ECDH_KEY_ID_P256_SENDER).await?;
-    let public_key_recipient_utf8_bytes = generate_kms_ecc_public_key(ecc_recipient_key_arn).await?;
-    
-    // 2. Create the KmsPrivateKeyToStaticPublicKeyInput
-    let kms_ecdh_static_configuration_input =
-        KmsPrivateKeyToStaticPublicKeyInput::builder()
-            .sender_kms_identifier(TEST_KMS_ECDH_KEY_ID_P256_SENDER)
-            // Must be a UTF8 DER-encoded X.509 public key
-            .sender_public_key(public_key_sender_utf8_bytes)
-            // Must be a UTF8 DER-encoded X.509 public key
-            .recipient_public_key(public_key_recipient_utf8_bytes)
-            .build()?;
+    let public_key_sender_utf8_bytes =
+        generate_kms_ecc_public_key(TEST_KMS_ECDH_KEY_ID_P256_SENDER).await?;
+    let public_key_recipient_utf8_bytes =
+        generate_kms_ecc_public_key(ecc_recipient_key_arn).await?;
 
-    let kms_ecdh_static_configuration = KmsEcdhStaticConfigurations::KmsPrivateKeyToStaticPublicKey(kms_ecdh_static_configuration_input);
+    // 2. Create the KmsPrivateKeyToStaticPublicKeyInput
+    let kms_ecdh_static_configuration_input = KmsPrivateKeyToStaticPublicKeyInput::builder()
+        .sender_kms_identifier(TEST_KMS_ECDH_KEY_ID_P256_SENDER)
+        // Must be a UTF8 DER-encoded X.509 public key
+        .sender_public_key(public_key_sender_utf8_bytes)
+        // Must be a UTF8 DER-encoded X.509 public key
+        .recipient_public_key(public_key_recipient_utf8_bytes)
+        .build()?;
+
+    let kms_ecdh_static_configuration = KmsEcdhStaticConfigurations::KmsPrivateKeyToStaticPublicKey(
+        kms_ecdh_static_configuration_input,
+    );
 
     // 3. Create the KMS ECDH keyring.
     let mpl_config = MaterialProvidersConfig::builder().build()?;
@@ -183,7 +198,8 @@ async fn get_ciphertext(
     // 4. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
 
-    let encryption_response = esdk_client.encrypt()
+    let encryption_response = esdk_client
+        .encrypt()
         .plaintext(plaintext)
         .keyring(kms_ecdh_keyring.clone())
         .encryption_context(encryption_context.clone())
@@ -191,13 +207,16 @@ async fn get_ciphertext(
         .await?;
 
     let ciphertext = encryption_response
-                        .ciphertext
-                        .expect("Unable to unwrap ciphertext from encryption response");
+        .ciphertext
+        .expect("Unable to unwrap ciphertext from encryption response");
 
     // 5. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
-        "Ciphertext and plaintext data are the same. Invalid encryption");
+    assert_ne!(
+        ciphertext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Ciphertext and plaintext data are the same. Invalid encryption"
+    );
 
     Ok(ciphertext)
 }
@@ -210,8 +229,9 @@ pub async fn test_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
     decrypt_with_keyring(
         utils::TEST_EXAMPLE_DATA,
         EcdhCurveSpec::EccNistP256,
-        utils::TEST_KMS_ECDH_KEY_ID_P256_RECIPIENT
-    ).await?;
+        utils::TEST_KMS_ECDH_KEY_ID_P256_RECIPIENT,
+    )
+    .await?;
 
     Ok(())
 }

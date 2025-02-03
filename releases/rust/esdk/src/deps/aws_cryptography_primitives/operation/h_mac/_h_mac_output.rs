@@ -6,17 +6,19 @@
 #[allow(missing_docs)]
 pub struct HMacOutput {
     #[allow(missing_docs)]
-pub digest: ::std::option::Option<::aws_smithy_types::Blob>,
+    pub digest: ::std::option::Option<::aws_smithy_types::Blob>,
 }
 impl HMacOutput {
     #[allow(missing_docs)]
-pub fn digest(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
-    &self.digest
-}
+    pub fn digest(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
+        &self.digest
+    }
 }
 impl HMacOutput {
     /// Creates a new builder-style object to manufacture [`HMacOutput`](crate::operation::h_mac::builders::HMacOutput).
-    pub fn builder() -> crate::deps::aws_cryptography_primitives::operation::h_mac::builders::HMacOutputBuilder {
+    pub fn builder(
+    ) -> crate::deps::aws_cryptography_primitives::operation::h_mac::builders::HMacOutputBuilder
+    {
         crate::deps::aws_cryptography_primitives::operation::h_mac::builders::HMacOutputBuilder::default()
     }
 }
@@ -31,19 +33,19 @@ pub struct HMacOutputBuilder {
 }
 impl HMacOutputBuilder {
     #[allow(missing_docs)]
-pub fn digest(mut self, input: impl ::std::convert::Into<::aws_smithy_types::Blob>) -> Self {
-    self.digest = ::std::option::Option::Some(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_digest(mut self, input: ::std::option::Option<::aws_smithy_types::Blob>) -> Self {
-    self.digest = input;
-    self
-}
-#[allow(missing_docs)]
-pub fn get_digest(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
-    &self.digest
-}
+    pub fn digest(mut self, input: impl ::std::convert::Into<::aws_smithy_types::Blob>) -> Self {
+        self.digest = ::std::option::Option::Some(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_digest(mut self, input: ::std::option::Option<::aws_smithy_types::Blob>) -> Self {
+        self.digest = input;
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_digest(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
+        &self.digest
+    }
     /// Consumes the builder and constructs a [`HMacOutput`](crate::operation::operation::HMacOutput).
     pub fn build(
         self,
@@ -51,8 +53,10 @@ pub fn get_digest(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
         crate::deps::aws_cryptography_primitives::operation::h_mac::HMacOutput,
         ::aws_smithy_types::error::operation::BuildError,
     > {
-        ::std::result::Result::Ok(crate::deps::aws_cryptography_primitives::operation::h_mac::HMacOutput {
-            digest: self.digest,
-        })
+        ::std::result::Result::Ok(
+            crate::deps::aws_cryptography_primitives::operation::h_mac::HMacOutput {
+                digest: self.digest,
+            },
+        )
     }
 }

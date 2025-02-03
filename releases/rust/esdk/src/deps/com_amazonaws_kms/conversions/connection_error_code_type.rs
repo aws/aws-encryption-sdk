@@ -5,8 +5,8 @@
 
 pub fn to_dafny(
     value: aws_sdk_kms::types::ConnectionErrorCodeType,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ConnectionErrorCodeType>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ConnectionErrorCodeType>{
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_kms::types::ConnectionErrorCodeType::InvalidCredentials => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ConnectionErrorCodeType::INVALID_CREDENTIALS {},
 aws_sdk_kms::types::ConnectionErrorCodeType::ClusterNotFound => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ConnectionErrorCodeType::CLUSTER_NOT_FOUND {},
 aws_sdk_kms::types::ConnectionErrorCodeType::NetworkErrors => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ConnectionErrorCodeType::NETWORK_ERRORS {},
@@ -28,7 +28,7 @@ aws_sdk_kms::types::ConnectionErrorCodeType::XksProxyInvalidTlsConfiguration => 
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ConnectionErrorCodeType,
 ) -> aws_sdk_kms::types::ConnectionErrorCodeType {

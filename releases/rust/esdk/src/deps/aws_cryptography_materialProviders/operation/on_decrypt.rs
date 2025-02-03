@@ -20,7 +20,7 @@ impl OnDecrypt {
     > {
         crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HOnDecryptInput_for_Keyring_OnDecrypt(&input)
             .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
-        keyring.inner.borrow_mut().on_decrypt(input)
+        keyring.inner.lock().unwrap().on_decrypt(input)
     }
 }
 

@@ -4,10 +4,10 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_materialProviders::operation::valid_algorithm_suite_info::AlgorithmSuiteInfo,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::AlgorithmSuiteInfo,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::AlgorithmSuiteInfo::AlgorithmSuiteInfo {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::AlgorithmSuiteInfo::AlgorithmSuiteInfo {
         id: crate::deps::aws_cryptography_materialProviders::conversions::algorithm_suite_id::to_dafny(&value.id.clone().unwrap())
 ,
  binaryId: crate::standard_library_conversions::blob_to_dafny(&value.binary_id.unwrap()),
@@ -26,12 +26,12 @@ pub fn to_dafny(
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::AlgorithmSuiteInfo,
     >,
-) -> crate::deps::aws_cryptography_materialProviders::operation::valid_algorithm_suite_info::AlgorithmSuiteInfo {
+) -> crate::deps::aws_cryptography_materialProviders::operation::valid_algorithm_suite_info::AlgorithmSuiteInfo{
     crate::deps::aws_cryptography_materialProviders::operation::valid_algorithm_suite_info::AlgorithmSuiteInfo::builder()
         .set_id(Some( crate::deps::aws_cryptography_materialProviders::conversions::algorithm_suite_id::from_dafny(dafny_value.id().clone())
  ))

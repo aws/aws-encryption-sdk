@@ -1,18 +1,18 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use aws_esdk::material_providers::operation::get_encryption_materials::GetEncryptionMaterialsInput;
-use aws_esdk::material_providers::operation::get_encryption_materials::GetEncryptionMaterialsOutput;
+use aws_esdk::material_providers::client as mpl_client;
 use aws_esdk::material_providers::operation::decrypt_materials::DecryptMaterialsInput;
 use aws_esdk::material_providers::operation::decrypt_materials::DecryptMaterialsOutput;
-use aws_esdk::material_providers::types::error::Error;
+use aws_esdk::material_providers::operation::get_encryption_materials::GetEncryptionMaterialsInput;
+use aws_esdk::material_providers::operation::get_encryption_materials::GetEncryptionMaterialsOutput;
 use aws_esdk::material_providers::types::cryptographic_materials_manager::CryptographicMaterialsManager;
 use aws_esdk::material_providers::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
+use aws_esdk::material_providers::types::error::Error;
 use aws_esdk::material_providers::types::keyring::KeyringRef;
-use aws_esdk::material_providers::types::EsdkAlgorithmSuiteId;
-use aws_esdk::material_providers::types::AlgorithmSuiteId;
-use aws_esdk::material_providers::client as mpl_client;
 use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
+use aws_esdk::material_providers::types::AlgorithmSuiteId;
+use aws_esdk::material_providers::types::EsdkAlgorithmSuiteId;
 use std::vec::Vec;
 
 /*
@@ -51,7 +51,8 @@ impl SigningSuiteOnlyCMM {
                         .send()
                         .await
                 })
-            }).unwrap(),
+            })
+            .unwrap(),
         }
     }
 }
@@ -62,12 +63,12 @@ impl CryptographicMaterialsManager for SigningSuiteOnlyCMM {
         input: GetEncryptionMaterialsInput,
     ) -> Result<GetEncryptionMaterialsOutput, Error> {
         let algorithm_suite_id: AlgorithmSuiteId = input.algorithm_suite_id.clone().unwrap();
-        let esdk_algorithm_suite_id: EsdkAlgorithmSuiteId = if let AlgorithmSuiteId::Esdk(esdk_id) = algorithm_suite_id {
-            esdk_id
-        }
-        else {
-            panic!("Algorithm Suite ID is not an EsdkAlgorithmSuiteId");
-        };
+        let esdk_algorithm_suite_id: EsdkAlgorithmSuiteId =
+            if let AlgorithmSuiteId::Esdk(esdk_id) = algorithm_suite_id {
+                esdk_id
+            } else {
+                panic!("Algorithm Suite ID is not an EsdkAlgorithmSuiteId");
+            };
 
         if !self.approved_algos.contains(&esdk_algorithm_suite_id) {
             return Err(Error::AwsCryptographicMaterialProvidersException {
@@ -77,7 +78,8 @@ impl CryptographicMaterialsManager for SigningSuiteOnlyCMM {
 
         tokio::task::block_in_place(|| {
             tokio::runtime::Handle::current().block_on(async {
-                self.cmm.get_encryption_materials()
+                self.cmm
+                    .get_encryption_materials()
                     .algorithm_suite_id(input.algorithm_suite_id.unwrap())
                     .commitment_policy(input.commitment_policy.unwrap())
                     .encryption_context(input.encryption_context.unwrap())
@@ -86,7 +88,6 @@ impl CryptographicMaterialsManager for SigningSuiteOnlyCMM {
                     .await
             })
         })
-
     }
 
     fn decrypt_materials(
@@ -94,12 +95,12 @@ impl CryptographicMaterialsManager for SigningSuiteOnlyCMM {
         input: DecryptMaterialsInput,
     ) -> Result<DecryptMaterialsOutput, Error> {
         let algorithm_suite_id: AlgorithmSuiteId = input.algorithm_suite_id.clone().unwrap();
-        let esdk_algorithm_suite_id: EsdkAlgorithmSuiteId = if let AlgorithmSuiteId::Esdk(esdk_id) = algorithm_suite_id {
-            esdk_id
-        }
-        else {
-            panic!("Algorithm Suite ID is not an EsdkAlgorithmSuiteId");
-        };
+        let esdk_algorithm_suite_id: EsdkAlgorithmSuiteId =
+            if let AlgorithmSuiteId::Esdk(esdk_id) = algorithm_suite_id {
+                esdk_id
+            } else {
+                panic!("Algorithm Suite ID is not an EsdkAlgorithmSuiteId");
+            };
 
         if !self.approved_algos.contains(&esdk_algorithm_suite_id) {
             return Err(Error::AwsCryptographicMaterialProvidersException {
@@ -109,7 +110,8 @@ impl CryptographicMaterialsManager for SigningSuiteOnlyCMM {
 
         tokio::task::block_in_place(|| {
             tokio::runtime::Handle::current().block_on(async {
-                self.cmm.decrypt_materials()
+                self.cmm
+                    .decrypt_materials()
                     .algorithm_suite_id(input.algorithm_suite_id.unwrap())
                     .commitment_policy(input.commitment_policy.unwrap())
                     .encryption_context(input.encryption_context.unwrap())

@@ -4,12 +4,12 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::operation::execute_statement::ExecuteStatementInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExecuteStatementInput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExecuteStatementInput::ExecuteStatementInput {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExecuteStatementInput::ExecuteStatementInput {
         Statement: crate::standard_library_conversions::ostring_to_dafny(&value.statement) .Extract(),
- Parameters: ::std::rc::Rc::new(match &value.parameters {
+ Parameters: ::dafny_runtime::Rc::new(match &value.parameters {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| crate::deps::com_amazonaws_dynamodb::conversions::attribute_value::to_dafny(e)
@@ -21,7 +21,7 @@ pub fn to_dafny(
 ,
  ConsistentRead: crate::standard_library_conversions::obool_to_dafny(&value.consistent_read),
  NextToken: crate::standard_library_conversions::ostring_to_dafny(&value.next_token),
- ReturnConsumedCapacity: ::std::rc::Rc::new(match &value.return_consumed_capacity {
+ ReturnConsumedCapacity: ::dafny_runtime::Rc::new(match &value.return_consumed_capacity {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::return_consumed_capacity::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
@@ -29,11 +29,11 @@ pub fn to_dafny(
  Limit: crate::standard_library_conversions::oint_to_dafny(value.limit),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExecuteStatementInput,
-    >
+    >,
 ) -> aws_sdk_dynamodb::operation::execute_statement::ExecuteStatementInput {
     aws_sdk_dynamodb::operation::execute_statement::ExecuteStatementInput::builder()
           .set_statement(Some( dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(dafny_value.Statement()) ))
@@ -41,7 +41,7 @@ pub fn from_dafny(
     crate::r#_Wrappers_Compile::Option::Some { value } =>
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(value,
-                |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AttributeValue>| crate::deps::com_amazonaws_dynamodb::conversions::attribute_value::from_dafny(e.clone())
+                |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AttributeValue>| crate::deps::com_amazonaws_dynamodb::conversions::attribute_value::from_dafny(e.clone())
 ,
             )
         ),

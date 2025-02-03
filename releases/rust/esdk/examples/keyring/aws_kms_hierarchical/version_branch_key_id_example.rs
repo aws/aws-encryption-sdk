@@ -13,7 +13,7 @@ pub async fn version_branch_key_id(
     key_store_table_name: &str,
     logical_key_store_name: &str,
     kms_key_arn: &str,
-    branch_key_id: &str
+    branch_key_id: &str,
 ) -> Result<(), crate::BoxError> {
     // Create a Key Store
     // The KMS Configuration you use in the KeyStore MUST have the right access to the resources in the KeyStore.
@@ -29,7 +29,8 @@ pub async fn version_branch_key_id(
     let keystore = keystore_client::Client::from_conf(key_store_config)?;
 
     // To version a branch key you MUST have access to kms:ReEncrypt* and kms:GenerateDataKeyWithoutPlaintext
-    keystore.version_key()
+    keystore
+        .version_key()
         .branch_key_identifier(branch_key_id)
         .send()
         .await?;
@@ -41,21 +42,23 @@ pub async fn version_branch_key_id(
 
 // Function to test version_branch_key_id in main.rs in examples directory
 pub async fn create_and_version_branch_key_id() -> Result<(), crate::BoxError2> {
-    use crate::example_utils::utils;
     use super::create_branch_key_id::create_branch_key_id;
+    use crate::example_utils::utils;
 
     let branch_key_id: String = create_branch_key_id(
         utils::TEST_KEY_STORE_NAME,
         utils::TEST_LOGICAL_KEY_STORE_NAME,
-        utils::TEST_KEY_STORE_KMS_KEY_ID
-    ).await?;
+        utils::TEST_KEY_STORE_KMS_KEY_ID,
+    )
+    .await?;
 
     version_branch_key_id(
         utils::TEST_KEY_STORE_NAME,
         utils::TEST_LOGICAL_KEY_STORE_NAME,
         utils::TEST_KEY_STORE_KMS_KEY_ID,
-        &branch_key_id
-    ).await?;
+        &branch_key_id,
+    )
+    .await?;
 
     Ok(())
 }

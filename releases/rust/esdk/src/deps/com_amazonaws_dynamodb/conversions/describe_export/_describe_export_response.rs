@@ -4,31 +4,31 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::operation::describe_export::DescribeExportOutput
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeExportOutput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeExportOutput::DescribeExportOutput {
-        ExportDescription: ::std::rc::Rc::new(match &value.export_description {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeExportOutput::DescribeExportOutput {
+        ExportDescription: ::dafny_runtime::Rc::new(match &value.export_description {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::export_description::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeExportOutput,
-    >
+    >,
 ) -> aws_sdk_dynamodb::operation::describe_export::DescribeExportOutput {
     aws_sdk_dynamodb::operation::describe_export::DescribeExportOutput::builder()
-          .set_export_description(match (*dafny_value.ExportDescription()).as_ref() {
-    crate::r#_Wrappers_Compile::Option::Some { value } =>
-        Some(crate::deps::com_amazonaws_dynamodb::conversions::export_description::from_dafny(value.clone())),
-    _ => None,
-}
-)
-          .build()
-
-
+        .set_export_description(match (*dafny_value.ExportDescription()).as_ref() {
+            crate::r#_Wrappers_Compile::Option::Some { value } => Some(
+                crate::deps::com_amazonaws_dynamodb::conversions::export_description::from_dafny(
+                    value.clone(),
+                ),
+            ),
+            _ => None,
+        })
+        .build()
 }

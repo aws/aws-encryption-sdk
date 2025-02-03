@@ -13,7 +13,7 @@ impl crate::deps::aws_cryptography_keyStore::client::Client {
     ///   - [`kms_configuration(Option<crate::deps::aws_cryptography_keyStore::types::KmsConfiguration>)`](crate::operation::get_key_store_info::GetKeyStoreInfoOutput::kms_configuration): (undocumented)
     ///   - [`logical_key_store_name(Option<::std::string::String>)`](crate::operation::get_key_store_info::GetKeyStoreInfoOutput::logical_key_store_name): (undocumented)
     /// - On failure, responds with [`SdkError<GetKeyStoreInfoError>`](crate::operation::get_key_store_info::GetKeyStoreInfoError)
-    pub fn get_key_store_info(&self) -> crate::deps::aws_cryptography_keyStore::operation::get_key_store_info::builders::GetKeyStoreInfoFluentBuilder {
+    pub fn get_key_store_info(&self) -> crate::deps::aws_cryptography_keyStore::operation::get_key_store_info::builders::GetKeyStoreInfoFluentBuilder{
         crate::deps::aws_cryptography_keyStore::operation::get_key_store_info::builders::GetKeyStoreInfoFluentBuilder::new(self.clone())
     }
 }

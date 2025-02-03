@@ -5,15 +5,15 @@
 
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_materialProviders::types::AesWrappingAlg,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::AesWrappingAlg>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::AesWrappingAlg>{
+    ::dafny_runtime::Rc::new(match value {
         crate::deps::aws_cryptography_materialProviders::types::AesWrappingAlg::AlgAes128GcmIv12Tag16 => crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::AesWrappingAlg::ALG_AES128_GCM_IV12_TAG16 {},
 crate::deps::aws_cryptography_materialProviders::types::AesWrappingAlg::AlgAes192GcmIv12Tag16 => crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::AesWrappingAlg::ALG_AES192_GCM_IV12_TAG16 {},
 crate::deps::aws_cryptography_materialProviders::types::AesWrappingAlg::AlgAes256GcmIv12Tag16 => crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::AesWrappingAlg::ALG_AES256_GCM_IV12_TAG16 {},
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::AesWrappingAlg,
 ) -> crate::deps::aws_cryptography_materialProviders::types::AesWrappingAlg {

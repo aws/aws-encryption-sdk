@@ -4,23 +4,23 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::operation::update_table_replica_auto_scaling::UpdateTableReplicaAutoScalingOutput
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateTableReplicaAutoScalingOutput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateTableReplicaAutoScalingOutput::UpdateTableReplicaAutoScalingOutput {
-        TableAutoScalingDescription: ::std::rc::Rc::new(match &value.table_auto_scaling_description {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateTableReplicaAutoScalingOutput::UpdateTableReplicaAutoScalingOutput {
+        TableAutoScalingDescription: ::dafny_runtime::Rc::new(match &value.table_auto_scaling_description {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::table_auto_scaling_description::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateTableReplicaAutoScalingOutput,
     >
-) -> aws_sdk_dynamodb::operation::update_table_replica_auto_scaling::UpdateTableReplicaAutoScalingOutput {
+) -> aws_sdk_dynamodb::operation::update_table_replica_auto_scaling::UpdateTableReplicaAutoScalingOutput{
     aws_sdk_dynamodb::operation::update_table_replica_auto_scaling::UpdateTableReplicaAutoScalingOutput::builder()
           .set_table_auto_scaling_description(match (*dafny_value.TableAutoScalingDescription()).as_ref() {
     crate::r#_Wrappers_Compile::Option::Some { value } =>
@@ -29,6 +29,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
-
 }

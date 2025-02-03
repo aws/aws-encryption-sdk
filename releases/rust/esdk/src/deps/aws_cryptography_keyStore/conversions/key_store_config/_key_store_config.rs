@@ -5,21 +5,20 @@
 
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::keystore::internaldafny::types::KeyStoreConfig,
 > {
-    ::std::rc::Rc::new(to_dafny_plain(value))
+    ::dafny_runtime::Rc::new(to_dafny_plain(value))
 }
 
 #[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::keystore::internaldafny::types::KeyStoreConfig,
     >,
 ) -> crate::deps::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig {
     plain_from_dafny(&*dafny_value)
 }
-
 
 #[allow(dead_code)]
 pub fn to_dafny_plain(
@@ -31,7 +30,7 @@ pub fn to_dafny_plain(
 ,
  logicalKeyStoreName: crate::standard_library_conversions::ostring_to_dafny(&value.logical_key_store_name) .Extract(),
  id: crate::standard_library_conversions::ostring_to_dafny(&value.id),
- grantTokens: ::std::rc::Rc::new(match &value.grant_tokens {
+ grantTokens: ::dafny_runtime::Rc::new(match &value.grant_tokens {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&e),
@@ -40,12 +39,12 @@ pub fn to_dafny_plain(
     None => crate::r#_Wrappers_Compile::Option::None {}
 })
 ,
- ddbClient: ::std::rc::Rc::new(match &value.ddb_client {
+ ddbClient: ::dafny_runtime::Rc::new(match &value.ddb_client {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::client::to_dafny(&x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- kmsClient: ::std::rc::Rc::new(match &value.kms_client {
+ kmsClient: ::dafny_runtime::Rc::new(match &value.kms_client {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::client::to_dafny(&x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })

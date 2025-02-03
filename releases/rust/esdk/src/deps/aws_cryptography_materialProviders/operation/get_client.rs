@@ -20,7 +20,7 @@ impl GetClient {
     > {
         crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HGetClientInput_for_ClientSupplier_GetClient(&input)
             .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
-        client_supplier.inner.borrow_mut().get_client(input)
+        client_supplier.inner.lock().unwrap().get_client(input)
     }
 }
 

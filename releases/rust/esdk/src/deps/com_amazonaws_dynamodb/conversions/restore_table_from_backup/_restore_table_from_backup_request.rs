@@ -4,18 +4,18 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::operation::restore_table_from_backup::RestoreTableFromBackupInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::RestoreTableFromBackupInput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::RestoreTableFromBackupInput::RestoreTableFromBackupInput {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::RestoreTableFromBackupInput::RestoreTableFromBackupInput {
         TargetTableName: crate::standard_library_conversions::ostring_to_dafny(&value.target_table_name) .Extract(),
  BackupArn: crate::standard_library_conversions::ostring_to_dafny(&value.backup_arn) .Extract(),
- BillingModeOverride: ::std::rc::Rc::new(match &value.billing_mode_override {
+ BillingModeOverride: ::dafny_runtime::Rc::new(match &value.billing_mode_override {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::billing_mode::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- GlobalSecondaryIndexOverride: ::std::rc::Rc::new(match &value.global_secondary_index_override {
+ GlobalSecondaryIndexOverride: ::dafny_runtime::Rc::new(match &value.global_secondary_index_override {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| crate::deps::com_amazonaws_dynamodb::conversions::global_secondary_index::to_dafny(e)
@@ -25,7 +25,7 @@ pub fn to_dafny(
     None => crate::r#_Wrappers_Compile::Option::None {}
 })
 ,
- LocalSecondaryIndexOverride: ::std::rc::Rc::new(match &value.local_secondary_index_override {
+ LocalSecondaryIndexOverride: ::dafny_runtime::Rc::new(match &value.local_secondary_index_override {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| crate::deps::com_amazonaws_dynamodb::conversions::local_secondary_index::to_dafny(e)
@@ -35,28 +35,28 @@ pub fn to_dafny(
     None => crate::r#_Wrappers_Compile::Option::None {}
 })
 ,
- ProvisionedThroughputOverride: ::std::rc::Rc::new(match &value.provisioned_throughput_override {
+ ProvisionedThroughputOverride: ::dafny_runtime::Rc::new(match &value.provisioned_throughput_override {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::provisioned_throughput::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- OnDemandThroughputOverride: ::std::rc::Rc::new(match &value.on_demand_throughput_override {
+ OnDemandThroughputOverride: ::dafny_runtime::Rc::new(match &value.on_demand_throughput_override {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::on_demand_throughput::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- SSESpecificationOverride: ::std::rc::Rc::new(match &value.sse_specification_override {
+ SSESpecificationOverride: ::dafny_runtime::Rc::new(match &value.sse_specification_override {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::sse_specification::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::RestoreTableFromBackupInput,
-    >
+    >,
 ) -> aws_sdk_dynamodb::operation::restore_table_from_backup::RestoreTableFromBackupInput {
     aws_sdk_dynamodb::operation::restore_table_from_backup::RestoreTableFromBackupInput::builder()
           .set_target_table_name(Some( dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(dafny_value.TargetTableName()) ))
@@ -72,7 +72,7 @@ pub fn from_dafny(
     crate::r#_Wrappers_Compile::Option::Some { value } =>
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(value,
-                |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::GlobalSecondaryIndex>| crate::deps::com_amazonaws_dynamodb::conversions::global_secondary_index::from_dafny(e.clone())
+                |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::GlobalSecondaryIndex>| crate::deps::com_amazonaws_dynamodb::conversions::global_secondary_index::from_dafny(e.clone())
 ,
             )
         ),
@@ -83,7 +83,7 @@ pub fn from_dafny(
     crate::r#_Wrappers_Compile::Option::Some { value } =>
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(value,
-                |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::LocalSecondaryIndex>| crate::deps::com_amazonaws_dynamodb::conversions::local_secondary_index::from_dafny(e.clone())
+                |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::LocalSecondaryIndex>| crate::deps::com_amazonaws_dynamodb::conversions::local_secondary_index::from_dafny(e.clone())
 ,
             )
         ),

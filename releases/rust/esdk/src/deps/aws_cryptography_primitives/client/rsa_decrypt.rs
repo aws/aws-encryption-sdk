@@ -11,7 +11,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     /// - On success, responds with [`RsaDecryptOutput`](crate::operation::rsa_decrypt::RsaDecryptOutput) with field(s):
     ///   - [`plaintext(Option<::aws_smithy_types::Blob>)`](crate::operation::rsa_decrypt::RSADecryptOutput::plaintext): (undocumented)
     /// - On failure, responds with [`SdkError<RsaDecryptError>`](crate::operation::rsa_decrypt::RsaDecryptError)
-    pub fn rsa_decrypt(&self) -> crate::deps::aws_cryptography_primitives::operation::rsa_decrypt::builders::RsaDecryptFluentBuilder {
+    pub fn rsa_decrypt(&self) -> crate::deps::aws_cryptography_primitives::operation::rsa_decrypt::builders::RsaDecryptFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::rsa_decrypt::builders::RsaDecryptFluentBuilder::new(self.clone())
     }
 }

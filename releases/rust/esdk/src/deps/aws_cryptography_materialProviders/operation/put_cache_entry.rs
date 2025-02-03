@@ -20,7 +20,11 @@ impl PutCacheEntry {
     > {
         crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HPutCacheEntryInput_for_CryptographicMaterialsCache_PutCacheEntry(&input)
             .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
-        cryptographic_materials_cache.inner.borrow_mut().put_cache_entry(input)
+        cryptographic_materials_cache
+            .inner
+            .lock()
+            .unwrap()
+            .put_cache_entry(input)
     }
 }
 

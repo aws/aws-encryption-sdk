@@ -4,10 +4,10 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &crate::deps::aws_cryptography_materialProviders::types::SymmetricSignatureAlgorithm,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::SymmetricSignatureAlgorithm,
-> {
-    ::std::rc::Rc::new(match value {
+>{
+    ::dafny_runtime::Rc::new(match value {
         crate::deps::aws_cryptography_materialProviders::types::SymmetricSignatureAlgorithm::Hmac(x) =>
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::SymmetricSignatureAlgorithm::HMAC {
         HMAC: crate::deps::aws_cryptography_primitives::conversions::digest_algorithm::to_dafny(x.clone()),
@@ -23,11 +23,11 @@ crate::deps::aws_cryptography_materialProviders::types::SymmetricSignatureAlgori
 
 #[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::SymmetricSignatureAlgorithm,
     >,
 ) -> crate::deps::aws_cryptography_materialProviders::types::SymmetricSignatureAlgorithm {
-    match &::std::rc::Rc::unwrap_or_clone(dafny_value) {
+    match &::dafny_runtime::Rc::unwrap_or_clone(dafny_value) {
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::SymmetricSignatureAlgorithm::HMAC {
     HMAC: x @ _,
 } => crate::deps::aws_cryptography_materialProviders::types::SymmetricSignatureAlgorithm::Hmac(crate::deps::aws_cryptography_primitives::conversions::digest_algorithm::from_dafny(x)),

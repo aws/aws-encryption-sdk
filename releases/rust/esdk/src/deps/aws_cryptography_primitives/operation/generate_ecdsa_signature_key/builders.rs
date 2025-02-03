@@ -13,7 +13,7 @@ impl GenerateEcdsaSignatureKeyInputBuilder {
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_primitives::operation::generate_ecdsa_signature_key::GenerateEcdsaSignatureKeyOutput,
         crate::deps::aws_cryptography_primitives::types::error::Error,
-    > {
+    >{
         let mut fluent_builder = client.generate_ecdsa_signature_key();
         fluent_builder.inner = self;
         fluent_builder.send().await
@@ -35,7 +35,7 @@ impl GenerateEcdsaSignatureKeyFluentBuilder {
         }
     }
     /// Access the GenerateEcdsaSignatureKey as a reference.
-    pub fn as_input(&self) -> &crate::deps::aws_cryptography_primitives::operation::generate_ecdsa_signature_key::builders::GenerateEcdsaSignatureKeyInputBuilder {
+    pub fn as_input(&self) -> &crate::deps::aws_cryptography_primitives::operation::generate_ecdsa_signature_key::builders::GenerateEcdsaSignatureKeyInputBuilder{
         &self.inner
     }
     /// Sends the request and returns the response.
@@ -44,7 +44,7 @@ impl GenerateEcdsaSignatureKeyFluentBuilder {
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_primitives::operation::generate_ecdsa_signature_key::GenerateEcdsaSignatureKeyOutput,
         crate::deps::aws_cryptography_primitives::types::error::Error,
-    > {
+    >{
         let input = self
             .inner
             .build()
@@ -53,26 +53,41 @@ impl GenerateEcdsaSignatureKeyFluentBuilder {
             // and smithy-rs seems to not generate a ValidationError case unless there is.
             // Vanilla smithy-rs uses SdkError::construction_failure, but we aren't using SdkError.
             .map_err(|mut e| {
-	     let msg = format!("{:?}", e);
-             crate::deps::aws_cryptography_primitives::types::error::Error::OpaqueWithText {
-                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut dyn ::std::any::Any),
-		objMessage: msg
-             }})?;
+                let msg = format!("{:?}", e);
+                crate::deps::aws_cryptography_primitives::types::error::Error::OpaqueWithText {
+                    obj: ::dafny_runtime::Object::from_ref(&mut e as &mut ::dafny_runtime::DynAny),
+                    objMessage: msg,
+                }
+            })?;
         crate::deps::aws_cryptography_primitives::operation::generate_ecdsa_signature_key::GenerateEcdsaSignatureKey::send(&self.client, input).await
     }
 
     #[allow(missing_docs)]
-pub fn signature_algorithm(mut self, input: impl ::std::convert::Into<crate::deps::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm>) -> Self {
-    self.inner = self.inner.signature_algorithm(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_signature_algorithm(mut self, input: ::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm>) -> Self {
-    self.inner = self.inner.set_signature_algorithm(input);
-    self
-}
-#[allow(missing_docs)]
-pub fn get_signature_algorithm(&self) -> &::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm> {
-    self.inner.get_signature_algorithm()
-}
+    pub fn signature_algorithm(
+        mut self,
+        input: impl ::std::convert::Into<
+            crate::deps::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm,
+        >,
+    ) -> Self {
+        self.inner = self.inner.signature_algorithm(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_signature_algorithm(
+        mut self,
+        input: ::std::option::Option<
+            crate::deps::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm,
+        >,
+    ) -> Self {
+        self.inner = self.inner.set_signature_algorithm(input);
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_signature_algorithm(
+        &self,
+    ) -> &::std::option::Option<
+        crate::deps::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm,
+    > {
+        self.inner.get_signature_algorithm()
+    }
 }

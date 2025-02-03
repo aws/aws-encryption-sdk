@@ -5,8 +5,10 @@
 
 pub fn to_dafny(
     value: aws_sdk_kms::types::GrantOperation,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GrantOperation>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GrantOperation,
+> {
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_kms::types::GrantOperation::Decrypt => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GrantOperation::Decrypt {},
 aws_sdk_kms::types::GrantOperation::Encrypt => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GrantOperation::Encrypt {},
 aws_sdk_kms::types::GrantOperation::GenerateDataKey => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GrantOperation::GenerateDataKey {},
@@ -27,7 +29,7 @@ aws_sdk_kms::types::GrantOperation::DeriveSharedSecret => crate::r#software::ama
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GrantOperation,
 ) -> aws_sdk_kms::types::GrantOperation {

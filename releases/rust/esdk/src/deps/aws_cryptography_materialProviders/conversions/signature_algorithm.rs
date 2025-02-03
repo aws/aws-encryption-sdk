@@ -4,10 +4,10 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &crate::deps::aws_cryptography_materialProviders::types::SignatureAlgorithm,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::SignatureAlgorithm,
-> {
-    ::std::rc::Rc::new(match value {
+>{
+    ::dafny_runtime::Rc::new(match value {
         crate::deps::aws_cryptography_materialProviders::types::SignatureAlgorithm::Ecdsa(x) =>
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::SignatureAlgorithm::ECDSA {
         ECDSA: crate::deps::aws_cryptography_materialProviders::conversions::ecdsa::to_dafny(&x.clone())
@@ -24,11 +24,11 @@ crate::deps::aws_cryptography_materialProviders::types::SignatureAlgorithm::None
 
 #[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::SignatureAlgorithm,
     >,
 ) -> crate::deps::aws_cryptography_materialProviders::types::SignatureAlgorithm {
-    match &::std::rc::Rc::unwrap_or_clone(dafny_value) {
+    match &::dafny_runtime::Rc::unwrap_or_clone(dafny_value) {
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::SignatureAlgorithm::ECDSA {
     ECDSA: x @ _,
 } => crate::deps::aws_cryptography_materialProviders::types::SignatureAlgorithm::Ecdsa(crate::deps::aws_cryptography_materialProviders::conversions::ecdsa::from_dafny(x.clone())

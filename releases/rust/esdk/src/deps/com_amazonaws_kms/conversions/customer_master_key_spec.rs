@@ -5,8 +5,8 @@
 
 pub fn to_dafny(
     value: aws_sdk_kms::types::CustomerMasterKeySpec,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CustomerMasterKeySpec>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CustomerMasterKeySpec>{
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_kms::types::CustomerMasterKeySpec::Rsa2048 => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CustomerMasterKeySpec::RSA_2048 {},
 aws_sdk_kms::types::CustomerMasterKeySpec::Rsa3072 => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CustomerMasterKeySpec::RSA_3072 {},
 aws_sdk_kms::types::CustomerMasterKeySpec::Rsa4096 => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CustomerMasterKeySpec::RSA_4096 {},
@@ -23,7 +23,7 @@ aws_sdk_kms::types::CustomerMasterKeySpec::Sm2 => crate::r#software::amazon::cry
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CustomerMasterKeySpec,
 ) -> aws_sdk_kms::types::CustomerMasterKeySpec {

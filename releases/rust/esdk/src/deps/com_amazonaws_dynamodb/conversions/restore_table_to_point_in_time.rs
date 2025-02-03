@@ -7,7 +7,9 @@ pub fn to_dafny_error(
         aws_sdk_dynamodb::operation::restore_table_to_point_in_time::RestoreTableToPointInTimeError,
         ::aws_smithy_runtime_api::client::orchestrator::HttpResponse,
     >,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Error> {
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Error,
+> {
     match value {
       aws_sdk_dynamodb::error::SdkError::ServiceError(service_error) => match service_error.err() {
                 aws_sdk_dynamodb::operation::restore_table_to_point_in_time::RestoreTableToPointInTimeError::InternalServerError(e) =>
@@ -38,6 +40,6 @@ pub fn to_dafny_error(
    }
 }
 
- pub mod _restore_table_to_point_in_time_request;
+pub mod _restore_table_to_point_in_time_request;
 
- pub mod _restore_table_to_point_in_time_response;
+pub mod _restore_table_to_point_in_time_response;

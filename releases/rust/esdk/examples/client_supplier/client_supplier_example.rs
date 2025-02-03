@@ -17,11 +17,11 @@
 
 use super::regional_role_client_supplier::RegionalRoleClientSupplier;
 use aws_esdk::client as esdk_client;
-use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
-use aws_esdk::material_providers::types::error::Error::AwsCryptographicMaterialProvidersException;
 use aws_esdk::material_providers::client as mpl_client;
+use aws_esdk::material_providers::types::error::Error::AwsCryptographicMaterialProvidersException;
 use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
 use aws_esdk::material_providers::types::DiscoveryFilter;
+use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use std::collections::HashMap;
 
 pub async fn encrypt_and_decrypt_with_keyring(
@@ -46,8 +46,14 @@ pub async fn encrypt_and_decrypt_with_keyring(
         ("encryption".to_string(), "context".to_string()),
         ("is not".to_string(), "secret".to_string()),
         ("but adds".to_string(), "useful metadata".to_string()),
-        ("that can help you".to_string(), "be confident that".to_string()),
-        ("the data you are handling".to_string(), "is what you think it is".to_string()),
+        (
+            "that can help you".to_string(),
+            "be confident that".to_string(),
+        ),
+        (
+            "the data you are handling".to_string(),
+            "is what you think it is".to_string(),
+        ),
     ]);
 
     // 3. Create a single MRK multi-keyring.
@@ -74,7 +80,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 4. Encrypt the data with the encryption_context using the encrypt_keyring.
     let plaintext = example_data.as_bytes();
 
-    let encryption_response = esdk_client.encrypt()
+    let encryption_response = esdk_client
+        .encrypt()
         .plaintext(plaintext)
         .keyring(mrk_keyring_with_client_supplier)
         .encryption_context(encryption_context.clone())
@@ -82,13 +89,16 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let ciphertext = encryption_response
-                        .ciphertext
-                        .expect("Unable to unwrap ciphertext from encryption response");
+        .ciphertext
+        .expect("Unable to unwrap ciphertext from encryption response");
 
     // 5. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
-        "Ciphertext and plaintext data are the same. Invalid encryption");
+    assert_ne!(
+        ciphertext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Ciphertext and plaintext data are the same. Invalid encryption"
+    );
 
     // 6. Create a MRK discovery multi-keyring with a custom client supplier.
     //    A discovery MRK multi-keyring will be composed of
@@ -123,7 +133,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // All of this is done serially, until a success occurs or all keyrings have failed
     // all (filtered) EDKs. KMS MRK Discovery Keyrings will attempt to decrypt
     // Multi Region Keys (MRKs) and regular KMS Keys.
-    let decryption_response = esdk_client.decrypt()
+    let decryption_response = esdk_client
+        .decrypt()
         .ciphertext(ciphertext)
         .keyring(mrk_discovery_client_supplier_keyring)
         // Provide the encryption context that was supplied to the encrypt method
@@ -132,13 +143,16 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let decrypted_plaintext = decryption_response
-                                .plaintext
-                                .expect("Unable to unwrap plaintext from decryption response");
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // 8. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        decrypted_plaintext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     // 9. Test the Missing Region Exception
     // (This is an example for demonstration; you do not need to do this in your own code.)
@@ -153,8 +167,10 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // Swallow the exception
     // (This is an example for demonstration; you do not need to do this in your own code.)
     match mrk_discovery_client_supplier_keyring_missing_region {
-        Ok(_) => panic!("Decryption using discovery keyring with missing region MUST \
-                            raise AwsCryptographicMaterialProvidersException"),
+        Ok(_) => panic!(
+            "Decryption using discovery keyring with missing region MUST \
+                            raise AwsCryptographicMaterialProvidersException"
+        ),
         Err(AwsCryptographicMaterialProvidersException { message: _e }) => (),
         _ => panic!("Unexpected error type"),
     }
@@ -180,7 +196,8 @@ pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxErr
         utils::TEST_MRK_KEY_ID_US_EAST_1,
         utils::TEST_DEFAULT_KMS_KEY_ACCOUNT_ID,
         aws_regions,
-    ).await?;
+    )
+    .await?;
 
     Ok(())
 }

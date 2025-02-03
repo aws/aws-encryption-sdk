@@ -6,9 +6,13 @@
 /// Allowed configurations when using KmsEcdhStaticConfigurations.
 pub enum KmsEcdhStaticConfigurations {
     #[allow(missing_docs)]
-KmsPublicKeyDiscovery(crate::deps::aws_cryptography_materialProviders::types::KmsPublicKeyDiscoveryInput),
-#[allow(missing_docs)]
-KmsPrivateKeyToStaticPublicKey(crate::deps::aws_cryptography_materialProviders::types::KmsPrivateKeyToStaticPublicKeyInput),
+    KmsPublicKeyDiscovery(
+        crate::deps::aws_cryptography_materialProviders::types::KmsPublicKeyDiscoveryInput,
+    ),
+    #[allow(missing_docs)]
+    KmsPrivateKeyToStaticPublicKey(
+        crate::deps::aws_cryptography_materialProviders::types::KmsPrivateKeyToStaticPublicKeyInput,
+    ),
     /// The `Unknown` variant represents cases where new union variant was received. Consider upgrading the SDK to the latest available version.
     /// An unknown enum variant
     ///
@@ -21,31 +25,36 @@ KmsPrivateKeyToStaticPublicKey(crate::deps::aws_cryptography_materialProviders::
 }
 impl KmsEcdhStaticConfigurations {
     /// Tries to convert the enum instance into [`KmsPublicKeyDiscovery`](crate::deps::aws_cryptography_materialProviders::types::KmsEcdhStaticConfigurations::KmsPublicKeyDiscovery), extracting the inner [`crate::deps::aws_cryptography_materialProviders::types::KmsPublicKeyDiscoveryInput`](crate::deps::aws_cryptography_materialProviders::types::KmsPublicKeyDiscoveryInput).
-/// Returns `Err(&Self)` if it can't be converted.
-pub fn as_kms_public_key_discovery(&self) -> ::std::result::Result<&crate::deps::aws_cryptography_materialProviders::types::KmsPublicKeyDiscoveryInput, &Self> {
-    if let crate::deps::aws_cryptography_materialProviders::types::KmsEcdhStaticConfigurations::KmsPublicKeyDiscovery(val) = &self {
+    /// Returns `Err(&Self)` if it can't be converted.
+    pub fn as_kms_public_key_discovery(
+        &self,
+    ) -> ::std::result::Result<
+        &crate::deps::aws_cryptography_materialProviders::types::KmsPublicKeyDiscoveryInput,
+        &Self,
+    > {
+        if let crate::deps::aws_cryptography_materialProviders::types::KmsEcdhStaticConfigurations::KmsPublicKeyDiscovery(val) = &self {
         ::std::result::Result::Ok(val)
     } else {
         ::std::result::Result::Err(self)
     }
-}
-/// Tries to convert the enum instance into [`KmsPrivateKeyToStaticPublicKey`](crate::deps::aws_cryptography_materialProviders::types::KmsEcdhStaticConfigurations::KmsPrivateKeyToStaticPublicKey), extracting the inner [`crate::deps::aws_cryptography_materialProviders::types::KmsPrivateKeyToStaticPublicKeyInput`](crate::deps::aws_cryptography_materialProviders::types::KmsPrivateKeyToStaticPublicKeyInput).
-/// Returns `Err(&Self)` if it can't be converted.
-pub fn as_kms_private_key_to_static_public_key(&self) -> ::std::result::Result<&crate::deps::aws_cryptography_materialProviders::types::KmsPrivateKeyToStaticPublicKeyInput, &Self> {
-    if let crate::deps::aws_cryptography_materialProviders::types::KmsEcdhStaticConfigurations::KmsPrivateKeyToStaticPublicKey(val) = &self {
+    }
+    /// Tries to convert the enum instance into [`KmsPrivateKeyToStaticPublicKey`](crate::deps::aws_cryptography_materialProviders::types::KmsEcdhStaticConfigurations::KmsPrivateKeyToStaticPublicKey), extracting the inner [`crate::deps::aws_cryptography_materialProviders::types::KmsPrivateKeyToStaticPublicKeyInput`](crate::deps::aws_cryptography_materialProviders::types::KmsPrivateKeyToStaticPublicKeyInput).
+    /// Returns `Err(&Self)` if it can't be converted.
+    pub fn as_kms_private_key_to_static_public_key(&self) -> ::std::result::Result<&crate::deps::aws_cryptography_materialProviders::types::KmsPrivateKeyToStaticPublicKeyInput, &Self>{
+        if let crate::deps::aws_cryptography_materialProviders::types::KmsEcdhStaticConfigurations::KmsPrivateKeyToStaticPublicKey(val) = &self {
         ::std::result::Result::Ok(val)
     } else {
         ::std::result::Result::Err(self)
     }
-}
+    }
     /// Returns true if this is a [`KmsPublicKeyDiscovery`](crate::deps::aws_cryptography_materialProviders::types::KmsEcdhStaticConfigurations::KmsPublicKeyDiscovery).
-pub fn is_kms_public_key_discovery(&self) -> ::std::primitive::bool {
-    self.as_kms_public_key_discovery().is_ok()
-}
-/// Returns true if this is a [`KmsPrivateKeyToStaticPublicKey`](crate::deps::aws_cryptography_materialProviders::types::KmsEcdhStaticConfigurations::KmsPrivateKeyToStaticPublicKey).
-pub fn is_kms_private_key_to_static_public_key(&self) -> ::std::primitive::bool {
-    self.as_kms_private_key_to_static_public_key().is_ok()
-}
+    pub fn is_kms_public_key_discovery(&self) -> ::std::primitive::bool {
+        self.as_kms_public_key_discovery().is_ok()
+    }
+    /// Returns true if this is a [`KmsPrivateKeyToStaticPublicKey`](crate::deps::aws_cryptography_materialProviders::types::KmsEcdhStaticConfigurations::KmsPrivateKeyToStaticPublicKey).
+    pub fn is_kms_private_key_to_static_public_key(&self) -> ::std::primitive::bool {
+        self.as_kms_private_key_to_static_public_key().is_ok()
+    }
     /// Returns true if the enum instance is the `Unknown` variant.
     pub fn is_unknown(&self) -> ::std::primitive::bool {
         matches!(self, Self::Unknown)

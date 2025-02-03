@@ -4,21 +4,25 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::operation::describe_import::DescribeImportInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeImportInput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeImportInput::DescribeImportInput {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeImportInput::DescribeImportInput {
         ImportArn: crate::standard_library_conversions::ostring_to_dafny(&value.import_arn) .Extract(),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeImportInput,
-    >
+    >,
 ) -> aws_sdk_dynamodb::operation::describe_import::DescribeImportInput {
     aws_sdk_dynamodb::operation::describe_import::DescribeImportInput::builder()
-          .set_import_arn(Some( dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(dafny_value.ImportArn()) ))
-          .build()
-          .unwrap()
+        .set_import_arn(Some(
+            dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(
+                dafny_value.ImportArn(),
+            ),
+        ))
+        .build()
+        .unwrap()
 }

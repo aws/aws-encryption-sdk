@@ -12,23 +12,23 @@ encrypted data keys, none of which can be decrypted.
 As a result, the AWS Encryption SDK would attempt to decrypt each
 encrypted data key until it exhausted the encrypted data keys in the message.
 
-For more information on how to use Raw AES keyrings, see
-https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-raw-aes-keyring.html
+For more information on limiting EDKs, see
+https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/configure.html#config-limit-keys
 */
 
 use aws_esdk::client as esdk_client;
-use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use aws_esdk::material_providers::client as mpl_client;
-use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
 use aws_esdk::material_providers::types::keyring::KeyringRef;
+use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
 use aws_esdk::material_providers::types::AesWrappingAlg;
+use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use aws_esdk::types::error::Error::AwsEncryptionSdkException;
+use rand::TryRngCore;
 use std::collections::HashMap;
-use rand::RngCore;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
-    max_encrypted_data_keys: u16
+    max_encrypted_data_keys: u16,
 ) -> Result<(), crate::BoxError> {
     // 1. Instantiate the encryption SDK client.
     // This builds the default client with the RequireEncryptRequireDecrypt commitment policy,
@@ -37,8 +37,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // algorithm suite.
     // Also, set the EncryptionSDK's max_encrypted_data_keys parameter here
     let esdk_config = AwsEncryptionSdkConfig::builder()
-                        .max_encrypted_data_keys(max_encrypted_data_keys)
-                        .build()?;
+        .max_encrypted_data_keys(max_encrypted_data_keys)
+        .build()?;
     let esdk_client = esdk_client::Client::from_conf(esdk_config)?;
 
     // 2. The key namespace and key name are defined by you.
@@ -57,8 +57,14 @@ pub async fn encrypt_and_decrypt_with_keyring(
         ("encryption".to_string(), "context".to_string()),
         ("is not".to_string(), "secret".to_string()),
         ("but adds".to_string(), "useful metadata".to_string()),
-        ("that can help you".to_string(), "be confident that".to_string()),
-        ("the data you are handling".to_string(), "is what you think it is".to_string()),
+        (
+            "that can help you".to_string(),
+            "be confident that".to_string(),
+        ),
+        (
+            "the data you are handling".to_string(),
+            "is what you think it is".to_string(),
+        ),
     ]);
 
     // 4. Generate `max_encrypted_data_keys` AES keyrings to use with your keyring.
@@ -68,7 +74,10 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     let mut raw_aes_keyrings: Vec<KeyringRef> = vec![];
 
-    assert!(max_encrypted_data_keys > 0, "max_encrypted_data_keys MUST be greater than 0");
+    assert!(
+        max_encrypted_data_keys > 0,
+        "max_encrypted_data_keys MUST be greater than 0"
+    );
 
     let mut i = 0;
     while i < max_encrypted_data_keys {
@@ -100,7 +109,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 6. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
 
-    let encryption_response = esdk_client.encrypt()
+    let encryption_response = esdk_client
+        .encrypt()
         .plaintext(plaintext)
         .keyring(multi_keyring.clone())
         .encryption_context(encryption_context.clone())
@@ -108,16 +118,20 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let ciphertext = encryption_response
-                        .ciphertext
-                        .expect("Unable to unwrap ciphertext from encryption response");
+        .ciphertext
+        .expect("Unable to unwrap ciphertext from encryption response");
 
     // 7. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
-        "Ciphertext and plaintext data are the same. Invalid encryption");
+    assert_ne!(
+        ciphertext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Ciphertext and plaintext data are the same. Invalid encryption"
+    );
 
     // 8. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decryption_response = esdk_client.decrypt()
+    let decryption_response = esdk_client
+        .decrypt()
         .ciphertext(ciphertext.clone())
         .keyring(multi_keyring.clone())
         // Provide the encryption context that was supplied to the encrypt method
@@ -126,35 +140,42 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let decrypted_plaintext = decryption_response
-                                .plaintext
-                                .expect("Unable to unwrap plaintext from decryption response");
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // 9. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        decrypted_plaintext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     // 10. Demonstrate that an EncryptionSDK with a lower MaxEncryptedDataKeys
     // will fail to decrypt the encrypted message.
     let esdk_config = AwsEncryptionSdkConfig::builder()
-                        .max_encrypted_data_keys(max_encrypted_data_keys-1)
-                        .build()?;
+        .max_encrypted_data_keys(max_encrypted_data_keys - 1)
+        .build()?;
     let esdk_client_incorrect_max_encrypted_keys = esdk_client::Client::from_conf(esdk_config)?;
 
-    let decryption_response_incorrect_max_encrypted_keys =
-        esdk_client_incorrect_max_encrypted_keys.decrypt()
-            .ciphertext(ciphertext)
-            .keyring(multi_keyring)
-            // Provide the encryption context that was supplied to the encrypt method
-            .encryption_context(encryption_context)
-            .send()
-            .await;
+    let decryption_response_incorrect_max_encrypted_keys = esdk_client_incorrect_max_encrypted_keys
+        .decrypt()
+        .ciphertext(ciphertext)
+        .keyring(multi_keyring)
+        // Provide the encryption context that was supplied to the encrypt method
+        .encryption_context(encryption_context)
+        .send()
+        .await;
 
     match decryption_response_incorrect_max_encrypted_keys {
-        Ok(_) => panic!("Decrypt using discovery keyring with wrong AWS Account ID MUST \
-                            raise AwsCryptographicMaterialProvidersError"),
-        Err(AwsEncryptionSdkException { message: m }) =>
-            assert_eq!(m, "Ciphertext encrypted data keys exceed maxEncryptedDataKeys"),
+        Ok(_) => panic!(
+            "Decrypt using discovery keyring with wrong AWS Account ID MUST \
+                            raise AwsCryptographicMaterialProvidersError"
+        ),
+        Err(AwsEncryptionSdkException { message: m }) => assert_eq!(
+            m,
+            "Ciphertext encrypted data keys exceed maxEncryptedDataKeys"
+        ),
         _ => panic!("Unexpected error type"),
     }
 
@@ -169,7 +190,7 @@ fn generate_aes_key_bytes() -> Vec<u8> {
     //     retrieve this key from a secure key management system (e.g. HSM).
     // This key is created here for example purposes only and should not be used for any other purpose.
     let mut random_bytes = [0u8; 32];
-    rand::rngs::OsRng.fill_bytes(&mut random_bytes);
+    rand::rngs::OsRng.try_fill_bytes(&mut random_bytes).unwrap();
 
     random_bytes.to_vec()
 }
@@ -182,10 +203,7 @@ pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxErr
     // max_encrypted_data_keys MUST be greater than 0
     let max_encrypted_data_keys: u16 = 3;
 
-    encrypt_and_decrypt_with_keyring(
-        utils::TEST_EXAMPLE_DATA,
-        max_encrypted_data_keys
-    ).await?;
+    encrypt_and_decrypt_with_keyring(utils::TEST_EXAMPLE_DATA, max_encrypted_data_keys).await?;
 
     Ok(())
 }

@@ -4,31 +4,31 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::operation::describe_table::DescribeTableOutput
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeTableOutput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeTableOutput::DescribeTableOutput {
-        Table: ::std::rc::Rc::new(match &value.table {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeTableOutput::DescribeTableOutput {
+        Table: ::dafny_runtime::Rc::new(match &value.table {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::table_description::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeTableOutput,
-    >
+    >,
 ) -> aws_sdk_dynamodb::operation::describe_table::DescribeTableOutput {
     aws_sdk_dynamodb::operation::describe_table::DescribeTableOutput::builder()
-          .set_table(match (*dafny_value.Table()).as_ref() {
-    crate::r#_Wrappers_Compile::Option::Some { value } =>
-        Some(crate::deps::com_amazonaws_dynamodb::conversions::table_description::from_dafny(value.clone())),
-    _ => None,
-}
-)
-          .build()
-
-
+        .set_table(match (*dafny_value.Table()).as_ref() {
+            crate::r#_Wrappers_Compile::Option::Some { value } => Some(
+                crate::deps::com_amazonaws_dynamodb::conversions::table_description::from_dafny(
+                    value.clone(),
+                ),
+            ),
+            _ => None,
+        })
+        .build()
 }

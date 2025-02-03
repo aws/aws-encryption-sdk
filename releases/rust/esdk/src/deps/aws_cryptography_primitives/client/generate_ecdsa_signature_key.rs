@@ -11,7 +11,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     ///   - [`signing_key(Option<::aws_smithy_types::Blob>)`](crate::operation::generate_ecdsa_signature_key::GenerateECDSASignatureKeyOutput::signing_key): (undocumented)
     ///   - [`verification_key(Option<::aws_smithy_types::Blob>)`](crate::operation::generate_ecdsa_signature_key::GenerateECDSASignatureKeyOutput::verification_key): (undocumented)
     /// - On failure, responds with [`SdkError<GenerateEcdsaSignatureKeyError>`](crate::operation::generate_ecdsa_signature_key::GenerateEcdsaSignatureKeyError)
-    pub fn generate_ecdsa_signature_key(&self) -> crate::deps::aws_cryptography_primitives::operation::generate_ecdsa_signature_key::builders::GenerateEcdsaSignatureKeyFluentBuilder {
+    pub fn generate_ecdsa_signature_key(&self) -> crate::deps::aws_cryptography_primitives::operation::generate_ecdsa_signature_key::builders::GenerateEcdsaSignatureKeyFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::generate_ecdsa_signature_key::builders::GenerateEcdsaSignatureKeyFluentBuilder::new(self.clone())
     }
 }

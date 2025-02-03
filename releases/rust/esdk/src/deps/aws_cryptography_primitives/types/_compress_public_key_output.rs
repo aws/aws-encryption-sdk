@@ -6,17 +6,19 @@
 #[allow(missing_docs)]
 pub struct CompressPublicKeyOutput {
     #[allow(missing_docs)]
-pub compressed_public_key: ::std::option::Option<::aws_smithy_types::Blob>,
+    pub compressed_public_key: ::std::option::Option<::aws_smithy_types::Blob>,
 }
 impl CompressPublicKeyOutput {
     #[allow(missing_docs)]
-pub fn compressed_public_key(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
-    &self.compressed_public_key
-}
+    pub fn compressed_public_key(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
+        &self.compressed_public_key
+    }
 }
 impl CompressPublicKeyOutput {
     /// Creates a new builder-style object to manufacture [`CompressPublicKeyOutput`](crate::deps::aws_cryptography_primitives::types::CompressPublicKeyOutput).
-    pub fn builder() -> crate::deps::aws_cryptography_primitives::types::builders::CompressPublicKeyOutputBuilder {
+    pub fn builder(
+    ) -> crate::deps::aws_cryptography_primitives::types::builders::CompressPublicKeyOutputBuilder
+    {
         crate::deps::aws_cryptography_primitives::types::builders::CompressPublicKeyOutputBuilder::default()
     }
 }
@@ -31,19 +33,25 @@ pub struct CompressPublicKeyOutputBuilder {
 }
 impl CompressPublicKeyOutputBuilder {
     #[allow(missing_docs)]
-pub fn compressed_public_key(mut self, input: impl ::std::convert::Into<::aws_smithy_types::Blob>) -> Self {
-    self.compressed_public_key = ::std::option::Option::Some(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_compressed_public_key(mut self, input: ::std::option::Option<::aws_smithy_types::Blob>) -> Self {
-    self.compressed_public_key = input;
-    self
-}
-#[allow(missing_docs)]
-pub fn get_compressed_public_key(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
-    &self.compressed_public_key
-}
+    pub fn compressed_public_key(
+        mut self,
+        input: impl ::std::convert::Into<::aws_smithy_types::Blob>,
+    ) -> Self {
+        self.compressed_public_key = ::std::option::Option::Some(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_compressed_public_key(
+        mut self,
+        input: ::std::option::Option<::aws_smithy_types::Blob>,
+    ) -> Self {
+        self.compressed_public_key = input;
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_compressed_public_key(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
+        &self.compressed_public_key
+    }
     /// Consumes the builder and constructs a [`CompressPublicKeyOutput`](crate::deps::aws_cryptography_primitives::types::CompressPublicKeyOutput).
     pub fn build(
         self,
@@ -51,8 +59,10 @@ pub fn get_compressed_public_key(&self) -> &::std::option::Option<::aws_smithy_t
         crate::deps::aws_cryptography_primitives::types::CompressPublicKeyOutput,
         ::aws_smithy_types::error::operation::BuildError,
     > {
-        ::std::result::Result::Ok(crate::deps::aws_cryptography_primitives::types::CompressPublicKeyOutput {
-            compressed_public_key: self.compressed_public_key,
-        })
+        ::std::result::Result::Ok(
+            crate::deps::aws_cryptography_primitives::types::CompressPublicKeyOutput {
+                compressed_public_key: self.compressed_public_key,
+            },
+        )
     }
 }

@@ -5,8 +5,8 @@
 
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_materialProviders::types::EsdkAlgorithmSuiteId,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::ESDKAlgorithmSuiteId>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::ESDKAlgorithmSuiteId>{
+    ::dafny_runtime::Rc::new(match value {
         crate::deps::aws_cryptography_materialProviders::types::EsdkAlgorithmSuiteId::AlgAes128GcmIv12Tag16NoKdf => crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::ESDKAlgorithmSuiteId::ALG_AES_128_GCM_IV12_TAG16_NO_KDF {},
 crate::deps::aws_cryptography_materialProviders::types::EsdkAlgorithmSuiteId::AlgAes192GcmIv12Tag16NoKdf => crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::ESDKAlgorithmSuiteId::ALG_AES_192_GCM_IV12_TAG16_NO_KDF {},
 crate::deps::aws_cryptography_materialProviders::types::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16NoKdf => crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::ESDKAlgorithmSuiteId::ALG_AES_256_GCM_IV12_TAG16_NO_KDF {},
@@ -21,7 +21,7 @@ crate::deps::aws_cryptography_materialProviders::types::EsdkAlgorithmSuiteId::Al
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::ESDKAlgorithmSuiteId,
 ) -> crate::deps::aws_cryptography_materialProviders::types::EsdkAlgorithmSuiteId {

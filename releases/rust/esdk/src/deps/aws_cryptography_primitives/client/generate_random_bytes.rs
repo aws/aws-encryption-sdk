@@ -9,7 +9,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     /// - On success, responds with [`GenerateRandomBytesOutput`](crate::operation::generate_random_bytes::GenerateRandomBytesOutput) with field(s):
     ///   - [`data(Option<::aws_smithy_types::Blob>)`](crate::operation::generate_random_bytes::GenerateRandomBytesOutput::data): (undocumented)
     /// - On failure, responds with [`SdkError<GenerateRandomBytesError>`](crate::operation::generate_random_bytes::GenerateRandomBytesError)
-    pub fn generate_random_bytes(&self) -> crate::deps::aws_cryptography_primitives::operation::generate_random_bytes::builders::GenerateRandomBytesFluentBuilder {
+    pub fn generate_random_bytes(&self) -> crate::deps::aws_cryptography_primitives::operation::generate_random_bytes::builders::GenerateRandomBytesFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::generate_random_bytes::builders::GenerateRandomBytesFluentBuilder::new(self.clone())
     }
 }

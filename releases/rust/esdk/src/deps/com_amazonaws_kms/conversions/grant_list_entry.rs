@@ -4,8 +4,10 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_kms::types::GrantListEntry,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GrantListEntry>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GrantListEntry,
+> {
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GrantListEntry::GrantListEntry {
         KeyId: crate::standard_library_conversions::ostring_to_dafny(&value.key_id),
  GrantId: crate::standard_library_conversions::ostring_to_dafny(&value.grant_id),
@@ -14,7 +16,7 @@ pub fn to_dafny(
  GranteePrincipal: crate::standard_library_conversions::ostring_to_dafny(&value.grantee_principal),
  RetiringPrincipal: crate::standard_library_conversions::ostring_to_dafny(&value.retiring_principal),
  IssuingAccount: crate::standard_library_conversions::ostring_to_dafny(&value.issuing_account),
- Operations: ::std::rc::Rc::new(match &value.operations {
+ Operations: ::dafny_runtime::Rc::new(match &value.operations {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| crate::deps::com_amazonaws_kms::conversions::grant_operation::to_dafny(e.clone()),
@@ -23,16 +25,17 @@ pub fn to_dafny(
     None => crate::r#_Wrappers_Compile::Option::None {}
 })
 ,
- Constraints: ::std::rc::Rc::new(match &value.constraints {
+ Constraints: ::dafny_runtime::Rc::new(match &value.constraints {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::grant_constraints::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GrantListEntry,
     >,
 ) -> aws_sdk_kms::types::GrantListEntry {
@@ -48,7 +51,7 @@ pub fn from_dafny(
     crate::r#_Wrappers_Compile::Option::Some { value } =>
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(value,
-                |e: &::std::rc::Rc<crate::software::amazon::cryptography::services::kms::internaldafny::types::GrantOperation>| crate::deps::com_amazonaws_kms::conversions::grant_operation::from_dafny(e),
+                |e: &::dafny_runtime::Rc<crate::software::amazon::cryptography::services::kms::internaldafny::types::GrantOperation>| crate::deps::com_amazonaws_kms::conversions::grant_operation::from_dafny(e),
             )
         ),
     _ => None
@@ -61,5 +64,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
 }

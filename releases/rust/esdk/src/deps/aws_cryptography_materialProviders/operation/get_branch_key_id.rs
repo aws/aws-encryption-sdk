@@ -17,10 +17,14 @@ impl GetBranchKeyId {
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_materialProviders::operation::get_branch_key_id::GetBranchKeyIdOutput,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
-    > {
+    >{
         crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HGetBranchKeyIdInput_for_BranchKeyIdSupplier_GetBranchKeyId(&input)
             .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
-        branch_key_id_supplier.inner.borrow_mut().get_branch_key_id(input)
+        branch_key_id_supplier
+            .inner
+            .lock()
+            .unwrap()
+            .get_branch_key_id(input)
     }
 }
 

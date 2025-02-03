@@ -20,5 +20,7 @@ pub fn from_dafny(
       dyn crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::IAwsCryptographicMaterialProvidersClient
     >,
 ) -> crate::deps::aws_cryptography_materialProviders::client::Client {
-  crate::deps::aws_cryptography_materialProviders::client::Client { dafny_client: dafny_value }
+    crate::deps::aws_cryptography_materialProviders::client::Client {
+        dafny_client: dafny_value,
+    }
 }
