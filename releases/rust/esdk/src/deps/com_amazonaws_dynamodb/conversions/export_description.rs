@@ -4,11 +4,11 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::ExportDescription,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExportDescription>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExportDescription>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExportDescription::ExportDescription {
         ExportArn: crate::standard_library_conversions::ostring_to_dafny(&value.export_arn),
- ExportStatus: ::std::rc::Rc::new(match &value.export_status {
+ ExportStatus: ::dafny_runtime::Rc::new(match &value.export_status {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::export_status::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
@@ -23,7 +23,7 @@ pub fn to_dafny(
  S3Bucket: crate::standard_library_conversions::ostring_to_dafny(&value.s3_bucket),
  S3BucketOwner: crate::standard_library_conversions::ostring_to_dafny(&value.s3_bucket_owner),
  S3Prefix: crate::standard_library_conversions::ostring_to_dafny(&value.s3_prefix),
- S3SseAlgorithm: ::std::rc::Rc::new(match &value.s3_sse_algorithm {
+ S3SseAlgorithm: ::dafny_runtime::Rc::new(match &value.s3_sse_algorithm {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::s3_sse_algorithm::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
@@ -31,28 +31,29 @@ pub fn to_dafny(
  S3SseKmsKeyId: crate::standard_library_conversions::ostring_to_dafny(&value.s3_sse_kms_key_id),
  FailureCode: crate::standard_library_conversions::ostring_to_dafny(&value.failure_code),
  FailureMessage: crate::standard_library_conversions::ostring_to_dafny(&value.failure_message),
- ExportFormat: ::std::rc::Rc::new(match &value.export_format {
+ ExportFormat: ::dafny_runtime::Rc::new(match &value.export_format {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::export_format::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
  BilledSizeBytes: crate::standard_library_conversions::olong_to_dafny(&value.billed_size_bytes),
  ItemCount: crate::standard_library_conversions::olong_to_dafny(&value.item_count),
- ExportType: ::std::rc::Rc::new(match &value.export_type {
+ ExportType: ::dafny_runtime::Rc::new(match &value.export_type {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::export_type::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- IncrementalExportSpecification: ::std::rc::Rc::new(match &value.incremental_export_specification {
+ IncrementalExportSpecification: ::dafny_runtime::Rc::new(match &value.incremental_export_specification {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::incremental_export_specification::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExportDescription,
     >,
 ) -> aws_sdk_dynamodb::types::ExportDescription {
@@ -108,5 +109,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
 }

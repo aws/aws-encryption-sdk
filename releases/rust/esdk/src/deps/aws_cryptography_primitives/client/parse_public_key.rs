@@ -9,7 +9,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     /// - On success, responds with [`ParsePublicKeyOutput`](crate::operation::parse_public_key::ParsePublicKeyOutput) with field(s):
     ///   - [`public_key(Option<crate::deps::aws_cryptography_primitives::types::EccPublicKey>)`](crate::operation::parse_public_key::ParsePublicKeyOutput::public_key): (undocumented)
     /// - On failure, responds with [`SdkError<ParsePublicKeyError>`](crate::operation::parse_public_key::ParsePublicKeyError)
-    pub fn parse_public_key(&self) -> crate::deps::aws_cryptography_primitives::operation::parse_public_key::builders::ParsePublicKeyFluentBuilder {
+    pub fn parse_public_key(&self) -> crate::deps::aws_cryptography_primitives::operation::parse_public_key::builders::ParsePublicKeyFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::parse_public_key::builders::ParsePublicKeyFluentBuilder::new(self.clone())
     }
 }

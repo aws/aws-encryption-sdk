@@ -13,7 +13,7 @@ impl GetBranchKeyIdInputBuilder {
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_materialProviders::operation::get_branch_key_id::GetBranchKeyIdOutput,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
-    > {
+    >{
         let mut fluent_builder = branch_key_id_supplier.get_branch_key_id();
         fluent_builder.inner = self;
         fluent_builder.send().await
@@ -29,14 +29,16 @@ pub struct GetBranchKeyIdFluentBuilder {
 }
 impl GetBranchKeyIdFluentBuilder {
     /// Creates a new `GetBranchKeyId`.
-    pub(crate) fn new(branch_key_id_supplier: crate::deps::aws_cryptography_materialProviders::types::branch_key_id_supplier::BranchKeyIdSupplierRef) -> Self {
+    pub(crate) fn new(
+        branch_key_id_supplier: crate::deps::aws_cryptography_materialProviders::types::branch_key_id_supplier::BranchKeyIdSupplierRef,
+    ) -> Self {
         Self {
             branch_key_id_supplier,
             inner: ::std::default::Default::default(),
         }
     }
     /// Access the GetBranchKeyId as a reference.
-    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::get_branch_key_id::builders::GetBranchKeyIdInputBuilder {
+    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::get_branch_key_id::builders::GetBranchKeyIdInputBuilder{
         &self.inner
     }
     /// Sends the request and returns the response.
@@ -45,7 +47,7 @@ impl GetBranchKeyIdFluentBuilder {
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_materialProviders::operation::get_branch_key_id::GetBranchKeyIdOutput,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
-    > {
+    >{
         let input = self
             .inner
             .build()
@@ -56,24 +58,38 @@ impl GetBranchKeyIdFluentBuilder {
             .map_err(|mut e| {
 	     let msg = format!("{:?}", e);
              crate::deps::aws_cryptography_materialProviders::types::error::Error::OpaqueWithText {
-                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut dyn ::std::any::Any),
+                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut ::dafny_runtime::DynAny),
 		objMessage: msg
              }})?;
         crate::deps::aws_cryptography_materialProviders::operation::get_branch_key_id::GetBranchKeyId::send(&self.branch_key_id_supplier, input).await
     }
 
     /// The Encryption Context used with this encryption or decryption.
-pub fn encryption_context(mut self, input: impl ::std::convert::Into<::std::collections::HashMap<::std::string::String, ::std::string::String>>) -> Self {
-    self.inner = self.inner.encryption_context(input.into());
-    self
-}
-/// The Encryption Context used with this encryption or decryption.
-pub fn set_encryption_context(mut self, input: ::std::option::Option<::std::collections::HashMap<::std::string::String, ::std::string::String>>) -> Self {
-    self.inner = self.inner.set_encryption_context(input);
-    self
-}
-/// The Encryption Context used with this encryption or decryption.
-pub fn get_encryption_context(&self) -> &::std::option::Option<::std::collections::HashMap<::std::string::String, ::std::string::String>> {
-    self.inner.get_encryption_context()
-}
+    pub fn encryption_context(
+        mut self,
+        input: impl ::std::convert::Into<
+            ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+        >,
+    ) -> Self {
+        self.inner = self.inner.encryption_context(input.into());
+        self
+    }
+    /// The Encryption Context used with this encryption or decryption.
+    pub fn set_encryption_context(
+        mut self,
+        input: ::std::option::Option<
+            ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+        >,
+    ) -> Self {
+        self.inner = self.inner.set_encryption_context(input);
+        self
+    }
+    /// The Encryption Context used with this encryption or decryption.
+    pub fn get_encryption_context(
+        &self,
+    ) -> &::std::option::Option<
+        ::std::collections::HashMap<::std::string::String, ::std::string::String>,
+    > {
+        self.inner.get_encryption_context()
+    }
 }

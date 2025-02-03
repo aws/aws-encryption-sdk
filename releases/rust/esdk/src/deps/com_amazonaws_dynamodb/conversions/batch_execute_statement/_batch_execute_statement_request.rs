@@ -4,31 +4,31 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::operation::batch_execute_statement::BatchExecuteStatementInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::BatchExecuteStatementInput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::BatchExecuteStatementInput::BatchExecuteStatementInput {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::BatchExecuteStatementInput::BatchExecuteStatementInput {
         Statements: ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(&value.statements.clone().unwrap(),
     |e| crate::deps::com_amazonaws_dynamodb::conversions::batch_statement_request::to_dafny(e)
 ,
 )
 ,
- ReturnConsumedCapacity: ::std::rc::Rc::new(match &value.return_consumed_capacity {
+ ReturnConsumedCapacity: ::dafny_runtime::Rc::new(match &value.return_consumed_capacity {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::return_consumed_capacity::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::BatchExecuteStatementInput,
-    >
+    >,
 ) -> aws_sdk_dynamodb::operation::batch_execute_statement::BatchExecuteStatementInput {
     aws_sdk_dynamodb::operation::batch_execute_statement::BatchExecuteStatementInput::builder()
           .set_statements(Some( ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(dafny_value.Statements(),
-    |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::BatchStatementRequest>| crate::deps::com_amazonaws_dynamodb::conversions::batch_statement_request::from_dafny(e.clone())
+    |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::BatchStatementRequest>| crate::deps::com_amazonaws_dynamodb::conversions::batch_statement_request::from_dafny(e.clone())
 ,
 )
  ))

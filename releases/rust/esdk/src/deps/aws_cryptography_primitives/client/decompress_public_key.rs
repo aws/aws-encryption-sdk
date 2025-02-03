@@ -10,7 +10,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     /// - On success, responds with [`DecompressPublicKeyOutput`](crate::operation::decompress_public_key::DecompressPublicKeyOutput) with field(s):
     ///   - [`public_key(Option<crate::deps::aws_cryptography_primitives::types::EccPublicKey>)`](crate::operation::decompress_public_key::DecompressPublicKeyOutput::public_key): (undocumented)
     /// - On failure, responds with [`SdkError<DecompressPublicKeyError>`](crate::operation::decompress_public_key::DecompressPublicKeyError)
-    pub fn decompress_public_key(&self) -> crate::deps::aws_cryptography_primitives::operation::decompress_public_key::builders::DecompressPublicKeyFluentBuilder {
+    pub fn decompress_public_key(&self) -> crate::deps::aws_cryptography_primitives::operation::decompress_public_key::builders::DecompressPublicKeyFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::decompress_public_key::builders::DecompressPublicKeyFluentBuilder::new(self.clone())
     }
 }

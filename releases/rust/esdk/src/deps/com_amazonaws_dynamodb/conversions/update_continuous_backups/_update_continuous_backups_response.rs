@@ -4,22 +4,22 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::operation::update_continuous_backups::UpdateContinuousBackupsOutput
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateContinuousBackupsOutput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateContinuousBackupsOutput::UpdateContinuousBackupsOutput {
-        ContinuousBackupsDescription: ::std::rc::Rc::new(match &value.continuous_backups_description {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateContinuousBackupsOutput::UpdateContinuousBackupsOutput {
+        ContinuousBackupsDescription: ::dafny_runtime::Rc::new(match &value.continuous_backups_description {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::continuous_backups_description::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateContinuousBackupsOutput,
-    >
+    >,
 ) -> aws_sdk_dynamodb::operation::update_continuous_backups::UpdateContinuousBackupsOutput {
     aws_sdk_dynamodb::operation::update_continuous_backups::UpdateContinuousBackupsOutput::builder()
           .set_continuous_backups_description(match (*dafny_value.ContinuousBackupsDescription()).as_ref() {
@@ -29,6 +29,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
-
 }

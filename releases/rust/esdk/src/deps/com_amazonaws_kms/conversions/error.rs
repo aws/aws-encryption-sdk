@@ -3,109 +3,115 @@
 // Do not modify this file. This file is machine generated, and any changes to it will be overwritten.
 pub mod already_exists_exception;
 
- pub mod cloud_hsm_cluster_in_use_exception;
+pub mod cloud_hsm_cluster_in_use_exception;
 
- pub mod cloud_hsm_cluster_invalid_configuration_exception;
+pub mod cloud_hsm_cluster_invalid_configuration_exception;
 
- pub mod cloud_hsm_cluster_not_active_exception;
+pub mod cloud_hsm_cluster_not_active_exception;
 
- pub mod cloud_hsm_cluster_not_found_exception;
+pub mod cloud_hsm_cluster_not_found_exception;
 
- pub mod cloud_hsm_cluster_not_related_exception;
+pub mod cloud_hsm_cluster_not_related_exception;
 
- pub mod conflict_exception;
+pub mod conflict_exception;
 
- pub mod custom_key_store_has_cmks_exception;
+pub mod custom_key_store_has_cmks_exception;
 
- pub mod custom_key_store_invalid_state_exception;
+pub mod custom_key_store_invalid_state_exception;
 
- pub mod custom_key_store_name_in_use_exception;
+pub mod custom_key_store_name_in_use_exception;
 
- pub mod custom_key_store_not_found_exception;
+pub mod custom_key_store_not_found_exception;
 
- pub mod dependency_timeout_exception;
+pub mod dependency_timeout_exception;
 
- pub mod disabled_exception;
+pub mod disabled_exception;
 
- pub mod dry_run_operation_exception;
+pub mod dry_run_operation_exception;
 
- pub mod expired_import_token_exception;
+pub mod expired_import_token_exception;
 
- pub mod incorrect_key_exception;
+pub mod incorrect_key_exception;
 
- pub mod incorrect_key_material_exception;
+pub mod incorrect_key_material_exception;
 
- pub mod incorrect_trust_anchor_exception;
+pub mod incorrect_trust_anchor_exception;
 
- pub mod invalid_alias_name_exception;
+pub mod invalid_alias_name_exception;
 
- pub mod invalid_arn_exception;
+pub mod invalid_arn_exception;
 
- pub mod invalid_ciphertext_exception;
+pub mod invalid_ciphertext_exception;
 
- pub mod invalid_grant_id_exception;
+pub mod invalid_grant_id_exception;
 
- pub mod invalid_grant_token_exception;
+pub mod invalid_grant_token_exception;
 
- pub mod invalid_import_token_exception;
+pub mod invalid_import_token_exception;
 
- pub mod invalid_key_usage_exception;
+pub mod invalid_key_usage_exception;
 
- pub mod invalid_marker_exception;
+pub mod invalid_marker_exception;
 
- pub mod key_unavailable_exception;
+pub mod key_unavailable_exception;
 
- pub mod kms_internal_exception;
+pub mod kms_internal_exception;
 
- pub mod kms_invalid_mac_exception;
+pub mod kms_invalid_mac_exception;
 
- pub mod kms_invalid_signature_exception;
+pub mod kms_invalid_signature_exception;
 
- pub mod kms_invalid_state_exception;
+pub mod kms_invalid_state_exception;
 
- pub mod limit_exceeded_exception;
+pub mod limit_exceeded_exception;
 
- pub mod malformed_policy_document_exception;
+pub mod malformed_policy_document_exception;
 
- pub mod not_found_exception;
+pub mod not_found_exception;
 
- pub mod tag_exception;
+pub mod tag_exception;
 
- pub mod unsupported_operation_exception;
+pub mod unsupported_operation_exception;
 
- pub mod xks_key_already_in_use_exception;
+pub mod xks_key_already_in_use_exception;
 
- pub mod xks_key_invalid_configuration_exception;
+pub mod xks_key_invalid_configuration_exception;
 
- pub mod xks_key_not_found_exception;
+pub mod xks_key_not_found_exception;
 
- pub mod xks_proxy_incorrect_authentication_credential_exception;
+pub mod xks_proxy_incorrect_authentication_credential_exception;
 
- pub mod xks_proxy_invalid_configuration_exception;
+pub mod xks_proxy_invalid_configuration_exception;
 
- pub mod xks_proxy_invalid_response_exception;
+pub mod xks_proxy_invalid_response_exception;
 
- pub mod xks_proxy_uri_endpoint_in_use_exception;
+pub mod xks_proxy_uri_endpoint_in_use_exception;
 
- pub mod xks_proxy_uri_in_use_exception;
+pub mod xks_proxy_uri_in_use_exception;
 
- pub mod xks_proxy_uri_unreachable_exception;
+pub mod xks_proxy_uri_unreachable_exception;
 
- pub mod xks_proxy_vpc_endpoint_service_in_use_exception;
+pub mod xks_proxy_vpc_endpoint_service_in_use_exception;
 
- pub mod xks_proxy_vpc_endpoint_service_invalid_configuration_exception;
+pub mod xks_proxy_vpc_endpoint_service_invalid_configuration_exception;
 
- pub mod xks_proxy_vpc_endpoint_service_not_found_exception;
- /// Wraps up an arbitrary Rust Error value as a Dafny Error
-pub fn to_opaque_error(value: String) ->
-    ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Error>
-{
+pub mod xks_proxy_vpc_endpoint_service_not_found_exception;
+/// Wraps up an arbitrary Rust Error value as a Dafny Error
+pub fn to_opaque_error(
+    value: String,
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Error,
+> {
     let error_msg = value.clone();
-    let error_msg = ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&error_msg);
-    let error_obj: ::dafny_runtime::Object<dyn::std::any::Any> = ::dafny_runtime::Object(Some(
-        ::std::rc::Rc::new(::std::cell::UnsafeCell::new(value)),
-    ));
-    ::std::rc::Rc::new(
+    let error_msg =
+        ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(
+            &error_msg,
+        );
+    let error_obj: ::dafny_runtime::Object<::dafny_runtime::DynAny> =
+        ::dafny_runtime::Object(Some(::dafny_runtime::Rc::new(
+            ::dafny_runtime::UnsafeCell::new(value),
+        )));
+    ::dafny_runtime::Rc::new(
         crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Error::OpaqueWithText {
             obj: error_obj,
 	    objMessage: error_msg
@@ -114,21 +120,25 @@ pub fn to_opaque_error(value: String) ->
 }
 
 /// Wraps up an arbitrary Rust Error value as a Dafny Result<T, Error>.Failure
-pub fn to_opaque_error_result<T: ::dafny_runtime::DafnyType>(value: String) ->
-    ::std::rc::Rc<
-        crate::_Wrappers_Compile::Result<
-            T,
-            ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Error>
-        >
-    >
-{
-    ::std::rc::Rc::new(crate::_Wrappers_Compile::Result::Failure {
+pub fn to_opaque_error_result<T: ::dafny_runtime::DafnyType>(
+    value: String,
+) -> ::dafny_runtime::Rc<
+    crate::_Wrappers_Compile::Result<
+        T,
+        ::dafny_runtime::Rc<
+            crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Error,
+        >,
+    >,
+> {
+    ::dafny_runtime::Rc::new(crate::_Wrappers_Compile::Result::Failure {
         error: to_opaque_error(value),
     })
 }
 pub fn to_dafny(
     value: crate::deps::com_amazonaws_kms::types::error::Error,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Error> {
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Error,
+> {
     match value {
         crate::deps::com_amazonaws_kms::types::error::Error::AlreadyExistsException { error } =>
     crate::deps::com_amazonaws_kms::conversions::error::already_exists_exception::to_dafny(error),
@@ -227,11 +237,11 @@ crate::deps::com_amazonaws_kms::types::error::Error::XksProxyVpcEndpointServiceI
 crate::deps::com_amazonaws_kms::types::error::Error::XksProxyVpcEndpointServiceNotFoundException { error } =>
     crate::deps::com_amazonaws_kms::conversions::error::xks_proxy_vpc_endpoint_service_not_found_exception::to_dafny(error),
         crate::deps::com_amazonaws_kms::types::error::Error::Opaque { obj } =>
-            ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Error::Opaque {
+            ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Error::Opaque {
                 obj: ::dafny_runtime::Object(obj.0)
             }),
         crate::deps::com_amazonaws_kms::types::error::Error::OpaqueWithText { obj, objMessage } =>
-            ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Error::OpaqueWithText {
+            ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Error::OpaqueWithText {
                 obj: ::dafny_runtime::Object(obj.0),
                 objMessage: ::dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&objMessage),
             }),
@@ -240,7 +250,7 @@ crate::deps::com_amazonaws_kms::types::error::Error::XksProxyVpcEndpointServiceN
 
 #[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Error,
     >,
 ) -> crate::deps::com_amazonaws_kms::types::error::Error {

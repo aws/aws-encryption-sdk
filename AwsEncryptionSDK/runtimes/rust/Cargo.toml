@@ -1,6 +1,6 @@
 [package]
 name = "aws-esdk"
-version = "0.2.0"
+version = "1.0.0"
 edition = "2021"
 rust-version = "1.81.0"
 keywords = ["cryptography", "security", "dynamodb", "encryption", "client-side"]

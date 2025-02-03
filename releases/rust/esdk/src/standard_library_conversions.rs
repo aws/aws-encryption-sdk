@@ -3,7 +3,7 @@
 
 pub fn ostring_to_dafny(
     input: &Option<String>,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::_Wrappers_Compile::Option<::dafny_runtime::Sequence<::dafny_runtime::DafnyCharUTF16>>,
 > {
     let dafny_value = match input {
@@ -12,11 +12,11 @@ pub fn ostring_to_dafny(
         },
     None => crate::_Wrappers_Compile::Option::None {},
 };
-    ::std::rc::Rc::new(dafny_value)
+    ::dafny_runtime::Rc::new(dafny_value)
 }
 
 pub fn ostring_from_dafny(
-    input: ::std::rc::Rc<
+    input: ::dafny_runtime::Rc<
         crate::_Wrappers_Compile::Option<
             ::dafny_runtime::Sequence<::dafny_runtime::DafnyCharUTF16>,
         >,
@@ -38,16 +38,16 @@ pub fn ostring_from_dafny(
 
 pub fn obool_to_dafny(
     input: &Option<bool>,
-) -> ::std::rc::Rc<crate::_Wrappers_Compile::Option<bool>> {
+) -> ::dafny_runtime::Rc<crate::_Wrappers_Compile::Option<bool>> {
     let dafny_value = match input {
         Some(b) => crate::_Wrappers_Compile::Option::Some { value: *b },
         None => crate::_Wrappers_Compile::Option::None {},
     };
-    ::std::rc::Rc::new(dafny_value)
+    ::dafny_runtime::Rc::new(dafny_value)
 }
 
 pub fn obool_from_dafny(
-    input: ::std::rc::Rc<crate::_Wrappers_Compile::Option<bool>>,
+    input: ::dafny_runtime::Rc<crate::_Wrappers_Compile::Option<bool>>,
 ) -> Option<bool> {
     if matches!(
         input.as_ref(),
@@ -59,15 +59,19 @@ pub fn obool_from_dafny(
     }
 }
 
-pub fn oint_to_dafny(input: Option<i32>) -> ::std::rc::Rc<crate::_Wrappers_Compile::Option<i32>> {
+pub fn oint_to_dafny(
+    input: Option<i32>,
+) -> ::dafny_runtime::Rc<crate::_Wrappers_Compile::Option<i32>> {
     let dafny_value = match input {
         Some(b) => crate::_Wrappers_Compile::Option::Some { value: b },
         None => crate::_Wrappers_Compile::Option::None {},
     };
-    ::std::rc::Rc::new(dafny_value)
+    ::dafny_runtime::Rc::new(dafny_value)
 }
 
-pub fn oint_from_dafny(input: ::std::rc::Rc<crate::_Wrappers_Compile::Option<i32>>) -> Option<i32> {
+pub fn oint_from_dafny(
+    input: ::dafny_runtime::Rc<crate::_Wrappers_Compile::Option<i32>>,
+) -> Option<i32> {
     if matches!(
         input.as_ref(),
         crate::_Wrappers_Compile::Option::Some { .. }
@@ -78,16 +82,18 @@ pub fn oint_from_dafny(input: ::std::rc::Rc<crate::_Wrappers_Compile::Option<i32
     }
 }
 
-pub fn olong_to_dafny(input: &Option<i64>) -> ::std::rc::Rc<crate::_Wrappers_Compile::Option<i64>> {
+pub fn olong_to_dafny(
+    input: &Option<i64>,
+) -> ::dafny_runtime::Rc<crate::_Wrappers_Compile::Option<i64>> {
     let dafny_value = match input {
         Some(b) => crate::_Wrappers_Compile::Option::Some { value: *b },
         None => crate::_Wrappers_Compile::Option::None {},
     };
-    ::std::rc::Rc::new(dafny_value)
+    ::dafny_runtime::Rc::new(dafny_value)
 }
 
 pub fn olong_from_dafny(
-    input: ::std::rc::Rc<crate::_Wrappers_Compile::Option<i64>>,
+    input: ::dafny_runtime::Rc<crate::_Wrappers_Compile::Option<i64>>,
 ) -> Option<i64> {
     if matches!(
         input.as_ref(),
@@ -100,29 +106,32 @@ pub fn olong_from_dafny(
 }
 
 pub fn blob_to_dafny(input: &::aws_smithy_types::Blob) -> ::dafny_runtime::Sequence<u8> {
-    ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(&input.clone().into_inner(), |x| *x)
+    ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(
+        &input.clone().into_inner(),
+        |x| *x,
+    )
 }
 
 pub fn oblob_to_dafny(
     input: &Option<::aws_smithy_types::Blob>,
-) -> ::std::rc::Rc<crate::_Wrappers_Compile::Option<::dafny_runtime::Sequence<u8>>> {
+) -> ::dafny_runtime::Rc<crate::_Wrappers_Compile::Option<::dafny_runtime::Sequence<u8>>> {
     let dafny_value = match input {
         Some(b) => crate::_Wrappers_Compile::Option::Some {
             value: blob_to_dafny(&b),
         },
         None => crate::_Wrappers_Compile::Option::None {},
     };
-    ::std::rc::Rc::new(dafny_value)
+    ::dafny_runtime::Rc::new(dafny_value)
 }
 
 pub fn blob_from_dafny(input: ::dafny_runtime::Sequence<u8>) -> ::aws_smithy_types::Blob {
     ::aws_smithy_types::Blob::new(
-        ::std::rc::Rc::try_unwrap(input.to_array()).unwrap_or_else(|rc| (*rc).clone()),
+        ::dafny_runtime::Rc::try_unwrap(input.to_array()).unwrap_or_else(|rc| (*rc).clone()),
     )
 }
 
 pub fn oblob_from_dafny(
-    input: ::std::rc::Rc<crate::_Wrappers_Compile::Option<::dafny_runtime::Sequence<u8>>>,
+    input: ::dafny_runtime::Rc<crate::_Wrappers_Compile::Option<::dafny_runtime::Sequence<u8>>>,
 ) -> Option<::aws_smithy_types::Blob> {
     if matches!(
         input.as_ref(),
@@ -143,14 +152,14 @@ pub fn double_to_dafny(input: f64) -> ::dafny_runtime::Sequence<u8> {
 
 pub fn odouble_to_dafny(
     input: &Option<f64>,
-) -> ::std::rc::Rc<crate::_Wrappers_Compile::Option<::dafny_runtime::Sequence<u8>>> {
+) -> ::dafny_runtime::Rc<crate::_Wrappers_Compile::Option<::dafny_runtime::Sequence<u8>>> {
     let dafny_value = match input {
         Some(f) => crate::_Wrappers_Compile::Option::Some {
             value: double_to_dafny(*f),
         },
         None => crate::_Wrappers_Compile::Option::None {},
     };
-    ::std::rc::Rc::new(dafny_value)
+    ::dafny_runtime::Rc::new(dafny_value)
 }
 
 pub fn double_from_dafny(input: &::dafny_runtime::Sequence<u8>) -> f64 {
@@ -159,7 +168,7 @@ pub fn double_from_dafny(input: &::dafny_runtime::Sequence<u8>) -> f64 {
 }
 
 pub fn odouble_from_dafny(
-    input: ::std::rc::Rc<crate::_Wrappers_Compile::Option<::dafny_runtime::Sequence<u8>>>,
+    input: ::dafny_runtime::Rc<crate::_Wrappers_Compile::Option<::dafny_runtime::Sequence<u8>>>,
 ) -> Option<f64> {
     if matches!(
         input.as_ref(),
@@ -181,7 +190,7 @@ pub fn timestamp_to_dafny(
 
 pub fn otimestamp_to_dafny(
     input: &Option<::aws_smithy_types::DateTime>,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::_Wrappers_Compile::Option<::dafny_runtime::Sequence<::dafny_runtime::DafnyCharUTF16>>,
 > {
     let dafny_value = match input {
@@ -190,7 +199,7 @@ pub fn otimestamp_to_dafny(
         },
         None => crate::_Wrappers_Compile::Option::None {},
     };
-    ::std::rc::Rc::new(dafny_value)
+    ::dafny_runtime::Rc::new(dafny_value)
 }
 
 pub fn timestamp_from_dafny(
@@ -204,7 +213,7 @@ pub fn timestamp_from_dafny(
 }
 
 pub fn otimestamp_from_dafny(
-    input: ::std::rc::Rc<
+    input: ::dafny_runtime::Rc<
         crate::_Wrappers_Compile::Option<
             ::dafny_runtime::Sequence<::dafny_runtime::DafnyCharUTF16>,
         >,
@@ -221,7 +230,7 @@ pub fn otimestamp_from_dafny(
 }
 
 pub fn option_from_dafny<T: ::dafny_runtime::DafnyType, TR>(
-    input: ::std::rc::Rc<crate::_Wrappers_Compile::Option<T>>,
+    input: ::dafny_runtime::Rc<crate::_Wrappers_Compile::Option<T>>,
     converter: fn(&T) -> TR,
 ) -> Option<TR> {
     match &*input {
@@ -233,17 +242,17 @@ pub fn option_from_dafny<T: ::dafny_runtime::DafnyType, TR>(
 pub fn option_to_dafny<T: ::dafny_runtime::DafnyType, TR>(
     input: &Option<TR>,
     converter: fn(&TR) -> T,
-) -> ::std::rc::Rc<crate::_Wrappers_Compile::Option<T>> {
+) -> ::dafny_runtime::Rc<crate::_Wrappers_Compile::Option<T>> {
     match input {
-        Some(value) => ::std::rc::Rc::new(crate::_Wrappers_Compile::Option::Some {
+        Some(value) => ::dafny_runtime::Rc::new(crate::_Wrappers_Compile::Option::Some {
             value: converter(&value),
         }),
-        None => ::std::rc::Rc::new(crate::_Wrappers_Compile::Option::None {}),
+        None => ::dafny_runtime::Rc::new(crate::_Wrappers_Compile::Option::None {}),
     }
 }
 
 pub fn result_from_dafny<T: ::dafny_runtime::DafnyType, TR, E: ::dafny_runtime::DafnyType, ER>(
-    input: ::std::rc::Rc<crate::_Wrappers_Compile::Result<T, E>>,
+    input: ::dafny_runtime::Rc<crate::_Wrappers_Compile::Result<T, E>>,
     converter_t: fn(&T) -> TR,
     converter_e: fn(&E) -> ER,
 ) -> Result<TR, ER> {
@@ -257,12 +266,12 @@ pub fn result_to_dafny<T: ::dafny_runtime::DafnyType, TR, E: ::dafny_runtime::Da
     input: &Result<TR, ER>,
     converter_t: fn(&TR) -> T,
     converter_e: fn(&ER) -> E,
-) -> ::std::rc::Rc<crate::_Wrappers_Compile::Result<T, E>> {
+) -> ::dafny_runtime::Rc<crate::_Wrappers_Compile::Result<T, E>> {
     match input {
-        Ok(value) => ::std::rc::Rc::new(crate::_Wrappers_Compile::Result::Success {
+        Ok(value) => ::dafny_runtime::Rc::new(crate::_Wrappers_Compile::Result::Success {
             value: converter_t(&value),
         }),
-        Err(error) => ::std::rc::Rc::new(crate::_Wrappers_Compile::Result::Failure {
+        Err(error) => ::dafny_runtime::Rc::new(crate::_Wrappers_Compile::Result::Failure {
             error: converter_e(&error),
         }),
     }

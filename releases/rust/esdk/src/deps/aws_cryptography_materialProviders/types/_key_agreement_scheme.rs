@@ -6,7 +6,9 @@
 /// Supported ECDH Key Agreement Schemes.
 pub enum KeyAgreementScheme {
     #[allow(missing_docs)]
-StaticConfiguration(crate::deps::aws_cryptography_materialProviders::types::StaticConfigurations),
+    StaticConfiguration(
+        crate::deps::aws_cryptography_materialProviders::types::StaticConfigurations,
+    ),
     /// The `Unknown` variant represents cases where new union variant was received. Consider upgrading the SDK to the latest available version.
     /// An unknown enum variant
     ///
@@ -19,18 +21,23 @@ StaticConfiguration(crate::deps::aws_cryptography_materialProviders::types::Stat
 }
 impl KeyAgreementScheme {
     /// Tries to convert the enum instance into [`StaticConfiguration`](crate::deps::aws_cryptography_materialProviders::types::KeyAgreementScheme::StaticConfiguration), extracting the inner [`crate::deps::aws_cryptography_materialProviders::types::StaticConfigurations`](crate::deps::aws_cryptography_materialProviders::types::StaticConfigurations).
-/// Returns `Err(&Self)` if it can't be converted.
-pub fn as_static_configuration(&self) -> ::std::result::Result<&crate::deps::aws_cryptography_materialProviders::types::StaticConfigurations, &Self> {
-    if let crate::deps::aws_cryptography_materialProviders::types::KeyAgreementScheme::StaticConfiguration(val) = &self {
+    /// Returns `Err(&Self)` if it can't be converted.
+    pub fn as_static_configuration(
+        &self,
+    ) -> ::std::result::Result<
+        &crate::deps::aws_cryptography_materialProviders::types::StaticConfigurations,
+        &Self,
+    > {
+        if let crate::deps::aws_cryptography_materialProviders::types::KeyAgreementScheme::StaticConfiguration(val) = &self {
         ::std::result::Result::Ok(val)
     } else {
         ::std::result::Result::Err(self)
     }
-}
+    }
     /// Returns true if this is a [`StaticConfiguration`](crate::deps::aws_cryptography_materialProviders::types::KeyAgreementScheme::StaticConfiguration).
-pub fn is_static_configuration(&self) -> ::std::primitive::bool {
-    self.as_static_configuration().is_ok()
-}
+    pub fn is_static_configuration(&self) -> ::std::primitive::bool {
+        self.as_static_configuration().is_ok()
+    }
     /// Returns true if the enum instance is the `Unknown` variant.
     pub fn is_unknown(&self) -> ::std::primitive::bool {
         matches!(self, Self::Unknown)

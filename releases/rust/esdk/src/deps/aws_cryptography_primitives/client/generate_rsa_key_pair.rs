@@ -10,7 +10,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     ///   - [`private_key(Option<crate::deps::aws_cryptography_primitives::types::RsaPrivateKey>)`](crate::operation::generate_rsa_key_pair::GenerateRSAKeyPairOutput::private_key): (undocumented)
     ///   - [`public_key(Option<crate::deps::aws_cryptography_primitives::types::RsaPublicKey>)`](crate::operation::generate_rsa_key_pair::GenerateRSAKeyPairOutput::public_key): (undocumented)
     /// - On failure, responds with [`SdkError<GenerateRsaKeyPairError>`](crate::operation::generate_rsa_key_pair::GenerateRsaKeyPairError)
-    pub fn generate_rsa_key_pair(&self) -> crate::deps::aws_cryptography_primitives::operation::generate_rsa_key_pair::builders::GenerateRsaKeyPairFluentBuilder {
+    pub fn generate_rsa_key_pair(&self) -> crate::deps::aws_cryptography_primitives::operation::generate_rsa_key_pair::builders::GenerateRsaKeyPairFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::generate_rsa_key_pair::builders::GenerateRsaKeyPairFluentBuilder::new(self.clone())
     }
 }

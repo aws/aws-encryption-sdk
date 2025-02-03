@@ -4,10 +4,10 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_kms::types::XksProxyConfigurationType,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::XksProxyConfigurationType>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::XksProxyConfigurationType>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::kms::internaldafny::types::XksProxyConfigurationType::XksProxyConfigurationType {
-        Connectivity: ::std::rc::Rc::new(match &value.connectivity {
+        Connectivity: ::dafny_runtime::Rc::new(match &value.connectivity {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::xks_proxy_connectivity_type::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
@@ -18,9 +18,10 @@ pub fn to_dafny(
  VpcEndpointServiceName: crate::standard_library_conversions::ostring_to_dafny(&value.vpc_endpoint_service_name),
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::kms::internaldafny::types::XksProxyConfigurationType,
     >,
 ) -> aws_sdk_kms::types::XksProxyConfigurationType {
@@ -37,5 +38,4 @@ pub fn from_dafny(
  .set_uri_path(crate::standard_library_conversions::ostring_from_dafny(dafny_value.UriPath().clone()))
  .set_vpc_endpoint_service_name(crate::standard_library_conversions::ostring_from_dafny(dafny_value.VpcEndpointServiceName().clone()))
           .build()
-
 }

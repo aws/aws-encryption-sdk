@@ -38,19 +38,19 @@ For more information on this configuration see:
 https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-raw-ecdh-keyring.html#raw-ecdh-EphemeralPrivateKeyToStaticPublicKey
 */
 
+use crate::example_utils::utils::exists;
+use crate::example_utils::utils::write_raw_ecdh_ecc_keys;
+use crate::example_utils::utils::EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT;
+use aws_esdk::aws_cryptography_primitives::types::EcdhCurveSpec;
 use aws_esdk::client as esdk_client;
-use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use aws_esdk::material_providers::client as mpl_client;
 use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
-use aws_esdk::material_providers::types::RawEcdhStaticConfigurations;
 use aws_esdk::material_providers::types::EphemeralPrivateKeyToStaticPublicKeyInput;
-use aws_esdk::aws_cryptography_primitives::types::EcdhCurveSpec;
+use aws_esdk::material_providers::types::RawEcdhStaticConfigurations;
+use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
+use pem::parse;
 use std::collections::HashMap;
 use std::path::Path;
-use pem::parse;
-use crate::example_utils::utils::exists;
-use crate::example_utils::utils::EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT;
-use crate::example_utils::utils::write_raw_ecdh_ecc_keys;
 
 pub async fn encrypt_with_keyring(
     example_data: &str,
@@ -72,9 +72,15 @@ pub async fn encrypt_with_keyring(
         ("encryption".to_string(), "context".to_string()),
         ("is not".to_string(), "secret".to_string()),
         ("but adds".to_string(), "useful metadata".to_string()),
-        ("that can help you".to_string(), "be confident that".to_string()),
-        ("the data you are handling".to_string(), "is what you think it is".to_string()),
-        ]);
+        (
+            "that can help you".to_string(),
+            "be confident that".to_string(),
+        ),
+        (
+            "the data you are handling".to_string(),
+            "is what you think it is".to_string(),
+        ),
+    ]);
 
     // 3. You may provide your own ECC keys in the files located at
     // - EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT
@@ -90,9 +96,10 @@ pub async fn encrypt_with_keyring(
     }
 
     // 4. Load keys from UTF-8 encoded PEM files.
-    
+
     // Load public key from UTF-8 encoded PEM files into a DER encoded public key.
-    let public_key_file_content = std::fs::read_to_string(Path::new(EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT))?;
+    let public_key_file_content =
+        std::fs::read_to_string(Path::new(EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT))?;
     let parsed_public_key_file_content = parse(public_key_file_content)?;
     let public_key_recipient_utf8_bytes = parsed_public_key_file_content.contents();
 
@@ -104,7 +111,9 @@ pub async fn encrypt_with_keyring(
             .build()?;
 
     let ephemeral_raw_ecdh_static_configuration =
-        RawEcdhStaticConfigurations::EphemeralPrivateKeyToStaticPublicKey(ephemeral_raw_ecdh_static_configuration_input);
+        RawEcdhStaticConfigurations::EphemeralPrivateKeyToStaticPublicKey(
+            ephemeral_raw_ecdh_static_configuration_input,
+        );
 
     // 6. Create the Ephemeral Raw ECDH keyring.
     let mpl_config = MaterialProvidersConfig::builder().build()?;
@@ -128,7 +137,8 @@ pub async fn encrypt_with_keyring(
     // the private key that corresponds to the public key that is stored on the message.
     let plaintext = example_data.as_bytes();
 
-    let encryption_response = esdk_client.encrypt()
+    let encryption_response = esdk_client
+        .encrypt()
         .plaintext(plaintext)
         .keyring(ephemeral_raw_ecdh_keyring)
         .encryption_context(encryption_context)
@@ -136,13 +146,16 @@ pub async fn encrypt_with_keyring(
         .await?;
 
     let ciphertext = encryption_response
-                        .ciphertext
-                        .expect("Unable to unwrap ciphertext from encryption response");
+        .ciphertext
+        .expect("Unable to unwrap ciphertext from encryption response");
 
     // 8. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
-        "Ciphertext and plaintext data are the same. Invalid encryption");
+    assert_ne!(
+        ciphertext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Ciphertext and plaintext data are the same. Invalid encryption"
+    );
 
     println!("Ephemeral Raw ECDH Keyring Example Completed Successfully");
 
@@ -165,10 +178,7 @@ pub async fn test_encrypt_with_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt using the Ephemeral Raw ECDH Keyring example
     use crate::example_utils::utils;
 
-    encrypt_with_keyring(
-        utils::TEST_EXAMPLE_DATA,
-        EcdhCurveSpec::EccNistP256
-    ).await?;
+    encrypt_with_keyring(utils::TEST_EXAMPLE_DATA, EcdhCurveSpec::EccNistP256).await?;
 
     Ok(())
 }

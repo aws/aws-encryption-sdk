@@ -29,14 +29,16 @@ pub struct CreateRawEcdhKeyringFluentBuilder {
 }
 impl CreateRawEcdhKeyringFluentBuilder {
     /// Creates a new `CreateRawEcdhKeyring`.
-    pub(crate) fn new(client: crate::deps::aws_cryptography_materialProviders::client::Client) -> Self {
+    pub(crate) fn new(
+        client: crate::deps::aws_cryptography_materialProviders::client::Client,
+    ) -> Self {
         Self {
             client,
             inner: ::std::default::Default::default(),
         }
     }
     /// Access the CreateRawEcdhKeyring as a reference.
-    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::create_raw_ecdh_keyring::builders::CreateRawEcdhKeyringInputBuilder {
+    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::create_raw_ecdh_keyring::builders::CreateRawEcdhKeyringInputBuilder{
         &self.inner
     }
     /// Sends the request and returns the response.
@@ -56,38 +58,63 @@ impl CreateRawEcdhKeyringFluentBuilder {
             .map_err(|mut e| {
 	     let msg = format!("{:?}", e);
              crate::deps::aws_cryptography_materialProviders::types::error::Error::OpaqueWithText {
-                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut dyn ::std::any::Any),
+                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut ::dafny_runtime::DynAny),
 		objMessage: msg
              }})?;
         crate::deps::aws_cryptography_materialProviders::operation::create_raw_ecdh_keyring::CreateRawEcdhKeyring::send(&self.client, input).await
     }
 
     /// The Key Agreement Scheme configuration that is responsible for how the shared secret is calculated.
-pub fn key_agreement_scheme(mut self, input: impl ::std::convert::Into<crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations>) -> Self {
-    self.inner = self.inner.key_agreement_scheme(input.into());
-    self
-}
-/// The Key Agreement Scheme configuration that is responsible for how the shared secret is calculated.
-pub fn set_key_agreement_scheme(mut self, input: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations>) -> Self {
-    self.inner = self.inner.set_key_agreement_scheme(input);
-    self
-}
-/// The Key Agreement Scheme configuration that is responsible for how the shared secret is calculated.
-pub fn get_key_agreement_scheme(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations> {
-    self.inner.get_key_agreement_scheme()
-}
-/// The the curve on which the points for the sender's private and recipient's public key lie.
-pub fn curve_spec(mut self, input: impl ::std::convert::Into<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>) -> Self {
-    self.inner = self.inner.curve_spec(input.into());
-    self
-}
-/// The the curve on which the points for the sender's private and recipient's public key lie.
-pub fn set_curve_spec(mut self, input: ::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>) -> Self {
-    self.inner = self.inner.set_curve_spec(input);
-    self
-}
-/// The the curve on which the points for the sender's private and recipient's public key lie.
-pub fn get_curve_spec(&self) -> &::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec> {
-    self.inner.get_curve_spec()
-}
+    pub fn key_agreement_scheme(
+        mut self,
+        input: impl ::std::convert::Into<
+            crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations,
+        >,
+    ) -> Self {
+        self.inner = self.inner.key_agreement_scheme(input.into());
+        self
+    }
+    /// The Key Agreement Scheme configuration that is responsible for how the shared secret is calculated.
+    pub fn set_key_agreement_scheme(
+        mut self,
+        input: ::std::option::Option<
+            crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations,
+        >,
+    ) -> Self {
+        self.inner = self.inner.set_key_agreement_scheme(input);
+        self
+    }
+    /// The Key Agreement Scheme configuration that is responsible for how the shared secret is calculated.
+    pub fn get_key_agreement_scheme(
+        &self,
+    ) -> &::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations,
+    > {
+        self.inner.get_key_agreement_scheme()
+    }
+    /// The the curve on which the points for the sender's private and recipient's public key lie.
+    pub fn curve_spec(
+        mut self,
+        input: impl ::std::convert::Into<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>,
+    ) -> Self {
+        self.inner = self.inner.curve_spec(input.into());
+        self
+    }
+    /// The the curve on which the points for the sender's private and recipient's public key lie.
+    pub fn set_curve_spec(
+        mut self,
+        input: ::std::option::Option<
+            crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec,
+        >,
+    ) -> Self {
+        self.inner = self.inner.set_curve_spec(input);
+        self
+    }
+    /// The the curve on which the points for the sender's private and recipient's public key lie.
+    pub fn get_curve_spec(
+        &self,
+    ) -> &::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>
+    {
+        self.inner.get_curve_spec()
+    }
 }

@@ -31,12 +31,12 @@ For more information on KMS Key identifiers, see
 https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
+use aws_config::Region;
 use aws_esdk::client as esdk_client;
-use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use aws_esdk::material_providers::client as mpl_client;
 use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
+use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use std::collections::HashMap;
-use aws_config::Region;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
@@ -61,8 +61,14 @@ pub async fn encrypt_and_decrypt_with_keyring(
         ("encryption".to_string(), "context".to_string()),
         ("is not".to_string(), "secret".to_string()),
         ("but adds".to_string(), "useful metadata".to_string()),
-        ("that can help you".to_string(), "be confident that".to_string()),
-        ("the data you are handling".to_string(), "is what you think it is".to_string()),
+        (
+            "that can help you".to_string(),
+            "be confident that".to_string(),
+        ),
+        (
+            "the data you are handling".to_string(),
+            "is what you think it is".to_string(),
+        ),
     ]);
 
     // 3. Create an AwsKmsMrkMultiKeyring that protects your data under two different KMS Keys.
@@ -81,7 +87,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 4. Encrypt the data with the encryption_context using the kms_mrk_multi_keyring.
     let plaintext = example_data.as_bytes();
 
-    let encryption_response = esdk_client.encrypt()
+    let encryption_response = esdk_client
+        .encrypt()
         .plaintext(plaintext)
         .keyring(kms_mrk_multi_keyring.clone())
         .encryption_context(encryption_context.clone())
@@ -89,18 +96,22 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let ciphertext = encryption_response
-                        .ciphertext
-                        .expect("Unable to unwrap ciphertext from encryption response");
+        .ciphertext
+        .expect("Unable to unwrap ciphertext from encryption response");
 
     // 5. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
-        "Ciphertext and plaintext data are the same. Invalid encryption");
+    assert_ne!(
+        ciphertext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Ciphertext and plaintext data are the same. Invalid encryption"
+    );
 
     // 6. Decrypt your encrypted data using the same AwsKmsMrkMultiKeyring you used on encrypt.
     // It will decrypt the data using the generator key (in this case, the MRK), since that is
     // the first available KMS key on the keyring that is capable of decrypting the data.
-    let decryption_response = esdk_client.decrypt()
+    let decryption_response = esdk_client
+        .decrypt()
         .ciphertext(ciphertext.clone())
         .keyring(kms_mrk_multi_keyring)
         // Provide the encryption context that was supplied to the encrypt method
@@ -109,13 +120,16 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let decrypted_plaintext = decryption_response
-                                .plaintext
-                                .expect("Unable to unwrap plaintext from decryption response");
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // 7. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        decrypted_plaintext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     // Demonstrate that a single AwsKmsMrkKeyring configured with a replica of the MRK from the
     // multi-keyring used to encrypt the data is also capable of decrypting the data.
@@ -138,7 +152,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     // 9. Decrypt your encrypted data using the second region AwsKmsMrkKeyring
-    let second_region_decryption_response = esdk_client.decrypt()
+    let second_region_decryption_response = esdk_client
+        .decrypt()
         .ciphertext(ciphertext)
         .keyring(second_region_mrk_keyring)
         // Provide the encryption context that was supplied to the encrypt method
@@ -152,8 +167,11 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 10. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(second_region_decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        second_region_decrypted_plaintext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     // Not shown in this example: A KMS Keyring created with `kms_key_id` could also
     // decrypt this message.
@@ -176,7 +194,8 @@ pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxErr
         utils::TEST_DEFAULT_KMS_KEY_ID,
         utils::TEST_MRK_KEY_ID_EU_WEST_1,
         mrk_replica_decrypt_region,
-    ).await?;
+    )
+    .await?;
 
     Ok(())
 }

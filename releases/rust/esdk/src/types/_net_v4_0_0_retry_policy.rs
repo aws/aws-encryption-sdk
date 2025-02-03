@@ -5,14 +5,14 @@
 /// During Decryption, Allow or Forbid ESDK-NET v4.0.0 Behavior if the ESDK Message Header fails the Header Authentication check.
 pub enum NetV400RetryPolicy {
     ForbidRetry,
-AllowRetry,
+    AllowRetry,
 }
 
 impl ::std::fmt::Display for NetV400RetryPolicy {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         match self {
             NetV400RetryPolicy::ForbidRetry => write!(f, "FORBID_RETRY"),
-NetV400RetryPolicy::AllowRetry => write!(f, "ALLOW_RETRY"),
+            NetV400RetryPolicy::AllowRetry => write!(f, "ALLOW_RETRY"),
         }
     }
 }

@@ -6,17 +6,23 @@
 /// Outputs for creating a Keyring.
 pub struct CreateKeyringOutput {
     /// The created Keyring.
-pub keyring: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef>,
+    pub keyring: ::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
+    >,
 }
 impl CreateKeyringOutput {
     /// The created Keyring.
-pub fn keyring(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef> {
-    &self.keyring
-}
+    pub fn keyring(
+        &self,
+    ) -> &::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
+    > {
+        &self.keyring
+    }
 }
 impl CreateKeyringOutput {
     /// Creates a new builder-style object to manufacture [`CreateKeyringOutput`](crate::operation::create_aws_kms_discovery_multi_keyring::builders::CreateKeyringOutput).
-    pub fn builder() -> crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_discovery_multi_keyring::builders::CreateKeyringOutputBuilder {
+    pub fn builder() -> crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_discovery_multi_keyring::builders::CreateKeyringOutputBuilder{
         crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_discovery_multi_keyring::builders::CreateKeyringOutputBuilder::default()
     }
 }
@@ -27,30 +33,46 @@ impl CreateKeyringOutput {
     ::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug,
 )]
 pub struct CreateKeyringOutputBuilder {
-    pub(crate) keyring: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef>,
+    pub(crate) keyring: ::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
+    >,
 }
 impl CreateKeyringOutputBuilder {
     /// The created Keyring.
-pub fn keyring(mut self, input: impl ::std::convert::Into<crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef>) -> Self {
-    self.keyring = ::std::option::Option::Some(input.into());
-    self
-}
-/// The created Keyring.
-pub fn set_keyring(mut self, input: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef>) -> Self {
-    self.keyring = input;
-    self
-}
-/// The created Keyring.
-pub fn get_keyring(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef> {
-    &self.keyring
-}
+    pub fn keyring(
+        mut self,
+        input: impl ::std::convert::Into<
+            crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
+        >,
+    ) -> Self {
+        self.keyring = ::std::option::Option::Some(input.into());
+        self
+    }
+    /// The created Keyring.
+    pub fn set_keyring(
+        mut self,
+        input: ::std::option::Option<
+            crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
+        >,
+    ) -> Self {
+        self.keyring = input;
+        self
+    }
+    /// The created Keyring.
+    pub fn get_keyring(
+        &self,
+    ) -> &::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
+    > {
+        &self.keyring
+    }
     /// Consumes the builder and constructs a [`CreateKeyringOutput`](crate::operation::operation::CreateKeyringOutput).
     pub fn build(
         self,
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_discovery_multi_keyring::CreateKeyringOutput,
         ::aws_smithy_types::error::operation::BuildError,
-    > {
+    >{
         ::std::result::Result::Ok(crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_discovery_multi_keyring::CreateKeyringOutput {
             keyring: self.keyring,
         })

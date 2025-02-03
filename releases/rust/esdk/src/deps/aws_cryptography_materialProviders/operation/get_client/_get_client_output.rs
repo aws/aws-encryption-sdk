@@ -6,17 +6,17 @@
 #[allow(missing_docs)]
 pub struct GetClientOutput {
     #[allow(missing_docs)]
-pub client: ::std::option::Option<crate::deps::com_amazonaws_kms::client::Client>,
+    pub client: ::std::option::Option<crate::deps::com_amazonaws_kms::client::Client>,
 }
 impl GetClientOutput {
     #[allow(missing_docs)]
-pub fn client(&self) -> &::std::option::Option<crate::deps::com_amazonaws_kms::client::Client> {
-    &self.client
-}
+    pub fn client(&self) -> &::std::option::Option<crate::deps::com_amazonaws_kms::client::Client> {
+        &self.client
+    }
 }
 impl GetClientOutput {
     /// Creates a new builder-style object to manufacture [`GetClientOutput`](crate::operation::get_client::builders::GetClientOutput).
-    pub fn builder() -> crate::deps::aws_cryptography_materialProviders::operation::get_client::builders::GetClientOutputBuilder {
+    pub fn builder() -> crate::deps::aws_cryptography_materialProviders::operation::get_client::builders::GetClientOutputBuilder{
         crate::deps::aws_cryptography_materialProviders::operation::get_client::builders::GetClientOutputBuilder::default()
     }
 }
@@ -31,19 +31,27 @@ pub struct GetClientOutputBuilder {
 }
 impl GetClientOutputBuilder {
     #[allow(missing_docs)]
-pub fn client(mut self, input: impl ::std::convert::Into<crate::deps::com_amazonaws_kms::client::Client>) -> Self {
-    self.client = ::std::option::Option::Some(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_client(mut self, input: ::std::option::Option<crate::deps::com_amazonaws_kms::client::Client>) -> Self {
-    self.client = input;
-    self
-}
-#[allow(missing_docs)]
-pub fn get_client(&self) -> &::std::option::Option<crate::deps::com_amazonaws_kms::client::Client> {
-    &self.client
-}
+    pub fn client(
+        mut self,
+        input: impl ::std::convert::Into<crate::deps::com_amazonaws_kms::client::Client>,
+    ) -> Self {
+        self.client = ::std::option::Option::Some(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_client(
+        mut self,
+        input: ::std::option::Option<crate::deps::com_amazonaws_kms::client::Client>,
+    ) -> Self {
+        self.client = input;
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_client(
+        &self,
+    ) -> &::std::option::Option<crate::deps::com_amazonaws_kms::client::Client> {
+        &self.client
+    }
     /// Consumes the builder and constructs a [`GetClientOutput`](crate::operation::operation::GetClientOutput).
     pub fn build(
         self,

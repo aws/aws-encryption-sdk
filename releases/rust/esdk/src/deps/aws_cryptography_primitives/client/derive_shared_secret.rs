@@ -11,7 +11,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     /// - On success, responds with [`DeriveSharedSecretOutput`](crate::operation::derive_shared_secret::DeriveSharedSecretOutput) with field(s):
     ///   - [`shared_secret(Option<::aws_smithy_types::Blob>)`](crate::operation::derive_shared_secret::DeriveSharedSecretOutput::shared_secret): (undocumented)
     /// - On failure, responds with [`SdkError<DeriveSharedSecretError>`](crate::operation::derive_shared_secret::DeriveSharedSecretError)
-    pub fn derive_shared_secret(&self) -> crate::deps::aws_cryptography_primitives::operation::derive_shared_secret::builders::DeriveSharedSecretFluentBuilder {
+    pub fn derive_shared_secret(&self) -> crate::deps::aws_cryptography_primitives::operation::derive_shared_secret::builders::DeriveSharedSecretFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::derive_shared_secret::builders::DeriveSharedSecretFluentBuilder::new(self.clone())
     }
 }

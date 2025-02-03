@@ -20,7 +20,7 @@ impl ParsePublicKey {
     > {
         crate::deps::aws_cryptography_primitives::validation::validate_aws_Pcryptography_Pprimitives_HParsePublicKeyInput_for_AwsCryptographicPrimitives_ParsePublicKey(&input)
             .map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err)?;
-                let inner_input = crate::deps::aws_cryptography_primitives::conversions::parse_public_key::_parse_public_key_input::to_dafny(input);
+        let inner_input = crate::deps::aws_cryptography_primitives::conversions::parse_public_key::_parse_public_key_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).ParsePublicKey(&inner_input);
         if matches!(
@@ -31,9 +31,11 @@ impl ParsePublicKey {
                 crate::deps::aws_cryptography_primitives::conversions::parse_public_key::_parse_public_key_output::from_dafny(inner_result.value().clone()),
             )
         } else {
-            Err(crate::deps::aws_cryptography_primitives::conversions::error::from_dafny(
-                inner_result.error().clone(),
-            ))
+            Err(
+                crate::deps::aws_cryptography_primitives::conversions::error::from_dafny(
+                    inner_result.error().clone(),
+                ),
+            )
         }
     }
 }

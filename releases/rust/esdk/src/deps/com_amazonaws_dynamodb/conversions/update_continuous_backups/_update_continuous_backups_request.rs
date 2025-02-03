@@ -4,20 +4,20 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::operation::update_continuous_backups::UpdateContinuousBackupsInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateContinuousBackupsInput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateContinuousBackupsInput::UpdateContinuousBackupsInput {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateContinuousBackupsInput::UpdateContinuousBackupsInput {
         TableName: crate::standard_library_conversions::ostring_to_dafny(&value.table_name) .Extract(),
  PointInTimeRecoverySpecification: crate::deps::com_amazonaws_dynamodb::conversions::point_in_time_recovery_specification::to_dafny(&value.point_in_time_recovery_specification.clone().unwrap())
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateContinuousBackupsInput,
-    >
+    >,
 ) -> aws_sdk_dynamodb::operation::update_continuous_backups::UpdateContinuousBackupsInput {
     aws_sdk_dynamodb::operation::update_continuous_backups::UpdateContinuousBackupsInput::builder()
           .set_table_name(Some( dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(dafny_value.TableName()) ))

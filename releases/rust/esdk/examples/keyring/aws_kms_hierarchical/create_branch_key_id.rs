@@ -16,7 +16,7 @@ use aws_esdk::key_store::types::KmsConfiguration;
 pub async fn create_branch_key_id(
     key_store_table_name: &str,
     logical_key_store_name: &str,
-    kms_key_arn: &str
+    kms_key_arn: &str,
 ) -> Result<String, crate::BoxError> {
     // Create a Key Store
     // The KMS Configuration you use in the KeyStore MUST have the right access to the resources in the KeyStore.

@@ -4,11 +4,11 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_kms::operation::list_key_rotations::ListKeyRotationsOutput
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ListKeyRotationsResponse,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ListKeyRotationsResponse::ListKeyRotationsResponse {
-        Rotations: ::std::rc::Rc::new(match &value.rotations {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ListKeyRotationsResponse::ListKeyRotationsResponse {
+        Rotations: ::dafny_runtime::Rc::new(match &value.rotations {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| crate::deps::com_amazonaws_kms::conversions::rotations_list_entry::to_dafny(e)
@@ -22,18 +22,18 @@ pub fn to_dafny(
  Truncated: crate::standard_library_conversions::obool_to_dafny(&Some(value.truncated)),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ListKeyRotationsResponse,
-    >
+    >,
 ) -> aws_sdk_kms::operation::list_key_rotations::ListKeyRotationsOutput {
     aws_sdk_kms::operation::list_key_rotations::ListKeyRotationsOutput::builder()
           .set_rotations(match (*dafny_value.Rotations()).as_ref() {
     crate::r#_Wrappers_Compile::Option::Some { value } =>
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(value,
-                |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::RotationsListEntry>| crate::deps::com_amazonaws_kms::conversions::rotations_list_entry::from_dafny(e.clone())
+                |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::RotationsListEntry>| crate::deps::com_amazonaws_kms::conversions::rotations_list_entry::from_dafny(e.clone())
 ,
             )
         ),
@@ -43,6 +43,4 @@ pub fn from_dafny(
  .set_next_marker(crate::standard_library_conversions::ostring_from_dafny(dafny_value.NextMarker().clone()))
  .set_truncated(crate::standard_library_conversions::obool_from_dafny(dafny_value.Truncated().clone()))
           .build()
-
-
 }

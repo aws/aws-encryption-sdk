@@ -4,16 +4,16 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &crate::deps::aws_cryptography_materialProviders::types::GetCacheEntryInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::GetCacheEntryInput,
-> {
-    ::std::rc::Rc::new(to_dafny_plain(value.clone()))
+>{
+    ::dafny_runtime::Rc::new(to_dafny_plain(value.clone()))
 }
 
 #[allow(dead_code)]
 pub fn to_dafny_plain(
     value: crate::deps::aws_cryptography_materialProviders::types::GetCacheEntryInput,
-) -> crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::GetCacheEntryInput {
+) -> crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::GetCacheEntryInput{
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::GetCacheEntryInput::GetCacheEntryInput {
         identifier: crate::standard_library_conversions::blob_to_dafny(&value.identifier.unwrap()),
  bytesUsed: crate::standard_library_conversions::olong_to_dafny(&value.bytes_used),
@@ -23,20 +23,20 @@ pub fn to_dafny_plain(
 #[allow(dead_code)]
 pub fn option_to_dafny(
   value: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::GetCacheEntryInput>,
-) -> ::std::rc::Rc<crate::_Wrappers_Compile::Option<::std::rc::Rc<
+) -> ::dafny_runtime::Rc<crate::_Wrappers_Compile::Option<::dafny_runtime::Rc<
   crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::GetCacheEntryInput,
 >>>{
-    ::std::rc::Rc::new(match value {
+    ::dafny_runtime::Rc::new(match value {
         ::std::option::Option::None => crate::_Wrappers_Compile::Option::None {},
         ::std::option::Option::Some(x) => crate::_Wrappers_Compile::Option::Some {
-            value: ::std::rc::Rc::new(to_dafny_plain(x)),
+            value: ::dafny_runtime::Rc::new(to_dafny_plain(x)),
         },
     })
 }
 
 #[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::GetCacheEntryInput,
     >,
 ) -> crate::deps::aws_cryptography_materialProviders::types::GetCacheEntryInput {
@@ -59,10 +59,11 @@ pub fn plain_from_dafny(
 
 #[allow(dead_code)]
 pub fn option_from_dafny(
-    dafny_value: ::std::rc::Rc<crate::_Wrappers_Compile::Option<::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<crate::_Wrappers_Compile::Option<::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::GetCacheEntryInput,
     >>>,
-) -> ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::GetCacheEntryInput> {
+) -> ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::GetCacheEntryInput>
+{
     match &*dafny_value {
         crate::_Wrappers_Compile::Option::Some { value } => {
             ::std::option::Option::Some(plain_from_dafny(value))

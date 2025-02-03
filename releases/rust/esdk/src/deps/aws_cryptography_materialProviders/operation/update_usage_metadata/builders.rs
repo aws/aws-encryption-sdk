@@ -28,14 +28,16 @@ pub struct UpdateUsageMetadataFluentBuilder {
 }
 impl UpdateUsageMetadataFluentBuilder {
     /// Creates a new `UpdateUsageMetadata`.
-    pub(crate) fn new(cryptographic_materials_cache: crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef) -> Self {
+    pub(crate) fn new(
+        cryptographic_materials_cache: crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef,
+    ) -> Self {
         Self {
             cryptographic_materials_cache,
             inner: ::std::default::Default::default(),
         }
     }
     /// Access the UpdateUsageMetadata as a reference.
-    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::update_usage_metadata::builders::UpdateUsageMetadataInputBuilder {
+    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::update_usage_metadata::builders::UpdateUsageMetadataInputBuilder{
         &self.inner
     }
     /// Sends the request and returns the response.
@@ -55,38 +57,44 @@ impl UpdateUsageMetadataFluentBuilder {
             .map_err(|mut e| {
 	     let msg = format!("{:?}", e);
              crate::deps::aws_cryptography_materialProviders::types::error::Error::OpaqueWithText {
-                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut dyn ::std::any::Any),
+                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut ::dafny_runtime::DynAny),
 		objMessage: msg
              }})?;
         crate::deps::aws_cryptography_materialProviders::operation::update_usage_metadata::UpdateUsageMetadata::send(&self.cryptographic_materials_cache, input).await
     }
 
     #[allow(missing_docs)]
-pub fn bytes_used(mut self, input: impl ::std::convert::Into<::std::primitive::i32>) -> Self {
-    self.inner = self.inner.bytes_used(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_bytes_used(mut self, input: ::std::option::Option<::std::primitive::i32>) -> Self {
-    self.inner = self.inner.set_bytes_used(input);
-    self
-}
-#[allow(missing_docs)]
-pub fn get_bytes_used(&self) -> &::std::option::Option<::std::primitive::i32> {
-    self.inner.get_bytes_used()
-}
-#[allow(missing_docs)]
-pub fn identifier(mut self, input: impl ::std::convert::Into<::aws_smithy_types::Blob>) -> Self {
-    self.inner = self.inner.identifier(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_identifier(mut self, input: ::std::option::Option<::aws_smithy_types::Blob>) -> Self {
-    self.inner = self.inner.set_identifier(input);
-    self
-}
-#[allow(missing_docs)]
-pub fn get_identifier(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
-    self.inner.get_identifier()
-}
+    pub fn bytes_used(mut self, input: impl ::std::convert::Into<::std::primitive::i32>) -> Self {
+        self.inner = self.inner.bytes_used(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_bytes_used(mut self, input: ::std::option::Option<::std::primitive::i32>) -> Self {
+        self.inner = self.inner.set_bytes_used(input);
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_bytes_used(&self) -> &::std::option::Option<::std::primitive::i32> {
+        self.inner.get_bytes_used()
+    }
+    #[allow(missing_docs)]
+    pub fn identifier(
+        mut self,
+        input: impl ::std::convert::Into<::aws_smithy_types::Blob>,
+    ) -> Self {
+        self.inner = self.inner.identifier(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_identifier(
+        mut self,
+        input: ::std::option::Option<::aws_smithy_types::Blob>,
+    ) -> Self {
+        self.inner = self.inner.set_identifier(input);
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_identifier(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
+        self.inner.get_identifier()
+    }
 }

@@ -4,20 +4,20 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_kms::types::MultiRegionConfiguration,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::MultiRegionConfiguration>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::MultiRegionConfiguration>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::kms::internaldafny::types::MultiRegionConfiguration::MultiRegionConfiguration {
-        MultiRegionKeyType: ::std::rc::Rc::new(match &value.multi_region_key_type {
+        MultiRegionKeyType: ::dafny_runtime::Rc::new(match &value.multi_region_key_type {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::multi_region_key_type::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- PrimaryKey: ::std::rc::Rc::new(match &value.primary_key {
+ PrimaryKey: ::dafny_runtime::Rc::new(match &value.primary_key {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::multi_region_key::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- ReplicaKeys: ::std::rc::Rc::new(match &value.replica_keys {
+ ReplicaKeys: ::dafny_runtime::Rc::new(match &value.replica_keys {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| crate::deps::com_amazonaws_kms::conversions::multi_region_key::to_dafny(e)
@@ -29,9 +29,10 @@ pub fn to_dafny(
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::kms::internaldafny::types::MultiRegionConfiguration,
     >,
 ) -> aws_sdk_kms::types::MultiRegionConfiguration {
@@ -53,7 +54,7 @@ pub fn from_dafny(
     crate::r#_Wrappers_Compile::Option::Some { value } =>
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(value,
-                |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::MultiRegionKey>| crate::deps::com_amazonaws_kms::conversions::multi_region_key::from_dafny(e.clone())
+                |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::MultiRegionKey>| crate::deps::com_amazonaws_kms::conversions::multi_region_key::from_dafny(e.clone())
 ,
             )
         ),
@@ -61,5 +62,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
 }

@@ -4,13 +4,13 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: crate::operation::encrypt::EncryptInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::encryptionsdk::internaldafny::types::EncryptInput,
->{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::encryptionsdk::internaldafny::types::EncryptInput::EncryptInput {
+> {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::encryptionsdk::internaldafny::types::EncryptInput::EncryptInput {
         plaintext: crate::standard_library_conversions::blob_to_dafny(&value.plaintext.unwrap()),
  encryptionContext:
-::std::rc::Rc::new(match &value.encryption_context {
+::dafny_runtime::Rc::new(match &value.encryption_context {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::hashmap_to_dafny_map(x,
             |k| dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(&k.as_bytes().to_vec(), |b| *b),
@@ -20,17 +20,17 @@ pub fn to_dafny(
     None => crate::r#_Wrappers_Compile::Option::None {}
 })
 ,
- materialsManager: ::std::rc::Rc::new(match &value.materials_manager {
+ materialsManager: ::dafny_runtime::Rc::new(match &value.materials_manager {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::aws_cryptography_materialProviders::conversions::cryptographic_materials_manager::to_dafny(&x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- keyring: ::std::rc::Rc::new(match &value.keyring {
+ keyring: ::dafny_runtime::Rc::new(match &value.keyring {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::aws_cryptography_materialProviders::conversions::keyring::to_dafny(&x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- algorithmSuiteId: ::std::rc::Rc::new(match &value.algorithm_suite_id {
+ algorithmSuiteId: ::dafny_runtime::Rc::new(match &value.algorithm_suite_id {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::aws_cryptography_materialProviders::conversions::esdk_algorithm_suite_id::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
@@ -38,9 +38,9 @@ pub fn to_dafny(
  frameLength: crate::standard_library_conversions::olong_to_dafny(&value.frame_length),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::encryptionsdk::internaldafny::types::EncryptInput,
     >,
 ) -> crate::operation::encrypt::EncryptInput {

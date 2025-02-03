@@ -11,7 +11,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     /// - On success, responds with [`RsaEncryptOutput`](crate::operation::rsa_encrypt::RsaEncryptOutput) with field(s):
     ///   - [`cipher_text(Option<::aws_smithy_types::Blob>)`](crate::operation::rsa_encrypt::RSAEncryptOutput::cipher_text): (undocumented)
     /// - On failure, responds with [`SdkError<RsaEncryptError>`](crate::operation::rsa_encrypt::RsaEncryptError)
-    pub fn rsa_encrypt(&self) -> crate::deps::aws_cryptography_primitives::operation::rsa_encrypt::builders::RsaEncryptFluentBuilder {
+    pub fn rsa_encrypt(&self) -> crate::deps::aws_cryptography_primitives::operation::rsa_encrypt::builders::RsaEncryptFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::rsa_encrypt::builders::RsaEncryptFluentBuilder::new(self.clone())
     }
 }

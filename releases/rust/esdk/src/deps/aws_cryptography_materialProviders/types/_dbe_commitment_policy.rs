@@ -10,7 +10,9 @@ pub enum DbeCommitmentPolicy {
 impl ::std::fmt::Display for DbeCommitmentPolicy {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         match self {
-            DbeCommitmentPolicy::RequireEncryptRequireDecrypt => write!(f, "REQUIRE_ENCRYPT_REQUIRE_DECRYPT"),
+            DbeCommitmentPolicy::RequireEncryptRequireDecrypt => {
+                write!(f, "REQUIRE_ENCRYPT_REQUIRE_DECRYPT")
+            }
         }
     }
 }

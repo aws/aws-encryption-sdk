@@ -4,19 +4,20 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::UpdateKinesisStreamingConfiguration,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateKinesisStreamingConfiguration>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateKinesisStreamingConfiguration>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateKinesisStreamingConfiguration::UpdateKinesisStreamingConfiguration {
-        ApproximateCreationDateTimePrecision: ::std::rc::Rc::new(match &value.approximate_creation_date_time_precision {
+        ApproximateCreationDateTimePrecision: ::dafny_runtime::Rc::new(match &value.approximate_creation_date_time_precision {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::approximate_creation_date_time_precision::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateKinesisStreamingConfiguration,
     >,
 ) -> aws_sdk_dynamodb::types::UpdateKinesisStreamingConfiguration {
@@ -29,5 +30,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
 }

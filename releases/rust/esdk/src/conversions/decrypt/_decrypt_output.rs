@@ -4,10 +4,10 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: crate::operation::decrypt::DecryptOutput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::encryptionsdk::internaldafny::types::DecryptOutput,
->{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::encryptionsdk::internaldafny::types::DecryptOutput::DecryptOutput {
+> {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::encryptionsdk::internaldafny::types::DecryptOutput::DecryptOutput {
         plaintext: crate::standard_library_conversions::blob_to_dafny(&value.plaintext.unwrap()),
  encryptionContext: ::dafny_runtime::dafny_runtime_conversions::hashmap_to_dafny_map(&value.encryption_context.clone().unwrap(),
     |k| dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(&k.as_bytes().to_vec(), |b| *b),
@@ -17,9 +17,9 @@ pub fn to_dafny(
  algorithmSuiteId: crate::deps::aws_cryptography_materialProviders::conversions::esdk_algorithm_suite_id::to_dafny(value.algorithm_suite_id.clone().unwrap()),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::encryptionsdk::internaldafny::types::DecryptOutput,
     >,
 ) -> crate::operation::decrypt::DecryptOutput {

@@ -20,9 +20,9 @@ impl CreateDefaultClientSupplier {
     > {
         crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HCreateDefaultClientSupplierInput_for_AwsCryptographicMaterialProviders_CreateDefaultClientSupplier(&input)
             .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
-                let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::create_default_client_supplier::_create_default_client_supplier_input::to_dafny(input);
-        let inner_result =
-            ::dafny_runtime::md!(client.dafny_client.clone()).CreateDefaultClientSupplier(&inner_input);
+        let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::create_default_client_supplier::_create_default_client_supplier_input::to_dafny(input);
+        let inner_result = ::dafny_runtime::md!(client.dafny_client.clone())
+            .CreateDefaultClientSupplier(&inner_input);
         if matches!(
             inner_result.as_ref(),
             crate::r#_Wrappers_Compile::Result::Success { .. }
@@ -32,9 +32,11 @@ impl CreateDefaultClientSupplier {
 ,
             )
         } else {
-            Err(crate::deps::aws_cryptography_materialProviders::conversions::error::from_dafny(
-                inner_result.error().clone(),
-            ))
+            Err(
+                crate::deps::aws_cryptography_materialProviders::conversions::error::from_dafny(
+                    inner_result.error().clone(),
+                ),
+            )
         }
     }
 }

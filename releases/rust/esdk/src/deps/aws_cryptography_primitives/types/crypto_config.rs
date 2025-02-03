@@ -4,16 +4,14 @@
 #[non_exhaustive]
 #[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug)]
 #[allow(missing_docs)]
-pub struct CryptoConfig {
-
-}
-impl CryptoConfig {
-
-}
+pub struct CryptoConfig {}
+impl CryptoConfig {}
 impl CryptoConfig {
     /// Creates a new builder-style object to manufacture [`CryptoConfig`](crate::deps::aws_cryptography_primitives::types::CryptoConfig).
-    pub fn builder() -> crate::deps::aws_cryptography_primitives::types::crypto_config::CryptoConfigBuilder {
-        crate::deps::aws_cryptography_primitives::types::crypto_config::CryptoConfigBuilder::default()
+    pub fn builder(
+    ) -> crate::deps::aws_cryptography_primitives::types::crypto_config::CryptoConfigBuilder {
+        crate::deps::aws_cryptography_primitives::types::crypto_config::CryptoConfigBuilder::default(
+        )
     }
 }
 
@@ -22,11 +20,8 @@ impl CryptoConfig {
 #[derive(
     ::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug,
 )]
-pub struct CryptoConfigBuilder {
-
-}
+pub struct CryptoConfigBuilder {}
 impl CryptoConfigBuilder {
-
     /// Consumes the builder and constructs a [`CryptoConfig`](crate::deps::aws_cryptography_primitives::types::CryptoConfig).
     pub fn build(
         self,
@@ -34,8 +29,8 @@ impl CryptoConfigBuilder {
         crate::deps::aws_cryptography_primitives::types::crypto_config::CryptoConfig,
         ::aws_smithy_types::error::operation::BuildError,
     > {
-        ::std::result::Result::Ok(crate::deps::aws_cryptography_primitives::types::crypto_config::CryptoConfig {
-
-        })
+        ::std::result::Result::Ok(
+            crate::deps::aws_cryptography_primitives::types::crypto_config::CryptoConfig {},
+        )
     }
 }

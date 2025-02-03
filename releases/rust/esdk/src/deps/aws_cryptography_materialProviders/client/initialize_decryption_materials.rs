@@ -16,7 +16,7 @@ impl crate::deps::aws_cryptography_materialProviders::client::Client {
     ///   - [`symmetric_signing_key(Option<::aws_smithy_types::Blob>)`](crate::operation::initialize_decryption_materials::DecryptionMaterials::symmetric_signing_key): (undocumented)
     ///   - [`verification_key(Option<::aws_smithy_types::Blob>)`](crate::operation::initialize_decryption_materials::DecryptionMaterials::verification_key): (undocumented)
     /// - On failure, responds with [`SdkError<InitializeDecryptionMaterialsError>`](crate::operation::initialize_decryption_materials::InitializeDecryptionMaterialsError)
-    pub fn initialize_decryption_materials(&self) -> crate::deps::aws_cryptography_materialProviders::operation::initialize_decryption_materials::builders::InitializeDecryptionMaterialsFluentBuilder {
+    pub fn initialize_decryption_materials(&self) -> crate::deps::aws_cryptography_materialProviders::operation::initialize_decryption_materials::builders::InitializeDecryptionMaterialsFluentBuilder{
         crate::deps::aws_cryptography_materialProviders::operation::initialize_decryption_materials::builders::InitializeDecryptionMaterialsFluentBuilder::new(self.clone())
     }
 }

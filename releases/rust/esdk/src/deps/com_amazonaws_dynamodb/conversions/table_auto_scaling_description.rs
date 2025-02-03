@@ -4,16 +4,16 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::TableAutoScalingDescription,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::TableAutoScalingDescription>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::TableAutoScalingDescription>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::TableAutoScalingDescription::TableAutoScalingDescription {
         TableName: crate::standard_library_conversions::ostring_to_dafny(&value.table_name),
- TableStatus: ::std::rc::Rc::new(match &value.table_status {
+ TableStatus: ::dafny_runtime::Rc::new(match &value.table_status {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::table_status::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- Replicas: ::std::rc::Rc::new(match &value.replicas {
+ Replicas: ::dafny_runtime::Rc::new(match &value.replicas {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| crate::deps::com_amazonaws_dynamodb::conversions::replica_auto_scaling_description::to_dafny(e)
@@ -25,9 +25,10 @@ pub fn to_dafny(
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::TableAutoScalingDescription,
     >,
 ) -> aws_sdk_dynamodb::types::TableAutoScalingDescription {
@@ -44,7 +45,7 @@ pub fn from_dafny(
     crate::r#_Wrappers_Compile::Option::Some { value } =>
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(value,
-                |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReplicaAutoScalingDescription>| crate::deps::com_amazonaws_dynamodb::conversions::replica_auto_scaling_description::from_dafny(e.clone())
+                |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReplicaAutoScalingDescription>| crate::deps::com_amazonaws_dynamodb::conversions::replica_auto_scaling_description::from_dafny(e.clone())
 ,
             )
         ),
@@ -52,5 +53,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
 }

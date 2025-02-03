@@ -64,15 +64,15 @@
 
 use super::create_branch_key_id::create_branch_key_id;
 use aws_esdk::client as esdk_client;
-use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
+use aws_esdk::key_store::client as keystore_client;
+use aws_esdk::key_store::types::key_store_config::KeyStoreConfig;
+use aws_esdk::key_store::types::KmsConfiguration;
+use aws_esdk::material_providers::client as mpl_client;
+use aws_esdk::material_providers::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef;
+use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
 use aws_esdk::material_providers::types::CacheType;
 use aws_esdk::material_providers::types::DefaultCache;
-use aws_esdk::material_providers::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef;
-use aws_esdk::material_providers::client as mpl_client;
-use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
-use aws_esdk::key_store::types::KmsConfiguration;
-use aws_esdk::key_store::types::key_store_config::KeyStoreConfig;
-use aws_esdk::key_store::client as keystore_client;
+use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use std::collections::HashMap;
 
 pub async fn encrypt_and_decrypt_with_keyring(
@@ -82,20 +82,16 @@ pub async fn encrypt_and_decrypt_with_keyring(
     key_store_kms_key_id: &str,
 ) -> Result<(), crate::BoxError> {
     // 1a. Create the CryptographicMaterialsCache (CMC) to share across multiple Hierarchical Keyrings
-        // using the Material Providers Library
-        //    This CMC takes in:
-        //     - CacheType
+    // using the Material Providers Library
+    //    This CMC takes in:
+    //     - CacheType
     let mpl_config = MaterialProvidersConfig::builder().build()?;
     let mpl = mpl_client::Client::from_conf(mpl_config)?;
 
-    let cache: CacheType = CacheType::Default(
-        DefaultCache::builder()
-            .entry_capacity(100)
-            .build()?,
-    );
+    let cache: CacheType = CacheType::Default(DefaultCache::builder().entry_capacity(100).build()?);
 
-    let shared_cryptographic_materials_cache: CryptographicMaterialsCacheRef = mpl.
-        create_cryptographic_materials_cache()
+    let shared_cryptographic_materials_cache: CryptographicMaterialsCacheRef = mpl
+        .create_cryptographic_materials_cache()
         .cache(cache)
         .send()
         .await?;
@@ -131,7 +127,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .ddb_client(aws_sdk_dynamodb::Client::new(&sdk_config))
         .ddb_table_name(key_store_table_name)
         .logical_key_store_name(logical_key_store_name)
-        .kms_configuration(KmsConfiguration::KmsKeyArn(key_store_kms_key_id.to_string()))
+        .kms_configuration(KmsConfiguration::KmsKeyArn(
+            key_store_kms_key_id.to_string(),
+        ))
         .build()?;
 
     let key_store1 = keystore_client::Client::from_conf(key_store_config.clone())?;
@@ -140,8 +138,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
     let branch_key_id: String = create_branch_key_id(
         key_store_table_name,
         logical_key_store_name,
-        key_store_kms_key_id
-    ).await?;
+        key_store_kms_key_id,
+    )
+    .await?;
 
     // 5. Create the Hierarchical Keyring HK1 with Key Store instance K1, partition_id,
     // the shared_cache and the branch_key_id.
@@ -174,14 +173,21 @@ pub async fn encrypt_and_decrypt_with_keyring(
         ("encryption".to_string(), "context".to_string()),
         ("is not".to_string(), "secret".to_string()),
         ("but adds".to_string(), "useful metadata".to_string()),
-        ("that can help you".to_string(), "be confident that".to_string()),
-        ("the data you are handling".to_string(), "is what you think it is".to_string()),
+        (
+            "that can help you".to_string(),
+            "be confident that".to_string(),
+        ),
+        (
+            "the data you are handling".to_string(),
+            "is what you think it is".to_string(),
+        ),
     ]);
 
     // 7. Encrypt the data for encryption_context using keyring1
     let plaintext = example_data.as_bytes();
 
-    let encryption_response1 = esdk_client.encrypt()
+    let encryption_response1 = esdk_client
+        .encrypt()
         .plaintext(plaintext)
         .keyring(keyring1.clone())
         .encryption_context(encryption_context.clone())
@@ -194,11 +200,15 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 8. Demonstrate that the ciphertexts and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext1, aws_smithy_types::Blob::new(plaintext),
-        "Ciphertext and plaintext data are the same. Invalid encryption");
+    assert_ne!(
+        ciphertext1,
+        aws_smithy_types::Blob::new(plaintext),
+        "Ciphertext and plaintext data are the same. Invalid encryption"
+    );
 
     // 9. Decrypt your encrypted data using the same keyring HK1 you used on encrypt.
-    let decryption_response1 = esdk_client.decrypt()
+    let decryption_response1 = esdk_client
+        .decrypt()
         .ciphertext(ciphertext1)
         .keyring(keyring1)
         // Provide the encryption context that was supplied to the encrypt method
@@ -207,13 +217,16 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let decrypted_plaintext1 = decryption_response1
-                                .plaintext
-                                .expect("Unable to unwrap plaintext from decryption response");
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // 10. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext1, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        decrypted_plaintext1,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     // 11. Through the above encrypt and decrypt roundtrip, the cache will be populated and
     // the cache entries can be used by another Hierarchical Keyring with the
@@ -258,7 +271,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 13. This encrypt-decrypt roundtrip with HK2 will experience Cache HITS from previous HK1 roundtrip
     // Encrypt the data for encryption_context using keyring2
-    let encryption_response2 = esdk_client.encrypt()
+    let encryption_response2 = esdk_client
+        .encrypt()
         .plaintext(plaintext)
         .keyring(keyring2.clone())
         .encryption_context(encryption_context.clone())
@@ -271,11 +285,15 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 14. Demonstrate that the ciphertexts and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext2, aws_smithy_types::Blob::new(plaintext),
-        "Ciphertext and plaintext data are the same. Invalid encryption");
+    assert_ne!(
+        ciphertext2,
+        aws_smithy_types::Blob::new(plaintext),
+        "Ciphertext and plaintext data are the same. Invalid encryption"
+    );
 
     // 15. Decrypt your encrypted data using the same keyring HK2 you used on encrypt.
-    let decryption_response2 = esdk_client.decrypt()
+    let decryption_response2 = esdk_client
+        .decrypt()
         .ciphertext(ciphertext2)
         .keyring(keyring2)
         // Provide the encryption context that was supplied to the encrypt method
@@ -284,13 +302,16 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let decrypted_plaintext2 = decryption_response2
-                                .plaintext
-                                .expect("Unable to unwrap plaintext from decryption response");
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // 10. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext2, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        decrypted_plaintext2,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     println!("Shared Cache Across Hierarchical Keyrings Example Completed Successfully");
 
@@ -306,8 +327,9 @@ pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxErr
         utils::TEST_EXAMPLE_DATA,
         utils::TEST_KEY_STORE_NAME,
         utils::TEST_LOGICAL_KEY_STORE_NAME,
-        utils::TEST_KEY_STORE_KMS_KEY_ID
-    ).await?;
+        utils::TEST_KEY_STORE_KMS_KEY_ID,
+    )
+    .await?;
 
     Ok(())
 }

@@ -43,11 +43,7 @@ This table describes the current support status of each major version of the AWS
       - Current status
       - Next status
       - Next status date
-    * - 0.x
-      - Beta Version
-      - End of Support
-      - 2024-12-14
-    * - 4.x
+    * - 1.x
       - Generally Available
       -
       - 

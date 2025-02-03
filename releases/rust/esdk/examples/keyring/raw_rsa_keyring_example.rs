@@ -48,10 +48,10 @@ https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-raw-rsa-ke
 */
 
 use aws_esdk::client as esdk_client;
-use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use aws_esdk::material_providers::client as mpl_client;
 use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
 use aws_esdk::material_providers::types::PaddingScheme;
+use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
@@ -61,9 +61,7 @@ use std::path::Path;
 const EXAMPLE_RSA_PRIVATE_KEY_FILENAME: &str = "RawRsaKeyringExamplePrivateKey.pem";
 const EXAMPLE_RSA_PUBLIC_KEY_FILENAME: &str = "RawRsaKeyringExamplePublicKey.pem";
 
-pub async fn encrypt_and_decrypt_with_keyring(
-    example_data: &str,
-) -> Result<(), crate::BoxError> {
+pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), crate::BoxError> {
     // 1. Instantiate the encryption SDK client.
     // This builds the default client with the RequireEncryptRequireDecrypt commitment policy,
     // which enforces that this client only encrypts using committing algorithm suites and enforces
@@ -80,9 +78,15 @@ pub async fn encrypt_and_decrypt_with_keyring(
         ("encryption".to_string(), "context".to_string()),
         ("is not".to_string(), "secret".to_string()),
         ("but adds".to_string(), "useful metadata".to_string()),
-        ("that can help you".to_string(), "be confident that".to_string()),
-        ("the data you are handling".to_string(), "is what you think it is".to_string()),
-        ]);
+        (
+            "that can help you".to_string(),
+            "be confident that".to_string(),
+        ),
+        (
+            "the data you are handling".to_string(),
+            "is what you think it is".to_string(),
+        ),
+    ]);
 
     // 3. You may provide your own RSA key pair in the files located at
     //  - EXAMPLE_RSA_PRIVATE_KEY_FILENAME
@@ -128,7 +132,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 7. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
 
-    let encryption_response = esdk_client.encrypt()
+    let encryption_response = esdk_client
+        .encrypt()
         .plaintext(plaintext)
         .keyring(raw_rsa_keyring.clone())
         .encryption_context(encryption_context.clone())
@@ -136,16 +141,20 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let ciphertext = encryption_response
-                        .ciphertext
-                        .expect("Unable to unwrap ciphertext from encryption response");
+        .ciphertext
+        .expect("Unable to unwrap ciphertext from encryption response");
 
     // 8. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
-        "Ciphertext and plaintext data are the same. Invalid encryption");
+    assert_ne!(
+        ciphertext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Ciphertext and plaintext data are the same. Invalid encryption"
+    );
 
     // 9. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decryption_response = esdk_client.decrypt()
+    let decryption_response = esdk_client
+        .decrypt()
         .ciphertext(ciphertext)
         .keyring(raw_rsa_keyring)
         // Provide the encryption context that was supplied to the encrypt method
@@ -154,13 +163,16 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let decrypted_plaintext = decryption_response
-                                .plaintext
-                                .expect("Unable to unwrap plaintext from decryption response");
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // 10. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        decrypted_plaintext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     println!("Raw RSA Keyring Example Completed Successfully");
 
@@ -179,8 +191,7 @@ fn should_generate_new_rsa_key_pair() -> Result<bool, String> {
     // If only one file is present: throw exception
     else if exists(EXAMPLE_RSA_PRIVATE_KEY_FILENAME) && !exists(EXAMPLE_RSA_PUBLIC_KEY_FILENAME) {
         Err("Missing public key file at ".to_string() + EXAMPLE_RSA_PUBLIC_KEY_FILENAME)
-    }
-    else if exists(EXAMPLE_RSA_PRIVATE_KEY_FILENAME) && !exists(EXAMPLE_RSA_PUBLIC_KEY_FILENAME) {
+    } else if exists(EXAMPLE_RSA_PRIVATE_KEY_FILENAME) && !exists(EXAMPLE_RSA_PUBLIC_KEY_FILENAME) {
         Err("Missing private key file at ".to_string() + EXAMPLE_RSA_PRIVATE_KEY_FILENAME)
     }
     // If neither file is present, generate a new key pair
@@ -245,9 +256,7 @@ pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxErr
     // Test function for encrypt and decrypt using the Raw RSA Keyring example
     use crate::example_utils::utils;
 
-    encrypt_and_decrypt_with_keyring(
-        utils::TEST_EXAMPLE_DATA,
-    ).await?;
+    encrypt_and_decrypt_with_keyring(utils::TEST_EXAMPLE_DATA).await?;
 
     Ok(())
 }

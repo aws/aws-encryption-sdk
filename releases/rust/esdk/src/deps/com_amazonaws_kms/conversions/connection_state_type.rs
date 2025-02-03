@@ -5,8 +5,8 @@
 
 pub fn to_dafny(
     value: aws_sdk_kms::types::ConnectionStateType,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ConnectionStateType>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ConnectionStateType>{
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_kms::types::ConnectionStateType::Connected => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ConnectionStateType::CONNECTED {},
 aws_sdk_kms::types::ConnectionStateType::Connecting => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ConnectionStateType::CONNECTING {},
 aws_sdk_kms::types::ConnectionStateType::Failed => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ConnectionStateType::FAILED {},
@@ -15,7 +15,7 @@ aws_sdk_kms::types::ConnectionStateType::Disconnecting => crate::r#software::ama
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ConnectionStateType,
 ) -> aws_sdk_kms::types::ConnectionStateType {

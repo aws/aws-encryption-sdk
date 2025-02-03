@@ -6,17 +6,17 @@
 #[allow(missing_docs)]
 pub struct AesKdfCtrOutput {
     #[allow(missing_docs)]
-pub okm: ::std::option::Option<::aws_smithy_types::Blob>,
+    pub okm: ::std::option::Option<::aws_smithy_types::Blob>,
 }
 impl AesKdfCtrOutput {
     #[allow(missing_docs)]
-pub fn okm(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
-    &self.okm
-}
+    pub fn okm(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
+        &self.okm
+    }
 }
 impl AesKdfCtrOutput {
     /// Creates a new builder-style object to manufacture [`AesKdfCtrOutput`](crate::operation::aes_kdf_counter_mode::builders::AesKdfCtrOutput).
-    pub fn builder() -> crate::deps::aws_cryptography_primitives::operation::aes_kdf_counter_mode::builders::AesKdfCtrOutputBuilder {
+    pub fn builder() -> crate::deps::aws_cryptography_primitives::operation::aes_kdf_counter_mode::builders::AesKdfCtrOutputBuilder{
         crate::deps::aws_cryptography_primitives::operation::aes_kdf_counter_mode::builders::AesKdfCtrOutputBuilder::default()
     }
 }
@@ -31,19 +31,19 @@ pub struct AesKdfCtrOutputBuilder {
 }
 impl AesKdfCtrOutputBuilder {
     #[allow(missing_docs)]
-pub fn okm(mut self, input: impl ::std::convert::Into<::aws_smithy_types::Blob>) -> Self {
-    self.okm = ::std::option::Option::Some(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_okm(mut self, input: ::std::option::Option<::aws_smithy_types::Blob>) -> Self {
-    self.okm = input;
-    self
-}
-#[allow(missing_docs)]
-pub fn get_okm(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
-    &self.okm
-}
+    pub fn okm(mut self, input: impl ::std::convert::Into<::aws_smithy_types::Blob>) -> Self {
+        self.okm = ::std::option::Option::Some(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_okm(mut self, input: ::std::option::Option<::aws_smithy_types::Blob>) -> Self {
+        self.okm = input;
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_okm(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
+        &self.okm
+    }
     /// Consumes the builder and constructs a [`AesKdfCtrOutput`](crate::operation::operation::AesKdfCtrOutput).
     pub fn build(
         self,

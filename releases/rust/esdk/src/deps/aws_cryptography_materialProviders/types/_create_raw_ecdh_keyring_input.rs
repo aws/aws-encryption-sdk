@@ -6,23 +6,33 @@
 /// Inputs for creating a raw ECDH Keyring.
 pub struct CreateRawEcdhKeyringInput {
     /// The Key Agreement Scheme configuration that is responsible for how the shared secret is calculated.
-pub key_agreement_scheme: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations>,
-/// The the curve on which the points for the sender's private and recipient's public key lie.
-pub curve_spec: ::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>,
+    pub key_agreement_scheme: ::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations,
+    >,
+    /// The the curve on which the points for the sender's private and recipient's public key lie.
+    pub curve_spec:
+        ::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>,
 }
 impl CreateRawEcdhKeyringInput {
     /// The Key Agreement Scheme configuration that is responsible for how the shared secret is calculated.
-pub fn key_agreement_scheme(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations> {
-    &self.key_agreement_scheme
-}
-/// The the curve on which the points for the sender's private and recipient's public key lie.
-pub fn curve_spec(&self) -> &::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec> {
-    &self.curve_spec
-}
+    pub fn key_agreement_scheme(
+        &self,
+    ) -> &::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations,
+    > {
+        &self.key_agreement_scheme
+    }
+    /// The the curve on which the points for the sender's private and recipient's public key lie.
+    pub fn curve_spec(
+        &self,
+    ) -> &::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>
+    {
+        &self.curve_spec
+    }
 }
 impl CreateRawEcdhKeyringInput {
     /// Creates a new builder-style object to manufacture [`CreateRawEcdhKeyringInput`](crate::deps::aws_cryptography_materialProviders::types::CreateRawEcdhKeyringInput).
-    pub fn builder() -> crate::deps::aws_cryptography_materialProviders::types::builders::CreateRawEcdhKeyringInputBuilder {
+    pub fn builder() -> crate::deps::aws_cryptography_materialProviders::types::builders::CreateRawEcdhKeyringInputBuilder{
         crate::deps::aws_cryptography_materialProviders::types::builders::CreateRawEcdhKeyringInputBuilder::default()
     }
 }
@@ -33,38 +43,66 @@ impl CreateRawEcdhKeyringInput {
     ::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug,
 )]
 pub struct CreateRawEcdhKeyringInputBuilder {
-    pub(crate) key_agreement_scheme: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations>,
-pub(crate) curve_spec: ::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>,
+    pub(crate) key_agreement_scheme: ::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations,
+    >,
+    pub(crate) curve_spec:
+        ::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>,
 }
 impl CreateRawEcdhKeyringInputBuilder {
     /// The Key Agreement Scheme configuration that is responsible for how the shared secret is calculated.
-pub fn key_agreement_scheme(mut self, input: impl ::std::convert::Into<crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations>) -> Self {
-    self.key_agreement_scheme = ::std::option::Option::Some(input.into());
-    self
-}
-/// The Key Agreement Scheme configuration that is responsible for how the shared secret is calculated.
-pub fn set_key_agreement_scheme(mut self, input: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations>) -> Self {
-    self.key_agreement_scheme = input;
-    self
-}
-/// The Key Agreement Scheme configuration that is responsible for how the shared secret is calculated.
-pub fn get_key_agreement_scheme(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations> {
-    &self.key_agreement_scheme
-}
-/// The the curve on which the points for the sender's private and recipient's public key lie.
-pub fn curve_spec(mut self, input: impl ::std::convert::Into<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>) -> Self {
-    self.curve_spec = ::std::option::Option::Some(input.into());
-    self
-}
-/// The the curve on which the points for the sender's private and recipient's public key lie.
-pub fn set_curve_spec(mut self, input: ::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>) -> Self {
-    self.curve_spec = input;
-    self
-}
-/// The the curve on which the points for the sender's private and recipient's public key lie.
-pub fn get_curve_spec(&self) -> &::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec> {
-    &self.curve_spec
-}
+    pub fn key_agreement_scheme(
+        mut self,
+        input: impl ::std::convert::Into<
+            crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations,
+        >,
+    ) -> Self {
+        self.key_agreement_scheme = ::std::option::Option::Some(input.into());
+        self
+    }
+    /// The Key Agreement Scheme configuration that is responsible for how the shared secret is calculated.
+    pub fn set_key_agreement_scheme(
+        mut self,
+        input: ::std::option::Option<
+            crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations,
+        >,
+    ) -> Self {
+        self.key_agreement_scheme = input;
+        self
+    }
+    /// The Key Agreement Scheme configuration that is responsible for how the shared secret is calculated.
+    pub fn get_key_agreement_scheme(
+        &self,
+    ) -> &::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::RawEcdhStaticConfigurations,
+    > {
+        &self.key_agreement_scheme
+    }
+    /// The the curve on which the points for the sender's private and recipient's public key lie.
+    pub fn curve_spec(
+        mut self,
+        input: impl ::std::convert::Into<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>,
+    ) -> Self {
+        self.curve_spec = ::std::option::Option::Some(input.into());
+        self
+    }
+    /// The the curve on which the points for the sender's private and recipient's public key lie.
+    pub fn set_curve_spec(
+        mut self,
+        input: ::std::option::Option<
+            crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec,
+        >,
+    ) -> Self {
+        self.curve_spec = input;
+        self
+    }
+    /// The the curve on which the points for the sender's private and recipient's public key lie.
+    pub fn get_curve_spec(
+        &self,
+    ) -> &::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>
+    {
+        &self.curve_spec
+    }
     /// Consumes the builder and constructs a [`CreateRawEcdhKeyringInput`](crate::deps::aws_cryptography_materialProviders::types::CreateRawEcdhKeyringInput).
     pub fn build(
         self,
@@ -72,9 +110,11 @@ pub fn get_curve_spec(&self) -> &::std::option::Option<crate::deps::aws_cryptogr
         crate::deps::aws_cryptography_materialProviders::types::CreateRawEcdhKeyringInput,
         ::aws_smithy_types::error::operation::BuildError,
     > {
-        ::std::result::Result::Ok(crate::deps::aws_cryptography_materialProviders::types::CreateRawEcdhKeyringInput {
-            key_agreement_scheme: self.key_agreement_scheme,
-curve_spec: self.curve_spec,
-        })
+        ::std::result::Result::Ok(
+            crate::deps::aws_cryptography_materialProviders::types::CreateRawEcdhKeyringInput {
+                key_agreement_scheme: self.key_agreement_scheme,
+                curve_spec: self.curve_spec,
+            },
+        )
     }
 }

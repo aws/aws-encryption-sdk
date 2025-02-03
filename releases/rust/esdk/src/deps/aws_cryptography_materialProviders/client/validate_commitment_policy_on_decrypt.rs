@@ -10,7 +10,7 @@ impl crate::deps::aws_cryptography_materialProviders::client::Client {
     /// - On success, responds with [`Unit`](crate::operation::validate_commitment_policy_on_decrypt::Unit) with field(s):
 
     /// - On failure, responds with [`SdkError<ValidateCommitmentPolicyOnDecryptError>`](crate::operation::validate_commitment_policy_on_decrypt::ValidateCommitmentPolicyOnDecryptError)
-    pub fn validate_commitment_policy_on_decrypt(&self) -> crate::deps::aws_cryptography_materialProviders::operation::validate_commitment_policy_on_decrypt::builders::ValidateCommitmentPolicyOnDecryptFluentBuilder {
+    pub fn validate_commitment_policy_on_decrypt(&self) -> crate::deps::aws_cryptography_materialProviders::operation::validate_commitment_policy_on_decrypt::builders::ValidateCommitmentPolicyOnDecryptFluentBuilder{
         crate::deps::aws_cryptography_materialProviders::operation::validate_commitment_policy_on_decrypt::builders::ValidateCommitmentPolicyOnDecryptFluentBuilder::new(self.clone())
     }
 }

@@ -29,14 +29,16 @@ pub struct CreateAwsKmsMrkKeyringFluentBuilder {
 }
 impl CreateAwsKmsMrkKeyringFluentBuilder {
     /// Creates a new `CreateAwsKmsMrkKeyring`.
-    pub(crate) fn new(client: crate::deps::aws_cryptography_materialProviders::client::Client) -> Self {
+    pub(crate) fn new(
+        client: crate::deps::aws_cryptography_materialProviders::client::Client,
+    ) -> Self {
         Self {
             client,
             inner: ::std::default::Default::default(),
         }
     }
     /// Access the CreateAwsKmsMrkKeyring as a reference.
-    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_mrk_keyring::builders::CreateAwsKmsMrkKeyringInputBuilder {
+    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_mrk_keyring::builders::CreateAwsKmsMrkKeyringInputBuilder{
         &self.inner
     }
     /// Sends the request and returns the response.
@@ -56,52 +58,68 @@ impl CreateAwsKmsMrkKeyringFluentBuilder {
             .map_err(|mut e| {
 	     let msg = format!("{:?}", e);
              crate::deps::aws_cryptography_materialProviders::types::error::Error::OpaqueWithText {
-                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut dyn ::std::any::Any),
+                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut ::dafny_runtime::DynAny),
 		objMessage: msg
              }})?;
         crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_mrk_keyring::CreateAwsKmsMrkKeyring::send(&self.client, input).await
     }
 
     /// A list of grant tokens to be used when calling KMS.
-pub fn grant_tokens(mut self, input: impl ::std::convert::Into<::std::vec::Vec<::std::string::String>>) -> Self {
-    self.inner = self.inner.grant_tokens(input.into());
-    self
-}
-/// A list of grant tokens to be used when calling KMS.
-pub fn set_grant_tokens(mut self, input: ::std::option::Option<::std::vec::Vec<::std::string::String>>) -> Self {
-    self.inner = self.inner.set_grant_tokens(input);
-    self
-}
-/// A list of grant tokens to be used when calling KMS.
-pub fn get_grant_tokens(&self) -> &::std::option::Option<::std::vec::Vec<::std::string::String>> {
-    self.inner.get_grant_tokens()
-}
-/// The KMS Client this Keyring will use to call KMS.
-pub fn kms_client(mut self, input: impl ::std::convert::Into<crate::deps::com_amazonaws_kms::client::Client>) -> Self {
-    self.inner = self.inner.kms_client(input.into());
-    self
-}
-/// The KMS Client this Keyring will use to call KMS.
-pub fn set_kms_client(mut self, input: ::std::option::Option<crate::deps::com_amazonaws_kms::client::Client>) -> Self {
-    self.inner = self.inner.set_kms_client(input);
-    self
-}
-/// The KMS Client this Keyring will use to call KMS.
-pub fn get_kms_client(&self) -> &::std::option::Option<crate::deps::com_amazonaws_kms::client::Client> {
-    self.inner.get_kms_client()
-}
-/// The identifier for the symmetric AWS KMS Key or AWS KMS Multi-Region Key responsible for wrapping and unwrapping data keys.
-pub fn kms_key_id(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
-    self.inner = self.inner.kms_key_id(input.into());
-    self
-}
-/// The identifier for the symmetric AWS KMS Key or AWS KMS Multi-Region Key responsible for wrapping and unwrapping data keys.
-pub fn set_kms_key_id(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
-    self.inner = self.inner.set_kms_key_id(input);
-    self
-}
-/// The identifier for the symmetric AWS KMS Key or AWS KMS Multi-Region Key responsible for wrapping and unwrapping data keys.
-pub fn get_kms_key_id(&self) -> &::std::option::Option<::std::string::String> {
-    self.inner.get_kms_key_id()
-}
+    pub fn grant_tokens(
+        mut self,
+        input: impl ::std::convert::Into<::std::vec::Vec<::std::string::String>>,
+    ) -> Self {
+        self.inner = self.inner.grant_tokens(input.into());
+        self
+    }
+    /// A list of grant tokens to be used when calling KMS.
+    pub fn set_grant_tokens(
+        mut self,
+        input: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+    ) -> Self {
+        self.inner = self.inner.set_grant_tokens(input);
+        self
+    }
+    /// A list of grant tokens to be used when calling KMS.
+    pub fn get_grant_tokens(
+        &self,
+    ) -> &::std::option::Option<::std::vec::Vec<::std::string::String>> {
+        self.inner.get_grant_tokens()
+    }
+    /// The KMS Client this Keyring will use to call KMS.
+    pub fn kms_client(
+        mut self,
+        input: impl ::std::convert::Into<crate::deps::com_amazonaws_kms::client::Client>,
+    ) -> Self {
+        self.inner = self.inner.kms_client(input.into());
+        self
+    }
+    /// The KMS Client this Keyring will use to call KMS.
+    pub fn set_kms_client(
+        mut self,
+        input: ::std::option::Option<crate::deps::com_amazonaws_kms::client::Client>,
+    ) -> Self {
+        self.inner = self.inner.set_kms_client(input);
+        self
+    }
+    /// The KMS Client this Keyring will use to call KMS.
+    pub fn get_kms_client(
+        &self,
+    ) -> &::std::option::Option<crate::deps::com_amazonaws_kms::client::Client> {
+        self.inner.get_kms_client()
+    }
+    /// The identifier for the symmetric AWS KMS Key or AWS KMS Multi-Region Key responsible for wrapping and unwrapping data keys.
+    pub fn kms_key_id(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+        self.inner = self.inner.kms_key_id(input.into());
+        self
+    }
+    /// The identifier for the symmetric AWS KMS Key or AWS KMS Multi-Region Key responsible for wrapping and unwrapping data keys.
+    pub fn set_kms_key_id(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+        self.inner = self.inner.set_kms_key_id(input);
+        self
+    }
+    /// The identifier for the symmetric AWS KMS Key or AWS KMS Multi-Region Key responsible for wrapping and unwrapping data keys.
+    pub fn get_kms_key_id(&self) -> &::std::option::Option<::std::string::String> {
+        self.inner.get_kms_key_id()
+    }
 }
