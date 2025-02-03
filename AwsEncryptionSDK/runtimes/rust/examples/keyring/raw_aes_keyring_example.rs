@@ -29,7 +29,7 @@ use aws_esdk::material_providers::client as mpl_client;
 use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
 use aws_esdk::material_providers::types::AesWrappingAlg;
 use std::collections::HashMap;
-use rand::RngCore;
+use rand::TryRngCore;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
@@ -127,7 +127,7 @@ fn generate_aes_key_bytes() -> Vec<u8> {
     //     retrieve this key from a secure key management system (e.g. HSM).
     // This key is created here for example purposes only and should not be used for any other purpose.
     let mut random_bytes = [0u8; 32];
-    rand::rngs::OsRng.fill_bytes(&mut random_bytes);
+    rand::rngs::OsRng.try_fill_bytes(&mut random_bytes).unwrap();
 
     random_bytes.to_vec()
 }

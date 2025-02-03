@@ -1,0 +1,6 @@
+mpl
+aws-encryption-sdk-specification
+libraries
+TestVectors/aws-encryption-sdk-test-vectors
+AwsEncryptionSDK/runtimes/net/TestVectorsNative/TestVectorGenerator/resources/**/*.json
+TestVectors/dafny/TestVectors/**/*.json

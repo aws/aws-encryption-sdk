@@ -35,7 +35,7 @@ phases:
       - echo "Using unique id for flow $UNIQUE_ID"
       - make transpile_net
       - dotnet build runtimes/net /p:Configuration=Release -nowarn:CS0162,CS0168
-      # This step assumes signing has already happened and we just need to retrieve 
+      # This step assumes signing has already happened and we just need to retrieve
       # the signed artifacts
       - export BASE=codebuild/release
       - python $BASE/retrieve_signed_assembly.py --target net6.0 --unique-id $UNIQUE_ID

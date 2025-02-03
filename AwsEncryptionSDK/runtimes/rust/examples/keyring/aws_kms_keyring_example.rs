@@ -120,3 +120,19 @@ pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxErr
 
     Ok(())
 }
+
+#[tokio::test(flavor = "multi_thread")]
+pub async fn test_encrypt_and_decrypt_with_keyring_async() -> Result<(), crate::BoxError2> {
+    // Test function for encrypt and decrypt using the AWS KMS Keyring example (async)
+    use crate::example_utils::utils;
+
+    let handle = tokio::spawn(async move {
+        encrypt_and_decrypt_with_keyring(
+            utils::TEST_EXAMPLE_DATA,
+            utils::TEST_DEFAULT_KMS_KEY_ID
+        ).await
+    });
+
+    assert!(handle.await.unwrap().is_ok());
+    Ok(())
+}

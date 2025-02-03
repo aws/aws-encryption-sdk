@@ -6,7 +6,7 @@ public class __default extends _ExternBase___default {
 
   public static dafny.DafnySequence<
     ? extends Character
-    > GetTestVectorExecutionDirectory() {
+  > GetTestVectorExecutionDirectory() {
     return DafnySequence.asString("");
   }
 }

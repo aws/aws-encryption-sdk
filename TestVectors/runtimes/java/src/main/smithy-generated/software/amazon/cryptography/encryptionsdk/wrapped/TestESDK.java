@@ -4,6 +4,7 @@
 package software.amazon.cryptography.encryptionsdk.wrapped;
 
 import Wrappers_Compile.Result;
+import com.amazonaws.encryptionsdk.AwsCrypto;
 import com.amazonaws.encryptionsdk.CryptoAlgorithm;
 import com.amazonaws.encryptionsdk.CryptoResult;
 import dafny.DafnyMap;
@@ -13,7 +14,6 @@ import java.lang.RuntimeException;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Objects;
-import com.amazonaws.encryptionsdk.AwsCrypto;
 import software.amazon.cryptography.encryptionsdk.ESDK;
 import software.amazon.cryptography.encryptionsdk.ToDafny;
 import software.amazon.cryptography.encryptionsdk.ToNative;
@@ -47,24 +47,54 @@ public class TestESDK implements IAwsEncryptionSdkClient {
       if (Objects.isNull(nativeInput.materialsManager())) {
         // Call decrypt with keyring
         if (Objects.isNull(nativeInput.encryptionContext())) {
-          decryptResult = this._impl.decryptData(nativeInput.keyring(), nativeInput.ciphertext().array());
+          decryptResult =
+            this._impl.decryptData(
+                nativeInput.keyring(),
+                nativeInput.ciphertext().array()
+              );
         } else {
-          decryptResult = this._impl.decryptData(nativeInput.keyring(), nativeInput.ciphertext().array(), nativeInput.encryptionContext());
+          decryptResult =
+            this._impl.decryptData(
+                nativeInput.keyring(),
+                nativeInput.ciphertext().array(),
+                nativeInput.encryptionContext()
+              );
         }
       } else {
         if (Objects.isNull(nativeInput.encryptionContext())) {
-          decryptResult = this._impl.decryptData(nativeInput.materialsManager(), nativeInput.ciphertext().array());
+          decryptResult =
+            this._impl.decryptData(
+                nativeInput.materialsManager(),
+                nativeInput.ciphertext().array()
+              );
         } else {
-          decryptResult = this._impl.decryptData(nativeInput.materialsManager(), nativeInput.ciphertext().array(), nativeInput.encryptionContext());
+          decryptResult =
+            this._impl.decryptData(
+                nativeInput.materialsManager(),
+                nativeInput.ciphertext().array(),
+                nativeInput.encryptionContext()
+              );
         }
       }
-      DafnySequence<? extends Byte> plaintext = Simple.ByteSequence(decryptResult.getResult());
-      DafnyMap<? extends DafnySequence<? extends Byte>, ? extends DafnySequence<? extends Byte>> encryptionContext =
-        software.amazon.cryptography.materialproviders.ToDafny.EncryptionContext(decryptResult.getEncryptionContext());
-      ESDKAlgorithmSuiteId algorithmSuiteId = software.amazon.cryptography.materialproviders.ToDafny.ESDKAlgorithmSuiteId(
-        decryptResult.getCryptoAlgorithm().getAlgorithmSuiteId().ESDK()
+      DafnySequence<? extends Byte> plaintext = Simple.ByteSequence(
+        decryptResult.getResult()
       );
-      DecryptOutput dafnyOutput = new DecryptOutput(plaintext, encryptionContext, algorithmSuiteId);
+      DafnyMap<
+        ? extends DafnySequence<? extends Byte>,
+        ? extends DafnySequence<? extends Byte>
+      > encryptionContext =
+        software.amazon.cryptography.materialproviders.ToDafny.EncryptionContext(
+          decryptResult.getEncryptionContext()
+        );
+      ESDKAlgorithmSuiteId algorithmSuiteId =
+        software.amazon.cryptography.materialproviders.ToDafny.ESDKAlgorithmSuiteId(
+          decryptResult.getCryptoAlgorithm().getAlgorithmSuiteId().ESDK()
+        );
+      DecryptOutput dafnyOutput = new DecryptOutput(
+        plaintext,
+        encryptionContext,
+        algorithmSuiteId
+      );
 
       return Result.create_Success(
         DecryptOutput._typeDescriptor(),
@@ -88,31 +118,63 @@ public class TestESDK implements IAwsEncryptionSdkClient {
 
       // Java ESDK is special and you have to set the algorithm suite both in the keyring which the
       // test vectors do, but also in the client itself.
-      CryptoAlgorithm cryptoAlgorithm = _getAlgorithmSuite(nativeInput.algorithmSuiteId());
+      CryptoAlgorithm cryptoAlgorithm = _getAlgorithmSuite(
+        nativeInput.algorithmSuiteId()
+      );
       this._impl.setEncryptionAlgorithm(cryptoAlgorithm);
 
       if (Objects.isNull(nativeInput.materialsManager())) {
         // Call decrypt with keyring
         if (Objects.isNull(nativeInput.encryptionContext())) {
-          encryptResult = this._impl.encryptData(nativeInput.keyring(), nativeInput.plaintext().array());
+          encryptResult =
+            this._impl.encryptData(
+                nativeInput.keyring(),
+                nativeInput.plaintext().array()
+              );
         } else {
-          encryptResult = this._impl.encryptData(nativeInput.keyring(), nativeInput.plaintext().array(), nativeInput.encryptionContext());
+          encryptResult =
+            this._impl.encryptData(
+                nativeInput.keyring(),
+                nativeInput.plaintext().array(),
+                nativeInput.encryptionContext()
+              );
         }
       } else {
         if (Objects.isNull(nativeInput.encryptionContext())) {
-          encryptResult = this._impl.encryptData(nativeInput.materialsManager(), nativeInput.plaintext().array());
+          encryptResult =
+            this._impl.encryptData(
+                nativeInput.materialsManager(),
+                nativeInput.plaintext().array()
+              );
         } else {
-          encryptResult = this._impl.encryptData(nativeInput.materialsManager(), nativeInput.plaintext().array(), nativeInput.encryptionContext());
+          encryptResult =
+            this._impl.encryptData(
+                nativeInput.materialsManager(),
+                nativeInput.plaintext().array(),
+                nativeInput.encryptionContext()
+              );
         }
       }
-      dafny.DafnySequence<? extends Byte> ciphertext = Simple.ByteSequence(encryptResult.getResult());
-      DafnyMap<? extends DafnySequence<? extends Byte>, ? extends DafnySequence<? extends Byte>> encryptionContext =
-        software.amazon.cryptography.materialproviders.ToDafny.EncryptionContext(encryptResult.getEncryptionContext());
-      ESDKAlgorithmSuiteId algorithmSuiteId = software.amazon.cryptography.materialproviders.ToDafny.ESDKAlgorithmSuiteId(
-        encryptResult.getCryptoAlgorithm().getAlgorithmSuiteId().ESDK()
+      dafny.DafnySequence<? extends Byte> ciphertext = Simple.ByteSequence(
+        encryptResult.getResult()
       );
+      DafnyMap<
+        ? extends DafnySequence<? extends Byte>,
+        ? extends DafnySequence<? extends Byte>
+      > encryptionContext =
+        software.amazon.cryptography.materialproviders.ToDafny.EncryptionContext(
+          encryptResult.getEncryptionContext()
+        );
+      ESDKAlgorithmSuiteId algorithmSuiteId =
+        software.amazon.cryptography.materialproviders.ToDafny.ESDKAlgorithmSuiteId(
+          encryptResult.getCryptoAlgorithm().getAlgorithmSuiteId().ESDK()
+        );
 
-      EncryptOutput dafnyOutput = new EncryptOutput(ciphertext, encryptionContext, algorithmSuiteId);
+      EncryptOutput dafnyOutput = new EncryptOutput(
+        ciphertext,
+        encryptionContext,
+        algorithmSuiteId
+      );
       return Result.create_Success(
         EncryptOutput._typeDescriptor(),
         Error._typeDescriptor(),
@@ -127,7 +189,9 @@ public class TestESDK implements IAwsEncryptionSdkClient {
     }
   }
 
-  private CryptoAlgorithm _getAlgorithmSuite(software.amazon.cryptography.materialproviders.model.ESDKAlgorithmSuiteId esdkAlgorithmSuiteId) {
+  private CryptoAlgorithm _getAlgorithmSuite(
+    software.amazon.cryptography.materialproviders.model.ESDKAlgorithmSuiteId esdkAlgorithmSuiteId
+  ) {
     switch (esdkAlgorithmSuiteId) {
       case ALG_AES_128_GCM_IV12_TAG16_NO_KDF:
         return CryptoAlgorithm.ALG_AES_128_GCM_IV12_TAG16_NO_KDF;
@@ -152,7 +216,9 @@ public class TestESDK implements IAwsEncryptionSdkClient {
       case ALG_AES_256_GCM_HKDF_SHA512_COMMIT_KEY_ECDSA_P384:
         return CryptoAlgorithm.ALG_AES_256_GCM_HKDF_SHA512_COMMIT_KEY_ECDSA_P384;
       default:
-        throw new IllegalArgumentException("Unrecognized ESDK algorithmSuiteId: " + esdkAlgorithmSuiteId);
+        throw new IllegalArgumentException(
+          "Unrecognized ESDK algorithmSuiteId: " + esdkAlgorithmSuiteId
+        );
     }
   }
 
