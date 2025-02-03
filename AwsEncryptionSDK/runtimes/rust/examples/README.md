@@ -7,8 +7,8 @@ and how to set up some common configuration patterns.
 
 ## APIs
 
-The AWS Encryption SDK provides a high-level, 
-one-step API that processes encryption 
+The AWS Encryption SDK provides a high-level,
+one-step API that processes encryption
 and decryption operations entirely in memory.
 
 You can find examples that demonstrate these APIs
@@ -47,7 +47,7 @@ We start with AWS KMS examples, then show how to use other wrapping keys.
 ### Keyrings
 
 Keyrings are the most common way for you to configure the AWS Encryption SDK.
-They determine how the AWS Encryption SDK protects your data. 
+They determine how the AWS Encryption SDK protects your data.
 For more information about keyrings, see the [AWS Developer Guide on using Keyrings](https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/choose-keyring.html).
 You can find these examples in [`examples/keyring`](./keyring).
 
