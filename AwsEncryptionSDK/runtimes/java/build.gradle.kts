@@ -19,7 +19,7 @@ plugins {
 var props = Properties().apply {
     load(FileInputStream(File(rootProject.rootDir, "../../project.properties")))
 }
-var mplVersion = props.getProperty("mplDependencyJavaVersion")
+mplVersion = props.getProperty("mplDependencyJavaVersion")
 
 group = "software.amazon.cryptography"
 version = "1.0.0-SNAPSHOT"
