@@ -33,8 +33,8 @@ repositories {
 dependencies {
     implementation("org.dafny:DafnyRuntime:4.8.0")
     implementation("software.amazon.smithy.dafny:conversion:0.1")
-    implementation("software.amazon.cryptography:aws-cryptographic-material-providers:1.8.0")
-    implementation("software.amazon.cryptography:TestAwsCryptographicMaterialProviders:1.8.0-SNAPSHOT")
+    implementation("software.amazon.cryptography:aws-cryptographic-material-providers:${mplVersion}")
+    implementation("software.amazon.cryptography:TestAwsCryptographicMaterialProviders:${mplVersion}")
     implementation("software.amazon.cryptography:aws-encryption-sdk:1.0.0-SNAPSHOT")
     implementation("com.amazonaws:aws-encryption-sdk-java:3.0.1")
     implementation(platform("software.amazon.awssdk:bom:2.25.1"))
