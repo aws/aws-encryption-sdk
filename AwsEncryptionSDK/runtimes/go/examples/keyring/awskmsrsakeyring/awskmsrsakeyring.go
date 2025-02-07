@@ -26,7 +26,6 @@ import (
 	esdktypes "github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk/awscryptographyencryptionsdksmithygeneratedtypes"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/kms"
-	kmstypes "github.com/aws/aws-sdk-go-v2/service/kms/types"
 )
 
 func AwsKmsRsaExample(exampleText string, kmsRsaKeyID string, kmsRSAPublicKey []byte) {
@@ -47,10 +46,9 @@ func AwsKmsRsaExample(exampleText string, kmsRsaKeyID string, kmsRSAPublicKey []
 	}
 	// Step 3: Create the keyring
 	awsKmsRSAKeyringInput := mpltypes.CreateAwsKmsRsaKeyringInput{
-		KmsClient:           kmsClient,
-		KmsKeyId:            kmsRsaKeyID,
-		PublicKey:           kmsRSAPublicKey,
-		EncryptionAlgorithm: kmstypes.EncryptionAlgorithmSpecRsaesOaepSha256,
+		KmsClient: kmsClient,
+		KmsKeyId:  kmsRsaKeyID,
+		PublicKey: kmsRSAPublicKey,
 	}
 	awsKmsRSAKeyring, err := matProv.CreateAwsKmsRsaKeyring(context.Background(), awsKmsRSAKeyringInput)
 	if err != nil {
