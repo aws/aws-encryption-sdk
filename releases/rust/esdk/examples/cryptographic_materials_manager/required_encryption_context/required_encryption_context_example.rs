@@ -9,9 +9,9 @@ On decrypt, the client MUST supply the key/value pair(s) that were not stored to
 */
 
 use aws_esdk::client as esdk_client;
-use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use aws_esdk::material_providers::client as mpl_client;
 use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
+use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use aws_esdk::types::error::Error::AwsCryptographicMaterialProvidersError;
 use std::collections::HashMap;
 use std::vec::Vec;
@@ -40,8 +40,14 @@ pub async fn encrypt_and_decrypt_with_cmm(
         ("encryption".to_string(), "context".to_string()),
         ("is not".to_string(), "secret".to_string()),
         ("but adds".to_string(), "useful metadata".to_string()),
-        ("that can help you".to_string(), "be confident that".to_string()),
-        ("the data you are handling".to_string(), "is what you think it is".to_string()),
+        (
+            "that can help you".to_string(),
+            "be confident that".to_string(),
+        ),
+        (
+            "the data you are handling".to_string(),
+            "is what you think it is".to_string(),
+        ),
         ("requiredKey1".to_string(), "requiredValue1".to_string()),
         ("requiredKey2".to_string(), "requiredValue2".to_string()),
     ]);
@@ -50,10 +56,8 @@ pub async fn encrypt_and_decrypt_with_cmm(
     // These keys MUST be in your encryption context.
     // These keys and their corresponding values WILL NOT be stored on the message but will be used
     // for authentication.
-    let required_encryption_context_keys: Vec<String> = vec![
-        "requiredKey1".to_string(),
-        "requiredKey2".to_string(),
-    ];
+    let required_encryption_context_keys: Vec<String> =
+        vec!["requiredKey1".to_string(), "requiredKey2".to_string()];
 
     // 5. Create a KMS keyring
     let mpl_config = MaterialProvidersConfig::builder().build()?;
@@ -86,7 +90,8 @@ pub async fn encrypt_and_decrypt_with_cmm(
     // "but adds", "that can help you", and "the data you are handling" WILL be stored.
     let plaintext = example_data.as_bytes();
 
-    let encryption_response = esdk_client.encrypt()
+    let encryption_response = esdk_client
+        .encrypt()
         .plaintext(plaintext)
         .materials_manager(required_ec_cmm.clone())
         .encryption_context(encryption_context.clone())
@@ -94,16 +99,20 @@ pub async fn encrypt_and_decrypt_with_cmm(
         .await?;
 
     let ciphertext = encryption_response
-                        .ciphertext
-                        .expect("Unable to unwrap ciphertext from encryption response");
+        .ciphertext
+        .expect("Unable to unwrap ciphertext from encryption response");
 
     // 8. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
-        "Ciphertext and plaintext data are the same. Invalid encryption");
+    assert_ne!(
+        ciphertext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Ciphertext and plaintext data are the same. Invalid encryption"
+    );
 
     // 9. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decryption_response = esdk_client.decrypt()
+    let decryption_response = esdk_client
+        .decrypt()
         .ciphertext(ciphertext.clone())
         .materials_manager(required_ec_cmm.clone())
         // Provide the encryption context that was supplied to the encrypt method
@@ -112,26 +121,32 @@ pub async fn encrypt_and_decrypt_with_cmm(
         .await?;
 
     let decrypted_plaintext = decryption_response
-                                .plaintext
-                                .expect("Unable to unwrap plaintext from decryption response");
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // 10. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        decrypted_plaintext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     // 11. Attempt to decrypt your encrypted data using the same cryptographic material manager
     // you used on encrypt, but we won't pass the encryption context we DID NOT store on the message.
     // This will fail
-    let decryption_response_without_ec = esdk_client.decrypt()
+    let decryption_response_without_ec = esdk_client
+        .decrypt()
         .ciphertext(ciphertext.clone())
         .materials_manager(required_ec_cmm.clone())
         .send()
         .await;
 
     match decryption_response_without_ec {
-        Ok(_) => panic!("Decrypt without encryption context MUST \
-                            raise AwsCryptographicMaterialProvidersError"),
+        Ok(_) => panic!(
+            "Decrypt without encryption context MUST \
+                            raise AwsCryptographicMaterialProvidersError"
+        ),
         Err(AwsCryptographicMaterialProvidersError { error: _e }) => (),
         _ => panic!("Unexpected error type"),
     }
@@ -144,7 +159,8 @@ pub async fn encrypt_and_decrypt_with_cmm(
         ("requiredKey2".to_string(), "requiredValue2".to_string()),
     ]);
 
-    let decryption_response_with_reproduced_ec = esdk_client.decrypt()
+    let decryption_response_with_reproduced_ec = esdk_client
+        .decrypt()
         .ciphertext(ciphertext.clone())
         .materials_manager(required_ec_cmm)
         // Provide the encryption context that was supplied to the encrypt method
@@ -152,21 +168,24 @@ pub async fn encrypt_and_decrypt_with_cmm(
         .send()
         .await?;
 
-    let decrypted_plaintext_with_reproduced_ec =
-        decryption_response_with_reproduced_ec
-            .plaintext
-            .expect("Unable to unwrap plaintext from decryption response");
+    let decrypted_plaintext_with_reproduced_ec = decryption_response_with_reproduced_ec
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext_with_reproduced_ec, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        decrypted_plaintext_with_reproduced_ec,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     // 13. You can decrypt the ciphertext using the underlying cmm, but not providing the
     // encryption context with the request will result in an AwsCryptographicMaterialProvidersError
 
     // This will pass
-    let decryption_response_with_ec_underlying_cmm = esdk_client.decrypt()
+    let decryption_response_with_ec_underlying_cmm = esdk_client
+        .decrypt()
         .ciphertext(ciphertext.clone())
         .materials_manager(underlying_cmm.clone())
         // Provide the encryption context that was supplied to the encrypt method
@@ -174,26 +193,31 @@ pub async fn encrypt_and_decrypt_with_cmm(
         .send()
         .await?;
 
-    let decrypted_plaintext_with_ec_underlying_cmm =
-        decryption_response_with_ec_underlying_cmm
-            .plaintext
-            .expect("Unable to unwrap plaintext from decryption response");
+    let decrypted_plaintext_with_ec_underlying_cmm = decryption_response_with_ec_underlying_cmm
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext_with_ec_underlying_cmm, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        decrypted_plaintext_with_ec_underlying_cmm,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     // This will fail
-    let decryption_response_without_ec_underlying_cmm = esdk_client.decrypt()
+    let decryption_response_without_ec_underlying_cmm = esdk_client
+        .decrypt()
         .ciphertext(ciphertext)
         .materials_manager(underlying_cmm)
         .send()
         .await;
 
     match decryption_response_without_ec_underlying_cmm {
-        Ok(_) => panic!("Decrypt without encryption context MUST \
-                            raise AwsCryptographicMaterialProvidersError"),
+        Ok(_) => panic!(
+            "Decrypt without encryption context MUST \
+                            raise AwsCryptographicMaterialProvidersError"
+        ),
         Err(AwsCryptographicMaterialProvidersError { error: _e }) => (),
         _ => panic!("Unexpected error type"),
     }
@@ -208,10 +232,7 @@ pub async fn test_encrypt_and_decrypt_with_cmm() -> Result<(), crate::BoxError2>
     // Test function for encrypt and decrypt using the Required Encryption Context CMM example
     use crate::example_utils::utils;
 
-    encrypt_and_decrypt_with_cmm(
-        utils::TEST_EXAMPLE_DATA,
-        utils::TEST_DEFAULT_KMS_KEY_ID
-    ).await?;
+    encrypt_and_decrypt_with_cmm(utils::TEST_EXAMPLE_DATA, utils::TEST_DEFAULT_KMS_KEY_ID).await?;
 
     Ok(())
 }

@@ -5,8 +5,10 @@
 
 pub fn to_dafny(
     value: aws_sdk_kms::types::AlgorithmSpec,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::AlgorithmSpec>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::kms::internaldafny::types::AlgorithmSpec,
+> {
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_kms::types::AlgorithmSpec::RsaesPkcs1V15 => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::AlgorithmSpec::RSAES_PKCS1_V1_5 {},
 aws_sdk_kms::types::AlgorithmSpec::RsaesOaepSha1 => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::AlgorithmSpec::RSAES_OAEP_SHA_1 {},
 aws_sdk_kms::types::AlgorithmSpec::RsaesOaepSha256 => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::AlgorithmSpec::RSAES_OAEP_SHA_256 {},
@@ -16,7 +18,7 @@ aws_sdk_kms::types::AlgorithmSpec::Sm2Pke => crate::r#software::amazon::cryptogr
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::kms::internaldafny::types::AlgorithmSpec,
 ) -> aws_sdk_kms::types::AlgorithmSpec {

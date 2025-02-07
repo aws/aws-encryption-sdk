@@ -11,7 +11,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     /// - On success, responds with [`EcdsaSignOutput`](crate::operation::ecdsa_sign::EcdsaSignOutput) with field(s):
     ///   - [`signature(Option<::aws_smithy_types::Blob>)`](crate::operation::ecdsa_sign::ECDSASignOutput::signature): (undocumented)
     /// - On failure, responds with [`SdkError<EcdsaSignError>`](crate::operation::ecdsa_sign::EcdsaSignError)
-    pub fn ecdsa_sign(&self) -> crate::deps::aws_cryptography_primitives::operation::ecdsa_sign::builders::EcdsaSignFluentBuilder {
+    pub fn ecdsa_sign(&self) -> crate::deps::aws_cryptography_primitives::operation::ecdsa_sign::builders::EcdsaSignFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::ecdsa_sign::builders::EcdsaSignFluentBuilder::new(self.clone())
     }
 }

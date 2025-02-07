@@ -4,11 +4,11 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::operation::update_table_replica_auto_scaling::UpdateTableReplicaAutoScalingInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateTableReplicaAutoScalingInput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateTableReplicaAutoScalingInput::UpdateTableReplicaAutoScalingInput {
-        GlobalSecondaryIndexUpdates: ::std::rc::Rc::new(match &value.global_secondary_index_updates {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateTableReplicaAutoScalingInput::UpdateTableReplicaAutoScalingInput {
+        GlobalSecondaryIndexUpdates: ::dafny_runtime::Rc::new(match &value.global_secondary_index_updates {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| crate::deps::com_amazonaws_dynamodb::conversions::global_secondary_index_auto_scaling_update::to_dafny(e)
@@ -19,12 +19,12 @@ pub fn to_dafny(
 })
 ,
  TableName: crate::standard_library_conversions::ostring_to_dafny(&value.table_name) .Extract(),
- ProvisionedWriteCapacityAutoScalingUpdate: ::std::rc::Rc::new(match &value.provisioned_write_capacity_auto_scaling_update {
+ ProvisionedWriteCapacityAutoScalingUpdate: ::dafny_runtime::Rc::new(match &value.provisioned_write_capacity_auto_scaling_update {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::auto_scaling_settings_update::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- ReplicaUpdates: ::std::rc::Rc::new(match &value.replica_updates {
+ ReplicaUpdates: ::dafny_runtime::Rc::new(match &value.replica_updates {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| crate::deps::com_amazonaws_dynamodb::conversions::replica_auto_scaling_update::to_dafny(e)
@@ -36,18 +36,18 @@ pub fn to_dafny(
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateTableReplicaAutoScalingInput,
     >
-) -> aws_sdk_dynamodb::operation::update_table_replica_auto_scaling::UpdateTableReplicaAutoScalingInput {
+) -> aws_sdk_dynamodb::operation::update_table_replica_auto_scaling::UpdateTableReplicaAutoScalingInput{
     aws_sdk_dynamodb::operation::update_table_replica_auto_scaling::UpdateTableReplicaAutoScalingInput::builder()
           .set_global_secondary_index_updates(match (*dafny_value.GlobalSecondaryIndexUpdates()).as_ref() {
     crate::r#_Wrappers_Compile::Option::Some { value } =>
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(value,
-                |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::GlobalSecondaryIndexAutoScalingUpdate>| crate::deps::com_amazonaws_dynamodb::conversions::global_secondary_index_auto_scaling_update::from_dafny(e.clone())
+                |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::GlobalSecondaryIndexAutoScalingUpdate>| crate::deps::com_amazonaws_dynamodb::conversions::global_secondary_index_auto_scaling_update::from_dafny(e.clone())
 ,
             )
         ),
@@ -65,7 +65,7 @@ pub fn from_dafny(
     crate::r#_Wrappers_Compile::Option::Some { value } =>
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(value,
-                |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReplicaAutoScalingUpdate>| crate::deps::com_amazonaws_dynamodb::conversions::replica_auto_scaling_update::from_dafny(e.clone())
+                |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReplicaAutoScalingUpdate>| crate::deps::com_amazonaws_dynamodb::conversions::replica_auto_scaling_update::from_dafny(e.clone())
 ,
             )
         ),

@@ -9,7 +9,7 @@ impl crate::deps::aws_cryptography_keyStore::client::Client {
     /// - On success, responds with [`GetActiveBranchKeyOutput`](crate::operation::get_active_branch_key::GetActiveBranchKeyOutput) with field(s):
     ///   - [`branch_key_materials(Option<crate::deps::aws_cryptography_keyStore::types::BranchKeyMaterials>)`](crate::operation::get_active_branch_key::GetActiveBranchKeyOutput::branch_key_materials): (undocumented)
     /// - On failure, responds with [`SdkError<GetActiveBranchKeyError>`](crate::operation::get_active_branch_key::GetActiveBranchKeyError)
-    pub fn get_active_branch_key(&self) -> crate::deps::aws_cryptography_keyStore::operation::get_active_branch_key::builders::GetActiveBranchKeyFluentBuilder {
+    pub fn get_active_branch_key(&self) -> crate::deps::aws_cryptography_keyStore::operation::get_active_branch_key::builders::GetActiveBranchKeyFluentBuilder{
         crate::deps::aws_cryptography_keyStore::operation::get_active_branch_key::builders::GetActiveBranchKeyFluentBuilder::new(self.clone())
     }
 }

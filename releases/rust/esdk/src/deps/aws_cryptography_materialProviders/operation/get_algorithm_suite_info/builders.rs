@@ -13,7 +13,7 @@ impl GetAlgorithmSuiteInfoInputBuilder {
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_materialProviders::operation::get_algorithm_suite_info::AlgorithmSuiteInfo,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
-    > {
+    >{
         let mut fluent_builder = client.get_algorithm_suite_info();
         fluent_builder.inner = self;
         fluent_builder.send().await
@@ -28,14 +28,16 @@ pub struct GetAlgorithmSuiteInfoFluentBuilder {
 }
 impl GetAlgorithmSuiteInfoFluentBuilder {
     /// Creates a new `GetAlgorithmSuiteInfo`.
-    pub(crate) fn new(client: crate::deps::aws_cryptography_materialProviders::client::Client) -> Self {
+    pub(crate) fn new(
+        client: crate::deps::aws_cryptography_materialProviders::client::Client,
+    ) -> Self {
         Self {
             client,
             inner: ::std::default::Default::default(),
         }
     }
     /// Access the GetAlgorithmSuiteInfo as a reference.
-    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::get_algorithm_suite_info::builders::GetAlgorithmSuiteInfoInputBuilder {
+    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::get_algorithm_suite_info::builders::GetAlgorithmSuiteInfoInputBuilder{
         &self.inner
     }
     /// Sends the request and returns the response.
@@ -44,7 +46,7 @@ impl GetAlgorithmSuiteInfoFluentBuilder {
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_materialProviders::operation::get_algorithm_suite_info::AlgorithmSuiteInfo,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
-    > {
+    >{
         let input = self
             .inner
             .build()
@@ -55,24 +57,24 @@ impl GetAlgorithmSuiteInfoFluentBuilder {
             .map_err(|mut e| {
 	     let msg = format!("{:?}", e);
              crate::deps::aws_cryptography_materialProviders::types::error::Error::OpaqueWithText {
-                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut dyn ::std::any::Any),
+                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut ::dafny_runtime::DynAny),
 		objMessage: msg
              }})?;
         crate::deps::aws_cryptography_materialProviders::operation::get_algorithm_suite_info::GetAlgorithmSuiteInfo::send(&self.client, input).await
     }
 
     #[allow(missing_docs)]
-pub fn binary_id(mut self, input: impl ::std::convert::Into<::aws_smithy_types::Blob>) -> Self {
-    self.inner = self.inner.binary_id(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_binary_id(mut self, input: ::std::option::Option<::aws_smithy_types::Blob>) -> Self {
-    self.inner = self.inner.set_binary_id(input);
-    self
-}
-#[allow(missing_docs)]
-pub fn get_binary_id(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
-    self.inner.get_binary_id()
-}
+    pub fn binary_id(mut self, input: impl ::std::convert::Into<::aws_smithy_types::Blob>) -> Self {
+        self.inner = self.inner.binary_id(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_binary_id(mut self, input: ::std::option::Option<::aws_smithy_types::Blob>) -> Self {
+        self.inner = self.inner.set_binary_id(input);
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_binary_id(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
+        self.inner.get_binary_id()
+    }
 }

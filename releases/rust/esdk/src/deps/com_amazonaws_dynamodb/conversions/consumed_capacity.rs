@@ -4,20 +4,20 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::ConsumedCapacity,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ConsumedCapacity>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ConsumedCapacity>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ConsumedCapacity::ConsumedCapacity {
         TableName: crate::standard_library_conversions::ostring_to_dafny(&value.table_name),
  CapacityUnits: crate::standard_library_conversions::odouble_to_dafny(&value.capacity_units),
  ReadCapacityUnits: crate::standard_library_conversions::odouble_to_dafny(&value.read_capacity_units),
  WriteCapacityUnits: crate::standard_library_conversions::odouble_to_dafny(&value.write_capacity_units),
- Table: ::std::rc::Rc::new(match &value.table {
+ Table: ::dafny_runtime::Rc::new(match &value.table {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::capacity::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
  LocalSecondaryIndexes:
-::std::rc::Rc::new(match &value.local_secondary_indexes {
+::dafny_runtime::Rc::new(match &value.local_secondary_indexes {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::hashmap_to_dafny_map(x,
             |k| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&k),
@@ -29,7 +29,7 @@ pub fn to_dafny(
 })
 ,
  GlobalSecondaryIndexes:
-::std::rc::Rc::new(match &value.global_secondary_indexes {
+::dafny_runtime::Rc::new(match &value.global_secondary_indexes {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::hashmap_to_dafny_map(x,
             |k| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&k),
@@ -42,9 +42,10 @@ pub fn to_dafny(
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ConsumedCapacity,
     >,
 ) -> aws_sdk_dynamodb::types::ConsumedCapacity {
@@ -64,7 +65,7 @@ pub fn from_dafny(
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_map_to_hashmap(value,
                 |k: &::dafny_runtime::dafny_runtime_conversions::DafnySequence<::dafny_runtime::dafny_runtime_conversions::DafnyCharUTF16>| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(k),
-                |v: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Capacity>| crate::deps::com_amazonaws_dynamodb::conversions::capacity::from_dafny(v.clone())
+                |v: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Capacity>| crate::deps::com_amazonaws_dynamodb::conversions::capacity::from_dafny(v.clone())
 ,
             )
         ),
@@ -76,7 +77,7 @@ pub fn from_dafny(
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_map_to_hashmap(value,
                 |k: &::dafny_runtime::dafny_runtime_conversions::DafnySequence<::dafny_runtime::dafny_runtime_conversions::DafnyCharUTF16>| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(k),
-                |v: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Capacity>| crate::deps::com_amazonaws_dynamodb::conversions::capacity::from_dafny(v.clone())
+                |v: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Capacity>| crate::deps::com_amazonaws_dynamodb::conversions::capacity::from_dafny(v.clone())
 ,
             )
         ),
@@ -84,5 +85,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
 }

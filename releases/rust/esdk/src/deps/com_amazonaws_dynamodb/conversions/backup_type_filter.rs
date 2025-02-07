@@ -5,8 +5,8 @@
 
 pub fn to_dafny(
     value: aws_sdk_dynamodb::types::BackupTypeFilter,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::BackupTypeFilter>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::BackupTypeFilter>{
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_dynamodb::types::BackupTypeFilter::User => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::BackupTypeFilter::USER {},
 aws_sdk_dynamodb::types::BackupTypeFilter::System => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::BackupTypeFilter::SYSTEM {},
 aws_sdk_dynamodb::types::BackupTypeFilter::AwsBackup => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::BackupTypeFilter::AWS_BACKUP {},
@@ -14,7 +14,7 @@ aws_sdk_dynamodb::types::BackupTypeFilter::All => crate::r#software::amazon::cry
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::BackupTypeFilter,
 ) -> aws_sdk_dynamodb::types::BackupTypeFilter {

@@ -25,10 +25,10 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
 use aws_esdk::client as esdk_client;
-use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use aws_esdk::material_providers::client as mpl_client;
-use aws_esdk::material_providers::types::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
 use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
+use aws_esdk::material_providers::types::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use std::collections::HashMap;
 
 pub async fn encrypt_and_decrypt_with_keyring(
@@ -44,8 +44,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // We recommend that AWS Encryption SDK users use the default commitment policy
     // (RequireEncryptRequireDecrypt) whenever possible.
     let esdk_config = AwsEncryptionSdkConfig::builder()
-                        .commitment_policy(ForbidEncryptAllowDecrypt)
-                        .build()?;
+        .commitment_policy(ForbidEncryptAllowDecrypt)
+        .build()?;
     let esdk_client = esdk_client::Client::from_conf(esdk_config)?;
 
     // 2. Create a KMS client.
@@ -60,8 +60,14 @@ pub async fn encrypt_and_decrypt_with_keyring(
         ("encryption".to_string(), "context".to_string()),
         ("is not".to_string(), "secret".to_string()),
         ("but adds".to_string(), "useful metadata".to_string()),
-        ("that can help you".to_string(), "be confident that".to_string()),
-        ("the data you are handling".to_string(), "is what you think it is".to_string()),
+        (
+            "that can help you".to_string(),
+            "be confident that".to_string(),
+        ),
+        (
+            "the data you are handling".to_string(),
+            "is what you think it is".to_string(),
+        ),
     ]);
 
     // 4. Create a KMS keyring
@@ -88,7 +94,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384 which is a non-committing algorithm.
     let plaintext = example_data.as_bytes();
 
-    let encryption_response = esdk_client.encrypt()
+    let encryption_response = esdk_client
+        .encrypt()
         .plaintext(plaintext)
         .keyring(kms_keyring.clone())
         .encryption_context(encryption_context.clone())
@@ -96,16 +103,20 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let ciphertext = encryption_response
-                        .ciphertext
-                        .expect("Unable to unwrap ciphertext from encryption response");
+        .ciphertext
+        .expect("Unable to unwrap ciphertext from encryption response");
 
     // 6. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
-        "Ciphertext and plaintext data are the same. Invalid encryption");
+    assert_ne!(
+        ciphertext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Ciphertext and plaintext data are the same. Invalid encryption"
+    );
 
     // 7. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decryption_response = esdk_client.decrypt()
+    let decryption_response = esdk_client
+        .decrypt()
         .ciphertext(ciphertext)
         .keyring(kms_keyring)
         // Provide the encryption context that was supplied to the encrypt method
@@ -114,13 +125,16 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let decrypted_plaintext = decryption_response
-                                .plaintext
-                                .expect("Unable to unwrap plaintext from decryption response");
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // 8. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        decrypted_plaintext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     println!("Set Commitment Policy Example Completed Successfully");
 
@@ -132,10 +146,8 @@ pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxErr
     // Test function for encrypt and decrypt using the Set Commitment Policy example
     use crate::example_utils::utils;
 
-    encrypt_and_decrypt_with_keyring(
-        utils::TEST_EXAMPLE_DATA,
-        utils::TEST_DEFAULT_KMS_KEY_ID
-    ).await?;
+    encrypt_and_decrypt_with_keyring(utils::TEST_EXAMPLE_DATA, utils::TEST_DEFAULT_KMS_KEY_ID)
+        .await?;
 
     Ok(())
 }

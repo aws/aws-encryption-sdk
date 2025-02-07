@@ -17,12 +17,12 @@ impl CreateCryptographicMaterialsCache {
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
-    > {
+    >{
         crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HCreateCryptographicMaterialsCacheInput_for_AwsCryptographicMaterialProviders_CreateCryptographicMaterialsCache(&input)
             .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
-                let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::create_cryptographic_materials_cache::_create_cryptographic_materials_cache_input::to_dafny(input);
-        let inner_result =
-            ::dafny_runtime::md!(client.dafny_client.clone()).CreateCryptographicMaterialsCache(&inner_input);
+        let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::create_cryptographic_materials_cache::_create_cryptographic_materials_cache_input::to_dafny(input);
+        let inner_result = ::dafny_runtime::md!(client.dafny_client.clone())
+            .CreateCryptographicMaterialsCache(&inner_input);
         if matches!(
             inner_result.as_ref(),
             crate::r#_Wrappers_Compile::Result::Success { .. }
@@ -32,9 +32,11 @@ impl CreateCryptographicMaterialsCache {
 ,
             )
         } else {
-            Err(crate::deps::aws_cryptography_materialProviders::conversions::error::from_dafny(
-                inner_result.error().clone(),
-            ))
+            Err(
+                crate::deps::aws_cryptography_materialProviders::conversions::error::from_dafny(
+                    inner_result.error().clone(),
+                ),
+            )
         }
     }
 }

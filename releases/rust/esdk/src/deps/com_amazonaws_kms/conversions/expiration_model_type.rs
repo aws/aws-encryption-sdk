@@ -5,14 +5,14 @@
 
 pub fn to_dafny(
     value: aws_sdk_kms::types::ExpirationModelType,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ExpirationModelType>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ExpirationModelType>{
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_kms::types::ExpirationModelType::KeyMaterialExpires => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ExpirationModelType::KEY_MATERIAL_EXPIRES {},
 aws_sdk_kms::types::ExpirationModelType::KeyMaterialDoesNotExpire => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ExpirationModelType::KEY_MATERIAL_DOES_NOT_EXPIRE {},
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::kms::internaldafny::types::ExpirationModelType,
 ) -> aws_sdk_kms::types::ExpirationModelType {

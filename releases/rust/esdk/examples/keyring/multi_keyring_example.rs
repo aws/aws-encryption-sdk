@@ -42,12 +42,12 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
 use aws_esdk::client as esdk_client;
-use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use aws_esdk::material_providers::client as mpl_client;
 use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
 use aws_esdk::material_providers::types::AesWrappingAlg;
+use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
+use rand::TryRngCore;
 use std::collections::HashMap;
-use rand::RngCore;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
@@ -73,8 +73,14 @@ pub async fn encrypt_and_decrypt_with_keyring(
         ("encryption".to_string(), "context".to_string()),
         ("is not".to_string(), "secret".to_string()),
         ("but adds".to_string(), "useful metadata".to_string()),
-        ("that can help you".to_string(), "be confident that".to_string()),
-        ("the data you are handling".to_string(), "is what you think it is".to_string()),
+        (
+            "that can help you".to_string(),
+            "be confident that".to_string(),
+        ),
+        (
+            "the data you are handling".to_string(),
+            "is what you think it is".to_string(),
+        ),
     ]);
 
     // 4. Create a KMS keyring
@@ -124,7 +130,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 7. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
 
-    let encryption_response = esdk_client.encrypt()
+    let encryption_response = esdk_client
+        .encrypt()
         .plaintext(plaintext)
         .keyring(multi_keyring.clone())
         .encryption_context(encryption_context.clone())
@@ -132,16 +139,20 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let ciphertext = encryption_response
-                        .ciphertext
-                        .expect("Unable to unwrap ciphertext from encryption response");
+        .ciphertext
+        .expect("Unable to unwrap ciphertext from encryption response");
 
     // 8. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
-        "Ciphertext and plaintext data are the same. Invalid encryption");
+    assert_ne!(
+        ciphertext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Ciphertext and plaintext data are the same. Invalid encryption"
+    );
 
     // 9a. Decrypt your encrypted data using the same multi_keyring you used on encrypt.
-    let decryption_response_multi_keyring = esdk_client.decrypt()
+    let decryption_response_multi_keyring = esdk_client
+        .decrypt()
         .ciphertext(ciphertext.clone())
         .keyring(multi_keyring)
         // Provide the encryption context that was supplied to the encrypt method
@@ -149,15 +160,17 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .send()
         .await?;
 
-    let decrypted_plaintext_multi_keyring =
-            decryption_response_multi_keyring
-                .plaintext
-                .expect("Unable to unwrap plaintext from decryption response");
+    let decrypted_plaintext_multi_keyring = decryption_response_multi_keyring
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // 9b. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext_multi_keyring, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        decrypted_plaintext_multi_keyring,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     // Because you used a multi_keyring on Encrypt, you can use either the
     // `kms_keyring` or `raw_aes_keyring` individually to decrypt the data.
@@ -167,7 +180,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // (This is an example for demonstration; you do not need to do this in your own code.)
 
     // 10a. Decrypt your encrypted data using the kms_keyring.
-    let decryption_response_kms_keyring = esdk_client.decrypt()
+    let decryption_response_kms_keyring = esdk_client
+        .decrypt()
         .ciphertext(ciphertext.clone())
         .keyring(kms_keyring)
         // Provide the encryption context that was supplied to the encrypt method
@@ -175,22 +189,25 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .send()
         .await?;
 
-    let decrypted_plaintext_kms_keyring =
-            decryption_response_kms_keyring
-                .plaintext
-                .expect("Unable to unwrap plaintext from decryption response");
+    let decrypted_plaintext_kms_keyring = decryption_response_kms_keyring
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // 10b. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext_kms_keyring, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        decrypted_plaintext_kms_keyring,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     // 11. Demonstrate that you can also successfully decrypt data using the `raw_aes_keyring`
     // directly.
     // (This is an example for demonstration; you do not need to do this in your own code.)
 
     // 11a. Decrypt your encrypted data using the raw_aes_keyring.
-    let decryption_response_raw_aes_keyring = esdk_client.decrypt()
+    let decryption_response_raw_aes_keyring = esdk_client
+        .decrypt()
         .ciphertext(ciphertext)
         .keyring(raw_aes_keyring)
         // Provide the encryption context that was supplied to the encrypt method
@@ -198,15 +215,17 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .send()
         .await?;
 
-    let decrypted_plaintext_raw_aes_keyring =
-            decryption_response_raw_aes_keyring
-                .plaintext
-                .expect("Unable to unwrap plaintext from decryption response");
+    let decrypted_plaintext_raw_aes_keyring = decryption_response_raw_aes_keyring
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // 11b. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext_raw_aes_keyring, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        decrypted_plaintext_raw_aes_keyring,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     println!("Multi Keyring Example Completed Successfully");
 
@@ -219,7 +238,7 @@ fn generate_aes_key_bytes() -> Vec<u8> {
     //     retrieve this key from a secure key management system (e.g. HSM).
     // This key is created here for example purposes only and should not be used for any other purpose.
     let mut random_bytes = [0u8; 32];
-    rand::rngs::OsRng.fill_bytes(&mut random_bytes);
+    rand::rngs::OsRng.try_fill_bytes(&mut random_bytes).unwrap();
 
     random_bytes.to_vec()
 }
@@ -229,10 +248,8 @@ pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxErr
     // Test function for encrypt and decrypt using the Multi Keyring example
     use crate::example_utils::utils;
 
-    encrypt_and_decrypt_with_keyring(
-        utils::TEST_EXAMPLE_DATA,
-        utils::TEST_DEFAULT_KMS_KEY_ID,
-    ).await?;
+    encrypt_and_decrypt_with_keyring(utils::TEST_EXAMPLE_DATA, utils::TEST_DEFAULT_KMS_KEY_ID)
+        .await?;
 
     Ok(())
 }

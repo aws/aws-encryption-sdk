@@ -4,23 +4,29 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::operation::delete_resource_policy::DeleteResourcePolicyInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DeleteResourcePolicyInput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DeleteResourcePolicyInput::DeleteResourcePolicyInput {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DeleteResourcePolicyInput::DeleteResourcePolicyInput {
         ResourceArn: crate::standard_library_conversions::ostring_to_dafny(&value.resource_arn) .Extract(),
  ExpectedRevisionId: crate::standard_library_conversions::ostring_to_dafny(&value.expected_revision_id),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DeleteResourcePolicyInput,
-    >
+    >,
 ) -> aws_sdk_dynamodb::operation::delete_resource_policy::DeleteResourcePolicyInput {
     aws_sdk_dynamodb::operation::delete_resource_policy::DeleteResourcePolicyInput::builder()
-          .set_resource_arn(Some( dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(dafny_value.ResourceArn()) ))
- .set_expected_revision_id(crate::standard_library_conversions::ostring_from_dafny(dafny_value.ExpectedRevisionId().clone()))
-          .build()
-          .unwrap()
+        .set_resource_arn(Some(
+            dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(
+                dafny_value.ResourceArn(),
+            ),
+        ))
+        .set_expected_revision_id(crate::standard_library_conversions::ostring_from_dafny(
+            dafny_value.ExpectedRevisionId().clone(),
+        ))
+        .build()
+        .unwrap()
 }

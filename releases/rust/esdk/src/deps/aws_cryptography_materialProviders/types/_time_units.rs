@@ -5,14 +5,14 @@
 #[allow(missing_docs)]
 pub enum TimeUnits {
     Seconds,
-Milliseconds,
+    Milliseconds,
 }
 
 impl ::std::fmt::Display for TimeUnits {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         match self {
             TimeUnits::Seconds => write!(f, "Seconds"),
-TimeUnits::Milliseconds => write!(f, "Milliseconds"),
+            TimeUnits::Milliseconds => write!(f, "Milliseconds"),
         }
     }
 }

@@ -14,7 +14,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     ///   - [`auth_tag(Option<::aws_smithy_types::Blob>)`](crate::operation::aes_encrypt::AESEncryptOutput::auth_tag): (undocumented)
     ///   - [`cipher_text(Option<::aws_smithy_types::Blob>)`](crate::operation::aes_encrypt::AESEncryptOutput::cipher_text): (undocumented)
     /// - On failure, responds with [`SdkError<AesEncryptError>`](crate::operation::aes_encrypt::AesEncryptError)
-    pub fn aes_encrypt(&self) -> crate::deps::aws_cryptography_primitives::operation::aes_encrypt::builders::AesEncryptFluentBuilder {
+    pub fn aes_encrypt(&self) -> crate::deps::aws_cryptography_primitives::operation::aes_encrypt::builders::AesEncryptFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::aes_encrypt::builders::AesEncryptFluentBuilder::new(self.clone())
     }
 }

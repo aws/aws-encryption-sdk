@@ -14,10 +14,10 @@ and streaming APIs.
 You can find examples that demonstrate these APIs
 in the [`examples/`](./) directory.
 
-* [How to encrypt and decrypt](./keyring/awskmskeyring/awskmskeyring.go)
-* [How to change the algorithm suite](./misc/setencryptionalgorithmsuite.go)
-* [How to set the commitment policy](./misc/commitmentpolicy.go)
-* [How to limit the number of encrypted data keys (EDKs)](./misc/limitencrypteddatakeysexample.go)
+- [How to encrypt and decrypt](./keyring/awskmskeyring/awskmskeyring.go)
+- [How to change the algorithm suite](./misc/setencryptionalgorithmsuite.go)
+- [How to set the commitment policy](./misc/commitmentpolicy.go)
+- [How to limit the number of encrypted data keys (EDKs)](./misc/limitencrypteddatakeysexample.go)
 
 ## Configuration
 
@@ -29,20 +29,20 @@ These examples will show you how to use the configuration tools that we include 
 and how to create some of your own.
 We start with AWS KMS examples, then show how to use other wrapping keys.
 
-* Using AWS Key Management Service (AWS KMS)
-    * [How to use one AWS KMS key](./keyring/awskmskeyring/awskmskeyring.go)
-    * [How to use multiple AWS KMS keys in different regions](./keyring/awskmsmrkmultikeyring/awskmsmrkmultikeyring.go)
-    * [How to decrypt when you don't know the AWS KMS key](./keyring/awskmsdiscoverykeyring/awskmsdiscoverykeyring.go)
-    * [How to limit decryption to a single region](./keyring/awskmsmrkdiscoverykeyring/awskmsmrkdiscoverykeyring.go)
-    * [How to decrypt with a preferred region but failover to others](./keyring/awskmsmrkdiscoverykeyring/awskmsmrkdiscoverykeyring.go)
-    * [How to reproduce the behavior of an AWS KMS master key provider](./keyring/awskmsmultikeyring/awskmsmultikeyring.go)
-* Using raw wrapping keys
-    * [How to use a raw AES wrapping key](./keyring/rawaeskeyring/rawaeskeyring.go)
-    * [How to use a raw RSA wrapping key](./keyring/rawrsakeyring/rawrasakeyring.go)
-* Combining wrapping keys
-    * [How to combine AWS KMS with an offline escrow key](./keyring/multikeyring/multikeyring.go)
-* How to restrict algorithm suites
-    * [with a custom cryptographic materials manager](./cryptographicmaterialsmanager/restrictalgorithmsuite/signingsuiteonlycmm.go)
+- Using AWS Key Management Service (AWS KMS)
+  - [How to use one AWS KMS key](./keyring/awskmskeyring/awskmskeyring.go)
+  - [How to use multiple AWS KMS keys in different regions](./keyring/awskmsmrkmultikeyring/awskmsmrkmultikeyring.go)
+  - [How to decrypt when you don't know the AWS KMS key](./keyring/awskmsdiscoverykeyring/awskmsdiscoverykeyring.go)
+  - [How to limit decryption to a single region](./keyring/awskmsmrkdiscoverykeyring/awskmsmrkdiscoverykeyring.go)
+  - [How to decrypt with a preferred region but failover to others](./keyring/awskmsmrkdiscoverykeyring/awskmsmrkdiscoverykeyring.go)
+  - [How to reproduce the behavior of an AWS KMS master key provider](./keyring/awskmsmultikeyring/awskmsmultikeyring.go)
+- Using raw wrapping keys
+  - [How to use a raw AES wrapping key](./keyring/rawaeskeyring/rawaeskeyring.go)
+  - [How to use a raw RSA wrapping key](./keyring/rawrsakeyring/rawrasakeyring.go)
+- Combining wrapping keys
+  - [How to combine AWS KMS with an offline escrow key](./keyring/multikeyring/multikeyring.go)
+- How to restrict algorithm suites
+  - [with a custom cryptographic materials manager](./cryptographicmaterialsmanager/restrictalgorithmsuite/signingsuiteonlycmm.go)
 
 ### Keyrings
 
@@ -83,7 +83,7 @@ To make sure that your example runs in our CI,
 please make sure that it meets the following requirements:
 
 1. The example MUST be a distinct subdirectory or file in the [`examples/`](./) directory.
-1. The example MAY be nested arbitrarily deeply. 
+1. The example MAY be nested arbitrarily deeply.
 1. Each example file MUST contain exactly one example.
 1. Each example filename MUST be descriptive.
 1. Each example file MUST contain validation checks to check for expected returned values and MUST panic is the returned value is no expected.

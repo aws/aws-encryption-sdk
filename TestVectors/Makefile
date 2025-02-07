@@ -93,14 +93,6 @@ IMPLEMENTATION_FROM_DAFNY_TV_NET_FILE=runtimes/net/ImplementationFromDafny.cs
 IMPLEMENTATION_FROM_DAFNY_TV_NET_MPL_MAIN="Dafny.Helpers.WithHaltHandling(() => WrappedMaterialProvidersMain_Compile.__default._Main(Dafny.Sequence<Dafny.ISequence<char>>.FromMainArguments(args)));"
 IMPLEMENTATION_FROM_DAFNY_TV_NET_ESDK_MAIN="Dafny.Helpers.WithHaltHandling(() => WrappedESDKMain_Compile.__default.Main2(Dafny.Sequence<Dafny.ISequence<char>>.FromMainArguments(args)));"
 
-IMPLEMENTATION_FROM_DAFNY_TV_RUST_FILE=runtimes/rust/src/implementation_from_dafny.rs
-IMPLEMENTATION_FROM_DAFNY_TV_RUST_MPL_MAIN="WrappedMaterialProvidersMain::_default::Main();"
-IMPLEMENTATION_FROM_DAFNY_TV_RUST_ESDK_MAIN= \
-	"let args: Vec<String> = std::env::args().collect();\
-	let dafny_strings = args.iter().map(|x| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(\&x)).collect::<Vec<_>>();\
-	let dafny_args = dafny_runtime::Sequence::from_array_owned(dafny_strings);\
-	r\#_WrappedESDKMain_Compile::_default::Main2(\&dafny_args);"
-
 IMPLEMENTATION_FROM_DAFNY_TV_GO_FILE=runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny.go
 IMPLEMENTATION_FROM_DAFNY_TV_GO_MPL_MAIN="m_WrappedMaterialProvidersMain.Companion_Default___.Main(_dafny.FromMainArguments(os.Args))"
 IMPLEMENTATION_FROM_DAFNY_TV_GO_ESDK_MAIN="m_WrappedESDKMain.Companion_Default___.Main2(_dafny.FromMainArguments(os.Args))"
@@ -124,8 +116,8 @@ GO_DEPENDENCY_MODULE_NAMES := \
 	--dependency-library-name=aws.cryptography.keyStore=github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl \
 	--dependency-library-name=aws.cryptography.primitives=github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives \
 	--dependency-library-name=aws.cryptography.materialProviders=github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl \
-    	--dependency-library-name=sdk.com.amazonaws.dynamodb=github.com/aws/aws-sdk-go-v2/service/dynamodb \
-    	--dependency-library-name=sdk.com.amazonaws.kms=github.com/aws/aws-sdk-go-v2/service/kms
+	--dependency-library-name=sdk.com.amazonaws.dynamodb=github.com/aws/aws-sdk-go-v2/service/dynamodb \
+	--dependency-library-name=sdk.com.amazonaws.kms=github.com/aws/aws-sdk-go-v2/service/kms
 
 TRANSLATION_RECORD_GO := \
 	AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
@@ -144,7 +136,6 @@ WRAPPED_INDEX_FILE_WITHOUT_EXTERN_STRING="module WrappedESDK refines WrappedAbst
 
 transpile_implementation_java: _replace_main_method_name_java
 transpile_implementation_net: _replace_main_method_name_net
-transpile_implementation_rust: _replace_main_method_name_rust
 transpile_implementation_go: _replace_main_method_name_go
 
 _polymorph_go: purge_polymorph_code
@@ -170,9 +161,6 @@ _replace_main_method_name_java:
 
 _replace_main_method_name_net:
 	$(MAKE) _sed_file SED_FILE_PATH=$(IMPLEMENTATION_FROM_DAFNY_TV_NET_FILE) SED_BEFORE_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_NET_MPL_MAIN) SED_AFTER_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_NET_ESDK_MAIN)
-
-_replace_main_method_name_rust:
-	$(MAKE) _sed_file SED_FILE_PATH=$(IMPLEMENTATION_FROM_DAFNY_TV_RUST_FILE) SED_BEFORE_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_RUST_MPL_MAIN) SED_AFTER_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_RUST_ESDK_MAIN)
 
 _replace_main_method_name_go:
 	$(MAKE) _sed_file SED_FILE_PATH=$(IMPLEMENTATION_FROM_DAFNY_TV_GO_FILE) SED_BEFORE_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_GO_MPL_MAIN) SED_AFTER_STRING=$(IMPLEMENTATION_FROM_DAFNY_TV_GO_ESDK_MAIN)

@@ -5,14 +5,14 @@
 
 pub fn to_dafny(
     value: aws_sdk_kms::types::CustomKeyStoreType,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CustomKeyStoreType>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CustomKeyStoreType>{
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_kms::types::CustomKeyStoreType::AwsCloudhsm => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CustomKeyStoreType::AWS_CLOUDHSM {},
 aws_sdk_kms::types::CustomKeyStoreType::ExternalKeyStore => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CustomKeyStoreType::EXTERNAL_KEY_STORE {},
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CustomKeyStoreType,
 ) -> aws_sdk_kms::types::CustomKeyStoreType {

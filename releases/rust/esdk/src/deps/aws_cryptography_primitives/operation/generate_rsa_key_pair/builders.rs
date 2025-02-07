@@ -13,7 +13,7 @@ impl GenerateRsaKeyPairInputBuilder {
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_primitives::operation::generate_rsa_key_pair::GenerateRsaKeyPairOutput,
         crate::deps::aws_cryptography_primitives::types::error::Error,
-    > {
+    >{
         let mut fluent_builder = client.generate_rsa_key_pair();
         fluent_builder.inner = self;
         fluent_builder.send().await
@@ -35,7 +35,7 @@ impl GenerateRsaKeyPairFluentBuilder {
         }
     }
     /// Access the GenerateRsaKeyPair as a reference.
-    pub fn as_input(&self) -> &crate::deps::aws_cryptography_primitives::operation::generate_rsa_key_pair::builders::GenerateRsaKeyPairInputBuilder {
+    pub fn as_input(&self) -> &crate::deps::aws_cryptography_primitives::operation::generate_rsa_key_pair::builders::GenerateRsaKeyPairInputBuilder{
         &self.inner
     }
     /// Sends the request and returns the response.
@@ -44,7 +44,7 @@ impl GenerateRsaKeyPairFluentBuilder {
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_primitives::operation::generate_rsa_key_pair::GenerateRsaKeyPairOutput,
         crate::deps::aws_cryptography_primitives::types::error::Error,
-    > {
+    >{
         let input = self
             .inner
             .build()
@@ -53,26 +53,27 @@ impl GenerateRsaKeyPairFluentBuilder {
             // and smithy-rs seems to not generate a ValidationError case unless there is.
             // Vanilla smithy-rs uses SdkError::construction_failure, but we aren't using SdkError.
             .map_err(|mut e| {
-	     let msg = format!("{:?}", e);
-             crate::deps::aws_cryptography_primitives::types::error::Error::OpaqueWithText {
-                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut dyn ::std::any::Any),
-		objMessage: msg
-             }})?;
+                let msg = format!("{:?}", e);
+                crate::deps::aws_cryptography_primitives::types::error::Error::OpaqueWithText {
+                    obj: ::dafny_runtime::Object::from_ref(&mut e as &mut ::dafny_runtime::DynAny),
+                    objMessage: msg,
+                }
+            })?;
         crate::deps::aws_cryptography_primitives::operation::generate_rsa_key_pair::GenerateRsaKeyPair::send(&self.client, input).await
     }
 
     #[allow(missing_docs)]
-pub fn length_bits(mut self, input: impl ::std::convert::Into<::std::primitive::i32>) -> Self {
-    self.inner = self.inner.length_bits(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_length_bits(mut self, input: ::std::option::Option<::std::primitive::i32>) -> Self {
-    self.inner = self.inner.set_length_bits(input);
-    self
-}
-#[allow(missing_docs)]
-pub fn get_length_bits(&self) -> &::std::option::Option<::std::primitive::i32> {
-    self.inner.get_length_bits()
-}
+    pub fn length_bits(mut self, input: impl ::std::convert::Into<::std::primitive::i32>) -> Self {
+        self.inner = self.inner.length_bits(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_length_bits(mut self, input: ::std::option::Option<::std::primitive::i32>) -> Self {
+        self.inner = self.inner.set_length_bits(input);
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_length_bits(&self) -> &::std::option::Option<::std::primitive::i32> {
+        self.inner.get_length_bits()
+    }
 }

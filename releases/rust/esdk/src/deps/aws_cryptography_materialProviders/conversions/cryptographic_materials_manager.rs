@@ -6,20 +6,20 @@ pub fn to_dafny(
     value: &crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef,
 ) -> ::dafny_runtime::Object<
   dyn crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::ICryptographicMaterialsManager,
-> {
-  let wrap = CryptographicMaterialsManagerWrapper {
-      obj: value.clone(),
-  };
-  let inner = ::std::rc::Rc::new(::std::cell::UnsafeCell::new(wrap));
-  ::dafny_runtime::Object (Some(inner) )
+>{
+    let wrap = CryptographicMaterialsManagerWrapper { obj: value.clone() };
+    let inner = ::dafny_runtime::Rc::new(::dafny_runtime::UnsafeCell::new(wrap));
+    ::dafny_runtime::Object(Some(inner))
 }
 
 pub struct CryptographicMaterialsManagerWrapper {
   obj: crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef,
 }
 
-impl ::dafny_runtime::UpcastObject<dyn ::std::any::Any> for CryptographicMaterialsManagerWrapper {
-  ::dafny_runtime::UpcastObjectFn!(dyn ::std::any::Any);
+impl ::dafny_runtime::UpcastObject<::dafny_runtime::DynAny>
+    for CryptographicMaterialsManagerWrapper
+{
+    ::dafny_runtime::UpcastObjectFn!(::dafny_runtime::DynAny);
 }
 
 #[allow(dead_code)]
@@ -27,12 +27,12 @@ pub fn from_dafny(
     dafny_value: ::dafny_runtime::Object<
       dyn crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::ICryptographicMaterialsManager,
     >,
-) -> crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef {
+) -> crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef{
     let wrap = ICryptographicMaterialsManagerDafnyWrapper {
         obj: dafny_value.clone(),
     };
     crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef {
-      inner: ::std::rc::Rc::new(::std::cell::RefCell::new(wrap))
+      inner: ::dafny_runtime::Rc::new(::dafny_runtime::RefCell::new(wrap))
     }
 }
 
@@ -48,16 +48,16 @@ impl crate::software::amazon::cryptography::materialproviders::internaldafny::ty
 {
   fn r#_GetEncryptionMaterials_k(
     &self,
-    input: &::std::rc::Rc<crate::software::amazon::cryptography::materialproviders::internaldafny::types::GetEncryptionMaterialsInput>,
-) -> ::std::rc::Rc<
+    input: &::dafny_runtime::Rc<crate::software::amazon::cryptography::materialproviders::internaldafny::types::GetEncryptionMaterialsInput>,
+) -> ::dafny_runtime::Rc<
     crate::r#_Wrappers_Compile::Result<
-        ::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::GetEncryptionMaterialsOutput>,
-        ::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error>,
+        ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::GetEncryptionMaterialsOutput>,
+        ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error>,
     >,
 >
 {
     let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::get_encryption_materials::_get_encryption_materials_input::from_dafny(input.clone());
-    let inner_result = self.obj.inner.borrow_mut().get_encryption_materials(inner_input);
+    let inner_result = self.obj.inner.lock().unwrap().get_encryption_materials(inner_input);
     let result = match inner_result {
         Ok(x) => crate::r#_Wrappers_Compile::Result::Success {
             value: crate::deps::aws_cryptography_materialProviders::conversions::get_encryption_materials::_get_encryption_materials_output::to_dafny(x.clone()),
@@ -66,21 +66,21 @@ impl crate::software::amazon::cryptography::materialproviders::internaldafny::ty
             error: crate::deps::aws_cryptography_materialProviders::conversions::error::to_dafny(x),
         },
     };
-    ::std::rc::Rc::new(result)
+    ::dafny_runtime::Rc::new(result)
 }
 
 fn r#_DecryptMaterials_k(
     &self,
-    input: &::std::rc::Rc<crate::software::amazon::cryptography::materialproviders::internaldafny::types::DecryptMaterialsInput>,
-) -> ::std::rc::Rc<
+    input: &::dafny_runtime::Rc<crate::software::amazon::cryptography::materialproviders::internaldafny::types::DecryptMaterialsInput>,
+) -> ::dafny_runtime::Rc<
     crate::r#_Wrappers_Compile::Result<
-        ::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::DecryptMaterialsOutput>,
-        ::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error>,
+        ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::DecryptMaterialsOutput>,
+        ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error>,
     >,
 >
 {
     let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::decrypt_materials::_decrypt_materials_input::from_dafny(input.clone());
-    let inner_result = self.obj.inner.borrow_mut().decrypt_materials(inner_input);
+    let inner_result = self.obj.inner.lock().unwrap().decrypt_materials(inner_input);
     let result = match inner_result {
         Ok(x) => crate::r#_Wrappers_Compile::Result::Success {
             value: crate::deps::aws_cryptography_materialProviders::conversions::decrypt_materials::_decrypt_materials_output::to_dafny(x.clone()),
@@ -89,7 +89,7 @@ fn r#_DecryptMaterials_k(
             error: crate::deps::aws_cryptography_materialProviders::conversions::error::to_dafny(x),
         },
     };
-    ::std::rc::Rc::new(result)
+    ::dafny_runtime::Rc::new(result)
 }
 }
 

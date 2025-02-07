@@ -4,20 +4,20 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_kms::operation::verify::VerifyInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::kms::internaldafny::types::VerifyRequest,
->{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::VerifyRequest::VerifyRequest {
+> {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::VerifyRequest::VerifyRequest {
         KeyId: crate::standard_library_conversions::ostring_to_dafny(&value.key_id) .Extract(),
  Message: crate::standard_library_conversions::oblob_to_dafny(&value.message).Extract(),
- MessageType: ::std::rc::Rc::new(match &value.message_type {
+ MessageType: ::dafny_runtime::Rc::new(match &value.message_type {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::message_type::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
  Signature: crate::standard_library_conversions::oblob_to_dafny(&value.signature).Extract(),
  SigningAlgorithm: crate::deps::com_amazonaws_kms::conversions::signing_algorithm_spec::to_dafny(value.signing_algorithm.clone().unwrap()),
- GrantTokens: ::std::rc::Rc::new(match &value.grant_tokens {
+ GrantTokens: ::dafny_runtime::Rc::new(match &value.grant_tokens {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&e),
@@ -29,11 +29,11 @@ pub fn to_dafny(
  DryRun: crate::standard_library_conversions::obool_to_dafny(&value.dry_run),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::kms::internaldafny::types::VerifyRequest,
-    >
+    >,
 ) -> aws_sdk_kms::operation::verify::VerifyInput {
     aws_sdk_kms::operation::verify::VerifyInput::builder()
           .set_key_id(Some( dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(dafny_value.KeyId()) ))

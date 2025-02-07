@@ -10,7 +10,7 @@ impl crate::deps::aws_cryptography_materialProviders::client::Client {
     /// - On success, responds with [`Unit`](crate::operation::valid_decryption_materials_transition::Unit) with field(s):
 
     /// - On failure, responds with [`SdkError<ValidDecryptionMaterialsTransitionError>`](crate::operation::valid_decryption_materials_transition::ValidDecryptionMaterialsTransitionError)
-    pub fn valid_decryption_materials_transition(&self) -> crate::deps::aws_cryptography_materialProviders::operation::valid_decryption_materials_transition::builders::ValidDecryptionMaterialsTransitionFluentBuilder {
+    pub fn valid_decryption_materials_transition(&self) -> crate::deps::aws_cryptography_materialProviders::operation::valid_decryption_materials_transition::builders::ValidDecryptionMaterialsTransitionFluentBuilder{
         crate::deps::aws_cryptography_materialProviders::operation::valid_decryption_materials_transition::builders::ValidDecryptionMaterialsTransitionFluentBuilder::new(self.clone())
     }
 }

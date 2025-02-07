@@ -4,39 +4,40 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_kms::types::CustomKeyStoresListEntry,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CustomKeyStoresListEntry>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CustomKeyStoresListEntry>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CustomKeyStoresListEntry::CustomKeyStoresListEntry {
         CustomKeyStoreId: crate::standard_library_conversions::ostring_to_dafny(&value.custom_key_store_id),
  CustomKeyStoreName: crate::standard_library_conversions::ostring_to_dafny(&value.custom_key_store_name),
  CloudHsmClusterId: crate::standard_library_conversions::ostring_to_dafny(&value.cloud_hsm_cluster_id),
  TrustAnchorCertificate: crate::standard_library_conversions::ostring_to_dafny(&value.trust_anchor_certificate),
- ConnectionState: ::std::rc::Rc::new(match &value.connection_state {
+ ConnectionState: ::dafny_runtime::Rc::new(match &value.connection_state {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::connection_state_type::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- ConnectionErrorCode: ::std::rc::Rc::new(match &value.connection_error_code {
+ ConnectionErrorCode: ::dafny_runtime::Rc::new(match &value.connection_error_code {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::connection_error_code_type::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
  CreationDate: crate::standard_library_conversions::otimestamp_to_dafny(&value.creation_date),
- CustomKeyStoreType: ::std::rc::Rc::new(match &value.custom_key_store_type {
+ CustomKeyStoreType: ::dafny_runtime::Rc::new(match &value.custom_key_store_type {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::custom_key_store_type::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- XksProxyConfiguration: ::std::rc::Rc::new(match &value.xks_proxy_configuration {
+ XksProxyConfiguration: ::dafny_runtime::Rc::new(match &value.xks_proxy_configuration {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::xks_proxy_configuration_type::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CustomKeyStoresListEntry,
     >,
 ) -> aws_sdk_kms::types::CustomKeyStoresListEntry {
@@ -74,5 +75,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
 }

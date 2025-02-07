@@ -7,8 +7,6 @@ pub use crate::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 
 pub mod builders;
 
-
-
 mod _decrypt_input;
 pub use crate::types::_decrypt_input::DecryptInput;
 mod _decrypt_output;
@@ -22,4 +20,3 @@ pub mod error;
 
 mod _net_v4_0_0_retry_policy;
 pub use crate::types::_net_v4_0_0_retry_policy::NetV400RetryPolicy;
-

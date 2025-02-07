@@ -17,10 +17,11 @@ impl GetAlgorithmSuiteInfo {
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_materialProviders::operation::get_algorithm_suite_info::AlgorithmSuiteInfo,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
-    > {
+    >{
         crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HGetAlgorithmSuiteInfoInput_for_AwsCryptographicMaterialProviders_GetAlgorithmSuiteInfo(&input)
             .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
-                let inner_input = crate::standard_library_conversions::blob_to_dafny(&input.binary_id.unwrap());
+        let inner_input =
+            crate::standard_library_conversions::blob_to_dafny(&input.r#binary_id.unwrap());
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).GetAlgorithmSuiteInfo(&inner_input);
         if matches!(
@@ -31,9 +32,11 @@ impl GetAlgorithmSuiteInfo {
                 crate::deps::aws_cryptography_materialProviders::conversions::get_algorithm_suite_info::_get_algorithm_suite_info_output::from_dafny(inner_result.value().clone()),
             )
         } else {
-            Err(crate::deps::aws_cryptography_materialProviders::conversions::error::from_dafny(
-                inner_result.error().clone(),
-            ))
+            Err(
+                crate::deps::aws_cryptography_materialProviders::conversions::error::from_dafny(
+                    inner_result.error().clone(),
+                ),
+            )
         }
     }
 }

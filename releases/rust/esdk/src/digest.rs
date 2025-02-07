@@ -12,12 +12,14 @@ use software::amazon::cryptography::primitives::internaldafny::types::DigestAlgo
 impl crate::ExternDigest::_default {
     #[allow(non_snake_case)]
     pub fn Digest(
-        digest_algorithm: &::std::rc::Rc<DigestAlgorithm>,
+        digest_algorithm: &::dafny_runtime::Rc<DigestAlgorithm>,
         message: &::dafny_runtime::Sequence<u8>,
-    ) -> ::std::rc::Rc<
+    ) -> ::dafny_runtime::Rc<
         _Wrappers_Compile::Result<
             ::dafny_runtime::Sequence<u8>,
-            ::std::rc::Rc<software::amazon::cryptography::primitives::internaldafny::types::Error>,
+            ::dafny_runtime::Rc<
+                software::amazon::cryptography::primitives::internaldafny::types::Error,
+            >,
         >,
     > {
         let algorithm = match **digest_algorithm {
@@ -27,7 +29,7 @@ impl crate::ExternDigest::_default {
         };
         let message_vec: Vec<u8> = message.iter().collect();
         let result = digest::digest(algorithm, &message_vec);
-        ::std::rc::Rc::new(_Wrappers_Compile::Result::Success {
+        ::dafny_runtime::Rc::new(_Wrappers_Compile::Result::Success {
             value: result.as_ref().iter().cloned().collect(),
         })
     }

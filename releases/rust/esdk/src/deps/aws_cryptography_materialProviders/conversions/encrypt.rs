@@ -4,10 +4,10 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &crate::deps::aws_cryptography_materialProviders::types::Encrypt,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Encrypt,
 > {
-    ::std::rc::Rc::new(match value {
+    ::dafny_runtime::Rc::new(match value {
         crate::deps::aws_cryptography_materialProviders::types::Encrypt::AesGcm(x) =>
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Encrypt::AES_GCM {
         AES_GCM: crate::deps::aws_cryptography_primitives::conversions::aes_gcm::to_dafny(&x.clone())
@@ -19,11 +19,11 @@ pub fn to_dafny(
 
 #[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Encrypt,
     >,
 ) -> crate::deps::aws_cryptography_materialProviders::types::Encrypt {
-    match &::std::rc::Rc::unwrap_or_clone(dafny_value) {
+    match &::dafny_runtime::Rc::unwrap_or_clone(dafny_value) {
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Encrypt::AES_GCM {
     AES_GCM: x @ _,
 } => crate::deps::aws_cryptography_materialProviders::types::Encrypt::AesGcm(crate::deps::aws_cryptography_primitives::conversions::aes_gcm::from_dafny(x.clone())

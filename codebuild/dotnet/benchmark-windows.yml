@@ -2,9 +2,8 @@ version: 0.2
 
 env:
   variables:
-    BENCHMARK_PLAINTEXT_LENGTH_BYTES: '1,1000,1000000'
-    BENCHMARK_FRAME_LENGTH_BYTES: '4096'  # the ESDK's default
-
+    BENCHMARK_PLAINTEXT_LENGTH_BYTES: "1,1000,1000000"
+    BENCHMARK_FRAME_LENGTH_BYTES: "4096" # the ESDK's default
 
 phases:
   install:

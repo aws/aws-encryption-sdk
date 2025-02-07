@@ -13,7 +13,7 @@ impl GetPublicKeyFromPrivateKeyInputBuilder {
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_primitives::operation::get_public_key_from_private_key::GetPublicKeyFromPrivateKeyOutput,
         crate::deps::aws_cryptography_primitives::types::error::Error,
-    > {
+    >{
         let mut fluent_builder = client.get_public_key_from_private_key();
         fluent_builder.inner = self;
         fluent_builder.send().await
@@ -35,7 +35,7 @@ impl GetPublicKeyFromPrivateKeyFluentBuilder {
         }
     }
     /// Access the GetPublicKeyFromPrivateKey as a reference.
-    pub fn as_input(&self) -> &crate::deps::aws_cryptography_primitives::operation::get_public_key_from_private_key::builders::GetPublicKeyFromPrivateKeyInputBuilder {
+    pub fn as_input(&self) -> &crate::deps::aws_cryptography_primitives::operation::get_public_key_from_private_key::builders::GetPublicKeyFromPrivateKeyInputBuilder{
         &self.inner
     }
     /// Sends the request and returns the response.
@@ -44,7 +44,7 @@ impl GetPublicKeyFromPrivateKeyFluentBuilder {
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_primitives::operation::get_public_key_from_private_key::GetPublicKeyFromPrivateKeyOutput,
         crate::deps::aws_cryptography_primitives::types::error::Error,
-    > {
+    >{
         let input = self
             .inner
             .build()
@@ -53,40 +53,63 @@ impl GetPublicKeyFromPrivateKeyFluentBuilder {
             // and smithy-rs seems to not generate a ValidationError case unless there is.
             // Vanilla smithy-rs uses SdkError::construction_failure, but we aren't using SdkError.
             .map_err(|mut e| {
-	     let msg = format!("{:?}", e);
-             crate::deps::aws_cryptography_primitives::types::error::Error::OpaqueWithText {
-                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut dyn ::std::any::Any),
-		objMessage: msg
-             }})?;
+                let msg = format!("{:?}", e);
+                crate::deps::aws_cryptography_primitives::types::error::Error::OpaqueWithText {
+                    obj: ::dafny_runtime::Object::from_ref(&mut e as &mut ::dafny_runtime::DynAny),
+                    objMessage: msg,
+                }
+            })?;
         crate::deps::aws_cryptography_primitives::operation::get_public_key_from_private_key::GetPublicKeyFromPrivateKey::send(&self.client, input).await
     }
 
     #[allow(missing_docs)]
-pub fn ecc_curve(mut self, input: impl ::std::convert::Into<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>) -> Self {
-    self.inner = self.inner.ecc_curve(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_ecc_curve(mut self, input: ::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>) -> Self {
-    self.inner = self.inner.set_ecc_curve(input);
-    self
-}
-#[allow(missing_docs)]
-pub fn get_ecc_curve(&self) -> &::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec> {
-    self.inner.get_ecc_curve()
-}
-#[allow(missing_docs)]
-pub fn private_key(mut self, input: impl ::std::convert::Into<crate::deps::aws_cryptography_primitives::types::EccPrivateKey>) -> Self {
-    self.inner = self.inner.private_key(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_private_key(mut self, input: ::std::option::Option<crate::deps::aws_cryptography_primitives::types::EccPrivateKey>) -> Self {
-    self.inner = self.inner.set_private_key(input);
-    self
-}
-#[allow(missing_docs)]
-pub fn get_private_key(&self) -> &::std::option::Option<crate::deps::aws_cryptography_primitives::types::EccPrivateKey> {
-    self.inner.get_private_key()
-}
+    pub fn ecc_curve(
+        mut self,
+        input: impl ::std::convert::Into<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>,
+    ) -> Self {
+        self.inner = self.inner.ecc_curve(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_ecc_curve(
+        mut self,
+        input: ::std::option::Option<
+            crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec,
+        >,
+    ) -> Self {
+        self.inner = self.inner.set_ecc_curve(input);
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_ecc_curve(
+        &self,
+    ) -> &::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>
+    {
+        self.inner.get_ecc_curve()
+    }
+    #[allow(missing_docs)]
+    pub fn private_key(
+        mut self,
+        input: impl ::std::convert::Into<crate::deps::aws_cryptography_primitives::types::EccPrivateKey>,
+    ) -> Self {
+        self.inner = self.inner.private_key(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_private_key(
+        mut self,
+        input: ::std::option::Option<
+            crate::deps::aws_cryptography_primitives::types::EccPrivateKey,
+        >,
+    ) -> Self {
+        self.inner = self.inner.set_private_key(input);
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_private_key(
+        &self,
+    ) -> &::std::option::Option<crate::deps::aws_cryptography_primitives::types::EccPrivateKey>
+    {
+        self.inner.get_private_key()
+    }
 }

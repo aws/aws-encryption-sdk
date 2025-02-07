@@ -17,7 +17,7 @@ jobs:
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
     uses: ./.github/workflows/library_dafny_verification.yml
     with:
-      dafny: 'nightly-latest'
+      dafny: "nightly-latest"
       regenerate-code: true
   # dafny-nightly-java:
   #   if: github.event_name != 'schedule' || github.repository_owner == 'aws'
@@ -29,31 +29,27 @@ jobs:
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
     uses: ./.github/workflows/library_net_tests.yml
     with:
-      dafny: 'nightly-latest'
+      dafny: "nightly-latest"
       regenerate-code: true
   dafny-nightly-rust:
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
     uses: ./.github/workflows/library_rust_tests.yml
     with:
-      dafny: 'nightly-latest'
+      dafny: "nightly-latest"
       regenerate-code: true
   dafny-nightly-go:
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
     uses: ./.github/workflows/library_go_tests.yml
     with:
-      dafny: 'nightly-latest'
+      dafny: "nightly-latest"
       regenerate-code: true
-  
+
   cut-issue-on-failure:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       id-token: write
       contents: read
-    needs:
-      [
-        dafny-nightly-verification,
-        dafny-nightly-net,
-      ]
+    needs: [dafny-nightly-verification, dafny-nightly-net]
     if: ${{ always() && contains(needs.*.result, 'failure') }}
     steps:
       # We need access to the role that is able to get CI Bot Creds

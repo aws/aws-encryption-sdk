@@ -4,44 +4,44 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::operation::export_table_to_point_in_time::ExportTableToPointInTimeInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExportTableToPointInTimeInput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExportTableToPointInTimeInput::ExportTableToPointInTimeInput {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExportTableToPointInTimeInput::ExportTableToPointInTimeInput {
         TableArn: crate::standard_library_conversions::ostring_to_dafny(&value.table_arn) .Extract(),
  ExportTime: crate::standard_library_conversions::otimestamp_to_dafny(&value.export_time),
  ClientToken: crate::standard_library_conversions::ostring_to_dafny(&value.client_token),
  S3Bucket: crate::standard_library_conversions::ostring_to_dafny(&value.s3_bucket) .Extract(),
  S3BucketOwner: crate::standard_library_conversions::ostring_to_dafny(&value.s3_bucket_owner),
  S3Prefix: crate::standard_library_conversions::ostring_to_dafny(&value.s3_prefix),
- S3SseAlgorithm: ::std::rc::Rc::new(match &value.s3_sse_algorithm {
+ S3SseAlgorithm: ::dafny_runtime::Rc::new(match &value.s3_sse_algorithm {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::s3_sse_algorithm::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
  S3SseKmsKeyId: crate::standard_library_conversions::ostring_to_dafny(&value.s3_sse_kms_key_id),
- ExportFormat: ::std::rc::Rc::new(match &value.export_format {
+ ExportFormat: ::dafny_runtime::Rc::new(match &value.export_format {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::export_format::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- ExportType: ::std::rc::Rc::new(match &value.export_type {
+ ExportType: ::dafny_runtime::Rc::new(match &value.export_type {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::export_type::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- IncrementalExportSpecification: ::std::rc::Rc::new(match &value.incremental_export_specification {
+ IncrementalExportSpecification: ::dafny_runtime::Rc::new(match &value.incremental_export_specification {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::incremental_export_specification::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExportTableToPointInTimeInput,
-    >
+    >,
 ) -> aws_sdk_dynamodb::operation::export_table_to_point_in_time::ExportTableToPointInTimeInput {
     aws_sdk_dynamodb::operation::export_table_to_point_in_time::ExportTableToPointInTimeInput::builder()
           .set_table_arn(Some( dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(dafny_value.TableArn()) ))

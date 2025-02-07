@@ -9,7 +9,7 @@
 #[allow(non_snake_case)]
 pub mod ECDH {
     use crate::software::amazon::cryptography::primitives::internaldafny::types::Error as DafnyError;
-    use std::rc::Rc;
+    use dafny_runtime::Rc;
 
     fn error(s: &str) -> Rc<DafnyError> {
         Rc::new(DafnyError::AwsCryptographicPrimitivesError {
@@ -23,7 +23,7 @@ pub mod ECDH {
         use crate::software::amazon::cryptography::primitives::internaldafny::types::Error as DafnyError;
         use crate::*;
         use aws_lc_sys;
-        use std::rc::Rc;
+        use dafny_runtime::Rc;
 
         fn get_nid(x: &ECDHCurveSpec) -> i32 {
             match x {
@@ -340,7 +340,7 @@ pub mod ECDH {
             }
             let ec_key = unsafe { EVP_PKEY_get0_EC_KEY(evp_pkey) };
 
-            if unsafe {aws_lc_sys::EC_KEY_check_fips(ec_key)} != 1 {
+            if unsafe { aws_lc_sys::EC_KEY_check_fips(ec_key) } != 1 {
                 return Err(INVALID_KEY.to_string());
             }
             let ec_group = unsafe { EC_KEY_get0_group(ec_key) };
@@ -422,7 +422,7 @@ pub mod ECDH {
         use crate::software::amazon::cryptography::primitives::internaldafny::types::ECDHCurveSpec;
         use crate::software::amazon::cryptography::primitives::internaldafny::types::Error as DafnyError;
         use crate::*;
-        use std::rc::Rc;
+        use dafny_runtime::Rc;
 
         pub fn agree(
             curve_algorithm: &ECDHCurveSpec,
@@ -472,7 +472,7 @@ pub mod ECDH {
         use crate::*;
         use aws_lc_rs::encoding::AsDer;
         use aws_lc_rs::encoding::EcPrivateKeyRfc5915Der;
-        use std::rc::Rc;
+        use dafny_runtime::Rc;
 
         fn ecdsa_key_gen(alg: &ECDHCurveSpec) -> Result<(Vec<u8>, Vec<u8>), String> {
             let private_key =
@@ -518,7 +518,7 @@ pub mod ECDH {
         use super::*;
         use crate::software::amazon::cryptography::primitives::internaldafny::types::ECDHCurveSpec;
         use crate::*;
-        use std::rc::Rc;
+        use dafny_runtime::Rc;
 
         #[test]
         fn test_generate() {

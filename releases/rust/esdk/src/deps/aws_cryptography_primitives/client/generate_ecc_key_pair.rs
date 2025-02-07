@@ -11,7 +11,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     ///   - [`private_key(Option<crate::deps::aws_cryptography_primitives::types::EccPrivateKey>)`](crate::operation::generate_ecc_key_pair::GenerateECCKeyPairOutput::private_key): (undocumented)
     ///   - [`public_key(Option<crate::deps::aws_cryptography_primitives::types::EccPublicKey>)`](crate::operation::generate_ecc_key_pair::GenerateECCKeyPairOutput::public_key): (undocumented)
     /// - On failure, responds with [`SdkError<GenerateEccKeyPairError>`](crate::operation::generate_ecc_key_pair::GenerateEccKeyPairError)
-    pub fn generate_ecc_key_pair(&self) -> crate::deps::aws_cryptography_primitives::operation::generate_ecc_key_pair::builders::GenerateEccKeyPairFluentBuilder {
+    pub fn generate_ecc_key_pair(&self) -> crate::deps::aws_cryptography_primitives::operation::generate_ecc_key_pair::builders::GenerateEccKeyPairFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::generate_ecc_key_pair::builders::GenerateEccKeyPairFluentBuilder::new(self.clone())
     }
 }

@@ -13,7 +13,7 @@ pub mod RSAEncryption {
         use crate::software::amazon::cryptography::primitives::internaldafny::types::RSAPaddingMode;
         use crate::*;
         use aws_lc_rs::encoding::{AsDer, Pkcs8V1Der, PublicKeyX509Der};
-        use std::rc::Rc;
+        use dafny_runtime::Rc;
 
         use aws_lc_rs::rsa::KeySize;
         use aws_lc_rs::rsa::OaepAlgorithm;

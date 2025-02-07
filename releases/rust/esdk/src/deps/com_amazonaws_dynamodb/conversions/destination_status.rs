@@ -5,8 +5,8 @@
 
 pub fn to_dafny(
     value: aws_sdk_dynamodb::types::DestinationStatus,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DestinationStatus>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DestinationStatus>{
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_dynamodb::types::DestinationStatus::Enabling => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DestinationStatus::ENABLING {},
 aws_sdk_dynamodb::types::DestinationStatus::Active => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DestinationStatus::ACTIVE {},
 aws_sdk_dynamodb::types::DestinationStatus::Disabling => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DestinationStatus::DISABLING {},
@@ -16,7 +16,7 @@ aws_sdk_dynamodb::types::DestinationStatus::Updating => crate::r#software::amazo
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DestinationStatus,
 ) -> aws_sdk_dynamodb::types::DestinationStatus {

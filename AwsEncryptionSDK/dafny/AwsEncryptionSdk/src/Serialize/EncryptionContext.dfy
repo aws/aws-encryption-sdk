@@ -223,7 +223,7 @@ module {:options "/functionSyntax:4" } EncryptionContext {
     requires subEC.Keys <= ec.Keys
     requires forall k <- subEC.Keys :: ec[k] == subEC[k]
     ensures IsESDKEncryptionContext(subEC)
-  { 
+  {
     var complement := Complement(ec, subEC);
 
     calc {
@@ -233,34 +233,34 @@ module {:options "/functionSyntax:4" } EncryptionContext {
     == {LinearLengthIsDistributive(GetCanonicalLinearPairs(complement), GetCanonicalLinearPairs(subEC));}
       LinearLength(GetCanonicalLinearPairs(complement) + GetCanonicalLinearPairs(subEC));
     == {
-        var pairs1 := GetCanonicalLinearPairs(complement + subEC);
-        var pairs2 := GetCanonicalLinearPairs(complement) + GetCanonicalLinearPairs(subEC);
+         var pairs1 := GetCanonicalLinearPairs(complement + subEC);
+         var pairs2 := GetCanonicalLinearPairs(complement) + GetCanonicalLinearPairs(subEC);
 
-        GetCanonicalLinearPairsIsBijective(complement + subEC, pairs1);
-        GetCanonicalLinearPairsIsBijective(complement, GetCanonicalLinearPairs(complement));
-        GetCanonicalLinearPairsIsBijective(subEC, GetCanonicalLinearPairs(subEC));
-        assert forall p <- pairs1 :: p in pairs2;
-        assert forall p <- pairs2 :: p in pairs1 by {
-          forall p <- pairs2
-            ensures p in pairs1
-          {
-            calc ==>
-            {
-                p in pairs2;
-              ==>
-                p in GetCanonicalLinearPairs(complement) + GetCanonicalLinearPairs(subEC);
-              ==> {
-                  assert (forall p' <- GetCanonicalLinearPairs(complement) :: p' in GetCanonicalLinearPairs(complement + subEC));
-                  assert (forall p' <- GetCanonicalLinearPairs(subEC) :: p' in GetCanonicalLinearPairs(complement + subEC));
-                }
-                p in GetCanonicalLinearPairs(complement + subEC);
-              ==>
-                p in pairs1;
-            }
-          }
-        }
-        LinearLengthOfUniquePairsIsOrderIndependent(pairs1, pairs2);
-      }
+         GetCanonicalLinearPairsIsBijective(complement + subEC, pairs1);
+         GetCanonicalLinearPairsIsBijective(complement, GetCanonicalLinearPairs(complement));
+         GetCanonicalLinearPairsIsBijective(subEC, GetCanonicalLinearPairs(subEC));
+         assert forall p <- pairs1 :: p in pairs2;
+         assert forall p <- pairs2 :: p in pairs1 by {
+           forall p <- pairs2
+             ensures p in pairs1
+           {
+             calc ==>
+             {
+               p in pairs2;
+             ==>
+               p in GetCanonicalLinearPairs(complement) + GetCanonicalLinearPairs(subEC);
+             ==> {
+                 assert (forall p' <- GetCanonicalLinearPairs(complement) :: p' in GetCanonicalLinearPairs(complement + subEC));
+                 assert (forall p' <- GetCanonicalLinearPairs(subEC) :: p' in GetCanonicalLinearPairs(complement + subEC));
+               }
+               p in GetCanonicalLinearPairs(complement + subEC);
+             ==>
+               p in pairs1;
+             }
+           }
+         }
+         LinearLengthOfUniquePairsIsOrderIndependent(pairs1, pairs2);
+       }
       LinearLength(GetCanonicalLinearPairs(complement + subEC));
     ==
       Length(complement + subEC);
@@ -343,7 +343,7 @@ module {:options "/functionSyntax:4" } EncryptionContext {
     ensures HasUint16Len(ret)
   {
     // The Serialization of No Encryption Context is NOT `[0, [0, 0]]`,
-    // but `[]`. 
+    // but `[]`.
     if |ec| == 0 then
       []
     else
@@ -378,7 +378,7 @@ module {:options "/functionSyntax:4" } EncryptionContext {
     // |ec| == 0 is encoded as 0 count.
     // However,
     // this |ec| == 0 behavior is never invoked,
-    // as this method is protected by 
+    // as this method is protected by
     // WriteAADSection and WriteEmptyEcOrWriteAAD,
     // which both handle |ec| == 0 independently
     // of this method.

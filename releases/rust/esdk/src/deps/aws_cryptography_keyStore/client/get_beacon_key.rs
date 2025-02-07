@@ -9,7 +9,7 @@ impl crate::deps::aws_cryptography_keyStore::client::Client {
     /// - On success, responds with [`GetBeaconKeyOutput`](crate::operation::get_beacon_key::GetBeaconKeyOutput) with field(s):
     ///   - [`beacon_key_materials(Option<crate::deps::aws_cryptography_keyStore::types::BeaconKeyMaterials>)`](crate::operation::get_beacon_key::GetBeaconKeyOutput::beacon_key_materials): (undocumented)
     /// - On failure, responds with [`SdkError<GetBeaconKeyError>`](crate::operation::get_beacon_key::GetBeaconKeyError)
-    pub fn get_beacon_key(&self) -> crate::deps::aws_cryptography_keyStore::operation::get_beacon_key::builders::GetBeaconKeyFluentBuilder {
+    pub fn get_beacon_key(&self) -> crate::deps::aws_cryptography_keyStore::operation::get_beacon_key::builders::GetBeaconKeyFluentBuilder{
         crate::deps::aws_cryptography_keyStore::operation::get_beacon_key::builders::GetBeaconKeyFluentBuilder::new(self.clone())
     }
 }

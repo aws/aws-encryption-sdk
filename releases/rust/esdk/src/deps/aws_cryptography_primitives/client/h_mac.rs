@@ -11,7 +11,12 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     /// - On success, responds with [`HMacOutput`](crate::operation::h_mac::HMacOutput) with field(s):
     ///   - [`digest(Option<::aws_smithy_types::Blob>)`](crate::operation::h_mac::HMacOutput::digest): (undocumented)
     /// - On failure, responds with [`SdkError<HMacError>`](crate::operation::h_mac::HMacError)
-    pub fn h_mac(&self) -> crate::deps::aws_cryptography_primitives::operation::h_mac::builders::HMacFluentBuilder {
-        crate::deps::aws_cryptography_primitives::operation::h_mac::builders::HMacFluentBuilder::new(self.clone())
+    pub fn h_mac(
+        &self,
+    ) -> crate::deps::aws_cryptography_primitives::operation::h_mac::builders::HMacFluentBuilder
+    {
+        crate::deps::aws_cryptography_primitives::operation::h_mac::builders::HMacFluentBuilder::new(
+            self.clone(),
+        )
     }
 }
