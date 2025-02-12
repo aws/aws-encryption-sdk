@@ -63,7 +63,7 @@ func RequiredEncryptionContextExample(exampleText, defaultKMSKeyId, defaultKmsKe
 		"that can help you":         "be confident that",
 		"the data you are handling": "is what you think it is",
 		"requiredKey1":              "requiredValue1",
-		"requiredKey2":              "requiredValue2",
+		"requiredKey2":              "𐀂",
 	}
 	// Step 6: Create your required encryption context keys.
 	// These keys MUST be in your encryption context.
