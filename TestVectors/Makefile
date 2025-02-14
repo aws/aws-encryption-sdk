@@ -212,7 +212,7 @@ test_encrypt_vectors_go:
 	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go encrypt --manifest-path=.. --decrypt-manifest-path=..
 
 test_encrypt_vectors_python:
-  rm -rf runtimes/python/.tox \
+	rm -rf runtimes/python/.tox \
   python3 -m tox -c runtimes/python --verbose -e cli -- encrypt --manifest-path runtimes/python --decrypt-manifest-path runtimes/python
 
 test_decrypt_encrypt_vectors_java:
