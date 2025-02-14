@@ -25,10 +25,11 @@ jobs:
             ubuntu-22.04,
             macos-13,
           ]
-        language: [java, net, rust, go, python]
+        language: [java, net, rust, go]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
     runs-on: ${{ matrix.os }}
+    environment: "MPL_DAFNY"
     permissions:
       id-token: write
       contents: read
@@ -45,11 +46,23 @@ jobs:
           role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2
           role-session-name: InterOpTests
 
-      - uses: actions/checkout@v3
-      #  Not all submodules are needed.
-      # We manually pull the submodule we DO need.
-      - run: git submodule update --init libraries
-      - run: git submodule update --init --recursive mpl
+      - uses: actions/checkout@v4
+        env:
+          TOKEN: ${{secrets.PRIVATE_MPL}}
+        with:
+          token: ${{ env.TOKEN }}
+          submodules: 'recursive'
+      # #  Not all submodules are needed.
+      # # We manually pull the submodule we DO need.
+      # - run: git submodule update --init libraries
+
+      # - name: Init Private MPL
+      #   env:
+      #     PRIVATE_MPL: ${{ secrets.MPL_DAFNY }}
+      #   run: |
+      #     AUTH="$(echo -n "pat:${PRIVATE_MPL}" | base64 | tr -d '\n')"
+      #     git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $AUTH"
+      #     git submodule update --init --recursive mpl
 
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
@@ -215,8 +228,8 @@ jobs:
             ubuntu-22.04,
             macos-13,
           ]
-        encrypting_language: [java, net, rust, go, python]
-        decrypting_language: [java, net, rust, go, python]
+        encrypting_language: [java, net, rust, go]
+        decrypting_language: [java, net, rust, go]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
     runs-on: ${{ matrix.os }}

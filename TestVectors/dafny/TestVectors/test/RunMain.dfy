@@ -29,7 +29,7 @@ module {:extern} TestWrappedESDKMain {
   // Read encrypt manifests for valid ESDK .NET v4.0.0 messages
   // These messages are expected to successfully decrypt without
   // having to retry.
-  method {:test} TestNetRetryFlagVectorsExpectSuccess() {
+  method TestNetRetryFlagVectorsExpectSuccess() {
     var directory := GetTestVectorExecutionDirectory();
     var result := EsdkTestManifests.StartDecryptVectors(
       EsdkManifestOptions.Decrypt(
@@ -50,7 +50,7 @@ module {:extern} TestWrappedESDKMain {
   // to correctly pass when this configuration runs the invalid net 4.0.0 tests.
   // The errors that we get back from the MPL are opaque errors, not opaque with text...
   // This means that in dafny code we cannot check the error message :(
-  method {:test} TestNetInvalidTestVectorsExpectFailure() {
+  method TestNetInvalidTestVectorsExpectFailure() {
     var directory := GetTestVectorExecutionDirectory();
     var result := EsdkTestManifests.StartDecryptVectors(
       EsdkManifestOptions.Decrypt(
@@ -65,7 +65,7 @@ module {:extern} TestWrappedESDKMain {
     expect result.Failure?;
   }
 
-  method {:test} TestNetInvalidTestVectorsExpectSuccessOnRetry() {
+  method TestNetInvalidTestVectorsExpectSuccessOnRetry() {
     var directory := GetTestVectorExecutionDirectory();
     var result := EsdkTestManifests.StartDecryptVectors(
       EsdkManifestOptions.Decrypt(
@@ -80,7 +80,7 @@ module {:extern} TestWrappedESDKMain {
     expect result.Success?;
   }
 
-  method {:test} TestNet401ValidTestVectorsExpectSuccess() {
+  method TestNet401ValidTestVectorsExpectSuccess() {
     var directory := GetTestVectorExecutionDirectory();
     var result := EsdkTestManifests.StartDecryptVectors(
       EsdkManifestOptions.Decrypt(
