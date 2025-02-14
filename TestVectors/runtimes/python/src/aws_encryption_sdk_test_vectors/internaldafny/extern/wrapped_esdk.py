@@ -29,6 +29,7 @@ from aws_encryption_sdk_dafny.smithygenerated.aws_cryptography_encryptionsdk.err
     _smithy_error_to_dafny_error,
 )
 from aws_encryption_sdk.materials_managers.mpl.cmm import CryptoMaterialsManagerFromMPL
+from aws_encryption_sdk.materials_managers.mpl.materials import _mpl_algorithm_id_to_native_algorithm_id
 
 
 def _esdk_dafny_commitment_policy_to_native(dafny_commitment_policy):
@@ -51,18 +52,34 @@ class DafnyESDKToNativeESDKShim:
         try:
           native_encrypt_input = dafny_to_smithy_EncryptInput(dafny_encrypt_input)
 
-          if native_encrypt_input.materials_manager is not None:
-              native_esdk_ciphertext, native_esdk_header = self.native_esdk.encrypt(
-                  source=native_encrypt_input.plaintext,
-                  materials_manager=native_encrypt_input.materials_manager,
-                  encryption_context=native_encrypt_input.encryption_context,
-              )
-          else:
-              native_esdk_ciphertext, native_esdk_header = self.native_esdk.encrypt(
-                  source=native_encrypt_input.plaintext,
-                  materials_manager=native_encrypt_input.keyring,
-                  encryption_context=native_encrypt_input.encryption_context,
-              )
+          if native_encrypt_input.algorithm_suite_id is None:
+            if native_encrypt_input.materials_manager is not None:
+                native_esdk_ciphertext, native_esdk_header = self.native_esdk.encrypt(
+                    source=native_encrypt_input.plaintext,
+                    materials_manager=native_encrypt_input.materials_manager,
+                    encryption_context=native_encrypt_input.encryption_context,
+                )
+            else:
+                native_esdk_ciphertext, native_esdk_header = self.native_esdk.encrypt(
+                    source=native_encrypt_input.plaintext,
+                    materials_manager=native_encrypt_input.keyring,
+                    encryption_context=native_encrypt_input.encryption_context,
+                )
+          else: 
+              if native_encrypt_input.materials_manager is not None:
+                native_esdk_ciphertext, native_esdk_header = self.native_esdk.encrypt(
+                    source=native_encrypt_input.plaintext,
+                    materials_manager=native_encrypt_input.materials_manager,
+                    encryption_context=native_encrypt_input.encryption_context,
+                    algorithm = _mpl_algorithm_id_to_native_algorithm_id(native_encrypt_input.algorithm_suite_id)
+                )
+              else:
+                native_esdk_ciphertext, native_esdk_header = self.native_esdk.encrypt(
+                    source=native_encrypt_input.plaintext,
+                    materials_manager=native_encrypt_input.keyring,
+                    encryption_context=native_encrypt_input.encryption_context,
+                    algorithm = _mpl_algorithm_id_to_native_algorithm_id(native_encrypt_input.algorithm_suite_id)
+                )
 
           dafny_esdk_native_encrypt_output = EncryptOutput(
               ciphertext=native_esdk_ciphertext,
