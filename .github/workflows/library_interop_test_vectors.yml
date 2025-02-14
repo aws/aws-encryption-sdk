@@ -82,11 +82,7 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
         with:
           components: rustfmt
-      # TODO - uncomment this after Rust formatter works
-      # - name: Rustfmt Check
-      #   uses: actions-rust-lang/rustfmt@v1
 
-      # TODO: Remove this after the formatting in Rust starts working
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
@@ -95,16 +91,6 @@ jobs:
       - name: Install Go imports
         run: |
           go install golang.org/x/tools/cmd/goimports@latest
-
-      - name: smithy-dafny Rust hacks
-        if: matrix.language == 'rust'
-        shell: bash
-        run: |
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            sed -i '' 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
-          else
-            sed -i 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
-          fi
 
       - name: Setup NASM for Windows in Rust (aws-lc-sys)
         if: matrix.language == 'rust' && matrix.os == 'windows-latest'
@@ -153,7 +139,6 @@ jobs:
         if: matrix.language == 'rust'
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
 
-      # TODO: Remove this after checking in Rust polymorph code
       - name: Run make polymorph_rust
         if: matrix.language == 'rust'
         shell: bash
@@ -352,7 +337,6 @@ jobs:
         if: matrix.decrypting_language == 'rust'
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
 
-      # TODO: Remove this after checking in Rust polymorph code
       - name: Run make polymorph_rust
         if: matrix.decrypting_language == 'rust'
         shell: bash
