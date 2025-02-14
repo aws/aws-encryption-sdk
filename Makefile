@@ -1,6 +1,8 @@
 # Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
+PROJECTS = ./AwsEncryptionSDK ./TestVectors
+
 verify:
 	$(MAKE) -C AwsEncryptionSDK verify CORES=4
 
@@ -38,3 +40,32 @@ run_semantic_release:
 
 dry_run_semantic_release:
 	npx semantic-release --dry-run
+
+format_dafny:
+	$(foreach PROJECT, $(PROJECTS), \
+		$(MAKE) -C $(PROJECT) format_dafny && \
+	) true
+
+format_dafny-check:
+	$(foreach PROJECT, $(PROJECTS), \
+		$(MAKE) -C $(PROJECT) format_dafny-check && \
+	) true
+
+format_net:
+	$(foreach PROJECT, $(PROJECTS), \
+		$(MAKE) -C $(PROJECT) format_net && \
+	) true
+
+format_net-check:
+	$(foreach PROJECT, $(PROJECTS), \
+		$(MAKE) -C $(PROJECT) format_net-check && \
+	) true
+
+format_java_misc: setup_prettier
+	npx prettier --plugin=prettier-plugin-java . --write
+
+format_java_misc-check: setup_prettier
+	npx prettier --plugin=prettier-plugin-java . --check
+
+setup_prettier:
+	npm i --no-save prettier@3 prettier-plugin-java@2.5

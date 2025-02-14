@@ -4,10 +4,10 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_kms::operation::update_custom_key_store::UpdateCustomKeyStoreInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::kms::internaldafny::types::UpdateCustomKeyStoreRequest,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::UpdateCustomKeyStoreRequest::UpdateCustomKeyStoreRequest {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::UpdateCustomKeyStoreRequest::UpdateCustomKeyStoreRequest {
         CustomKeyStoreId: crate::standard_library_conversions::ostring_to_dafny(&value.custom_key_store_id) .Extract(),
  NewCustomKeyStoreName: crate::standard_library_conversions::ostring_to_dafny(&value.new_custom_key_store_name),
  KeyStorePassword: crate::standard_library_conversions::ostring_to_dafny(&value.key_store_password),
@@ -15,23 +15,23 @@ pub fn to_dafny(
  XksProxyUriEndpoint: crate::standard_library_conversions::ostring_to_dafny(&value.xks_proxy_uri_endpoint),
  XksProxyUriPath: crate::standard_library_conversions::ostring_to_dafny(&value.xks_proxy_uri_path),
  XksProxyVpcEndpointServiceName: crate::standard_library_conversions::ostring_to_dafny(&value.xks_proxy_vpc_endpoint_service_name),
- XksProxyAuthenticationCredential: ::std::rc::Rc::new(match &value.xks_proxy_authentication_credential {
+ XksProxyAuthenticationCredential: ::dafny_runtime::Rc::new(match &value.xks_proxy_authentication_credential {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::xks_proxy_authentication_credential_type::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- XksProxyConnectivity: ::std::rc::Rc::new(match &value.xks_proxy_connectivity {
+ XksProxyConnectivity: ::dafny_runtime::Rc::new(match &value.xks_proxy_connectivity {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::xks_proxy_connectivity_type::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::kms::internaldafny::types::UpdateCustomKeyStoreRequest,
-    >
+    >,
 ) -> aws_sdk_kms::operation::update_custom_key_store::UpdateCustomKeyStoreInput {
     aws_sdk_kms::operation::update_custom_key_store::UpdateCustomKeyStoreInput::builder()
           .set_custom_key_store_id(Some( dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(dafny_value.CustomKeyStoreId()) ))

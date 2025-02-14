@@ -9,7 +9,7 @@ impl crate::deps::aws_cryptography_materialProviders::client::Client {
     /// - On success, responds with [`CreateCryptographicMaterialsCacheOutput`](crate::operation::create_cryptographic_materials_cache::CreateCryptographicMaterialsCacheOutput) with field(s):
     ///   - [`materials_cache(Option<crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef>)`](crate::operation::create_cryptographic_materials_cache::CreateCryptographicMaterialsCacheOutput::materials_cache): (undocumented)
     /// - On failure, responds with [`SdkError<CreateCryptographicMaterialsCacheError>`](crate::operation::create_cryptographic_materials_cache::CreateCryptographicMaterialsCacheError)
-    pub fn create_cryptographic_materials_cache(&self) -> crate::deps::aws_cryptography_materialProviders::operation::create_cryptographic_materials_cache::builders::CreateCryptographicMaterialsCacheFluentBuilder {
+    pub fn create_cryptographic_materials_cache(&self) -> crate::deps::aws_cryptography_materialProviders::operation::create_cryptographic_materials_cache::builders::CreateCryptographicMaterialsCacheFluentBuilder{
         crate::deps::aws_cryptography_materialProviders::operation::create_cryptographic_materials_cache::builders::CreateCryptographicMaterialsCacheFluentBuilder::new(self.clone())
     }
 }

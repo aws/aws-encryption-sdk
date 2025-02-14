@@ -10,7 +10,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     /// - On success, responds with [`CompressPublicKeyOutput`](crate::operation::compress_public_key::CompressPublicKeyOutput) with field(s):
     ///   - [`compressed_public_key(Option<::aws_smithy_types::Blob>)`](crate::operation::compress_public_key::CompressPublicKeyOutput::compressed_public_key): (undocumented)
     /// - On failure, responds with [`SdkError<CompressPublicKeyError>`](crate::operation::compress_public_key::CompressPublicKeyError)
-    pub fn compress_public_key(&self) -> crate::deps::aws_cryptography_primitives::operation::compress_public_key::builders::CompressPublicKeyFluentBuilder {
+    pub fn compress_public_key(&self) -> crate::deps::aws_cryptography_primitives::operation::compress_public_key::builders::CompressPublicKeyFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::compress_public_key::builders::CompressPublicKeyFluentBuilder::new(self.clone())
     }
 }

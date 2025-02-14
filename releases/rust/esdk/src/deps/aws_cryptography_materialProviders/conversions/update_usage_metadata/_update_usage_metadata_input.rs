@@ -4,20 +4,20 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_materialProviders::operation::update_usage_metadata::UpdateUsageMetadataInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::UpdateUsageMetadataInput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::UpdateUsageMetadataInput::UpdateUsageMetadataInput {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::UpdateUsageMetadataInput::UpdateUsageMetadataInput {
         identifier: crate::standard_library_conversions::blob_to_dafny(&value.identifier.unwrap()),
  bytesUsed: value.bytes_used.clone().unwrap(),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::UpdateUsageMetadataInput,
     >,
-) -> crate::deps::aws_cryptography_materialProviders::operation::update_usage_metadata::UpdateUsageMetadataInput {
+) -> crate::deps::aws_cryptography_materialProviders::operation::update_usage_metadata::UpdateUsageMetadataInput{
     crate::deps::aws_cryptography_materialProviders::operation::update_usage_metadata::UpdateUsageMetadataInput::builder()
         .set_identifier(Some(crate::standard_library_conversions::blob_from_dafny(dafny_value.identifier().clone())))
  .set_bytes_used(Some( dafny_value.bytesUsed() .clone() ))

@@ -5,14 +5,14 @@
 
 pub fn to_dafny(
     value: aws_sdk_dynamodb::types::ReturnValuesOnConditionCheckFailure,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReturnValuesOnConditionCheckFailure>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReturnValuesOnConditionCheckFailure>{
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_dynamodb::types::ReturnValuesOnConditionCheckFailure::AllOld => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReturnValuesOnConditionCheckFailure::ALL_OLD {},
 aws_sdk_dynamodb::types::ReturnValuesOnConditionCheckFailure::None => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReturnValuesOnConditionCheckFailure::NONE {},
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReturnValuesOnConditionCheckFailure,
 ) -> aws_sdk_dynamodb::types::ReturnValuesOnConditionCheckFailure {

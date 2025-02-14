@@ -5,15 +5,17 @@
 
 pub fn to_dafny(
     value: aws_sdk_dynamodb::types::InputFormat,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::InputFormat>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::InputFormat,
+> {
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_dynamodb::types::InputFormat::DynamodbJson => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::InputFormat::DYNAMODB_JSON {},
 aws_sdk_dynamodb::types::InputFormat::Ion => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::InputFormat::ION {},
 aws_sdk_dynamodb::types::InputFormat::Csv => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::InputFormat::CSV {},
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::InputFormat,
 ) -> aws_sdk_dynamodb::types::InputFormat {

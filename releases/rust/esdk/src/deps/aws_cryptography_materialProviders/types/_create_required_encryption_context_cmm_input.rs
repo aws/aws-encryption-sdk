@@ -14,21 +14,27 @@ pub underlying_cmm: ::std::option::Option<crate::deps::aws_cryptography_material
 }
 impl CreateRequiredEncryptionContextCmmInput {
     /// The Keyring that the created Cryprographic Materials Manager will use to wrap data keys. The created Required Encryption Context CMM will delegate to a Default Cryptographic Materials Manager created with this Keyring. Either a Keyring or an underlying Cryprographic Materials Manager must be specified as input.
-pub fn keyring(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef> {
-    &self.keyring
-}
-/// A list of Encryption Context keys which are required to be supplied during encryption and decryption, and correspond to Encryption Context key-value pairs which are not stored on the resulting message.
-pub fn required_encryption_context_keys(&self) -> &::std::option::Option<::std::vec::Vec<::std::string::String>> {
-    &self.required_encryption_context_keys
-}
-/// The Cryprographic Materials Manager that the created Required Encryption Context Cryptographic Materials Manager will delegate to. Either a Keyring or underlying Cryprographic Materials Manager must be specified.
-pub fn underlying_cmm(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef> {
-    &self.underlying_cmm
-}
+    pub fn keyring(
+        &self,
+    ) -> &::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
+    > {
+        &self.keyring
+    }
+    /// A list of Encryption Context keys which are required to be supplied during encryption and decryption, and correspond to Encryption Context key-value pairs which are not stored on the resulting message.
+    pub fn required_encryption_context_keys(
+        &self,
+    ) -> &::std::option::Option<::std::vec::Vec<::std::string::String>> {
+        &self.required_encryption_context_keys
+    }
+    /// The Cryprographic Materials Manager that the created Required Encryption Context Cryptographic Materials Manager will delegate to. Either a Keyring or underlying Cryprographic Materials Manager must be specified.
+    pub fn underlying_cmm(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef>{
+        &self.underlying_cmm
+    }
 }
 impl CreateRequiredEncryptionContextCmmInput {
     /// Creates a new builder-style object to manufacture [`CreateRequiredEncryptionContextCmmInput`](crate::deps::aws_cryptography_materialProviders::types::CreateRequiredEncryptionContextCmmInput).
-    pub fn builder() -> crate::deps::aws_cryptography_materialProviders::types::builders::CreateRequiredEncryptionContextCmmInputBuilder {
+    pub fn builder() -> crate::deps::aws_cryptography_materialProviders::types::builders::CreateRequiredEncryptionContextCmmInputBuilder{
         crate::deps::aws_cryptography_materialProviders::types::builders::CreateRequiredEncryptionContextCmmInputBuilder::default()
     }
 }
@@ -45,54 +51,82 @@ pub(crate) underlying_cmm: ::std::option::Option<crate::deps::aws_cryptography_m
 }
 impl CreateRequiredEncryptionContextCmmInputBuilder {
     /// The Keyring that the created Cryprographic Materials Manager will use to wrap data keys. The created Required Encryption Context CMM will delegate to a Default Cryptographic Materials Manager created with this Keyring. Either a Keyring or an underlying Cryprographic Materials Manager must be specified as input.
-pub fn keyring(mut self, input: impl ::std::convert::Into<crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef>) -> Self {
-    self.keyring = ::std::option::Option::Some(input.into());
-    self
-}
-/// The Keyring that the created Cryprographic Materials Manager will use to wrap data keys. The created Required Encryption Context CMM will delegate to a Default Cryptographic Materials Manager created with this Keyring. Either a Keyring or an underlying Cryprographic Materials Manager must be specified as input.
-pub fn set_keyring(mut self, input: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef>) -> Self {
-    self.keyring = input;
-    self
-}
-/// The Keyring that the created Cryprographic Materials Manager will use to wrap data keys. The created Required Encryption Context CMM will delegate to a Default Cryptographic Materials Manager created with this Keyring. Either a Keyring or an underlying Cryprographic Materials Manager must be specified as input.
-pub fn get_keyring(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef> {
-    &self.keyring
-}
-/// A list of Encryption Context keys which are required to be supplied during encryption and decryption, and correspond to Encryption Context key-value pairs which are not stored on the resulting message.
-pub fn required_encryption_context_keys(mut self, input: impl ::std::convert::Into<::std::vec::Vec<::std::string::String>>) -> Self {
-    self.required_encryption_context_keys = ::std::option::Option::Some(input.into());
-    self
-}
-/// A list of Encryption Context keys which are required to be supplied during encryption and decryption, and correspond to Encryption Context key-value pairs which are not stored on the resulting message.
-pub fn set_required_encryption_context_keys(mut self, input: ::std::option::Option<::std::vec::Vec<::std::string::String>>) -> Self {
-    self.required_encryption_context_keys = input;
-    self
-}
-/// A list of Encryption Context keys which are required to be supplied during encryption and decryption, and correspond to Encryption Context key-value pairs which are not stored on the resulting message.
-pub fn get_required_encryption_context_keys(&self) -> &::std::option::Option<::std::vec::Vec<::std::string::String>> {
-    &self.required_encryption_context_keys
-}
-/// The Cryprographic Materials Manager that the created Required Encryption Context Cryptographic Materials Manager will delegate to. Either a Keyring or underlying Cryprographic Materials Manager must be specified.
-pub fn underlying_cmm(mut self, input: impl ::std::convert::Into<crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef>) -> Self {
-    self.underlying_cmm = ::std::option::Option::Some(input.into());
-    self
-}
-/// The Cryprographic Materials Manager that the created Required Encryption Context Cryptographic Materials Manager will delegate to. Either a Keyring or underlying Cryprographic Materials Manager must be specified.
-pub fn set_underlying_cmm(mut self, input: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef>) -> Self {
-    self.underlying_cmm = input;
-    self
-}
-/// The Cryprographic Materials Manager that the created Required Encryption Context Cryptographic Materials Manager will delegate to. Either a Keyring or underlying Cryprographic Materials Manager must be specified.
-pub fn get_underlying_cmm(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef> {
-    &self.underlying_cmm
-}
+    pub fn keyring(
+        mut self,
+        input: impl ::std::convert::Into<
+            crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
+        >,
+    ) -> Self {
+        self.keyring = ::std::option::Option::Some(input.into());
+        self
+    }
+    /// The Keyring that the created Cryprographic Materials Manager will use to wrap data keys. The created Required Encryption Context CMM will delegate to a Default Cryptographic Materials Manager created with this Keyring. Either a Keyring or an underlying Cryprographic Materials Manager must be specified as input.
+    pub fn set_keyring(
+        mut self,
+        input: ::std::option::Option<
+            crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
+        >,
+    ) -> Self {
+        self.keyring = input;
+        self
+    }
+    /// The Keyring that the created Cryprographic Materials Manager will use to wrap data keys. The created Required Encryption Context CMM will delegate to a Default Cryptographic Materials Manager created with this Keyring. Either a Keyring or an underlying Cryprographic Materials Manager must be specified as input.
+    pub fn get_keyring(
+        &self,
+    ) -> &::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
+    > {
+        &self.keyring
+    }
+    /// A list of Encryption Context keys which are required to be supplied during encryption and decryption, and correspond to Encryption Context key-value pairs which are not stored on the resulting message.
+    pub fn required_encryption_context_keys(
+        mut self,
+        input: impl ::std::convert::Into<::std::vec::Vec<::std::string::String>>,
+    ) -> Self {
+        self.required_encryption_context_keys = ::std::option::Option::Some(input.into());
+        self
+    }
+    /// A list of Encryption Context keys which are required to be supplied during encryption and decryption, and correspond to Encryption Context key-value pairs which are not stored on the resulting message.
+    pub fn set_required_encryption_context_keys(
+        mut self,
+        input: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+    ) -> Self {
+        self.required_encryption_context_keys = input;
+        self
+    }
+    /// A list of Encryption Context keys which are required to be supplied during encryption and decryption, and correspond to Encryption Context key-value pairs which are not stored on the resulting message.
+    pub fn get_required_encryption_context_keys(
+        &self,
+    ) -> &::std::option::Option<::std::vec::Vec<::std::string::String>> {
+        &self.required_encryption_context_keys
+    }
+    /// The Cryprographic Materials Manager that the created Required Encryption Context Cryptographic Materials Manager will delegate to. Either a Keyring or underlying Cryprographic Materials Manager must be specified.
+    pub fn underlying_cmm(
+        mut self,
+        input: impl ::std::convert::Into<crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef>,
+    ) -> Self {
+        self.underlying_cmm = ::std::option::Option::Some(input.into());
+        self
+    }
+    /// The Cryprographic Materials Manager that the created Required Encryption Context Cryptographic Materials Manager will delegate to. Either a Keyring or underlying Cryprographic Materials Manager must be specified.
+    pub fn set_underlying_cmm(
+        mut self,
+        input: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef>,
+    ) -> Self {
+        self.underlying_cmm = input;
+        self
+    }
+    /// The Cryprographic Materials Manager that the created Required Encryption Context Cryptographic Materials Manager will delegate to. Either a Keyring or underlying Cryprographic Materials Manager must be specified.
+    pub fn get_underlying_cmm(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef>{
+        &self.underlying_cmm
+    }
     /// Consumes the builder and constructs a [`CreateRequiredEncryptionContextCmmInput`](crate::deps::aws_cryptography_materialProviders::types::CreateRequiredEncryptionContextCmmInput).
     pub fn build(
         self,
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_materialProviders::types::CreateRequiredEncryptionContextCmmInput,
         ::aws_smithy_types::error::operation::BuildError,
-    > {
+    >{
         ::std::result::Result::Ok(crate::deps::aws_cryptography_materialProviders::types::CreateRequiredEncryptionContextCmmInput {
             keyring: self.keyring,
 required_encryption_context_keys: self.required_encryption_context_keys,

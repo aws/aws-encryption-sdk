@@ -4,25 +4,26 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::UpdateGlobalSecondaryIndexAction,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateGlobalSecondaryIndexAction>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateGlobalSecondaryIndexAction>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateGlobalSecondaryIndexAction::UpdateGlobalSecondaryIndexAction {
         IndexName: dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&value.index_name),
- ProvisionedThroughput: ::std::rc::Rc::new(match &value.provisioned_throughput {
+ ProvisionedThroughput: ::dafny_runtime::Rc::new(match &value.provisioned_throughput {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::provisioned_throughput::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- OnDemandThroughput: ::std::rc::Rc::new(match &value.on_demand_throughput {
+ OnDemandThroughput: ::dafny_runtime::Rc::new(match &value.on_demand_throughput {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::on_demand_throughput::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateGlobalSecondaryIndexAction,
     >,
 ) -> aws_sdk_dynamodb::types::UpdateGlobalSecondaryIndexAction {

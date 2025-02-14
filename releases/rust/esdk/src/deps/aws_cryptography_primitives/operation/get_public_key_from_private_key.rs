@@ -17,12 +17,12 @@ impl GetPublicKeyFromPrivateKey {
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_primitives::operation::get_public_key_from_private_key::GetPublicKeyFromPrivateKeyOutput,
         crate::deps::aws_cryptography_primitives::types::error::Error,
-    > {
+    >{
         crate::deps::aws_cryptography_primitives::validation::validate_aws_Pcryptography_Pprimitives_HGetPublicKeyFromPrivateKeyInput_for_AwsCryptographicPrimitives_GetPublicKeyFromPrivateKey(&input)
             .map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err)?;
-                let inner_input = crate::deps::aws_cryptography_primitives::conversions::get_public_key_from_private_key::_get_public_key_from_private_key_input::to_dafny(input);
-        let inner_result =
-            ::dafny_runtime::md!(client.dafny_client.clone()).GetPublicKeyFromPrivateKey(&inner_input);
+        let inner_input = crate::deps::aws_cryptography_primitives::conversions::get_public_key_from_private_key::_get_public_key_from_private_key_input::to_dafny(input);
+        let inner_result = ::dafny_runtime::md!(client.dafny_client.clone())
+            .GetPublicKeyFromPrivateKey(&inner_input);
         if matches!(
             inner_result.as_ref(),
             crate::r#_Wrappers_Compile::Result::Success { .. }
@@ -31,9 +31,11 @@ impl GetPublicKeyFromPrivateKey {
                 crate::deps::aws_cryptography_primitives::conversions::get_public_key_from_private_key::_get_public_key_from_private_key_output::from_dafny(inner_result.value().clone()),
             )
         } else {
-            Err(crate::deps::aws_cryptography_primitives::conversions::error::from_dafny(
-                inner_result.error().clone(),
-            ))
+            Err(
+                crate::deps::aws_cryptography_primitives::conversions::error::from_dafny(
+                    inner_result.error().clone(),
+                ),
+            )
         }
     }
 }

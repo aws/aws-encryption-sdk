@@ -4,13 +4,13 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_kms::operation::generate_data_key_without_plaintext::GenerateDataKeyWithoutPlaintextInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GenerateDataKeyWithoutPlaintextRequest,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GenerateDataKeyWithoutPlaintextRequest::GenerateDataKeyWithoutPlaintextRequest {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GenerateDataKeyWithoutPlaintextRequest::GenerateDataKeyWithoutPlaintextRequest {
         KeyId: crate::standard_library_conversions::ostring_to_dafny(&value.key_id) .Extract(),
  EncryptionContext:
-::std::rc::Rc::new(match &value.encryption_context {
+::dafny_runtime::Rc::new(match &value.encryption_context {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::hashmap_to_dafny_map(x,
             |k| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&k),
@@ -20,13 +20,13 @@ pub fn to_dafny(
     None => crate::r#_Wrappers_Compile::Option::None {}
 })
 ,
- KeySpec: ::std::rc::Rc::new(match &value.key_spec {
+ KeySpec: ::dafny_runtime::Rc::new(match &value.key_spec {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::data_key_spec::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
  NumberOfBytes: crate::standard_library_conversions::oint_to_dafny(value.number_of_bytes),
- GrantTokens: ::std::rc::Rc::new(match &value.grant_tokens {
+ GrantTokens: ::dafny_runtime::Rc::new(match &value.grant_tokens {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&e),
@@ -38,12 +38,13 @@ pub fn to_dafny(
  DryRun: crate::standard_library_conversions::obool_to_dafny(&value.dry_run),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GenerateDataKeyWithoutPlaintextRequest,
-    >
-) -> aws_sdk_kms::operation::generate_data_key_without_plaintext::GenerateDataKeyWithoutPlaintextInput {
+    >,
+) -> aws_sdk_kms::operation::generate_data_key_without_plaintext::GenerateDataKeyWithoutPlaintextInput
+{
     aws_sdk_kms::operation::generate_data_key_without_plaintext::GenerateDataKeyWithoutPlaintextInput::builder()
           .set_key_id(Some( dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(dafny_value.KeyId()) ))
  .set_encryption_context(match (*dafny_value.EncryptionContext()).as_ref() {

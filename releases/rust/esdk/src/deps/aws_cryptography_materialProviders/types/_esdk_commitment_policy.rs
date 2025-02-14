@@ -5,16 +5,22 @@
 #[allow(missing_docs)]
 pub enum EsdkCommitmentPolicy {
     ForbidEncryptAllowDecrypt,
-RequireEncryptAllowDecrypt,
-RequireEncryptRequireDecrypt,
+    RequireEncryptAllowDecrypt,
+    RequireEncryptRequireDecrypt,
 }
 
 impl ::std::fmt::Display for EsdkCommitmentPolicy {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         match self {
-            EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt => write!(f, "FORBID_ENCRYPT_ALLOW_DECRYPT"),
-EsdkCommitmentPolicy::RequireEncryptAllowDecrypt => write!(f, "REQUIRE_ENCRYPT_ALLOW_DECRYPT"),
-EsdkCommitmentPolicy::RequireEncryptRequireDecrypt => write!(f, "REQUIRE_ENCRYPT_REQUIRE_DECRYPT"),
+            EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt => {
+                write!(f, "FORBID_ENCRYPT_ALLOW_DECRYPT")
+            }
+            EsdkCommitmentPolicy::RequireEncryptAllowDecrypt => {
+                write!(f, "REQUIRE_ENCRYPT_ALLOW_DECRYPT")
+            }
+            EsdkCommitmentPolicy::RequireEncryptRequireDecrypt => {
+                write!(f, "REQUIRE_ENCRYPT_REQUIRE_DECRYPT")
+            }
         }
     }
 }

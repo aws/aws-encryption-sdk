@@ -15,8 +15,10 @@ impl Client {
     pub fn from_conf(
         input: crate::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig,
     ) -> Result<Self, crate::types::error::Error> {
-        crate::validation::validate_aws_Pcryptography_PencryptionSdk_HAwsEncryptionSdkConfig(&input)
-            .map_err(crate::types::error::Error::wrap_validation_err)?;
+        crate::validation::validate_aws_Pcryptography_PencryptionSdk_HAwsEncryptionSdkConfig(
+            &input,
+        )
+        .map_err(crate::types::error::Error::wrap_validation_err)?;
         let inner =
             crate::software::amazon::cryptography::encryptionsdk::internaldafny::_default::ESDK(
                 &crate::conversions::aws_encryption_sdk_config::_aws_encryption_sdk_config::to_dafny(input),
@@ -25,10 +27,12 @@ impl Client {
             inner.as_ref(),
             crate::_Wrappers_Compile::Result::Failure { .. }
         ) {
-            return Err(crate::conversions::error::from_dafny(inner.as_ref().error().clone()));
+            return Err(crate::conversions::error::from_dafny(
+                inner.as_ref().error().clone(),
+            ));
         }
         Ok(Self {
-            dafny_client: ::dafny_runtime::upcast_object()(inner.Extract())
+            dafny_client: ::dafny_runtime::upcast_object()(inner.Extract()),
         })
     }
 }

@@ -5,7 +5,7 @@ on:
   workflow_call:
     inputs:
       dafny:
-        description: 'The Dafny version to run'
+        description: "The Dafny version to run"
         required: true
         type: string
       regenerate-code:
@@ -20,13 +20,13 @@ jobs:
       fail-fast: false
       matrix:
         library: [AwsEncryptionSDK, TestVectors]
-        go-version: [ "1.23" ]
+        go-version: ["1.23"]
         os: [
-          # Sed script doesn't work properly on windows
-          # windows-latest,
-          ubuntu-latest,
-          macos-13,
-        ]
+            # Sed script doesn't work properly on windows
+            # windows-latest,
+            ubuntu-22.04,
+            macos-13,
+          ]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
@@ -50,7 +50,7 @@ jobs:
           role-session-name: GoTests
 
       - name: Setup Dafny
-        uses: dafny-lang/setup-dafny-action@v1.7.0
+        uses: dafny-lang/setup-dafny-action@v1.8.0
         with:
           dafny-version: ${{ inputs.dafny }}
 
@@ -65,7 +65,7 @@ jobs:
 
       - name: Install Go imports
         run: |
-          go install golang.org/x/tools/cmd/goimports@latest        
+          go install golang.org/x/tools/cmd/goimports@latest
 
       - name: Compile ${{ matrix.library }} implementation
         shell: bash
@@ -74,7 +74,7 @@ jobs:
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_go CORES=$CORES
-          
+
       - name: Unzip .NET Retry Flag Manifests
         shell: bash
         working-directory: TestVectors/dafny/TestVectors/test/
@@ -96,7 +96,7 @@ jobs:
         shell: bash
         run: |
           make test_go
-      
+
       - name: Test Examples for Go
         if: matrix.library == 'AwsEncryptionSDK'
         working-directory: ${{ matrix.library }}/runtimes/go/examples

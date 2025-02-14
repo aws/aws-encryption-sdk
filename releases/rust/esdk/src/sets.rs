@@ -21,7 +21,7 @@ pub mod SortedSets {
 
         pub fn SetToOrderedSequence<T: ::dafny_runtime::DafnyTypeEq>(
             elems: &::dafny_runtime::Set<::dafny_runtime::Sequence<T>>,
-            less: &::std::rc::Rc<dyn Fn(&T, &T) -> bool>,
+            less: &::dafny_runtime::Rc<dyn Fn(&T, &T) -> bool + Send + Sync>,
         ) -> ::dafny_runtime::Sequence<::dafny_runtime::Sequence<T>> {
             let mut vec = elems.iter().cloned().collect::<Vec<_>>();
             vec.sort_by(|a, b| Self::order(a, b, less));
@@ -30,7 +30,7 @@ pub mod SortedSets {
 
         pub fn SetToOrderedSequence2<T: ::dafny_runtime::DafnyTypeEq>(
             elems: &::dafny_runtime::Set<::dafny_runtime::Sequence<T>>,
-            less: &::std::rc::Rc<dyn Fn(&T, &T) -> bool>,
+            less: &::dafny_runtime::Rc<dyn Fn(&T, &T) -> bool + Send + Sync>,
         ) -> ::dafny_runtime::Sequence<::dafny_runtime::Sequence<T>> {
             Self::SetToOrderedSequence(elems, less)
         }
@@ -38,7 +38,7 @@ pub mod SortedSets {
         fn order<T: ::dafny_runtime::DafnyTypeEq>(
             x: &::dafny_runtime::Sequence<T>,
             y: &::dafny_runtime::Sequence<T>,
-            less: &::std::rc::Rc<dyn Fn(&T, &T) -> bool>,
+            less: &::dafny_runtime::Rc<dyn Fn(&T, &T) -> bool + Send + Sync>,
         ) -> Ordering {
             let mut iter1 = x.iter();
             let mut iter2 = y.iter();

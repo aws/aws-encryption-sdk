@@ -75,9 +75,6 @@ pub mod operation;
 /// Types for the transform client.
 pub mod types;
 
-#[cfg(feature = "wrapped-client")]
-pub mod wrapped;
-
 pub use client::Client;
 pub use types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 

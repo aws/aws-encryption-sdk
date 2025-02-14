@@ -29,14 +29,16 @@ pub struct CreateAwsKmsMrkDiscoveryKeyringFluentBuilder {
 }
 impl CreateAwsKmsMrkDiscoveryKeyringFluentBuilder {
     /// Creates a new `CreateAwsKmsMrkDiscoveryKeyring`.
-    pub(crate) fn new(client: crate::deps::aws_cryptography_materialProviders::client::Client) -> Self {
+    pub(crate) fn new(
+        client: crate::deps::aws_cryptography_materialProviders::client::Client,
+    ) -> Self {
         Self {
             client,
             inner: ::std::default::Default::default(),
         }
     }
     /// Access the CreateAwsKmsMrkDiscoveryKeyring as a reference.
-    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_mrk_discovery_keyring::builders::CreateAwsKmsMrkDiscoveryKeyringInputBuilder {
+    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_mrk_discovery_keyring::builders::CreateAwsKmsMrkDiscoveryKeyringInputBuilder{
         &self.inner
     }
     /// Sends the request and returns the response.
@@ -56,66 +58,96 @@ impl CreateAwsKmsMrkDiscoveryKeyringFluentBuilder {
             .map_err(|mut e| {
 	     let msg = format!("{:?}", e);
              crate::deps::aws_cryptography_materialProviders::types::error::Error::OpaqueWithText {
-                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut dyn ::std::any::Any),
+                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut ::dafny_runtime::DynAny),
 		objMessage: msg
              }})?;
         crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_mrk_discovery_keyring::CreateAwsKmsMrkDiscoveryKeyring::send(&self.client, input).await
     }
 
     /// A filter which restricts which KMS Keys this Keyring may attempt to decrypt with by AWS partition and account.
-pub fn discovery_filter(mut self, input: impl ::std::convert::Into<crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter>) -> Self {
-    self.inner = self.inner.discovery_filter(input.into());
-    self
-}
-/// A filter which restricts which KMS Keys this Keyring may attempt to decrypt with by AWS partition and account.
-pub fn set_discovery_filter(mut self, input: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter>) -> Self {
-    self.inner = self.inner.set_discovery_filter(input);
-    self
-}
-/// A filter which restricts which KMS Keys this Keyring may attempt to decrypt with by AWS partition and account.
-pub fn get_discovery_filter(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter> {
-    self.inner.get_discovery_filter()
-}
-/// A list of grant tokens to be used when calling KMS.
-pub fn grant_tokens(mut self, input: impl ::std::convert::Into<::std::vec::Vec<::std::string::String>>) -> Self {
-    self.inner = self.inner.grant_tokens(input.into());
-    self
-}
-/// A list of grant tokens to be used when calling KMS.
-pub fn set_grant_tokens(mut self, input: ::std::option::Option<::std::vec::Vec<::std::string::String>>) -> Self {
-    self.inner = self.inner.set_grant_tokens(input);
-    self
-}
-/// A list of grant tokens to be used when calling KMS.
-pub fn get_grant_tokens(&self) -> &::std::option::Option<::std::vec::Vec<::std::string::String>> {
-    self.inner.get_grant_tokens()
-}
-/// The KMS Client this Keyring will use to call KMS.
-pub fn kms_client(mut self, input: impl ::std::convert::Into<crate::deps::com_amazonaws_kms::client::Client>) -> Self {
-    self.inner = self.inner.kms_client(input.into());
-    self
-}
-/// The KMS Client this Keyring will use to call KMS.
-pub fn set_kms_client(mut self, input: ::std::option::Option<crate::deps::com_amazonaws_kms::client::Client>) -> Self {
-    self.inner = self.inner.set_kms_client(input);
-    self
-}
-/// The KMS Client this Keyring will use to call KMS.
-pub fn get_kms_client(&self) -> &::std::option::Option<crate::deps::com_amazonaws_kms::client::Client> {
-    self.inner.get_kms_client()
-}
-/// The region the input 'kmsClient' is in.
-pub fn region(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
-    self.inner = self.inner.region(input.into());
-    self
-}
-/// The region the input 'kmsClient' is in.
-pub fn set_region(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
-    self.inner = self.inner.set_region(input);
-    self
-}
-/// The region the input 'kmsClient' is in.
-pub fn get_region(&self) -> &::std::option::Option<::std::string::String> {
-    self.inner.get_region()
-}
+    pub fn discovery_filter(
+        mut self,
+        input: impl ::std::convert::Into<
+            crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter,
+        >,
+    ) -> Self {
+        self.inner = self.inner.discovery_filter(input.into());
+        self
+    }
+    /// A filter which restricts which KMS Keys this Keyring may attempt to decrypt with by AWS partition and account.
+    pub fn set_discovery_filter(
+        mut self,
+        input: ::std::option::Option<
+            crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter,
+        >,
+    ) -> Self {
+        self.inner = self.inner.set_discovery_filter(input);
+        self
+    }
+    /// A filter which restricts which KMS Keys this Keyring may attempt to decrypt with by AWS partition and account.
+    pub fn get_discovery_filter(
+        &self,
+    ) -> &::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::DiscoveryFilter,
+    > {
+        self.inner.get_discovery_filter()
+    }
+    /// A list of grant tokens to be used when calling KMS.
+    pub fn grant_tokens(
+        mut self,
+        input: impl ::std::convert::Into<::std::vec::Vec<::std::string::String>>,
+    ) -> Self {
+        self.inner = self.inner.grant_tokens(input.into());
+        self
+    }
+    /// A list of grant tokens to be used when calling KMS.
+    pub fn set_grant_tokens(
+        mut self,
+        input: ::std::option::Option<::std::vec::Vec<::std::string::String>>,
+    ) -> Self {
+        self.inner = self.inner.set_grant_tokens(input);
+        self
+    }
+    /// A list of grant tokens to be used when calling KMS.
+    pub fn get_grant_tokens(
+        &self,
+    ) -> &::std::option::Option<::std::vec::Vec<::std::string::String>> {
+        self.inner.get_grant_tokens()
+    }
+    /// The KMS Client this Keyring will use to call KMS.
+    pub fn kms_client(
+        mut self,
+        input: impl ::std::convert::Into<crate::deps::com_amazonaws_kms::client::Client>,
+    ) -> Self {
+        self.inner = self.inner.kms_client(input.into());
+        self
+    }
+    /// The KMS Client this Keyring will use to call KMS.
+    pub fn set_kms_client(
+        mut self,
+        input: ::std::option::Option<crate::deps::com_amazonaws_kms::client::Client>,
+    ) -> Self {
+        self.inner = self.inner.set_kms_client(input);
+        self
+    }
+    /// The KMS Client this Keyring will use to call KMS.
+    pub fn get_kms_client(
+        &self,
+    ) -> &::std::option::Option<crate::deps::com_amazonaws_kms::client::Client> {
+        self.inner.get_kms_client()
+    }
+    /// The region the input 'kmsClient' is in.
+    pub fn region(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+        self.inner = self.inner.region(input.into());
+        self
+    }
+    /// The region the input 'kmsClient' is in.
+    pub fn set_region(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+        self.inner = self.inner.set_region(input);
+        self
+    }
+    /// The region the input 'kmsClient' is in.
+    pub fn get_region(&self) -> &::std::option::Option<::std::string::String> {
+        self.inner.get_region()
+    }
 }

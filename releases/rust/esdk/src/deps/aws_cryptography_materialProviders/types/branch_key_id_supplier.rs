@@ -3,7 +3,7 @@
 // Do not modify this file. This file is machine generated, and any changes to it will be overwritten.
 
 #[allow(missing_docs)]
-pub trait BranchKeyIdSupplier {
+pub trait BranchKeyIdSupplier: Send + Sync {
     fn get_branch_key_id(
     &self,
     input: crate::deps::aws_cryptography_materialProviders::operation::get_branch_key_id::GetBranchKeyIdInput,
@@ -16,18 +16,20 @@ pub trait BranchKeyIdSupplier {
 #[derive(::std::clone::Clone)]
 /// A reference to a BranchKeyIdSupplier
 pub struct BranchKeyIdSupplierRef {
-  pub inner: ::std::rc::Rc<std::cell::RefCell<dyn BranchKeyIdSupplier>>
+    pub inner: ::dafny_runtime::Rc<::dafny_runtime::RefCell<dyn BranchKeyIdSupplier>>,
 }
 
-impl<T : BranchKeyIdSupplier + 'static> From<T> for BranchKeyIdSupplierRef {
+impl<T: BranchKeyIdSupplier + 'static> From<T> for BranchKeyIdSupplierRef {
     fn from(value: T) -> Self {
-        Self { inner: std::rc::Rc::new(std::cell::RefCell::new(value)) }
+        Self {
+            inner: dafny_runtime::Rc::new(::dafny_runtime::RefCell::new(value)),
+        }
     }
 }
 
 impl ::std::cmp::PartialEq for BranchKeyIdSupplierRef {
     fn eq(&self, other: &BranchKeyIdSupplierRef) -> bool {
-        ::std::rc::Rc::ptr_eq(&self.inner, &other.inner)
+        ::dafny_runtime::Rc::ptr_eq(&self.inner, &other.inner)
     }
 }
 

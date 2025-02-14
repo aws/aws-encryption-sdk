@@ -9,11 +9,13 @@ AWS Encryption SDK for .NET
 The AWS Encryption SDK is available on [NuGet](https://www.nuget.org/) and can referenced from an existing `.csproj` through typical ways.
 
 Using the dotnet CLI:
+
 ```shell
 dotnet add <your-project-name>.csproj package AWS.Cryptography.EncryptionSDK
 ```
 
 Alternatively, you may directly modify the `.csproj` and add the AWS Encryption SDK to `PackageReference` `ItemGroup`:
+
 ```xml
 <PackageReference Include="AWS.Cryptography.EncryptionSDK" />
 ```
@@ -35,8 +37,8 @@ To build, the AWS Encryption SDK requires the most up to date version of [Dafny]
 The AWS Encryption SDK targets frameworks [`net48` and `net6.0`](https://docs.microsoft.com/en-us/dotnet/standard/frameworks#supported-target-frameworks).
 To build and test the AWS Encryption SDK, you must install the following .NET tools:
 
-* [.NET 6.0](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) or newer
-* [.NET Framework 4.8.0](https://docs.microsoft.com/en-us/dotnet/framework/install/) or newer (if on Windows)
+- [.NET 6.0](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) or newer
+- [.NET Framework 4.8.0](https://docs.microsoft.com/en-us/dotnet/framework/install/) or newer (if on Windows)
 
 You will also need to ensure that you fetch all submodules using either `git clone --recursive ...` when cloning the repository or `git submodule update --init` on an existing clone.
 
@@ -58,7 +60,7 @@ If you set up the AWS Encryption SDK to use the AWS KMS Keyring,
 the AWS Encryption SDK will make calls to AWS KMS on your behalf,
 using the appropriate AWS SDK.
 
-However, you must first set up AWS credentials for use with the AWS SDK. 
+However, you must first set up AWS credentials for use with the AWS SDK.
 Instructions for setting up AWS credentials are available in the [AWS Docs for the AWS SDK for .NET.](https://docs.aws.amazon.com/sdk-for-net/v3/developer-guide/net-dg-config-creds.html).
 
 ## Testing the AWS Encryption SDK for .NET
@@ -78,7 +80,7 @@ Run the test suite with:
 cd AwsEncryptionSDK
 make transpile_test_net
 # Windows/Linux
-make test_net 
+make test_net
 # On Mac
 make test_net_mac_brew
 ```
@@ -97,11 +99,13 @@ Please note that tests and test vectors require internet access and valid AWS cr
 Most c# IDEs appreciate Solution files.
 To generate one Solution file for all the projects here,
 run:
+
 ```
 cd AwsEncryptionSDK/runtimes/net
 dotnet new sln --name ESDK
 dotnet sln add $(find . -name '*.csproj')
 ```
+
 Then ask your IDE to open `ESDK.sln`.
 
 ## License

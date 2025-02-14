@@ -37,10 +37,10 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
 use aws_esdk::client as esdk_client;
-use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use aws_esdk::material_providers::client as mpl_client;
 use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
 use aws_esdk::material_providers::types::DiscoveryFilter;
+use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use aws_esdk::types::error::Error::AwsCryptographicMaterialProvidersError;
 use std::collections::HashMap;
 
@@ -69,8 +69,14 @@ pub async fn encrypt_and_decrypt_with_keyring(
         ("encryption".to_string(), "context".to_string()),
         ("is not".to_string(), "secret".to_string()),
         ("but adds".to_string(), "useful metadata".to_string()),
-        ("that can help you".to_string(), "be confident that".to_string()),
-        ("the data you are handling".to_string(), "is what you think it is".to_string()),
+        (
+            "that can help you".to_string(),
+            "be confident that".to_string(),
+        ),
+        (
+            "the data you are handling".to_string(),
+            "is what you think it is".to_string(),
+        ),
     ]);
 
     // 4. Create the keyring that determines how your data keys are protected.
@@ -89,7 +95,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 5. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
 
-    let encryption_response = esdk_client.encrypt()
+    let encryption_response = esdk_client
+        .encrypt()
         .plaintext(plaintext)
         .keyring(encrypt_kms_keyring)
         .encryption_context(encryption_context.clone())
@@ -97,13 +104,16 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let ciphertext = encryption_response
-                        .ciphertext
-                        .expect("Unable to unwrap ciphertext from encryption response");
+        .ciphertext
+        .expect("Unable to unwrap ciphertext from encryption response");
 
     // 6. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
-        "Ciphertext and plaintext data are the same. Invalid encryption");
+    assert_ne!(
+        ciphertext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Ciphertext and plaintext data are the same. Invalid encryption"
+    );
 
     // 7. Now create a Discovery keyring to use for decryption. We'll add a discovery filter
     //    so that we limit the set of ciphertexts we are willing to decrypt to only ones
@@ -133,7 +143,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     //    successfully decrypted. The resulting data key is used to decrypt the
     //    ciphertext's message.
     //    If all calls to KMS fail, the decryption fails.
-    let decryption_response = esdk_client.decrypt()
+    let decryption_response = esdk_client
+        .decrypt()
         .ciphertext(ciphertext.clone())
         .keyring(discovery_keyring)
         // Provide the encryption context that was supplied to the encrypt method
@@ -142,13 +153,16 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let decrypted_plaintext = decryption_response
-                                .plaintext
-                                .expect("Unable to unwrap plaintext from decryption response");
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // 9. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        decrypted_plaintext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     // 10. Demonstrate that if a different discovery keyring (Bob's) doesn't have the correct
     //     AWS Account ID's, the decrypt will fail with an error message
@@ -169,7 +183,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // Decrypt the ciphertext using Bob's discovery keyring which doesn't contain the required
     // Account ID's for the KMS keyring used for encryption.
     // This should throw an AwsCryptographicMaterialProvidersError exception
-    let decryption_response_bob = esdk_client.decrypt()
+    let decryption_response_bob = esdk_client
+        .decrypt()
         .ciphertext(ciphertext)
         .keyring(discovery_keyring_bob)
         // Provide the encryption context that was supplied to the encrypt method
@@ -178,8 +193,10 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await;
 
     match decryption_response_bob {
-        Ok(_) => panic!("Decrypt using discovery keyring with wrong AWS Account ID MUST \
-                            raise AwsCryptographicMaterialProvidersError"),
+        Ok(_) => panic!(
+            "Decrypt using discovery keyring with wrong AWS Account ID MUST \
+                            raise AwsCryptographicMaterialProvidersError"
+        ),
         Err(AwsCryptographicMaterialProvidersError { error: _e }) => (),
         _ => panic!("Unexpected error type"),
     }
@@ -197,8 +214,9 @@ pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxErr
     encrypt_and_decrypt_with_keyring(
         utils::TEST_EXAMPLE_DATA,
         utils::TEST_DEFAULT_KMS_KEY_ID,
-        utils::TEST_DEFAULT_KMS_KEY_ACCOUNT_ID
-    ).await?;
+        utils::TEST_DEFAULT_KMS_KEY_ACCOUNT_ID,
+    )
+    .await?;
 
     Ok(())
 }

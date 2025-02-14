@@ -44,24 +44,24 @@ For more information on this configuration see:
 https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-raw-ecdh-keyring.html#raw-ecdh-PublicKeyDiscovery
 */
 
+use crate::example_utils::utils::exists;
+use crate::example_utils::utils::write_raw_ecdh_ecc_keys;
+use crate::example_utils::utils::EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT;
+use crate::example_utils::utils::EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT;
+use aws_esdk::aws_cryptography_primitives::types::EcdhCurveSpec;
 use aws_esdk::client as esdk_client;
-use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use aws_esdk::material_providers::client as mpl_client;
 use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
-use aws_esdk::material_providers::types::RawEcdhStaticConfigurations;
-use aws_esdk::material_providers::types::PublicKeyDiscoveryInput;
 use aws_esdk::material_providers::types::EphemeralPrivateKeyToStaticPublicKeyInput;
-use aws_esdk::aws_cryptography_primitives::types::EcdhCurveSpec;
+use aws_esdk::material_providers::types::PublicKeyDiscoveryInput;
+use aws_esdk::material_providers::types::RawEcdhStaticConfigurations;
+use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use aws_smithy_types::Blob;
+use pem::parse;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-use pem::parse;
-use crate::example_utils::utils::exists;
-use crate::example_utils::utils::EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT;
-use crate::example_utils::utils::EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT;
-use crate::example_utils::utils::write_raw_ecdh_ecc_keys;
 
 pub async fn decrypt_with_keyring(
     example_data: &str,
@@ -86,9 +86,15 @@ pub async fn decrypt_with_keyring(
         ("encryption".to_string(), "context".to_string()),
         ("is not".to_string(), "secret".to_string()),
         ("but adds".to_string(), "useful metadata".to_string()),
-        ("that can help you".to_string(), "be confident that".to_string()),
-        ("the data you are handling".to_string(), "is what you think it is".to_string()),
-        ]);
+        (
+            "that can help you".to_string(),
+            "be confident that".to_string(),
+        ),
+        (
+            "the data you are handling".to_string(),
+            "is what you think it is".to_string(),
+        ),
+    ]);
 
     // 3. You may provide your own ECC keys in the files located at
     // - EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT
@@ -114,18 +120,19 @@ pub async fn decrypt_with_keyring(
         ecdh_curve_spec,
         encryption_context.clone(),
         esdk_client.clone(),
-        mpl.clone()
-    ).await?;
+        mpl.clone(),
+    )
+    .await?;
 
     // 5. Create the PublicKeyDiscoveryInput
-    let discovery_raw_ecdh_static_configuration_input =
-        PublicKeyDiscoveryInput::builder()
-            // Must be a UTF8 PEM-encoded private key
-            .recipient_static_private_key(private_key_recipient_utf8_bytes)
-            .build()?;
+    let discovery_raw_ecdh_static_configuration_input = PublicKeyDiscoveryInput::builder()
+        // Must be a UTF8 PEM-encoded private key
+        .recipient_static_private_key(private_key_recipient_utf8_bytes)
+        .build()?;
 
-    let discovery_raw_ecdh_static_configuration =
-        RawEcdhStaticConfigurations::PublicKeyDiscovery(discovery_raw_ecdh_static_configuration_input);
+    let discovery_raw_ecdh_static_configuration = RawEcdhStaticConfigurations::PublicKeyDiscovery(
+        discovery_raw_ecdh_static_configuration_input,
+    );
 
     // 6. Create the Public Key Discovery Raw ECDH keyring.
 
@@ -141,7 +148,8 @@ pub async fn decrypt_with_keyring(
         .await?;
 
     // 7. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decryption_response = esdk_client.decrypt()
+    let decryption_response = esdk_client
+        .decrypt()
         .ciphertext(ciphertext)
         .keyring(discovery_raw_ecdh_keyring)
         // Provide the encryption context that was supplied to the encrypt method
@@ -150,16 +158,19 @@ pub async fn decrypt_with_keyring(
         .await?;
 
     let decrypted_plaintext = decryption_response
-                                .plaintext
-                                .expect("Unable to unwrap plaintext from decryption response");
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // 8. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
     let plaintext = example_data.as_bytes();
 
-    assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
-    
+    assert_eq!(
+        decrypted_plaintext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
+
     println!("Public Key Discovery Raw ECDH Keyring Example Completed Successfully");
 
     Ok(())
@@ -169,26 +180,19 @@ fn should_generate_new_ecc_key_pair_discovery_raw_ecdh() -> Result<bool, String>
     // If keys already exist: do not overwrite existing keys
     if exists(EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT)
         && exists(EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT)
-        {
-            Ok(false)
-        }
+    {
+        Ok(false)
+    }
     // If only one file is present: throw exception
     else if !exists(EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT)
         && exists(EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT)
-        {
-            Err(
-                "Missing key file at ".to_string()
-                + EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT
-            )
-        }
-    else if exists(EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT)
+    {
+        Err("Missing key file at ".to_string() + EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT)
+    } else if exists(EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT)
         && !exists(EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT)
-        {
-            Err(
-                "Missing key file at ".to_string()
-                + EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT
-            )
-        }
+    {
+        Err("Missing key file at ".to_string() + EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT)
+    }
     // If neither file is present, generate a new key pair
     else {
         Ok(true)
@@ -200,12 +204,13 @@ async fn get_ciphertext(
     ecdh_curve_spec: EcdhCurveSpec,
     encryption_context: HashMap<String, String>,
     esdk_client: esdk_client::Client,
-    mpl: mpl_client::Client
+    mpl: mpl_client::Client,
 ) -> Result<Blob, crate::BoxError> {
     // 1. Load keys from UTF-8 encoded PEM files.
-    
+
     // Load public key from UTF-8 encoded PEM files into a DER encoded public key.
-    let public_key_file_content = std::fs::read_to_string(Path::new(EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT))?;
+    let public_key_file_content =
+        std::fs::read_to_string(Path::new(EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT))?;
     let parsed_public_key_file_content = parse(public_key_file_content)?;
     let public_key_recipient_utf8_bytes = parsed_public_key_file_content.contents();
 
@@ -217,7 +222,9 @@ async fn get_ciphertext(
             .build()?;
 
     let ephemeral_raw_ecdh_static_configuration =
-        RawEcdhStaticConfigurations::EphemeralPrivateKeyToStaticPublicKey(ephemeral_raw_ecdh_static_configuration_input);
+        RawEcdhStaticConfigurations::EphemeralPrivateKeyToStaticPublicKey(
+            ephemeral_raw_ecdh_static_configuration_input,
+        );
 
     // 3. Create the Ephemeral Raw ECDH keyring.
 
@@ -239,7 +246,8 @@ async fn get_ciphertext(
     // the private key that corresponds to the public key that is stored on the message.
     let plaintext = example_data.as_bytes();
 
-    let encryption_response = esdk_client.encrypt()
+    let encryption_response = esdk_client
+        .encrypt()
         .plaintext(plaintext)
         .keyring(ephemeral_raw_ecdh_keyring)
         .encryption_context(encryption_context)
@@ -247,13 +255,16 @@ async fn get_ciphertext(
         .await?;
 
     let ciphertext = encryption_response
-                        .ciphertext
-                        .expect("Unable to unwrap ciphertext from encryption response");
+        .ciphertext
+        .expect("Unable to unwrap ciphertext from encryption response");
 
     // 5. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext, aws_smithy_types::Blob::new(plaintext),
-        "Ciphertext and plaintext data are the same. Invalid encryption");
+    assert_ne!(
+        ciphertext,
+        aws_smithy_types::Blob::new(plaintext),
+        "Ciphertext and plaintext data are the same. Invalid encryption"
+    );
 
     Ok(ciphertext)
 }
@@ -263,10 +274,7 @@ pub async fn test_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
     // Test function for decrypt using the Public Key Discovery Raw ECDH Keyring example
     use crate::example_utils::utils;
 
-    decrypt_with_keyring(
-        utils::TEST_EXAMPLE_DATA,
-        EcdhCurveSpec::EccNistP256
-    ).await?;
+    decrypt_with_keyring(utils::TEST_EXAMPLE_DATA, EcdhCurveSpec::EccNistP256).await?;
 
     Ok(())
 }

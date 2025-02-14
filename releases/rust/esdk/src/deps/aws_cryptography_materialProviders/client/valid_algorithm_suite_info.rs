@@ -17,7 +17,7 @@ impl crate::deps::aws_cryptography_materialProviders::client::Client {
     /// - On success, responds with [`Unit`](crate::operation::valid_algorithm_suite_info::Unit) with field(s):
 
     /// - On failure, responds with [`SdkError<ValidAlgorithmSuiteInfoError>`](crate::operation::valid_algorithm_suite_info::ValidAlgorithmSuiteInfoError)
-    pub fn valid_algorithm_suite_info(&self) -> crate::deps::aws_cryptography_materialProviders::operation::valid_algorithm_suite_info::builders::ValidAlgorithmSuiteInfoFluentBuilder {
+    pub fn valid_algorithm_suite_info(&self) -> crate::deps::aws_cryptography_materialProviders::operation::valid_algorithm_suite_info::builders::ValidAlgorithmSuiteInfoFluentBuilder{
         crate::deps::aws_cryptography_materialProviders::operation::valid_algorithm_suite_info::builders::ValidAlgorithmSuiteInfoFluentBuilder::new(self.clone())
     }
 }

@@ -11,7 +11,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     /// - On success, responds with [`AesKdfCtrOutput`](crate::operation::aes_kdf_counter_mode::AesKdfCtrOutput) with field(s):
     ///   - [`okm(Option<::aws_smithy_types::Blob>)`](crate::operation::aes_kdf_counter_mode::AesKdfCtrOutput::okm): (undocumented)
     /// - On failure, responds with [`SdkError<AesKdfCounterModeError>`](crate::operation::aes_kdf_counter_mode::AesKdfCounterModeError)
-    pub fn aes_kdf_counter_mode(&self) -> crate::deps::aws_cryptography_primitives::operation::aes_kdf_counter_mode::builders::AesKdfCounterModeFluentBuilder {
+    pub fn aes_kdf_counter_mode(&self) -> crate::deps::aws_cryptography_primitives::operation::aes_kdf_counter_mode::builders::AesKdfCounterModeFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::aes_kdf_counter_mode::builders::AesKdfCounterModeFluentBuilder::new(self.clone())
     }
 }

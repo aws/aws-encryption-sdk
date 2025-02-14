@@ -13,7 +13,7 @@ impl crate::deps::aws_cryptography_materialProviders::client::Client {
     /// - On success, responds with [`CreateKeyringOutput`](crate::operation::create_raw_rsa_keyring::CreateKeyringOutput) with field(s):
     ///   - [`keyring(Option<crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef>)`](crate::operation::create_raw_rsa_keyring::CreateKeyringOutput::keyring): (undocumented)
     /// - On failure, responds with [`SdkError<CreateRawRsaKeyringError>`](crate::operation::create_raw_rsa_keyring::CreateRawRsaKeyringError)
-    pub fn create_raw_rsa_keyring(&self) -> crate::deps::aws_cryptography_materialProviders::operation::create_raw_rsa_keyring::builders::CreateRawRsaKeyringFluentBuilder {
+    pub fn create_raw_rsa_keyring(&self) -> crate::deps::aws_cryptography_materialProviders::operation::create_raw_rsa_keyring::builders::CreateRawRsaKeyringFluentBuilder{
         crate::deps::aws_cryptography_materialProviders::operation::create_raw_rsa_keyring::builders::CreateRawRsaKeyringFluentBuilder::new(self.clone())
     }
 }

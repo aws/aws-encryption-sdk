@@ -4,23 +4,31 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_kms::operation::update_key_description::UpdateKeyDescriptionInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::kms::internaldafny::types::UpdateKeyDescriptionRequest,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::UpdateKeyDescriptionRequest::UpdateKeyDescriptionRequest {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::UpdateKeyDescriptionRequest::UpdateKeyDescriptionRequest {
         KeyId: crate::standard_library_conversions::ostring_to_dafny(&value.key_id) .Extract(),
  Description: crate::standard_library_conversions::ostring_to_dafny(&value.description) .Extract(),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::kms::internaldafny::types::UpdateKeyDescriptionRequest,
-    >
+    >,
 ) -> aws_sdk_kms::operation::update_key_description::UpdateKeyDescriptionInput {
     aws_sdk_kms::operation::update_key_description::UpdateKeyDescriptionInput::builder()
-          .set_key_id(Some( dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(dafny_value.KeyId()) ))
- .set_description(Some( dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(dafny_value.Description()) ))
-          .build()
-          .unwrap()
+        .set_key_id(Some(
+            dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(
+                dafny_value.KeyId(),
+            ),
+        ))
+        .set_description(Some(
+            dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(
+                dafny_value.Description(),
+            ),
+        ))
+        .build()
+        .unwrap()
 }

@@ -14,7 +14,7 @@ impl crate::deps::aws_cryptography_materialProviders::client::Client {
     /// - On success, responds with [`Unit`](crate::operation::decryption_materials_with_plaintext_data_key::Unit) with field(s):
 
     /// - On failure, responds with [`SdkError<DecryptionMaterialsWithPlaintextDataKeyError>`](crate::operation::decryption_materials_with_plaintext_data_key::DecryptionMaterialsWithPlaintextDataKeyError)
-    pub fn decryption_materials_with_plaintext_data_key(&self) -> crate::deps::aws_cryptography_materialProviders::operation::decryption_materials_with_plaintext_data_key::builders::DecryptionMaterialsWithPlaintextDataKeyFluentBuilder {
+    pub fn decryption_materials_with_plaintext_data_key(&self) -> crate::deps::aws_cryptography_materialProviders::operation::decryption_materials_with_plaintext_data_key::builders::DecryptionMaterialsWithPlaintextDataKeyFluentBuilder{
         crate::deps::aws_cryptography_materialProviders::operation::decryption_materials_with_plaintext_data_key::builders::DecryptionMaterialsWithPlaintextDataKeyFluentBuilder::new(self.clone())
     }
 }

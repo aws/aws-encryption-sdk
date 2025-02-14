@@ -5,8 +5,8 @@
 
 pub fn to_dafny(
     value: aws_sdk_dynamodb::types::ContributorInsightsStatus,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ContributorInsightsStatus>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ContributorInsightsStatus>{
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_dynamodb::types::ContributorInsightsStatus::Enabling => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ContributorInsightsStatus::ENABLING {},
 aws_sdk_dynamodb::types::ContributorInsightsStatus::Enabled => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ContributorInsightsStatus::ENABLED {},
 aws_sdk_dynamodb::types::ContributorInsightsStatus::Disabling => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ContributorInsightsStatus::DISABLING {},
@@ -15,7 +15,7 @@ aws_sdk_dynamodb::types::ContributorInsightsStatus::Failed => crate::r#software:
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ContributorInsightsStatus,
 ) -> aws_sdk_dynamodb::types::ContributorInsightsStatus {

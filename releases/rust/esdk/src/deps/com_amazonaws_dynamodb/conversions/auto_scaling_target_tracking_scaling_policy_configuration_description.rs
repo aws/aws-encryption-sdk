@@ -4,8 +4,8 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::AutoScalingTargetTrackingScalingPolicyConfigurationDescription,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AutoScalingTargetTrackingScalingPolicyConfigurationDescription>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AutoScalingTargetTrackingScalingPolicyConfigurationDescription>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AutoScalingTargetTrackingScalingPolicyConfigurationDescription::AutoScalingTargetTrackingScalingPolicyConfigurationDescription {
         DisableScaleIn: crate::standard_library_conversions::obool_to_dafny(&value.disable_scale_in),
  ScaleInCooldown: crate::standard_library_conversions::oint_to_dafny(value.scale_in_cooldown),
@@ -13,9 +13,10 @@ pub fn to_dafny(
  TargetValue: crate::standard_library_conversions::double_to_dafny(value.target_value.clone()),
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AutoScalingTargetTrackingScalingPolicyConfigurationDescription,
     >,
 ) -> aws_sdk_dynamodb::types::AutoScalingTargetTrackingScalingPolicyConfigurationDescription {

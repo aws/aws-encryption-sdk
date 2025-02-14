@@ -4,35 +4,35 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_kms::operation::create_key::CreateKeyInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CreateKeyRequest,
->{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CreateKeyRequest::CreateKeyRequest {
+> {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CreateKeyRequest::CreateKeyRequest {
         Policy: crate::standard_library_conversions::ostring_to_dafny(&value.policy),
  Description: crate::standard_library_conversions::ostring_to_dafny(&value.description),
- KeyUsage: ::std::rc::Rc::new(match &value.key_usage {
+ KeyUsage: ::dafny_runtime::Rc::new(match &value.key_usage {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::key_usage_type::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- CustomerMasterKeySpec: ::std::rc::Rc::new(match &value.customer_master_key_spec {
+ CustomerMasterKeySpec: ::dafny_runtime::Rc::new(match &value.customer_master_key_spec {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::customer_master_key_spec::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- KeySpec: ::std::rc::Rc::new(match &value.key_spec {
+ KeySpec: ::dafny_runtime::Rc::new(match &value.key_spec {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::key_spec::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- Origin: ::std::rc::Rc::new(match &value.origin {
+ Origin: ::dafny_runtime::Rc::new(match &value.origin {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::origin_type::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
  CustomKeyStoreId: crate::standard_library_conversions::ostring_to_dafny(&value.custom_key_store_id),
  BypassPolicyLockoutSafetyCheck: crate::standard_library_conversions::obool_to_dafny(&value.bypass_policy_lockout_safety_check),
- Tags: ::std::rc::Rc::new(match &value.tags {
+ Tags: ::dafny_runtime::Rc::new(match &value.tags {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| crate::deps::com_amazonaws_kms::conversions::tag::to_dafny(e)
@@ -46,11 +46,11 @@ pub fn to_dafny(
  XksKeyId: crate::standard_library_conversions::ostring_to_dafny(&value.xks_key_id),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::kms::internaldafny::types::CreateKeyRequest,
-    >
+    >,
 ) -> aws_sdk_kms::operation::create_key::CreateKeyInput {
     aws_sdk_kms::operation::create_key::CreateKeyInput::builder()
           .set_policy(crate::standard_library_conversions::ostring_from_dafny(dafny_value.Policy().clone()))
@@ -89,7 +89,7 @@ pub fn from_dafny(
     crate::r#_Wrappers_Compile::Option::Some { value } =>
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(value,
-                |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Tag>| crate::deps::com_amazonaws_kms::conversions::tag::from_dafny(e.clone())
+                |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::Tag>| crate::deps::com_amazonaws_kms::conversions::tag::from_dafny(e.clone())
 ,
             )
         ),

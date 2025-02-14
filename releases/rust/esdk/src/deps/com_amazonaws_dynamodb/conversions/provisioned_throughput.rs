@@ -4,22 +4,23 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::ProvisionedThroughput,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ProvisionedThroughput>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ProvisionedThroughput>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ProvisionedThroughput::ProvisionedThroughput {
         ReadCapacityUnits: value.read_capacity_units,
  WriteCapacityUnits: value.write_capacity_units,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ProvisionedThroughput,
     >,
 ) -> aws_sdk_dynamodb::types::ProvisionedThroughput {
     aws_sdk_dynamodb::types::ProvisionedThroughput::builder()
-          .set_read_capacity_units(Some( dafny_value.ReadCapacityUnits() .clone() ))
- .set_write_capacity_units(Some( dafny_value.WriteCapacityUnits() .clone() ))
-          .build()
-          .unwrap()
+        .set_read_capacity_units(Some(dafny_value.ReadCapacityUnits().clone()))
+        .set_write_capacity_units(Some(dafny_value.WriteCapacityUnits().clone()))
+        .build()
+        .unwrap()
 }

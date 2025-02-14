@@ -140,6 +140,26 @@ func AwsEncryptionSdkConfig_FromDafny(dafnyOutput AwsCryptographyEncryptionSdkTy
 
 }
 
+func NetV4_0_0_RetryPolicy_FromDafny(input interface{}) awscryptographyencryptionsdksmithygeneratedtypes.NetV4_0_0_RetryPolicy {
+	return func() awscryptographyencryptionsdksmithygeneratedtypes.NetV4_0_0_RetryPolicy {
+		var u awscryptographyencryptionsdksmithygeneratedtypes.NetV4_0_0_RetryPolicy
+		inputEnum := input.(AwsCryptographyEncryptionSdkTypes.NetV4__0__0__RetryPolicy)
+		index := -1
+		for allEnums := dafny.Iterate(AwsCryptographyEncryptionSdkTypes.CompanionStruct_NetV4__0__0__RetryPolicy_{}.AllSingletonConstructors()); ; {
+			enum, ok := allEnums()
+			if ok {
+				index++
+				if enum.(AwsCryptographyEncryptionSdkTypes.NetV4__0__0__RetryPolicy).Equals(inputEnum) {
+					break
+				}
+			}
+		}
+
+		return u.Values()[index]
+	}()
+
+}
+
 func aws_cryptography_encryptionSdk_DecryptInput_ciphertext_FromDafny(input interface{}) []byte {
 	return func() []byte {
 		var b []byte

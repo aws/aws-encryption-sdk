@@ -4,25 +4,25 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::operation::update_kinesis_streaming_destination::UpdateKinesisStreamingDestinationInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateKinesisStreamingDestinationInput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateKinesisStreamingDestinationInput::UpdateKinesisStreamingDestinationInput {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateKinesisStreamingDestinationInput::UpdateKinesisStreamingDestinationInput {
         TableName: crate::standard_library_conversions::ostring_to_dafny(&value.table_name) .Extract(),
  StreamArn: crate::standard_library_conversions::ostring_to_dafny(&value.stream_arn) .Extract(),
- UpdateKinesisStreamingConfiguration: ::std::rc::Rc::new(match &value.update_kinesis_streaming_configuration {
+ UpdateKinesisStreamingConfiguration: ::dafny_runtime::Rc::new(match &value.update_kinesis_streaming_configuration {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::update_kinesis_streaming_configuration::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::UpdateKinesisStreamingDestinationInput,
     >
-) -> aws_sdk_dynamodb::operation::update_kinesis_streaming_destination::UpdateKinesisStreamingDestinationInput {
+) -> aws_sdk_dynamodb::operation::update_kinesis_streaming_destination::UpdateKinesisStreamingDestinationInput{
     aws_sdk_dynamodb::operation::update_kinesis_streaming_destination::UpdateKinesisStreamingDestinationInput::builder()
           .set_table_name(Some( dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(dafny_value.TableName()) ))
  .set_stream_arn(Some( dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(dafny_value.StreamArn()) ))

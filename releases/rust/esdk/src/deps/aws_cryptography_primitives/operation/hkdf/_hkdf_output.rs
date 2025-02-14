@@ -6,17 +6,19 @@
 #[allow(missing_docs)]
 pub struct HkdfOutput {
     #[allow(missing_docs)]
-pub okm: ::std::option::Option<::aws_smithy_types::Blob>,
+    pub okm: ::std::option::Option<::aws_smithy_types::Blob>,
 }
 impl HkdfOutput {
     #[allow(missing_docs)]
-pub fn okm(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
-    &self.okm
-}
+    pub fn okm(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
+        &self.okm
+    }
 }
 impl HkdfOutput {
     /// Creates a new builder-style object to manufacture [`HkdfOutput`](crate::operation::hkdf::builders::HkdfOutput).
-    pub fn builder() -> crate::deps::aws_cryptography_primitives::operation::hkdf::builders::HkdfOutputBuilder {
+    pub fn builder(
+    ) -> crate::deps::aws_cryptography_primitives::operation::hkdf::builders::HkdfOutputBuilder
+    {
         crate::deps::aws_cryptography_primitives::operation::hkdf::builders::HkdfOutputBuilder::default()
     }
 }
@@ -31,19 +33,19 @@ pub struct HkdfOutputBuilder {
 }
 impl HkdfOutputBuilder {
     #[allow(missing_docs)]
-pub fn okm(mut self, input: impl ::std::convert::Into<::aws_smithy_types::Blob>) -> Self {
-    self.okm = ::std::option::Option::Some(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_okm(mut self, input: ::std::option::Option<::aws_smithy_types::Blob>) -> Self {
-    self.okm = input;
-    self
-}
-#[allow(missing_docs)]
-pub fn get_okm(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
-    &self.okm
-}
+    pub fn okm(mut self, input: impl ::std::convert::Into<::aws_smithy_types::Blob>) -> Self {
+        self.okm = ::std::option::Option::Some(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_okm(mut self, input: ::std::option::Option<::aws_smithy_types::Blob>) -> Self {
+        self.okm = input;
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_okm(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
+        &self.okm
+    }
     /// Consumes the builder and constructs a [`HkdfOutput`](crate::operation::operation::HkdfOutput).
     pub fn build(
         self,
@@ -51,8 +53,8 @@ pub fn get_okm(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
         crate::deps::aws_cryptography_primitives::operation::hkdf::HkdfOutput,
         ::aws_smithy_types::error::operation::BuildError,
     > {
-        ::std::result::Result::Ok(crate::deps::aws_cryptography_primitives::operation::hkdf::HkdfOutput {
-            okm: self.okm,
-        })
+        ::std::result::Result::Ok(
+            crate::deps::aws_cryptography_primitives::operation::hkdf::HkdfOutput { okm: self.okm },
+        )
     }
 }

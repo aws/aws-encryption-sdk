@@ -5,8 +5,10 @@
 
 pub fn to_dafny(
     value: aws_sdk_kms::types::MacAlgorithmSpec,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::MacAlgorithmSpec>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::kms::internaldafny::types::MacAlgorithmSpec,
+> {
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_kms::types::MacAlgorithmSpec::HmacSha224 => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::MacAlgorithmSpec::HMAC_SHA_224 {},
 aws_sdk_kms::types::MacAlgorithmSpec::HmacSha256 => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::MacAlgorithmSpec::HMAC_SHA_256 {},
 aws_sdk_kms::types::MacAlgorithmSpec::HmacSha384 => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::MacAlgorithmSpec::HMAC_SHA_384 {},
@@ -14,7 +16,7 @@ aws_sdk_kms::types::MacAlgorithmSpec::HmacSha512 => crate::r#software::amazon::c
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::kms::internaldafny::types::MacAlgorithmSpec,
 ) -> aws_sdk_kms::types::MacAlgorithmSpec {

@@ -4,18 +4,18 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_primitives::operation::aes_kdf_counter_mode::AesKdfCtrInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::primitives::internaldafny::types::AesKdfCtrInput,
->{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::primitives::internaldafny::types::AesKdfCtrInput::AesKdfCtrInput {
+> {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::primitives::internaldafny::types::AesKdfCtrInput::AesKdfCtrInput {
         ikm: crate::standard_library_conversions::blob_to_dafny(&value.ikm.unwrap()),
  expectedLength: value.expected_length.clone().unwrap(),
  nonce: crate::standard_library_conversions::oblob_to_dafny(&value.nonce),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::primitives::internaldafny::types::AesKdfCtrInput,
     >,
 ) -> crate::deps::aws_cryptography_primitives::operation::aes_kdf_counter_mode::AesKdfCtrInput {

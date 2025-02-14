@@ -1,13 +1,13 @@
 # This workflow performs tests in .NET.
 name: Library net tests
 
-on: 
+on:
   workflow_call:
     inputs:
       dafny:
-        description: 'The Dafny version to run'
+        description: "The Dafny version to run"
         required: true
-        type: string  
+        type: string
 
 env:
   # Used in examples
@@ -24,11 +24,7 @@ jobs:
   decrypt_python_vectors:
     strategy:
       matrix:
-        os: [
-          windows-latest,
-          ubuntu-latest,
-          macos-13,
-        ]
+        os: [windows-latest, ubuntu-22.04, macos-13]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
@@ -46,25 +42,25 @@ jobs:
         run: |
           git submodule update --init libraries
           git submodule update --init --recursive mpl
-          
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2 
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: NetTests
-      
+
       - name: Setup .NET Core SDK 6
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: "6.0.x"
 
       - name: Setup Dafny
-        uses: dafny-lang/setup-dafny-action@v1.6.1
+        uses: dafny-lang/setup-dafny-action@v1.8.0
         with:
           dafny-version: ${{ inputs.dafny }}
 
-      - name: Download Dependencies 
+      - name: Download Dependencies
         working-directory: ./AwsEncryptionSDK
         run: make setup_net
 
@@ -83,7 +79,7 @@ jobs:
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_net CORES=$CORES
-      
+
       - name: Fetch Python 2.3.0 Test Vectors
         working-directory: ./
         shell: bash
@@ -94,7 +90,7 @@ jobs:
           curl --no-progress-meter --output $DOWNLOAD_NAME --location $VECTORS_URL
           unzip -o -qq $DOWNLOAD_NAME  -d $PYTHON_23_VECTOR_PATH
           rm  $DOWNLOAD_NAME
-      
+
       - name: Decrypt Python 2.3.0 Test Vectors on .net48 (Windows ONLY)
         working-directory: ./AwsEncryptionSDK/runtimes/net/TestVectorsNative/TestVectors
         if: matrix.os == 'windows-latest'
@@ -103,7 +99,7 @@ jobs:
           PYTHON_23_VECTOR_PATH=$GITHUB_WORKSPACE/python23/vectors
           DAFNY_AWS_ESDK_TEST_VECTOR_MANIFEST_PATH="$PYTHON_23_VECTOR_PATH/manifest.json" \
           dotnet test --framework net48
-      
+
       - name: Decrypt Python 2.3.0 Test Vectors on .net6.0
         working-directory: ./AwsEncryptionSDK/runtimes/net/TestVectorsNative/TestVectors
         if: matrix.os != 'windows-latest'
@@ -118,14 +114,11 @@ jobs:
             DAFNY_AWS_ESDK_TEST_VECTOR_MANIFEST_PATH="$PYTHON_23_VECTOR_PATH/manifest.json" \
             dotnet test --framework net6.0
           fi
-          
+
   generate_vectors:
     strategy:
       matrix:
-        os: [
-          ubuntu-latest,
-          macos-13,
-        ]
+        os: [ubuntu-22.04, macos-13]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
@@ -143,26 +136,25 @@ jobs:
         run: |
           git submodule update --init libraries
           git submodule update --init --recursive mpl
-          
-          
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2 
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: NetTests
-      
+
       - name: Setup .NET Core SDK 6
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: "6.0.x"
 
       - name: Setup Dafny
-        uses: dafny-lang/setup-dafny-action@v1.6.1
+        uses: dafny-lang/setup-dafny-action@v1.8.0
         with:
           dafny-version: ${{ inputs.dafny }}
 
-      - name: Download Dependencies 
+      - name: Download Dependencies
         working-directory: ./AwsEncryptionSDK
         run: make setup_net
 
@@ -174,7 +166,6 @@ jobs:
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_net CORES=$CORES
 
-    
       - name: Compile MPL TestVectors implementation
         shell: bash
         working-directory: ./mpl/TestVectorsAwsCryptographicMaterialProviders
@@ -182,7 +173,6 @@ jobs:
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_net CORES=$CORES
-      
 
       # # TODO: Fix Zip file creation on Windows
       # # - name: Zip the Generated Test Vectors for ESDK-JS on Windows
@@ -191,9 +181,8 @@ jobs:
       # #   run: |
       # #     # NET_41_VECTOR_PATH=$GITHUB_WORKSPACE/net41/vectors
       # #     Set-Location -Path "$env:GITHUB_WORKSPACE\net41\vectors"
-      # #     Compress-Archive -Path "$env:GITHUB_WORKSPACE\net41\vectors\*" -DestinationPath "$env:GITHUB_WORKSPACE\net41\vectors\net41.zip"        
+      # #     Compress-Archive -Path "$env:GITHUB_WORKSPACE\net41\vectors\*" -DestinationPath "$env:GITHUB_WORKSPACE\net41\vectors\net41.zip"
 
-      
       - name: Generate Test Vectors with .NET Framework net6.0
         # TODO Post-#619: Fix Zip file creation on Windows
         if: matrix.os != 'windows-latest'
@@ -206,7 +195,7 @@ jobs:
           dotnet run --project $GEN_PATH --framework net6.0 -- \
             --encrypt-manifest $GEN_PATH/resources/0006-awses-message-decryption-generation.v2.json \
             --output-dir $NET_41_VECTOR_PATH
-     
+
       - name: Zip the Generated Test Vectors for ESDK-JS on Mac/Linux
         if: matrix.os != 'windows-latest'
         working-directory: ./AwsEncryptionSDK
@@ -215,22 +204,19 @@ jobs:
           NET_41_VECTOR_PATH=net41/vectors
           cd $NET_41_VECTOR_PATH
           zip -qq net41.zip -r .
-      
+
       - name: Upload Zip File
         uses: actions/upload-artifact@v4
         if: matrix.os != 'windows-latest'
         with:
           name: ${{matrix.os}}_vector_artifact
           path: AwsEncryptionSDK/net41/vectors/*.zip
-    
+
   decrypt_net_vectors_with_js:
     needs: generate_vectors
     strategy:
       matrix:
-        os: [
-          ubuntu-latest,
-          macos-13,
-        ]
+        os: [ubuntu-22.04, macos-13]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
@@ -245,37 +231,36 @@ jobs:
         run: |
           git submodule update --init libraries
           git submodule update --init --recursive mpl
-          
-          
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2 
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: NetTests
-     
+
       - name: Set up Dirs
         working-directory: ./AwsEncryptionSDK
         run: |
           NET_41_VECTOR_PATH=AwsEncryptionSDK/net41/vectors
           mkdir -p $NET_41_VECTOR_PATH
-        
+
       - name: Download Encrypt Manifest Artifact
         uses: actions/download-artifact@v4
         with:
           name: ${{matrix.os}}_vector_artifact
           path: AwsEncryptionSDK/net41/vectors
-    
+
       - uses: actions/setup-node@v4
         with:
-            node-version: 17
+          node-version: 17
 
       - name: Install deps
         run: |
           openssl version
           npm install @aws-crypto/integration-node
           npm install fast-xml-parser
-      
+
       - name: Decrypt Generated Test Vectors with ESDK-JS
         working-directory: ./AwsEncryptionSDK
         # TODO Post-#619: Fix Zip file creation on Windows
@@ -284,5 +269,3 @@ jobs:
           NET_41_VECTOR_PATH=net41/vectors
           cd $NET_41_VECTOR_PATH
           npx -y @aws-crypto/integration-node decrypt -v net41.zip -c cpu -f 100
-    
-

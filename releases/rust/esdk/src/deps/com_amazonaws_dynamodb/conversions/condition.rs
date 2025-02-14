@@ -4,10 +4,12 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::Condition,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Condition>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Condition,
+> {
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Condition::Condition {
-        AttributeValueList: ::std::rc::Rc::new(match &value.attribute_value_list {
+        AttributeValueList: ::dafny_runtime::Rc::new(match &value.attribute_value_list {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| crate::deps::com_amazonaws_dynamodb::conversions::attribute_value::to_dafny(e)
@@ -20,9 +22,10 @@ pub fn to_dafny(
  ComparisonOperator: crate::deps::com_amazonaws_dynamodb::conversions::comparison_operator::to_dafny(value.comparison_operator.clone()),
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Condition,
     >,
 ) -> aws_sdk_dynamodb::types::Condition {
@@ -31,7 +34,7 @@ pub fn from_dafny(
     crate::r#_Wrappers_Compile::Option::Some { value } =>
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(value,
-                |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AttributeValue>| crate::deps::com_amazonaws_dynamodb::conversions::attribute_value::from_dafny(e.clone())
+                |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AttributeValue>| crate::deps::com_amazonaws_dynamodb::conversions::attribute_value::from_dafny(e.clone())
 ,
             )
         ),

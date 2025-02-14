@@ -36,28 +36,28 @@ module SerializableTypes {
     && |ec| < UINT16_LIMIT
     && Length(ec) < ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH
     && forall element
-    | element in (multiset(ec.Keys) + multiset(ec.Values))
-    ::
-      && HasUint16Len(element)
-      && ValidUTF8Seq(element)
+         | element in (multiset(ec.Keys) + multiset(ec.Values))
+         ::
+           && HasUint16Len(element)
+           && ValidUTF8Seq(element)
   }
 
   type ESDKEncryptionContext = ec: MPL.EncryptionContext
-  | IsESDKEncryptionContext(ec)
-  witness *
+    | IsESDKEncryptionContext(ec)
+    witness *
 
   function method GetIvLength(a: MPL.AlgorithmSuiteInfo)
     : (output: uint8)
   {
     match a.encrypt
-      case AES_GCM(e) => e.ivLength as uint8
+    case AES_GCM(e) => e.ivLength as uint8
   }
 
   function method GetTagLength(a: MPL.AlgorithmSuiteInfo)
     : (output: uint8)
   {
     match a.encrypt
-      case AES_GCM(e) => e.tagLength as uint8
+    case AES_GCM(e) => e.tagLength as uint8
   }
 
   function method GetEncryptKeyLength(a: MPL.AlgorithmSuiteInfo)
@@ -67,7 +67,7 @@ module SerializableTypes {
       && AwsCryptographyPrimitivesTypes.IsValid_SymmetricKeyLength(output)
   {
     match a.encrypt
-      case AES_GCM(e) => e.keyLength
+    case AES_GCM(e) => e.keyLength
   }
 
   /*
@@ -92,8 +92,8 @@ module SerializableTypes {
       && ret == LinearLength(pairs)
   {
     if |encryptionContext| == 0 then 0 else
-      var pairs := GetCanonicalLinearPairs(encryptionContext);
-      LinearLength(pairs)
+    var pairs := GetCanonicalLinearPairs(encryptionContext);
+    LinearLength(pairs)
   }
 
   // Defining and reasoning about order with maps
@@ -110,14 +110,14 @@ module SerializableTypes {
     //# These entries MUST have entries sorted, by key, in ascending order
     //# according to the UTF-8 encoded binary value.
     var keys: seq<UTF8.ValidUTF8Bytes> := SortedSets.ComputeSetToOrderedSequence2<uint8>(
-      encryptionContext.Keys,
-      UInt.UInt8Less
-    );
+                                            encryptionContext.Keys,
+                                            UInt.UInt8Less
+                                          );
     seq(
-      |keys|,
-      i
-        requires 0 <= i < |keys|
-      => Pair(
+    |keys|,
+    i
+    requires 0 <= i < |keys|
+    => Pair(
         keys[i],
         encryptionContext[keys[i]]))
   }
@@ -154,9 +154,9 @@ module SerializableTypes {
   ):
     (ret: nat)
     ensures |pairs| == 0
-    ==> ret == 0
+            ==> ret == 0
     ensures |pairs| != 0
-    ==> ret == LinearLength(Seq.DropLast(pairs)) + PairLength(Seq.Last(pairs))
+            ==> ret == LinearLength(Seq.DropLast(pairs)) + PairLength(Seq.Last(pairs))
   {
     if |pairs| == 0 then 0
     else

@@ -4,16 +4,14 @@
 #[non_exhaustive]
 #[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug)]
 #[allow(missing_docs)]
-pub struct CreateKeyStoreInput {
-
-}
-impl CreateKeyStoreInput {
-
-}
+pub struct CreateKeyStoreInput {}
+impl CreateKeyStoreInput {}
 impl CreateKeyStoreInput {
     /// Creates a new builder-style object to manufacture [`CreateKeyStoreInput`](crate::deps::aws_cryptography_keyStore::types::CreateKeyStoreInput).
-    pub fn builder() -> crate::deps::aws_cryptography_keyStore::types::builders::CreateKeyStoreInputBuilder {
-        crate::deps::aws_cryptography_keyStore::types::builders::CreateKeyStoreInputBuilder::default()
+    pub fn builder(
+    ) -> crate::deps::aws_cryptography_keyStore::types::builders::CreateKeyStoreInputBuilder {
+        crate::deps::aws_cryptography_keyStore::types::builders::CreateKeyStoreInputBuilder::default(
+        )
     }
 }
 
@@ -22,11 +20,8 @@ impl CreateKeyStoreInput {
 #[derive(
     ::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug,
 )]
-pub struct CreateKeyStoreInputBuilder {
-
-}
+pub struct CreateKeyStoreInputBuilder {}
 impl CreateKeyStoreInputBuilder {
-
     /// Consumes the builder and constructs a [`CreateKeyStoreInput`](crate::deps::aws_cryptography_keyStore::types::CreateKeyStoreInput).
     pub fn build(
         self,
@@ -34,8 +29,8 @@ impl CreateKeyStoreInputBuilder {
         crate::deps::aws_cryptography_keyStore::types::CreateKeyStoreInput,
         ::aws_smithy_types::error::operation::BuildError,
     > {
-        ::std::result::Result::Ok(crate::deps::aws_cryptography_keyStore::types::CreateKeyStoreInput {
-
-        })
+        ::std::result::Result::Ok(
+            crate::deps::aws_cryptography_keyStore::types::CreateKeyStoreInput {},
+        )
     }
 }

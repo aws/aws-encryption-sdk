@@ -12,7 +12,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     /// - On success, responds with [`EcdsaVerifyOutput`](crate::operation::ecdsa_verify::EcdsaVerifyOutput) with field(s):
     ///   - [`success(Option<::std::primitive::bool>)`](crate::operation::ecdsa_verify::ECDSAVerifyOutput::success): (undocumented)
     /// - On failure, responds with [`SdkError<EcdsaVerifyError>`](crate::operation::ecdsa_verify::EcdsaVerifyError)
-    pub fn ecdsa_verify(&self) -> crate::deps::aws_cryptography_primitives::operation::ecdsa_verify::builders::EcdsaVerifyFluentBuilder {
+    pub fn ecdsa_verify(&self) -> crate::deps::aws_cryptography_primitives::operation::ecdsa_verify::builders::EcdsaVerifyFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::ecdsa_verify::builders::EcdsaVerifyFluentBuilder::new(self.clone())
     }
 }

@@ -17,8 +17,10 @@ plugins {
 }
 
 var props = Properties().apply {
-    load(FileInputStream(File(rootProject.rootDir, "../../project.properties")))
+    load(FileInputStream(File(rootProject.rootDir, "../../../project.properties")))
 }
+var mplVersion = props.getProperty("mplDependencyJavaVersion")
+
 group = "software.amazon.cryptography"
 version = "1.0.0-SNAPSHOT"
 description = "AwsEncryptionSdk"
@@ -32,7 +34,7 @@ repositories {
 dependencies {
     implementation("org.dafny:DafnyRuntime:4.9.0")
     implementation("software.amazon.smithy.dafny:conversion:0.1")
-    implementation("software.amazon.cryptography:aws-cryptographic-material-providers:1.8.0")
+    implementation("software.amazon.cryptography:aws-cryptographic-material-providers:${mplVersion}")
 
     // Use JUnit test framework.
     testImplementation("junit:junit:4.13.2")

@@ -6,18 +6,32 @@ on:
     - cron: "00 15 * * 1-5"
 
 jobs:
+  getVersion:
+    uses: ./.github/workflows/dafny_version.yaml
+  getVerifyVersion:
+    uses: ./.github/workflows/dafny_verify_version.yaml
+  # not yet used, because we don't actually CI formatting in this project?!?
+  getFormatVersion:
+    uses: ./.github/workflows/dafny_format_version.yaml
+  pr-ci-format:
+    needs: getFormatVersion
+    uses: ./.github/workflows/library_format.yml
+    with:
+      dafny: ${{needs.getFormatVersion.outputs.version}}
   daily-ci-codegen:
     # Don't run the cron builds on forks
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
+    needs: getVersion
     uses: ./.github/workflows/library_codegen.yml
     with:
-      dafny: '4.9.0'
+      dafny: ${{needs.getVersion.outputs.version}}
   daily-ci-verification:
     # Don't run the cron builds on forks
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
+    needs: getVerifyVersion
     uses: ./.github/workflows/library_dafny_verification.yml
     with:
-      dafny: '4.9.0'
+      dafny: ${{needs.getVerifyVersion.outputs.version}}
   # daily-ci-java:
   #   if: github.event_name != 'schedule' || github.repository_owner == 'aws'
   #   uses: ./.github/workflows/library_java_tests.yml
@@ -25,34 +39,40 @@ jobs:
   #     dafny: '4.2.0'
   daily-ci-net:
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
+    needs: getVersion
     uses: ./.github/workflows/library_net_tests.yml
     with:
-      dafny: '4.9.0'
+      dafny: ${{needs.getVersion.outputs.version}}
   daily-ci-rust:
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
+    needs: getVersion
     uses: ./.github/workflows/library_rust_tests.yml
     with:
-      dafny: '4.9.0'
+      dafny: ${{needs.getVersion.outputs.version}}
   daily-ci-go:
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
+    needs: getVersion
     uses: ./.github/workflows/library_go_tests.yml
     with:
-      dafny: '4.9.0'
+      dafny: ${{needs.getVersion.outputs.version}}
 
   daily-ci-interop-tests:
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
+    needs: getVersion
     uses: ./.github/workflows/library_interop_tests.yml
     with:
-      dafny: '4.9.0'
+      dafny: ${{needs.getVersion.outputs.version}}
 
   daily-dafny-test-vectors:
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
+    needs: getVersion
     uses: ./.github/workflows/library_interop_test_vectors.yml
     with:
-      dafny: '4.9.0'
+      dafny: ${{needs.getVersion.outputs.version}}
 
   daily-dafny-legacy-test-vectors:
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
+    needs: getVersion
     uses: ./.github/workflows/library_legacy_interop_test_vectors.yml
     with:
-      dafny: '4.9.0'
+      dafny: ${{needs.getVersion.outputs.version}}

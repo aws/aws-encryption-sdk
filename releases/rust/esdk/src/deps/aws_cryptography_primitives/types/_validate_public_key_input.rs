@@ -6,23 +6,29 @@
 #[allow(missing_docs)]
 pub struct ValidatePublicKeyInput {
     #[allow(missing_docs)]
-pub ecc_curve: ::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>,
-#[allow(missing_docs)]
-pub public_key: ::std::option::Option<::aws_smithy_types::Blob>,
+    pub ecc_curve:
+        ::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>,
+    #[allow(missing_docs)]
+    pub public_key: ::std::option::Option<::aws_smithy_types::Blob>,
 }
 impl ValidatePublicKeyInput {
     #[allow(missing_docs)]
-pub fn ecc_curve(&self) -> &::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec> {
-    &self.ecc_curve
-}
-#[allow(missing_docs)]
-pub fn public_key(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
-    &self.public_key
-}
+    pub fn ecc_curve(
+        &self,
+    ) -> &::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>
+    {
+        &self.ecc_curve
+    }
+    #[allow(missing_docs)]
+    pub fn public_key(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
+        &self.public_key
+    }
 }
 impl ValidatePublicKeyInput {
     /// Creates a new builder-style object to manufacture [`ValidatePublicKeyInput`](crate::deps::aws_cryptography_primitives::types::ValidatePublicKeyInput).
-    pub fn builder() -> crate::deps::aws_cryptography_primitives::types::builders::ValidatePublicKeyInputBuilder {
+    pub fn builder(
+    ) -> crate::deps::aws_cryptography_primitives::types::builders::ValidatePublicKeyInputBuilder
+    {
         crate::deps::aws_cryptography_primitives::types::builders::ValidatePublicKeyInputBuilder::default()
     }
 }
@@ -33,38 +39,56 @@ impl ValidatePublicKeyInput {
     ::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug,
 )]
 pub struct ValidatePublicKeyInputBuilder {
-    pub(crate) ecc_curve: ::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>,
-pub(crate) public_key: ::std::option::Option<::aws_smithy_types::Blob>,
+    pub(crate) ecc_curve:
+        ::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>,
+    pub(crate) public_key: ::std::option::Option<::aws_smithy_types::Blob>,
 }
 impl ValidatePublicKeyInputBuilder {
     #[allow(missing_docs)]
-pub fn ecc_curve(mut self, input: impl ::std::convert::Into<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>) -> Self {
-    self.ecc_curve = ::std::option::Option::Some(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_ecc_curve(mut self, input: ::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>) -> Self {
-    self.ecc_curve = input;
-    self
-}
-#[allow(missing_docs)]
-pub fn get_ecc_curve(&self) -> &::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec> {
-    &self.ecc_curve
-}
-#[allow(missing_docs)]
-pub fn public_key(mut self, input: impl ::std::convert::Into<::aws_smithy_types::Blob>) -> Self {
-    self.public_key = ::std::option::Option::Some(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_public_key(mut self, input: ::std::option::Option<::aws_smithy_types::Blob>) -> Self {
-    self.public_key = input;
-    self
-}
-#[allow(missing_docs)]
-pub fn get_public_key(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
-    &self.public_key
-}
+    pub fn ecc_curve(
+        mut self,
+        input: impl ::std::convert::Into<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>,
+    ) -> Self {
+        self.ecc_curve = ::std::option::Option::Some(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_ecc_curve(
+        mut self,
+        input: ::std::option::Option<
+            crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec,
+        >,
+    ) -> Self {
+        self.ecc_curve = input;
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_ecc_curve(
+        &self,
+    ) -> &::std::option::Option<crate::deps::aws_cryptography_primitives::types::EcdhCurveSpec>
+    {
+        &self.ecc_curve
+    }
+    #[allow(missing_docs)]
+    pub fn public_key(
+        mut self,
+        input: impl ::std::convert::Into<::aws_smithy_types::Blob>,
+    ) -> Self {
+        self.public_key = ::std::option::Option::Some(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_public_key(
+        mut self,
+        input: ::std::option::Option<::aws_smithy_types::Blob>,
+    ) -> Self {
+        self.public_key = input;
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_public_key(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
+        &self.public_key
+    }
     /// Consumes the builder and constructs a [`ValidatePublicKeyInput`](crate::deps::aws_cryptography_primitives::types::ValidatePublicKeyInput).
     pub fn build(
         self,
@@ -72,9 +96,11 @@ pub fn get_public_key(&self) -> &::std::option::Option<::aws_smithy_types::Blob>
         crate::deps::aws_cryptography_primitives::types::ValidatePublicKeyInput,
         ::aws_smithy_types::error::operation::BuildError,
     > {
-        ::std::result::Result::Ok(crate::deps::aws_cryptography_primitives::types::ValidatePublicKeyInput {
-            ecc_curve: self.ecc_curve,
-public_key: self.public_key,
-        })
+        ::std::result::Result::Ok(
+            crate::deps::aws_cryptography_primitives::types::ValidatePublicKeyInput {
+                ecc_curve: self.ecc_curve,
+                public_key: self.public_key,
+            },
+        )
     }
 }

@@ -10,7 +10,7 @@ use crate::software::amazon::cryptography::primitives::internaldafny::types::Err
 use crate::software::amazon::cryptography::primitives::internaldafny::types::AES_GCM;
 use crate::*;
 use aws_lc_rs::aead::{Aad, LessSafeKey, Nonce, UnboundKey};
-use std::rc::Rc;
+use dafny_runtime::Rc;
 
 struct DoAESEncryptOutput {
     cipher_text: Vec<u8>,

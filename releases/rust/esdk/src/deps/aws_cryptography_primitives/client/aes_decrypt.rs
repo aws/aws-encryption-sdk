@@ -14,7 +14,7 @@ impl crate::deps::aws_cryptography_primitives::client::Client {
     /// - On success, responds with [`AesDecryptOutput`](crate::operation::aes_decrypt::AesDecryptOutput) with field(s):
     ///   - [`plaintext(Option<::aws_smithy_types::Blob>)`](crate::operation::aes_decrypt::AESDecryptOutput::plaintext): (undocumented)
     /// - On failure, responds with [`SdkError<AesDecryptError>`](crate::operation::aes_decrypt::AesDecryptError)
-    pub fn aes_decrypt(&self) -> crate::deps::aws_cryptography_primitives::operation::aes_decrypt::builders::AesDecryptFluentBuilder {
+    pub fn aes_decrypt(&self) -> crate::deps::aws_cryptography_primitives::operation::aes_decrypt::builders::AesDecryptFluentBuilder{
         crate::deps::aws_cryptography_primitives::operation::aes_decrypt::builders::AesDecryptFluentBuilder::new(self.clone())
     }
 }

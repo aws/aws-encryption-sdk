@@ -5,14 +5,14 @@
 
 pub fn to_dafny(
     value: aws_sdk_dynamodb::types::ContinuousBackupsStatus,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ContinuousBackupsStatus>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ContinuousBackupsStatus>{
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_dynamodb::types::ContinuousBackupsStatus::Enabled => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ContinuousBackupsStatus::ENABLED {},
 aws_sdk_dynamodb::types::ContinuousBackupsStatus::Disabled => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ContinuousBackupsStatus::DISABLED {},
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ContinuousBackupsStatus,
 ) -> aws_sdk_dynamodb::types::ContinuousBackupsStatus {

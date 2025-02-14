@@ -4,15 +4,17 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::Projection,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Projection>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Projection,
+> {
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Projection::Projection {
-        ProjectionType: ::std::rc::Rc::new(match &value.projection_type {
+        ProjectionType: ::dafny_runtime::Rc::new(match &value.projection_type {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::projection_type::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- NonKeyAttributes: ::std::rc::Rc::new(match &value.non_key_attributes {
+ NonKeyAttributes: ::dafny_runtime::Rc::new(match &value.non_key_attributes {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&e),
@@ -23,9 +25,10 @@ pub fn to_dafny(
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::Projection,
     >,
 ) -> aws_sdk_dynamodb::types::Projection {
@@ -48,5 +51,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
 }
