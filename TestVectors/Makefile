@@ -245,7 +245,7 @@ test_decrypt_encrypt_vectors_go:
 
 test_decrypt_encrypt_vectors_python:
 	rm -rf runtimes/python/.tox
-  python3 -m tox -c runtimes/python --verbose -e cli -- decrypt --manifest-path runtimes/python --manifest-name decrypt-manifest.json
+	python3 -m tox -c runtimes/python --verbose -e cli -- decrypt --manifest-path runtimes/python --manifest-name decrypt-manifest.json
 
 _polymorph_dependencies:
 	@echo "No polymorphing of dependency"
