@@ -116,7 +116,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2
           role-session-name: LegacyInterOpTests
 
       # Extract test vector zips
