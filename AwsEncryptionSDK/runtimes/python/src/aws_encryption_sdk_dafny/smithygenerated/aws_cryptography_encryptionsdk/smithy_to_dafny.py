@@ -10,8 +10,8 @@ from aws_encryption_sdk_dafny.internaldafny.generated.AwsCryptographyEncryptionS
     DecryptOutput_DecryptOutput as DafnyDecryptOutput,
     EncryptInput_EncryptInput as DafnyEncryptInput,
     EncryptOutput_EncryptOutput as DafnyEncryptOutput,
-    NetV4_0_0_RetryPolicy_ALLOW__RETRY,
-    NetV4_0_0_RetryPolicy_FORBID__RETRY,
+    NetV4__0__0__RetryPolicy_ALLOW__RETRY,
+    NetV4__0__0__RetryPolicy_FORBID__RETRY,
 )
 import aws_encryption_sdk_dafny.internaldafny.generated.module_
 import aws_encryption_sdk_dafny.smithygenerated.aws_cryptography_encryptionsdk.smithy_to_dafny
@@ -189,10 +189,10 @@ def aws_cryptography_encryptionsdk_AtomicPrimitivesReference(native_input):
 
 def aws_cryptography_encryptionsdk_NetV4_0_0_RetryPolicy(native_input):
     if native_input == "FORBID_RETRY":
-        return NetV4_0_0_RetryPolicy_FORBID__RETRY()
+        return NetV4__0__0__RetryPolicy_FORBID__RETRY()
 
     elif native_input == "ALLOW_RETRY":
-        return NetV4_0_0_RetryPolicy_ALLOW__RETRY()
+        return NetV4__0__0__RetryPolicy_ALLOW__RETRY()
 
     else:
         raise ValueError(f"No recognized enum value in enum type: {native_input=}")
