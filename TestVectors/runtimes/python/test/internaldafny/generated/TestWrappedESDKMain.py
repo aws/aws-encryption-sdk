@@ -18,7 +18,7 @@ import aws_cryptography_internal_kms.internaldafny.generated.ComAmazonawsKmsType
 import aws_cryptographic_material_providers.internaldafny.generated.AwsCryptographyKeyStoreTypes as AwsCryptographyKeyStoreTypes
 import aws_cryptography_primitives.internaldafny.generated.AwsCryptographyPrimitivesTypes as AwsCryptographyPrimitivesTypes
 import aws_cryptographic_material_providers.internaldafny.generated.AwsCryptographyMaterialProvidersTypes as AwsCryptographyMaterialProvidersTypes
-import aws_encryption_sdk.internaldafny.generated.AwsCryptographyEncryptionSdkTypes as AwsCryptographyEncryptionSdkTypes
+import aws_encryption_sdk_dafny.internaldafny.generated.AwsCryptographyEncryptionSdkTypes as AwsCryptographyEncryptionSdkTypes
 import aws_cryptography_primitives.internaldafny.generated.ExternRandom as ExternRandom
 import aws_cryptography_primitives.internaldafny.generated.Random as Random
 import aws_cryptography_primitives.internaldafny.generated.AESEncryption as AESEncryption
@@ -67,6 +67,7 @@ import aws_cryptographic_material_providers.internaldafny.generated.MrkAwareDisc
 import aws_cryptographic_material_providers.internaldafny.generated.AwsKmsMrkKeyring as AwsKmsMrkKeyring
 import aws_cryptographic_material_providers.internaldafny.generated.MrkAwareStrictMultiKeyring as MrkAwareStrictMultiKeyring
 import smithy_dafny_standard_library.internaldafny.generated.DafnyLibraries as DafnyLibraries
+import smithy_dafny_standard_library.internaldafny.generated.OsLang as OsLang
 import smithy_dafny_standard_library.internaldafny.generated.Time as Time
 import aws_cryptographic_material_providers.internaldafny.generated.LocalCMC as LocalCMC
 import aws_cryptographic_material_providers.internaldafny.generated.SynchronizedLocalCMC as SynchronizedLocalCMC
@@ -90,22 +91,22 @@ import aws_cryptographic_material_providers.internaldafny.generated.RequiredEncr
 import aws_cryptographic_material_providers.internaldafny.generated.AwsCryptographyMaterialProvidersOperations as AwsCryptographyMaterialProvidersOperations
 import aws_cryptographic_material_providers.internaldafny.generated.MaterialProviders as MaterialProviders
 import smithy_dafny_standard_library.internaldafny.generated.Streams as Streams
-import aws_encryption_sdk.internaldafny.generated.SerializableTypes as SerializableTypes
-import aws_encryption_sdk.internaldafny.generated.SerializeFunctions as SerializeFunctions
-import aws_encryption_sdk.internaldafny.generated.EncryptionContext as EncryptionContext
-import aws_encryption_sdk.internaldafny.generated.HeaderTypes as HeaderTypes
-import aws_encryption_sdk.internaldafny.generated.SharedHeaderFunctions as SharedHeaderFunctions
-import aws_encryption_sdk.internaldafny.generated.EncryptedDataKeys as EncryptedDataKeys
-import aws_encryption_sdk.internaldafny.generated.V1HeaderBody as V1HeaderBody
-import aws_encryption_sdk.internaldafny.generated.V2HeaderBody as V2HeaderBody
-import aws_encryption_sdk.internaldafny.generated.HeaderAuth as HeaderAuth
-import aws_encryption_sdk.internaldafny.generated.Header as Header
-import aws_encryption_sdk.internaldafny.generated.Frames as Frames
-import aws_encryption_sdk.internaldafny.generated.MessageBody as MessageBody
-import aws_encryption_sdk.internaldafny.generated.KeyDerivation as KeyDerivation
-import aws_encryption_sdk.internaldafny.generated.EncryptDecryptHelpers as EncryptDecryptHelpers
-import aws_encryption_sdk.internaldafny.generated.AwsEncryptionSdkOperations as AwsEncryptionSdkOperations
-import aws_encryption_sdk.internaldafny.generated.ESDK as ESDK
+import aws_encryption_sdk_dafny.internaldafny.generated.SerializableTypes as SerializableTypes
+import aws_encryption_sdk_dafny.internaldafny.generated.SerializeFunctions as SerializeFunctions
+import aws_encryption_sdk_dafny.internaldafny.generated.EncryptionContext as EncryptionContext
+import aws_encryption_sdk_dafny.internaldafny.generated.HeaderTypes as HeaderTypes
+import aws_encryption_sdk_dafny.internaldafny.generated.SharedHeaderFunctions as SharedHeaderFunctions
+import aws_encryption_sdk_dafny.internaldafny.generated.EncryptedDataKeys as EncryptedDataKeys
+import aws_encryption_sdk_dafny.internaldafny.generated.V1HeaderBody as V1HeaderBody
+import aws_encryption_sdk_dafny.internaldafny.generated.V2HeaderBody as V2HeaderBody
+import aws_encryption_sdk_dafny.internaldafny.generated.HeaderAuth as HeaderAuth
+import aws_encryption_sdk_dafny.internaldafny.generated.Header as Header
+import aws_encryption_sdk_dafny.internaldafny.generated.Frames as Frames
+import aws_encryption_sdk_dafny.internaldafny.generated.MessageBody as MessageBody
+import aws_encryption_sdk_dafny.internaldafny.generated.KeyDerivation as KeyDerivation
+import aws_encryption_sdk_dafny.internaldafny.generated.EncryptDecryptHelpers as EncryptDecryptHelpers
+import aws_encryption_sdk_dafny.internaldafny.generated.AwsEncryptionSdkOperations as AwsEncryptionSdkOperations
+import aws_encryption_sdk_dafny.internaldafny.generated.ESDK as ESDK
 import aws_encryption_sdk_test_vectors.internaldafny.generated.WrappedESDK as WrappedESDK
 import smithy_dafny_standard_library.internaldafny.generated.HexStrings as HexStrings
 import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllAlgorithmSuites as AllAlgorithmSuites
@@ -257,7 +258,7 @@ class default__:
         out1_ = EsdkTestManifests.default__.StartDecryptVectors(EsdkManifestOptions.ManifestOptions_Decrypt((d_0_directory_) + (_dafny.Seq("dafny/TestVectors/test/invalid-Net-4.0.0/")), _dafny.Seq("manifest.json"), AwsCryptographyEncryptionSdkTypes.NetV4__0__0__RetryPolicy_FORBID__RETRY(), Wrappers.Option_None()))
         d_1_result_ = out1_
         _dafny.print(_dafny.string_of(_dafny.Seq("ONLY WORRY IF THE ABOVE TESTS PASSED!!! THESE TESTS ARE SUPPOSED TO FAIL!\n")))
-        _dafny.print(_dafny.string_of(_dafny.Seq("IF THE TESTS FAIL OTHER THAN A AES GCM TAG VALIDATION EXCEPTION, CUT AN ISSUE.\n")))
+        _dafny.print(_dafny.string_of(_dafny.Seq("IF THE TESTS FAIL OTHER THAN A `AES GCM TAG VALIDATION EXCEPTION` or `AES Decrypt : gather Unspecified`, CUT AN ISSUE.\n")))
         _dafny.print(_dafny.string_of(_dafny.Seq("IF THE TESTS ALL FAIL IT MEANS THE TEST PASSED!")))
         if not((d_1_result_).is_Failure):
             raise _dafny.HaltException("dafny/TestVectors/test/RunMain.dfy(65,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
