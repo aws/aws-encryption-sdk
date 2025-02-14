@@ -68,7 +68,7 @@ class DafnyESDKToNativeESDKShim:
               ciphertext=native_esdk_ciphertext,
               encryption_context=native_esdk_header.encryption_context,
               algorithm_suite_id=CryptoMaterialsManagerFromMPL._native_algorithm_id_to_mpl_algorithm_id(
-                  native_esdk_header.algorithm
+                  native_esdk_header.algorithm.algorithm_id
               ).value,
           )
 
@@ -103,7 +103,7 @@ class DafnyESDKToNativeESDKShim:
               plaintext=native_esdk_plaintext,
               encryption_context=native_esdk_header.encryption_context,
               algorithm_suite_id=CryptoMaterialsManagerFromMPL._native_algorithm_id_to_mpl_algorithm_id(
-                  native_esdk_header.algorithm
+                  native_esdk_header.algorithm.algorithm_id
               ).value,
           )
 
