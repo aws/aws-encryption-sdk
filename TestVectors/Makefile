@@ -195,8 +195,8 @@ test_generate_vectors_go:
 	cp dafny/TestVectors/test/keys.json runtimes/go
 
 test_generate_vectors_python:
-	rm -rf runtimes/python/.tox \
-	python3 -m tox -c runtimes/python --verbose -e cli -- encrypt-manifest --encrypt-manifest-output runtimes/python \
+	rm -rf runtimes/python/.tox
+	python3 -m tox -c runtimes/python --verbose -e cli -- encrypt-manifest --encrypt-manifest-output runtimes/python
 	cp dafny/TestVectors/test/keys.json runtimes/python
 
 test_encrypt_vectors_java:
