@@ -217,7 +217,7 @@ test_encrypt_vectors_go:
 	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go encrypt --manifest-path=.. --decrypt-manifest-path=..
 
 test_encrypt_vectors_python:
-	rm -rf runtimes/python/.tox \
+	rm -rf runtimes/python/.tox
   python3 -m tox -c runtimes/python --verbose -e cli -- encrypt --manifest-path runtimes/python --decrypt-manifest-path runtimes/python
 
 test_decrypt_encrypt_vectors_java:
@@ -244,7 +244,7 @@ test_decrypt_encrypt_vectors_go:
 	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go decrypt --manifest-path=.. --manifest-name=decrypt-manifest.json
 
 test_decrypt_encrypt_vectors_python:
-	rm -rf runtimes/python/.tox \
+	rm -rf runtimes/python/.tox
   python3 -m tox -c runtimes/python --verbose -e cli -- decrypt --manifest-path runtimes/python --manifest-name decrypt-manifest.json
 
 _polymorph_dependencies:
