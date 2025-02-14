@@ -109,13 +109,13 @@ class DafnyESDKToNativeESDKShim:
           native_decrypt_input = dafny_to_smithy_DecryptInput(dafny_decrypt_input)
 
           if native_decrypt_input.materials_manager is not None:
-              native_esdk_plaintext, native_esdk_header = self.native_esdk.encrypt(
+              native_esdk_plaintext, native_esdk_header = self.native_esdk.decrypt(
                   source=native_decrypt_input.ciphertext,
                   materials_manager=native_decrypt_input.materials_manager,
                   encryption_context=native_decrypt_input.encryption_context,
               )
           else:
-              native_esdk_plaintext, native_esdk_header = self.native_esdk.encrypt(
+              native_esdk_plaintext, native_esdk_header = self.native_esdk.decrypt(
                   source=native_decrypt_input.ciphertext,
                   materials_manager=native_decrypt_input.keyring,
                   encryption_context=native_decrypt_input.encryption_context,
