@@ -165,10 +165,10 @@ def aws_cryptography_encryptionsdk_AwsEncryptionSdkConfig(dafny_input):
         net_v4_0_0_retry_policy=(
             (
                 aws_encryption_sdk_dafny.smithygenerated.aws_cryptography_encryptionsdk.dafny_to_smithy.aws_cryptography_encryptionsdk_NetV4_0_0_RetryPolicy(
-                    dafny_input.netV4_0_0_RetryPolicy.value
+                    dafny_input.netV4__0__0__RetryPolicy.value
                 )
             )
-            if (dafny_input.netV4_0_0_RetryPolicy.is_Some)
+            if (dafny_input.netV4__0__0__RetryPolicy.is_Some)
             else None
         ),
     )

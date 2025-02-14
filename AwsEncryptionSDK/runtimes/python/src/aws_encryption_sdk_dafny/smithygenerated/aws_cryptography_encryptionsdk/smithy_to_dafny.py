@@ -216,7 +216,7 @@ def aws_cryptography_encryptionsdk_AwsEncryptionSdkConfig(native_input):
             if (native_input.max_encrypted_data_keys is not None)
             else (Option_None())
         ),
-        netV4_0_0_RetryPolicy=(
+        netV4__0__0__RetryPolicy=(
             (
                 Option_Some(
                     aws_encryption_sdk_dafny.smithygenerated.aws_cryptography_encryptionsdk.smithy_to_dafny.aws_cryptography_encryptionsdk_NetV4_0_0_RetryPolicy(

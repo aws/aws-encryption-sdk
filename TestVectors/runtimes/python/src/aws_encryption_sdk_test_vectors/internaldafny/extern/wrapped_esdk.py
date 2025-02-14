@@ -15,6 +15,7 @@ from aws_encryption_sdk_dafny.smithygenerated.aws_cryptography_encryptionsdk.mod
     EncryptOutput,
     DecryptOutput,
     DecryptInput,
+    NetV4_0_0_RetryPolicy,
 )
 from aws_encryption_sdk_dafny.smithygenerated.aws_cryptography_encryptionsdk.dafny_to_smithy import (
     aws_cryptography_encryptionsdk_EncryptInput as dafny_to_smithy_EncryptInput,
@@ -127,10 +128,14 @@ class default__(WrappedESDK.default__):
     #   return Wrappers.Result_Success(wrapped_client)
 
     @staticmethod
+    # Wrapper for the native ESDK-Python.
     def WrappedESDK(dafny_config):
         native_config = dafny_config_to_smithy_config(dafny_config)
 
         # TODO deny net 4.0.0 allow retry
+
+        if native_config.net_v4_0_0_retry_policy == NetV4_0_0_RetryPolicy.ALLOW_RETRY:
+            raise ValueError("net 4.0.0 retry policy is not supported")
 
         commitment_policy = _esdk_dafny_commitment_policy_to_native(
             native_config.commitment_policy
@@ -143,7 +148,8 @@ class default__(WrappedESDK.default__):
         )
 
         native_esdk = aws_encryption_sdk.EncryptionSDKClient(
-            commitment_policy=commitment_policy
+            commitment_policy=commitment_policy,
+            max_encrypted_data_keys=max_edks,
         )
 
         dafny_wrapped_esdk = DafnyESDKToNativeESDKShim(native_esdk)
