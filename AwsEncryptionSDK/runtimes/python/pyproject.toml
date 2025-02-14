@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "aws-encryption-sdk"
+name = "aws-encryption-sdk-dafny"
 version = "0.1.0"
 description = ""
 authors = ["AWS Crypto Tools <aws-crypto-tools@amazon.com>"]
 packages = [
-    { include = "aws_encryption_sdk", from = "src" }
+    { include = "aws_encryption_sdk_dafny", from = "src" }
 ]
 # Include generated internaldafny files in package distributions,
 # even though they are not included in version control

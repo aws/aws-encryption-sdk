@@ -18,7 +18,7 @@ import aws_cryptography_internal_kms.internaldafny.generated.ComAmazonawsKmsType
 import aws_cryptographic_material_providers.internaldafny.generated.AwsCryptographyKeyStoreTypes as AwsCryptographyKeyStoreTypes
 import aws_cryptography_primitives.internaldafny.generated.AwsCryptographyPrimitivesTypes as AwsCryptographyPrimitivesTypes
 import aws_cryptographic_material_providers.internaldafny.generated.AwsCryptographyMaterialProvidersTypes as AwsCryptographyMaterialProvidersTypes
-import aws_encryption_sdk.internaldafny.generated.AwsCryptographyEncryptionSdkTypes as AwsCryptographyEncryptionSdkTypes
+import aws_encryption_sdk_dafny.internaldafny.generated.AwsCryptographyEncryptionSdkTypes as AwsCryptographyEncryptionSdkTypes
 import aws_cryptography_primitives.internaldafny.generated.ExternRandom as ExternRandom
 import aws_cryptography_primitives.internaldafny.generated.Random as Random
 import aws_cryptography_primitives.internaldafny.generated.AESEncryption as AESEncryption
@@ -67,6 +67,7 @@ import aws_cryptographic_material_providers.internaldafny.generated.MrkAwareDisc
 import aws_cryptographic_material_providers.internaldafny.generated.AwsKmsMrkKeyring as AwsKmsMrkKeyring
 import aws_cryptographic_material_providers.internaldafny.generated.MrkAwareStrictMultiKeyring as MrkAwareStrictMultiKeyring
 import smithy_dafny_standard_library.internaldafny.generated.DafnyLibraries as DafnyLibraries
+import smithy_dafny_standard_library.internaldafny.generated.OsLang as OsLang
 import smithy_dafny_standard_library.internaldafny.generated.Time as Time
 import aws_cryptographic_material_providers.internaldafny.generated.LocalCMC as LocalCMC
 import aws_cryptographic_material_providers.internaldafny.generated.SynchronizedLocalCMC as SynchronizedLocalCMC
@@ -90,22 +91,22 @@ import aws_cryptographic_material_providers.internaldafny.generated.RequiredEncr
 import aws_cryptographic_material_providers.internaldafny.generated.AwsCryptographyMaterialProvidersOperations as AwsCryptographyMaterialProvidersOperations
 import aws_cryptographic_material_providers.internaldafny.generated.MaterialProviders as MaterialProviders
 import smithy_dafny_standard_library.internaldafny.generated.Streams as Streams
-import aws_encryption_sdk.internaldafny.generated.SerializableTypes as SerializableTypes
-import aws_encryption_sdk.internaldafny.generated.SerializeFunctions as SerializeFunctions
-import aws_encryption_sdk.internaldafny.generated.EncryptionContext as EncryptionContext
-import aws_encryption_sdk.internaldafny.generated.HeaderTypes as HeaderTypes
-import aws_encryption_sdk.internaldafny.generated.SharedHeaderFunctions as SharedHeaderFunctions
-import aws_encryption_sdk.internaldafny.generated.EncryptedDataKeys as EncryptedDataKeys
-import aws_encryption_sdk.internaldafny.generated.V1HeaderBody as V1HeaderBody
-import aws_encryption_sdk.internaldafny.generated.V2HeaderBody as V2HeaderBody
-import aws_encryption_sdk.internaldafny.generated.HeaderAuth as HeaderAuth
-import aws_encryption_sdk.internaldafny.generated.Header as Header
-import aws_encryption_sdk.internaldafny.generated.Frames as Frames
-import aws_encryption_sdk.internaldafny.generated.MessageBody as MessageBody
-import aws_encryption_sdk.internaldafny.generated.KeyDerivation as KeyDerivation
-import aws_encryption_sdk.internaldafny.generated.EncryptDecryptHelpers as EncryptDecryptHelpers
-import aws_encryption_sdk.internaldafny.generated.AwsEncryptionSdkOperations as AwsEncryptionSdkOperations
-import aws_encryption_sdk.internaldafny.generated.ESDK as ESDK
+import aws_encryption_sdk_dafny.internaldafny.generated.SerializableTypes as SerializableTypes
+import aws_encryption_sdk_dafny.internaldafny.generated.SerializeFunctions as SerializeFunctions
+import aws_encryption_sdk_dafny.internaldafny.generated.EncryptionContext as EncryptionContext
+import aws_encryption_sdk_dafny.internaldafny.generated.HeaderTypes as HeaderTypes
+import aws_encryption_sdk_dafny.internaldafny.generated.SharedHeaderFunctions as SharedHeaderFunctions
+import aws_encryption_sdk_dafny.internaldafny.generated.EncryptedDataKeys as EncryptedDataKeys
+import aws_encryption_sdk_dafny.internaldafny.generated.V1HeaderBody as V1HeaderBody
+import aws_encryption_sdk_dafny.internaldafny.generated.V2HeaderBody as V2HeaderBody
+import aws_encryption_sdk_dafny.internaldafny.generated.HeaderAuth as HeaderAuth
+import aws_encryption_sdk_dafny.internaldafny.generated.Header as Header
+import aws_encryption_sdk_dafny.internaldafny.generated.Frames as Frames
+import aws_encryption_sdk_dafny.internaldafny.generated.MessageBody as MessageBody
+import aws_encryption_sdk_dafny.internaldafny.generated.KeyDerivation as KeyDerivation
+import aws_encryption_sdk_dafny.internaldafny.generated.EncryptDecryptHelpers as EncryptDecryptHelpers
+import aws_encryption_sdk_dafny.internaldafny.generated.AwsEncryptionSdkOperations as AwsEncryptionSdkOperations
+import aws_encryption_sdk_dafny.internaldafny.generated.ESDK as ESDK
 import aws_cryptography_primitives.internaldafny.generated.AesKdfCtr as AesKdfCtr
 import aws_cryptographic_material_providers.internaldafny.generated.KeyStoreErrorMessages as KeyStoreErrorMessages
 import aws_cryptographic_material_providers.internaldafny.generated.KmsArn as KmsArn
@@ -160,7 +161,7 @@ class default__:
         out0_ = ESDK.default__.ESDK(d_1_defaultConfig_)
         d_2_valueOrError0_ = out0_
         if not(not((d_2_valueOrError0_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(39,20): " + _dafny.string_of(d_2_valueOrError0_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(39,16): " + _dafny.string_of(d_2_valueOrError0_))
         d_3_esdk_: ESDK.ESDKClient
         d_3_esdk_ = (d_2_valueOrError0_).Extract()
         d_4_valueOrError1_: Wrappers.Result = None
@@ -168,7 +169,7 @@ class default__:
         out1_ = MaterialProviders.default__.MaterialProviders(MaterialProviders.default__.DefaultMaterialProvidersConfig())
         d_4_valueOrError1_ = out1_
         if not(not((d_4_valueOrError1_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(40,19): " + _dafny.string_of(d_4_valueOrError1_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(40,15): " + _dafny.string_of(d_4_valueOrError1_))
         d_5_mpl_: MaterialProviders.MaterialProvidersClient
         d_5_mpl_ = (d_4_valueOrError1_).Extract()
         d_6_rsaKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
@@ -192,7 +193,7 @@ class default__:
         out6_ = (d_5_mpl_).CreateMultiKeyring(AwsCryptographyMaterialProvidersTypes.CreateMultiKeyringInput_CreateMultiKeyringInput(Wrappers.Option_Some(d_8_aesKeyring_), _dafny.Seq([d_6_rsaKeyring_, d_7_kmsKeyring_, d_9_hKeyring_])))
         d_10_valueOrError2_ = out6_
         if not(not((d_10_valueOrError2_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(48,28): " + _dafny.string_of(d_10_valueOrError2_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(48,24): " + _dafny.string_of(d_10_valueOrError2_))
         d_11_multiKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
         d_11_multiKeyring_ = (d_10_valueOrError2_).Extract()
         d_12_encryptionContext_: _dafny.Map
@@ -204,7 +205,7 @@ class default__:
         out8_ = (d_3_esdk_).Encrypt(AwsCryptographyEncryptionSdkTypes.EncryptInput_EncryptInput(d_0_asdf_, Wrappers.Option_Some(d_12_encryptionContext_), Wrappers.Option_None(), Wrappers.Option_Some(d_11_multiKeyring_), Wrappers.Option_None(), Wrappers.Option_None()))
         d_13_encryptOutput_ = out8_
         if not((d_13_encryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(66,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(66,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_14_esdkCiphertext_: _dafny.Seq
         d_14_esdkCiphertext_ = ((d_13_encryptOutput_).value).ciphertext
         d_15_decryptOutput_: Wrappers.Result
@@ -212,35 +213,35 @@ class default__:
         out9_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_14_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_6_rsaKeyring_), Wrappers.Option_Some(d_12_encryptionContext_)))
         d_15_decryptOutput_ = out9_
         if not((d_15_decryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(77,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(77,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_16_cycledPlaintext_: _dafny.Seq
         d_16_cycledPlaintext_ = ((d_15_decryptOutput_).value).plaintext
         if not((d_16_cycledPlaintext_) == (d_0_asdf_)):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(79,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(79,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out10_: Wrappers.Result
         out10_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_14_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_7_kmsKeyring_), Wrappers.Option_Some(d_12_encryptionContext_)))
         d_15_decryptOutput_ = out10_
         if not((d_15_decryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(89,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(89,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_16_cycledPlaintext_ = ((d_15_decryptOutput_).value).plaintext
         if not((d_16_cycledPlaintext_) == (d_0_asdf_)):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(91,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(91,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out11_: Wrappers.Result
         out11_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_14_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_8_aesKeyring_), Wrappers.Option_Some(d_12_encryptionContext_)))
         d_15_decryptOutput_ = out11_
         if not((d_15_decryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(101,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(101,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_16_cycledPlaintext_ = ((d_15_decryptOutput_).value).plaintext
         if not((d_16_cycledPlaintext_) == (d_0_asdf_)):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(103,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(103,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out12_: Wrappers.Result
         out12_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_14_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_9_hKeyring_), Wrappers.Option_Some(d_12_encryptionContext_)))
         d_15_decryptOutput_ = out12_
         if not((d_15_decryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(113,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(113,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_16_cycledPlaintext_ = ((d_15_decryptOutput_).value).plaintext
         if not((d_16_cycledPlaintext_) == (d_0_asdf_)):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(115,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(115,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
 
     @staticmethod
     def TestRemoveOnEncryptAndSupplyOnDecryptHappyCase():
@@ -253,7 +254,7 @@ class default__:
         out0_ = ESDK.default__.ESDK(d_1_defaultConfig_)
         d_2_valueOrError0_ = out0_
         if not(not((d_2_valueOrError0_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(124,20): " + _dafny.string_of(d_2_valueOrError0_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(124,16): " + _dafny.string_of(d_2_valueOrError0_))
         d_3_esdk_: ESDK.ESDKClient
         d_3_esdk_ = (d_2_valueOrError0_).Extract()
         d_4_valueOrError1_: Wrappers.Result = None
@@ -261,7 +262,7 @@ class default__:
         out1_ = MaterialProviders.default__.MaterialProviders(MaterialProviders.default__.DefaultMaterialProvidersConfig())
         d_4_valueOrError1_ = out1_
         if not(not((d_4_valueOrError1_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(125,19): " + _dafny.string_of(d_4_valueOrError1_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(125,15): " + _dafny.string_of(d_4_valueOrError1_))
         d_5_mpl_: MaterialProviders.MaterialProvidersClient
         d_5_mpl_ = (d_4_valueOrError1_).Extract()
         d_6_rsaKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
@@ -285,7 +286,7 @@ class default__:
         out6_ = (d_5_mpl_).CreateMultiKeyring(AwsCryptographyMaterialProvidersTypes.CreateMultiKeyringInput_CreateMultiKeyringInput(Wrappers.Option_Some(d_8_aesKeyring_), _dafny.Seq([d_6_rsaKeyring_, d_7_kmsKeyring_, d_9_hKeyring_])))
         d_10_valueOrError2_ = out6_
         if not(not((d_10_valueOrError2_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(133,28): " + _dafny.string_of(d_10_valueOrError2_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(133,24): " + _dafny.string_of(d_10_valueOrError2_))
         d_11_multiKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
         d_11_multiKeyring_ = (d_10_valueOrError2_).Extract()
         d_12_encryptionContext_: _dafny.Map
@@ -305,7 +306,7 @@ class default__:
         out10_ = (d_5_mpl_).CreateDefaultCryptographicMaterialsManager(AwsCryptographyMaterialProvidersTypes.CreateDefaultCryptographicMaterialsManagerInput_CreateDefaultCryptographicMaterialsManagerInput(d_11_multiKeyring_))
         d_15_valueOrError3_ = out10_
         if not(not((d_15_valueOrError3_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(148,26): " + _dafny.string_of(d_15_valueOrError3_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(148,22): " + _dafny.string_of(d_15_valueOrError3_))
         d_16_defaultCMM_: AwsCryptographyMaterialProvidersTypes.ICryptographicMaterialsManager
         d_16_defaultCMM_ = (d_15_valueOrError3_).Extract()
         d_17_valueOrError4_: Wrappers.Result = None
@@ -313,7 +314,7 @@ class default__:
         out11_ = (d_5_mpl_).CreateRequiredEncryptionContextCMM(AwsCryptographyMaterialProvidersTypes.CreateRequiredEncryptionContextCMMInput_CreateRequiredEncryptionContextCMMInput(Wrappers.Option_Some(d_16_defaultCMM_), Wrappers.Option_None(), d_14_requiredEncryptionContextKeys_))
         d_17_valueOrError4_ = out11_
         if not(not((d_17_valueOrError4_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(155,22): " + _dafny.string_of(d_17_valueOrError4_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(155,18): " + _dafny.string_of(d_17_valueOrError4_))
         d_18_reqCMM_: AwsCryptographyMaterialProvidersTypes.ICryptographicMaterialsManager
         d_18_reqCMM_ = (d_17_valueOrError4_).Extract()
         d_19_encryptOutput_: Wrappers.Result
@@ -321,7 +322,7 @@ class default__:
         out12_ = (d_3_esdk_).Encrypt(AwsCryptographyEncryptionSdkTypes.EncryptInput_EncryptInput(d_0_asdf_, Wrappers.Option_Some(d_12_encryptionContext_), Wrappers.Option_Some(d_18_reqCMM_), Wrappers.Option_None(), Wrappers.Option_None(), Wrappers.Option_None()))
         d_19_encryptOutput_ = out12_
         if not((d_19_encryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(174,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(174,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_20_esdkCiphertext_: _dafny.Seq
         d_20_esdkCiphertext_ = ((d_19_encryptOutput_).value).ciphertext
         d_21_decryptOutput_: Wrappers.Result
@@ -329,35 +330,35 @@ class default__:
         out13_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_20_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_6_rsaKeyring_), Wrappers.Option_Some(d_13_reproducedEncryptionContext_)))
         d_21_decryptOutput_ = out13_
         if not((d_21_decryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(185,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(185,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_22_cycledPlaintext_: _dafny.Seq
         d_22_cycledPlaintext_ = ((d_21_decryptOutput_).value).plaintext
         if not((d_22_cycledPlaintext_) == (d_0_asdf_)):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(187,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(187,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out14_: Wrappers.Result
         out14_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_20_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_7_kmsKeyring_), Wrappers.Option_Some(d_13_reproducedEncryptionContext_)))
         d_21_decryptOutput_ = out14_
         if not((d_21_decryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(197,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(197,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_22_cycledPlaintext_ = ((d_21_decryptOutput_).value).plaintext
         if not((d_22_cycledPlaintext_) == (d_0_asdf_)):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(199,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(199,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out15_: Wrappers.Result
         out15_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_20_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_8_aesKeyring_), Wrappers.Option_Some(d_13_reproducedEncryptionContext_)))
         d_21_decryptOutput_ = out15_
         if not((d_21_decryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(209,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(209,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_22_cycledPlaintext_ = ((d_21_decryptOutput_).value).plaintext
         if not((d_22_cycledPlaintext_) == (d_0_asdf_)):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(211,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(211,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out16_: Wrappers.Result
         out16_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_20_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_9_hKeyring_), Wrappers.Option_Some(d_13_reproducedEncryptionContext_)))
         d_21_decryptOutput_ = out16_
         if not((d_21_decryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(221,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(221,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_22_cycledPlaintext_ = ((d_21_decryptOutput_).value).plaintext
         if not((d_22_cycledPlaintext_) == (d_0_asdf_)):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(223,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(223,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
 
     @staticmethod
     def TestRemoveOnEncryptRemoveAndSupplyOnDecryptHappyCase():
@@ -370,7 +371,7 @@ class default__:
         out0_ = ESDK.default__.ESDK(d_1_defaultConfig_)
         d_2_valueOrError0_ = out0_
         if not(not((d_2_valueOrError0_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(233,20): " + _dafny.string_of(d_2_valueOrError0_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(233,16): " + _dafny.string_of(d_2_valueOrError0_))
         d_3_esdk_: ESDK.ESDKClient
         d_3_esdk_ = (d_2_valueOrError0_).Extract()
         d_4_valueOrError1_: Wrappers.Result = None
@@ -378,7 +379,7 @@ class default__:
         out1_ = MaterialProviders.default__.MaterialProviders(MaterialProviders.default__.DefaultMaterialProvidersConfig())
         d_4_valueOrError1_ = out1_
         if not(not((d_4_valueOrError1_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(234,19): " + _dafny.string_of(d_4_valueOrError1_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(234,15): " + _dafny.string_of(d_4_valueOrError1_))
         d_5_mpl_: MaterialProviders.MaterialProvidersClient
         d_5_mpl_ = (d_4_valueOrError1_).Extract()
         d_6_rsaKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
@@ -402,7 +403,7 @@ class default__:
         out6_ = (d_5_mpl_).CreateMultiKeyring(AwsCryptographyMaterialProvidersTypes.CreateMultiKeyringInput_CreateMultiKeyringInput(Wrappers.Option_Some(d_8_aesKeyring_), _dafny.Seq([d_6_rsaKeyring_, d_7_kmsKeyring_, d_9_hKeyring_])))
         d_10_valueOrError2_ = out6_
         if not(not((d_10_valueOrError2_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(242,28): " + _dafny.string_of(d_10_valueOrError2_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(242,24): " + _dafny.string_of(d_10_valueOrError2_))
         d_11_multiKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
         d_11_multiKeyring_ = (d_10_valueOrError2_).Extract()
         d_12_encryptionContext_: _dafny.Map
@@ -422,7 +423,7 @@ class default__:
         out10_ = (d_5_mpl_).CreateDefaultCryptographicMaterialsManager(AwsCryptographyMaterialProvidersTypes.CreateDefaultCryptographicMaterialsManagerInput_CreateDefaultCryptographicMaterialsManagerInput(d_11_multiKeyring_))
         d_15_valueOrError3_ = out10_
         if not(not((d_15_valueOrError3_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(257,26): " + _dafny.string_of(d_15_valueOrError3_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(257,22): " + _dafny.string_of(d_15_valueOrError3_))
         d_16_defaultCMM_: AwsCryptographyMaterialProvidersTypes.ICryptographicMaterialsManager
         d_16_defaultCMM_ = (d_15_valueOrError3_).Extract()
         d_17_valueOrError4_: Wrappers.Result = None
@@ -430,7 +431,7 @@ class default__:
         out11_ = (d_5_mpl_).CreateRequiredEncryptionContextCMM(AwsCryptographyMaterialProvidersTypes.CreateRequiredEncryptionContextCMMInput_CreateRequiredEncryptionContextCMMInput(Wrappers.Option_Some(d_16_defaultCMM_), Wrappers.Option_None(), d_14_requiredEncryptionContextKeys_))
         d_17_valueOrError4_ = out11_
         if not(not((d_17_valueOrError4_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(264,22): " + _dafny.string_of(d_17_valueOrError4_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(264,18): " + _dafny.string_of(d_17_valueOrError4_))
         d_18_reqCMM_: AwsCryptographyMaterialProvidersTypes.ICryptographicMaterialsManager
         d_18_reqCMM_ = (d_17_valueOrError4_).Extract()
         d_19_encryptOutput_: Wrappers.Result
@@ -438,7 +439,7 @@ class default__:
         out12_ = (d_3_esdk_).Encrypt(AwsCryptographyEncryptionSdkTypes.EncryptInput_EncryptInput(d_0_asdf_, Wrappers.Option_Some(d_12_encryptionContext_), Wrappers.Option_Some(d_18_reqCMM_), Wrappers.Option_None(), Wrappers.Option_None(), Wrappers.Option_None()))
         d_19_encryptOutput_ = out12_
         if not((d_19_encryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(283,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(283,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_20_esdkCiphertext_: _dafny.Seq
         d_20_esdkCiphertext_ = ((d_19_encryptOutput_).value).ciphertext
         d_21_valueOrError5_: Wrappers.Result = None
@@ -446,91 +447,91 @@ class default__:
         out13_ = (d_5_mpl_).CreateDefaultCryptographicMaterialsManager(AwsCryptographyMaterialProvidersTypes.CreateDefaultCryptographicMaterialsManagerInput_CreateDefaultCryptographicMaterialsManagerInput(d_6_rsaKeyring_))
         d_21_valueOrError5_ = out13_
         if not(not((d_21_valueOrError5_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(287,22): " + _dafny.string_of(d_21_valueOrError5_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(287,18): " + _dafny.string_of(d_21_valueOrError5_))
         d_16_defaultCMM_ = (d_21_valueOrError5_).Extract()
         d_22_valueOrError6_: Wrappers.Result = None
         out14_: Wrappers.Result
         out14_ = (d_5_mpl_).CreateRequiredEncryptionContextCMM(AwsCryptographyMaterialProvidersTypes.CreateRequiredEncryptionContextCMMInput_CreateRequiredEncryptionContextCMMInput(Wrappers.Option_Some(d_16_defaultCMM_), Wrappers.Option_None(), d_14_requiredEncryptionContextKeys_))
         d_22_valueOrError6_ = out14_
         if not(not((d_22_valueOrError6_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(294,18): " + _dafny.string_of(d_22_valueOrError6_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(294,14): " + _dafny.string_of(d_22_valueOrError6_))
         d_18_reqCMM_ = (d_22_valueOrError6_).Extract()
         d_23_decryptOutput_: Wrappers.Result
         out15_: Wrappers.Result
         out15_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_20_esdkCiphertext_, Wrappers.Option_Some(d_18_reqCMM_), Wrappers.Option_None(), Wrappers.Option_Some(d_13_reproducedEncryptionContext_)))
         d_23_decryptOutput_ = out15_
         if not((d_23_decryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(312,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(312,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_24_cycledPlaintext_: _dafny.Seq
         d_24_cycledPlaintext_ = ((d_23_decryptOutput_).value).plaintext
         if not((d_24_cycledPlaintext_) == (d_0_asdf_)):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(314,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(314,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_25_valueOrError7_: Wrappers.Result = None
         out16_: Wrappers.Result
         out16_ = (d_5_mpl_).CreateDefaultCryptographicMaterialsManager(AwsCryptographyMaterialProvidersTypes.CreateDefaultCryptographicMaterialsManagerInput_CreateDefaultCryptographicMaterialsManagerInput(d_7_kmsKeyring_))
         d_25_valueOrError7_ = out16_
         if not(not((d_25_valueOrError7_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(318,22): " + _dafny.string_of(d_25_valueOrError7_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(318,18): " + _dafny.string_of(d_25_valueOrError7_))
         d_16_defaultCMM_ = (d_25_valueOrError7_).Extract()
         d_26_valueOrError8_: Wrappers.Result = None
         out17_: Wrappers.Result
         out17_ = (d_5_mpl_).CreateRequiredEncryptionContextCMM(AwsCryptographyMaterialProvidersTypes.CreateRequiredEncryptionContextCMMInput_CreateRequiredEncryptionContextCMMInput(Wrappers.Option_Some(d_16_defaultCMM_), Wrappers.Option_None(), d_14_requiredEncryptionContextKeys_))
         d_26_valueOrError8_ = out17_
         if not(not((d_26_valueOrError8_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(325,18): " + _dafny.string_of(d_26_valueOrError8_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(325,14): " + _dafny.string_of(d_26_valueOrError8_))
         d_18_reqCMM_ = (d_26_valueOrError8_).Extract()
         out18_: Wrappers.Result
         out18_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_20_esdkCiphertext_, Wrappers.Option_Some(d_18_reqCMM_), Wrappers.Option_None(), Wrappers.Option_Some(d_13_reproducedEncryptionContext_)))
         d_23_decryptOutput_ = out18_
         if not((d_23_decryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(343,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(343,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_24_cycledPlaintext_ = ((d_23_decryptOutput_).value).plaintext
         if not((d_24_cycledPlaintext_) == (d_0_asdf_)):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(345,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(345,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_27_valueOrError9_: Wrappers.Result = None
         out19_: Wrappers.Result
         out19_ = (d_5_mpl_).CreateDefaultCryptographicMaterialsManager(AwsCryptographyMaterialProvidersTypes.CreateDefaultCryptographicMaterialsManagerInput_CreateDefaultCryptographicMaterialsManagerInput(d_8_aesKeyring_))
         d_27_valueOrError9_ = out19_
         if not(not((d_27_valueOrError9_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(349,22): " + _dafny.string_of(d_27_valueOrError9_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(349,18): " + _dafny.string_of(d_27_valueOrError9_))
         d_16_defaultCMM_ = (d_27_valueOrError9_).Extract()
         d_28_valueOrError10_: Wrappers.Result = None
         out20_: Wrappers.Result
         out20_ = (d_5_mpl_).CreateRequiredEncryptionContextCMM(AwsCryptographyMaterialProvidersTypes.CreateRequiredEncryptionContextCMMInput_CreateRequiredEncryptionContextCMMInput(Wrappers.Option_Some(d_16_defaultCMM_), Wrappers.Option_None(), d_14_requiredEncryptionContextKeys_))
         d_28_valueOrError10_ = out20_
         if not(not((d_28_valueOrError10_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(356,18): " + _dafny.string_of(d_28_valueOrError10_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(356,14): " + _dafny.string_of(d_28_valueOrError10_))
         d_18_reqCMM_ = (d_28_valueOrError10_).Extract()
         out21_: Wrappers.Result
         out21_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_20_esdkCiphertext_, Wrappers.Option_Some(d_18_reqCMM_), Wrappers.Option_None(), Wrappers.Option_Some(d_13_reproducedEncryptionContext_)))
         d_23_decryptOutput_ = out21_
         if not((d_23_decryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(374,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(374,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_24_cycledPlaintext_ = ((d_23_decryptOutput_).value).plaintext
         if not((d_24_cycledPlaintext_) == (d_0_asdf_)):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(376,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(376,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_29_valueOrError11_: Wrappers.Result = None
         out22_: Wrappers.Result
         out22_ = (d_5_mpl_).CreateDefaultCryptographicMaterialsManager(AwsCryptographyMaterialProvidersTypes.CreateDefaultCryptographicMaterialsManagerInput_CreateDefaultCryptographicMaterialsManagerInput(d_9_hKeyring_))
         d_29_valueOrError11_ = out22_
         if not(not((d_29_valueOrError11_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(379,22): " + _dafny.string_of(d_29_valueOrError11_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(379,18): " + _dafny.string_of(d_29_valueOrError11_))
         d_16_defaultCMM_ = (d_29_valueOrError11_).Extract()
         d_30_valueOrError12_: Wrappers.Result = None
         out23_: Wrappers.Result
         out23_ = (d_5_mpl_).CreateRequiredEncryptionContextCMM(AwsCryptographyMaterialProvidersTypes.CreateRequiredEncryptionContextCMMInput_CreateRequiredEncryptionContextCMMInput(Wrappers.Option_Some(d_16_defaultCMM_), Wrappers.Option_None(), d_14_requiredEncryptionContextKeys_))
         d_30_valueOrError12_ = out23_
         if not(not((d_30_valueOrError12_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(386,18): " + _dafny.string_of(d_30_valueOrError12_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(386,14): " + _dafny.string_of(d_30_valueOrError12_))
         d_18_reqCMM_ = (d_30_valueOrError12_).Extract()
         out24_: Wrappers.Result
         out24_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_20_esdkCiphertext_, Wrappers.Option_Some(d_18_reqCMM_), Wrappers.Option_None(), Wrappers.Option_Some(d_13_reproducedEncryptionContext_)))
         d_23_decryptOutput_ = out24_
         if not((d_23_decryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(404,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(404,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_24_cycledPlaintext_ = ((d_23_decryptOutput_).value).plaintext
         if not((d_24_cycledPlaintext_) == (d_0_asdf_)):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(406,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(406,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
 
     @staticmethod
     def TestRemoveOnDecryptIsBackwardsCompatibleHappyCase():
@@ -543,7 +544,7 @@ class default__:
         out0_ = ESDK.default__.ESDK(d_1_defaultConfig_)
         d_2_valueOrError0_ = out0_
         if not(not((d_2_valueOrError0_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(415,20): " + _dafny.string_of(d_2_valueOrError0_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(415,16): " + _dafny.string_of(d_2_valueOrError0_))
         d_3_esdk_: ESDK.ESDKClient
         d_3_esdk_ = (d_2_valueOrError0_).Extract()
         d_4_valueOrError1_: Wrappers.Result = None
@@ -551,7 +552,7 @@ class default__:
         out1_ = MaterialProviders.default__.MaterialProviders(MaterialProviders.default__.DefaultMaterialProvidersConfig())
         d_4_valueOrError1_ = out1_
         if not(not((d_4_valueOrError1_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(416,19): " + _dafny.string_of(d_4_valueOrError1_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(416,15): " + _dafny.string_of(d_4_valueOrError1_))
         d_5_mpl_: MaterialProviders.MaterialProvidersClient
         d_5_mpl_ = (d_4_valueOrError1_).Extract()
         d_6_rsaKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
@@ -575,7 +576,7 @@ class default__:
         out6_ = (d_5_mpl_).CreateMultiKeyring(AwsCryptographyMaterialProvidersTypes.CreateMultiKeyringInput_CreateMultiKeyringInput(Wrappers.Option_Some(d_8_aesKeyring_), _dafny.Seq([d_6_rsaKeyring_, d_7_kmsKeyring_, d_9_hKeyring_])))
         d_10_valueOrError2_ = out6_
         if not(not((d_10_valueOrError2_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(424,28): " + _dafny.string_of(d_10_valueOrError2_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(424,24): " + _dafny.string_of(d_10_valueOrError2_))
         d_11_multiKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
         d_11_multiKeyring_ = (d_10_valueOrError2_).Extract()
         d_12_encryptionContext_: _dafny.Map
@@ -595,7 +596,7 @@ class default__:
         out10_ = (d_5_mpl_).CreateDefaultCryptographicMaterialsManager(AwsCryptographyMaterialProvidersTypes.CreateDefaultCryptographicMaterialsManagerInput_CreateDefaultCryptographicMaterialsManagerInput(d_11_multiKeyring_))
         d_15_valueOrError3_ = out10_
         if not(not((d_15_valueOrError3_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(439,26): " + _dafny.string_of(d_15_valueOrError3_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(439,22): " + _dafny.string_of(d_15_valueOrError3_))
         d_16_defaultCMM_: AwsCryptographyMaterialProvidersTypes.ICryptographicMaterialsManager
         d_16_defaultCMM_ = (d_15_valueOrError3_).Extract()
         d_17_encryptOutput_: Wrappers.Result
@@ -603,7 +604,7 @@ class default__:
         out11_ = (d_3_esdk_).Encrypt(AwsCryptographyEncryptionSdkTypes.EncryptInput_EncryptInput(d_0_asdf_, Wrappers.Option_Some(d_12_encryptionContext_), Wrappers.Option_Some(d_16_defaultCMM_), Wrappers.Option_None(), Wrappers.Option_None(), Wrappers.Option_None()))
         d_17_encryptOutput_ = out11_
         if not((d_17_encryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(455,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(455,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_18_esdkCiphertext_: _dafny.Seq
         d_18_esdkCiphertext_ = ((d_17_encryptOutput_).value).ciphertext
         d_19_valueOrError4_: Wrappers.Result = None
@@ -611,14 +612,14 @@ class default__:
         out12_ = (d_5_mpl_).CreateDefaultCryptographicMaterialsManager(AwsCryptographyMaterialProvidersTypes.CreateDefaultCryptographicMaterialsManagerInput_CreateDefaultCryptographicMaterialsManagerInput(d_6_rsaKeyring_))
         d_19_valueOrError4_ = out12_
         if not(not((d_19_valueOrError4_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(459,22): " + _dafny.string_of(d_19_valueOrError4_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(459,18): " + _dafny.string_of(d_19_valueOrError4_))
         d_16_defaultCMM_ = (d_19_valueOrError4_).Extract()
         d_20_valueOrError5_: Wrappers.Result = None
         out13_: Wrappers.Result
         out13_ = (d_5_mpl_).CreateRequiredEncryptionContextCMM(AwsCryptographyMaterialProvidersTypes.CreateRequiredEncryptionContextCMMInput_CreateRequiredEncryptionContextCMMInput(Wrappers.Option_Some(d_16_defaultCMM_), Wrappers.Option_None(), d_14_requiredEncryptionContextKeys_))
         d_20_valueOrError5_ = out13_
         if not(not((d_20_valueOrError5_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(466,22): " + _dafny.string_of(d_20_valueOrError5_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(466,18): " + _dafny.string_of(d_20_valueOrError5_))
         d_21_reqCMM_: AwsCryptographyMaterialProvidersTypes.ICryptographicMaterialsManager
         d_21_reqCMM_ = (d_20_valueOrError5_).Extract()
         d_22_decryptOutput_: Wrappers.Result
@@ -626,77 +627,77 @@ class default__:
         out14_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_18_esdkCiphertext_, Wrappers.Option_Some(d_21_reqCMM_), Wrappers.Option_None(), Wrappers.Option_Some(d_13_reproducedEncryptionContext_)))
         d_22_decryptOutput_ = out14_
         if not((d_22_decryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(484,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(484,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_23_cycledPlaintext_: _dafny.Seq
         d_23_cycledPlaintext_ = ((d_22_decryptOutput_).value).plaintext
         if not((d_23_cycledPlaintext_) == (d_0_asdf_)):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(486,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(486,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_24_valueOrError6_: Wrappers.Result = None
         out15_: Wrappers.Result
         out15_ = (d_5_mpl_).CreateDefaultCryptographicMaterialsManager(AwsCryptographyMaterialProvidersTypes.CreateDefaultCryptographicMaterialsManagerInput_CreateDefaultCryptographicMaterialsManagerInput(d_7_kmsKeyring_))
         d_24_valueOrError6_ = out15_
         if not(not((d_24_valueOrError6_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(490,22): " + _dafny.string_of(d_24_valueOrError6_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(490,18): " + _dafny.string_of(d_24_valueOrError6_))
         d_16_defaultCMM_ = (d_24_valueOrError6_).Extract()
         d_25_valueOrError7_: Wrappers.Result = None
         out16_: Wrappers.Result
         out16_ = (d_5_mpl_).CreateRequiredEncryptionContextCMM(AwsCryptographyMaterialProvidersTypes.CreateRequiredEncryptionContextCMMInput_CreateRequiredEncryptionContextCMMInput(Wrappers.Option_Some(d_16_defaultCMM_), Wrappers.Option_None(), d_14_requiredEncryptionContextKeys_))
         d_25_valueOrError7_ = out16_
         if not(not((d_25_valueOrError7_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(497,18): " + _dafny.string_of(d_25_valueOrError7_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(497,14): " + _dafny.string_of(d_25_valueOrError7_))
         d_21_reqCMM_ = (d_25_valueOrError7_).Extract()
         out17_: Wrappers.Result
         out17_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_18_esdkCiphertext_, Wrappers.Option_Some(d_21_reqCMM_), Wrappers.Option_None(), Wrappers.Option_Some(d_13_reproducedEncryptionContext_)))
         d_22_decryptOutput_ = out17_
         if not((d_22_decryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(515,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(515,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_23_cycledPlaintext_ = ((d_22_decryptOutput_).value).plaintext
         if not((d_23_cycledPlaintext_) == (d_0_asdf_)):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(517,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(517,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_26_valueOrError8_: Wrappers.Result = None
         out18_: Wrappers.Result
         out18_ = (d_5_mpl_).CreateDefaultCryptographicMaterialsManager(AwsCryptographyMaterialProvidersTypes.CreateDefaultCryptographicMaterialsManagerInput_CreateDefaultCryptographicMaterialsManagerInput(d_8_aesKeyring_))
         d_26_valueOrError8_ = out18_
         if not(not((d_26_valueOrError8_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(521,22): " + _dafny.string_of(d_26_valueOrError8_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(521,18): " + _dafny.string_of(d_26_valueOrError8_))
         d_16_defaultCMM_ = (d_26_valueOrError8_).Extract()
         d_27_valueOrError9_: Wrappers.Result = None
         out19_: Wrappers.Result
         out19_ = (d_5_mpl_).CreateRequiredEncryptionContextCMM(AwsCryptographyMaterialProvidersTypes.CreateRequiredEncryptionContextCMMInput_CreateRequiredEncryptionContextCMMInput(Wrappers.Option_Some(d_16_defaultCMM_), Wrappers.Option_None(), d_14_requiredEncryptionContextKeys_))
         d_27_valueOrError9_ = out19_
         if not(not((d_27_valueOrError9_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(528,18): " + _dafny.string_of(d_27_valueOrError9_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(528,14): " + _dafny.string_of(d_27_valueOrError9_))
         d_21_reqCMM_ = (d_27_valueOrError9_).Extract()
         out20_: Wrappers.Result
         out20_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_18_esdkCiphertext_, Wrappers.Option_Some(d_21_reqCMM_), Wrappers.Option_None(), Wrappers.Option_Some(d_13_reproducedEncryptionContext_)))
         d_22_decryptOutput_ = out20_
         if not((d_22_decryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(546,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(546,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_23_cycledPlaintext_ = ((d_22_decryptOutput_).value).plaintext
         if not((d_23_cycledPlaintext_) == (d_0_asdf_)):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(548,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(548,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_28_valueOrError10_: Wrappers.Result = None
         out21_: Wrappers.Result
         out21_ = (d_5_mpl_).CreateDefaultCryptographicMaterialsManager(AwsCryptographyMaterialProvidersTypes.CreateDefaultCryptographicMaterialsManagerInput_CreateDefaultCryptographicMaterialsManagerInput(d_9_hKeyring_))
         d_28_valueOrError10_ = out21_
         if not(not((d_28_valueOrError10_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(551,22): " + _dafny.string_of(d_28_valueOrError10_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(551,18): " + _dafny.string_of(d_28_valueOrError10_))
         d_16_defaultCMM_ = (d_28_valueOrError10_).Extract()
         d_29_valueOrError11_: Wrappers.Result = None
         out22_: Wrappers.Result
         out22_ = (d_5_mpl_).CreateRequiredEncryptionContextCMM(AwsCryptographyMaterialProvidersTypes.CreateRequiredEncryptionContextCMMInput_CreateRequiredEncryptionContextCMMInput(Wrappers.Option_Some(d_16_defaultCMM_), Wrappers.Option_None(), d_14_requiredEncryptionContextKeys_))
         d_29_valueOrError11_ = out22_
         if not(not((d_29_valueOrError11_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(558,18): " + _dafny.string_of(d_29_valueOrError11_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(558,14): " + _dafny.string_of(d_29_valueOrError11_))
         d_21_reqCMM_ = (d_29_valueOrError11_).Extract()
         out23_: Wrappers.Result
         out23_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_18_esdkCiphertext_, Wrappers.Option_Some(d_21_reqCMM_), Wrappers.Option_None(), Wrappers.Option_Some(d_13_reproducedEncryptionContext_)))
         d_22_decryptOutput_ = out23_
         if not((d_22_decryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(576,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(576,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_23_cycledPlaintext_ = ((d_22_decryptOutput_).value).plaintext
         if not((d_23_cycledPlaintext_) == (d_0_asdf_)):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(578,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(578,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
 
     @staticmethod
     def TestDifferentECOnDecryptFailure():
@@ -709,7 +710,7 @@ class default__:
         out0_ = ESDK.default__.ESDK(d_1_defaultConfig_)
         d_2_valueOrError0_ = out0_
         if not(not((d_2_valueOrError0_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(590,20): " + _dafny.string_of(d_2_valueOrError0_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(590,16): " + _dafny.string_of(d_2_valueOrError0_))
         d_3_esdk_: ESDK.ESDKClient
         d_3_esdk_ = (d_2_valueOrError0_).Extract()
         d_4_valueOrError1_: Wrappers.Result = None
@@ -717,7 +718,7 @@ class default__:
         out1_ = MaterialProviders.default__.MaterialProviders(MaterialProviders.default__.DefaultMaterialProvidersConfig())
         d_4_valueOrError1_ = out1_
         if not(not((d_4_valueOrError1_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(591,19): " + _dafny.string_of(d_4_valueOrError1_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(591,15): " + _dafny.string_of(d_4_valueOrError1_))
         d_5_mpl_: MaterialProviders.MaterialProvidersClient
         d_5_mpl_ = (d_4_valueOrError1_).Extract()
         d_6_rsaKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
@@ -741,7 +742,7 @@ class default__:
         out6_ = (d_5_mpl_).CreateMultiKeyring(AwsCryptographyMaterialProvidersTypes.CreateMultiKeyringInput_CreateMultiKeyringInput(Wrappers.Option_Some(d_8_aesKeyring_), _dafny.Seq([d_6_rsaKeyring_, d_7_kmsKeyring_, d_9_hKeyring_])))
         d_10_valueOrError2_ = out6_
         if not(not((d_10_valueOrError2_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(599,28): " + _dafny.string_of(d_10_valueOrError2_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(599,24): " + _dafny.string_of(d_10_valueOrError2_))
         d_11_multiKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
         d_11_multiKeyring_ = (d_10_valueOrError2_).Extract()
         d_12_encryptionContext_: _dafny.Map
@@ -761,7 +762,7 @@ class default__:
         out10_ = (d_3_esdk_).Encrypt(AwsCryptographyEncryptionSdkTypes.EncryptInput_EncryptInput(d_0_asdf_, Wrappers.Option_Some(d_12_encryptionContext_), Wrappers.Option_None(), Wrappers.Option_Some(d_11_multiKeyring_), Wrappers.Option_None(), Wrappers.Option_None()))
         d_15_encryptOutput_ = out10_
         if not((d_15_encryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(623,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(623,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_16_esdkCiphertext_: _dafny.Seq
         d_16_esdkCiphertext_ = ((d_15_encryptOutput_).value).ciphertext
         d_17_decryptOutput_: Wrappers.Result
@@ -769,42 +770,42 @@ class default__:
         out11_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_16_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_6_rsaKeyring_), Wrappers.Option_Some(d_13_reproducedAdditionalEncryptionContext_)))
         d_17_decryptOutput_ = out11_
         if not((d_17_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(634,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(634,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out12_: Wrappers.Result
         out12_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_16_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_6_rsaKeyring_), Wrappers.Option_Some(d_14_reproducedMismatchedEncryptionContext_)))
         d_17_decryptOutput_ = out12_
         if not((d_17_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(643,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(643,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out13_: Wrappers.Result
         out13_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_16_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_7_kmsKeyring_), Wrappers.Option_Some(d_13_reproducedAdditionalEncryptionContext_)))
         d_17_decryptOutput_ = out13_
         if not((d_17_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(653,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(653,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out14_: Wrappers.Result
         out14_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_16_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_7_kmsKeyring_), Wrappers.Option_Some(d_14_reproducedMismatchedEncryptionContext_)))
         d_17_decryptOutput_ = out14_
         if not((d_17_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(662,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(662,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out15_: Wrappers.Result
         out15_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_16_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_8_aesKeyring_), Wrappers.Option_Some(d_13_reproducedAdditionalEncryptionContext_)))
         d_17_decryptOutput_ = out15_
         if not((d_17_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(672,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(672,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out16_: Wrappers.Result
         out16_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_16_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_8_aesKeyring_), Wrappers.Option_Some(d_14_reproducedMismatchedEncryptionContext_)))
         d_17_decryptOutput_ = out16_
         if not((d_17_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(681,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(681,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out17_: Wrappers.Result
         out17_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_16_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_9_hKeyring_), Wrappers.Option_Some(d_13_reproducedAdditionalEncryptionContext_)))
         d_17_decryptOutput_ = out17_
         if not((d_17_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(691,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(691,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out18_: Wrappers.Result
         out18_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_16_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_9_hKeyring_), Wrappers.Option_Some(d_14_reproducedMismatchedEncryptionContext_)))
         d_17_decryptOutput_ = out18_
         if not((d_17_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(700,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(700,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
 
     @staticmethod
     def TestRemoveECAndNotSupplyOnDecryptFailure():
@@ -817,7 +818,7 @@ class default__:
         out0_ = ESDK.default__.ESDK(d_1_defaultConfig_)
         d_2_valueOrError0_ = out0_
         if not(not((d_2_valueOrError0_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(715,20): " + _dafny.string_of(d_2_valueOrError0_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(715,16): " + _dafny.string_of(d_2_valueOrError0_))
         d_3_esdk_: ESDK.ESDKClient
         d_3_esdk_ = (d_2_valueOrError0_).Extract()
         d_4_valueOrError1_: Wrappers.Result = None
@@ -825,7 +826,7 @@ class default__:
         out1_ = MaterialProviders.default__.MaterialProviders(MaterialProviders.default__.DefaultMaterialProvidersConfig())
         d_4_valueOrError1_ = out1_
         if not(not((d_4_valueOrError1_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(716,19): " + _dafny.string_of(d_4_valueOrError1_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(716,15): " + _dafny.string_of(d_4_valueOrError1_))
         d_5_mpl_: MaterialProviders.MaterialProvidersClient
         d_5_mpl_ = (d_4_valueOrError1_).Extract()
         d_6_rsaKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
@@ -849,7 +850,7 @@ class default__:
         out6_ = (d_5_mpl_).CreateMultiKeyring(AwsCryptographyMaterialProvidersTypes.CreateMultiKeyringInput_CreateMultiKeyringInput(Wrappers.Option_Some(d_8_aesKeyring_), _dafny.Seq([d_6_rsaKeyring_, d_7_kmsKeyring_, d_9_hKeyring_])))
         d_10_valueOrError2_ = out6_
         if not(not((d_10_valueOrError2_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(724,28): " + _dafny.string_of(d_10_valueOrError2_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(724,24): " + _dafny.string_of(d_10_valueOrError2_))
         d_11_multiKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
         d_11_multiKeyring_ = (d_10_valueOrError2_).Extract()
         d_12_encryptionContext_: _dafny.Map
@@ -865,7 +866,7 @@ class default__:
         out9_ = (d_5_mpl_).CreateDefaultCryptographicMaterialsManager(AwsCryptographyMaterialProvidersTypes.CreateDefaultCryptographicMaterialsManagerInput_CreateDefaultCryptographicMaterialsManagerInput(d_11_multiKeyring_))
         d_14_valueOrError3_ = out9_
         if not(not((d_14_valueOrError3_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(736,26): " + _dafny.string_of(d_14_valueOrError3_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(736,22): " + _dafny.string_of(d_14_valueOrError3_))
         d_15_defaultCMM_: AwsCryptographyMaterialProvidersTypes.ICryptographicMaterialsManager
         d_15_defaultCMM_ = (d_14_valueOrError3_).Extract()
         d_16_valueOrError4_: Wrappers.Result = None
@@ -873,7 +874,7 @@ class default__:
         out10_ = (d_5_mpl_).CreateRequiredEncryptionContextCMM(AwsCryptographyMaterialProvidersTypes.CreateRequiredEncryptionContextCMMInput_CreateRequiredEncryptionContextCMMInput(Wrappers.Option_Some(d_15_defaultCMM_), Wrappers.Option_None(), d_13_requiredECKeys_))
         d_16_valueOrError4_ = out10_
         if not(not((d_16_valueOrError4_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(743,22): " + _dafny.string_of(d_16_valueOrError4_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(743,18): " + _dafny.string_of(d_16_valueOrError4_))
         d_17_reqCMM_: AwsCryptographyMaterialProvidersTypes.ICryptographicMaterialsManager
         d_17_reqCMM_ = (d_16_valueOrError4_).Extract()
         d_18_encryptOutput_: Wrappers.Result
@@ -881,7 +882,7 @@ class default__:
         out11_ = (d_3_esdk_).Encrypt(AwsCryptographyEncryptionSdkTypes.EncryptInput_EncryptInput(d_0_asdf_, Wrappers.Option_Some(d_12_encryptionContext_), Wrappers.Option_Some(d_17_reqCMM_), Wrappers.Option_None(), Wrappers.Option_None(), Wrappers.Option_None()))
         d_18_encryptOutput_ = out11_
         if not((d_18_encryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(762,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(762,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_19_esdkCiphertext_: _dafny.Seq
         d_19_esdkCiphertext_ = ((d_18_encryptOutput_).value).ciphertext
         d_20_decryptOutput_: Wrappers.Result
@@ -889,22 +890,22 @@ class default__:
         out12_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_19_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_6_rsaKeyring_), Wrappers.Option_None()))
         d_20_decryptOutput_ = out12_
         if not((d_20_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(773,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(773,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out13_: Wrappers.Result
         out13_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_19_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_7_kmsKeyring_), Wrappers.Option_None()))
         d_20_decryptOutput_ = out13_
         if not((d_20_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(783,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(783,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out14_: Wrappers.Result
         out14_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_19_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_8_aesKeyring_), Wrappers.Option_None()))
         d_20_decryptOutput_ = out14_
         if not((d_20_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(793,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(793,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out15_: Wrappers.Result
         out15_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_19_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_9_hKeyring_), Wrappers.Option_None()))
         d_20_decryptOutput_ = out15_
         if not((d_20_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(803,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(803,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
 
     @staticmethod
     def TestRemoveECAndSupplyMismatchedReprECFailure():
@@ -917,7 +918,7 @@ class default__:
         out0_ = ESDK.default__.ESDK(d_1_defaultConfig_)
         d_2_valueOrError0_ = out0_
         if not(not((d_2_valueOrError0_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(818,20): " + _dafny.string_of(d_2_valueOrError0_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(818,16): " + _dafny.string_of(d_2_valueOrError0_))
         d_3_esdk_: ESDK.ESDKClient
         d_3_esdk_ = (d_2_valueOrError0_).Extract()
         d_4_valueOrError1_: Wrappers.Result = None
@@ -925,7 +926,7 @@ class default__:
         out1_ = MaterialProviders.default__.MaterialProviders(MaterialProviders.default__.DefaultMaterialProvidersConfig())
         d_4_valueOrError1_ = out1_
         if not(not((d_4_valueOrError1_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(819,19): " + _dafny.string_of(d_4_valueOrError1_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(819,15): " + _dafny.string_of(d_4_valueOrError1_))
         d_5_mpl_: MaterialProviders.MaterialProvidersClient
         d_5_mpl_ = (d_4_valueOrError1_).Extract()
         d_6_rsaKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
@@ -949,7 +950,7 @@ class default__:
         out6_ = (d_5_mpl_).CreateMultiKeyring(AwsCryptographyMaterialProvidersTypes.CreateMultiKeyringInput_CreateMultiKeyringInput(Wrappers.Option_Some(d_8_aesKeyring_), _dafny.Seq([d_6_rsaKeyring_, d_7_kmsKeyring_, d_9_hKeyring_])))
         d_10_valueOrError2_ = out6_
         if not(not((d_10_valueOrError2_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(827,28): " + _dafny.string_of(d_10_valueOrError2_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(827,24): " + _dafny.string_of(d_10_valueOrError2_))
         d_11_multiKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
         d_11_multiKeyring_ = (d_10_valueOrError2_).Extract()
         d_12_encryptionContext_: _dafny.Map
@@ -969,7 +970,7 @@ class default__:
         out10_ = (d_5_mpl_).CreateDefaultCryptographicMaterialsManager(AwsCryptographyMaterialProvidersTypes.CreateDefaultCryptographicMaterialsManagerInput_CreateDefaultCryptographicMaterialsManagerInput(d_11_multiKeyring_))
         d_15_valueOrError3_ = out10_
         if not(not((d_15_valueOrError3_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(841,26): " + _dafny.string_of(d_15_valueOrError3_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(841,22): " + _dafny.string_of(d_15_valueOrError3_))
         d_16_defaultCMM_: AwsCryptographyMaterialProvidersTypes.ICryptographicMaterialsManager
         d_16_defaultCMM_ = (d_15_valueOrError3_).Extract()
         d_17_valueOrError4_: Wrappers.Result = None
@@ -977,7 +978,7 @@ class default__:
         out11_ = (d_5_mpl_).CreateRequiredEncryptionContextCMM(AwsCryptographyMaterialProvidersTypes.CreateRequiredEncryptionContextCMMInput_CreateRequiredEncryptionContextCMMInput(Wrappers.Option_Some(d_16_defaultCMM_), Wrappers.Option_None(), d_13_requiredECKeys_))
         d_17_valueOrError4_ = out11_
         if not(not((d_17_valueOrError4_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(848,22): " + _dafny.string_of(d_17_valueOrError4_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(848,18): " + _dafny.string_of(d_17_valueOrError4_))
         d_18_reqCMM_: AwsCryptographyMaterialProvidersTypes.ICryptographicMaterialsManager
         d_18_reqCMM_ = (d_17_valueOrError4_).Extract()
         d_19_encryptOutput_: Wrappers.Result
@@ -985,7 +986,7 @@ class default__:
         out12_ = (d_3_esdk_).Encrypt(AwsCryptographyEncryptionSdkTypes.EncryptInput_EncryptInput(d_0_asdf_, Wrappers.Option_Some(d_12_encryptionContext_), Wrappers.Option_Some(d_18_reqCMM_), Wrappers.Option_None(), Wrappers.Option_None(), Wrappers.Option_None()))
         d_19_encryptOutput_ = out12_
         if not((d_19_encryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(867,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(867,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_20_esdkCiphertext_: _dafny.Seq
         d_20_esdkCiphertext_ = ((d_19_encryptOutput_).value).ciphertext
         d_21_decryptOutput_: Wrappers.Result
@@ -993,22 +994,22 @@ class default__:
         out13_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_20_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_6_rsaKeyring_), Wrappers.Option_Some(d_14_mismatchedReproducedEncryptionContext_)))
         d_21_decryptOutput_ = out13_
         if not((d_21_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(878,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(878,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out14_: Wrappers.Result
         out14_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_20_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_7_kmsKeyring_), Wrappers.Option_Some(d_14_mismatchedReproducedEncryptionContext_)))
         d_21_decryptOutput_ = out14_
         if not((d_21_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(888,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(888,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out15_: Wrappers.Result
         out15_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_20_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_8_aesKeyring_), Wrappers.Option_Some(d_14_mismatchedReproducedEncryptionContext_)))
         d_21_decryptOutput_ = out15_
         if not((d_21_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(898,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(898,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out16_: Wrappers.Result
         out16_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_20_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_9_hKeyring_), Wrappers.Option_Some(d_14_mismatchedReproducedEncryptionContext_)))
         d_21_decryptOutput_ = out16_
         if not((d_21_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(908,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(908,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
 
     @staticmethod
     def TestRemoveECAndSupplyWithMissingRequiredValueDecryptFailure():
@@ -1021,7 +1022,7 @@ class default__:
         out0_ = ESDK.default__.ESDK(d_1_defaultConfig_)
         d_2_valueOrError0_ = out0_
         if not(not((d_2_valueOrError0_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(922,20): " + _dafny.string_of(d_2_valueOrError0_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(922,16): " + _dafny.string_of(d_2_valueOrError0_))
         d_3_esdk_: ESDK.ESDKClient
         d_3_esdk_ = (d_2_valueOrError0_).Extract()
         d_4_valueOrError1_: Wrappers.Result = None
@@ -1029,7 +1030,7 @@ class default__:
         out1_ = MaterialProviders.default__.MaterialProviders(MaterialProviders.default__.DefaultMaterialProvidersConfig())
         d_4_valueOrError1_ = out1_
         if not(not((d_4_valueOrError1_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(923,19): " + _dafny.string_of(d_4_valueOrError1_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(923,15): " + _dafny.string_of(d_4_valueOrError1_))
         d_5_mpl_: MaterialProviders.MaterialProvidersClient
         d_5_mpl_ = (d_4_valueOrError1_).Extract()
         d_6_rsaKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
@@ -1053,7 +1054,7 @@ class default__:
         out6_ = (d_5_mpl_).CreateMultiKeyring(AwsCryptographyMaterialProvidersTypes.CreateMultiKeyringInput_CreateMultiKeyringInput(Wrappers.Option_Some(d_8_aesKeyring_), _dafny.Seq([d_6_rsaKeyring_, d_7_kmsKeyring_, d_9_hKeyring_])))
         d_10_valueOrError2_ = out6_
         if not(not((d_10_valueOrError2_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(931,28): " + _dafny.string_of(d_10_valueOrError2_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(931,24): " + _dafny.string_of(d_10_valueOrError2_))
         d_11_multiKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
         d_11_multiKeyring_ = (d_10_valueOrError2_).Extract()
         d_12_encryptionContext_: _dafny.Map
@@ -1073,7 +1074,7 @@ class default__:
         out10_ = (d_5_mpl_).CreateDefaultCryptographicMaterialsManager(AwsCryptographyMaterialProvidersTypes.CreateDefaultCryptographicMaterialsManagerInput_CreateDefaultCryptographicMaterialsManagerInput(d_11_multiKeyring_))
         d_15_valueOrError3_ = out10_
         if not(not((d_15_valueOrError3_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(945,26): " + _dafny.string_of(d_15_valueOrError3_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(945,22): " + _dafny.string_of(d_15_valueOrError3_))
         d_16_defaultCMM_: AwsCryptographyMaterialProvidersTypes.ICryptographicMaterialsManager
         d_16_defaultCMM_ = (d_15_valueOrError3_).Extract()
         d_17_valueOrError4_: Wrappers.Result = None
@@ -1081,7 +1082,7 @@ class default__:
         out11_ = (d_5_mpl_).CreateRequiredEncryptionContextCMM(AwsCryptographyMaterialProvidersTypes.CreateRequiredEncryptionContextCMMInput_CreateRequiredEncryptionContextCMMInput(Wrappers.Option_Some(d_16_defaultCMM_), Wrappers.Option_None(), d_13_requiredECKeys_))
         d_17_valueOrError4_ = out11_
         if not(not((d_17_valueOrError4_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(952,22): " + _dafny.string_of(d_17_valueOrError4_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(952,18): " + _dafny.string_of(d_17_valueOrError4_))
         d_18_reqCMM_: AwsCryptographyMaterialProvidersTypes.ICryptographicMaterialsManager
         d_18_reqCMM_ = (d_17_valueOrError4_).Extract()
         d_19_encryptOutput_: Wrappers.Result
@@ -1089,7 +1090,7 @@ class default__:
         out12_ = (d_3_esdk_).Encrypt(AwsCryptographyEncryptionSdkTypes.EncryptInput_EncryptInput(d_0_asdf_, Wrappers.Option_Some(d_12_encryptionContext_), Wrappers.Option_Some(d_18_reqCMM_), Wrappers.Option_None(), Wrappers.Option_None(), Wrappers.Option_None()))
         d_19_encryptOutput_ = out12_
         if not((d_19_encryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(971,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(971,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         d_20_esdkCiphertext_: _dafny.Seq
         d_20_esdkCiphertext_ = ((d_19_encryptOutput_).value).ciphertext
         d_21_decryptOutput_: Wrappers.Result
@@ -1097,22 +1098,22 @@ class default__:
         out13_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_20_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_6_rsaKeyring_), Wrappers.Option_Some(d_14_droppedRequiredKeyEncryptionContext_)))
         d_21_decryptOutput_ = out13_
         if not((d_21_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(982,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(982,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out14_: Wrappers.Result
         out14_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_20_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_7_kmsKeyring_), Wrappers.Option_Some(d_14_droppedRequiredKeyEncryptionContext_)))
         d_21_decryptOutput_ = out14_
         if not((d_21_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(992,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(992,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out15_: Wrappers.Result
         out15_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_20_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_8_aesKeyring_), Wrappers.Option_Some(d_14_droppedRequiredKeyEncryptionContext_)))
         d_21_decryptOutput_ = out15_
         if not((d_21_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1002,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1002,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
         out16_: Wrappers.Result
         out16_ = (d_3_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_20_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_9_hKeyring_), Wrappers.Option_Some(d_14_droppedRequiredKeyEncryptionContext_)))
         d_21_decryptOutput_ = out16_
         if not((d_21_decryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1012,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1012,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
 
     @staticmethod
     def TestReservedEncryptionContextKeyFailure():
@@ -1125,7 +1126,7 @@ class default__:
         out0_ = ESDK.default__.ESDK(d_1_defaultConfig_)
         d_2_valueOrError0_ = out0_
         if not(not((d_2_valueOrError0_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1022,20): " + _dafny.string_of(d_2_valueOrError0_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1022,16): " + _dafny.string_of(d_2_valueOrError0_))
         d_3_esdk_: ESDK.ESDKClient
         d_3_esdk_ = (d_2_valueOrError0_).Extract()
         d_4_valueOrError1_: Wrappers.Result = None
@@ -1133,7 +1134,7 @@ class default__:
         out1_ = MaterialProviders.default__.MaterialProviders(MaterialProviders.default__.DefaultMaterialProvidersConfig())
         d_4_valueOrError1_ = out1_
         if not(not((d_4_valueOrError1_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1023,19): " + _dafny.string_of(d_4_valueOrError1_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1023,15): " + _dafny.string_of(d_4_valueOrError1_))
         d_5_mpl_: MaterialProviders.MaterialProvidersClient
         d_5_mpl_ = (d_4_valueOrError1_).Extract()
         d_6_rsaKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
@@ -1151,7 +1152,7 @@ class default__:
         out4_ = (d_5_mpl_).CreateDefaultCryptographicMaterialsManager(AwsCryptographyMaterialProvidersTypes.CreateDefaultCryptographicMaterialsManagerInput_CreateDefaultCryptographicMaterialsManagerInput(d_6_rsaKeyring_))
         d_9_valueOrError2_ = out4_
         if not(not((d_9_valueOrError2_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1031,26): " + _dafny.string_of(d_9_valueOrError2_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1031,22): " + _dafny.string_of(d_9_valueOrError2_))
         d_10_defaultCMM_: AwsCryptographyMaterialProvidersTypes.ICryptographicMaterialsManager
         d_10_defaultCMM_ = (d_9_valueOrError2_).Extract()
         d_11_valueOrError3_: Wrappers.Result = None
@@ -1159,7 +1160,7 @@ class default__:
         out5_ = (d_5_mpl_).CreateRequiredEncryptionContextCMM(AwsCryptographyMaterialProvidersTypes.CreateRequiredEncryptionContextCMMInput_CreateRequiredEncryptionContextCMMInput(Wrappers.Option_Some(d_10_defaultCMM_), Wrappers.Option_None(), d_8_requiredECKeys_))
         d_11_valueOrError3_ = out5_
         if not(not((d_11_valueOrError3_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1041,22): " + _dafny.string_of(d_11_valueOrError3_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1041,18): " + _dafny.string_of(d_11_valueOrError3_))
         d_12_reqCMM_: AwsCryptographyMaterialProvidersTypes.ICryptographicMaterialsManager
         d_12_reqCMM_ = (d_11_valueOrError3_).Extract()
         d_13_encryptOutput_: Wrappers.Result
@@ -1167,7 +1168,7 @@ class default__:
         out6_ = (d_3_esdk_).Encrypt(AwsCryptographyEncryptionSdkTypes.EncryptInput_EncryptInput(d_0_asdf_, Wrappers.Option_Some(d_7_encryptionContext_), Wrappers.Option_Some(d_12_reqCMM_), Wrappers.Option_None(), Wrappers.Option_None(), Wrappers.Option_None()))
         d_13_encryptOutput_ = out6_
         if not((d_13_encryptOutput_).is_Failure):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1060,8): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1060,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
 
     @staticmethod
     def GetHierarchicalKeyring():
@@ -1181,7 +1182,7 @@ class default__:
         out0_ = MaterialProviders.default__.MaterialProviders(MaterialProviders.default__.DefaultMaterialProvidersConfig())
         d_2_valueOrError0_ = out0_
         if not(not((d_2_valueOrError0_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1070,19): " + _dafny.string_of(d_2_valueOrError0_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1070,15): " + _dafny.string_of(d_2_valueOrError0_))
         d_3_mpl_: MaterialProviders.MaterialProvidersClient
         d_3_mpl_ = (d_2_valueOrError0_).Extract()
         d_4_valueOrError1_: Wrappers.Result = None
@@ -1189,7 +1190,7 @@ class default__:
         out1_ = Com_Amazonaws_Kms.default__.KMSClient()
         d_4_valueOrError1_ = out1_
         if not(not((d_4_valueOrError1_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1072,25): " + _dafny.string_of(d_4_valueOrError1_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1072,21): " + _dafny.string_of(d_4_valueOrError1_))
         d_5_kmsClient_: ComAmazonawsKmsTypes.IKMSClient
         d_5_kmsClient_ = (d_4_valueOrError1_).Extract()
         d_6_valueOrError2_: Wrappers.Result = None
@@ -1197,7 +1198,7 @@ class default__:
         out2_ = Com_Amazonaws_Dynamodb.default__.DynamoDBClient()
         d_6_valueOrError2_ = out2_
         if not(not((d_6_valueOrError2_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1073,25): " + _dafny.string_of(d_6_valueOrError2_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1073,21): " + _dafny.string_of(d_6_valueOrError2_))
         d_7_ddbClient_: ComAmazonawsDynamodbTypes.IDynamoDBClient
         d_7_ddbClient_ = (d_6_valueOrError2_).Extract()
         d_8_kmsConfig_: AwsCryptographyKeyStoreTypes.KMSConfiguration
@@ -1209,7 +1210,7 @@ class default__:
         out3_ = KeyStore.default__.KeyStore(d_9_keyStoreConfig_)
         d_10_valueOrError3_ = out3_
         if not(not((d_10_valueOrError3_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1086,24): " + _dafny.string_of(d_10_valueOrError3_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1086,20): " + _dafny.string_of(d_10_valueOrError3_))
         d_11_keyStore_: KeyStore.KeyStoreClient
         d_11_keyStore_ = (d_10_valueOrError3_).Extract()
         d_12_valueOrError4_: Wrappers.Result = None
@@ -1217,7 +1218,7 @@ class default__:
         out4_ = (d_3_mpl_).CreateAwsKmsHierarchicalKeyring(AwsCryptographyMaterialProvidersTypes.CreateAwsKmsHierarchicalKeyringInput_CreateAwsKmsHierarchicalKeyringInput(Wrappers.Option_Some(d_0_branchKeyId_), Wrappers.Option_None(), d_11_keyStore_, d_1_ttl_, Wrappers.Option_None(), Wrappers.Option_None()))
         d_12_valueOrError4_ = out4_
         if not(not((d_12_valueOrError4_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1088,18): " + _dafny.string_of(d_12_valueOrError4_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1088,14): " + _dafny.string_of(d_12_valueOrError4_))
         output = (d_12_valueOrError4_).Extract()
         return output
 
@@ -1229,7 +1230,7 @@ class default__:
         out0_ = MaterialProviders.default__.MaterialProviders(MaterialProviders.default__.DefaultMaterialProvidersConfig())
         d_0_valueOrError0_ = out0_
         if not(not((d_0_valueOrError0_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1102,19): " + _dafny.string_of(d_0_valueOrError0_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1102,15): " + _dafny.string_of(d_0_valueOrError0_))
         d_1_mpl_: MaterialProviders.MaterialProvidersClient
         d_1_mpl_ = (d_0_valueOrError0_).Extract()
         d_2_namespace_: _dafny.Seq
@@ -1248,7 +1249,7 @@ class default__:
         out4_ = (d_1_mpl_).CreateRawRsaKeyring(AwsCryptographyMaterialProvidersTypes.CreateRawRsaKeyringInput_CreateRawRsaKeyringInput(d_2_namespace_, d_3_name_, AwsCryptographyMaterialProvidersTypes.PaddingScheme_OAEP__SHA1__MGF1(), Wrappers.Option_Some(((d_4_keys_).publicKey).pem), Wrappers.Option_Some(((d_4_keys_).privateKey).pem)))
         d_5_valueOrError1_ = out4_
         if not(not((d_5_valueOrError1_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1106,18): " + _dafny.string_of(d_5_valueOrError1_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1106,14): " + _dafny.string_of(d_5_valueOrError1_))
         output = (d_5_valueOrError1_).Extract()
         return output
 
@@ -1260,7 +1261,7 @@ class default__:
         out0_ = MaterialProviders.default__.MaterialProviders(MaterialProviders.default__.DefaultMaterialProvidersConfig())
         d_0_valueOrError0_ = out0_
         if not(not((d_0_valueOrError0_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1120,19): " + _dafny.string_of(d_0_valueOrError0_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1120,15): " + _dafny.string_of(d_0_valueOrError0_))
         d_1_mpl_: MaterialProviders.MaterialProvidersClient
         d_1_mpl_ = (d_0_valueOrError0_).Extract()
         d_2_namespace_: _dafny.Seq
@@ -1275,7 +1276,7 @@ class default__:
         out3_ = (d_1_mpl_).CreateRawAesKeyring(AwsCryptographyMaterialProvidersTypes.CreateRawAesKeyringInput_CreateRawAesKeyringInput(d_2_namespace_, d_3_name_, _dafny.Seq([0 for d_5_i_ in range(32)]), AwsCryptographyMaterialProvidersTypes.AesWrappingAlg_ALG__AES256__GCM__IV12__TAG16()))
         d_4_valueOrError1_ = out3_
         if not(not((d_4_valueOrError1_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1123,18): " + _dafny.string_of(d_4_valueOrError1_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1123,14): " + _dafny.string_of(d_4_valueOrError1_))
         output = (d_4_valueOrError1_).Extract()
         return output
 
@@ -1291,7 +1292,7 @@ class default__:
         out0_ = ESDK.default__.ESDK(d_1_defaultConfig_)
         d_2_valueOrError0_ = out0_
         if not(not((d_2_valueOrError0_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1137,20): " + _dafny.string_of(d_2_valueOrError0_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1137,16): " + _dafny.string_of(d_2_valueOrError0_))
         d_3_esdk_: ESDK.ESDKClient
         d_3_esdk_ = (d_2_valueOrError0_).Extract()
         d_4_valueOrError1_: Wrappers.Result = None
@@ -1299,7 +1300,7 @@ class default__:
         out1_ = MaterialProviders.default__.MaterialProviders(MaterialProviders.default__.DefaultMaterialProvidersConfig())
         d_4_valueOrError1_ = out1_
         if not(not((d_4_valueOrError1_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1138,19): " + _dafny.string_of(d_4_valueOrError1_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1138,15): " + _dafny.string_of(d_4_valueOrError1_))
         d_5_mpl_: MaterialProviders.MaterialProvidersClient
         d_5_mpl_ = (d_4_valueOrError1_).Extract()
         d_6_valueOrError2_: Wrappers.Result = None
@@ -1307,7 +1308,7 @@ class default__:
         out2_ = (d_5_mpl_).CreateDefaultClientSupplier(AwsCryptographyMaterialProvidersTypes.CreateDefaultClientSupplierInput_CreateDefaultClientSupplierInput())
         d_6_valueOrError2_ = out2_
         if not(not((d_6_valueOrError2_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1139,30): " + _dafny.string_of(d_6_valueOrError2_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1139,26): " + _dafny.string_of(d_6_valueOrError2_))
         d_7_clientSupplier_: AwsCryptographyMaterialProvidersTypes.IClientSupplier
         d_7_clientSupplier_ = (d_6_valueOrError2_).Extract()
         d_8_valueOrError3_: Wrappers.Result = None
@@ -1315,7 +1316,7 @@ class default__:
         out3_ = (d_7_clientSupplier_).GetClient(AwsCryptographyMaterialProvidersTypes.GetClientInput_GetClientInput(_dafny.Seq("us-west-2")))
         d_8_valueOrError3_ = out3_
         if not(not((d_8_valueOrError3_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1140,25): " + _dafny.string_of(d_8_valueOrError3_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1140,21): " + _dafny.string_of(d_8_valueOrError3_))
         d_9_kmsClient_: ComAmazonawsKmsTypes.IKMSClient
         d_9_kmsClient_ = (d_8_valueOrError3_).Extract()
         d_10_valueOrError4_: Wrappers.Result = None
@@ -1323,7 +1324,7 @@ class default__:
         out4_ = (d_5_mpl_).CreateAwsKmsKeyring(AwsCryptographyMaterialProvidersTypes.CreateAwsKmsKeyringInput_CreateAwsKmsKeyringInput(d_0_kmsKey_, d_9_kmsClient_, Wrappers.Option_None()))
         d_10_valueOrError4_ = out4_
         if not(not((d_10_valueOrError4_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1142,18): " + _dafny.string_of(d_10_valueOrError4_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestRequiredEncryptionContext.dfy(1142,14): " + _dafny.string_of(d_10_valueOrError4_))
         output = (d_10_valueOrError4_).Extract()
         return output
 

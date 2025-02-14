@@ -14,7 +14,9 @@ include = ["**/internaldafny/generated/*.py"]
 python = "^3.11.0"
 aws-cryptographic-material-providers = { path = "../../../mpl/AwsCryptographicMaterialProviders/runtimes/python", develop = false}
 aws-cryptography-internal-mpl-testvectors = { path = "../../../mpl/TestVectorsAwsCryptographicMaterialProviders/runtimes/python", develop = false}
-aws-encryption-sdk = { path = "../../../AwsEncryptionSDK/runtimes/python", develop = false}
+aws-encryption-sdk-dafny = { path = "../../../AwsEncryptionSDK/runtimes/python", develop = false}
+aws-encryption-sdk = "4.0.0"
+
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.0"

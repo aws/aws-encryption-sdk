@@ -108,7 +108,7 @@ restore_directories:
 		fi \
 	done
 
-PYTHON_MODULE_NAME=aws_encryption_sdk
+PYTHON_MODULE_NAME=aws_encryption_sdk_dafny
 
 TRANSLATION_RECORD_PYTHON := \
     --translation-record ../mpl/StandardLibrary/runtimes/python/src/smithy_dafny_standard_library/internaldafny/generated/dafny_src-py.dtr \

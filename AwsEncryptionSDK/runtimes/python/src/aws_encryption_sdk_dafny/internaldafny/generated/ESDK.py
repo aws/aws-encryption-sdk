@@ -3,7 +3,7 @@ from typing import Callable, Any, TypeVar, NamedTuple
 from math import floor
 from itertools import count
 
-import aws_encryption_sdk_test_vectors.internaldafny.generated.module_ as module_
+import aws_encryption_sdk_dafny.internaldafny.generated.module_ as module_
 import _dafny as _dafny
 import System_ as System_
 import smithy_dafny_standard_library.internaldafny.generated.Wrappers as Wrappers
@@ -99,13 +99,13 @@ import aws_cryptographic_material_providers.internaldafny.generated.CreateKeySto
 import aws_cryptographic_material_providers.internaldafny.generated.GetKeys as GetKeys
 import aws_cryptographic_material_providers.internaldafny.generated.AwsCryptographyKeyStoreOperations as AwsCryptographyKeyStoreOperations
 import aws_cryptographic_material_providers.internaldafny.generated.KeyStore as KeyStore
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AwsCryptographyMaterialProvidersTestVectorKeysTypes as AwsCryptographyMaterialProvidersTestVectorKeysTypes
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Utils_Views_Core as JSON_Utils_Views_Core
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Utils_Views_Writers as JSON_Utils_Views_Writers
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Utils_Lexers_Core as JSON_Utils_Lexers_Core
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Utils_Lexers_Strings as JSON_Utils_Lexers_Strings
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Utils_Cursors as JSON_Utils_Cursors
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Utils_Parsers as JSON_Utils_Parsers
+import aws_cryptography_primitives.internaldafny.generated.AesKdfCtr as AesKdfCtr
+import smithy_dafny_standard_library.internaldafny.generated.Unicode as Unicode
+import smithy_dafny_standard_library.internaldafny.generated.Functions as Functions
+import smithy_dafny_standard_library.internaldafny.generated.Utf8EncodingForm as Utf8EncodingForm
+import smithy_dafny_standard_library.internaldafny.generated.Utf16EncodingForm as Utf16EncodingForm
+import smithy_dafny_standard_library.internaldafny.generated.UnicodeStrings as UnicodeStrings
+import smithy_dafny_standard_library.internaldafny.generated.FileIO as FileIO
 import smithy_dafny_standard_library.internaldafny.generated.GeneralInternals as GeneralInternals
 import smithy_dafny_standard_library.internaldafny.generated.MulInternalsNonlinear as MulInternalsNonlinear
 import smithy_dafny_standard_library.internaldafny.generated.MulInternals as MulInternals
@@ -117,55 +117,15 @@ import smithy_dafny_standard_library.internaldafny.generated.DivInternals as Div
 import smithy_dafny_standard_library.internaldafny.generated.DivMod as DivMod
 import smithy_dafny_standard_library.internaldafny.generated.Power as Power
 import smithy_dafny_standard_library.internaldafny.generated.Logarithm as Logarithm
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Utils_Str_CharStrConversion as JSON_Utils_Str_CharStrConversion
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Utils_Str_CharStrEscaping as JSON_Utils_Str_CharStrEscaping
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Utils_Str as JSON_Utils_Str
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Utils_Seq as JSON_Utils_Seq
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Utils_Vectors as JSON_Utils_Vectors
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Errors as JSON_Errors
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Values as JSON_Values
-import smithy_dafny_standard_library.internaldafny.generated.Unicode as Unicode
-import smithy_dafny_standard_library.internaldafny.generated.Functions as Functions
-import smithy_dafny_standard_library.internaldafny.generated.Utf8EncodingForm as Utf8EncodingForm
-import smithy_dafny_standard_library.internaldafny.generated.Utf16EncodingForm as Utf16EncodingForm
-import smithy_dafny_standard_library.internaldafny.generated.UnicodeStrings as UnicodeStrings
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Spec as JSON_Spec
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Grammar as JSON_Grammar
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Serializer_ByteStrConversion as JSON_Serializer_ByteStrConversion
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Serializer as JSON_Serializer
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Deserializer_Uint16StrConversion as JSON_Deserializer_Uint16StrConversion
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Deserializer_ByteStrConversion as JSON_Deserializer_ByteStrConversion
-import smithy_dafny_standard_library.internaldafny.generated.JSON_Deserializer as JSON_Deserializer
-import smithy_dafny_standard_library.internaldafny.generated.JSON_ConcreteSyntax_Spec as JSON_ConcreteSyntax_Spec
-import smithy_dafny_standard_library.internaldafny.generated.JSON_ConcreteSyntax_SpecProperties as JSON_ConcreteSyntax_SpecProperties
-import smithy_dafny_standard_library.internaldafny.generated.JSON_ZeroCopy_Serializer as JSON_ZeroCopy_Serializer
-import smithy_dafny_standard_library.internaldafny.generated.JSON_ZeroCopy_Deserializer_Core as JSON_ZeroCopy_Deserializer_Core
-import smithy_dafny_standard_library.internaldafny.generated.JSON_ZeroCopy_Deserializer_Strings as JSON_ZeroCopy_Deserializer_Strings
-import smithy_dafny_standard_library.internaldafny.generated.JSON_ZeroCopy_Deserializer_Numbers as JSON_ZeroCopy_Deserializer_Numbers
-import smithy_dafny_standard_library.internaldafny.generated.JSON_ZeroCopy_Deserializer_ObjectParams as JSON_ZeroCopy_Deserializer_ObjectParams
-import smithy_dafny_standard_library.internaldafny.generated.JSON_ZeroCopy_Deserializer_Objects as JSON_ZeroCopy_Deserializer_Objects
-import smithy_dafny_standard_library.internaldafny.generated.JSON_ZeroCopy_Deserializer_ArrayParams as JSON_ZeroCopy_Deserializer_ArrayParams
-import smithy_dafny_standard_library.internaldafny.generated.JSON_ZeroCopy_Deserializer_Arrays as JSON_ZeroCopy_Deserializer_Arrays
-import smithy_dafny_standard_library.internaldafny.generated.JSON_ZeroCopy_Deserializer_Constants as JSON_ZeroCopy_Deserializer_Constants
-import smithy_dafny_standard_library.internaldafny.generated.JSON_ZeroCopy_Deserializer_Values as JSON_ZeroCopy_Deserializer_Values
-import smithy_dafny_standard_library.internaldafny.generated.JSON_ZeroCopy_Deserializer_API as JSON_ZeroCopy_Deserializer_API
-import smithy_dafny_standard_library.internaldafny.generated.JSON_ZeroCopy_Deserializer as JSON_ZeroCopy_Deserializer
-import smithy_dafny_standard_library.internaldafny.generated.JSON_ZeroCopy_API as JSON_ZeroCopy_API
-import smithy_dafny_standard_library.internaldafny.generated.JSON_API as JSON_API
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.JSONHelpers as JSONHelpers
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.KeyDescription as KeyDescription
-import smithy_dafny_standard_library.internaldafny.generated.HexStrings as HexStrings
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.KeyMaterial as KeyMaterial
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.CreateStaticKeyrings as CreateStaticKeyrings
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.CreateStaticKeyStores as CreateStaticKeyStores
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.KeyringFromKeyDescription as KeyringFromKeyDescription
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.CmmFromKeyDescription as CmmFromKeyDescription
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.WrappedMaterialProviders as WrappedMaterialProviders
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.KeysVectorOperations as KeysVectorOperations
-import smithy_dafny_standard_library.internaldafny.generated.FileIO as FileIO
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.KeyVectors as KeyVectors
-import aws_encryption_sdk_dafny.internaldafny.generated.AwsCryptographyEncryptionSdkTypes as AwsCryptographyEncryptionSdkTypes
+import smithy_dafny_standard_library.internaldafny.generated.StandardLibraryInterop as StandardLibraryInterop
 import smithy_dafny_standard_library.internaldafny.generated.Streams as Streams
+import smithy_dafny_standard_library.internaldafny.generated.Sorting as Sorting
+import smithy_dafny_standard_library.internaldafny.generated.HexStrings as HexStrings
+import smithy_dafny_standard_library.internaldafny.generated.GetOpt as GetOpt
+import smithy_dafny_standard_library.internaldafny.generated.FloatCompare as FloatCompare
+import smithy_dafny_standard_library.internaldafny.generated.ConcurrentCall as ConcurrentCall
+import smithy_dafny_standard_library.internaldafny.generated.Base64Lemmas as Base64Lemmas
+import aws_encryption_sdk_dafny.internaldafny.generated.AwsCryptographyEncryptionSdkTypes as AwsCryptographyEncryptionSdkTypes
 import aws_encryption_sdk_dafny.internaldafny.generated.SerializableTypes as SerializableTypes
 import aws_encryption_sdk_dafny.internaldafny.generated.SerializeFunctions as SerializeFunctions
 import aws_encryption_sdk_dafny.internaldafny.generated.EncryptionContext as EncryptionContext
@@ -181,54 +141,95 @@ import aws_encryption_sdk_dafny.internaldafny.generated.MessageBody as MessageBo
 import aws_encryption_sdk_dafny.internaldafny.generated.KeyDerivation as KeyDerivation
 import aws_encryption_sdk_dafny.internaldafny.generated.EncryptDecryptHelpers as EncryptDecryptHelpers
 import aws_encryption_sdk_dafny.internaldafny.generated.AwsEncryptionSdkOperations as AwsEncryptionSdkOperations
-import aws_encryption_sdk_dafny.internaldafny.generated.ESDK as ESDK
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.MplManifestOptions as MplManifestOptions
-import smithy_dafny_standard_library.internaldafny.generated.GetOpt as GetOpt
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllAlgorithmSuites as AllAlgorithmSuites
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.TestVectors as TestVectors
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllHierarchy as AllHierarchy
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllKms as AllKms
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllKmsMrkAware as AllKmsMrkAware
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllKmsMrkAwareDiscovery as AllKmsMrkAwareDiscovery
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllKmsRsa as AllKmsRsa
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllKmsEcdh as AllKmsEcdh
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllRawAES as AllRawAES
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllRawRSA as AllRawRSA
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllRawECDH as AllRawECDH
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllDefaultCmm as AllDefaultCmm
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllRequiredEncryptionContextCmm as AllRequiredEncryptionContextCmm
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.AllMulti as AllMulti
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.WriteJsonManifests as WriteJsonManifests
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.CompleteVectors as CompleteVectors
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.ParseJsonManifests as ParseJsonManifests
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.TestManifests as TestManifests
-import aws_cryptography_materialproviders_test_vectors.internaldafny.generated.WrappedMaterialProvidersMain as WrappedMaterialProvidersMain
-import aws_cryptography_primitives.internaldafny.generated.AesKdfCtr as AesKdfCtr
-import smithy_dafny_standard_library.internaldafny.generated.StandardLibraryInterop as StandardLibraryInterop
-import smithy_dafny_standard_library.internaldafny.generated.Sorting as Sorting
-import smithy_dafny_standard_library.internaldafny.generated.FloatCompare as FloatCompare
-import smithy_dafny_standard_library.internaldafny.generated.ConcurrentCall as ConcurrentCall
-import smithy_dafny_standard_library.internaldafny.generated.Base64Lemmas as Base64Lemmas
 
-# Module: WrappedESDK
+# Module: ESDK
 
 class default__:
     def  __init__(self):
         pass
 
     @staticmethod
-    def WrappedDefaultAwsEncryptionSdkConfig():
-        return AwsCryptographyEncryptionSdkTypes.AwsEncryptionSdkConfig_AwsEncryptionSdkConfig(Wrappers.Option_Some(AwsCryptographyMaterialProvidersTypes.ESDKCommitmentPolicy_REQUIRE__ENCRYPT__REQUIRE__DECRYPT()), Wrappers.Option_None(), Wrappers.Option_None())
+    def DefaultAwsEncryptionSdkConfig():
+        return AwsCryptographyEncryptionSdkTypes.AwsEncryptionSdkConfig_AwsEncryptionSdkConfig(Wrappers.Option_Some(AwsCryptographyMaterialProvidersTypes.ESDKCommitmentPolicy_REQUIRE__ENCRYPT__REQUIRE__DECRYPT()), Wrappers.Option_None(), Wrappers.Option_Some(AwsCryptographyEncryptionSdkTypes.NetV4__0__0__RetryPolicy_ALLOW__RETRY()))
 
     @staticmethod
-    def WrappedAwsEncryptionSdkConfigWithSuppliedCommitment(commitmentPolicy):
-        return AwsCryptographyEncryptionSdkTypes.AwsEncryptionSdkConfig_AwsEncryptionSdkConfig(Wrappers.Option_Some(commitmentPolicy), Wrappers.Option_None(), Wrappers.Option_None())
+    def ESDK(config):
+        res: Wrappers.Result = None
+        d_0_maybeCrypto_: Wrappers.Result
+        out0_: Wrappers.Result
+        out0_ = AtomicPrimitives.default__.AtomicPrimitives(AtomicPrimitives.default__.DefaultCryptoConfig())
+        d_0_maybeCrypto_ = out0_
+        d_1_valueOrError0_: Wrappers.Result = None
+        def lambda0_(d_2_e_):
+            return AwsCryptographyEncryptionSdkTypes.Error_AwsCryptographyPrimitives(d_2_e_)
+
+        d_1_valueOrError0_ = (d_0_maybeCrypto_).MapFailure(lambda0_)
+        if (d_1_valueOrError0_).IsFailure():
+            res = (d_1_valueOrError0_).PropagateFailure()
+            return res
+        d_3_cryptoX_: AwsCryptographyPrimitivesTypes.IAwsCryptographicPrimitivesClient
+        d_3_cryptoX_ = (d_1_valueOrError0_).Extract()
+        d_4_crypto_: AtomicPrimitives.AtomicPrimitivesClient
+        d_4_crypto_ = d_3_cryptoX_
+        d_5_maybeMpl_: Wrappers.Result
+        out1_: Wrappers.Result
+        out1_ = MaterialProviders.default__.MaterialProviders(MaterialProviders.default__.DefaultMaterialProvidersConfig())
+        d_5_maybeMpl_ = out1_
+        d_6_valueOrError1_: Wrappers.Result = None
+        def lambda1_(d_7_e_):
+            return AwsCryptographyEncryptionSdkTypes.Error_AwsCryptographyMaterialProviders(d_7_e_)
+
+        d_6_valueOrError1_ = (d_5_maybeMpl_).MapFailure(lambda1_)
+        if (d_6_valueOrError1_).IsFailure():
+            res = (d_6_valueOrError1_).PropagateFailure()
+            return res
+        d_8_mplX_: AwsCryptographyMaterialProvidersTypes.IAwsCryptographicMaterialProvidersClient
+        d_8_mplX_ = (d_6_valueOrError1_).Extract()
+        d_9_mpl_: MaterialProviders.MaterialProvidersClient
+        d_9_mpl_ = d_8_mplX_
+        d_10_internalConfig_: AwsEncryptionSdkOperations.Config
+        d_10_internalConfig_ = AwsEncryptionSdkOperations.Config_Config(d_4_crypto_, d_9_mpl_, ((config).commitmentPolicy).UnwrapOr(AwsCryptographyMaterialProvidersTypes.ESDKCommitmentPolicy_REQUIRE__ENCRYPT__REQUIRE__DECRYPT()), (config).maxEncryptedDataKeys, ((config).netV4__0__0__RetryPolicy).UnwrapOr(AwsCryptographyEncryptionSdkTypes.NetV4__0__0__RetryPolicy_ALLOW__RETRY()))
+        d_11_client_: ESDKClient
+        nw0_ = ESDKClient()
+        nw0_.ctor__(d_10_internalConfig_)
+        d_11_client_ = nw0_
+        res = Wrappers.Result_Success(d_11_client_)
+        return res
+        return res
 
     @staticmethod
-    def WrappedAwsEncryptionSdkConfigWithSuppliedCommitmentRetryPolicy(commitmentPolicy, netV4__0__0__RetryPolicy):
-        return AwsCryptographyEncryptionSdkTypes.AwsEncryptionSdkConfig_AwsEncryptionSdkConfig(Wrappers.Option_Some(commitmentPolicy), Wrappers.Option_None(), Wrappers.Option_Some(netV4__0__0__RetryPolicy))
+    def CreateSuccessOfClient(client):
+        return Wrappers.Result_Success(client)
 
     @staticmethod
-    def WrappedAwsEncryptionSdkConfig(commitmentPolicy, maxEncryptedDataKeys, netV4__0__0__RetryPolicy):
-        return AwsCryptographyEncryptionSdkTypes.AwsEncryptionSdkConfig_AwsEncryptionSdkConfig(Wrappers.Option_Some(commitmentPolicy), Wrappers.Option_Some(maxEncryptedDataKeys), Wrappers.Option_Some(netV4__0__0__RetryPolicy))
+    def CreateFailureOfError(error):
+        return Wrappers.Result_Failure(error)
 
+
+class ESDKClient(AwsCryptographyEncryptionSdkTypes.IAwsEncryptionSdkClient):
+    def  __init__(self):
+        self._config: AwsEncryptionSdkOperations.Config = None
+        pass
+
+    def __dafnystr__(self) -> str:
+        return "ESDK.ESDKClient"
+    def ctor__(self, config):
+        (self)._config = config
+
+    def Encrypt(self, input):
+        output: Wrappers.Result = Wrappers.Result.default(AwsCryptographyEncryptionSdkTypes.EncryptOutput.default())()
+        out0_: Wrappers.Result
+        out0_ = AwsEncryptionSdkOperations.default__.Encrypt((self).config, input)
+        output = out0_
+        return output
+
+    def Decrypt(self, input):
+        output: Wrappers.Result = Wrappers.Result.default(AwsCryptographyEncryptionSdkTypes.DecryptOutput.default())()
+        out0_: Wrappers.Result
+        out0_ = AwsEncryptionSdkOperations.default__.Decrypt((self).config, input)
+        output = out0_
+        return output
+
+    @property
+    def config(self):
+        return self._config

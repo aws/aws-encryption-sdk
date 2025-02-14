@@ -18,7 +18,7 @@ import aws_cryptography_internal_kms.internaldafny.generated.ComAmazonawsKmsType
 import aws_cryptographic_material_providers.internaldafny.generated.AwsCryptographyKeyStoreTypes as AwsCryptographyKeyStoreTypes
 import aws_cryptography_primitives.internaldafny.generated.AwsCryptographyPrimitivesTypes as AwsCryptographyPrimitivesTypes
 import aws_cryptographic_material_providers.internaldafny.generated.AwsCryptographyMaterialProvidersTypes as AwsCryptographyMaterialProvidersTypes
-import aws_encryption_sdk.internaldafny.generated.AwsCryptographyEncryptionSdkTypes as AwsCryptographyEncryptionSdkTypes
+import aws_encryption_sdk_dafny.internaldafny.generated.AwsCryptographyEncryptionSdkTypes as AwsCryptographyEncryptionSdkTypes
 import aws_cryptography_primitives.internaldafny.generated.ExternRandom as ExternRandom
 import aws_cryptography_primitives.internaldafny.generated.Random as Random
 import aws_cryptography_primitives.internaldafny.generated.AESEncryption as AESEncryption
@@ -67,6 +67,7 @@ import aws_cryptographic_material_providers.internaldafny.generated.MrkAwareDisc
 import aws_cryptographic_material_providers.internaldafny.generated.AwsKmsMrkKeyring as AwsKmsMrkKeyring
 import aws_cryptographic_material_providers.internaldafny.generated.MrkAwareStrictMultiKeyring as MrkAwareStrictMultiKeyring
 import smithy_dafny_standard_library.internaldafny.generated.DafnyLibraries as DafnyLibraries
+import smithy_dafny_standard_library.internaldafny.generated.OsLang as OsLang
 import smithy_dafny_standard_library.internaldafny.generated.Time as Time
 import aws_cryptographic_material_providers.internaldafny.generated.LocalCMC as LocalCMC
 import aws_cryptographic_material_providers.internaldafny.generated.SynchronizedLocalCMC as SynchronizedLocalCMC
@@ -90,22 +91,22 @@ import aws_cryptographic_material_providers.internaldafny.generated.RequiredEncr
 import aws_cryptographic_material_providers.internaldafny.generated.AwsCryptographyMaterialProvidersOperations as AwsCryptographyMaterialProvidersOperations
 import aws_cryptographic_material_providers.internaldafny.generated.MaterialProviders as MaterialProviders
 import smithy_dafny_standard_library.internaldafny.generated.Streams as Streams
-import aws_encryption_sdk.internaldafny.generated.SerializableTypes as SerializableTypes
-import aws_encryption_sdk.internaldafny.generated.SerializeFunctions as SerializeFunctions
-import aws_encryption_sdk.internaldafny.generated.EncryptionContext as EncryptionContext
-import aws_encryption_sdk.internaldafny.generated.HeaderTypes as HeaderTypes
-import aws_encryption_sdk.internaldafny.generated.SharedHeaderFunctions as SharedHeaderFunctions
-import aws_encryption_sdk.internaldafny.generated.EncryptedDataKeys as EncryptedDataKeys
-import aws_encryption_sdk.internaldafny.generated.V1HeaderBody as V1HeaderBody
-import aws_encryption_sdk.internaldafny.generated.V2HeaderBody as V2HeaderBody
-import aws_encryption_sdk.internaldafny.generated.HeaderAuth as HeaderAuth
-import aws_encryption_sdk.internaldafny.generated.Header as Header
-import aws_encryption_sdk.internaldafny.generated.Frames as Frames
-import aws_encryption_sdk.internaldafny.generated.MessageBody as MessageBody
-import aws_encryption_sdk.internaldafny.generated.KeyDerivation as KeyDerivation
-import aws_encryption_sdk.internaldafny.generated.EncryptDecryptHelpers as EncryptDecryptHelpers
-import aws_encryption_sdk.internaldafny.generated.AwsEncryptionSdkOperations as AwsEncryptionSdkOperations
-import aws_encryption_sdk.internaldafny.generated.ESDK as ESDK
+import aws_encryption_sdk_dafny.internaldafny.generated.SerializableTypes as SerializableTypes
+import aws_encryption_sdk_dafny.internaldafny.generated.SerializeFunctions as SerializeFunctions
+import aws_encryption_sdk_dafny.internaldafny.generated.EncryptionContext as EncryptionContext
+import aws_encryption_sdk_dafny.internaldafny.generated.HeaderTypes as HeaderTypes
+import aws_encryption_sdk_dafny.internaldafny.generated.SharedHeaderFunctions as SharedHeaderFunctions
+import aws_encryption_sdk_dafny.internaldafny.generated.EncryptedDataKeys as EncryptedDataKeys
+import aws_encryption_sdk_dafny.internaldafny.generated.V1HeaderBody as V1HeaderBody
+import aws_encryption_sdk_dafny.internaldafny.generated.V2HeaderBody as V2HeaderBody
+import aws_encryption_sdk_dafny.internaldafny.generated.HeaderAuth as HeaderAuth
+import aws_encryption_sdk_dafny.internaldafny.generated.Header as Header
+import aws_encryption_sdk_dafny.internaldafny.generated.Frames as Frames
+import aws_encryption_sdk_dafny.internaldafny.generated.MessageBody as MessageBody
+import aws_encryption_sdk_dafny.internaldafny.generated.KeyDerivation as KeyDerivation
+import aws_encryption_sdk_dafny.internaldafny.generated.EncryptDecryptHelpers as EncryptDecryptHelpers
+import aws_encryption_sdk_dafny.internaldafny.generated.AwsEncryptionSdkOperations as AwsEncryptionSdkOperations
+import aws_encryption_sdk_dafny.internaldafny.generated.ESDK as ESDK
 import aws_cryptography_primitives.internaldafny.generated.AesKdfCtr as AesKdfCtr
 import aws_cryptographic_material_providers.internaldafny.generated.KeyStoreErrorMessages as KeyStoreErrorMessages
 import aws_cryptographic_material_providers.internaldafny.generated.KmsArn as KmsArn
@@ -409,7 +410,7 @@ class default__:
         out0_ = AtomicPrimitives.default__.AtomicPrimitives(AtomicPrimitives.default__.DefaultCryptoConfig())
         d_0_valueOrError0_ = out0_
         if not(not((d_0_valueOrError0_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/Fixtures.dfy(143,72): " + _dafny.string_of(d_0_valueOrError0_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/Fixtures.dfy(143,70): " + _dafny.string_of(d_0_valueOrError0_))
         d_1_cryptoX_: AwsCryptographyPrimitivesTypes.IAwsCryptographicPrimitivesClient
         d_1_cryptoX_ = (d_0_valueOrError0_).Extract()
         d_2_crypto_: AtomicPrimitives.AtomicPrimitivesClient
@@ -419,7 +420,7 @@ class default__:
         out1_ = (d_2_crypto_).GenerateRSAKeyPair(AwsCryptographyPrimitivesTypes.GenerateRSAKeyPairInput_GenerateRSAKeyPairInput(keyModulusLength))
         d_3_valueOrError1_ = out1_
         if not(not((d_3_valueOrError1_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/Fixtures.dfy(147,14): " + _dafny.string_of(d_3_valueOrError1_))
+            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/Fixtures.dfy(147,12): " + _dafny.string_of(d_3_valueOrError1_))
         keys = (d_3_valueOrError1_).Extract()
         return keys
 
