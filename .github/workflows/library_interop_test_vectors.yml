@@ -227,7 +227,7 @@ jobs:
         os: [
             # https://taskei.amazon.dev/tasks/CrypTool-5283
             # windows-latest,
-            ubuntu-latest,
+            ubuntu-22.04,
             macos-13,
           ]
         encrypting_language: [java, net, rust, go, python]
@@ -289,27 +289,35 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
         with:
           components: rustfmt
-      # TODO - uncomment this after Rust formatter works
-      # - name: Rustfmt Check
-      #   uses: actions-rust-lang/rustfmt@v1
 
-      # TODO: Remove this after the formatting in Rust starts working
-      - name: smithy-dafny Rust hacks
+      - name: Setup Rust Toolchain for GitHub CI
         if: matrix.decrypting_language == 'rust'
-        shell: bash
+        uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
+        with:
+          components: rustfmt
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Install Go imports
         run: |
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            sed -i '' 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
-          else
-            sed -i 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
-          fi
+          go install golang.org/x/tools/cmd/goimports@latest
 
       - name: Setup NASM for Windows in Rust (aws-lc-sys)
         if: matrix.decrypting_language == 'rust' && matrix.os == 'windows-latest'
         uses: ilammy/setup-nasm@v1
 
-      - name: Setup Dafny
-        uses: dafny-lang/setup-dafny-action@v1.6.1
+      - name: Setup Dafny Rust
+        if: matrix.decrypting_language == 'rust'
+        uses: dafny-lang/setup-dafny-action@v1.8.0
+        with:
+          dafny-version: nightly-2025-01-30-7db1e5f
+
+      - name: Setup Dafny Not Rust
+        if: matrix.decrypting_language != 'rust'
+        uses: dafny-lang/setup-dafny-action@v1.8.0
         with:
           dafny-version: ${{ inputs.dafny }}
 
