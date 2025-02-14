@@ -66,24 +66,24 @@ SERVICE_DEPS_AwsEncryptionSdk := \
 	mpl/AwsCryptographicMaterialProviders/dafny/AwsCryptographicMaterialProviders \
 	mpl/AwsCryptographicMaterialProviders/dafny/AwsCryptographyKeyStore
 
-GO_MODULE_NAME="github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk"
+# GO_MODULE_NAME="github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk"
 
-GO_DEPENDENCY_MODULE_NAMES := \
-	--dependency-library-name=com.amazonaws.dynamodb=github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb \
-	--dependency-library-name=com.amazonaws.kms=github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms \
-	--dependency-library-name=aws.cryptography.keyStore=github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl \
-	--dependency-library-name=aws.cryptography.primitives=github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives \
-	--dependency-library-name=aws.cryptography.materialProviders=github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl \
-    	--dependency-library-name=sdk.com.amazonaws.dynamodb=github.com/aws/aws-sdk-go-v2/service/dynamodb \
-    	--dependency-library-name=sdk.com.amazonaws.kms=github.com/aws/aws-sdk-go-v2/service/kms
+# GO_DEPENDENCY_MODULE_NAMES := \
+# 	--dependency-library-name=com.amazonaws.dynamodb=github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb \
+# 	--dependency-library-name=com.amazonaws.kms=github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms \
+# 	--dependency-library-name=aws.cryptography.keyStore=github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl \
+# 	--dependency-library-name=aws.cryptography.primitives=github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives \
+# 	--dependency-library-name=aws.cryptography.materialProviders=github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl \
+#     	--dependency-library-name=sdk.com.amazonaws.dynamodb=github.com/aws/aws-sdk-go-v2/service/dynamodb \
+#     	--dependency-library-name=sdk.com.amazonaws.kms=github.com/aws/aws-sdk-go-v2/service/kms
 
 
-TRANSLATION_RECORD_GO := \
-    mpl/StandardLibrary/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    mpl/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    mpl/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    mpl/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
-    mpl/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr
+# TRANSLATION_RECORD_GO := \
+#     mpl/StandardLibrary/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+#     mpl/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+#     mpl/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+#     mpl/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr \
+#     mpl/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/ImplementationFromDafny-go.dtr
 
 TYPES_FILE_PATH=dafny/AwsEncryptionSdk/Model/AwsCryptographyEncryptionSdkTypes.dfy
 TYPES_FILE_WITH_EXTERN_STRING="module {:extern \"software.amazon.cryptography.encryptionsdk.internaldafny.types\" } AwsCryptographyEncryptionSdkTypes"
@@ -108,7 +108,7 @@ restore_directories:
 		fi \
 	done
 
-PYTHON_MODULE_NAME=aws_encryption_sdk
+PYTHON_MODULE_NAME=aws_encryption_sdk_dafny
 
 TRANSLATION_RECORD_PYTHON := \
     --translation-record ../mpl/StandardLibrary/runtimes/python/src/smithy_dafny_standard_library/internaldafny/generated/dafny_src-py.dtr \
@@ -118,9 +118,9 @@ TRANSLATION_RECORD_PYTHON := \
                 --translation-record ../mpl/AwsCryptographicMaterialProviders/runtimes/python/src/aws_cryptographic_material_providers/internaldafny/generated/dafny_src-py.dtr
 
 PYTHON_DEPENDENCY_MODULE_NAMES := \
-        --dependency-library-name=aws.cryptography.primitives=aws_cryptography_primitives \
-        --dependency-library-name=com.amazonaws.kms=aws_cryptography_internal_kms \
-        --dependency-library-name=com.amazonaws.dynamodb=aws_cryptography_internal_dynamodb \
-        --dependency-library-name=aws.cryptography.materialProviders=aws_cryptographic_material_providers \
-        --dependency-library-name=aws.cryptography.keyStore=aws_cryptographic_material_providers \
-        --dependency-library-name=smithy.api=aws_cryptographic_material_providers
+        --python-dependency-module-name=aws.cryptography.primitives=aws_cryptography_primitives \
+        --python-dependency-module-name=com.amazonaws.kms=aws_cryptography_internal_kms \
+        --python-dependency-module-name=com.amazonaws.dynamodb=aws_cryptography_internal_dynamodb \
+        --python-dependency-module-name=aws.cryptography.materialProviders=aws_cryptographic_material_providers \
+        --python-dependency-module-name=aws.cryptography.keyStore=aws_cryptographic_material_providers \
+        --python-dependency-module-name=smithy.api=aws_cryptographic_material_providers

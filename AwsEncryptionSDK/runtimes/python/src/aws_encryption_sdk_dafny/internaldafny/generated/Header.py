@@ -3,7 +3,7 @@ from typing import Callable, Any, TypeVar, NamedTuple
 from math import floor
 from itertools import count
 
-import module_ as module_
+import aws_encryption_sdk_dafny.internaldafny.generated.module_ as module_
 import _dafny as _dafny
 import System_ as System_
 import smithy_dafny_standard_library.internaldafny.generated.Wrappers as Wrappers
@@ -13,12 +13,7 @@ import smithy_dafny_standard_library.internaldafny.generated.StandardLibrary_Seq
 import smithy_dafny_standard_library.internaldafny.generated.StandardLibrary_String as StandardLibrary_String
 import smithy_dafny_standard_library.internaldafny.generated.StandardLibrary as StandardLibrary
 import smithy_dafny_standard_library.internaldafny.generated.UTF8 as UTF8
-import aws_cryptography_internal_dynamodb.internaldafny.generated.ComAmazonawsDynamodbTypes as ComAmazonawsDynamodbTypes
-import aws_cryptography_internal_kms.internaldafny.generated.ComAmazonawsKmsTypes as ComAmazonawsKmsTypes
-import aws_cryptographic_material_providers.internaldafny.generated.AwsCryptographyKeyStoreTypes as AwsCryptographyKeyStoreTypes
 import aws_cryptography_primitives.internaldafny.generated.AwsCryptographyPrimitivesTypes as AwsCryptographyPrimitivesTypes
-import aws_cryptographic_material_providers.internaldafny.generated.AwsCryptographyMaterialProvidersTypes as AwsCryptographyMaterialProvidersTypes
-import aws_encryption_sdk_dafny.internaldafny.generated.AwsCryptographyEncryptionSdkTypes as AwsCryptographyEncryptionSdkTypes
 import aws_cryptography_primitives.internaldafny.generated.ExternRandom as ExternRandom
 import aws_cryptography_primitives.internaldafny.generated.Random as Random
 import aws_cryptography_primitives.internaldafny.generated.AESEncryption as AESEncryption
@@ -34,6 +29,10 @@ import aws_cryptography_primitives.internaldafny.generated.RSAEncryption as RSAE
 import aws_cryptography_primitives.internaldafny.generated.ECDH as ECDH
 import aws_cryptography_primitives.internaldafny.generated.AwsCryptographyPrimitivesOperations as AwsCryptographyPrimitivesOperations
 import aws_cryptography_primitives.internaldafny.generated.AtomicPrimitives as AtomicPrimitives
+import aws_cryptography_internal_dynamodb.internaldafny.generated.ComAmazonawsDynamodbTypes as ComAmazonawsDynamodbTypes
+import aws_cryptography_internal_kms.internaldafny.generated.ComAmazonawsKmsTypes as ComAmazonawsKmsTypes
+import aws_cryptographic_material_providers.internaldafny.generated.AwsCryptographyKeyStoreTypes as AwsCryptographyKeyStoreTypes
+import aws_cryptographic_material_providers.internaldafny.generated.AwsCryptographyMaterialProvidersTypes as AwsCryptographyMaterialProvidersTypes
 import smithy_dafny_standard_library.internaldafny.generated.Base64 as Base64
 import aws_cryptographic_material_providers.internaldafny.generated.AlgorithmSuites as AlgorithmSuites
 import aws_cryptographic_material_providers.internaldafny.generated.Materials as Materials
@@ -90,24 +89,6 @@ import aws_cryptographic_material_providers.internaldafny.generated.Utils as Uti
 import aws_cryptographic_material_providers.internaldafny.generated.RequiredEncryptionContextCMM as RequiredEncryptionContextCMM
 import aws_cryptographic_material_providers.internaldafny.generated.AwsCryptographyMaterialProvidersOperations as AwsCryptographyMaterialProvidersOperations
 import aws_cryptographic_material_providers.internaldafny.generated.MaterialProviders as MaterialProviders
-import smithy_dafny_standard_library.internaldafny.generated.Streams as Streams
-import aws_encryption_sdk_dafny.internaldafny.generated.SerializableTypes as SerializableTypes
-import aws_encryption_sdk_dafny.internaldafny.generated.SerializeFunctions as SerializeFunctions
-import aws_encryption_sdk_dafny.internaldafny.generated.EncryptionContext as EncryptionContext
-import aws_encryption_sdk_dafny.internaldafny.generated.HeaderTypes as HeaderTypes
-import aws_encryption_sdk_dafny.internaldafny.generated.SharedHeaderFunctions as SharedHeaderFunctions
-import aws_encryption_sdk_dafny.internaldafny.generated.EncryptedDataKeys as EncryptedDataKeys
-import aws_encryption_sdk_dafny.internaldafny.generated.V1HeaderBody as V1HeaderBody
-import aws_encryption_sdk_dafny.internaldafny.generated.V2HeaderBody as V2HeaderBody
-import aws_encryption_sdk_dafny.internaldafny.generated.HeaderAuth as HeaderAuth
-import aws_encryption_sdk_dafny.internaldafny.generated.Header as Header
-import aws_encryption_sdk_dafny.internaldafny.generated.Frames as Frames
-import aws_encryption_sdk_dafny.internaldafny.generated.MessageBody as MessageBody
-import aws_encryption_sdk_dafny.internaldafny.generated.KeyDerivation as KeyDerivation
-import aws_encryption_sdk_dafny.internaldafny.generated.EncryptDecryptHelpers as EncryptDecryptHelpers
-import aws_encryption_sdk_dafny.internaldafny.generated.AwsEncryptionSdkOperations as AwsEncryptionSdkOperations
-import aws_encryption_sdk_dafny.internaldafny.generated.ESDK as ESDK
-import aws_cryptography_primitives.internaldafny.generated.AesKdfCtr as AesKdfCtr
 import aws_cryptographic_material_providers.internaldafny.generated.KeyStoreErrorMessages as KeyStoreErrorMessages
 import aws_cryptographic_material_providers.internaldafny.generated.KmsArn as KmsArn
 import aws_cryptographic_material_providers.internaldafny.generated.Structure as Structure
@@ -118,6 +99,7 @@ import aws_cryptographic_material_providers.internaldafny.generated.CreateKeySto
 import aws_cryptographic_material_providers.internaldafny.generated.GetKeys as GetKeys
 import aws_cryptographic_material_providers.internaldafny.generated.AwsCryptographyKeyStoreOperations as AwsCryptographyKeyStoreOperations
 import aws_cryptographic_material_providers.internaldafny.generated.KeyStore as KeyStore
+import aws_cryptography_primitives.internaldafny.generated.AesKdfCtr as AesKdfCtr
 import smithy_dafny_standard_library.internaldafny.generated.Unicode as Unicode
 import smithy_dafny_standard_library.internaldafny.generated.Functions as Functions
 import smithy_dafny_standard_library.internaldafny.generated.Utf8EncodingForm as Utf8EncodingForm
@@ -136,86 +118,111 @@ import smithy_dafny_standard_library.internaldafny.generated.DivMod as DivMod
 import smithy_dafny_standard_library.internaldafny.generated.Power as Power
 import smithy_dafny_standard_library.internaldafny.generated.Logarithm as Logarithm
 import smithy_dafny_standard_library.internaldafny.generated.StandardLibraryInterop as StandardLibraryInterop
+import smithy_dafny_standard_library.internaldafny.generated.Streams as Streams
 import smithy_dafny_standard_library.internaldafny.generated.Sorting as Sorting
 import smithy_dafny_standard_library.internaldafny.generated.HexStrings as HexStrings
 import smithy_dafny_standard_library.internaldafny.generated.GetOpt as GetOpt
 import smithy_dafny_standard_library.internaldafny.generated.FloatCompare as FloatCompare
 import smithy_dafny_standard_library.internaldafny.generated.ConcurrentCall as ConcurrentCall
 import smithy_dafny_standard_library.internaldafny.generated.Base64Lemmas as Base64Lemmas
-import Fixtures as Fixtures
-import TestRequiredEncryptionContext as TestRequiredEncryptionContext
-import TestReproducedEncryptionContext as TestReproducedEncryptionContext
+import aws_encryption_sdk_dafny.internaldafny.generated.AwsCryptographyEncryptionSdkTypes as AwsCryptographyEncryptionSdkTypes
+import aws_encryption_sdk_dafny.internaldafny.generated.SerializableTypes as SerializableTypes
+import aws_encryption_sdk_dafny.internaldafny.generated.SerializeFunctions as SerializeFunctions
+import aws_encryption_sdk_dafny.internaldafny.generated.EncryptionContext as EncryptionContext
+import aws_encryption_sdk_dafny.internaldafny.generated.HeaderTypes as HeaderTypes
+import aws_encryption_sdk_dafny.internaldafny.generated.SharedHeaderFunctions as SharedHeaderFunctions
+import aws_encryption_sdk_dafny.internaldafny.generated.EncryptedDataKeys as EncryptedDataKeys
+import aws_encryption_sdk_dafny.internaldafny.generated.V1HeaderBody as V1HeaderBody
+import aws_encryption_sdk_dafny.internaldafny.generated.V2HeaderBody as V2HeaderBody
+import aws_encryption_sdk_dafny.internaldafny.generated.HeaderAuth as HeaderAuth
 
-# Module: TestEncryptDecrypt
+# Module: Header
 
 class default__:
     def  __init__(self):
         pass
 
     @staticmethod
-    def TestEncryptDecrypt():
-        d_0_kmsKey_: _dafny.Seq
-        d_0_kmsKey_ = Fixtures.default__.keyArn
-        d_1_asdf_: _dafny.Seq
-        d_1_asdf_ = _dafny.Seq([97, 115, 100, 102])
-        d_2_defaultConfig_: AwsCryptographyEncryptionSdkTypes.AwsEncryptionSdkConfig
-        d_2_defaultConfig_ = ESDK.default__.DefaultAwsEncryptionSdkConfig()
-        d_3_valueOrError0_: Wrappers.Result = None
-        out0_: Wrappers.Result
-        out0_ = ESDK.default__.ESDK(d_2_defaultConfig_)
-        d_3_valueOrError0_ = out0_
-        if not(not((d_3_valueOrError0_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestEncryptDecrypt.dfy(24,16): " + _dafny.string_of(d_3_valueOrError0_))
-        d_4_esdk_: ESDK.ESDKClient
-        d_4_esdk_ = (d_3_valueOrError0_).Extract()
-        d_5_valueOrError1_: Wrappers.Result = None
-        out1_: Wrappers.Result
-        out1_ = MaterialProviders.default__.MaterialProviders(MaterialProviders.default__.DefaultMaterialProvidersConfig())
-        d_5_valueOrError1_ = out1_
-        if not(not((d_5_valueOrError1_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestEncryptDecrypt.dfy(25,15): " + _dafny.string_of(d_5_valueOrError1_))
-        d_6_mpl_: MaterialProviders.MaterialProvidersClient
-        d_6_mpl_ = (d_5_valueOrError1_).Extract()
-        d_7_valueOrError2_: Wrappers.Result = None
-        out2_: Wrappers.Result
-        out2_ = (d_6_mpl_).CreateDefaultClientSupplier(AwsCryptographyMaterialProvidersTypes.CreateDefaultClientSupplierInput_CreateDefaultClientSupplierInput())
-        d_7_valueOrError2_ = out2_
-        if not(not((d_7_valueOrError2_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestEncryptDecrypt.dfy(26,26): " + _dafny.string_of(d_7_valueOrError2_))
-        d_8_clientSupplier_: AwsCryptographyMaterialProvidersTypes.IClientSupplier
-        d_8_clientSupplier_ = (d_7_valueOrError2_).Extract()
-        d_9_valueOrError3_: Wrappers.Result = None
-        out3_: Wrappers.Result
-        out3_ = (d_8_clientSupplier_).GetClient(AwsCryptographyMaterialProvidersTypes.GetClientInput_GetClientInput(_dafny.Seq("us-west-2")))
-        d_9_valueOrError3_ = out3_
-        if not(not((d_9_valueOrError3_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestEncryptDecrypt.dfy(27,21): " + _dafny.string_of(d_9_valueOrError3_))
-        d_10_kmsClient_: ComAmazonawsKmsTypes.IKMSClient
-        d_10_kmsClient_ = (d_9_valueOrError3_).Extract()
-        d_11_valueOrError4_: Wrappers.Result = None
-        out4_: Wrappers.Result
-        out4_ = (d_6_mpl_).CreateAwsKmsKeyring(AwsCryptographyMaterialProvidersTypes.CreateAwsKmsKeyringInput_CreateAwsKmsKeyringInput(d_0_kmsKey_, d_10_kmsClient_, Wrappers.Option_None()))
-        d_11_valueOrError4_ = out4_
-        if not(not((d_11_valueOrError4_).IsFailure())):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestEncryptDecrypt.dfy(29,22): " + _dafny.string_of(d_11_valueOrError4_))
-        d_12_kmsKeyring_: AwsCryptographyMaterialProvidersTypes.IKeyring
-        d_12_kmsKeyring_ = (d_11_valueOrError4_).Extract()
-        d_13_encryptOutput_: Wrappers.Result
-        out5_: Wrappers.Result
-        out5_ = (d_4_esdk_).Encrypt(AwsCryptographyEncryptionSdkTypes.EncryptInput_EncryptInput(d_1_asdf_, Wrappers.Option_None(), Wrappers.Option_None(), Wrappers.Option_Some(d_12_kmsKeyring_), Wrappers.Option_None(), Wrappers.Option_None()))
-        d_13_encryptOutput_ = out5_
-        if not((d_13_encryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestEncryptDecrypt.dfy(46,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
-        d_14_esdkCiphertext_: _dafny.Seq
-        d_14_esdkCiphertext_ = ((d_13_encryptOutput_).value).ciphertext
-        d_15_decryptOutput_: Wrappers.Result
-        out6_: Wrappers.Result
-        out6_ = (d_4_esdk_).Decrypt(AwsCryptographyEncryptionSdkTypes.DecryptInput_DecryptInput(d_14_esdkCiphertext_, Wrappers.Option_None(), Wrappers.Option_Some(d_12_kmsKeyring_), Wrappers.Option_None()))
-        d_15_decryptOutput_ = out6_
-        if not((d_15_decryptOutput_).is_Success):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestEncryptDecrypt.dfy(56,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
-        d_16_cycledPlaintext_: _dafny.Seq
-        d_16_cycledPlaintext_ = ((d_15_decryptOutput_).value).plaintext
-        if not((d_16_cycledPlaintext_) == (d_1_asdf_)):
-            raise _dafny.HaltException("dafny/AwsEncryptionSdk/test/TestEncryptDecrypt.dfy(59,4): " + _dafny.string_of(_dafny.Seq("expectation violation")))
+    def HeaderVersionSupportsCommitment_q(suite, body):
+        return (not (((suite).commitment).is_HKDF) or (((body).is_V2HeaderBody) and ((len((body).suiteData)) == ((((suite).commitment).HKDF).outputKeyLength)))) and (not (not(((suite).commitment).is_HKDF)) or ((True) and ((body).is_V1HeaderBody)))
 
+    @staticmethod
+    def ReadHeaderBody(buffer, maxEdks, mpl):
+        d_0_valueOrError0_ = SharedHeaderFunctions.default__.ReadMessageFormatVersion(buffer)
+        if (d_0_valueOrError0_).IsFailure():
+            return (d_0_valueOrError0_).PropagateFailure()
+        elif True:
+            d_1_version_ = (d_0_valueOrError0_).Extract()
+            def lambda0_():
+                source0_ = (d_1_version_).data
+                if True:
+                    if source0_.is_V1:
+                        d_3_valueOrError2_ = V1HeaderBody.default__.ReadV1HeaderBody(buffer, maxEdks, mpl)
+                        if (d_3_valueOrError2_).IsFailure():
+                            return (d_3_valueOrError2_).PropagateFailure()
+                        elif True:
+                            d_4_b_ = (d_3_valueOrError2_).Extract()
+                            d_5_body_ = (d_4_b_).data
+                            return Wrappers.Result_Success((d_5_body_, (d_4_b_).tail))
+                if True:
+                    d_6_valueOrError3_ = V2HeaderBody.default__.ReadV2HeaderBody(buffer, maxEdks, mpl)
+                    if (d_6_valueOrError3_).IsFailure():
+                        return (d_6_valueOrError3_).PropagateFailure()
+                    elif True:
+                        d_7_b_ = (d_6_valueOrError3_).Extract()
+                        d_8_body_ = (d_7_b_).data
+                        return Wrappers.Result_Success((d_8_body_, (d_7_b_).tail))
+
+            d_2_valueOrError1_ = lambda0_()
+            if (d_2_valueOrError1_).IsFailure():
+                return (d_2_valueOrError1_).PropagateFailure()
+            elif True:
+                let_tmp_rhs0_ = (d_2_valueOrError1_).Extract()
+                d_9_body_ = let_tmp_rhs0_[0]
+                d_10_tail_ = let_tmp_rhs0_[1]
+                d_11_valueOrError4_ = Wrappers.default__.Need((((d_9_body_).contentType).is_Framed) == (((d_9_body_).frameLength) > (0)), SerializeFunctions.ReadProblems_Error(_dafny.Seq("Frame length must be positive if content is framed")))
+                if (d_11_valueOrError4_).IsFailure():
+                    return (d_11_valueOrError4_).PropagateFailure()
+                elif True:
+                    d_12_valueOrError5_ = Wrappers.default__.Need((((d_9_body_).contentType).is_NonFramed) == (((d_9_body_).frameLength) == (0)), SerializeFunctions.ReadProblems_Error(_dafny.Seq("Frame length must be zero if content is non-framed")))
+                    if (d_12_valueOrError5_).IsFailure():
+                        return (d_12_valueOrError5_).PropagateFailure()
+                    elif True:
+                        return Wrappers.Result_Success(SerializeFunctions.SuccessfulRead_SuccessfulRead(d_9_body_, d_10_tail_))
+
+    @staticmethod
+    def WriteHeaderBody(body):
+        source0_ = body
+        if True:
+            if source0_.is_V1HeaderBody:
+                return V1HeaderBody.default__.WriteV1HeaderBody(body)
+        if True:
+            return V2HeaderBody.default__.WriteV2HeaderBody(body)
+
+
+class HeaderInfo:
+    @classmethod
+    def default(cls, ):
+        return lambda: HeaderInfo_HeaderInfo(HeaderTypes.HeaderBody.default()(), _dafny.Seq({}), _dafny.Map({}), AwsCryptographyMaterialProvidersTypes.AlgorithmSuiteInfo.default()(), HeaderTypes.HeaderAuth.default()())
+    def __ne__(self, __o: object) -> bool:
+        return not self.__eq__(__o)
+    @property
+    def is_HeaderInfo(self) -> bool:
+        return isinstance(self, HeaderInfo_HeaderInfo)
+
+class HeaderInfo_HeaderInfo(HeaderInfo, NamedTuple('HeaderInfo', [('body', Any), ('rawHeader', Any), ('encryptionContext', Any), ('suite', Any), ('headerAuth', Any)])):
+    def __dafnystr__(self) -> str:
+        return f'Header.HeaderInfo.HeaderInfo({_dafny.string_of(self.body)}, {_dafny.string_of(self.rawHeader)}, {_dafny.string_of(self.encryptionContext)}, {_dafny.string_of(self.suite)}, {_dafny.string_of(self.headerAuth)})'
+    def __eq__(self, __o: object) -> bool:
+        return isinstance(__o, HeaderInfo_HeaderInfo) and self.body == __o.body and self.rawHeader == __o.rawHeader and self.encryptionContext == __o.encryptionContext and self.suite == __o.suite and self.headerAuth == __o.headerAuth
+    def __hash__(self) -> int:
+        return super().__hash__()
+
+
+class Header:
+    def  __init__(self):
+        pass
+
+    @staticmethod
+    def default():
+        return HeaderInfo.default()()
