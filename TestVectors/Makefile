@@ -211,6 +211,10 @@ test_encrypt_vectors_rust:
 test_encrypt_vectors_go:
 	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go encrypt --manifest-path=.. --decrypt-manifest-path=..
 
+test_encrypt_vectors_python:
+        rm -rf runtimes/python/.tox
+        python3 -m tox -c runtimes/python --verbose -e cli -- encrypt --manifest-path runtimes/python --decrypt-manifest-path runtimes/python
+
 test_decrypt_encrypt_vectors_java:
 	gradle -p runtimes/java run --args="decrypt --manifest-path . --manifest-name decrypt-manifest.json"
 
@@ -234,6 +238,10 @@ test_decrypt_encrypt_vectors_rust:
 test_decrypt_encrypt_vectors_go:
 	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go decrypt --manifest-path=.. --manifest-name=decrypt-manifest.json
 
+test_decrypt_encrypt_vectors_python:
+        rm -rf runtimes/python/.tox
+        python3 -m tox -c runtimes/python --verbose -e cli -- decrypt --manifest-path runtimes/python --manifest-name decrypt-manifest.json
+
 _polymorph_dependencies:
 	@echo "No polymorphing of dependency"
 
@@ -248,3 +256,24 @@ _sed_types_file_add_extern:
 
 _sed_index_file_add_extern:
 	@echo "No extern to process for ESDK TestVectors"
+
+PYTHON_MODULE_NAME=aws_encryption_sdk_test_vectors
+
+TRANSLATION_RECORD_PYTHON := \
+    --translation-record ../mpl/StandardLibrary/runtimes/python/src/smithy_dafny_standard_library/internaldafny/generated/dafny_src-py.dtr \
+    --translation-record ../mpl/ComAmazonawsKms/runtimes/python/src/aws_cryptography_internal_kms/internaldafny/generated/dafny_src-py.dtr \
+    --translation-record ../mpl/ComAmazonawsDynamodb/runtimes/python/src/aws_cryptography_internal_dynamodb/internaldafny/generated/dafny_src-py.dtr \
+    --translation-record ../mpl/AwsCryptographyPrimitives/runtimes/python/src/aws_cryptography_primitives/internaldafny/generated/dafny_src-py.dtr \
+        --translation-record ../mpl/AwsCryptographicMaterialProviders/runtimes/python/src/aws_cryptographic_material_providers/internaldafny/generated/dafny_src-py.dtr \
+        --translation-record ../mpl/TestVectorsAwsCryptographicMaterialProviders/runtimes/python/src/aws_cryptography_materialproviders_test_vectors/internaldafny/generated/dafny_src-py.dtr \
+        --translation-record ../AwsEncryptionSDK/runtimes/python/src/aws_encryption_sdk/internaldafny/generated/dafny_src-py.dtr
+
+PYTHON_DEPENDENCY_MODULE_NAMES := \
+        --dependency-library-name=aws.cryptography.primitives=aws_cryptography_primitives \
+        --dependency-library-name=com.amazonaws.kms=aws_cryptography_internal_kms \
+        --dependency-library-name=com.amazonaws.dynamodb=aws_cryptography_internal_dynamodb \
+        --dependency-library-name=aws.cryptography.materialProviders=aws_cryptographic_material_providers \
+        --dependency-library-name=aws.cryptography.keyStore=aws_cryptographic_material_providers \
+        --dependency-library-name=smithy.api=aws_cryptographic_material_providers \
+        --dependency-library-name=aws.cryptography.materialProvidersTestVectorKeys=aws_cryptographic_material_providers_test_vectors \
+        --dependency-library-name=aws.cryptography.encryptionSdk=aws_encryption_sdk
