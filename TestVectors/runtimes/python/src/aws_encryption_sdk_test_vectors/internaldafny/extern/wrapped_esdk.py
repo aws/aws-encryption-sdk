@@ -72,7 +72,7 @@ class DafnyESDKToNativeESDKShim:
                 )
 
             native_esdk_ciphertext, native_esdk_header = (
-                self.native_esdk.encrypt(**native_encrypt_input)
+                self.native_esdk.encrypt(**native_esdk_input)
             )
 
             # if native_encrypt_input.algorithm_suite_id is None:
