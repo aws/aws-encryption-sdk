@@ -3,4 +3,3 @@
 
 # Initialize generated Dafny
 from .internaldafny.generated import module_
-
