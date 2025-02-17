@@ -5,6 +5,7 @@ ImplementationFromDafny-cs.dtr
 TestsFromDafny-cs.dtr
 **/bin
 **/obj
+*.pyc
 runtimes/java/dafny
 runtimes/**/encrypt-manifest.json
 runtimes/**/decrypt-manifest.json
