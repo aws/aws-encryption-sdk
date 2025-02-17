@@ -65,14 +65,18 @@ class DafnyESDKToNativeESDKShim:
             if native_encrypt_input.keyring is not None:
                 native_esdk_input["keyring"] = native_encrypt_input.keyring
             if native_encrypt_input.materials_manager is not None:
-                native_esdk_input["materials_manager"] = native_encrypt_input.materials_manager
+                native_esdk_input["materials_manager"] = (
+                    native_encrypt_input.materials_manager
+                )
             if native_encrypt_input.algorithm_suite_id is not None:
                 native_esdk_input["algorithm"] = AlgorithmSuite.get_by_id(
-                    _mpl_algorithm_id_to_native_algorithm_id(native_encrypt_input.algorithm_suite_id)
+                    _mpl_algorithm_id_to_native_algorithm_id(
+                        native_encrypt_input.algorithm_suite_id
+                    )
                 )
 
-            native_esdk_ciphertext, native_esdk_header = (
-                self.native_esdk.encrypt(**native_esdk_input)
+            native_esdk_ciphertext, native_esdk_header = self.native_esdk.encrypt(
+                **native_esdk_input
             )
 
             # if native_encrypt_input.algorithm_suite_id is None:
@@ -150,10 +154,12 @@ class DafnyESDKToNativeESDKShim:
             if native_decrypt_input.keyring is not None:
                 native_esdk_input["keyring"] = native_decrypt_input.keyring
             if native_decrypt_input.materials_manager is not None:
-                native_esdk_input["materials_manager"] = native_decrypt_input.materials_manager
+                native_esdk_input["materials_manager"] = (
+                    native_decrypt_input.materials_manager
+                )
 
-            native_esdk_plaintext, native_esdk_header = (
-                self.native_esdk.encrypt(**native_esdk_input)
+            native_esdk_plaintext, native_esdk_header = self.native_esdk.decrypt(
+                **native_esdk_input
             )
 
             # if native_decrypt_input.materials_manager is not None:
