@@ -1,3 +1,5 @@
+# Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
 import aws_encryption_sdk.streaming_client
 import aws_encryption_sdk_test_vectors.internaldafny.generated.WrappedESDK as WrappedESDK
 import smithy_dafny_standard_library.internaldafny.generated.Wrappers as Wrappers
@@ -29,7 +31,9 @@ from aws_encryption_sdk_dafny.smithygenerated.aws_cryptography_encryptionsdk.err
     _smithy_error_to_dafny_error,
 )
 from aws_encryption_sdk.materials_managers.mpl.cmm import CryptoMaterialsManagerFromMPL
-from aws_encryption_sdk.materials_managers.mpl.materials import _mpl_algorithm_id_to_native_algorithm_id
+from aws_encryption_sdk.materials_managers.mpl.materials import (
+    _mpl_algorithm_id_to_native_algorithm_id,
+)
 from aws_encryption_sdk.identifiers import AlgorithmSuite
 
 
@@ -51,96 +55,141 @@ class DafnyESDKToNativeESDKShim:
 
     def Encrypt(self, dafny_encrypt_input):
         try:
-          native_encrypt_input = dafny_to_smithy_EncryptInput(dafny_encrypt_input)
+            native_encrypt_input = dafny_to_smithy_EncryptInput(dafny_encrypt_input)
 
-          if native_encrypt_input.algorithm_suite_id is None:
+            # Manual conversion of ESDK-Dafny EncryptInput to unmodelled native ESDK-Python encrypt parameters
+            native_esdk_input = {
+                "source": native_encrypt_input.plaintext,
+                "encryption_context": native_encrypt_input.encryption_context,
+            }
+            if native_encrypt_input.keyring is not None:
+                native_esdk_input["keyring"] = native_encrypt_input.keyring
             if native_encrypt_input.materials_manager is not None:
-                native_esdk_ciphertext, native_esdk_header = self.native_esdk.encrypt(
-                    source=native_encrypt_input.plaintext,
-                    materials_manager=native_encrypt_input.materials_manager,
-                    encryption_context=native_encrypt_input.encryption_context,
-                )
-            else:
-                native_esdk_ciphertext, native_esdk_header = self.native_esdk.encrypt(
-                    source=native_encrypt_input.plaintext,
-                    materials_manager=native_encrypt_input.keyring,
-                    encryption_context=native_encrypt_input.encryption_context,
-                )
-          else: 
-              if native_encrypt_input.materials_manager is not None:
-                native_esdk_ciphertext, native_esdk_header = self.native_esdk.encrypt(
-                    source=native_encrypt_input.plaintext,
-                    materials_manager=native_encrypt_input.materials_manager,
-                    encryption_context=native_encrypt_input.encryption_context,
-                    algorithm = AlgorithmSuite.get_by_id(
-                        _mpl_algorithm_id_to_native_algorithm_id(native_encrypt_input.algorithm_suite_id)
-                    )
-                )
-              else:
-                native_esdk_ciphertext, native_esdk_header = self.native_esdk.encrypt(
-                    source=native_encrypt_input.plaintext,
-                    materials_manager=native_encrypt_input.keyring,
-                    encryption_context=native_encrypt_input.encryption_context,
-                    algorithm = AlgorithmSuite.get_by_id(
-                        _mpl_algorithm_id_to_native_algorithm_id(native_encrypt_input.algorithm_suite_id)
-                    )
+                native_esdk_input["materials_manager"] = native_encrypt_input.materials_manager
+            if native_encrypt_input.algorithm_suite_id is not None:
+                native_esdk_input["algorithm"] = AlgorithmSuite.get_by_id(
+                    _mpl_algorithm_id_to_native_algorithm_id(native_encrypt_input.algorithm_suite_id)
                 )
 
-          dafny_esdk_native_encrypt_output = EncryptOutput(
-              ciphertext=native_esdk_ciphertext,
-              encryption_context=native_esdk_header.encryption_context,
-              algorithm_suite_id=CryptoMaterialsManagerFromMPL._native_algorithm_id_to_mpl_algorithm_id(
-                  native_esdk_header.algorithm.algorithm_id
-              ).value,
-          )
+            native_esdk_ciphertext, native_esdk_header = (
+                self.native_esdk.encrypt(**native_encrypt_input)
+            )
 
-          dafny_esdk_dafny_encrypt_output = smithy_to_dafny_EncryptOutput(
-              dafny_esdk_native_encrypt_output
-          )
+            # if native_encrypt_input.algorithm_suite_id is None:
+            #     if native_encrypt_input.materials_manager is not None:
+            #         native_esdk_ciphertext, native_esdk_header = (
+            #             self.native_esdk.encrypt(
+            #                 source=native_encrypt_input.plaintext,
+            #                 materials_manager=native_encrypt_input.materials_manager,
+            #                 encryption_context=native_encrypt_input.encryption_context,
+            #             )
+            #         )
+            #     else:
+            #         native_esdk_ciphertext, native_esdk_header = (
+            #             self.native_esdk.encrypt(
+            #                 source=native_encrypt_input.plaintext,
+            #                 materials_manager=native_encrypt_input.keyring,
+            #                 encryption_context=native_encrypt_input.encryption_context,
+            #             )
+            #         )
+            # else:
+            #     if native_encrypt_input.materials_manager is not None:
+            #         native_esdk_ciphertext, native_esdk_header = (
+            #             self.native_esdk.encrypt(
+            #                 source=native_encrypt_input.plaintext,
+            #                 materials_manager=native_encrypt_input.materials_manager,
+            #                 encryption_context=native_encrypt_input.encryption_context,
+            #                 algorithm=AlgorithmSuite.get_by_id(
+            #                     _mpl_algorithm_id_to_native_algorithm_id(
+            #                         native_encrypt_input.algorithm_suite_id
+            #                     )
+            #                 ),
+            #             )
+            #         )
+            #     else:
+            #         native_esdk_ciphertext, native_esdk_header = (
+            #             self.native_esdk.encrypt(
+            #                 source=native_encrypt_input.plaintext,
+            #                 materials_manager=native_encrypt_input.keyring,
+            #                 encryption_context=native_encrypt_input.encryption_context,
+            #                 algorithm=AlgorithmSuite.get_by_id(
+            #                     _mpl_algorithm_id_to_native_algorithm_id(
+            #                         native_encrypt_input.algorithm_suite_id
+            #                     )
+            #                 ),
+            #             )
+            #         )
 
-          return Wrappers.Result_Success(dafny_esdk_dafny_encrypt_output)
+            dafny_esdk_native_encrypt_output = EncryptOutput(
+                ciphertext=native_esdk_ciphertext,
+                encryption_context=native_esdk_header.encryption_context,
+                algorithm_suite_id=CryptoMaterialsManagerFromMPL._native_algorithm_id_to_mpl_algorithm_id(
+                    native_esdk_header.algorithm.algorithm_id
+                ).value,
+            )
+
+            dafny_esdk_dafny_encrypt_output = smithy_to_dafny_EncryptOutput(
+                dafny_esdk_native_encrypt_output
+            )
+
+            return Wrappers.Result_Success(dafny_esdk_dafny_encrypt_output)
         except Exception as e:
-          return Wrappers.Result_Failure(_smithy_error_to_dafny_error(e))
+            return Wrappers.Result_Failure(_smithy_error_to_dafny_error(e))
 
     def Decrypt(self, dafny_decrypt_input):
-        
+
         try:
 
-          native_decrypt_input = dafny_to_smithy_DecryptInput(dafny_decrypt_input)
+            native_decrypt_input = dafny_to_smithy_DecryptInput(dafny_decrypt_input)
 
-          if native_decrypt_input.materials_manager is not None:
-              native_esdk_plaintext, native_esdk_header = self.native_esdk.decrypt(
-                  source=native_decrypt_input.ciphertext,
-                  materials_manager=native_decrypt_input.materials_manager,
-                  encryption_context=native_decrypt_input.encryption_context,
-              )
-          else:
-              native_esdk_plaintext, native_esdk_header = self.native_esdk.decrypt(
-                  source=native_decrypt_input.ciphertext,
-                  materials_manager=native_decrypt_input.keyring,
-                  encryption_context=native_decrypt_input.encryption_context,
-              )
+            # Manual conversion of ESDK-Dafny DecryptInput to unmodelled native ESDK-Python decrypt parameters
+            native_esdk_input = {
+                "source": native_decrypt_input.ciphertext,
+                "encryption_context": native_decrypt_input.encryption_context,
+            }
+            if native_decrypt_input.keyring is not None:
+                native_esdk_input["keyring"] = native_decrypt_input.keyring
+            if native_decrypt_input.materials_manager is not None:
+                native_esdk_input["materials_manager"] = native_decrypt_input.materials_manager
 
-          dafny_esdk_native_decrypt_output = DecryptOutput(
-              plaintext=native_esdk_plaintext,
-              encryption_context=native_esdk_header.encryption_context,
-              algorithm_suite_id=CryptoMaterialsManagerFromMPL._native_algorithm_id_to_mpl_algorithm_id(
-                  native_esdk_header.algorithm.algorithm_id
-              ).value,
-          )
+            native_esdk_plaintext, native_esdk_header = (
+                self.native_esdk.encrypt(**native_esdk_input)
+            )
 
-          dafny_esdk_dafny_decrypt_output = smithy_to_dafny_DecryptOutput(
-              dafny_esdk_native_decrypt_output
-          )
+            # if native_decrypt_input.materials_manager is not None:
+            #     native_esdk_plaintext, native_esdk_header = self.native_esdk.decrypt(
+            #         source=native_decrypt_input.ciphertext,
+            #         materials_manager=native_decrypt_input.materials_manager,
+            #         encryption_context=native_decrypt_input.encryption_context,
+            #     )
+            # else:
+            #     native_esdk_plaintext, native_esdk_header = self.native_esdk.decrypt(
+            #         source=native_decrypt_input.ciphertext,
+            #         materials_manager=native_decrypt_input.keyring,
+            #         encryption_context=native_decrypt_input.encryption_context,
+            #     )
 
-          return Wrappers.Result_Success(dafny_esdk_dafny_decrypt_output)
+            dafny_esdk_native_decrypt_output = DecryptOutput(
+                plaintext=native_esdk_plaintext,
+                encryption_context=native_esdk_header.encryption_context,
+                algorithm_suite_id=CryptoMaterialsManagerFromMPL._native_algorithm_id_to_mpl_algorithm_id(
+                    native_esdk_header.algorithm.algorithm_id
+                ).value,
+            )
+
+            dafny_esdk_dafny_decrypt_output = smithy_to_dafny_DecryptOutput(
+                dafny_esdk_native_decrypt_output
+            )
+
+            return Wrappers.Result_Success(dafny_esdk_dafny_decrypt_output)
         except Exception as e:
             return Wrappers.Result_Failure(_smithy_error_to_dafny_error(e))
 
 
 class default__(WrappedESDK.default__):
 
-    # Dafny-generated ESDK. Not launched right now.
+    # This commented-out method wraps the Dafny-generated ESDK.
+    # Not testing right now.
     # @staticmethod
     # def WrappedESDK(config):
     #   smithy_client = aws_encryption_sdk.smithygenerated.aws_cryptography_encryptionsdk.client.AwsEncryptionSdk(
@@ -153,8 +202,6 @@ class default__(WrappedESDK.default__):
     # Wrapper for the native ESDK-Python.
     def WrappedESDK(dafny_config):
         native_config = dafny_config_to_smithy_config(dafny_config)
-
-        # TODO deny net 4.0.0 allow retry
 
         if native_config.net_v4_0_0_retry_policy == NetV4_0_0_RetryPolicy.ALLOW_RETRY:
             raise ValueError("net 4.0.0 retry policy is not supported")
