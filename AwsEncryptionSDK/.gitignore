@@ -4,8 +4,6 @@ TestsFromDafny.cs
 ImplementationFromDafny-cs.dtr
 TestsFromDafny-cs.dtr
 
-*.pyc
-
 bin/
 obj/
 
