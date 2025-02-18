@@ -46,30 +46,10 @@ jobs:
           role-session-name: InterOpTests
       
       - uses: actions/checkout@v4
-      
-      - name: Init libraries
-        run: |
-          git submodule update --init --recursive libraries
-      
-      - uses: actions/checkout@v4
         with:
-          repository: aws/private-aws-cryptographic-material-providers-library-dafny-staging
-          path: ${{ github.workspace }}/mpl
           submodules: 'true'
           ref: 'jocorell/test-surrogate-pairs-ec'
           token: ${{secrets.PRIVATE_MPL}}
-      # - name: Init Submodules
-      #   env:
-      #     PRIVATE_MPL: ${{ secrets.PRIVATE_MPL }}
-      #   run: |
-      #     AUTH="$(echo -n "pat:${PRIVATE_MPL}" | base64 | tr -d '\n')"
-      #     git config --global user.email "your-email"
-      #     git config --global user.name "your-id"
-      #     git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $AUTH"
-      #     git config --global --add url.https://github.com/.insteadOf git@github.com:
-      #     git config --global url.https://${{ secrets.PRIVATE_MPL }}@github.com/.insteadOf https://github.com/
-      #     git submodule update --init --recursive mpl
-          # git submodule update --init libraries 
 
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
