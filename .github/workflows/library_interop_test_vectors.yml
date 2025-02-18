@@ -58,6 +58,7 @@ jobs:
           path: ${{ github.workspace }}/mpl
           submodules: 'true'
           ref: 'jocorell/test-surrogate-pairs-ec'
+          token: ${{secrets.PRIVATE_MPL}}
       # - name: Init Submodules
       #   env:
       #     PRIVATE_MPL: ${{ secrets.PRIVATE_MPL }}
