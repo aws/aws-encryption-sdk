@@ -29,7 +29,6 @@ jobs:
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
     runs-on: ${{ matrix.os }}
-    environment: "MPL_DAFNY"
     permissions:
       id-token: write
       contents: read
