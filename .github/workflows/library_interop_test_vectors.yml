@@ -57,6 +57,7 @@ jobs:
           repository: aws/private-aws-cryptographic-material-providers-library-dafny-staging
           path: ${{ github.workspace }}/mpl
           submodules: 'true'
+          ref: 'jocorell/test-surrogate-pairs-ec'
       # - name: Init Submodules
       #   env:
       #     PRIVATE_MPL: ${{ secrets.PRIVATE_MPL }}
