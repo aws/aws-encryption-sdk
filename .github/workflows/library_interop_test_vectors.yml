@@ -45,6 +45,8 @@ jobs:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2
           role-session-name: InterOpTests
+      
+      - uses: actions/checkout@v4
 
       - name: Init Submodules
         env:
