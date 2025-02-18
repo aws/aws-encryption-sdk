@@ -240,11 +240,14 @@ jobs:
           role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2
           role-session-name: InterOpTests
 
-      - uses: actions/checkout@v3
-      #  Not all submodules are needed.
-      # We manually pull the submodule we DO need.
-      - run: git submodule update --init libraries
-      - run: git submodule update --init --recursive mpl
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+          token: ${{secrets.PRIVATE_MPL}}
+      - name: Init Submodules
+        shell: bash
+        run: |
+          git submodule update --init --recursive mpl
 
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
