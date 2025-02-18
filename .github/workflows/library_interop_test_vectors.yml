@@ -46,23 +46,6 @@ jobs:
           role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2
           role-session-name: InterOpTests
 
-      - uses: actions/checkout@v4
-        env:
-          TOKEN: ${{secrets.PRIVATE_MPL}}
-        with:
-          token: ${{ env.TOKEN }}
-          submodules: 'recursive'
-      # #  Not all submodules are needed.
-      # # We manually pull the submodule we DO need.
-      # - run: git submodule update --init libraries
-
-      # - name: Init Private MPL
-      #   env:
-      #     PRIVATE_MPL: ${{ secrets.MPL_DAFNY }}
-      #   run: |
-      #     AUTH="$(echo -n "pat:${PRIVATE_MPL}" | base64 | tr -d '\n')"
-      #     git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $AUTH"
-      #     git submodule update --init --recursive mpl
       - name: Init Submodules
         env:
         # This secret is in the configured environment
