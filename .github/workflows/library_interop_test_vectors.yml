@@ -48,7 +48,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: 'true'
-          ref: 'jocorell/test-surrogate-pairs-ec'
           token: ${{secrets.PRIVATE_MPL}}
 
       # Set up runtimes
