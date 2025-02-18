@@ -62,6 +62,7 @@ class DafnyESDKToNativeESDKShim:
                 "source": native_encrypt_input.plaintext,
                 "encryption_context": native_encrypt_input.encryption_context,
             }
+
             if native_encrypt_input.keyring is not None:
                 native_esdk_input["keyring"] = native_encrypt_input.keyring
             if native_encrypt_input.materials_manager is not None:
@@ -78,51 +79,6 @@ class DafnyESDKToNativeESDKShim:
             native_esdk_ciphertext, native_esdk_header = self.native_esdk.encrypt(
                 **native_esdk_input
             )
-
-            # if native_encrypt_input.algorithm_suite_id is None:
-            #     if native_encrypt_input.materials_manager is not None:
-            #         native_esdk_ciphertext, native_esdk_header = (
-            #             self.native_esdk.encrypt(
-            #                 source=native_encrypt_input.plaintext,
-            #                 materials_manager=native_encrypt_input.materials_manager,
-            #                 encryption_context=native_encrypt_input.encryption_context,
-            #             )
-            #         )
-            #     else:
-            #         native_esdk_ciphertext, native_esdk_header = (
-            #             self.native_esdk.encrypt(
-            #                 source=native_encrypt_input.plaintext,
-            #                 materials_manager=native_encrypt_input.keyring,
-            #                 encryption_context=native_encrypt_input.encryption_context,
-            #             )
-            #         )
-            # else:
-            #     if native_encrypt_input.materials_manager is not None:
-            #         native_esdk_ciphertext, native_esdk_header = (
-            #             self.native_esdk.encrypt(
-            #                 source=native_encrypt_input.plaintext,
-            #                 materials_manager=native_encrypt_input.materials_manager,
-            #                 encryption_context=native_encrypt_input.encryption_context,
-            #                 algorithm=AlgorithmSuite.get_by_id(
-            #                     _mpl_algorithm_id_to_native_algorithm_id(
-            #                         native_encrypt_input.algorithm_suite_id
-            #                     )
-            #                 ),
-            #             )
-            #         )
-            #     else:
-            #         native_esdk_ciphertext, native_esdk_header = (
-            #             self.native_esdk.encrypt(
-            #                 source=native_encrypt_input.plaintext,
-            #                 materials_manager=native_encrypt_input.keyring,
-            #                 encryption_context=native_encrypt_input.encryption_context,
-            #                 algorithm=AlgorithmSuite.get_by_id(
-            #                     _mpl_algorithm_id_to_native_algorithm_id(
-            #                         native_encrypt_input.algorithm_suite_id
-            #                     )
-            #                 ),
-            #             )
-            #         )
 
             dafny_esdk_native_encrypt_output = EncryptOutput(
                 ciphertext=native_esdk_ciphertext,
@@ -161,19 +117,6 @@ class DafnyESDKToNativeESDKShim:
             native_esdk_plaintext, native_esdk_header = self.native_esdk.decrypt(
                 **native_esdk_input
             )
-
-            # if native_decrypt_input.materials_manager is not None:
-            #     native_esdk_plaintext, native_esdk_header = self.native_esdk.decrypt(
-            #         source=native_decrypt_input.ciphertext,
-            #         materials_manager=native_decrypt_input.materials_manager,
-            #         encryption_context=native_decrypt_input.encryption_context,
-            #     )
-            # else:
-            #     native_esdk_plaintext, native_esdk_header = self.native_esdk.decrypt(
-            #         source=native_decrypt_input.ciphertext,
-            #         materials_manager=native_decrypt_input.keyring,
-            #         encryption_context=native_decrypt_input.encryption_context,
-            #     )
 
             dafny_esdk_native_decrypt_output = DecryptOutput(
                 plaintext=native_esdk_plaintext,
