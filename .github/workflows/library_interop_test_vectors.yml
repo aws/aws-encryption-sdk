@@ -63,6 +63,18 @@ jobs:
       #     AUTH="$(echo -n "pat:${PRIVATE_MPL}" | base64 | tr -d '\n')"
       #     git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $AUTH"
       #     git submodule update --init --recursive mpl
+      - name: Init Submodules
+        env:
+        # This secret is in the configured environment
+        # Token created on # 11/28/2022
+        # expires in ~30 days 12/28/2022
+          PRIVATE_MPL: ${{ secrets.MPL_DAFNY }}
+        run: |
+          AUTH="$(echo -n "pat:${PRIVATE_MPL}" | base64 | tr -d '\n')"
+          git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic $AUTH"
+          git config --global --add url.https://github.com/.insteadOf git@github.com:
+          git submodule update --init --recursive mpl
+          git submodule update --init libraries 
 
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
