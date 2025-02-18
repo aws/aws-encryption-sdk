@@ -49,6 +49,10 @@ jobs:
         with:
           submodules: 'true'
           token: ${{secrets.PRIVATE_MPL}}
+      - name: Init Submodules
+        shell: bash
+        run: |
+          git submodule update --init --recursive mpl
 
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
