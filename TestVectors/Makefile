@@ -235,6 +235,10 @@ test_decrypt_encrypt_vectors_net_legacy:
 	dotnet build runtimes/net
 	dotnet run --project runtimes/net --framework $(FRAMEWORK) decrypt --manifest-path $(MANIFEST_PATH) --manifest-name $(MANIFEST_NAME)
 
+test_decrypt_encrypt_vectors_python_legacy:
+	rm -rf runtimes/python/.tox
+	python3 -m tox -c runtimes/python --verbose -e cli -- decrypt --manifest-path $(MANIFEST_PATH) --manifest-name $(MANIFEST_NAME)
+
 test_decrypt_encrypt_vectors_rust:
 	cd runtimes/rust && \
 	cargo run --bin test-vectors --features="wrapped-client" --release -- decrypt --manifest-path . --manifest-name decrypt-manifest.json && \

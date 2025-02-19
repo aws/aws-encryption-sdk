@@ -57,11 +57,12 @@ jobs:
     with:
       dafny: ${{needs.getVersion.outputs.version}}
     secrets: inherit
-  # pr-dafny-legacy-test-vectors:
-  #   needs: getVersion
-  #   uses: ./.github/workflows/library_legacy_interop_test_vectors.yml
-  #   with:
-  #     dafny: ${{needs.getVersion.outputs.version}}
+  pr-dafny-legacy-test-vectors:
+    needs: getVersion
+    uses: ./.github/workflows/library_legacy_interop_test_vectors.yml
+    with:
+      dafny: ${{needs.getVersion.outputs.version}}
+    secrets: inherit
   pr-ci-all-required:
     if: always()
     needs:
@@ -71,7 +72,7 @@ jobs:
       # - pr-ci-rust
       # - pr-test-vectors
       - pr-dafny-test-vectors
-      # - pr-dafny-legacy-test-vectors
+      - pr-dafny-legacy-test-vectors
     runs-on: ubuntu-22.04
     steps:
       - name: Verify all required jobs passed
