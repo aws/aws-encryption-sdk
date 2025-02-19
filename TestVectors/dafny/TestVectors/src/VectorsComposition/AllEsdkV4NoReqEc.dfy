@@ -49,7 +49,7 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
   // + AllDefaultCmm.SuccessTestingRequiredEncryptionContextKeysReproducedEncryptionContext
   + AllDefaultCmm.Tests
   // + AllHierarchy.Tests
-  // + AllKms.Tests
+  + AllKms.Tests
   // + AllKmsMrkAware.Tests
   // + AllKmsMrkAwareDiscovery.Tests
   + AllRawAES.Tests
