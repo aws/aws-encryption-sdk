@@ -79,6 +79,7 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
           encryptDescriptions := keyringConfig.encryptDescription,
           decryptDescriptions := keyringConfig.decryptDescription,
           encryptionContext := Some(encryptionContext),
+          reproducedEncryptionContext := Some(encryptionContext),
           frameLength := Some(frameSize),
           algorithmSuiteId := Some(algorithmSuite),
           description := keyringConfig.name
@@ -98,6 +99,7 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
           encryptDescriptions := keyringConfig.encryptDescription,
           decryptDescriptions := keyringConfig.decryptDescription,
           encryptionContext := Some(encryptionContext),
+          reproducedEncryptionContext := Some(encryptionContext),
           frameLength := Some(frameSize),
           algorithmSuiteId := Some(algorithmSuite),
           description := keyringConfig.name
