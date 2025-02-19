@@ -68,8 +68,7 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
   const AllPostiveKeyringTestsNoDBESuiteNoReqEC :=
     set
       keyringConfig <- AllPositiveKeyringTestsNoReqCmmNoKmsRsa | !keyringConfig.NegativeEncryptKeyringVector?,
-      algorithmSuite <- AllAlgorithmSuites.ESDKAlgorithmSuites,
-      encryptionContext <- EncryptionContextUtils.encryptionContextWitPsi + EncryptionContextUtils.encryptionContextControl + EncryptionContextUtils.encryptionContextBasic + EncryptionContextUtils.encryptionContextEmpty
+      algorithmSuite <- AllAlgorithmSuites.ESDKAlgorithmSuites
       ::
         EsdkTestVectors.PositiveEncryptTestVector(
           version := 4,
@@ -78,8 +77,8 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
           plaintextPath := "",
           encryptDescriptions := keyringConfig.encryptDescription,
           decryptDescriptions := keyringConfig.decryptDescription,
-          encryptionContext := Some(encryptionContext),
-          reproducedEncryptionContext := Some(encryptionContext),
+          reproducedEncryptionContext := Some(keyringConfig.encryptionContext),
+          encryptionContext := Some(keyringConfig.encryptionContext),
           frameLength := Some(frameSize),
           algorithmSuiteId := Some(algorithmSuite),
           description := keyringConfig.name
@@ -88,8 +87,7 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
   const AllPositiveKeyringTestsNoDBEKmsRsa :=
     set
       keyringConfig <- AwsKmsRsaTests | !keyringConfig.NegativeEncryptKeyringVector?,
-      algorithmSuite <- esdkAlgorithmSuitesKmsRsa,
-      encryptionContext <- EncryptionContextUtils.encryptionContextWitPsi + EncryptionContextUtils.encryptionContextControl + EncryptionContextUtils.encryptionContextBasic + EncryptionContextUtils.encryptionContextEmpty
+      algorithmSuite <- esdkAlgorithmSuitesKmsRsa
       ::
         EsdkTestVectors.PositiveEncryptTestVector(
           version := 4,
@@ -98,8 +96,8 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
           plaintextPath := "",
           encryptDescriptions := keyringConfig.encryptDescription,
           decryptDescriptions := keyringConfig.decryptDescription,
-          encryptionContext := Some(encryptionContext),
-          reproducedEncryptionContext := Some(encryptionContext),
+          reproducedEncryptionContext := Some(keyringConfig.encryptionContext),
+          encryptionContext := Some(keyringConfig.encryptionContext),
           frameLength := Some(frameSize),
           algorithmSuiteId := Some(algorithmSuite),
           description := keyringConfig.name
