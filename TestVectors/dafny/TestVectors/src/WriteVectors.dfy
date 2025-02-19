@@ -165,10 +165,8 @@ module {:options "-functionSyntax:4"} WriteVectors {
   function getVersionTests(version: nat): (ret: Result<set<EsdkTestVectors.EsdkEncryptTestVector>, string>)
   {
     match version
-    case 5 => Success(AllEsdkV4NoReqEc.Tests)
+    case 5 => Success(AllEsdkV4NoReqEc.Tests + AllEsdkV4WithReqEc.Tests)
     case _ => Failure("Only version 4 of generate manifest is supported\n")
-    // case 5 => Success(AllEsdkV4NoReqEc.Tests + AllEsdkV4WithReqEc.Tests)
-    // case _ => Failure("Only version 4 of generate manifest is supported\n")
   }
 
   predicate DescriptionLessThan(x: EsdkTestVectors.EsdkEncryptTestVector, y: EsdkTestVectors.EsdkEncryptTestVector) {
