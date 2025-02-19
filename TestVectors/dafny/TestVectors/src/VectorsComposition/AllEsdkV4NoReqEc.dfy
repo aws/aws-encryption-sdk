@@ -47,17 +47,17 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
 
   const AllPositiveKeyringTestsNoReqCmmNoKmsRsa
   := {}
-  // + AllDefaultCmm.SuccessTestingRequiredEncryptionContextKeysReproducedEncryptionContext
+  + AllDefaultCmm.SuccessTestingRequiredEncryptionContextKeysReproducedEncryptionContext
   + AllDefaultCmm.Tests
-  // + AllHierarchy.Tests
+  + AllHierarchy.Tests
   + AllKms.Tests
-  // + AllKmsMrkAware.Tests
-  // + AllKmsMrkAwareDiscovery.Tests
+  + AllKmsMrkAware.Tests
+  + AllKmsMrkAwareDiscovery.Tests
   + AllRawAES.Tests
-  // + AllRawRSA.Tests
-  // + AllMulti.Tests
-  // + AllRawECDH.Tests
-  // + AllKmsEcdh.Tests
+  + AllRawRSA.Tests
+  + AllMulti.Tests
+  + AllRawECDH.Tests
+  + AllKmsEcdh.Tests
 
   const AwsKmsRsaTests := AllKmsRsa.Tests
 
@@ -105,5 +105,5 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
 
   const Tests :=
     AllPostiveKeyringTestsNoDBESuiteNoReqEC
-    // + AllPositiveKeyringTestsNoDBEKmsRsa
+    + AllPositiveKeyringTestsNoDBEKmsRsa
 }
