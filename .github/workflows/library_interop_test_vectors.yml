@@ -80,11 +80,6 @@ jobs:
           pip install --upgrade tox
           pip install poetry
 
-      - name: Install built ESDK-Python
-        if: matrix.language == 'python'
-        run: |
-          pip install dist/aws_encryption_sdk-4.0.0-py2.py3-none-any.whl
-
       - name: Setup Rust Toolchain for GitHub CI
         if: matrix.language == 'rust'
         uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
@@ -279,11 +274,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install --upgrade tox
           pip install poetry
-
-      - name: Install built ESDK-Python
-        if: matrix.decrypting_language == 'python'
-        run: |
-          pip install dist/aws_encryption_sdk-4.0.0-py2.py3-none-any.whl
 
       - name: Setup Rust Toolchain for GitHub CI
         if: matrix.decrypting_language == 'rust'
