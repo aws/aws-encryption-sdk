@@ -84,6 +84,16 @@
       "material": "AAECAwQFBgcICRAREhMUFRYXGBkgISIjJCUmJygpMDE=",
       "key-id": "aes-256"
     },
+    "𝟁-nonascii-𐀂-aes-256-𝟁": {
+      "encrypt": true,
+      "decrypt": true,
+      "algorithm": "aes",
+      "type": "symmetric",
+      "bits": 256,
+      "encoding": "base64",
+      "material": "AAECAwQFBgcICRAREhMUFRYXGBkgISIjJCUmJygpMDE=",
+      "key-id": "aes-256"
+    },
     "rsa-4096-private": {
       "encrypt": true,
       "decrypt": true,
