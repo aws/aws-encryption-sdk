@@ -70,7 +70,7 @@ jobs:
           java-version: 17
 
       - name: Setup Python for running tests
-        if: matrix.language == 'python_mkp' || matrix.language == 'python_keyrings'
+        if: matrix.language == 'python_mkp' || matrix.language == 'python'
         uses: actions/setup-python@v4
         with:
           python-version: 3.11
@@ -158,7 +158,7 @@ jobs:
           make transpile_rust CORES=$CORES
 
       - name: Build ${{ matrix.library }} implementation in Python
-        if: matrix.language == 'python_keyrings' || matrix.language == 'python_mkp'
+        if: matrix.language == 'python' || matrix.language == 'python_mkp'
         shell: bash
         working-directory: ./${{ matrix.library }}
         run: |
