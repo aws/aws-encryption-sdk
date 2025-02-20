@@ -179,8 +179,6 @@ test_generate_vectors_java:
 
 test_generate_vectors_java_mkp: test_generate_vectors_java
 
-test_generate_vectors_java_keyrings: test_generate_vectors_java
-
 test_generate_vectors_net: FRAMEWORK=net6.0
 test_generate_vectors_net:
 	dotnet restore runtimes/net
@@ -205,12 +203,10 @@ test_generate_vectors_python:
 
 test_generate_vectors_python_mkp: test_generate_vectors_python
 
-test_generate_vectors_python_keyrings: test_generate_vectors_python
-
 test_encrypt_vectors_java_mkp:
 	gradle -p runtimes/java run --args="encrypt --manifest-path . --decrypt-manifest-path ."
 
-test_encrypt_vectors_java_keyrings:
+test_encrypt_vectors_java:
 	gradle -p runtimes/java run --args="encrypt --manifest-path . --decrypt-manifest-path ."
 
 test_encrypt_vectors_net: FRAMEWORK=net6.0
@@ -227,7 +223,7 @@ test_encrypt_vectors_rust:
 test_encrypt_vectors_go:
 	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go encrypt --manifest-path=.. --decrypt-manifest-path=..
 
-test_encrypt_vectors_python_keyrings:
+test_encrypt_vectors_python:
 	rm -rf runtimes/python/.tox
 	python3 -m tox -c runtimes/python --verbose -e cli -- encrypt --manifest-path runtimes/python --decrypt-manifest-path runtimes/python
 
@@ -238,7 +234,7 @@ test_encrypt_vectors_python_mkp:
 test_decrypt_encrypt_vectors_java_mkp:
 	gradle -p runtimes/java run --args="decrypt --manifest-path . --manifest-name decrypt-manifest.json"
 
-test_decrypt_encrypt_vectors_java_keyrings:
+test_decrypt_encrypt_vectors_java:
 	gradle -p runtimes/java run --args="decrypt --manifest-path . --manifest-name decrypt-manifest.json"
 
 test_decrypt_encrypt_vectors_net: FRAMEWORK=net6.0
@@ -265,7 +261,7 @@ test_decrypt_encrypt_vectors_rust:
 test_decrypt_encrypt_vectors_go:
 	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go decrypt --manifest-path=.. --manifest-name=decrypt-manifest.json
 
-test_decrypt_encrypt_vectors_python_keyrings:
+test_decrypt_encrypt_vectors_python:
 	rm -rf runtimes/python/.tox
 	python3 -m tox -c runtimes/python --verbose -e cli -- decrypt --manifest-path runtimes/python --manifest-name decrypt-manifest.json
 
