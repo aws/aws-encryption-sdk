@@ -25,7 +25,7 @@ jobs:
             ubuntu-22.04,
             macos-13,
           ]
-        language: [java, net, rust, python]
+        language: [java_mkp, java_keyrings, net, rust, python_mkp, python_keyrings]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
     runs-on: ${{ matrix.os }}
@@ -63,14 +63,14 @@ jobs:
 
       # Setup Java in Rust is needed for running polymorph
       - name: Setup Java 17
-        if: matrix.language == 'java' || matrix.language == 'rust'
+        if: matrix.language == 'java_mkp' || matrix.language == 'java_keyrings' || matrix.language == 'rust'
         uses: actions/setup-java@v3
         with:
           distribution: "corretto"
           java-version: 17
 
       - name: Setup Python for running tests
-        if: matrix.language == 'python'
+        if: matrix.language == 'python_mkp' || matrix.language == 'python_keyrings'
         uses: actions/setup-python@v4
         with:
           python-version: 3.11
@@ -121,7 +121,7 @@ jobs:
 
       # Build implementation for each runtime
       - name: Build ${{ matrix.library }} implementation in Java
-        if: matrix.language == 'java'
+        if: matrix.language == 'java_mkp' || matrix.language == 'java_keyrings'
         shell: bash
         working-directory: ./${{ matrix.library }}
         run: |
@@ -158,7 +158,7 @@ jobs:
           make transpile_rust CORES=$CORES
 
       - name: Build ${{ matrix.library }} implementation in Python
-        if: matrix.language == 'python'
+        if: matrix.language == 'python_keyrings' || matrix.language == 'python_mkp'
         shell: bash
         working-directory: ./${{ matrix.library }}
         run: |
@@ -184,7 +184,7 @@ jobs:
           make purge_polymorph_code
 
       - name: Setup gradle
-        if: matrix.language == 'java'
+        if: matrix.language == 'java_mkp' || matrix.language == 'java_keyrings'
         uses: gradle/gradle-build-action@v2
         with:
           gradle-version: 7.2
@@ -218,8 +218,8 @@ jobs:
             ubuntu-22.04,
             macos-13,
           ]
-        encrypting_language: [java, net, rust, python]
-        decrypting_language: [java, net, rust, python]
+        encrypting_language: [java_mkp, java_keyrings, net, rust, python_mkp, python_keyrings]
+        decrypting_language: [java_mkp, java_keyrings, net, rust, python_mkp, python_keyrings]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
     runs-on: ${{ matrix.os }}
@@ -258,14 +258,14 @@ jobs:
 
       # Setup Java in Rust is needed for running polymorph
       - name: Setup Java 17
-        if: matrix.decrypting_language == 'java' || matrix.decrypting_language == 'rust'
+        if: matrix.decrypting_language == 'java_mkp' || matrix.decrypting_language == 'java_keyrings' || matrix.decrypting_language == 'rust'
         uses: actions/setup-java@v3
         with:
           distribution: "corretto"
           java-version: 17
 
       - name: Setup Python for running tests
-        if: matrix.decrypting_language == 'python'
+        if: matrix.decrypting_language == 'python_mkp' || matrix.decrypting_language == 'python_keyrings'
         uses: actions/setup-python@v4
         with:
           python-version: 3.11
@@ -316,7 +316,7 @@ jobs:
 
       # Build implementation for each runtime
       - name: Build ${{ matrix.library }} implementation in Java
-        if: matrix.decrypting_language == 'java'
+        if: matrix.decrypting_language == 'java_mkp' || matrix.decrypting_language == 'java_keyrings'
         working-directory: ./${{ matrix.library }}
         shell: bash
         run: |
@@ -370,7 +370,7 @@ jobs:
           make purge_polymorph_code
 
       - name: Build ${{ matrix.library }} implementation in Python
-        if: matrix.decrypting_language == 'python'
+        if: matrix.decrypting_language == 'python_mkp' || matrix.decrypting_language == 'python_keyrings'
         shell: bash
         working-directory: ./${{ matrix.library }}
         run: |

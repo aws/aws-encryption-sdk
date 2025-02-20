@@ -1,5 +1,6 @@
 # Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
+import os
 import aws_encryption_sdk.streaming_client
 import aws_encryption_sdk_test_vectors.internaldafny.generated.WrappedESDK as WrappedESDK
 import smithy_dafny_standard_library.internaldafny.generated.Wrappers as Wrappers
@@ -35,8 +36,13 @@ from aws_encryption_sdk.materials_managers.mpl.materials import (
     _mpl_algorithm_id_to_native_algorithm_id,
 )
 from aws_encryption_sdk.identifiers import AlgorithmSuite
+from aws_encryption_sdk_test_vectors.internaldafny.extern.keyring_to_mkp import keyring_to_mkp
+from aws_cryptographic_material_providers.internaldafny.generated.MultiKeyring import MultiKeyring
+from aws_cryptographic_material_providers.internaldafny.generated.RawRSAKeyring import RawRSAKeyring
+from aws_cryptographic_material_providers.internaldafny.generated.RawECDHKeyring import RawEcdhKeyring
+from aws_cryptographic_material_providers.internaldafny.generated.AwsKmsHierarchicalKeyring import AwsKmsHierarchicalKeyring
 
-
+import sys
 def _esdk_dafny_commitment_policy_to_native(dafny_commitment_policy):
     if dafny_commitment_policy == "FORBID_ENCRYPT_ALLOW_DECRYPT":
         return CommitmentPolicy.FORBID_ENCRYPT_ALLOW_DECRYPT
@@ -46,7 +52,6 @@ def _esdk_dafny_commitment_policy_to_native(dafny_commitment_policy):
         return CommitmentPolicy.REQUIRE_ENCRYPT_REQUIRE_DECRYPT
     else:
         raise ValueError(f"Unsupported CommitmentPolicy: {dafny_commitment_policy}")
-
 
 class DafnyESDKToNativeESDKShim:
 
@@ -62,67 +67,35 @@ class DafnyESDKToNativeESDKShim:
                 "source": native_encrypt_input.plaintext,
                 "encryption_context": native_encrypt_input.encryption_context,
             }
+            mkp_flag = False
+            if "MASTERKEY" in sys.argv:
+                mkp_flag = True
+            print("mkp_flag:", mkp_flag)
+            # TODO: Support Multikey and Raw rsa. 
+            keyring_to_mkp_NOT_convertable_types = (MultiKeyring, RawRSAKeyring, RawEcdhKeyring, AwsKmsHierarchicalKeyring)
             if native_encrypt_input.keyring is not None:
-                native_esdk_input["keyring"] = native_encrypt_input.keyring
+                if mkp_flag and not isinstance(native_encrypt_input.keyring, keyring_to_mkp_NOT_convertable_types):
+                    native_esdk_input["key_provider"] = keyring_to_mkp(dafny_encrypt_input.keyring)
+                else:
+                    native_esdk_input["keyring"] = native_encrypt_input.keyring
             if native_encrypt_input.materials_manager is not None:
-                native_esdk_input["materials_manager"] = (
-                    native_encrypt_input.materials_manager
-                )
+                if mkp_flag and not isinstance(native_encrypt_input.keyring, keyring_to_mkp_NOT_convertable_types):
+                    if "key_provider" in native_esdk_input:
+                        raise ValueError(f"key_provider already exists in input")
+                    native_esdk_input["key_provider"] = keyring_to_mkp(native_encrypt_input.materials_manager._impl.keyring)
+                else:
+                    native_esdk_input["materials_manager"] = (
+                        native_encrypt_input.materials_manager
+                    )
             if native_encrypt_input.algorithm_suite_id is not None:
                 native_esdk_input["algorithm"] = AlgorithmSuite.get_by_id(
                     _mpl_algorithm_id_to_native_algorithm_id(
                         native_encrypt_input.algorithm_suite_id
                     )
                 )
-
             native_esdk_ciphertext, native_esdk_header = self.native_esdk.encrypt(
                 **native_esdk_input
             )
-
-            # if native_encrypt_input.algorithm_suite_id is None:
-            #     if native_encrypt_input.materials_manager is not None:
-            #         native_esdk_ciphertext, native_esdk_header = (
-            #             self.native_esdk.encrypt(
-            #                 source=native_encrypt_input.plaintext,
-            #                 materials_manager=native_encrypt_input.materials_manager,
-            #                 encryption_context=native_encrypt_input.encryption_context,
-            #             )
-            #         )
-            #     else:
-            #         native_esdk_ciphertext, native_esdk_header = (
-            #             self.native_esdk.encrypt(
-            #                 source=native_encrypt_input.plaintext,
-            #                 materials_manager=native_encrypt_input.keyring,
-            #                 encryption_context=native_encrypt_input.encryption_context,
-            #             )
-            #         )
-            # else:
-            #     if native_encrypt_input.materials_manager is not None:
-            #         native_esdk_ciphertext, native_esdk_header = (
-            #             self.native_esdk.encrypt(
-            #                 source=native_encrypt_input.plaintext,
-            #                 materials_manager=native_encrypt_input.materials_manager,
-            #                 encryption_context=native_encrypt_input.encryption_context,
-            #                 algorithm=AlgorithmSuite.get_by_id(
-            #                     _mpl_algorithm_id_to_native_algorithm_id(
-            #                         native_encrypt_input.algorithm_suite_id
-            #                     )
-            #                 ),
-            #             )
-            #         )
-            #     else:
-            #         native_esdk_ciphertext, native_esdk_header = (
-            #             self.native_esdk.encrypt(
-            #                 source=native_encrypt_input.plaintext,
-            #                 materials_manager=native_encrypt_input.keyring,
-            #                 encryption_context=native_encrypt_input.encryption_context,
-            #                 algorithm=AlgorithmSuite.get_by_id(
-            #                     _mpl_algorithm_id_to_native_algorithm_id(
-            #                         native_encrypt_input.algorithm_suite_id
-            #                     )
-            #                 ),
-            #             )
-            #         )
 
             dafny_esdk_native_encrypt_output = EncryptOutput(
                 ciphertext=native_esdk_ciphertext,
@@ -143,37 +116,37 @@ class DafnyESDKToNativeESDKShim:
     def Decrypt(self, dafny_decrypt_input):
 
         try:
-
             native_decrypt_input = dafny_to_smithy_DecryptInput(dafny_decrypt_input)
-
             # Manual conversion of ESDK-Dafny DecryptInput to unmodelled native ESDK-Python decrypt parameters
-            native_esdk_input = {
-                "source": native_decrypt_input.ciphertext,
-                "encryption_context": native_decrypt_input.encryption_context,
-            }
+            mkp_flag = False
+            if "MASTERKEY" in sys.argv:
+                mkp_flag = True
+            print("mkp_flag:", mkp_flag)
+            native_esdk_input = {}
+            # TODO: Support Multikey and Raw rsa. 
+            keyring_to_mkp_NOT_convertable_types = (MultiKeyring, RawRSAKeyring, RawEcdhKeyring, AwsKmsHierarchicalKeyring)
             if native_decrypt_input.keyring is not None:
-                native_esdk_input["keyring"] = native_decrypt_input.keyring
+                if mkp_flag and not isinstance(native_decrypt_input.keyring, keyring_to_mkp_NOT_convertable_types):
+                    native_esdk_input["key_provider"] = keyring_to_mkp(dafny_decrypt_input.keyring)
+                else:
+                    native_esdk_input["keyring"] = native_decrypt_input.keyring
             if native_decrypt_input.materials_manager is not None:
-                native_esdk_input["materials_manager"] = (
-                    native_decrypt_input.materials_manager
-                )
-
+                if mkp_flag and not isinstance(native_decrypt_input.materials_manager._impl.keyring, keyring_to_mkp_NOT_convertable_types):
+                    if "key_provider" in native_esdk_input:
+                        raise ValueError(f"key_provider already exists in input")
+                    native_esdk_input["key_provider"] = keyring_to_mkp(native_decrypt_input.materials_manager._impl.keyring)
+                else:
+                    native_esdk_input["materials_manager"] = (
+                        native_decrypt_input.materials_manager
+                    )
+            if "key_provider" in native_esdk_input:
+                native_esdk_input["source"] = native_decrypt_input.ciphertext
+            else:
+                native_esdk_input["source"] = native_decrypt_input.ciphertext
+                native_esdk_input["encryption_context"] = native_decrypt_input.encryption_context
             native_esdk_plaintext, native_esdk_header = self.native_esdk.decrypt(
                 **native_esdk_input
             )
-
-            # if native_decrypt_input.materials_manager is not None:
-            #     native_esdk_plaintext, native_esdk_header = self.native_esdk.decrypt(
-            #         source=native_decrypt_input.ciphertext,
-            #         materials_manager=native_decrypt_input.materials_manager,
-            #         encryption_context=native_decrypt_input.encryption_context,
-            #     )
-            # else:
-            #     native_esdk_plaintext, native_esdk_header = self.native_esdk.decrypt(
-            #         source=native_decrypt_input.ciphertext,
-            #         materials_manager=native_decrypt_input.keyring,
-            #         encryption_context=native_decrypt_input.encryption_context,
-            #     )
 
             dafny_esdk_native_decrypt_output = DecryptOutput(
                 plaintext=native_esdk_plaintext,
