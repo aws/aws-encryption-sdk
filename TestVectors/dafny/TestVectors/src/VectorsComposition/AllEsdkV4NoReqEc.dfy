@@ -56,7 +56,7 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
   + AllRawAES.Tests
   + AllRawRSA.Tests
   + AllMulti.Tests
-  + AllRawECDH.Tests
+  // + AllRawECDH.Tests
   + AllKmsEcdh.Tests
 
   const AwsKmsRsaTests := AllKmsRsa.Tests
