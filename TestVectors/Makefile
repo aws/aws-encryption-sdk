@@ -209,11 +209,11 @@ test_generate_vectors_python_mkp:
 	python3 -m tox -c runtimes/python --verbose -e cli -- encrypt-manifest --encrypt-manifest-output runtimes/python_mkp
 	cp dafny/TestVectors/test/keys.json runtimes/python_mkp
 
-test_encrypt_vectors_java_mkp:
-	gradle -p runtimes/java run --args="encrypt --manifest-path ../java_mkp --decrypt-manifest-path ../java_mkp"
-
 test_encrypt_vectors_java:
 	gradle -p runtimes/java run --args="encrypt --manifest-path . --decrypt-manifest-path ."
+
+test_encrypt_vectors_java_mkp:
+	masterkey=true gradle -p runtimes/java run --args="encrypt --manifest-path ../java_mkp --decrypt-manifest-path ../java_mkp"
 
 test_encrypt_vectors_net: FRAMEWORK=net6.0
 test_encrypt_vectors_net:
@@ -237,11 +237,11 @@ test_encrypt_vectors_python_mkp:
 	rm -rf runtimes/python/.tox
 	python3 -m tox -c runtimes/python --verbose -e cli -- encrypt --manifest-path runtimes/python_mkp --decrypt-manifest-path runtimes/python_mkp MASTERKEY
 
-test_decrypt_encrypt_vectors_java_mkp:
-	gradle -p runtimes/java run --args="decrypt --manifest-path ../java_mkp --manifest-name decrypt-manifest.json"
-
 test_decrypt_encrypt_vectors_java:
 	gradle -p runtimes/java run --args="decrypt --manifest-path . --manifest-name decrypt-manifest.json"
+
+test_decrypt_encrypt_vectors_java_mkp:
+	masterkey=true gradle -p runtimes/java run --args="decrypt --manifest-path ../java_mkp --manifest-name decrypt-manifest.json"
 
 test_decrypt_encrypt_vectors_net: FRAMEWORK=net6.0
 test_decrypt_encrypt_vectors_net:
