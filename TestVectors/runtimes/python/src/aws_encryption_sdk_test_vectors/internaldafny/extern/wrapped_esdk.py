@@ -36,11 +36,11 @@ from aws_encryption_sdk.materials_managers.mpl.materials import (
     _mpl_algorithm_id_to_native_algorithm_id,
 )
 from aws_encryption_sdk.identifiers import AlgorithmSuite
-from aws_encryption_sdk_test_vectors.internaldafny.extern.keyring_to_mkp import keyring_to_mkp
-from aws_cryptographic_material_providers.internaldafny.generated.MultiKeyring import MultiKeyring
-from aws_cryptographic_material_providers.internaldafny.generated.RawRSAKeyring import RawRSAKeyring
-from aws_cryptographic_material_providers.internaldafny.generated.RawECDHKeyring import RawEcdhKeyring
-from aws_cryptographic_material_providers.internaldafny.generated.AwsKmsHierarchicalKeyring import AwsKmsHierarchicalKeyring
+from aws_encryption_sdk_test_vectors.internaldafny.extern.keyring_to_mkp import (
+    keyring_to_mkp,
+    materials_manager_to_mkp
+)
+from aws_cryptographic_material_providers.internaldafny.generated.DefaultCMM import DefaultCMM
 
 import sys
 def _esdk_dafny_commitment_policy_to_native(dafny_commitment_policy):
@@ -54,7 +54,7 @@ def _esdk_dafny_commitment_policy_to_native(dafny_commitment_policy):
         raise ValueError(f"Unsupported CommitmentPolicy: {dafny_commitment_policy}")
 
 class DafnyESDKToNativeESDKShim:
-
+    
     def __init__(self, native_esdk):
         self.native_esdk = native_esdk
 
@@ -71,22 +71,28 @@ class DafnyESDKToNativeESDKShim:
             if "MASTERKEY" in sys.argv:
                 mkp_flag = True
             print("mkp_flag:", mkp_flag)
-            # TODO: Support Multikey and Raw rsa. 
-            keyring_to_mkp_NOT_convertable_types = (MultiKeyring, RawRSAKeyring, RawEcdhKeyring, AwsKmsHierarchicalKeyring)
+            mkp = None
             if native_encrypt_input.keyring is not None:
-                if mkp_flag and not isinstance(native_encrypt_input.keyring, keyring_to_mkp_NOT_convertable_types):
-                    native_esdk_input["key_provider"] = keyring_to_mkp(dafny_encrypt_input.keyring)
-                else:
+                if mkp_flag:
+                    mkp = keyring_to_mkp(dafny_encrypt_input.keyring)
+
+                # `keyring_to_mkp` will return None if there is no valid MKP representation for the provided keyring
+                if mkp is None:
                     native_esdk_input["keyring"] = native_encrypt_input.keyring
-            if native_encrypt_input.materials_manager is not None:
-                if mkp_flag and not isinstance(native_encrypt_input.keyring, keyring_to_mkp_NOT_convertable_types):
-                    if "key_provider" in native_esdk_input:
-                        raise ValueError(f"key_provider already exists in input")
-                    native_esdk_input["key_provider"] = keyring_to_mkp(native_encrypt_input.materials_manager._impl.keyring)
                 else:
-                    native_esdk_input["materials_manager"] = (
-                        native_encrypt_input.materials_manager
-                    )
+                    native_esdk_input["key_provider"] = mkp
+            elif native_encrypt_input.materials_manager is not None:
+                if mkp_flag:
+                    mkp = materials_manager_to_mkp(native_encrypt_input.materials_manager._impl)
+
+                # `materials_manager_to_mkp` will return None if there is no valid MKP representation for the provided materials manager
+                if mkp is None:
+                    native_esdk_input["materials_manager"] = native_encrypt_input.materials_manager
+                else:
+                    native_esdk_input["key_provider"] = mkp
+            else:
+                raise ValueError("Neither keyring nor materials_manager are present")
+
             if native_encrypt_input.algorithm_suite_id is not None:
                 native_esdk_input["algorithm"] = AlgorithmSuite.get_by_id(
                     _mpl_algorithm_id_to_native_algorithm_id(
@@ -123,22 +129,27 @@ class DafnyESDKToNativeESDKShim:
                 mkp_flag = True
             print("mkp_flag:", mkp_flag)
             native_esdk_input = {}
-            # TODO: Support Multikey and Raw rsa. 
-            keyring_to_mkp_NOT_convertable_types = (MultiKeyring, RawRSAKeyring, RawEcdhKeyring, AwsKmsHierarchicalKeyring)
+            mkp = None
             if native_decrypt_input.keyring is not None:
-                if mkp_flag and not isinstance(native_decrypt_input.keyring, keyring_to_mkp_NOT_convertable_types):
-                    native_esdk_input["key_provider"] = keyring_to_mkp(dafny_decrypt_input.keyring)
+                if mkp_flag:
+                    mkp = keyring_to_mkp(dafny_decrypt_input.keyring)
+                
+                # `keyring_to_mkp` will return None if there is no valid MKP representation for the provided keyring
+                if mkp is None:
+                    native_esdk_input["keyring"] = dafny_decrypt_input.keyring
                 else:
-                    native_esdk_input["keyring"] = native_decrypt_input.keyring
-            if native_decrypt_input.materials_manager is not None:
-                if mkp_flag and not isinstance(native_decrypt_input.materials_manager._impl.keyring, keyring_to_mkp_NOT_convertable_types):
-                    if "key_provider" in native_esdk_input:
-                        raise ValueError(f"key_provider already exists in input")
-                    native_esdk_input["key_provider"] = keyring_to_mkp(native_decrypt_input.materials_manager._impl.keyring)
+                    native_esdk_input["key_provider"] = mkp
+            elif native_decrypt_input.materials_manager is not None:
+                if mkp_flag:
+                    mkp = materials_manager_to_mkp(native_decrypt_input.materials_manager._impl)
+
+                # `materials_manager_to_mkp` will return None if there is no valid MKP representation for the provided materials manager
+                if mkp is None:
+                    native_esdk_input["materials_manager"] = native_decrypt_input.materials_manager
                 else:
-                    native_esdk_input["materials_manager"] = (
-                        native_decrypt_input.materials_manager
-                    )
+                    native_esdk_input["key_provider"] = mkp
+            else:
+                raise ValueError("Neither keyring nor materials_manager are present")
             if "key_provider" in native_esdk_input:
                 native_esdk_input["source"] = native_decrypt_input.ciphertext
             else:

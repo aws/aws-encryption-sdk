@@ -14,6 +14,13 @@ from aws_encryption_sdk.key_providers.kms import (
     MRKAwareDiscoveryAwsKmsMasterKeyProvider,
     MRKAwareStrictAwsKmsMasterKeyProvider,
 )
+from aws_cryptographic_material_providers.internaldafny.generated.DefaultCMM import DefaultCMM
+from aws_cryptographic_material_providers.internaldafny.generated.MultiKeyring import MultiKeyring
+from aws_cryptographic_material_providers.internaldafny.generated.RawRSAKeyring import RawRSAKeyring
+from aws_cryptographic_material_providers.internaldafny.generated.RawECDHKeyring import RawEcdhKeyring
+from aws_cryptographic_material_providers.internaldafny.generated.AwsKmsHierarchicalKeyring import AwsKmsHierarchicalKeyring
+from aws_cryptographic_material_providers.internaldafny.generated.AwsKmsRsaKeyring import AwsKmsRsaKeyring
+from aws_cryptographic_material_providers.internaldafny.generated.AwsKmsEcdhKeyring import AwsKmsEcdhKeyring
 import aws_cryptographic_material_providers.smithygenerated.aws_cryptography_materialproviders.dafny_to_smithy
 import aws_encryption_sdk
 class StaticMasterKeyProvider(RawMasterKeyProvider):
@@ -88,17 +95,22 @@ def create_raw_aes_key_provider(key_name, key_namespace, key):
 
     return key_provider
 
+def materials_manager_to_mkp(materials_manager):
+    if not isinstance(materials_manager, DefaultCMM):
+        return None
+    return keyring_to_mkp(materials_manager.keyring)
+
 def keyring_to_mkp(keyring):
+    # TODO: Support Multikey and Raw rsa. 
+    keyring_to_mkp_NOT_convertable_types = (MultiKeyring, RawRSAKeyring, RawEcdhKeyring, AwsKmsEcdhKeyring, AwsKmsHierarchicalKeyring, AwsKmsRsaKeyring)
+    if isinstance(keyring, keyring_to_mkp_NOT_convertable_types):
+        return None
     if (isinstance(keyring, RawAESKeyring)):
         mkp_key_id = bytes(keyring.wrappingKey)
         # The key name in the Raw keyrings is equivalent to the Key ID field
         # in the Raw Master Key Providers
-        mkp_key = b"".join(
-                ord(chr(c)).to_bytes(2, "big") for c in keyring.keyName
-            ).decode("utf-16-be")
-        mkpProvider_id = b"".join(
-            ord(chr(c)).to_bytes(2, "big") for c in keyring.keyNamespace
-        ).decode("utf-16-be")
+        mkp_key = bytes(keyring.keyName.Elements).decode('utf-8')
+        mkpProvider_id = bytes(keyring.keyNamespace.Elements).decode('utf-8')
         return create_raw_aes_key_provider(mkp_key, mkpProvider_id, mkp_key_id)
     
     if (isinstance(keyring, AwsKmsKeyring)):
