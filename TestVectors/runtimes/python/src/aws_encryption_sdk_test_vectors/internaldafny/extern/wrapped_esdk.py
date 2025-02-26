@@ -74,18 +74,18 @@ class DafnyESDKToNativeESDKShim:
             mkp = None
             if native_encrypt_input.keyring is not None:
                 if mkp_flag:
+                    # `keyring_to_mkp` will return None if there is no valid MKP representation for the provided keyring
                     mkp = keyring_to_mkp(dafny_encrypt_input.keyring)
 
-                # `keyring_to_mkp` will return None if there is no valid MKP representation for the provided keyring
                 if mkp is None:
                     native_esdk_input["keyring"] = native_encrypt_input.keyring
                 else:
                     native_esdk_input["key_provider"] = mkp
             elif native_encrypt_input.materials_manager is not None:
                 if mkp_flag:
+                    # `materials_manager_to_mkp` will return None if there is no valid MKP representation for the provided materials manager
                     mkp = materials_manager_to_mkp(native_encrypt_input.materials_manager._impl)
 
-                # `materials_manager_to_mkp` will return None if there is no valid MKP representation for the provided materials manager
                 if mkp is None:
                     native_esdk_input["materials_manager"] = native_encrypt_input.materials_manager
                 else:
@@ -132,18 +132,18 @@ class DafnyESDKToNativeESDKShim:
             mkp = None
             if native_decrypt_input.keyring is not None:
                 if mkp_flag:
+                    # `keyring_to_mkp` will return None if there is no valid MKP representation for the provided keyring
                     mkp = keyring_to_mkp(dafny_decrypt_input.keyring)
-                
-                # `keyring_to_mkp` will return None if there is no valid MKP representation for the provided keyring
+
                 if mkp is None:
                     native_esdk_input["keyring"] = dafny_decrypt_input.keyring
                 else:
                     native_esdk_input["key_provider"] = mkp
             elif native_decrypt_input.materials_manager is not None:
                 if mkp_flag:
+                    # `materials_manager_to_mkp` will return None if there is no valid MKP representation for the provided materials manager
                     mkp = materials_manager_to_mkp(native_decrypt_input.materials_manager._impl)
 
-                # `materials_manager_to_mkp` will return None if there is no valid MKP representation for the provided materials manager
                 if mkp is None:
                     native_esdk_input["materials_manager"] = native_decrypt_input.materials_manager
                 else:
