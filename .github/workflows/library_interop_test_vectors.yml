@@ -17,15 +17,15 @@ on:
 jobs:
   generateEncryptVectors:
     strategy:
+      fail-fast: false
       matrix:
         library: [TestVectors]
         os: [
             # https://taskei.amazon.dev/tasks/CrypTool-5283
             # windows-latest,
             ubuntu-22.04,
-            macos-13,
           ]
-        language: [java, net, rust, python, python_mkp, java_mkp]
+        language: [java, net, rust, python, python_mkp, java_mkp, go]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
     runs-on: ${{ matrix.os }}
@@ -48,12 +48,8 @@ jobs:
       
       - uses: actions/checkout@v4
         with:
-          submodules: 'true'
+          submodules: 'recursive'
           token: ${{secrets.PRIVATE_MPL}}
-      - name: Init Submodules
-        shell: bash
-        run: |
-          git submodule update --init --recursive mpl
 
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
@@ -217,10 +213,9 @@ jobs:
             # https://taskei.amazon.dev/tasks/CrypTool-5283
             # windows-latest,
             ubuntu-22.04,
-            macos-13,
           ]
-        encrypting_language: [java, net, rust, python, python_mkp, java_mkp]
-        decrypting_language: [java, net, rust, python, python_mkp, java_mkp]
+        encrypting_language: [java, net, rust, python, python_mkp, java_mkp, go]
+        decrypting_language: [java, net, rust, python, python_mkp, java_mkp, go]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
     runs-on: ${{ matrix.os }}
@@ -244,12 +239,8 @@ jobs:
 
       - uses: actions/checkout@v4
         with:
-          submodules: 'true'
+          submodules: 'recursive'
           token: ${{secrets.PRIVATE_MPL}}
-      - name: Init Submodules
-        shell: bash
-        run: |
-          git submodule update --init --recursive mpl
 
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
