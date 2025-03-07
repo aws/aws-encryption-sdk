@@ -248,3 +248,26 @@ _sed_types_file_add_extern:
 
 _sed_index_file_add_extern:
 	@echo "No extern to process for ESDK TestVectors"
+
+test_vectors_c: *.cpp *.h
+	cd aws-encryption-sdk-c/tests/TestVectors/; \
+	g++ -g -ggdb --std=c++14 -o test_vectors_c -I../../include/ \
+	base64.cpp do_decrypt.cpp do_encrypt.cpp parse_encrypt.cpp parse_keys.cpp test_vectors.cpp \
+	-I/opt/homebrew/include/ -L/opt/homebrew/lib/ \
+	-I../../install/include/ -L../../install/lib/ -I ../../aws-encryption-sdk-cpp/include/ \
+	../../build-aws-encryption-sdk-c/Debug/libaws-encryption-sdk.dylib \
+	../../build-aws-encryption-sdk-c/aws-encryption-sdk-cpp/Debug/libaws-encryption-sdk-cpp.dylib \
+	-laws-cpp-sdk-core -laws-cpp-sdk-kms -laws-c-common -lcrypto; \
+	install_name_tool -add_rpath ../../build-aws-encryption-sdk-c/Debug/ test_vectors_c; \
+	install_name_tool -add_rpath ../../build-aws-encryption-sdk-c/aws-encryption-sdk-cpp/Debug/ test_vectors_c; \
+	install_name_tool -add_rpath ../../install/lib/ test_vectors_c
+
+test_encrypt_vectors_c: test_vectors_c
+	cd aws-encryption-sdk-c/tests/TestVectors/; \
+	rm -rf local; \
+	mkdir -p local; \
+	./test_vectors_c encrypt --manifest-path ./from-dafny --decrypt-manifest-path ./local || exit 1
+	cp -r ./aws-encryption-sdk-c/tests/TestVectors/local/ ./runtimes/c/
+
+test_decrypt_encrypt_vectors_c: test_vectors_c
+	./test_vectors_c decrypt --manifest-path ./local --manifest-name decrypt-manifest.json || exit 1

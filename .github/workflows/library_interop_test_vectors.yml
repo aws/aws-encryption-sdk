@@ -25,7 +25,7 @@ jobs:
             ubuntu-22.04,
             macos-13,
           ]
-        language: [java, net, rust, go]
+        language: [java, net, rust, go, c]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
     runs-on: ${{ matrix.os }}
@@ -98,6 +98,45 @@ jobs:
         with:
           dafny-version: ${{ inputs.dafny }}
 
+      - name: Checkout C-ESDK
+        if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
+        uses: actions/checkout@v4
+        with:
+          repository: "aws/aws-encryption-sdk-c"
+          path: "aws-encryption-sdk-c"
+          submodules: recursive
+
+      - name: Checkout AWS C++ SDK
+        if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
+        uses: actions/checkout@v4
+        with:
+          repository: "aws/aws-sdk-cpp"
+          path: "aws-encryption-sdk-c/aws-sdk-cpp"
+          submodules: recursive
+
+      - name: Build and install aws-sdk-cpp
+        if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
+        working-directory: ./aws-encryption-sdk-c
+        run: |
+          # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
+          perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
+          mkdir -p build-aws-sdk-cpp || true
+          mkdir -p install || true
+          cd build-aws-sdk-cpp
+          cmake -G Xcode -DTARGET_ARCH="APPLE" -DBUILD_SHARED_LIBS=ON -DBUILD_ONLY="kms" -DENABLE_UNITY_BUILD=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/aws-encryption-sdk-c/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/aws-encryption-sdk-c/install ../aws-sdk-cpp
+          xcodebuild -target ALL_BUILD
+          xcodebuild -target install
+
+      - name: Build C-ESDK
+        if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
+        working-directory: ./aws-encryption-sdk-c
+        run: |
+          mkdir build-aws-encryption-sdk-c || true
+          cd build-aws-encryption-sdk-c
+          cmake -G Xcode -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/install -DOPENSSL_ROOT_DIR="/usr/local/opt/openssl@1.1" ../
+          xcodebuild -target ALL_BUILD
+          xcodebuild -scheme RUN_TESTS
+
       - name: Regenerate code using smithy-dafny if necessary
         if: ${{ inputs.regenerate-code }}
         uses: ./.github/actions/polymorph_codegen
@@ -168,6 +207,7 @@ jobs:
           gradle-version: 7.2
 
       - name: Create Manifests
+        if: matrix.language != 'c'
         working-directory: ./${{ matrix.library }}
         run: make test_generate_vectors_${{ matrix.language }}
 
