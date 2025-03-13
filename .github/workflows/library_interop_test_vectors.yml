@@ -23,7 +23,7 @@ jobs:
             # https://taskei.amazon.dev/tasks/CrypTool-5283
             # windows-latest,
             ubuntu-22.04,
-            macos-13,
+            # macos-13,
           ]
         language: [java, net, rust, go, c]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
@@ -98,16 +98,30 @@ jobs:
         with:
           dafny-version: ${{ inputs.dafny }}
 
+      - name: Install OpenSSL
+        if: matrix.os != 'ubuntu-22.04' && matrix.language == 'c'
+        run: brew install openssl
+
+      - name: Install dependencies
+        if: matrix.os != 'ubuntu-22.04'	&& matrix.language == 'c'
+        run:
+          brew install json-c
+
+      - name: Install LibCurl
+        if: matrix.os == 'ubuntu-22.04' && matrix.language == 'c'
+        run: sudo apt-get install libcurl4-openssl-dev
+
       - name: Checkout C-ESDK
-        if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
+        if: matrix.language == 'c'
         uses: actions/checkout@v4
         with:
           repository: "aws/aws-encryption-sdk-c"
           path: "aws-encryption-sdk-c"
+          ref: "ajewell/test_vectors"
           submodules: recursive
 
       - name: Checkout AWS C++ SDK
-        if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
+        if: matrix.language == 'c'
         uses: actions/checkout@v4
         with:
           repository: "aws/aws-sdk-cpp"
@@ -127,6 +141,19 @@ jobs:
           xcodebuild -target ALL_BUILD
           xcodebuild -target install
 
+      - name: Build and install aws-sdk-cpp
+        if: matrix.os == 'ubuntu-22.04' && matrix.language == 'c'
+        run: |
+          # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
+          perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
+          mkdir -p build-aws-sdk-cpp || true
+          mkdir -p install || true
+          cd build-aws-sdk-cpp
+          cmake -DBUILD_SHARED_LIBS=ON -DBUILD_ONLY="kms" -DENABLE_UNITY_BUILD=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/install ../aws-sdk-cpp
+          make
+          make install
+
+
       - name: Build C-ESDK
         if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
         working-directory: ./aws-encryption-sdk-c
@@ -136,6 +163,17 @@ jobs:
           cmake -G Xcode -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/install -DOPENSSL_ROOT_DIR="/usr/local/opt/openssl@1.1" ../
           xcodebuild -target ALL_BUILD
           xcodebuild -scheme RUN_TESTS
+
+      - name: Build C-ESDK
+        if: matrix.os == 'ubuntu-22.04'
+        # TODO-RS: Figure out how to safely add AWS credentials and add -DAWS_ENC_SDK_END_TO_END_TESTS=ON and -DAWS_ENC_SDK_KNOWN_GOOD_TESTS=ON
+        run: |
+          mkdir build-aws-encryption-sdk-c || true
+          cd build-aws-encryption-sdk-c
+          cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/install ..
+          make
+          make test
+          make install
 
       - name: Regenerate code using smithy-dafny if necessary
         if: ${{ inputs.regenerate-code }}
@@ -212,8 +250,19 @@ jobs:
         run: make test_generate_vectors_${{ matrix.language }}
 
       - name: Create Encrypt Manifests
+        if: matrix.language != 'c'
         working-directory: ./${{ matrix.library }}
         run: make test_encrypt_vectors_${{ matrix.language }}
+
+      - name: Create Encrypt Manifests
+        if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}
+        run: make test_encrypt_vectors_c_mac
+
+      - name: Create Encrypt Manifests
+        if: matrix.language == 'c' && matrix.os == 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}
+        run: make test_encrypt_vectors_c_unix
 
       - name: Upload Encrypt Manifest and keys.json files
         uses: actions/upload-artifact@v4

@@ -249,25 +249,55 @@ _sed_types_file_add_extern:
 _sed_index_file_add_extern:
 	@echo "No extern to process for ESDK TestVectors"
 
-test_vectors_c: *.cpp *.h
-	cd aws-encryption-sdk-c/tests/TestVectors/; \
-	g++ -g -ggdb --std=c++14 -o test_vectors_c -I../../include/ \
+c_test_vectors:
+	cd aws-encryption-sdk/tests/TestVectors; \
+	g++ -g -ggdb --std=c++17 -o test_vectors -I../../include/ \
 	base64.cpp do_decrypt.cpp do_encrypt.cpp parse_encrypt.cpp parse_keys.cpp test_vectors.cpp \
 	-I/opt/homebrew/include/ -L/opt/homebrew/lib/ \
 	-I../../install/include/ -L../../install/lib/ -I ../../aws-encryption-sdk-cpp/include/ \
 	../../build-aws-encryption-sdk-c/Debug/libaws-encryption-sdk.dylib \
 	../../build-aws-encryption-sdk-c/aws-encryption-sdk-cpp/Debug/libaws-encryption-sdk-cpp.dylib \
 	-laws-cpp-sdk-core -laws-cpp-sdk-kms -laws-c-common -lcrypto; \
-	install_name_tool -add_rpath ../../build-aws-encryption-sdk-c/Debug/ test_vectors_c; \
-	install_name_tool -add_rpath ../../build-aws-encryption-sdk-c/aws-encryption-sdk-cpp/Debug/ test_vectors_c; \
-	install_name_tool -add_rpath ../../install/lib/ test_vectors_c
+	install_name_tool -add_rpath ../../build-aws-encryption-sdk-c/Debug/ test_vectors; \
+	install_name_tool -add_rpath ../../build-aws-encryption-sdk-c/aws-encryption-sdk-cpp/Debug/ test_vectors; \
+	install_name_tool -add_rpath ../../install/lib/ test_vectors
 
-test_encrypt_vectors_c: test_vectors_c
-	cd aws-encryption-sdk-c/tests/TestVectors/; \
+c_test_vectors_unix:
+	cd aws-encryption-sdk/tests/TestVectors; \
+	g++ -g -ggdb --std=c++17 -o test_vectors -I../../include/ \
+	base64.cpp do_decrypt.cpp do_encrypt.cpp parse_encrypt.cpp parse_keys.cpp test_vectors.cpp \
+	-I../../install/include/ -L../../install/lib/ -I ../../aws-encryption-sdk-cpp/include/ \
+	-laws-encryption-sdk -laws-encryption-sdk-cpp \
+	-laws-cpp-sdk-core -laws-cpp-sdk-kms -laws-c-common -lcrypto
+
+test_encrypt_vectors_c_unix: c_test_vectors
+	cd aws-encryption-sdk/tests/TestVectors; \
 	rm -rf local; \
 	mkdir -p local; \
-	./test_vectors_c encrypt --manifest-path ./from-dafny --decrypt-manifest-path ./local || exit 1
-	cp -r ./aws-encryption-sdk-c/tests/TestVectors/local/ ./runtimes/c/
+	LD_LIBRARY_PATH=../../install/lib/ ./test_vectors encrypt --manifest-path ./from-dafny --decrypt-manifest-path ./local
+	cp aws-encryption-sdk/tests/TestVectors/local/*.json ./runtimes/c/
+	cp -r aws-encryption-sdk/tests/TestVectors/local/plaintexts/ ./runtimes/c/plaintexts/
+	cp -r aws-encryption-sdk/tests/TestVectors/local/ciphertexts/ ./runtimes/c/ciphertexts/
 
-test_decrypt_encrypt_vectors_c: test_vectors_c
-	./test_vectors_c decrypt --manifest-path ./local --manifest-name decrypt-manifest.json || exit 1
+test_encrypt_vectors_c_mac: c_test_vectors_unix
+	cd aws-encryption-sdk/tests/TestVectors; \
+	rm -rf local; \
+	mkdir -p local; \
+	LD_LIBRARY_PATH=../../install/lib/ ./test_vectors encrypt --manifest-path ./from-dafny --decrypt-manifest-path ./local
+	cp aws-encryption-sdk/tests/TestVectors/local/*.json ./runtimes/c/
+	cp -r aws-encryption-sdk/tests/TestVectors/local/plaintexts/ ./runtimes/c/plaintexts/
+	cp -r aws-encryption-sdk/tests/TestVectors/local/ciphertexts/ ./runtimes/c/ciphertexts/
+
+test_decrypt_encrypt_vectors_c_mac: c_test_vectors
+	cp  ./runtimes/c/*.json aws-encryption-sdk/tests/TestVectors/local/
+	cp -r ./runtimes/c/plaintexts/ aws-encryption-sdk/tests/TestVectors/local/plaintexts/
+	cp -r ./runtimes/c/ciphertexts/ aws-encryption-sdk/tests/TestVectors/local/ciphertexts/
+	cd aws-encryption-sdk/tests/TestVectors; \
+	LD_LIBRARY_PATH=../../install/lib/ ./test_vectors decrypt --manifest-path ./local --manifest-name decrypt-manifest.json
+
+test_decrypt_encrypt_vectors_c_unix: c_test_vectors_unix
+	cp  ./runtimes/c/*.json aws-encryption-sdk/tests/TestVectors/local/
+	cp -r ./runtimes/c/plaintexts/ aws-encryption-sdk/tests/TestVectors/local/plaintexts/
+	cp -r ./runtimes/c/ciphertexts/ aws-encryption-sdk/tests/TestVectors/local/ciphertexts/
+	cd aws-encryption-sdk/tests/TestVectors; \
+	LD_LIBRARY_PATH=../../install/lib/ ./test_vectors decrypt --manifest-path ./local --manifest-name decrypt-manifest.json
