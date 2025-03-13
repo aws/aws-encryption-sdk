@@ -107,10 +107,10 @@ REMOVE_WRAPPED_CLIENT_AFTER_POLYMORPH_RUST_TO_2 := '\/\/ removed wrapped module 
 
 # Go
 
-GO_MODULE_NAME="github.com/aws/aws-encryption-sdk-c/testvectors"
+GO_MODULE_NAME="github.com/aws/aws-encryption-sdk/testvectors"
 
 GO_DEPENDENCY_MODULE_NAMES := \
-	--dependency-library-name=aws.cryptography.encryptionSdk=github.com/aws/aws-encryption-sdk-c/releases/go/encryption-sdk \
+	--dependency-library-name=aws.cryptography.encryptionSdk=github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk \
 	--dependency-library-name=com.amazonaws.dynamodb=github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb \
 	--dependency-library-name=com.amazonaws.kms=github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms \
 	--dependency-library-name=aws.cryptography.keyStore=github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl \
@@ -271,6 +271,10 @@ c_test_vectors_unix:
 	-laws-cpp-sdk-core -laws-cpp-sdk-kms -laws-c-common -lcrypto
 
 test_encrypt_vectors_c_mac: c_test_vectors
+	pwd
+	ls
+	find . -name install
+	ls aws-encryption-sdk-c
 	cd aws-encryption-sdk-c/tests/TestVectors; \
 	rm -rf local; \
 	mkdir -p local; \
