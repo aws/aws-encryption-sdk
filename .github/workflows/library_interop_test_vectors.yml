@@ -146,11 +146,9 @@ jobs:
 
       - name: Build and install aws-sdk-cpp
         if: matrix.os == 'ubuntu-22.04' && matrix.language == 'c'
-        working-directory: ./${{ matrix.library }}
         run: |
           pwd
           ls
-          ls aws-encryption-sdk-c
           # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
           perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
           mkdir -p build-aws-sdk-cpp || true
