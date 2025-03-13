@@ -132,8 +132,6 @@ jobs:
         if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
         working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
         run: |
-          pwd
-          ls
           # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
           perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
           mkdir -p aws-encryption-sdk-c/build-aws-sdk-cpp || true
@@ -147,8 +145,6 @@ jobs:
         if: matrix.os == 'ubuntu-22.04' && matrix.language == 'c'
         working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
         run: |
-          pwd
-          ls
           # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
           perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
           mkdir -p build-aws-sdk-cpp || true
