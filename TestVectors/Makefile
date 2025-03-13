@@ -265,9 +265,11 @@ c_test_vectors:
 c_test_vectors_unix:
 	pwd
 	ls
-	find . -name install
+	find .. -name install
 	ls aws-encryption-sdk-c
 	cd aws-encryption-sdk-c/tests/TestVectors; \
+	ls ../../install/; \
+	ls ../../install/include/; \
 	g++ -g -ggdb --std=c++17 -o test_vectors -I../../include/ \
 	base64.cpp do_decrypt.cpp do_encrypt.cpp parse_encrypt.cpp parse_keys.cpp test_vectors.cpp \
 	-I../../install/include/ -L../../install/lib/ -I ../../aws-encryption-sdk-cpp/include/ \
