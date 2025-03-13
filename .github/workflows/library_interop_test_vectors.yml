@@ -118,7 +118,6 @@ jobs:
         with:
           repository: "aws/aws-encryption-sdk-c"
           path: "aws-encryption-sdk-c"
-          ref: "ajewell/test_vectors"
           submodules: recursive
 
       - name: Checkout AWS C++ SDK
@@ -133,6 +132,9 @@ jobs:
         if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
         working-directory: ./${{ matrix.library }}
         run: |
+          pwd
+          ls
+          ls aws-encryption-sdk-c
           # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
           perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
           mkdir -p aws-encryption-sdk-c/build-aws-sdk-cpp || true
