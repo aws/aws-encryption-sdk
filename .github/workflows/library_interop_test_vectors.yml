@@ -117,7 +117,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: "aws/aws-encryption-sdk-c"
-          path: "aws-encryption-sdk-c"
+          path: ./${{ matrix.library }}/aws-encryption-sdk-c
           submodules: recursive
 
       - name: Checkout AWS C++ SDK
@@ -125,16 +125,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: "aws/aws-sdk-cpp"
-          path: "aws-encryption-sdk-c/aws-sdk-cpp"
+          path: ./${{ matrix.library }}/aws-encryption-sdk-c/aws-sdk-cpp
           submodules: recursive
 
       - name: Build and install aws-sdk-cpp
         if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
-        working-directory: ./${{ matrix.library }}
+        working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
         run: |
           pwd
           ls
-          ls aws-encryption-sdk-c
           # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
           perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
           mkdir -p aws-encryption-sdk-c/build-aws-sdk-cpp || true
@@ -146,6 +145,7 @@ jobs:
 
       - name: Build and install aws-sdk-cpp
         if: matrix.os == 'ubuntu-22.04' && matrix.language == 'c'
+        working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
         run: |
           pwd
           ls
