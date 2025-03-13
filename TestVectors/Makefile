@@ -270,8 +270,8 @@ c_test_vectors_unix:
 	-laws-encryption-sdk -laws-encryption-sdk-cpp \
 	-laws-cpp-sdk-core -laws-cpp-sdk-kms -laws-c-common -lcrypto
 
-test_encrypt_vectors_c_unix: c_test_vectors
-	cd aws-encryption-sdk/tests/TestVectors; \
+test_encrypt_vectors_c_mac: c_test_vectors
+	cd aws-encryption-sdk-c/tests/TestVectors; \
 	rm -rf local; \
 	mkdir -p local; \
 	LD_LIBRARY_PATH=../../install/lib/ ./test_vectors encrypt --manifest-path ./from-dafny --decrypt-manifest-path ./local
@@ -279,8 +279,10 @@ test_encrypt_vectors_c_unix: c_test_vectors
 	cp -r aws-encryption-sdk/tests/TestVectors/local/plaintexts/ ./runtimes/c/plaintexts/
 	cp -r aws-encryption-sdk/tests/TestVectors/local/ciphertexts/ ./runtimes/c/ciphertexts/
 
-test_encrypt_vectors_c_mac: c_test_vectors_unix
-	cd aws-encryption-sdk/tests/TestVectors; \
+test_encrypt_vectors_c_unix: c_test_vectors_unix
+	pwd
+	ls
+	cd aws-encryption-sdk-c/tests/TestVectors; \
 	rm -rf local; \
 	mkdir -p local; \
 	LD_LIBRARY_PATH=../../install/lib/ ./test_vectors encrypt --manifest-path ./from-dafny --decrypt-manifest-path ./local
