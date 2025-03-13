@@ -446,6 +446,15 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     requires test.vector.algorithmSuiteId.Some?
     requires test.vector.id.Some?
   {
+    var description := test.vector.decryptDescriptions;
+    if description.RSA? {
+      var newDescription := KeyVectorsTypes.RSA(KeyVectorsTypes.RawRSA(
+                              keyId := "rsa-4096-private",
+                              providerId := description.RSA.providerId,
+                              padding := description.RSA.padding
+                            ));
+      description := newDescription;
+    }
     output := match test.vector
       case PositiveEncryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_,_) =>
         Success(PositiveDecryptTestVector(
@@ -455,7 +464,7 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
                   ciphertextPath := ciphertextPathPathRoot,
                   plaintextPath := plaintextPathRoot + test.vector.plaintextPath,
                   reproducedEncryptionContext := test.vector.reproducedEncryptionContext,
-                  decryptDescriptions := test.vector.decryptDescriptions,
+                  decryptDescriptions := description,
                   commitmentPolicy := test.vector.commitmentPolicy,
                   frameLength := test.vector.frameLength,
                   algorithmSuiteId := test.vector.algorithmSuiteId,

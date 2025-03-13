@@ -84,7 +84,7 @@
       "material": "AAECAwQFBgcICRAREhMUFRYXGBkgISIjJCUmJygpMDE=",
       "key-id": "aes-256"
     },
-    "𝟁-nonascii-𐀂-aes-256-𝟁": {
+    "𝟁-nonascii-𐀂-aes-256-𝟁-with-�": {
       "encrypt": true,
       "decrypt": true,
       "algorithm": "aes",

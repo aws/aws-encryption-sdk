@@ -3,7 +3,7 @@
 
 include "../LibraryIndex.dfy"
 
-module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
+module {:options "/functionSyntax:4"} AllEsdkV5NoReqEc {
   import Types = AwsCryptographyEncryptionSdkTypes
   import mplTypes = AwsCryptographyMaterialProvidersTypes
   import keyVectorKeyTypes = AwsCryptographyMaterialProvidersTestVectorKeysTypes
@@ -45,27 +45,29 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
 
   const frameSize: int64 := 512
 
-  // A V4 manifest is can be parsed by JS, C, Older versions of Java and Python
-  // To make it easier on use we will only include keyrings that have 
-  // an equivalent in these ESDKs.
   const AllPositiveKeyringTestsNoReqCmmNoKmsRsa
   := {}
   + AllDefaultCmm.SuccessTestingRequiredEncryptionContextKeysReproducedEncryptionContext
+  + AllHierarchy.Tests
   + AllKms.Tests
   + AllKmsMrkAware.Tests
   + AllKmsMrkAwareDiscovery.Tests
-  + AllRawAES.TestsNoEc
-  + AllRawAES.TestsBasicEc
-  + AllRawAES.TestControlEc
-  + AllRawAES.TestsWithOnePairOfHighCodePointUtf8ValuesInEc
+  + AllRawAES.Tests
   + AllRawRSA.Tests
   + AllMulti.Tests
+  + AllRawECDH.Tests
+  + AllKmsEcdh.Tests
 
-  // All these tests will use a default CMM
+  const AwsKmsRsaTests := AllKmsRsa.Tests
+
+  const esdkAlgorithmSuitesKmsRsa := set suite <- AllAlgorithmSuites.AllAlgorithmSuites
+                                         | !suite.signature.ECDSA? && suite.id.ESDK?:: suite
+
+  // All these tests will use a defualt CMM
   const AllPostiveKeyringTestsNoDBESuiteNoReqEC :=
     set
       keyringConfig <- AllPositiveKeyringTestsNoReqCmmNoKmsRsa | !keyringConfig.NegativeEncryptKeyringVector?,
-      algorithmSuite <- AllAlgorithmSuites.ESDKAlgorithmSuites | algorithmSuite.commitment.None?
+      algorithmSuite <- AllAlgorithmSuites.ESDKAlgorithmSuites
       ::
         EsdkTestVectors.PositiveEncryptTestVector(
           version := 4,
@@ -74,11 +76,27 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
           plaintextPath := "",
           encryptDescriptions := keyringConfig.encryptDescription,
           decryptDescriptions := keyringConfig.decryptDescription,
-          // For now, interop with the ESDK-JS is tricky because of it's sorting of the aad.
-          // To deal with this detail we will only include encryption context in the test vector if the algorithm
-          // suite does not have an asymmetric signature.
-          reproducedEncryptionContext := if algorithmSuite.signature.ECDSA? then Some(map[]) else Some(keyringConfig.encryptionContext),
-          encryptionContext := if algorithmSuite.signature.ECDSA? then Some(map[]) else Some(keyringConfig.encryptionContext),
+          reproducedEncryptionContext := Some(keyringConfig.encryptionContext),
+          encryptionContext := Some(keyringConfig.encryptionContext),
+          frameLength := Some(frameSize),
+          algorithmSuiteId := Some(algorithmSuite),
+          description := keyringConfig.name
+        )
+
+  const AllPositiveKeyringTestsNoDBEKmsRsa :=
+    set
+      keyringConfig <- AwsKmsRsaTests | !keyringConfig.NegativeEncryptKeyringVector?,
+      algorithmSuite <- esdkAlgorithmSuitesKmsRsa
+      ::
+        EsdkTestVectors.PositiveEncryptTestVector(
+          version := 4,
+          manifestPath := "",
+          decryptManifestPath := "",
+          plaintextPath := "",
+          encryptDescriptions := keyringConfig.encryptDescription,
+          decryptDescriptions := keyringConfig.decryptDescription,
+          reproducedEncryptionContext := Some(keyringConfig.encryptionContext),
+          encryptionContext := Some(keyringConfig.encryptionContext),
           frameLength := Some(frameSize),
           algorithmSuiteId := Some(algorithmSuite),
           description := keyringConfig.name
@@ -86,4 +104,5 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
 
   const Tests :=
     AllPostiveKeyringTestsNoDBESuiteNoReqEC
+    + AllPositiveKeyringTestsNoDBEKmsRsa
 }

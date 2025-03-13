@@ -3,7 +3,7 @@
 
 include "../LibraryIndex.dfy"
 
-module {:options "/functionSyntax:4" } AllEsdkV4WithReqEc {
+module {:options "/functionSyntax:4" } AllEsdkV5WithReqEc {
   import Types = AwsCryptographyEncryptionSdkTypes
   import mplTypes = AwsCryptographyMaterialProvidersTypes
   import ESDK
@@ -17,7 +17,7 @@ module {:options "/functionSyntax:4" } AllEsdkV4WithReqEc {
   import JSONHelpers
   import EsdkManifestOptions
   import EsdkTestVectors
-  import AllEsdkV4NoReqEc
+  import AllEsdkV5NoReqEc
 
   import UUID
   import UTF8

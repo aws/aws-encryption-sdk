@@ -51,7 +51,8 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
   function printJson(j: JSON) : (){()} by method {print j, "\n", "\n"; return ();}
 
   function {:vcs_split_on_every_assert} EncryptTestVectorToJson(
-    test: EsdkTestVectors.EsdkEncryptTestVector
+    test: EsdkTestVectors.EsdkEncryptTestVector,
+    version: int
   ): Result<JSON, string>
   {
     :- Need(
@@ -75,30 +76,65 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
     var reproducedEncryptionContext
       :- if test.reproducedEncryptionContext.Some? then
            EncryptionContextToJson("reproduced-encryption-context", test.reproducedEncryptionContext.value)
-         else
+         else 
            EncryptionContextToJson("reproduced-encryption-context", map[]);
 
-    var optionalValues := encryptionContext + reproducedEncryptionContext;
+    var optionalValues := if version == 5 then
+        encryptionContext + reproducedEncryptionContext
+      else
+        encryptionContext;
 
+    if version == 4 then
+     var test? :- ToV4Test(test, id, optionalValues);
+     Success(test?)
+    else if version == 5 then
+      var test? :- ToV5Test(test, id, optionalValues);
+      Success(test?)
+    else
+      Failure("The Dafny Test Vector Framework can only write manifests with version >= 4.")
+
+  }
+
+  function ToV4Test(test: EsdkTestVectors.EsdkEncryptTestVector, id: string, optionalValues: seq<(string, JSON)>) : Result<JSON, string>
+    requires test.algorithmSuiteId.Some? && test.frameLength.Some?
+  {
+    match test
+    case PositiveEncryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_,_) =>
+      var encrypt? :- KeyDescription.ToJson(test.encryptDescriptions, 2);
+      var encrypt := if encrypt?.Array? then encrypt? else Array([encrypt?]);
+      Success(Object([
+        ("plaintext", String("small")),
+        ("algorithm", String(id)),
+        ("frame-size", Number(Int(test.frameLength.value as int))),
+        ("master-keys", encrypt),
+        ("cmm", String("Default"))
+      ] + optionalValues))
+      
+    case _ =>
+      Failure("Only Positive Tests supported :(")
+  }
+
+  function ToV5Test(test: EsdkTestVectors.EsdkEncryptTestVector, id: string, optionalValues: seq<(string, JSON)>) : Result<JSON, string>
+    requires test.algorithmSuiteId.Some? && test.frameLength.Some?
+  {
     match test
     case PositiveEncryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_,_,_) =>
       var encrypt :- KeyDescription.ToJson(test.encryptDescriptions, 3);
       var decrypt :- KeyDescription.ToJson(test.decryptDescriptions, 3);
       var scenario := Object([
-                               ("type", String("positive-esdk")),
-                               ("plaintext", String("small")),
-                               ("description", String(test.description)),
-                               ("algorithmSuiteId", String(id)),
-                               ("frame-size", Number(Int(test.frameLength.value as int))),
-                               ("encryptKeyDescription", encrypt),
-                               ("decryptKeyDescription", decrypt)
-                             ] + optionalValues);
+                              ("type", String("positive-esdk")),
+                              ("plaintext", String("small")),
+                              ("description", String(test.description)),
+                              ("algorithmSuiteId", String(id)),
+                              ("frame-size", Number(Int(test.frameLength.value as int))),
+                              ("encryptKeyDescription", encrypt),
+                              ("decryptKeyDescription", decrypt)
+                            ] + optionalValues);
       Success(Object([
-                       ("encryption-scenario", scenario)
-                     ]))
+                      ("encryption-scenario", scenario)
+                    ]))
     case _ =>
       Failure("Only Positive Tests supported :(")
-
     // Left here for future reference on how you would start to add negative test vectors
     // match test
     // case PositiveEncryptKeyringVector(_,_,_,_,_,_,_,_,_,_) =>
@@ -144,7 +180,8 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
   }
 
   function {:vcs_split_on_every_assert} DecryptTestVectorToJson(
-    test: EsdkTestVectors.EsdkDecryptTestVector
+    test: EsdkTestVectors.EsdkDecryptTestVector,
+    version: int
   ): Result<JSON, string>
   {
     :- Need(
@@ -153,13 +190,14 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
          "test is missing algorithmSuite ID, or frameLength"
        );
     var id := AllAlgorithmSuites.ToHex(test.algorithmSuiteId.value);
-    var description := test.description + " " + id;
+
+    var ec := if version == 5 then "reproduced-encryption-context" else "encryption-context";
 
     var reproducedEncryptionContext
       :- if test.reproducedEncryptionContext.Some? then
-           EncryptionContextToJson("reproduced-encryption-context", test.reproducedEncryptionContext.value)
+           EncryptionContextToJson(ec, test.reproducedEncryptionContext.value)
          else
-           EncryptionContextToJson("reproduced-encryption-context", map[]);
+           EncryptionContextToJson(ec, map[]);
 
     :- Need(
          |reproducedEncryptionContext| == 1,
@@ -168,6 +206,41 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
 
     var optionalValues := reproducedEncryptionContext;
 
+    if version == 4 then
+      var test? :- ToV4DecryptTest(test, id, optionalValues);
+      Success(test?)
+    else if version == 5 then
+      var test? :- ToV5DecryptTest(test, id, optionalValues);
+      Success(test?)
+    else
+      Failure("The Dafny Test Vector Framework can only write manifests with version >= 4.")
+
+  }
+  
+  function ToV4DecryptTest(test: EsdkTestVectors.EsdkDecryptTestVector, id: string, optionalValues: seq<(string, JSON)>) : Result<JSON, string>
+    requires test.algorithmSuiteId.Some? && test.frameLength.Some?
+  {
+    match test
+    case PositiveDecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_) =>
+      var decrypt? :- KeyDescription.ToJson(test.decryptDescriptions, 2);
+      var decrypt := if decrypt?.Array? then decrypt? else Array([decrypt?]);
+      var fileName := String("file://" + test.plaintextPath);
+      var fileLoc := Object([("plaintext", fileName)]);
+      var scenario := Object([
+                               ("ciphertext", String("file://ciphertexts/" + test.id)),
+                               ("result", Object([("output", fileLoc)])),
+                               ("master-keys", decrypt),
+                               ("description", String(test.description)),
+                               ("cmm", String("Default"))
+                             ] + optionalValues);
+      Success(scenario)
+    case _ =>
+      Failure("Only Positive Tests supported :(")
+  }
+
+  function ToV5DecryptTest(test: EsdkTestVectors.EsdkDecryptTestVector, id: string, optionalValues: seq<(string, JSON)>) : Result<JSON, string>
+    requires test.algorithmSuiteId.Some? && test.frameLength.Some?
+  {
     match test
     case PositiveDecryptTestVector(_,_,_,_,_,_,_,_,_,_,_,_) =>
       var decrypt :- KeyDescription.ToJson(test.decryptDescriptions, 3);

@@ -51,9 +51,15 @@ jobs:
   #   uses: ./.github/workflows/library_interop_tests.yml
   #   with:
   #     dafny: ${{needs.getVersion.outputs.version}}
-  pr-dafny-test-vectors:
+  pr-dafny-keyring-test-vectors:
     needs: getVersion
-    uses: ./.github/workflows/library_interop_test_vectors.yml
+    uses: ./.github/workflows/library_interop_keyring_test_vectors.yml
+    with:
+      dafny: ${{needs.getVersion.outputs.version}}
+    secrets: inherit
+  pr-dafny-mkp-keyring-legacy-test-vectors:
+    needs: getVersion
+    uses: ./.github/workflows/library_interop_mkp_test_vectors.yml
     with:
       dafny: ${{needs.getVersion.outputs.version}}
     secrets: inherit
@@ -71,7 +77,7 @@ jobs:
       # - pr-ci-net
       # - pr-ci-rust
       # - pr-test-vectors
-      - pr-dafny-test-vectors
+      - pr-dafny-keyring-test-vectors
       - pr-dafny-legacy-test-vectors
     runs-on: ubuntu-22.04
     steps:
