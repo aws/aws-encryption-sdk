@@ -130,7 +130,7 @@ jobs:
 
       - name: Build and install aws-sdk-cpp
         if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
-        working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
+        working-directory: ./${{ matrix.library }}
         run: |
           pwd
           ls
@@ -146,7 +146,7 @@ jobs:
 
       - name: Build and install aws-sdk-cpp
         if: matrix.os == 'ubuntu-22.04' && matrix.language == 'c'
-        working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
+        working-directory: ./${{ matrix.library }}
         run: |
           pwd
           ls
