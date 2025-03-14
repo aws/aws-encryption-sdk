@@ -20,7 +20,12 @@ jobs:
       fail-fast: false
       matrix:
         library: [AwsEncryptionSDK]
-        os: [windows-latest, ubuntu-22.04, macos-13]
+        os: [
+            windows-latest,
+            ubuntu-22.04,
+            # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
+            # macos-13,
+          ]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
@@ -117,7 +122,8 @@ jobs:
             # Sed script doesn't work properly on windows
             # windows-latest,
             ubuntu-22.04,
-            macos-13,
+            # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
+            # macos-13,
           ]
     runs-on: ${{ matrix.os }}
     permissions:
