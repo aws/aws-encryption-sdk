@@ -29,8 +29,8 @@ on:
 # 4. Read what ESDK-JS wrote
 #     Using the zip file created in stage 3 every library attempts
 #     to decrypt what ESDK-JS wrote.
-# These tests will ensure that messages encrypted with compatible MKP to Keyring 
-# can be successfully read by other languages 
+# These tests will ensure that messages encrypted with compatible MKP to Keyring
+# can be successfully read by other languages
 # These tests will ensure that the JavaScript ESDK can successfully decrypt messages encrypted
 # by compatible MKPs or Keyrings.
 # These tests will ensure that given an encrypt-manifest, every
@@ -63,13 +63,13 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2
+          ole-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: InterOpTests
           role-duration-seconds: 7200
-      
+
       - uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
           token: ${{secrets.PRIVATE_MPL}}
 
       # Set up runtimes
@@ -216,7 +216,7 @@ jobs:
         if: matrix.language != 'go'
         working-directory: ./${{ matrix.library }}
         run: make test_encrypt_vectors_${{ matrix.language }}_legacy_format
-      
+
       - name: Create Encrypt Manifests
         if: matrix.language == 'go'
         working-directory: ./${{ matrix.library }}
@@ -263,13 +263,13 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2
+          ole-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: InterOpTests
           role-duration-seconds: 7200
 
       - uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
           token: ${{secrets.PRIVATE_MPL}}
 
       # Set up runtimes
@@ -409,7 +409,7 @@ jobs:
       - name: Decrypt Encrypt Manifest
         working-directory: ./${{ matrix.library }}
         run: make test_decrypt_encrypt_vectors_${{matrix.decrypting_language}}
-  
+
   testInteroperabilityWithJs:
     needs: generateMkpKeyringLegacyFormatEncryptVectors
     strategy:
@@ -433,10 +433,10 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      
+
       - uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
           token: ${{secrets.PRIVATE_MPL}}
 
       # TestVectors will call KMS
@@ -444,7 +444,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2
+          ole-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: InterOpTests
           role-duration-seconds: 7200
 
@@ -457,26 +457,26 @@ jobs:
           openssl version
           npm install @aws-crypto/integration-node
           npm install fast-xml-parser
-  
+
       - name: Download Encrypt Manifest Artifact
         uses: actions/download-artifact@v4
         with:
           name: ${{matrix.os}}_vector_artifact_${{matrix.encrypting_language}}_legacy_format_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/
-      
+
       # Sadly we have to zip up the artifacts again to be consumed by JS
       - name: Decrypt Generated Test Vectors with ESDK-JS
         working-directory: ${{matrix.library}}/runtimes
         shell: bash
         run: |
           zip -qq tests.zip -r ciphertexts plaintexts *.json
-      
+
       - name: Decrypt Generated Test Vectors with ESDK-JS
         working-directory: ${{matrix.library}}/runtimes
         shell: bash
         run: |
           npx -y @aws-crypto/integration-node decrypt -v tests.zip -c cpu -f 100 -C
-  
+
   testWritesWithJs:
     needs: generateMkpKeyringLegacyFormatEncryptVectors
     strategy:
@@ -499,10 +499,10 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      
+
       - uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
           token: ${{secrets.PRIVATE_MPL}}
 
       # TestVectors will call KMS
@@ -510,7 +510,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2
+          ole-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: InterOpTests
           role-duration-seconds: 7200
 
@@ -523,14 +523,14 @@ jobs:
           openssl version
           npm install @aws-crypto/integration-node
           npm install fast-xml-parser
-  
+
       - name: Download Encrypt Manifest Artifact
         uses: actions/download-artifact@v4
         with:
           # we can pick any manifest we want. i choose java because it runs 6 billion devices
           name: ubuntu-22.04_vector_artifact_java_legacy_format_${{github.sha}}
           path: ./${{matrix.library}}
-      
+
       - name: Create JS decrypt manifest
         working-directory: ${{matrix.library}}
         shell: bash
@@ -573,13 +573,13 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2
+          ole-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: InterOpTests
           role-duration-seconds: 7200
 
       - uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
           token: ${{secrets.PRIVATE_MPL}}
 
       # Set up runtimes

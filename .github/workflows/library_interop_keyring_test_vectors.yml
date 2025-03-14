@@ -14,10 +14,10 @@ on:
         default: false
         type: boolean
 
-# These interop tests are strictly only for Dafny based languages 
+# These interop tests are strictly only for Dafny based languages
 # or Dafny integrated languages (ESDK-Java, ESDK-Python).
-# Additionally, these tests produce the latest version of 
-# test vector manifests V5. These have the ability to state how to 
+# Additionally, these tests produce the latest version of
+# test vector manifests V5. These have the ability to state how to
 # build negative test vectors and OnDecrypt constructions.
 jobs:
   generateKeyringEncryptVectors:
@@ -47,14 +47,13 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2
+          ole-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: InterOpTests
           role-duration-seconds: 7200
-      
+
       - uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
-          token: ${{secrets.PRIVATE_MPL}}
+          submodules: "recursive"
 
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
@@ -240,14 +239,13 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2
+          ole-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: InterOpTests
           role-duration-seconds: 7200
 
       - uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
-          token: ${{secrets.PRIVATE_MPL}}
+          submodules: "recursive"
 
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}

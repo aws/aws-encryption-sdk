@@ -3,14 +3,16 @@
 // Do not modify this file. This file is machine generated, and any changes to it will be overwritten.
 package software.amazon.cryptography.encryptionsdk.wrapped;
 
+import static software.amazon.cryptography.encryptionsdk.wrapped.KeyringToMasterKeyProvider.createMasterKeyProvider;
+
+import Wrappers_Compile.Result;
 import com.amazonaws.encryptionsdk.AwsCrypto;
 import com.amazonaws.encryptionsdk.CryptoAlgorithm;
 import com.amazonaws.encryptionsdk.CryptoResult;
-
-import Wrappers_Compile.Result;
 import com.amazonaws.encryptionsdk.MasterKeyProvider;
 import dafny.DafnyMap;
 import dafny.DafnySequence;
+import java.util.Objects;
 import software.amazon.cryptography.encryptionsdk.ToDafny;
 import software.amazon.cryptography.encryptionsdk.ToNative;
 import software.amazon.cryptography.encryptionsdk.internaldafny.types.DecryptInput;
@@ -21,10 +23,6 @@ import software.amazon.cryptography.encryptionsdk.internaldafny.types.Error;
 import software.amazon.cryptography.encryptionsdk.internaldafny.types.IAwsEncryptionSdkClient;
 import software.amazon.cryptography.materialproviders.internaldafny.types.ESDKAlgorithmSuiteId;
 import software.amazon.smithy.dafny.conversion.ToDafny.Simple;
-
-import java.util.Objects;
-
-import static software.amazon.cryptography.encryptionsdk.wrapped.KeyringToMasterKeyProvider.createMasterKeyProvider;
 
 @SuppressWarnings("ALL")
 public class TestESDK implements IAwsEncryptionSdkClient {
@@ -51,9 +49,13 @@ public class TestESDK implements IAwsEncryptionSdkClient {
       // Returns null for unsupported MKP to allow encryption/decryption with keyrings instead
       if (_prefer_mkp_over_keyring) {
         if (dafnyInput.dtor_keyring().is_Some()) {
-          provider = createMasterKeyProvider(dafnyInput.dtor_keyring().dtor_value());
+          provider =
+            createMasterKeyProvider(dafnyInput.dtor_keyring().dtor_value());
         } else if (dafnyInput.dtor_materialsManager().is_Some()) {
-          provider = createMasterKeyProvider(dafnyInput.dtor_materialsManager().dtor_value());
+          provider =
+            createMasterKeyProvider(
+              dafnyInput.dtor_materialsManager().dtor_value()
+            );
         }
       }
 
@@ -62,21 +64,34 @@ public class TestESDK implements IAwsEncryptionSdkClient {
       if (_prefer_mkp_over_keyring && provider != null) {
         // Logging
         // TODO: Make logging optional
-        System.out.println("Decrypted with MasterKeyProvider: " + provider.getClass().getName());
+        System.out.println(
+          "Decrypted with MasterKeyProvider: " + provider.getClass().getName()
+        );
         decryptResult =
-                this._impl.decryptData(
-                        provider,
-                        nativeInput.ciphertext().array()
-                );
+          this._impl.decryptData(provider, nativeInput.ciphertext().array());
         if (!Objects.isNull(nativeInput.encryptionContext())) {
           // For ESDK Java V2, We do not support to verify encryption context during decrypt call.
           // We have to explicitly verify for EC outside of decrypt. For V3, MKPs were deprecated.
           // TODO: Error message SHOULD include expected key-value and actual value
           // TODO: If key is missing, error message should detail which key is missing.
-          if (!nativeInput.encryptionContext().entrySet().stream()
-                  .allMatch(e -> e.getValue().equals(decryptResult.getEncryptionContext().get(e.getKey())))) {
-            throw new IllegalStateException(String.format("Encryption Context mismatch - Expected: %s, Actual: %s",
-                    nativeInput.encryptionContext(), decryptResult.getEncryptionContext()));
+          if (
+            !nativeInput
+              .encryptionContext()
+              .entrySet()
+              .stream()
+              .allMatch(e ->
+                e
+                  .getValue()
+                  .equals(decryptResult.getEncryptionContext().get(e.getKey()))
+              )
+          ) {
+            throw new IllegalStateException(
+              String.format(
+                "Encryption Context mismatch - Expected: %s, Actual: %s",
+                nativeInput.encryptionContext(),
+                decryptResult.getEncryptionContext()
+              )
+            );
           }
         }
       } else {
@@ -86,32 +101,32 @@ public class TestESDK implements IAwsEncryptionSdkClient {
           // Call decrypt with keyring
           if (Objects.isNull(nativeInput.encryptionContext())) {
             decryptResult =
-                    this._impl.decryptData(
-                            nativeInput.keyring(),
-                            nativeInput.ciphertext().array()
-                    );
+              this._impl.decryptData(
+                  nativeInput.keyring(),
+                  nativeInput.ciphertext().array()
+                );
           } else {
             decryptResult =
-                    this._impl.decryptData(
-                            nativeInput.keyring(),
-                            nativeInput.ciphertext().array(),
-                            nativeInput.encryptionContext()
-                    );
+              this._impl.decryptData(
+                  nativeInput.keyring(),
+                  nativeInput.ciphertext().array(),
+                  nativeInput.encryptionContext()
+                );
           }
         } else {
           if (Objects.isNull(nativeInput.encryptionContext())) {
             decryptResult =
-                    this._impl.decryptData(
-                            nativeInput.materialsManager(),
-                            nativeInput.ciphertext().array()
-                    );
+              this._impl.decryptData(
+                  nativeInput.materialsManager(),
+                  nativeInput.ciphertext().array()
+                );
           } else {
             decryptResult =
-                    this._impl.decryptData(
-                            nativeInput.materialsManager(),
-                            nativeInput.ciphertext().array(),
-                            nativeInput.encryptionContext()
-                    );
+              this._impl.decryptData(
+                  nativeInput.materialsManager(),
+                  nativeInput.ciphertext().array(),
+                  nativeInput.encryptionContext()
+                );
           }
         }
       }
@@ -162,9 +177,13 @@ public class TestESDK implements IAwsEncryptionSdkClient {
       // Returns null for unsupported MKP to allow encryption/decryption with keyrings instead
       if (_prefer_mkp_over_keyring) {
         if (dafnyInput.dtor_keyring().is_Some()) {
-          provider = createMasterKeyProvider(dafnyInput.dtor_keyring().dtor_value());
+          provider =
+            createMasterKeyProvider(dafnyInput.dtor_keyring().dtor_value());
         } else if (dafnyInput.dtor_materialsManager().is_Some()) {
-          provider = createMasterKeyProvider(dafnyInput.dtor_materialsManager().dtor_value());
+          provider =
+            createMasterKeyProvider(
+              dafnyInput.dtor_materialsManager().dtor_value()
+            );
         }
       }
 
@@ -181,17 +200,14 @@ public class TestESDK implements IAwsEncryptionSdkClient {
         // Call decrypt with MKP
         if (Objects.isNull(nativeInput.encryptionContext())) {
           encryptResult =
-                  this._impl.encryptData(
-                          provider,
-                          nativeInput.plaintext().array()
-                  );
+            this._impl.encryptData(provider, nativeInput.plaintext().array());
         } else {
           encryptResult =
-                  this._impl.encryptData(
-                          provider,
-                          nativeInput.plaintext().array(),
-                          nativeInput.encryptionContext()
-                  );
+            this._impl.encryptData(
+                provider,
+                nativeInput.plaintext().array(),
+                nativeInput.encryptionContext()
+              );
         }
       } else {
         // Logging
@@ -201,32 +217,32 @@ public class TestESDK implements IAwsEncryptionSdkClient {
           // Call decrypt with keyring
           if (Objects.isNull(nativeInput.encryptionContext())) {
             encryptResult =
-                    this._impl.encryptData(
-                            nativeInput.keyring(),
-                            nativeInput.plaintext().array()
-                    );
+              this._impl.encryptData(
+                  nativeInput.keyring(),
+                  nativeInput.plaintext().array()
+                );
           } else {
             encryptResult =
-                    this._impl.encryptData(
-                            nativeInput.keyring(),
-                            nativeInput.plaintext().array(),
-                            nativeInput.encryptionContext()
-                    );
+              this._impl.encryptData(
+                  nativeInput.keyring(),
+                  nativeInput.plaintext().array(),
+                  nativeInput.encryptionContext()
+                );
           }
         } else { // We are in the CMM case
           if (Objects.isNull(nativeInput.encryptionContext())) {
             encryptResult =
-                    this._impl.encryptData(
-                            nativeInput.materialsManager(),
-                            nativeInput.plaintext().array()
-                    );
+              this._impl.encryptData(
+                  nativeInput.materialsManager(),
+                  nativeInput.plaintext().array()
+                );
           } else {
             encryptResult =
-                    this._impl.encryptData(
-                            nativeInput.materialsManager(),
-                            nativeInput.plaintext().array(),
-                            nativeInput.encryptionContext()
-                    );
+              this._impl.encryptData(
+                  nativeInput.materialsManager(),
+                  nativeInput.plaintext().array(),
+                  nativeInput.encryptionContext()
+                );
           }
         }
       }
@@ -333,7 +349,10 @@ public class TestESDK implements IAwsEncryptionSdkClient {
         );
       }
 
-      if (System.getenv("masterkey") != null && System.getenv("masterkey").equals("true")) {
+      if (
+        System.getenv("masterkey") != null &&
+        System.getenv("masterkey").equals("true")
+      ) {
         prefer_mkp_over_keyring = true;
       }
 

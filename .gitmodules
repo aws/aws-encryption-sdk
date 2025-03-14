@@ -13,4 +13,4 @@
 	url = https://github.com/awslabs/aws-encryption-sdk-test-vectors.git
 [submodule "mpl"]
 	path = mpl
-	url = https://github.com/aws/private-aws-cryptographic-material-providers-library-dafny-staging.git
+	url = https://github.com/aws/aws-cryptographic-material-providers-library-dafny.git

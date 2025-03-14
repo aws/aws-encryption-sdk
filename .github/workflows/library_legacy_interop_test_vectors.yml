@@ -53,8 +53,7 @@ jobs:
 
       - uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
-          token: ${{secrets.PRIVATE_MPL}}
+          submodules: "recursive"
 
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
@@ -74,7 +73,7 @@ jobs:
         uses: dafny-lang/setup-dafny-action@v1.8.0
         with:
           dafny-version: ${{ inputs.dafny }}
-      
+
       - name: Setup Python for running tests
         if: matrix.language == 'python'
         uses: actions/setup-python@v4
@@ -112,7 +111,7 @@ jobs:
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_net
-      
+
       - name: Build ${{ matrix.library }} implementation in Python
         if: matrix.language == 'python'
         shell: bash
@@ -133,7 +132,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-ESDK-Dafny-Role-us-west-2
+          ole-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: LegacyInterOpTests
 
       # Extract test vector zips
