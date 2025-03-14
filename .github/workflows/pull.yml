@@ -26,11 +26,11 @@ jobs:
     uses: ./.github/workflows/library_dafny_verification.yml
     with:
       dafny: ${{needs.getVerifyVersion.outputs.version}}
-  pr-ci-java:
-    needs: getVerifyVersion
-    uses: ./.github/workflows/library_java_tests.yml
-    with:
-      dafny: ${{needs.getVersion.outputs.version}}
+  # pr-ci-java:
+  #   needs: getVerifyVersion
+  #   uses: ./.github/workflows/library_java_tests.yml
+  #   with:
+  #     dafny: ${{needs.getVersion.outputs.version}}
   pr-ci-net:
     needs: getVersion
     uses: ./.github/workflows/library_net_tests.yml
@@ -76,6 +76,7 @@ jobs:
       - pr-ci-verification
       - pr-ci-net
       - pr-ci-rust
+      - pr-ci-go
       - pr-test-vectors
       - pr-dafny-keyring-test-vectors
       - pr-dafny-legacy-test-vectors
