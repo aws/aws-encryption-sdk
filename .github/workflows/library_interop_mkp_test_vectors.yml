@@ -70,7 +70,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: "recursive"
-          token: ${{secrets.PRIVATE_MPL}}
 
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
@@ -270,7 +269,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: "recursive"
-          token: ${{secrets.PRIVATE_MPL}}
 
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
@@ -437,7 +435,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: "recursive"
-          token: ${{secrets.PRIVATE_MPL}}
 
       # TestVectors will call KMS
       - name: Configure AWS Credentials
@@ -503,7 +500,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: "recursive"
-          token: ${{secrets.PRIVATE_MPL}}
 
       # TestVectors will call KMS
       - name: Configure AWS Credentials
@@ -580,7 +576,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: "recursive"
-          token: ${{secrets.PRIVATE_MPL}}
 
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
