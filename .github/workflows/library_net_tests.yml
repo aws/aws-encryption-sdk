@@ -34,10 +34,10 @@ jobs:
         os: [
             # Sed script doesn't work properly on windows
             # windows-latest,
-          ubuntu-22.04,
-          # TODO: Add macOS after https://github.com/dotnet/sdk/issues/46857 is resolved
-          # macos-13
-        ]
+            ubuntu-22.04,
+            # TODO: Add macOS after https://github.com/dotnet/sdk/issues/46857 is resolved
+            # macos-13
+          ]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
