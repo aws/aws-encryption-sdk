@@ -34,7 +34,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-22.04, macos-13]
+        os: [
+          windows-latest,
+          ubuntu-22.04,
+          # TODO: Add macOS after https://github.com/dotnet/sdk/issues/46857 is resolved
+          # macos-13
+        ]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write

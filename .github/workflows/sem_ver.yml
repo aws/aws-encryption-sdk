@@ -6,7 +6,7 @@ on:
 
 jobs:
   semantic-release:
-    runs-on: macos-13
+    runs-on: ubunutu-latest
     permissions:
       id-token: write
       contents: read

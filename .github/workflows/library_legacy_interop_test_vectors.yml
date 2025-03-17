@@ -23,7 +23,8 @@ jobs:
             # https://taskei.amazon.dev/tasks/CrypTool-5283
             # windows-latest,
             ubuntu-22.04,
-            macos-13,
+            # TODO: Add macOS after https://github.com/dotnet/sdk/issues/46857 is resolved
+            # macos-13
           ]
         # java struggles with the json parsing
         # however; the native java esdk already runs a subset of these decrypt

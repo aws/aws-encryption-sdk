@@ -23,7 +23,8 @@ jobs:
             # https://taskei.amazon.dev/tasks/CrypTool-5283
             # windows-latest,
             ubuntu-22.04,
-            macos-13,
+            # TODO: Add macOS after https://github.com/dotnet/sdk/issues/46857 is resolved
+            # macos-13
           ]
         language: [java, net, rust, go]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
@@ -193,7 +194,8 @@ jobs:
             # https://taskei.amazon.dev/tasks/CrypTool-5283
             # windows-latest,
             ubuntu-22.04,
-            macos-13,
+            # TODO: Add macOS after https://github.com/dotnet/sdk/issues/46857 is resolved
+            # macos-13
           ]
         encrypting_language: [java, net, rust, go]
         decrypting_language: [java, net, rust, go]

@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         library: [AwsEncryptionSDK, TestVectors]
-        os: [macos-13]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1

@@ -33,7 +33,12 @@ jobs:
   decrypt_python_vectors:
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-22.04, macos-13]
+        os: [
+          windows-latest,
+          ubuntu-22.04,
+          # TODO: Add macOS after https://github.com/dotnet/sdk/issues/46857 is resolved
+          # macos-13
+        ]
     runs-on: ${{matrix.os}}
     permissions:
       id-token: write
@@ -140,7 +145,11 @@ jobs:
   generate_vectors:
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [
+          ubuntu-22.04,
+          # TODO: Add macOS after https://github.com/dotnet/sdk/issues/46857 is resolved
+          # macos-13
+        ]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
@@ -242,7 +251,11 @@ jobs:
     needs: generate_vectors
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [
+          ubuntu-22.04,
+          # TODO: Add macOS after https://github.com/dotnet/sdk/issues/46857 is resolved
+          # macos-13
+        ]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
