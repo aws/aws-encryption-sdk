@@ -28,6 +28,16 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
   import EsdkManifestOptions
   import opened EsdkTestVectors
   import WriteVectors
+  import Time
+  import OsLang
+
+  function LogFileName() : string
+  {
+    if OsLang.GetOsShort() == "Windows" && OsLang.GetLanguageShort() == "Dotnet" then
+      "..\\..\\PerfLog.txt"
+    else
+      "../../PerfLog.txt"
+  }
 
   method StartDecryptVectors(
     op: EsdkManifestOptions.ManifestOptions
@@ -70,6 +80,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
 
     var hasFailure := false;
     var skipped := 0;
+    var time := Time.GetAbsoluteTime();
 
     for i := 0 to |vectors|
     {
@@ -83,8 +94,10 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
         skipped := skipped + 1;
         print "\nSKIP===> ", vector.id, "\n";
       }
-
     }
+    var elapsed := Time.TimeSince(time);
+    Time.PrintTimeLong(elapsed, "TestDecrypts ESDK", Some(LogFileName()));
+
     print "\n=================== Completed ", |vectors|, " Decrypt Tests =================== \n\n";
 
     if 0 < skipped {
@@ -183,6 +196,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     var hasFailure := false;
     var decryptVectors := [];
     var skipped := [];
+    var time := Time.GetAbsoluteTime();
 
     for i := 0 to |tests|
       invariant forall t <- tests ::
@@ -210,6 +224,8 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
         print "\nSKIP===> ", test.vector.id.value, "\n";
       }
     }
+    var elapsed := Time.TimeSince(time);
+    Time.PrintTimeLong(elapsed, "TestDecrypts ESDK", Some(LogFileName()));
     print "\n=================== Completed ", |tests|, " Encrypt Tests =================== \n\n";
 
     expect !hasFailure;

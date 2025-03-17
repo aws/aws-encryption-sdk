@@ -199,13 +199,6 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     modifies keys.Modifies
     ensures keys.ValidState()
   {
-    if vector.algorithmSuiteId.Some? {
-      var id := AllAlgorithmSuites.ToHex(vector.algorithmSuiteId.value);
-      print "\nTEST-DECRYPT===> ", vector.id, "\n", id, " ", vector.description, "\n";
-    } else {
-      print "\nTEST-DECRYPT===> ", vector.id, "\n", vector.description, "\n";
-    }
-
     // The decrypt test vectors also test initialization
     // This is because they were developed when the MPL
     // was still part of the ESDK
@@ -213,6 +206,12 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
 
     if test?.Failure? {
       print test?.error, "\n", "\nFAILED! <-----------\n";
+      if vector.algorithmSuiteId.Some? {
+        var id := AllAlgorithmSuites.ToHex(vector.algorithmSuiteId.value);
+        print "\nTEST-DECRYPT===> ", vector.id, "\n", id, " ", vector.description, "\n\n";
+      } else {
+        print "\nTEST-DECRYPT===> ", vector.id, "\n", vector.description, "\n\n";
+      }
       return false;
     }
 
@@ -344,9 +343,6 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     requires test.vector.algorithmSuiteId.Some? && test.vector.algorithmSuiteId.value.id.ESDK?
     requires test.vector.id.Some?
   {
-    var id := AllAlgorithmSuites.ToHex(test.vector.algorithmSuiteId.value);
-    print "\nTEST-ENCRYPT===> ", test.vector.id.value, "\n", id, " ", test.vector.description, "\n";
-
     // The encrypt test vectors also test initialization
     // This is because they were developed when the MPL
     // was still part of the ESDK
@@ -386,6 +382,8 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
         print result.error;
       }
       print "\nFAILED! <-----------\n";
+      var id := AllAlgorithmSuites.ToHex(test.vector.algorithmSuiteId.value);
+      print "\nTEST-ENCRYPT===> ", test.vector.id.value, "\n", id, " ", test.vector.description, "\n\n";
     }
   }
 
