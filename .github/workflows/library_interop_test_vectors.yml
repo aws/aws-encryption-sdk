@@ -25,8 +25,7 @@ jobs:
             ubuntu-22.04,
             # macos-13,
           ]
-        # language: [java, net, rust, go, c]
-        language: [java, c]
+        language: [java, net, rust, go, c]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
     runs-on: ${{ matrix.os }}
@@ -283,13 +282,11 @@ jobs:
             # https://taskei.amazon.dev/tasks/CrypTool-5283
             # windows-latest,
             ubuntu-22.04,
-#            macos-13,
+            # macos-13,
           ]
-        # encrypting_language: [java, net, rust, go]
-        # decrypting_language: [java, net, rust, go]
-        encrypting_language: [java, c]
-        decrypting_language: [java, c]
-            # https://taskei.amazon.dev/tasks/CrypTool-5284
+        encrypting_language: [java, net, rust, go, c]
+        decrypting_language: [java, net, rust, go, c]
+        # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
     runs-on: ${{ matrix.os }}
     permissions:
