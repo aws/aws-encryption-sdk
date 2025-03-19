@@ -76,17 +76,17 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
     var reproducedEncryptionContext
       :- if test.reproducedEncryptionContext.Some? then
            EncryptionContextToJson("reproduced-encryption-context", test.reproducedEncryptionContext.value)
-         else 
+         else
            EncryptionContextToJson("reproduced-encryption-context", map[]);
 
     var optionalValues := if version == 5 then
-        encryptionContext + reproducedEncryptionContext
-      else
-        encryptionContext;
+                            encryptionContext + reproducedEncryptionContext
+                          else
+                            encryptionContext;
 
     if version == 4 then
-     var test? :- ToV4Test(test, id, optionalValues);
-     Success(test?)
+      var test? :- ToV4Test(test, id, optionalValues);
+      Success(test?)
     else if version == 5 then
       var test? :- ToV5Test(test, id, optionalValues);
       Success(test?)
@@ -103,13 +103,13 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
       var encrypt? :- KeyDescription.ToJson(test.encryptDescriptions, 2);
       var encrypt := if encrypt?.Array? then encrypt? else Array([encrypt?]);
       Success(Object([
-        ("plaintext", String("small")),
-        ("algorithm", String(id)),
-        ("frame-size", Number(Int(test.frameLength.value as int))),
-        ("master-keys", encrypt),
-        ("cmm", String("Default"))
-      ] + optionalValues))
-      
+                       ("plaintext", String("small")),
+                       ("algorithm", String(id)),
+                       ("frame-size", Number(Int(test.frameLength.value as int))),
+                       ("master-keys", encrypt),
+                       ("cmm", String("Default"))
+                     ] + optionalValues))
+
     case _ =>
       Failure("Only Positive Tests supported :(")
   }
@@ -122,51 +122,51 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
       var encrypt :- KeyDescription.ToJson(test.encryptDescriptions, 3);
       var decrypt :- KeyDescription.ToJson(test.decryptDescriptions, 3);
       var scenario := Object([
-                              ("type", String("positive-esdk")),
-                              ("plaintext", String("small")),
-                              ("description", String(test.description)),
-                              ("algorithmSuiteId", String(id)),
-                              ("frame-size", Number(Int(test.frameLength.value as int))),
-                              ("encryptKeyDescription", encrypt),
-                              ("decryptKeyDescription", decrypt)
-                            ] + optionalValues);
+                               ("type", String("positive-esdk")),
+                               ("plaintext", String("small")),
+                               ("description", String(test.description)),
+                               ("algorithmSuiteId", String(id)),
+                               ("frame-size", Number(Int(test.frameLength.value as int))),
+                               ("encryptKeyDescription", encrypt),
+                               ("decryptKeyDescription", decrypt)
+                             ] + optionalValues);
       Success(Object([
-                      ("encryption-scenario", scenario)
-                    ]))
+                       ("encryption-scenario", scenario)
+                     ]))
     case _ =>
       Failure("Only Positive Tests supported :(")
-    // Left here for future reference on how you would start to add negative test vectors
-    // match test
-    // case PositiveEncryptKeyringVector(_,_,_,_,_,_,_,_,_,_) =>
-    //   var encrypt :- KeyDescription.ToJson(test.encryptDescription, 3);
-    //   var decrypt :- KeyDescription.ToJson(test.decryptDescription, 3);
-    //   Success(Object([
-    //                    ("type", String("positive-keyring")),
-    //                    ("description", String(description)),
-    //                    ("algorithmSuiteId", String(id)),
-    //                    ("encryptKeyDescription", encrypt),
-    //                    ("decryptKeyDescription", decrypt)
-    //                  ] + optionalValues))
-    // case PositiveEncryptNegativeDecryptKeyringVector(_,_,_,_,_,_,_,_,_,_,_) =>
-    //   var encrypt :- KeyDescription.ToJson(test.encryptDescription, 3);
-    //   var decrypt :- KeyDescription.ToJson(test.decryptDescription, 3);
-    //   Success(Object([
-    //                    ("type", String("negative-decrypt-keyring")),
-    //                    ("description", String(description)),
-    //                    ("decryptErrorDescription", String(test.decryptErrorDescription)),
-    //                    ("algorithmSuiteId", String(id)),
-    //                    ("encryptKeyDescription", encrypt),
-    //                    ("decryptKeyDescription", decrypt)
-    //                  ] + optionalValues))
-    // case NegativeEncryptKeyringVector(_,_,_,_,_,_,_,_,_) =>
-    //   var keyDescription :- KeyDescription.ToJson(test.keyDescription, 3);
-    //   Success(Object([
-    //                    ("type", String("negative-encrypt-keyring")),
-    //                    ("description", String(description)),
-    //                    ("errorDescription", String(test.errorDescription)),
-    //                    ("algorithmSuiteId", String(id)),
-    //                    ("keyDescription", keyDescription)
-    //                  ] + optionalValues))
+      // Left here for future reference on how you would start to add negative test vectors
+      // match test
+      // case PositiveEncryptKeyringVector(_,_,_,_,_,_,_,_,_,_) =>
+      //   var encrypt :- KeyDescription.ToJson(test.encryptDescription, 3);
+      //   var decrypt :- KeyDescription.ToJson(test.decryptDescription, 3);
+      //   Success(Object([
+      //                    ("type", String("positive-keyring")),
+      //                    ("description", String(description)),
+      //                    ("algorithmSuiteId", String(id)),
+      //                    ("encryptKeyDescription", encrypt),
+      //                    ("decryptKeyDescription", decrypt)
+      //                  ] + optionalValues))
+      // case PositiveEncryptNegativeDecryptKeyringVector(_,_,_,_,_,_,_,_,_,_,_) =>
+      //   var encrypt :- KeyDescription.ToJson(test.encryptDescription, 3);
+      //   var decrypt :- KeyDescription.ToJson(test.decryptDescription, 3);
+      //   Success(Object([
+      //                    ("type", String("negative-decrypt-keyring")),
+      //                    ("description", String(description)),
+      //                    ("decryptErrorDescription", String(test.decryptErrorDescription)),
+      //                    ("algorithmSuiteId", String(id)),
+      //                    ("encryptKeyDescription", encrypt),
+      //                    ("decryptKeyDescription", decrypt)
+      //                  ] + optionalValues))
+      // case NegativeEncryptKeyringVector(_,_,_,_,_,_,_,_,_) =>
+      //   var keyDescription :- KeyDescription.ToJson(test.keyDescription, 3);
+      //   Success(Object([
+      //                    ("type", String("negative-encrypt-keyring")),
+      //                    ("description", String(description)),
+      //                    ("errorDescription", String(test.errorDescription)),
+      //                    ("algorithmSuiteId", String(id)),
+      //                    ("keyDescription", keyDescription)
+      //                  ] + optionalValues))
   }
 
   function OptionalBytes(key: string, secret: Option<Types.Secret>)
@@ -216,7 +216,7 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
       Failure("The Dafny Test Vector Framework can only write manifests with version >= 4.")
 
   }
-  
+
   function ToV4DecryptTest(test: EsdkTestVectors.EsdkDecryptTestVector, id: string, optionalValues: seq<(string, JSON)>) : Result<JSON, string>
     requires test.algorithmSuiteId.Some? && test.frameLength.Some?
   {

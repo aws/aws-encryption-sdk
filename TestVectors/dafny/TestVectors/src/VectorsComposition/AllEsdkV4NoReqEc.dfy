@@ -46,7 +46,7 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
   const frameSize: int64 := 512
 
   // A V4 manifest is can be parsed by JS, C, Older versions of Java and Python
-  // To make it easier on use we will only include keyrings that have 
+  // To make it easier on use we will only include keyrings that have
   // an equivalent in these ESDKs.
   const AllPositiveKeyringTestsNoReqCmmNoKmsRsa
   := {}

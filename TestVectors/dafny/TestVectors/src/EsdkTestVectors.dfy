@@ -449,10 +449,10 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     var description := test.vector.decryptDescriptions;
     if description.RSA? {
       var newDescription := KeyVectorsTypes.RSA(KeyVectorsTypes.RawRSA(
-                              keyId := "rsa-4096-private",
-                              providerId := description.RSA.providerId,
-                              padding := description.RSA.padding
-                            ));
+                                                  keyId := "rsa-4096-private",
+                                                  providerId := description.RSA.providerId,
+                                                  padding := description.RSA.padding
+                                                ));
       description := newDescription;
     }
     output := match test.vector

@@ -32,8 +32,8 @@ module {:options "/functionSyntax:4" } AllEsdkV5WithReqEc {
   const frameSize: int64 := 512
 
   const AllPositiveReqEcTests := {}
-    + AllRequiredEncryptionContextCmm.SuccessTestingRequiredEncryptionContextKeysReproducedEncryptionContext 
-    + AllRequiredEncryptionContextCmm.SuccessTestingRequiredEncryptionContextKeysReproducedEncryptionContextPsi
+  + AllRequiredEncryptionContextCmm.SuccessTestingRequiredEncryptionContextKeysReproducedEncryptionContext
+  + AllRequiredEncryptionContextCmm.SuccessTestingRequiredEncryptionContextKeysReproducedEncryptionContextPsi
 
   // These are only required encryption context vectors with static aes keyrings
   const AllPositiveReqEcEsdkTests :=

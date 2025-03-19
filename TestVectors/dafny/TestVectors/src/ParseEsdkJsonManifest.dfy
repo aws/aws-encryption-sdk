@@ -252,23 +252,23 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
   ) : Result<EsdkEncryptTestVector, string>
     requires op.Encrypt?
   {
-    var scenario := obj; 
-    
+    var scenario := obj;
+
     var plaintextLoc :- GetString(plaintextJsonKey, scenario);
     var algorithmSuite :- GetAlgorithmInfo(scenario);
     :- Need(algorithmSuite.id.ESDK?, "Unsupported algorithmSuiteId");
     var frameLength :- GetOptionalPositiveLong(frameSizeJsonKey, scenario);
-    
+
     var masterKeys :- GetArray("master-keys", scenario);
     var keyDescriptions :- GetKeyDescriptions(masterKeys, keys);
     var keyDescription :- ToMultiKeyDescription(keyDescriptions);
-    
+
     var encryptionContextStrings :- SmallObjectToStringStringMap(encryptionContextJsonKey, scenario);
     var encryptionContext :- utf8EncodeMap(encryptionContextStrings);
 
     var cmm? :- GetString("cmm", scenario);
     :- Need(cmm? == "Default", "Only Default CMM supported on encrypt-manifest version 4.");
-    
+
     Success(PositiveEncryptTestVector(
               id := Some(name),
               version := version,
@@ -284,7 +284,7 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
               description := name
             ))
   }
-  
+
   function GetAlgorithmInfo(
     obj: seq<(string, JSON)>
   ) : Result<mplTypes.AlgorithmSuiteInfo, string>
@@ -364,15 +364,15 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
       var keyDescription :- ToMultiKeyDescription(keyDescriptions);
 
       var newKeyDescription := if keyDescription.RSA? then
-          KeyVectorsTypes.RSA(
-            KeyVectorsTypes.RawRSA(
-              keyId := "rsa-4096-private",
-              providerId := keyDescription.RSA.providerId,
-              padding := keyDescription.RSA.padding
-            )
-          )
-        else
-          keyDescription;
+                                 KeyVectorsTypes.RSA(
+                                   KeyVectorsTypes.RawRSA(
+                                     keyId := "rsa-4096-private",
+                                     providerId := keyDescription.RSA.providerId,
+                                     padding := keyDescription.RSA.padding
+                                   )
+                                 )
+                               else
+                                 keyDescription;
 
       Success(PositiveV1OrV2DecryptTestVector(
                 id := name,
