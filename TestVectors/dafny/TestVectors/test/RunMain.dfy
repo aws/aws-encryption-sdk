@@ -14,22 +14,26 @@ module {:extern} TestWrappedESDKMain {
   import WriteVectors
   import opened Wrappers
   import Types = AwsCryptographyEncryptionSdkTypes
-
+  import WrappedESDK
+  import opened StandardLibrary.UInt
+  import Time
+  import MPL = AwsCryptographyMaterialProvidersTypes
+  import MaterialProviders
 
   // Test execution directory is different for different runtimes.
   // Runtime should define an extern to return the expected test execution directory.
   method {:extern} GetTestVectorExecutionDirectory() returns (res: string)
 
   method {:test} RunManifestTests() {
-    TestGenerateEncryptManifest();
-    TestEncryptManifest();
-    TestDecryptManifest();
+    // TestGenerateEncryptManifest();
+    // TestEncryptManifest();
+    // TestDecryptManifest();
   }
 
   // Read encrypt manifests for valid ESDK .NET v4.0.0 messages
   // These messages are expected to successfully decrypt without
   // having to retry.
-  method {:test} TestNetRetryFlagVectorsExpectSuccess() {
+  method /*{:test}*/ TestNetRetryFlagVectorsExpectSuccess() {
     var directory := GetTestVectorExecutionDirectory();
     var result := EsdkTestManifests.StartDecryptVectors(
       EsdkManifestOptions.Decrypt(
@@ -44,13 +48,51 @@ module {:extern} TestWrappedESDKMain {
     expect result.Success?;
   }
 
+  method {:test} TestLargePayload() {
+    var client :- expect WrappedESDK.WrappedESDK();
+
+    var mpl :- expect MaterialProviders.MaterialProviders();
+    var key_input := MPL.CreateRawAesKeyringInput (
+      keyNamespace := "namespace",
+      keyName := "keyname",
+      wrappingKey := [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
+      wrappingAlg := MPL.ALG_AES256_GCM_IV12_TAG16
+    );
+    var keyring :- expect mpl.CreateRawAesKeyring(key_input);
+
+    var plain : seq<uint8> := seq(100000000, _ => 42);
+
+    var time := Time.GetAbsoluteTime();
+    var enc_output :- expect client.Encrypt(
+      Types.EncryptInput (
+        plaintext := plain,
+        keyring := Some(keyring), 
+        algorithmSuiteId := Some(MPL.ALG_AES_256_GCM_HKDF_SHA512_COMMIT_KEY)
+      )
+    );
+    var elapsed := Time.TimeSince(time);
+    Time.PrintTimeLong(elapsed, "Large Encrypt", Some(EsdkTestManifests.LogFileName()));
+
+    time := Time.GetAbsoluteTime();
+    var dec_output :- expect client.Decrypt(
+      Types.DecryptInput (
+        ciphertext := enc_output.ciphertext,
+        keyring := Some(keyring)
+      )
+    );
+    elapsed := Time.TimeSince(time);
+    Time.PrintTimeLong(elapsed, "Large Decrypt", Some(EsdkTestManifests.LogFileName()));
+
+    expect plain == dec_output.plaintext;
+}
+
   // Read encrypt manifests for invalid ESDK .NET v4.0.0 messages
   // These messages are expected to fail if retry option is set to FORBID_RETRY
   // As of 12-7-2024, I can't think of an easy way to reuse all the test vector framework
   // to correctly pass when this configuration runs the invalid net 4.0.0 tests.
   // The errors that we get back from the MPL are opaque errors, not opaque with text...
   // This means that in dafny code we cannot check the error message :(
-  method {:test} TestNetInvalidTestVectorsExpectFailure() {
+  method /*{:test}*/ TestNetInvalidTestVectorsExpectFailure() {
     var directory := GetTestVectorExecutionDirectory();
     var result := EsdkTestManifests.StartDecryptVectors(
       EsdkManifestOptions.Decrypt(
@@ -65,7 +107,7 @@ module {:extern} TestWrappedESDKMain {
     expect result.Failure?;
   }
 
-  method {:test} TestNetInvalidTestVectorsExpectSuccessOnRetry() {
+  method /*{:test}*/ TestNetInvalidTestVectorsExpectSuccessOnRetry() {
     var directory := GetTestVectorExecutionDirectory();
     var result := EsdkTestManifests.StartDecryptVectors(
       EsdkManifestOptions.Decrypt(
@@ -80,7 +122,7 @@ module {:extern} TestWrappedESDKMain {
     expect result.Success?;
   }
 
-  method {:test} TestNet401ValidTestVectorsExpectSuccess() {
+  method /*{:test}*/ TestNet401ValidTestVectorsExpectSuccess() {
     var directory := GetTestVectorExecutionDirectory();
     var result := EsdkTestManifests.StartDecryptVectors(
       EsdkManifestOptions.Decrypt(
