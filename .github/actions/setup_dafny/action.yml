@@ -1,0 +1,29 @@
+#
+#
+# This local action consolidate all uses of dafny-lang/setup-dafny-action
+# Once the MPL is updated, this action can point to the MPL version.
+#
+name: "Setup Dafny"
+description: "This uses the setup Dafny action."
+inputs:
+  dafny-version:
+    description: "The Dafny version to setup"
+    required: true
+    type: string
+runs:
+  using: "composite"
+  steps:
+    # The dotnet tool requires >= 9.0.202 to work on MacOS
+    # See: https://github.com/dotnet/sdk/issues/46857#issuecomment-2734338347
+    # Ideally this action would only install this on MacOS,
+    # but I do not want to keep track of the various values
+    # See: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/store-information-in-variables#detecting-the-operating-system
+    - name: Setup .NET Core SDK '9.0.x'
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: "9.0.x"
+
+    - name: Setup Dafny with setup-dafny action
+      uses: dafny-lang/setup-dafny-action@v1.8.0
+      with:
+        dafny-version: ${{ inputs.dafny-version }}
