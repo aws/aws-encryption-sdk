@@ -54,7 +54,7 @@ jobs:
           components: rustfmt
 
       - name: Setup Dafny
-        uses: dafny-lang/setup-dafny-action@v1.8.0
+        uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: nightly-2025-01-30-7db1e5f
 
@@ -153,7 +153,7 @@ jobs:
           components: rustfmt
 
       - name: Setup Dafny
-        uses: dafny-lang/setup-dafny-action@v1.8.0
+        uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: nightly-2025-01-30-7db1e5f
 
