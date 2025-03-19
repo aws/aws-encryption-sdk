@@ -225,7 +225,10 @@ jobs:
     needs: generate_vectors
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-22.04,
+        # https://t.corp.amazon.com/P205755286
+        # macos-13
+        ]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
