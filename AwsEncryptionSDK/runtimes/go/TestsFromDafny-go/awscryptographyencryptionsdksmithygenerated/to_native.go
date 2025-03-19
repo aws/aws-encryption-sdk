@@ -92,15 +92,9 @@ func CollectionOfErrors_Output_FromDafny(dafnyOutput AwsCryptographyEncryptionSd
 
 	}
 	t.Message = func() string {
-		var s string
-		for i := dafny.Iterate(message); ; {
-			val, ok := i()
-			if !ok {
-				return s
-			} else {
-				s = s + string(val.(dafny.Char))
-			}
-		}
+		a := UTF8.Encode(message.(dafny.Sequence)).Dtor_value()
+		s := string(dafny.ToByteArray(a.(dafny.Sequence)))
+		return s
 	}()
 	return t
 }
