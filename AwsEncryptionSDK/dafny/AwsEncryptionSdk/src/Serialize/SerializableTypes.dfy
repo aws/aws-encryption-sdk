@@ -30,7 +30,7 @@ module SerializableTypes {
   // The AAD section is the total length|number of pairs|key|value|key|value...
   // The total length is uint16, so the maximum length for the keys and values
   // MUST be able to include the uint16 for the number of pairs.
-  const ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH := UINT16_LIMIT - 2;
+  const ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH := UINT16_LIMIT - 2
 
   predicate method IsESDKEncryptionContext(ec: MPL.EncryptionContext) {
     && |ec| < UINT16_LIMIT

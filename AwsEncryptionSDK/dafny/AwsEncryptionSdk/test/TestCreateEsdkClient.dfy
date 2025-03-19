@@ -47,7 +47,7 @@ module TestCreateEsdkClient {
     71, 110, 211, 189, 2, 48, 99, 98, 250, 36, 53, 182, 2, 204, 198, 55, 150, 51,
     159, 101, 231, 34, 42, 30, 57, 204, 88, 114, 138, 94, 12, 79, 52, 71, 178,
     34, 61, 246, 55, 163, 145, 95, 80, 61, 85, 143, 32, 0, 98, 20, 88, 251, 204, 5
-  ];
+  ]
 
   method {:test} TestClientCreation() {
     var defaultConfig := ESDK.DefaultAwsEncryptionSdkConfig();
