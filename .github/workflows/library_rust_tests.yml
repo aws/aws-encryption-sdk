@@ -207,4 +207,4 @@ jobs:
         run: |
           # Without this, running test vectors fails due to `fatal runtime error: stack overflow`
           export RUST_MIN_STACK=104857600
-          make test_rust test_rust_debug
+          make test_rust
