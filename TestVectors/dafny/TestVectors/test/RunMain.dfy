@@ -72,7 +72,7 @@ module {:extern} TestWrappedESDKMain {
       EsdkManifestOptions.Encrypt(
         manifestPath := directory + "dafny/TestVectors/test/",
         manifest := "perf-encrypt-manifest.json",
-        decryptManifestOutput := "dafny/TestVectors/test/perf/",
+        decryptManifestOutput := directory + "dafny/TestVectors/test/perf/",
         report := EsdkManifestOptions.ReportAll
       )
     );
