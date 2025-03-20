@@ -33,8 +33,8 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
 
   function LogFileName() : string
   {
-    if OsLang.GetOsShort() == "Windows" && OsLang.GetLanguageShort() == "Dotnet" then
-      "..\\..\\PerfLog.txt"
+    if OsLang.GetLanguageShort() == "Dotnet" then
+      "PerfLog.txt"
     else
       "../../PerfLog.txt"
   }
@@ -59,7 +59,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
       decryptManifest.jsonTests
     );
 
-    output := TestDecrypts(decryptManifest.keys, decryptVectors);
+    output := TestDecrypts(decryptManifest.keys, decryptVectors, op.report);
   }
 
   predicate TestDecryptVector?(v: EsdkDecryptTestVector)
@@ -69,7 +69,8 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
 
   method TestDecrypts(
     keys: KeyVectors.KeyVectorsClient,
-    vectors: seq<EsdkDecryptTestVector>
+    vectors: seq<EsdkDecryptTestVector>,
+    report: EsdkManifestOptions.PerfReport
   )
     returns (manifest: Result<seq<BoundedInts.byte>, string>)
     requires keys.ValidState()
@@ -86,7 +87,12 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     {
       var vector := vectors[i];
       if TestDecryptVector?(vector) {
+        var itime := Time.GetAbsoluteTime();
         var pass := EsdkTestVectors.TestDecrypt(keys, vector);
+        if EsdkManifestOptions.DoReportIndividual(report) {
+          var elapsed := Time.TimeSince(itime);
+          Time.PrintTimeLong(elapsed, "Decrypt " + vector.id, Some(LogFileName()));
+        }
         if !pass {
           hasFailure := true;
         }
@@ -95,8 +101,10 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
         print "\nSKIP===> ", vector.id, "\n";
       }
     }
-    var elapsed := Time.TimeSince(time);
-    Time.PrintTimeLong(elapsed, "TestDecrypts ESDK", Some(LogFileName()));
+    if EsdkManifestOptions.DoReportFinal(report) {
+      var elapsed := Time.TimeSince(time);
+      Time.PrintTimeLong(elapsed, "TestDecrypts ESDK", Some(LogFileName()));
+    }
 
     print "\n=================== Completed ", |vectors|, " Decrypt Tests =================== \n\n";
 
@@ -105,6 +113,19 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
     }
 
     manifest := if !hasFailure then Success([]) else Failure("Test Vectors failed, see errors above.\n");
+  }
+
+  method GetRandom(n : mplTypes.PositiveInteger) returns (out : seq<uint8>)
+  {
+    if n <= 100000 {
+      var p :- expect AtomicPrimitives.AtomicPrimitives();
+      out :- expect p.GenerateRandomBytes(
+        AtomicPrimitives.Types.GenerateRandomBytesInput(
+          length := n
+        ));
+    } else {
+      out := seq(n, _ => 42 as uint8);
+    }
   }
 
   method {:vcs_split_on_every_assert} StartEncryptVectors(
@@ -124,15 +145,11 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
       encryptManifest.jsonTests
     );
 
-    var p :- expect AtomicPrimitives.AtomicPrimitives();
     var plaintext := map[];
     for i := 0 to |encryptManifest.plaintext|
     {
       var (name, length) := encryptManifest.plaintext[i];
-      var data :- expect p.GenerateRandomBytes(
-        AtomicPrimitives.Types.GenerateRandomBytesInput(
-          length := length
-        ));
+      var data := GetRandom(length);
       // Write the plaintext to disk.
       print op.decryptManifestOutput + plaintextPathRoot + name, "\n\n";
       var _ :- WriteVectorsFile(op.decryptManifestOutput + plaintextPathRoot + name, data);
@@ -141,7 +158,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
 
     var encryptTests? := ToEncryptTests(encryptManifest.keys, encryptVectors);
     var encryptTests :- encryptTests?.MapFailure((e: KeyVectorsTypes.Error) => var _ := MplVectorPrintErr(e); "Cmm failure");
-    var decryptVectors :- TestEncrypts(plaintext, encryptManifest.keys, encryptTests);
+    var decryptVectors :- TestEncrypts(plaintext, encryptManifest.keys, encryptTests, op.report);
 
     var _ :- WriteVectors.WriteDecryptManifest(op, encryptManifest.keys, decryptVectors);
 
@@ -180,7 +197,8 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
   method TestEncrypts(
     plaintexts: map<string, seq<uint8>>,
     keys: KeyVectors.KeyVectorsClient,
-    tests: seq<EsdkTestVectors.EncryptTest>
+    tests: seq<EsdkTestVectors.EncryptTest>,
+    report: EsdkManifestOptions.PerfReport
   )
     returns (manifest: Result<seq<EsdkDecryptTestVector>, string>)
     requires keys.ValidState()
@@ -213,7 +231,13 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
           && test.vector.algorithmSuiteId.value.id.ESDK?,
           "Vector is using an algorithm suite other than ESDK"
         );
+        var itime := Time.GetAbsoluteTime();
         var pass :- EsdkTestVectors.TestEncrypt(plaintexts, keys, test);
+        if EsdkManifestOptions.DoReportIndividual(report) {
+          var elapsed := Time.TimeSince(itime);
+          Time.PrintTimeLong(elapsed, "Encrypt " + test.vector.id.UnwrapOr("unknown"), Some(LogFileName()));
+        }
+
         if !pass.output {
           hasFailure := true;
         } else if pass.vector.Some? {
@@ -224,8 +248,10 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
         print "\nSKIP===> ", test.vector.id.value, "\n";
       }
     }
-    var elapsed := Time.TimeSince(time);
-    Time.PrintTimeLong(elapsed, "TestDecrypts ESDK", Some(LogFileName()));
+    if EsdkManifestOptions.DoReportFinal(report) {
+      var elapsed := Time.TimeSince(time);
+      Time.PrintTimeLong(elapsed, "TestEncrypts ESDK", Some(LogFileName()));
+    }
     print "\n=================== Completed ", |tests|, " Encrypt Tests =================== \n\n";
 
     expect !hasFailure;

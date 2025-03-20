@@ -147,6 +147,18 @@ module MessageBody {
     && MessageFramesAreForTheSameMessage(regularFrames)
   }
 
+  lemma IsMessageRegularFramesCanBeSplit(
+    regularFrames: seq<Frames.RegularFrame>
+  )
+    requires IsMessageRegularFrames(regularFrames)
+    ensures forall accumulator
+              | accumulator <= regularFrames
+              ::
+                && IsMessageRegularFrames(accumulator)
+                && IsMessageRegularFrames(regularFrames[|accumulator|..])
+  {
+  }
+
   type NonFramedMessage = Frames.NonFramed
 
   datatype FramedMessageBody = FramedMessageBody(
@@ -251,7 +263,7 @@ module MessageBody {
       invariant |regularFrames| == (sequenceNumber - START_SEQUENCE_NUMBER) as nat
       invariant |crypto.History.AESEncrypt| - |old(crypto.History.AESEncrypt)|
              == |regularFrames|
-      invariant 0 < |regularFrames| ==> Seq.First(regularFrames).header == header;
+      invariant 0 < |regularFrames| ==> Seq.First(regularFrames).header == header
       invariant IsMessageRegularFrames(regularFrames)
 
       invariant forall i: nat, j: nat, frame: Frames.Frame, callEvent
@@ -939,7 +951,7 @@ module MessageBody {
     WriteMessageRegularFrames(body.regularFrames) + Frames.WriteFinalFrame(body.finalFrame)
   }
 
-  function method WriteMessageRegularFrames(
+  function WriteMessageRegularFrames(
     frames: MessageRegularFrames
   )
     :(ret: seq<uint8>)
@@ -953,6 +965,28 @@ module MessageBody {
     else
       WriteMessageRegularFrames(Seq.DropLast(frames))
       + Frames.WriteRegularFrame(Seq.Last(frames))
+  }
+  by method { // because Seq.DropLast makes a full copy
+    var result : seq<uint8> := [];
+    for i := 0 to |frames|
+      invariant IsMessageRegularFrames(frames)
+      invariant IsMessageRegularFrames(frames[..i])
+      invariant result == WriteMessageRegularFrames(frames[..i])
+    {
+      result := result + Frames.WriteRegularFrame(frames[i]);
+      assert result == WriteMessageRegularFrames(frames[..i]) + Frames.WriteRegularFrame(frames[i]);
+      assert Seq.DropLast(frames[..i+1]) == frames[..i];
+      assert result == WriteMessageRegularFrames(Seq.DropLast(frames[..i+1])) + Frames.WriteRegularFrame(Seq.Last(frames[..i+1]));
+      IsMessageRegularFramesCanBeSplit(frames);
+      assert IsMessageRegularFrames(frames[..i]);
+      assert IsMessageRegularFrames(frames[..i+1]);
+      assert result == WriteMessageRegularFrames(frames[..i+1]);
+
+    }
+    assert result == WriteMessageRegularFrames(frames[..|frames|]);
+    assert frames == frames[..|frames|];
+    assert result == WriteMessageRegularFrames(frames);
+    return result;
   }
 
   function method {:recursive} {:vcs_split_on_every_assert} ReadFramedMessageBody(

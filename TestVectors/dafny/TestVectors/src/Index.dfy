@@ -31,7 +31,7 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
                                                            Param.Opt("decrypt-manifest-path", "relative path to the location where the decrypted manifest will be written to.", unused := Required),
                                                            Param.Opt("test-name", "id of the test to run")
                                                          ])),
-                                   Param.Command(Options("encrypt-manifest", "encryp manifest command for test-vectors",
+                                   Param.Command(Options("encrypt-manifest", "encrypt manifest command for test-vectors",
                                                          [
                                                            Param.Opt("encrypt-manifest-output", "relative path of where to store the encrypt-manifest produced", unused := Required)
                                                          ]))
@@ -52,13 +52,13 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
       if op?.Success? {
         var op := op?.value;
         match op
-        case Decrypt(_, _, _, _) =>
+        case Decrypt(_, _, _, _, _) =>
           var result := EsdkTestManifests.StartDecryptVectors(op);
           if result.Failure? {
             print result.error;
           }
           expect result.Success?;
-        case Encrypt(_, _, _, _) =>
+        case Encrypt(_, _, _, _, _) =>
           var result := EsdkTestManifests.StartEncryptVectors(op);
           if result.Failure? {
             print result.error;

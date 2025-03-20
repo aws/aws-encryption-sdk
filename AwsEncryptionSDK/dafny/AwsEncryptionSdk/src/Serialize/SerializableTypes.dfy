@@ -30,7 +30,7 @@ module SerializableTypes {
   // The AAD section is the total length|number of pairs|key|value|key|value...
   // The total length is uint16, so the maximum length for the keys and values
   // MUST be able to include the uint16 for the number of pairs.
-  const ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH := UINT16_LIMIT - 2;
+  const ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH := UINT16_LIMIT - 2
 
   predicate method IsESDKEncryptionContext(ec: MPL.EncryptionContext) {
     && |ec| < UINT16_LIMIT
@@ -149,7 +149,7 @@ module SerializableTypes {
           ==> pairs[i].key != pairs[j].key)
   }
 
-  function method {:tailrecursion} LinearLength(
+  function LinearLength(
     pairs: Linear<UTF8.ValidUTF8Bytes, UTF8.ValidUTF8Bytes>
   ):
     (ret: nat)
@@ -162,6 +162,24 @@ module SerializableTypes {
     else
       LinearLength(Seq.DropLast(pairs)) + PairLength(Seq.Last(pairs))
   }
+  by method { // because Seq.DropLast makes a full copy
+    var result : nat := 0;
+    for i := 0 to |pairs|
+      invariant result == LinearLength(pairs[..i])
+    {
+      result := result + PairLength(pairs[i]);
+      assert result == LinearLength(pairs[..i]) + PairLength(pairs[i]);
+      assert Seq.DropLast(pairs[..i+1]) == pairs[..i];
+      assert result == LinearLength(Seq.DropLast(pairs[..i+1])) + PairLength(Seq.Last(pairs[..i+1]));
+      assert result == LinearLength(pairs[..i+1]);
+
+    }
+    assert result == LinearLength(pairs[..|pairs|]);
+    assert pairs == pairs[..|pairs|];
+    assert result == LinearLength(pairs);
+    return result;
+  }
+
 
   function method PairLength(
     pair: Pair<UTF8.ValidUTF8Bytes, UTF8.ValidUTF8Bytes>

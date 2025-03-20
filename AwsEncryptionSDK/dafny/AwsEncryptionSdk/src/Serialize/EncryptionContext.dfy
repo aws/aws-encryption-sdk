@@ -387,7 +387,7 @@ module {:options "/functionSyntax:4" } EncryptionContext {
     WriteUint16(|ec| as uint16) + WriteAADPairs(ec)
   }
 
-  function {:tailrecursion} WriteAADPairs(
+  function WriteAADPairs(
     ec: ESDKCanonicalEncryptionContext
   ):
     (ret: seq<uint8>)
@@ -405,6 +405,28 @@ module {:options "/functionSyntax:4" } EncryptionContext {
     else
       assert LinearLength(Seq.DropLast(ec)) < LinearLength(ec);
       WriteAADPairs(Seq.DropLast(ec)) + WriteAADPair(Seq.Last(ec))
+  }
+  by method { // because Seq.DropLast makes a full copy
+    var result : seq<uint8> := [];
+    for i := 0 to |ec|
+      invariant ESDKCanonicalEncryptionContext?(ec)
+      invariant ESDKCanonicalEncryptionContext?(ec[..i])
+      invariant result == WriteAADPairs(ec[..i])
+    {
+      result := result + WriteAADPair(ec[i]);
+      ESDKCanonicalEncryptionContextCanBeSplit(ec);
+      assert result == WriteAADPairs(ec[..i]) + WriteAADPair(ec[i]);
+      assert Seq.DropLast(ec[..i+1]) == ec[..i];
+      assert result == WriteAADPairs(Seq.DropLast(ec[..i+1])) + WriteAADPair(Seq.Last(ec[..i+1]));
+      assert ESDKCanonicalEncryptionContext?(ec[..i]);
+      assert ESDKCanonicalEncryptionContext?(ec[..i+1]);
+      assert result == WriteAADPairs(ec[..i+1]);
+
+    }
+    assert result == WriteAADPairs(ec[..|ec|]);
+    assert ec == ec[..|ec|];
+    assert result == WriteAADPairs(ec);
+    return result;
   }
 
   //= compliance/data-format/message-header.txt#2.5.1.7.2.2
