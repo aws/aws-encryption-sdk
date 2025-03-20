@@ -20,13 +20,13 @@ module {:extern} TestWrappedESDKMain {
   // Runtime should define an extern to return the expected test execution directory.
   method {:extern} GetTestVectorExecutionDirectory() returns (res: string)
 
-  method RunManifestTests() {
+  method {:test} RunManifestTests() {
     TestGenerateEncryptManifest(5);
     TestEncryptManifest(5);
     TestDecryptManifest();
   }
 
-  method {:test} CreateV4Manifests() {
+  method CreateV4Manifests() {
     TestGenerateEncryptManifest(4);
     TestEncryptManifest(4);
     TestDecryptManifest();
@@ -35,7 +35,7 @@ module {:extern} TestWrappedESDKMain {
   // Read encrypt manifests for valid ESDK .NET v4.0.0 messages
   // These messages are expected to successfully decrypt without
   // having to retry.
-  method TestNetRetryFlagVectorsExpectSuccess() {
+  method {:test} TestNetRetryFlagVectorsExpectSuccess() {
     var directory := GetTestVectorExecutionDirectory();
     var result := EsdkTestManifests.StartDecryptVectors(
       EsdkManifestOptions.Decrypt(
@@ -56,7 +56,7 @@ module {:extern} TestWrappedESDKMain {
   // to correctly pass when this configuration runs the invalid net 4.0.0 tests.
   // The errors that we get back from the MPL are opaque errors, not opaque with text...
   // This means that in dafny code we cannot check the error message :(
-  method TestNetInvalidTestVectorsExpectFailure() {
+  method {:test} TestNetInvalidTestVectorsExpectFailure() {
     var directory := GetTestVectorExecutionDirectory();
     var result := EsdkTestManifests.StartDecryptVectors(
       EsdkManifestOptions.Decrypt(
@@ -71,7 +71,7 @@ module {:extern} TestWrappedESDKMain {
     expect result.Failure?;
   }
 
-  method TestNetInvalidTestVectorsExpectSuccessOnRetry() {
+  method {:test} TestNetInvalidTestVectorsExpectSuccessOnRetry() {
     var directory := GetTestVectorExecutionDirectory();
     var result := EsdkTestManifests.StartDecryptVectors(
       EsdkManifestOptions.Decrypt(
@@ -86,7 +86,7 @@ module {:extern} TestWrappedESDKMain {
     expect result.Success?;
   }
 
-  method TestNet401ValidTestVectorsExpectSuccess() {
+  method {:test} TestNet401ValidTestVectorsExpectSuccess() {
     var directory := GetTestVectorExecutionDirectory();
     var result := EsdkTestManifests.StartDecryptVectors(
       EsdkManifestOptions.Decrypt(
