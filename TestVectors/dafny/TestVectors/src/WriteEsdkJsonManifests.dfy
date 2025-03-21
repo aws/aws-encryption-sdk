@@ -206,12 +206,12 @@ module {:options "-functionSyntax:4"} WriteEsdkJsonManifests {
 
     var optionalValues := reproducedEncryptionContext;
 
-      if version == 4 then
-        ToV4DecryptTest(test, id, optionalValues)
-      else if version == 5 then
-        ToV5DecryptTest(test, id, optionalValues)
-      else
-        Failure("The Dafny Test Vector Framework can only write manifests with version >= 4.")
+    if version == 4 then
+      ToV4DecryptTest(test, id, optionalValues)
+    else if version == 5 then
+      ToV5DecryptTest(test, id, optionalValues)
+    else
+      Failure("The Dafny Test Vector Framework can only write manifests with version >= 4.")
 
   }
 
