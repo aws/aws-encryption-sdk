@@ -6,17 +6,25 @@
 #[allow(missing_docs)]
 pub struct OnDecryptOutput {
     #[allow(missing_docs)]
-pub materials: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::DecryptionMaterials>,
+    pub materials: ::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::DecryptionMaterials,
+    >,
 }
 impl OnDecryptOutput {
     #[allow(missing_docs)]
-pub fn materials(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::DecryptionMaterials> {
-    &self.materials
-}
+    pub fn materials(
+        &self,
+    ) -> &::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::DecryptionMaterials,
+    > {
+        &self.materials
+    }
 }
 impl OnDecryptOutput {
     /// Creates a new builder-style object to manufacture [`OnDecryptOutput`](crate::deps::aws_cryptography_materialProviders::types::OnDecryptOutput).
-    pub fn builder() -> crate::deps::aws_cryptography_materialProviders::types::builders::OnDecryptOutputBuilder {
+    pub fn builder(
+    ) -> crate::deps::aws_cryptography_materialProviders::types::builders::OnDecryptOutputBuilder
+    {
         crate::deps::aws_cryptography_materialProviders::types::builders::OnDecryptOutputBuilder::default()
     }
 }
@@ -27,23 +35,39 @@ impl OnDecryptOutput {
     ::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug,
 )]
 pub struct OnDecryptOutputBuilder {
-    pub(crate) materials: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::DecryptionMaterials>,
+    pub(crate) materials: ::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::DecryptionMaterials,
+    >,
 }
 impl OnDecryptOutputBuilder {
     #[allow(missing_docs)]
-pub fn materials(mut self, input: impl ::std::convert::Into<crate::deps::aws_cryptography_materialProviders::types::DecryptionMaterials>) -> Self {
-    self.materials = ::std::option::Option::Some(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_materials(mut self, input: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::DecryptionMaterials>) -> Self {
-    self.materials = input;
-    self
-}
-#[allow(missing_docs)]
-pub fn get_materials(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::DecryptionMaterials> {
-    &self.materials
-}
+    pub fn materials(
+        mut self,
+        input: impl ::std::convert::Into<
+            crate::deps::aws_cryptography_materialProviders::types::DecryptionMaterials,
+        >,
+    ) -> Self {
+        self.materials = ::std::option::Option::Some(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_materials(
+        mut self,
+        input: ::std::option::Option<
+            crate::deps::aws_cryptography_materialProviders::types::DecryptionMaterials,
+        >,
+    ) -> Self {
+        self.materials = input;
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_materials(
+        &self,
+    ) -> &::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::DecryptionMaterials,
+    > {
+        &self.materials
+    }
     /// Consumes the builder and constructs a [`OnDecryptOutput`](crate::deps::aws_cryptography_materialProviders::types::OnDecryptOutput).
     pub fn build(
         self,
@@ -51,8 +75,10 @@ pub fn get_materials(&self) -> &::std::option::Option<crate::deps::aws_cryptogra
         crate::deps::aws_cryptography_materialProviders::types::OnDecryptOutput,
         ::aws_smithy_types::error::operation::BuildError,
     > {
-        ::std::result::Result::Ok(crate::deps::aws_cryptography_materialProviders::types::OnDecryptOutput {
-            materials: self.materials,
-        })
+        ::std::result::Result::Ok(
+            crate::deps::aws_cryptography_materialProviders::types::OnDecryptOutput {
+                materials: self.materials,
+            },
+        )
     }
 }

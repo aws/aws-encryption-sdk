@@ -4,10 +4,10 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_keyStore::operation::get_key_store_info::GetKeyStoreInfoOutput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::keystore::internaldafny::types::GetKeyStoreInfoOutput,
->{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::keystore::internaldafny::types::GetKeyStoreInfoOutput::GetKeyStoreInfoOutput {
+> {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::keystore::internaldafny::types::GetKeyStoreInfoOutput::GetKeyStoreInfoOutput {
         keyStoreId: crate::standard_library_conversions::ostring_to_dafny(&value.key_store_id) .Extract(),
  keyStoreName: crate::standard_library_conversions::ostring_to_dafny(&value.key_store_name) .Extract(),
  logicalKeyStoreName: crate::standard_library_conversions::ostring_to_dafny(&value.logical_key_store_name) .Extract(),
@@ -19,9 +19,9 @@ pub fn to_dafny(
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::keystore::internaldafny::types::GetKeyStoreInfoOutput,
     >,
 ) -> crate::deps::aws_cryptography_keyStore::operation::get_key_store_info::GetKeyStoreInfoOutput {

@@ -6,17 +6,19 @@
 /// Inputs for getting a Branch Key's ACTIVE version.
 pub struct GetActiveBranchKeyInput {
     /// The identifier for the Branch Key to get the ACTIVE version for.
-pub branch_key_identifier: ::std::option::Option<::std::string::String>,
+    pub branch_key_identifier: ::std::option::Option<::std::string::String>,
 }
 impl GetActiveBranchKeyInput {
     /// The identifier for the Branch Key to get the ACTIVE version for.
-pub fn branch_key_identifier(&self) -> &::std::option::Option<::std::string::String> {
-    &self.branch_key_identifier
-}
+    pub fn branch_key_identifier(&self) -> &::std::option::Option<::std::string::String> {
+        &self.branch_key_identifier
+    }
 }
 impl GetActiveBranchKeyInput {
     /// Creates a new builder-style object to manufacture [`GetActiveBranchKeyInput`](crate::deps::aws_cryptography_keyStore::types::GetActiveBranchKeyInput).
-    pub fn builder() -> crate::deps::aws_cryptography_keyStore::types::builders::GetActiveBranchKeyInputBuilder {
+    pub fn builder(
+    ) -> crate::deps::aws_cryptography_keyStore::types::builders::GetActiveBranchKeyInputBuilder
+    {
         crate::deps::aws_cryptography_keyStore::types::builders::GetActiveBranchKeyInputBuilder::default()
     }
 }
@@ -31,19 +33,25 @@ pub struct GetActiveBranchKeyInputBuilder {
 }
 impl GetActiveBranchKeyInputBuilder {
     /// The identifier for the Branch Key to get the ACTIVE version for.
-pub fn branch_key_identifier(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
-    self.branch_key_identifier = ::std::option::Option::Some(input.into());
-    self
-}
-/// The identifier for the Branch Key to get the ACTIVE version for.
-pub fn set_branch_key_identifier(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
-    self.branch_key_identifier = input;
-    self
-}
-/// The identifier for the Branch Key to get the ACTIVE version for.
-pub fn get_branch_key_identifier(&self) -> &::std::option::Option<::std::string::String> {
-    &self.branch_key_identifier
-}
+    pub fn branch_key_identifier(
+        mut self,
+        input: impl ::std::convert::Into<::std::string::String>,
+    ) -> Self {
+        self.branch_key_identifier = ::std::option::Option::Some(input.into());
+        self
+    }
+    /// The identifier for the Branch Key to get the ACTIVE version for.
+    pub fn set_branch_key_identifier(
+        mut self,
+        input: ::std::option::Option<::std::string::String>,
+    ) -> Self {
+        self.branch_key_identifier = input;
+        self
+    }
+    /// The identifier for the Branch Key to get the ACTIVE version for.
+    pub fn get_branch_key_identifier(&self) -> &::std::option::Option<::std::string::String> {
+        &self.branch_key_identifier
+    }
     /// Consumes the builder and constructs a [`GetActiveBranchKeyInput`](crate::deps::aws_cryptography_keyStore::types::GetActiveBranchKeyInput).
     pub fn build(
         self,
@@ -51,8 +59,10 @@ pub fn get_branch_key_identifier(&self) -> &::std::option::Option<::std::string:
         crate::deps::aws_cryptography_keyStore::types::GetActiveBranchKeyInput,
         ::aws_smithy_types::error::operation::BuildError,
     > {
-        ::std::result::Result::Ok(crate::deps::aws_cryptography_keyStore::types::GetActiveBranchKeyInput {
-            branch_key_identifier: self.branch_key_identifier,
-        })
+        ::std::result::Result::Ok(
+            crate::deps::aws_cryptography_keyStore::types::GetActiveBranchKeyInput {
+                branch_key_identifier: self.branch_key_identifier,
+            },
+        )
     }
 }

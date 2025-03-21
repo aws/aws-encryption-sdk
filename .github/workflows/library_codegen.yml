@@ -13,15 +13,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        library:
-          [
-            AwsEncryptionSDK,
-          ]
+        library: [AwsEncryptionSDK]
         # Note dotnet is only used for formatting generated code
         # in this workflow
         dotnet-version: ["6.0.x"]
         go-version: [1.23]
-        os: [ubuntu-latest]
+        os: [ubuntu-22.04]
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -44,7 +41,7 @@ jobs:
       # and to translate version strings such as "nightly-latest"
       # to an actual DAFNY_VERSION.
       - name: Setup Dafny
-        uses: dafny-lang/setup-dafny-action@v1.7.0
+        uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: ${{ inputs.dafny }}
 
@@ -53,12 +50,16 @@ jobs:
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
+      # even though we just installed dotnet 6, maybe dotnet 8 is out there somewhere
+      - name: Create temporary global.json
+        run: echo '{"sdk":{"rollForward":"latestFeature","version":"6.0.0"}}' > ./global.json
+
       - name: Setup Java 17 for codegen
         uses: actions/setup-java@v3
         with:
           distribution: "corretto"
           java-version: "17"
-      
+
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
 

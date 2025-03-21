@@ -5,14 +5,16 @@
 
 pub fn to_dafny(
     value: aws_sdk_kms::types::MessageType,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::MessageType>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::kms::internaldafny::types::MessageType,
+> {
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_kms::types::MessageType::Raw => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::MessageType::RAW {},
 aws_sdk_kms::types::MessageType::Digest => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::MessageType::DIGEST {},
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::kms::internaldafny::types::MessageType,
 ) -> aws_sdk_kms::types::MessageType {

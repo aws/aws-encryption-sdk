@@ -6,20 +6,18 @@ pub fn to_dafny(
     value: &crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef,
 ) -> ::dafny_runtime::Object<
   dyn crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::ICryptographicMaterialsCache,
-> {
-  let wrap = CryptographicMaterialsCacheWrapper {
-      obj: value.clone(),
-  };
-  let inner = ::std::rc::Rc::new(::std::cell::UnsafeCell::new(wrap));
-  ::dafny_runtime::Object (Some(inner) )
+>{
+    let wrap = CryptographicMaterialsCacheWrapper { obj: value.clone() };
+    let inner = ::dafny_runtime::Rc::new(::dafny_runtime::UnsafeCell::new(wrap));
+    ::dafny_runtime::Object(Some(inner))
 }
 
 pub struct CryptographicMaterialsCacheWrapper {
   obj: crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef,
 }
 
-impl ::dafny_runtime::UpcastObject<dyn ::std::any::Any> for CryptographicMaterialsCacheWrapper {
-  ::dafny_runtime::UpcastObjectFn!(dyn ::std::any::Any);
+impl ::dafny_runtime::UpcastObject<::dafny_runtime::DynAny> for CryptographicMaterialsCacheWrapper {
+    ::dafny_runtime::UpcastObjectFn!(::dafny_runtime::DynAny);
 }
 
 #[allow(dead_code)]
@@ -27,12 +25,12 @@ pub fn from_dafny(
     dafny_value: ::dafny_runtime::Object<
       dyn crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::ICryptographicMaterialsCache,
     >,
-) -> crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef {
+) -> crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef{
     let wrap = ICryptographicMaterialsCacheDafnyWrapper {
         obj: dafny_value.clone(),
     };
     crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef {
-      inner: ::std::rc::Rc::new(::std::cell::RefCell::new(wrap))
+      inner: ::dafny_runtime::Rc::new(::dafny_runtime::RefCell::new(wrap))
     }
 }
 
@@ -48,16 +46,16 @@ impl crate::software::amazon::cryptography::materialproviders::internaldafny::ty
 {
   fn r#_PutCacheEntry_k(
     &self,
-    input: &::std::rc::Rc<crate::software::amazon::cryptography::materialproviders::internaldafny::types::PutCacheEntryInput>,
-) -> ::std::rc::Rc<
+    input: &::dafny_runtime::Rc<crate::software::amazon::cryptography::materialproviders::internaldafny::types::PutCacheEntryInput>,
+) -> ::dafny_runtime::Rc<
     crate::r#_Wrappers_Compile::Result<
         (),
-        ::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error>,
+        ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error>,
     >,
 >
 {
     let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::put_cache_entry::_put_cache_entry_input::from_dafny(input.clone());
-    let inner_result = self.obj.inner.borrow_mut().put_cache_entry(inner_input);
+    let inner_result = self.obj.inner.lock().unwrap().put_cache_entry(inner_input);
     let result = match inner_result {
         Ok(x) => crate::r#_Wrappers_Compile::Result::Success {
             value: (),
@@ -66,21 +64,21 @@ impl crate::software::amazon::cryptography::materialproviders::internaldafny::ty
             error: crate::deps::aws_cryptography_materialProviders::conversions::error::to_dafny(x),
         },
     };
-    ::std::rc::Rc::new(result)
+    ::dafny_runtime::Rc::new(result)
 }
 
 fn r#_UpdateUsageMetadata_k(
     &self,
-    input: &::std::rc::Rc<crate::software::amazon::cryptography::materialproviders::internaldafny::types::UpdateUsageMetadataInput>,
-) -> ::std::rc::Rc<
+    input: &::dafny_runtime::Rc<crate::software::amazon::cryptography::materialproviders::internaldafny::types::UpdateUsageMetadataInput>,
+) -> ::dafny_runtime::Rc<
     crate::r#_Wrappers_Compile::Result<
         (),
-        ::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error>,
+        ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error>,
     >,
 >
 {
     let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::update_usage_metadata::_update_usage_metadata_input::from_dafny(input.clone());
-    let inner_result = self.obj.inner.borrow_mut().update_usage_metadata(inner_input);
+    let inner_result = self.obj.inner.lock().unwrap().update_usage_metadata(inner_input);
     let result = match inner_result {
         Ok(x) => crate::r#_Wrappers_Compile::Result::Success {
             value: (),
@@ -89,21 +87,21 @@ fn r#_UpdateUsageMetadata_k(
             error: crate::deps::aws_cryptography_materialProviders::conversions::error::to_dafny(x),
         },
     };
-    ::std::rc::Rc::new(result)
+    ::dafny_runtime::Rc::new(result)
 }
 
 fn r#_GetCacheEntry_k(
     &self,
-    input: &::std::rc::Rc<crate::software::amazon::cryptography::materialproviders::internaldafny::types::GetCacheEntryInput>,
-) -> ::std::rc::Rc<
+    input: &::dafny_runtime::Rc<crate::software::amazon::cryptography::materialproviders::internaldafny::types::GetCacheEntryInput>,
+) -> ::dafny_runtime::Rc<
     crate::r#_Wrappers_Compile::Result<
-        ::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::GetCacheEntryOutput>,
-        ::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error>,
+        ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::GetCacheEntryOutput>,
+        ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error>,
     >,
 >
 {
     let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::get_cache_entry::_get_cache_entry_input::from_dafny(input.clone());
-    let inner_result = self.obj.inner.borrow_mut().get_cache_entry(inner_input);
+    let inner_result = self.obj.inner.lock().unwrap().get_cache_entry(inner_input);
     let result = match inner_result {
         Ok(x) => crate::r#_Wrappers_Compile::Result::Success {
             value: crate::deps::aws_cryptography_materialProviders::conversions::get_cache_entry::_get_cache_entry_output::to_dafny(x.clone()),
@@ -112,21 +110,21 @@ fn r#_GetCacheEntry_k(
             error: crate::deps::aws_cryptography_materialProviders::conversions::error::to_dafny(x),
         },
     };
-    ::std::rc::Rc::new(result)
+    ::dafny_runtime::Rc::new(result)
 }
 
 fn r#_DeleteCacheEntry_k(
     &self,
-    input: &::std::rc::Rc<crate::software::amazon::cryptography::materialproviders::internaldafny::types::DeleteCacheEntryInput>,
-) -> ::std::rc::Rc<
+    input: &::dafny_runtime::Rc<crate::software::amazon::cryptography::materialproviders::internaldafny::types::DeleteCacheEntryInput>,
+) -> ::dafny_runtime::Rc<
     crate::r#_Wrappers_Compile::Result<
         (),
-        ::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error>,
+        ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::Error>,
     >,
 >
 {
     let inner_input = crate::deps::aws_cryptography_materialProviders::conversions::delete_cache_entry::_delete_cache_entry_input::from_dafny(input.clone());
-    let inner_result = self.obj.inner.borrow_mut().delete_cache_entry(inner_input);
+    let inner_result = self.obj.inner.lock().unwrap().delete_cache_entry(inner_input);
     let result = match inner_result {
         Ok(x) => crate::r#_Wrappers_Compile::Result::Success {
             value: (),
@@ -135,7 +133,7 @@ fn r#_DeleteCacheEntry_k(
             error: crate::deps::aws_cryptography_materialProviders::conversions::error::to_dafny(x),
         },
     };
-    ::std::rc::Rc::new(result)
+    ::dafny_runtime::Rc::new(result)
 }
 }
 

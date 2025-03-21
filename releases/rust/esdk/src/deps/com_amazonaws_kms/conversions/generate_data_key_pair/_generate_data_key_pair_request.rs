@@ -4,12 +4,12 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_kms::operation::generate_data_key_pair::GenerateDataKeyPairInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GenerateDataKeyPairRequest,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GenerateDataKeyPairRequest::GenerateDataKeyPairRequest {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GenerateDataKeyPairRequest::GenerateDataKeyPairRequest {
         EncryptionContext:
-::std::rc::Rc::new(match &value.encryption_context {
+::dafny_runtime::Rc::new(match &value.encryption_context {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::hashmap_to_dafny_map(x,
             |k| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&k),
@@ -21,7 +21,7 @@ pub fn to_dafny(
 ,
  KeyId: crate::standard_library_conversions::ostring_to_dafny(&value.key_id) .Extract(),
  KeyPairSpec: crate::deps::com_amazonaws_kms::conversions::data_key_pair_spec::to_dafny(value.key_pair_spec.clone().unwrap()),
- GrantTokens: ::std::rc::Rc::new(match &value.grant_tokens {
+ GrantTokens: ::dafny_runtime::Rc::new(match &value.grant_tokens {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&e),
@@ -30,7 +30,7 @@ pub fn to_dafny(
     None => crate::r#_Wrappers_Compile::Option::None {}
 })
 ,
- Recipient: ::std::rc::Rc::new(match &value.recipient {
+ Recipient: ::dafny_runtime::Rc::new(match &value.recipient {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_kms::conversions::recipient_info::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
@@ -38,11 +38,11 @@ pub fn to_dafny(
  DryRun: crate::standard_library_conversions::obool_to_dafny(&value.dry_run),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GenerateDataKeyPairRequest,
-    >
+    >,
 ) -> aws_sdk_kms::operation::generate_data_key_pair::GenerateDataKeyPairInput {
     aws_sdk_kms::operation::generate_data_key_pair::GenerateDataKeyPairInput::builder()
           .set_encryption_context(match (*dafny_value.EncryptionContext()).as_ref() {

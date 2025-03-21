@@ -5,15 +5,15 @@
 
 pub fn to_dafny(
     value: aws_sdk_dynamodb::types::ReturnConsumedCapacity,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReturnConsumedCapacity>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReturnConsumedCapacity>{
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_dynamodb::types::ReturnConsumedCapacity::Indexes => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReturnConsumedCapacity::INDEXES {},
 aws_sdk_dynamodb::types::ReturnConsumedCapacity::Total => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReturnConsumedCapacity::TOTAL {},
 aws_sdk_dynamodb::types::ReturnConsumedCapacity::None => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReturnConsumedCapacity::NONE {},
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReturnConsumedCapacity,
 ) -> aws_sdk_dynamodb::types::ReturnConsumedCapacity {

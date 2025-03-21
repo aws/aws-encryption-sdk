@@ -4,11 +4,13 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::CsvOptions,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::CsvOptions>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::CsvOptions,
+> {
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::CsvOptions::CsvOptions {
         Delimiter: crate::standard_library_conversions::ostring_to_dafny(&value.delimiter),
- HeaderList: ::std::rc::Rc::new(match &value.header_list {
+ HeaderList: ::dafny_runtime::Rc::new(match &value.header_list {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&e),
@@ -19,9 +21,10 @@ pub fn to_dafny(
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::CsvOptions,
     >,
 ) -> aws_sdk_dynamodb::types::CsvOptions {
@@ -38,5 +41,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
 }

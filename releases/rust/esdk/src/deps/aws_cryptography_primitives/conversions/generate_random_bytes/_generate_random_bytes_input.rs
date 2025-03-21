@@ -4,19 +4,19 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_primitives::operation::generate_random_bytes::GenerateRandomBytesInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::primitives::internaldafny::types::GenerateRandomBytesInput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::primitives::internaldafny::types::GenerateRandomBytesInput::GenerateRandomBytesInput {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::primitives::internaldafny::types::GenerateRandomBytesInput::GenerateRandomBytesInput {
         length: value.length.clone().unwrap(),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::primitives::internaldafny::types::GenerateRandomBytesInput,
     >,
-) -> crate::deps::aws_cryptography_primitives::operation::generate_random_bytes::GenerateRandomBytesInput {
+) -> crate::deps::aws_cryptography_primitives::operation::generate_random_bytes::GenerateRandomBytesInput{
     crate::deps::aws_cryptography_primitives::operation::generate_random_bytes::GenerateRandomBytesInput::builder()
         .set_length(Some( dafny_value.length() .clone() ))
         .build()

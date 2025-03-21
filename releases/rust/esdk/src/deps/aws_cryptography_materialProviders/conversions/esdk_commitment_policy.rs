@@ -5,15 +5,15 @@
 
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_materialProviders::types::EsdkCommitmentPolicy,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::ESDKCommitmentPolicy>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::ESDKCommitmentPolicy>{
+    ::dafny_runtime::Rc::new(match value {
         crate::deps::aws_cryptography_materialProviders::types::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt => crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::ESDKCommitmentPolicy::FORBID_ENCRYPT_ALLOW_DECRYPT {},
 crate::deps::aws_cryptography_materialProviders::types::EsdkCommitmentPolicy::RequireEncryptAllowDecrypt => crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::ESDKCommitmentPolicy::REQUIRE_ENCRYPT_ALLOW_DECRYPT {},
 crate::deps::aws_cryptography_materialProviders::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt => crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::ESDKCommitmentPolicy::REQUIRE_ENCRYPT_REQUIRE_DECRYPT {},
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::ESDKCommitmentPolicy,
 ) -> crate::deps::aws_cryptography_materialProviders::types::EsdkCommitmentPolicy {

@@ -7,8 +7,8 @@ as described in <https://github.com/awslabs/aws-crypto-tools-test-vector-framewo
 
 Prerequisites:
 
-* Set up AWS credentials
-* Create an empty output directory, e.g. `generated_vectors`
+- Set up AWS credentials
+- Create an empty output directory, e.g. `generated_vectors`
 
 From this directory, run the following:
 

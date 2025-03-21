@@ -4,22 +4,22 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::operation::describe_time_to_live::DescribeTimeToLiveOutput
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeTimeToLiveOutput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeTimeToLiveOutput::DescribeTimeToLiveOutput {
-        TimeToLiveDescription: ::std::rc::Rc::new(match &value.time_to_live_description {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeTimeToLiveOutput::DescribeTimeToLiveOutput {
+        TimeToLiveDescription: ::dafny_runtime::Rc::new(match &value.time_to_live_description {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::time_to_live_description::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::DescribeTimeToLiveOutput,
-    >
+    >,
 ) -> aws_sdk_dynamodb::operation::describe_time_to_live::DescribeTimeToLiveOutput {
     aws_sdk_dynamodb::operation::describe_time_to_live::DescribeTimeToLiveOutput::builder()
           .set_time_to_live_description(match (*dafny_value.TimeToLiveDescription()).as_ref() {
@@ -29,6 +29,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
-
 }

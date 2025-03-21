@@ -4,10 +4,10 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &crate::deps::aws_cryptography_materialProviders::types::StaticConfigurations,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::StaticConfigurations,
-> {
-    ::std::rc::Rc::new(match value {
+>{
+    ::dafny_runtime::Rc::new(match value {
         crate::deps::aws_cryptography_materialProviders::types::StaticConfigurations::AwsKmsEcdh(x) =>
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::StaticConfigurations::AWS_KMS_ECDH {
         AWS_KMS_ECDH: crate::deps::aws_cryptography_materialProviders::conversions::kms_ecdh_static_configurations::to_dafny(&x.clone())
@@ -24,11 +24,11 @@ crate::deps::aws_cryptography_materialProviders::types::StaticConfigurations::Ra
 
 #[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::StaticConfigurations,
     >,
 ) -> crate::deps::aws_cryptography_materialProviders::types::StaticConfigurations {
-    match &::std::rc::Rc::unwrap_or_clone(dafny_value) {
+    match &::dafny_runtime::Rc::unwrap_or_clone(dafny_value) {
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::StaticConfigurations::AWS_KMS_ECDH {
     AWS_KMS_ECDH: x @ _,
 } => crate::deps::aws_cryptography_materialProviders::types::StaticConfigurations::AwsKmsEcdh(crate::deps::aws_cryptography_materialProviders::conversions::kms_ecdh_static_configurations::from_dafny(x.clone())

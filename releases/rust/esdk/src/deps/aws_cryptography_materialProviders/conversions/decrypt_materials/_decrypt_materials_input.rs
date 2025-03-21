@@ -4,10 +4,10 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_materialProviders::operation::decrypt_materials::DecryptMaterialsInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::DecryptMaterialsInput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::DecryptMaterialsInput::DecryptMaterialsInput {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::DecryptMaterialsInput::DecryptMaterialsInput {
         algorithmSuiteId: crate::deps::aws_cryptography_materialProviders::conversions::algorithm_suite_id::to_dafny(&value.algorithm_suite_id.clone().unwrap())
 ,
  commitmentPolicy: crate::deps::aws_cryptography_materialProviders::conversions::commitment_policy::to_dafny(&value.commitment_policy.clone().unwrap())
@@ -23,7 +23,7 @@ pub fn to_dafny(
 )
 ,
  reproducedEncryptionContext:
-::std::rc::Rc::new(match &value.reproduced_encryption_context {
+::dafny_runtime::Rc::new(match &value.reproduced_encryption_context {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::hashmap_to_dafny_map(x,
             |k| dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(&k.as_bytes().to_vec(), |b| *b),
@@ -35,19 +35,19 @@ pub fn to_dafny(
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::DecryptMaterialsInput,
     >,
-) -> crate::deps::aws_cryptography_materialProviders::operation::decrypt_materials::DecryptMaterialsInput {
+) -> crate::deps::aws_cryptography_materialProviders::operation::decrypt_materials::DecryptMaterialsInput{
     crate::deps::aws_cryptography_materialProviders::operation::decrypt_materials::DecryptMaterialsInput::builder()
         .set_algorithm_suite_id(Some( crate::deps::aws_cryptography_materialProviders::conversions::algorithm_suite_id::from_dafny(dafny_value.algorithmSuiteId().clone())
  ))
  .set_commitment_policy(Some( crate::deps::aws_cryptography_materialProviders::conversions::commitment_policy::from_dafny(dafny_value.commitmentPolicy().clone())
  ))
  .set_encrypted_data_keys(Some( ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(dafny_value.encryptedDataKeys(),
-    |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::EncryptedDataKey>| crate::deps::aws_cryptography_materialProviders::conversions::encrypted_data_key::from_dafny(e.clone())
+    |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::EncryptedDataKey>| crate::deps::aws_cryptography_materialProviders::conversions::encrypted_data_key::from_dafny(e.clone())
 ,
 )
  ))

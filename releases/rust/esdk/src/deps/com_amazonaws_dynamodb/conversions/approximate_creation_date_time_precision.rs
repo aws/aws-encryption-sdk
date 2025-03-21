@@ -5,14 +5,14 @@
 
 pub fn to_dafny(
     value: aws_sdk_dynamodb::types::ApproximateCreationDateTimePrecision,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ApproximateCreationDateTimePrecision>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ApproximateCreationDateTimePrecision>{
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_dynamodb::types::ApproximateCreationDateTimePrecision::Millisecond => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ApproximateCreationDateTimePrecision::MILLISECOND {},
 aws_sdk_dynamodb::types::ApproximateCreationDateTimePrecision::Microsecond => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ApproximateCreationDateTimePrecision::MICROSECOND {},
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ApproximateCreationDateTimePrecision,
 ) -> aws_sdk_dynamodb::types::ApproximateCreationDateTimePrecision {

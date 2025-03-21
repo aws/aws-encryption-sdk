@@ -5,42 +5,70 @@ on:
   pull_request:
 
 jobs:
+  getVersion:
+    uses: ./.github/workflows/dafny_version.yaml
+  getVerifyVersion:
+    uses: ./.github/workflows/dafny_verify_version.yaml
+  getFormatVersion:
+    uses: ./.github/workflows/dafny_format_version.yaml
+  pr-ci-format:
+    needs: getFormatVersion
+    uses: ./.github/workflows/library_format.yml
+    with:
+      dafny: ${{needs.getFormatVersion.outputs.version}}
   pr-ci-codegen:
+    needs: getVersion
     uses: ./.github/workflows/library_codegen.yml
     with:
-      dafny: '4.9.0'
+      dafny: ${{needs.getVersion.outputs.version}}
   pr-ci-verification:
+    needs: getVerifyVersion
     uses: ./.github/workflows/library_dafny_verification.yml
     with:
-      dafny: '4.9.0'
+      dafny: ${{needs.getVerifyVersion.outputs.version}}
   # pr-ci-java:
+  #   needs: getVerifyVersion
   #   uses: ./.github/workflows/library_java_tests.yml
   #   with:
-  #     dafny: '4.2.0'
+  #     dafny: ${{needs.getVersion.outputs.version}}
   pr-ci-net:
+    needs: getVersion
     uses: ./.github/workflows/library_net_tests.yml
     with:
-      dafny: '4.9.0'
+      dafny: ${{needs.getVersion.outputs.version}}
   pr-ci-rust:
+    needs: getVersion
     uses: ./.github/workflows/library_rust_tests.yml
     with:
-      dafny: '4.9.0'
+      dafny: ${{needs.getVersion.outputs.version}}
   pr-ci-go:
+    needs: getVersion
     uses: ./.github/workflows/library_go_tests.yml
     with:
-      dafny: '4.9.0'
+      dafny: ${{needs.getVersion.outputs.version}}
   pr-test-vectors:
+    needs: getVersion
     uses: ./.github/workflows/library_interop_tests.yml
     with:
-      dafny: '4.9.0'
-  pr-dafny-test-vectors:
-    uses: ./.github/workflows/library_interop_test_vectors.yml
+      dafny: ${{needs.getVersion.outputs.version}}
+  pr-dafny-keyring-test-vectors:
+    needs: getVersion
+    uses: ./.github/workflows/library_interop_keyring_test_vectors.yml
     with:
-      dafny: '4.9.0'
+      dafny: ${{needs.getVersion.outputs.version}}
+    secrets: inherit
+  pr-dafny-mkp-keyring-legacy-test-vectors:
+    needs: getVersion
+    uses: ./.github/workflows/library_interop_mkp_test_vectors.yml
+    with:
+      dafny: ${{needs.getVersion.outputs.version}}
+    secrets: inherit
   pr-dafny-legacy-test-vectors:
+    needs: getVersion
     uses: ./.github/workflows/library_legacy_interop_test_vectors.yml
     with:
-      dafny: '4.9.0'
+      dafny: ${{needs.getVersion.outputs.version}}
+    secrets: inherit
   pr-ci-all-required:
     if: always()
     needs:
@@ -48,10 +76,11 @@ jobs:
       - pr-ci-verification
       - pr-ci-net
       - pr-ci-rust
+      - pr-ci-go
       - pr-test-vectors
-      - pr-dafny-test-vectors
+      - pr-dafny-keyring-test-vectors
       - pr-dafny-legacy-test-vectors
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Verify all required jobs passed
         uses: re-actors/alls-green@release/v1

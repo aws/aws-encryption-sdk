@@ -17,10 +17,14 @@ impl DecryptMaterials {
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_materialProviders::operation::decrypt_materials::DecryptMaterialsOutput,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
-    > {
+    >{
         crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HDecryptMaterialsInput_for_CryptographicMaterialsManager_DecryptMaterials(&input)
             .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
-        cryptographic_materials_manager.inner.borrow_mut().decrypt_materials(input)
+        cryptographic_materials_manager
+            .inner
+            .lock()
+            .unwrap()
+            .decrypt_materials(input)
     }
 }
 

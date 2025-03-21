@@ -10,7 +10,7 @@ impl crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef
     /// - On success, responds with [`OnDecryptOutput`](crate::operation::on_decrypt::OnDecryptOutput) with field(s):
     ///   - [`materials(Option<crate::deps::aws_cryptography_materialProviders::types::DecryptionMaterials>)`](crate::operation::on_decrypt::OnDecryptOutput::materials): (undocumented)
     /// - On failure, responds with [`SdkError<OnDecryptError>`](crate::operation::on_decrypt::OnDecryptError)
-    pub fn on_decrypt(&self) -> crate::deps::aws_cryptography_materialProviders::operation::on_decrypt::builders::OnDecryptFluentBuilder {
+    pub fn on_decrypt(&self) -> crate::deps::aws_cryptography_materialProviders::operation::on_decrypt::builders::OnDecryptFluentBuilder{
         crate::deps::aws_cryptography_materialProviders::operation::on_decrypt::builders::OnDecryptFluentBuilder::new(self.clone())
     }
 }

@@ -4,21 +4,21 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::ExpectedAttributeValue,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExpectedAttributeValue>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExpectedAttributeValue>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExpectedAttributeValue::ExpectedAttributeValue {
-        Value: ::std::rc::Rc::new(match &value.value {
+        Value: ::dafny_runtime::Rc::new(match &value.value {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::attribute_value::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
  Exists: crate::standard_library_conversions::obool_to_dafny(&value.exists),
- ComparisonOperator: ::std::rc::Rc::new(match &value.comparison_operator {
+ ComparisonOperator: ::dafny_runtime::Rc::new(match &value.comparison_operator {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::comparison_operator::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- AttributeValueList: ::std::rc::Rc::new(match &value.attribute_value_list {
+ AttributeValueList: ::dafny_runtime::Rc::new(match &value.attribute_value_list {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| crate::deps::com_amazonaws_dynamodb::conversions::attribute_value::to_dafny(e)
@@ -30,9 +30,10 @@ pub fn to_dafny(
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExpectedAttributeValue,
     >,
 ) -> aws_sdk_dynamodb::types::ExpectedAttributeValue {
@@ -55,7 +56,7 @@ pub fn from_dafny(
     crate::r#_Wrappers_Compile::Option::Some { value } =>
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(value,
-                |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AttributeValue>| crate::deps::com_amazonaws_dynamodb::conversions::attribute_value::from_dafny(e.clone())
+                |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AttributeValue>| crate::deps::com_amazonaws_dynamodb::conversions::attribute_value::from_dafny(e.clone())
 ,
             )
         ),
@@ -63,5 +64,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
 }

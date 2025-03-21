@@ -5,14 +5,16 @@
 
 pub fn to_dafny(
     value: aws_sdk_dynamodb::types::KeyType,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::KeyType>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::KeyType,
+> {
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_dynamodb::types::KeyType::Hash => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::KeyType::HASH {},
 aws_sdk_dynamodb::types::KeyType::Range => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::KeyType::RANGE {},
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::KeyType,
 ) -> aws_sdk_dynamodb::types::KeyType {

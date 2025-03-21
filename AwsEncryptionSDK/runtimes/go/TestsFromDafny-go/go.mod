@@ -2,17 +2,17 @@ module github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk/test
 
 go 1.23.0
 
-require github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library v0.0.1
+require github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library v0.2.0
 
 replace github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl => ../../../../mpl/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/
 
 replace github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk => ../ImplementationFromDafny-go
 
 require (
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb v0.0.3
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms v0.0.1
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl v0.0.1
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives v0.0.1
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb v0.2.0
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms v0.2.0
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl v0.2.0
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives v0.2.0
 	github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk v0.0.0
 	github.com/dafny-lang/DafnyRuntimeGo/v4 v4.9.2
 

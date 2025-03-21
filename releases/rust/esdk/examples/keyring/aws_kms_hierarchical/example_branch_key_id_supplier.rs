@@ -3,8 +3,8 @@
 
 use aws_esdk::material_providers::operation::get_branch_key_id::GetBranchKeyIdInput;
 use aws_esdk::material_providers::operation::get_branch_key_id::GetBranchKeyIdOutput;
-use aws_esdk::material_providers::types::error::Error;
 use aws_esdk::material_providers::types::branch_key_id_supplier::BranchKeyIdSupplier;
+use aws_esdk::material_providers::types::error::Error;
 use std::collections::HashMap;
 
 /*
@@ -37,19 +37,15 @@ impl ExampleBranchKeyIdSupplier {
 // We MUST use the encryption context to determine
 // the Branch Key ID.
 impl BranchKeyIdSupplier for ExampleBranchKeyIdSupplier {
-    fn get_branch_key_id(
-        &self,
-        input: GetBranchKeyIdInput,
-    ) -> Result<GetBranchKeyIdOutput, Error> {
+    fn get_branch_key_id(&self, input: GetBranchKeyIdInput) -> Result<GetBranchKeyIdOutput, Error> {
         let encryption_context: HashMap<String, String> = input.encryption_context.unwrap();
 
         if !encryption_context.contains_key("tenant") {
-            return Err( Error::AwsCryptographicMaterialProvidersException {
+            return Err(Error::AwsCryptographicMaterialProvidersException {
                 message:
                     "EncryptionContext invalid, does not contain expected tenant key value pair."
-                    .to_string()
-                }
-            );
+                        .to_string(),
+            });
         }
         let tenant_key_id: &str = encryption_context["tenant"].as_str();
 
@@ -64,11 +60,9 @@ impl BranchKeyIdSupplier for ExampleBranchKeyIdSupplier {
                 .build()
                 .unwrap())
         } else {
-            Err( Error::AwsCryptographicMaterialProvidersException {
-                message:
-                    "Item does not contain valid tenant ID.".to_string()
-                }
-            )
+            Err(Error::AwsCryptographicMaterialProvidersException {
+                message: "Item does not contain valid tenant ID.".to_string(),
+            })
         }
     }
 }

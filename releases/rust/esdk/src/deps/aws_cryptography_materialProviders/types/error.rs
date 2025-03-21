@@ -4,85 +4,85 @@
 #[derive(::std::clone::Clone, ::std::fmt::Debug, ::std::cmp::PartialEq)]
 pub enum Error {
     #[allow(missing_docs)]
-AwsCryptographicMaterialProvidersException {
-    message: ::std::string::String,
-},
+    AwsCryptographicMaterialProvidersException {
+        message: ::std::string::String,
+    },
 
-#[allow(missing_docs)]
-EntryAlreadyExists {
-    message: ::std::string::String,
-},
+    #[allow(missing_docs)]
+    EntryAlreadyExists {
+        message: ::std::string::String,
+    },
 
-#[allow(missing_docs)]
-EntryDoesNotExist {
-    message: ::std::string::String,
-},
+    #[allow(missing_docs)]
+    EntryDoesNotExist {
+        message: ::std::string::String,
+    },
 
-#[allow(missing_docs)]
-InFlightTtlExceeded {
-    message: ::std::string::String,
-},
+    #[allow(missing_docs)]
+    InFlightTtlExceeded {
+        message: ::std::string::String,
+    },
 
-#[allow(missing_docs)]
-InvalidAlgorithmSuiteInfo {
-    message: ::std::string::String,
-},
+    #[allow(missing_docs)]
+    InvalidAlgorithmSuiteInfo {
+        message: ::std::string::String,
+    },
 
-#[allow(missing_docs)]
-InvalidAlgorithmSuiteInfoOnDecrypt {
-    message: ::std::string::String,
-},
+    #[allow(missing_docs)]
+    InvalidAlgorithmSuiteInfoOnDecrypt {
+        message: ::std::string::String,
+    },
 
-#[allow(missing_docs)]
-InvalidAlgorithmSuiteInfoOnEncrypt {
-    message: ::std::string::String,
-},
+    #[allow(missing_docs)]
+    InvalidAlgorithmSuiteInfoOnEncrypt {
+        message: ::std::string::String,
+    },
 
-#[allow(missing_docs)]
-InvalidDecryptionMaterials {
-    message: ::std::string::String,
-},
+    #[allow(missing_docs)]
+    InvalidDecryptionMaterials {
+        message: ::std::string::String,
+    },
 
-#[allow(missing_docs)]
-InvalidDecryptionMaterialsTransition {
-    message: ::std::string::String,
-},
+    #[allow(missing_docs)]
+    InvalidDecryptionMaterialsTransition {
+        message: ::std::string::String,
+    },
 
-#[allow(missing_docs)]
-InvalidEncryptionMaterials {
-    message: ::std::string::String,
-},
+    #[allow(missing_docs)]
+    InvalidEncryptionMaterials {
+        message: ::std::string::String,
+    },
 
-#[allow(missing_docs)]
-InvalidEncryptionMaterialsTransition {
-    message: ::std::string::String,
-},
+    #[allow(missing_docs)]
+    InvalidEncryptionMaterialsTransition {
+        message: ::std::string::String,
+    },
 
-AwsCryptographicPrimitivesError {
-    error: crate::deps::aws_cryptography_primitives::types::error::Error,
-},
+    AwsCryptographicPrimitivesError {
+        error: crate::deps::aws_cryptography_primitives::types::error::Error,
+    },
 
-DynamoDB_20120810Error {
-    error: crate::deps::com_amazonaws_dynamodb::types::error::Error,
-},
+    DynamoDB_20120810Error {
+        error: crate::deps::com_amazonaws_dynamodb::types::error::Error,
+    },
 
-TrentServiceError {
-    error: crate::deps::com_amazonaws_kms::types::error::Error,
-},
+    TrentServiceError {
+        error: crate::deps::com_amazonaws_kms::types::error::Error,
+    },
 
-KeyStoreError {
-    error: crate::deps::aws_cryptography_keyStore::types::error::Error,
-},
+    KeyStoreError {
+        error: crate::deps::aws_cryptography_keyStore::types::error::Error,
+    },
     CollectionOfErrors {
         list: ::std::vec::Vec<Self>,
         message: ::std::string::String,
     },
     ValidationError(ValidationError),
     Opaque {
-        obj: ::dafny_runtime::Object<dyn ::std::any::Any>,
+        obj: ::dafny_runtime::Object<::dafny_runtime::DynAny>,
     },
     OpaqueWithText {
-        obj: ::dafny_runtime::Object<dyn ::std::any::Any>,
+        obj: ::dafny_runtime::Object<::dafny_runtime::DynAny>,
         objMessage: ::std::string::String,
     },
 }
@@ -110,18 +110,20 @@ impl ::std::error::Error for Error {
 impl Error {
     pub fn wrap_validation_err<E>(err: E) -> Self
     where
-        E: ::std::error::Error + 'static,
+        E: ::std::error::Error + Send + Sync + 'static,
     {
-        Self::ValidationError(ValidationError(::std::rc::Rc::new(err)))
+        Self::ValidationError(ValidationError(::dafny_runtime::Rc::new(err)))
     }
 }
 
 #[derive(::std::clone::Clone, ::std::fmt::Debug)]
-pub struct ValidationError(::std::rc::Rc<dyn ::std::error::Error>);
+pub struct ValidationError(::dafny_runtime::Rc<dyn ::std::error::Error + Send + Sync>);
 
 impl ::std::cmp::PartialEq for ValidationError {
     fn eq(&self, other: &Self) -> bool {
-        ::std::rc::Rc::<(dyn std::error::Error + 'static)>::ptr_eq(&self.0, &other.0)
+        ::dafny_runtime::Rc::<(dyn std::error::Error + Send + Sync + 'static)>::ptr_eq(
+            &self.0, &other.0,
+        )
     }
 }
 

@@ -112,7 +112,7 @@ Resources:
               }
           ]
         }
-  
+
   AssumeArtifactRolePolicy:
     Type: "AWS::IAM::ManagedPolicy"
     Properties:
@@ -240,28 +240,28 @@ Resources:
             }
           ]
         }
-  
+
   CryptoToolsKMS:
-      Type: "AWS::IAM::ManagedPolicy"
-      Properties:
-        ManagedPolicyName: !Sub >-
-          CrypotToolsKMSPolicy-${ProjectName}-${AWS::Region}-codebuild-${ProjectName}-service-role
-        Path: /service-role/
-        PolicyDocument: !Sub |
-          {
-            "Version": "2012-10-17",
-            "Statement": [
-              {
-                "Effect": "Allow",
-                "Resource": [
-                  "arn:aws:kms:*:658956600833:key/*",
-                  "arn:aws:kms:*:658956600833:alias/*"
-                ],
-                "Action": [
-                  "kms:Encrypt",
-                  "kms:Decrypt",
-                  "kms:GenerateDataKey"
-                ]
-              }
-            ]
-          }
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      ManagedPolicyName: !Sub >-
+        CrypotToolsKMSPolicy-${ProjectName}-${AWS::Region}-codebuild-${ProjectName}-service-role
+      Path: /service-role/
+      PolicyDocument: !Sub |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:kms:*:658956600833:key/*",
+                "arn:aws:kms:*:658956600833:alias/*"
+              ],
+              "Action": [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:GenerateDataKey"
+              ]
+            }
+          ]
+        }

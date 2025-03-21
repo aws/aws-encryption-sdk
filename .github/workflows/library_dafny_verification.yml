@@ -5,7 +5,7 @@ on:
   workflow_call:
     inputs:
       dafny:
-        description: 'The Dafny version to run'
+        description: "The Dafny version to run"
         required: true
         type: string
       regenerate-code:
@@ -18,11 +18,8 @@ jobs:
   verification:
     strategy:
       matrix:
-        library: [
-          AwsEncryptionSDK,
-          TestVectors
-        ]
-        os: [ macos-13 ]
+        library: [AwsEncryptionSDK, TestVectors]
+        os: [macos-13]
     runs-on: ${{ matrix.os }}
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -31,12 +28,12 @@ jobs:
       - name: Support longpaths
         run: |
           git config --global core.longpaths true
-          
+
       - uses: actions/checkout@v2
       - name: Init Submodules
         run: |
-            git submodule update --init libraries
-            git submodule update --init --recursive mpl
+          git submodule update --init libraries
+          git submodule update --init --recursive mpl
 
       # dafny-reportgenerator requires next6
       # but only 7.0 is installed on macos-13-large
@@ -46,7 +43,7 @@ jobs:
           dotnet-version: "6.0.x"
 
       - name: Setup Dafny
-        uses: dafny-lang/setup-dafny-action@v1.7.0
+        uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: ${{ inputs.dafny }}
 
@@ -58,7 +55,7 @@ jobs:
           library: ${{ matrix.library }}
           diff-generated-code: false
           update-and-regenerate-mpl: true
-            
+
       - name: Verify ${{ matrix.library }} Dafny code
         shell: bash
         working-directory: ./${{ matrix.library }}

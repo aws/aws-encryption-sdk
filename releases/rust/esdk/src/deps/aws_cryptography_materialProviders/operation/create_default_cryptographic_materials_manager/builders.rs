@@ -13,7 +13,7 @@ impl CreateDefaultCryptographicMaterialsManagerInputBuilder {
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
-    > {
+    >{
         let mut fluent_builder = client.create_default_cryptographic_materials_manager();
         fluent_builder.inner = self;
         fluent_builder.send().await
@@ -29,14 +29,16 @@ pub struct CreateDefaultCryptographicMaterialsManagerFluentBuilder {
 }
 impl CreateDefaultCryptographicMaterialsManagerFluentBuilder {
     /// Creates a new `CreateDefaultCryptographicMaterialsManager`.
-    pub(crate) fn new(client: crate::deps::aws_cryptography_materialProviders::client::Client) -> Self {
+    pub(crate) fn new(
+        client: crate::deps::aws_cryptography_materialProviders::client::Client,
+    ) -> Self {
         Self {
             client,
             inner: ::std::default::Default::default(),
         }
     }
     /// Access the CreateDefaultCryptographicMaterialsManager as a reference.
-    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::create_default_cryptographic_materials_manager::builders::CreateDefaultCryptographicMaterialsManagerInputBuilder {
+    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::create_default_cryptographic_materials_manager::builders::CreateDefaultCryptographicMaterialsManagerInputBuilder{
         &self.inner
     }
     /// Sends the request and returns the response.
@@ -45,7 +47,7 @@ impl CreateDefaultCryptographicMaterialsManagerFluentBuilder {
     ) -> ::std::result::Result<
         crate::deps::aws_cryptography_materialProviders::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef,
         crate::deps::aws_cryptography_materialProviders::types::error::Error,
-    > {
+    >{
         let input = self
             .inner
             .build()
@@ -56,24 +58,38 @@ impl CreateDefaultCryptographicMaterialsManagerFluentBuilder {
             .map_err(|mut e| {
 	     let msg = format!("{:?}", e);
              crate::deps::aws_cryptography_materialProviders::types::error::Error::OpaqueWithText {
-                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut dyn ::std::any::Any),
+                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut ::dafny_runtime::DynAny),
 		objMessage: msg
              }})?;
         crate::deps::aws_cryptography_materialProviders::operation::create_default_cryptographic_materials_manager::CreateDefaultCryptographicMaterialsManager::send(&self.client, input).await
     }
 
     /// The Keyring that the created Default Cryprographic Materials Manager will use to wrap data keys.
-pub fn keyring(mut self, input: impl ::std::convert::Into<crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef>) -> Self {
-    self.inner = self.inner.keyring(input.into());
-    self
-}
-/// The Keyring that the created Default Cryprographic Materials Manager will use to wrap data keys.
-pub fn set_keyring(mut self, input: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef>) -> Self {
-    self.inner = self.inner.set_keyring(input);
-    self
-}
-/// The Keyring that the created Default Cryprographic Materials Manager will use to wrap data keys.
-pub fn get_keyring(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef> {
-    self.inner.get_keyring()
-}
+    pub fn keyring(
+        mut self,
+        input: impl ::std::convert::Into<
+            crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
+        >,
+    ) -> Self {
+        self.inner = self.inner.keyring(input.into());
+        self
+    }
+    /// The Keyring that the created Default Cryprographic Materials Manager will use to wrap data keys.
+    pub fn set_keyring(
+        mut self,
+        input: ::std::option::Option<
+            crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
+        >,
+    ) -> Self {
+        self.inner = self.inner.set_keyring(input);
+        self
+    }
+    /// The Keyring that the created Default Cryprographic Materials Manager will use to wrap data keys.
+    pub fn get_keyring(
+        &self,
+    ) -> &::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
+    > {
+        self.inner.get_keyring()
+    }
 }

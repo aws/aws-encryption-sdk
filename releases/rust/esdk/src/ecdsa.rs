@@ -18,7 +18,7 @@ pub mod Signature {
         use aws_lc_rs::signature::EcdsaVerificationAlgorithm;
         use aws_lc_rs::signature::KeyPair;
         use aws_lc_rs::signature::UnparsedPublicKey;
-        use std::rc::Rc;
+        use dafny_runtime::Rc;
 
         fn error(s: &str) -> Rc<DafnyError> {
             Rc::new(DafnyError::AwsCryptographicPrimitivesError {
@@ -228,7 +228,7 @@ pub mod Signature {
         #[cfg(test)]
         mod tests {
             use super::*;
-            use std::rc::Rc;
+            use dafny_runtime::Rc;
 
             #[test]
             fn test_generate() {

@@ -5,34 +5,33 @@
 
 pub fn to_dafny(
     value: crate::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::encryptionsdk::internaldafny::types::AwsEncryptionSdkConfig,
-> {
-    ::std::rc::Rc::new(to_dafny_plain(value))
+>{
+    ::dafny_runtime::Rc::new(to_dafny_plain(value))
 }
 
 #[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::encryptionsdk::internaldafny::types::AwsEncryptionSdkConfig,
     >,
 ) -> crate::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig {
     plain_from_dafny(&*dafny_value)
 }
 
-
 #[allow(dead_code)]
 pub fn to_dafny_plain(
     value: crate::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig,
-) -> crate::r#software::amazon::cryptography::encryptionsdk::internaldafny::types::AwsEncryptionSdkConfig {
+) -> crate::r#software::amazon::cryptography::encryptionsdk::internaldafny::types::AwsEncryptionSdkConfig{
     crate::r#software::amazon::cryptography::encryptionsdk::internaldafny::types::AwsEncryptionSdkConfig::AwsEncryptionSdkConfig {
-        commitmentPolicy: ::std::rc::Rc::new(match &value.commitment_policy {
+        commitmentPolicy: ::dafny_runtime::Rc::new(match &value.commitment_policy {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::aws_cryptography_materialProviders::conversions::esdk_commitment_policy::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
  maxEncryptedDataKeys: crate::standard_library_conversions::olong_to_dafny(&value.max_encrypted_data_keys),
- netV4_0_0_RetryPolicy: ::std::rc::Rc::new(match &value.net_v4_0_0_retry_policy {
+ netV4_0_0_RetryPolicy: ::dafny_runtime::Rc::new(match &value.net_v4_0_0_retry_policy {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::conversions::net_v4_0_0_retry_policy::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })

@@ -4,15 +4,12 @@
 #[non_exhaustive]
 #[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug)]
 #[allow(missing_docs)]
-pub struct Identity {
-
-}
-impl Identity {
-
-}
+pub struct Identity {}
+impl Identity {}
 impl Identity {
     /// Creates a new builder-style object to manufacture [`Identity`](crate::deps::aws_cryptography_materialProviders::types::Identity).
-    pub fn builder() -> crate::deps::aws_cryptography_materialProviders::types::builders::IdentityBuilder {
+    pub fn builder(
+    ) -> crate::deps::aws_cryptography_materialProviders::types::builders::IdentityBuilder {
         crate::deps::aws_cryptography_materialProviders::types::builders::IdentityBuilder::default()
     }
 }
@@ -22,11 +19,8 @@ impl Identity {
 #[derive(
     ::std::clone::Clone, ::std::cmp::PartialEq, ::std::default::Default, ::std::fmt::Debug,
 )]
-pub struct IdentityBuilder {
-
-}
+pub struct IdentityBuilder {}
 impl IdentityBuilder {
-
     /// Consumes the builder and constructs a [`Identity`](crate::deps::aws_cryptography_materialProviders::types::Identity).
     pub fn build(
         self,
@@ -34,8 +28,8 @@ impl IdentityBuilder {
         crate::deps::aws_cryptography_materialProviders::types::Identity,
         ::aws_smithy_types::error::operation::BuildError,
     > {
-        ::std::result::Result::Ok(crate::deps::aws_cryptography_materialProviders::types::Identity {
-
-        })
+        ::std::result::Result::Ok(
+            crate::deps::aws_cryptography_materialProviders::types::Identity {},
+        )
     }
 }

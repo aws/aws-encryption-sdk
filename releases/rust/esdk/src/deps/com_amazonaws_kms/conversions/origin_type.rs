@@ -5,8 +5,10 @@
 
 pub fn to_dafny(
     value: aws_sdk_kms::types::OriginType,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::OriginType>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::kms::internaldafny::types::OriginType,
+> {
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_kms::types::OriginType::AwsKms => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::OriginType::AWS_KMS {},
 aws_sdk_kms::types::OriginType::External => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::OriginType::EXTERNAL {},
 aws_sdk_kms::types::OriginType::AwsCloudhsm => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::OriginType::AWS_CLOUDHSM {},
@@ -14,7 +16,7 @@ aws_sdk_kms::types::OriginType::ExternalKeyStore => crate::r#software::amazon::c
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::kms::internaldafny::types::OriginType,
 ) -> aws_sdk_kms::types::OriginType {

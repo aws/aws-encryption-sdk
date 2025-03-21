@@ -2,34 +2,34 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! The AWS Encryption SDK enables secure client-side encryption.
-//! 
+//!
 //! Running `cargo test --examples` for this library runs these example keyrings.
-//! 
+//!
 //! For details see the [Examples](https://github.com/aws/aws-encryption-sdk-dafny/tree/mainline/releases/rust/esdk/examples)
 //! or the [Developer Guide](https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/introduction.html)
-//! 
+//!
 //! One of the most common keyrings that you can use is the AWS KMS Keyring.
 //! The AWS KMS keyring uses symmetric encryption KMS keys to generate, encrypt and
 //! decrypt data keys. You provide the KMS Key and KMS client configuration while
 //! providing the keyring.
-//! 
+//!
 //! [See full example](https://github.com/aws/aws-encryption-sdk-dafny/blob/mainline/releases/rust/esdk/examples/keyring/aws_kms_keyring_example.rs)
-//! 
+//!
 //! ```text
 //! // Initialize ESDK client and MPL client
 //! let esdk_config = AwsEncryptionSdkConfig::builder().build()?;
 //! let esdk_client = esdk_client::Client::from_conf(esdk_config)?;
-//! 
+//!
 //! let mpl_config = MaterialProvidersConfig::builder().build()?;
 //! let mpl = mpl_client::Client::from_conf(mpl_config)?;
-//! 
+//!
 //! // Create KMS Keyring
 //! let kms_keyring = mpl
 //!     .create_aws_kms_keyring()
 //!     // your configuration here
 //!     .send()
 //!     .await?;
-//! 
+//!
 //! // Encrypt
 //! let encryption_response = esdk_client.encrypt()
 //!     .plaintext(plaintext)
@@ -37,11 +37,11 @@
 //!     .encryption_context(encryption_context)
 //!     .send()
 //!     .await?;
-//! 
+//!
 //! let ciphertext = encryption_response
 //!                 .ciphertext
 //!                 .expect("Unable to unwrap ciphertext from encryption response");
-//! 
+//!
 //! // Decrypt
 //! let decryption_response = esdk_client.decrypt()
 //!     .ciphertext(ciphertext)
@@ -49,11 +49,11 @@
 //!     .encryption_context(encryption_context)
 //!     .send()
 //!     .await?;
-//! 
+//!
 //! let decrypted_plaintext = decryption_response
 //!                         .plaintext
 //!                         .expect("Unable to unwrap plaintext from decryption response");
-//! 
+//!
 //! // Demonstrate that the decrypted plaintext is identical to the original plaintext.
 //! // (This is an example for demonstration; you do not need to do this in your own code.)
 //! assert_eq!(decrypted_plaintext, aws_smithy_types::Blob::new(plaintext),
@@ -74,9 +74,6 @@ pub mod error;
 pub mod operation;
 /// Types for the transform client.
 pub mod types;
-
-#[cfg(feature = "wrapped-client")]
-pub mod wrapped;
 
 pub use client::Client;
 pub use types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
@@ -126,6 +123,7 @@ pub(crate) mod ecdsa;
 pub(crate) mod hmac;
 pub(crate) mod kms;
 pub(crate) mod local_cmc;
+pub(crate) mod oslang;
 pub(crate) mod random;
 pub(crate) mod rsa;
 pub(crate) mod sets;

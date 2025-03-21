@@ -5,7 +5,7 @@ on:
   workflow_call:
     inputs:
       dafny:
-        description: 'The Dafny version to run'
+        description: "The Dafny version to run"
         required: true
         type: string
       regenerate-code:
@@ -21,10 +21,11 @@ jobs:
       matrix:
         library: [AwsEncryptionSDK]
         os: [
-          windows-latest,
-          ubuntu-latest,
-          macos-13,
-        ]
+            windows-latest,
+            ubuntu-22.04,
+            # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
+            # macos-13,
+          ]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
@@ -51,24 +52,11 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
         with:
           components: rustfmt
-      # TODO - uncomment this after Rust formatter works
-      # - name: Rustfmt Check
-      #   uses: actions-rust-lang/rustfmt@v1
 
       - name: Setup Dafny
-        uses: dafny-lang/setup-dafny-action@v1.7.0
+        uses: ./mpl/.github/actions/setup_dafny
         with:
-          dafny-version: ${{ inputs.dafny }}
-
-      # TODO: Remove this after the formatting in Rust starts working
-      - name: smithy-dafny Rust hacks
-        shell: bash
-        run: |
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            sed -i '' 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
-          else
-            sed -i 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
-          fi
+          dafny-version: nightly-2025-01-30-7db1e5f
 
       - name: Setup Java 17 for codegen
         uses: actions/setup-java@v3
@@ -92,8 +80,6 @@ jobs:
           diff-generated-code: false
           update-and-regenerate-mpl: true
 
-      # TODO: Remove this after checking in Rust polymorph code
-      # Also uncomment rust check_polymorph_diff for Rust in .github/actions/polymorph_codegen/action.yml
       - name: Run make polymorph_rust
         shell: bash
         working-directory: ${{ matrix.library }}
@@ -119,7 +105,7 @@ jobs:
         working-directory: ${{ matrix.library }}
         shell: bash
         run: |
-          make test_rust
+          make test_rust test_rust_debug
 
       - name: Test Examples for Rust
         working-directory: ${{ matrix.library }}/runtimes/rust
@@ -133,11 +119,12 @@ jobs:
       matrix:
         library: [TestVectors]
         os: [
-          # Sed script doesn't work properly on windows
-          # windows-latest,
-          ubuntu-latest,
-          macos-13,
-        ]
+            # Sed script doesn't work properly on windows
+            # windows-latest,
+            ubuntu-22.04,
+            # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
+            # macos-13,
+          ]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
@@ -164,24 +151,11 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
         with:
           components: rustfmt
-      # TODO - uncomment this after Rust formatter works
-      # - name: Rustfmt Check
-      #   uses: actions-rust-lang/rustfmt@v1
 
       - name: Setup Dafny
-        uses: dafny-lang/setup-dafny-action@v1.7.0
+        uses: ./mpl/.github/actions/setup_dafny
         with:
-          dafny-version: ${{ inputs.dafny }}
-
-      # TODO: Remove this after the formatting in Rust starts working
-      - name: smithy-dafny Rust hacks
-        shell: bash
-        run: |
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            sed -i '' 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
-          else
-            sed -i 's|rustfmt --edition 2021 runtimes/rust/src/implementation_from_dafny.rs|#&|' mpl/smithy-dafny/SmithyDafnyMakefile.mk
-          fi
+          dafny-version: nightly-2025-01-30-7db1e5f
 
       - name: Setup Java 17 for codegen
         uses: actions/setup-java@v3
@@ -205,8 +179,6 @@ jobs:
           diff-generated-code: false
           update-and-regenerate-mpl: true
 
-      # TODO: Remove this after checking in Rust polymorph code
-      # Also uncomment rust check_polymorph_diff for Rust in .github/actions/polymorph_codegen/action.yml
       - name: Run make polymorph_rust
         shell: bash
         working-directory: ${{ matrix.library }}

@@ -28,14 +28,16 @@ pub struct OnEncryptFluentBuilder {
 }
 impl OnEncryptFluentBuilder {
     /// Creates a new `OnEncrypt`.
-    pub(crate) fn new(keyring: crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef) -> Self {
+    pub(crate) fn new(
+        keyring: crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
+    ) -> Self {
         Self {
             keyring,
             inner: ::std::default::Default::default(),
         }
     }
     /// Access the OnEncrypt as a reference.
-    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::on_encrypt::builders::OnEncryptInputBuilder {
+    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::on_encrypt::builders::OnEncryptInputBuilder{
         &self.inner
     }
     /// Sends the request and returns the response.
@@ -55,24 +57,42 @@ impl OnEncryptFluentBuilder {
             .map_err(|mut e| {
 	     let msg = format!("{:?}", e);
              crate::deps::aws_cryptography_materialProviders::types::error::Error::OpaqueWithText {
-                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut dyn ::std::any::Any),
+                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut ::dafny_runtime::DynAny),
 		objMessage: msg
              }})?;
-        crate::deps::aws_cryptography_materialProviders::operation::on_encrypt::OnEncrypt::send(&self.keyring, input).await
+        crate::deps::aws_cryptography_materialProviders::operation::on_encrypt::OnEncrypt::send(
+            &self.keyring,
+            input,
+        )
+        .await
     }
 
     #[allow(missing_docs)]
-pub fn materials(mut self, input: impl ::std::convert::Into<crate::deps::aws_cryptography_materialProviders::types::EncryptionMaterials>) -> Self {
-    self.inner = self.inner.materials(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_materials(mut self, input: ::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::EncryptionMaterials>) -> Self {
-    self.inner = self.inner.set_materials(input);
-    self
-}
-#[allow(missing_docs)]
-pub fn get_materials(&self) -> &::std::option::Option<crate::deps::aws_cryptography_materialProviders::types::EncryptionMaterials> {
-    self.inner.get_materials()
-}
+    pub fn materials(
+        mut self,
+        input: impl ::std::convert::Into<
+            crate::deps::aws_cryptography_materialProviders::types::EncryptionMaterials,
+        >,
+    ) -> Self {
+        self.inner = self.inner.materials(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_materials(
+        mut self,
+        input: ::std::option::Option<
+            crate::deps::aws_cryptography_materialProviders::types::EncryptionMaterials,
+        >,
+    ) -> Self {
+        self.inner = self.inner.set_materials(input);
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_materials(
+        &self,
+    ) -> &::std::option::Option<
+        crate::deps::aws_cryptography_materialProviders::types::EncryptionMaterials,
+    > {
+        self.inner.get_materials()
+    }
 }

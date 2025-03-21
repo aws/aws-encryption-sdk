@@ -4,11 +4,11 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::operation::transact_get_items::TransactGetItemsOutput
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::TransactGetItemsOutput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::TransactGetItemsOutput::TransactGetItemsOutput {
-        ConsumedCapacity: ::std::rc::Rc::new(match &value.consumed_capacity {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::TransactGetItemsOutput::TransactGetItemsOutput {
+        ConsumedCapacity: ::dafny_runtime::Rc::new(match &value.consumed_capacity {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| crate::deps::com_amazonaws_dynamodb::conversions::consumed_capacity::to_dafny(e)
@@ -18,7 +18,7 @@ pub fn to_dafny(
     None => crate::r#_Wrappers_Compile::Option::None {}
 })
 ,
- Responses: ::std::rc::Rc::new(match &value.responses {
+ Responses: ::dafny_runtime::Rc::new(match &value.responses {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| crate::deps::com_amazonaws_dynamodb::conversions::item_response::to_dafny(e)
@@ -30,18 +30,18 @@ pub fn to_dafny(
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::TransactGetItemsOutput,
-    >
+    >,
 ) -> aws_sdk_dynamodb::operation::transact_get_items::TransactGetItemsOutput {
     aws_sdk_dynamodb::operation::transact_get_items::TransactGetItemsOutput::builder()
           .set_consumed_capacity(match (*dafny_value.ConsumedCapacity()).as_ref() {
     crate::r#_Wrappers_Compile::Option::Some { value } =>
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(value,
-                |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ConsumedCapacity>| crate::deps::com_amazonaws_dynamodb::conversions::consumed_capacity::from_dafny(e.clone())
+                |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ConsumedCapacity>| crate::deps::com_amazonaws_dynamodb::conversions::consumed_capacity::from_dafny(e.clone())
 ,
             )
         ),
@@ -52,7 +52,7 @@ pub fn from_dafny(
     crate::r#_Wrappers_Compile::Option::Some { value } =>
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(value,
-                |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ItemResponse>| crate::deps::com_amazonaws_dynamodb::conversions::item_response::from_dafny(e.clone())
+                |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ItemResponse>| crate::deps::com_amazonaws_dynamodb::conversions::item_response::from_dafny(e.clone())
 ,
             )
         ),
@@ -60,6 +60,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
-
 }

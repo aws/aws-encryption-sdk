@@ -20,20 +20,22 @@ impl AesDecrypt {
     > {
         crate::deps::aws_cryptography_primitives::validation::validate_aws_Pcryptography_Pprimitives_HAESDecryptInput_for_AwsCryptographicPrimitives_AESDecrypt(&input)
             .map_err(crate::deps::aws_cryptography_primitives::types::error::Error::wrap_validation_err)?;
-                let inner_input = crate::deps::aws_cryptography_primitives::conversions::aes_decrypt::_aes_decrypt_input::to_dafny(input);
+        let inner_input = crate::deps::aws_cryptography_primitives::conversions::aes_decrypt::_aes_decrypt_input::to_dafny(input);
         let inner_result =
             ::dafny_runtime::md!(client.dafny_client.clone()).AESDecrypt(&inner_input);
         if matches!(
             inner_result.as_ref(),
             crate::r#_Wrappers_Compile::Result::Success { .. }
         ) {
-            Ok(
-                crate::standard_library_conversions::blob_from_dafny(inner_result.value().clone()),
-            )
-        } else {
-            Err(crate::deps::aws_cryptography_primitives::conversions::error::from_dafny(
-                inner_result.error().clone(),
+            Ok(crate::standard_library_conversions::blob_from_dafny(
+                inner_result.value().clone(),
             ))
+        } else {
+            Err(
+                crate::deps::aws_cryptography_primitives::conversions::error::from_dafny(
+                    inner_result.error().clone(),
+                ),
+            )
         }
     }
 }

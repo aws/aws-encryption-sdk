@@ -17,7 +17,7 @@ static DAFNY_TOKIO_RUNTIME: LazyLock<tokio::runtime::Runtime> = LazyLock::new(||
 
 impl crate::r#software::amazon::cryptography::services::kms::internaldafny::_default {
     #[allow(non_snake_case)]
-    pub fn KMSClientForRegion(region: &::dafny_runtime::Sequence<::dafny_runtime::DafnyCharUTF16>) -> ::std::rc::Rc<crate::r#_Wrappers_Compile::Result<::dafny_runtime::Object<dyn crate::software::amazon::cryptography::services::kms::internaldafny::types::IKMSClient>, ::std::rc::Rc<crate::software::amazon::cryptography::services::kms::internaldafny::types::Error>>>{
+    pub fn KMSClientForRegion(region: &::dafny_runtime::Sequence<::dafny_runtime::DafnyCharUTF16>) -> ::dafny_runtime::Rc<crate::r#_Wrappers_Compile::Result<::dafny_runtime::Object<dyn crate::software::amazon::cryptography::services::kms::internaldafny::types::IKMSClient>, ::dafny_runtime::Rc<crate::software::amazon::cryptography::services::kms::internaldafny::types::Error>>>{
         let region =
             dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(
                 region,
@@ -41,13 +41,13 @@ impl crate::r#software::amazon::cryptography::services::kms::internaldafny::_def
         let inner = aws_sdk_kms::Client::new(&shared_config);
         let client = crate::deps::com_amazonaws_kms::client::Client { inner };
         let dafny_client = ::dafny_runtime::upcast_object()(::dafny_runtime::object::new(client));
-        std::rc::Rc::new(crate::r#_Wrappers_Compile::Result::Success {
+        dafny_runtime::Rc::new(crate::r#_Wrappers_Compile::Result::Success {
             value: dafny_client,
         })
     }
 
     #[allow(non_snake_case)]
-    pub fn KMSClient() -> ::std::rc::Rc<crate::r#_Wrappers_Compile::Result<::dafny_runtime::Object<dyn crate::software::amazon::cryptography::services::kms::internaldafny::types::IKMSClient>, ::std::rc::Rc<crate::software::amazon::cryptography::services::kms::internaldafny::types::Error>>>{
+    pub fn KMSClient() -> ::dafny_runtime::Rc<crate::r#_Wrappers_Compile::Result<::dafny_runtime::Object<dyn crate::software::amazon::cryptography::services::kms::internaldafny::types::IKMSClient>, ::dafny_runtime::Rc<crate::software::amazon::cryptography::services::kms::internaldafny::types::Error>>>{
         let shared_config = match tokio::runtime::Handle::try_current() {
             Ok(curr) => tokio::task::block_in_place(|| {
                 curr.block_on(async {
@@ -62,7 +62,7 @@ impl crate::r#software::amazon::cryptography::services::kms::internaldafny::_def
         let inner = aws_sdk_kms::Client::new(&shared_config);
         let client = crate::deps::com_amazonaws_kms::client::Client { inner };
         let dafny_client = ::dafny_runtime::upcast_object()(::dafny_runtime::object::new(client));
-        std::rc::Rc::new(crate::r#_Wrappers_Compile::Result::Success {
+        dafny_runtime::Rc::new(crate::r#_Wrappers_Compile::Result::Success {
             value: dafny_client,
         })
     }
@@ -71,7 +71,7 @@ impl crate::r#software::amazon::cryptography::services::kms::internaldafny::_def
     pub fn RegionMatch(
         kmsClient: &::dafny_runtime::Object<dyn crate::software::amazon::cryptography::services::kms::internaldafny::types::IKMSClient>,
         region: &::dafny_runtime::Sequence<::dafny_runtime::DafnyCharUTF16>,
-    ) -> ::std::rc::Rc<crate::r#_Wrappers_Compile::Option<bool>> {
+    ) -> ::dafny_runtime::Rc<crate::r#_Wrappers_Compile::Option<bool>> {
         let region =
             dafny_runtime::dafny_runtime_conversions::unicode_chars_false::dafny_string_to_string(
                 region,
@@ -83,6 +83,6 @@ impl crate::r#software::amazon::cryptography::services::kms::internaldafny::_def
             Some(r) => r.as_ref() == region,
             None => false,
         };
-        ::std::rc::Rc::new(crate::r#_Wrappers_Compile::Option::Some { value: flag })
+        ::dafny_runtime::Rc::new(crate::r#_Wrappers_Compile::Option::Some { value: flag })
     }
 }

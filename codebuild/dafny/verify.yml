@@ -14,8 +14,8 @@ phases:
       - dotnet build -t:VerifyDafny -p:TestVerifyOverride="verificationLogger:trx" test
       - MAX_VERIFICATION_DURATION_SECONDS=40 python3 verification-times-from-trx.py test/TestResults/*.trx
 reports:
-    Dafny:
-        file-format: VisualStudioTrx
-        files:
-            - '**/*'
-        base-directory: 'test/TestResults'
+  Dafny:
+    file-format: VisualStudioTrx
+    files:
+      - "**/*"
+    base-directory: "test/TestResults"

@@ -6,17 +6,19 @@
 #[allow(missing_docs)]
 pub struct DeriveSharedSecretOutput {
     #[allow(missing_docs)]
-pub shared_secret: ::std::option::Option<::aws_smithy_types::Blob>,
+    pub shared_secret: ::std::option::Option<::aws_smithy_types::Blob>,
 }
 impl DeriveSharedSecretOutput {
     #[allow(missing_docs)]
-pub fn shared_secret(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
-    &self.shared_secret
-}
+    pub fn shared_secret(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
+        &self.shared_secret
+    }
 }
 impl DeriveSharedSecretOutput {
     /// Creates a new builder-style object to manufacture [`DeriveSharedSecretOutput`](crate::deps::aws_cryptography_primitives::types::DeriveSharedSecretOutput).
-    pub fn builder() -> crate::deps::aws_cryptography_primitives::types::builders::DeriveSharedSecretOutputBuilder {
+    pub fn builder(
+    ) -> crate::deps::aws_cryptography_primitives::types::builders::DeriveSharedSecretOutputBuilder
+    {
         crate::deps::aws_cryptography_primitives::types::builders::DeriveSharedSecretOutputBuilder::default()
     }
 }
@@ -31,19 +33,25 @@ pub struct DeriveSharedSecretOutputBuilder {
 }
 impl DeriveSharedSecretOutputBuilder {
     #[allow(missing_docs)]
-pub fn shared_secret(mut self, input: impl ::std::convert::Into<::aws_smithy_types::Blob>) -> Self {
-    self.shared_secret = ::std::option::Option::Some(input.into());
-    self
-}
-#[allow(missing_docs)]
-pub fn set_shared_secret(mut self, input: ::std::option::Option<::aws_smithy_types::Blob>) -> Self {
-    self.shared_secret = input;
-    self
-}
-#[allow(missing_docs)]
-pub fn get_shared_secret(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
-    &self.shared_secret
-}
+    pub fn shared_secret(
+        mut self,
+        input: impl ::std::convert::Into<::aws_smithy_types::Blob>,
+    ) -> Self {
+        self.shared_secret = ::std::option::Option::Some(input.into());
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn set_shared_secret(
+        mut self,
+        input: ::std::option::Option<::aws_smithy_types::Blob>,
+    ) -> Self {
+        self.shared_secret = input;
+        self
+    }
+    #[allow(missing_docs)]
+    pub fn get_shared_secret(&self) -> &::std::option::Option<::aws_smithy_types::Blob> {
+        &self.shared_secret
+    }
     /// Consumes the builder and constructs a [`DeriveSharedSecretOutput`](crate::deps::aws_cryptography_primitives::types::DeriveSharedSecretOutput).
     pub fn build(
         self,
@@ -51,8 +59,10 @@ pub fn get_shared_secret(&self) -> &::std::option::Option<::aws_smithy_types::Bl
         crate::deps::aws_cryptography_primitives::types::DeriveSharedSecretOutput,
         ::aws_smithy_types::error::operation::BuildError,
     > {
-        ::std::result::Result::Ok(crate::deps::aws_cryptography_primitives::types::DeriveSharedSecretOutput {
-            shared_secret: self.shared_secret,
-        })
+        ::std::result::Result::Ok(
+            crate::deps::aws_cryptography_primitives::types::DeriveSharedSecretOutput {
+                shared_secret: self.shared_secret,
+            },
+        )
     }
 }

@@ -27,6 +27,6 @@ pub struct Unhandled {
     pub(crate) meta: ::aws_smithy_types::error::metadata::ErrorMetadata,
 }
 
-impl UpcastObject<dyn Any> for Unhandled {
-    ::dafny_runtime::UpcastObjectFn!(dyn ::std::any::Any);
+impl UpcastObject<::dafny_runtime::DynAny> for Unhandled {
+    ::dafny_runtime::UpcastObjectFn!(::dafny_runtime::DynAny);
 }

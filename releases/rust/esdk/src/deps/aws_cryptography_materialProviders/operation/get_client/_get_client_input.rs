@@ -6,17 +6,17 @@
 /// Inputs for getting a AWS KMS Client.
 pub struct GetClientInput {
     /// The region the client should be created in.
-pub region: ::std::option::Option<::std::string::String>,
+    pub region: ::std::option::Option<::std::string::String>,
 }
 impl GetClientInput {
     /// The region the client should be created in.
-pub fn region(&self) -> &::std::option::Option<::std::string::String> {
-    &self.region
-}
+    pub fn region(&self) -> &::std::option::Option<::std::string::String> {
+        &self.region
+    }
 }
 impl GetClientInput {
     /// Creates a new builder-style object to manufacture [`GetClientInput`](crate::operation::get_client::builders::GetClientInput).
-    pub fn builder() -> crate::deps::aws_cryptography_materialProviders::operation::get_client::builders::GetClientInputBuilder {
+    pub fn builder() -> crate::deps::aws_cryptography_materialProviders::operation::get_client::builders::GetClientInputBuilder{
         crate::deps::aws_cryptography_materialProviders::operation::get_client::builders::GetClientInputBuilder::default()
     }
 }
@@ -31,19 +31,19 @@ pub struct GetClientInputBuilder {
 }
 impl GetClientInputBuilder {
     /// The region the client should be created in.
-pub fn region(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
-    self.region = ::std::option::Option::Some(input.into());
-    self
-}
-/// The region the client should be created in.
-pub fn set_region(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
-    self.region = input;
-    self
-}
-/// The region the client should be created in.
-pub fn get_region(&self) -> &::std::option::Option<::std::string::String> {
-    &self.region
-}
+    pub fn region(mut self, input: impl ::std::convert::Into<::std::string::String>) -> Self {
+        self.region = ::std::option::Option::Some(input.into());
+        self
+    }
+    /// The region the client should be created in.
+    pub fn set_region(mut self, input: ::std::option::Option<::std::string::String>) -> Self {
+        self.region = input;
+        self
+    }
+    /// The region the client should be created in.
+    pub fn get_region(&self) -> &::std::option::Option<::std::string::String> {
+        &self.region
+    }
     /// Consumes the builder and constructs a [`GetClientInput`](crate::operation::operation::GetClientInput).
     pub fn build(
         self,

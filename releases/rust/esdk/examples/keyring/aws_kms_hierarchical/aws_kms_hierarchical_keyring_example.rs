@@ -40,13 +40,13 @@
 use super::create_branch_key_id::create_branch_key_id;
 use super::example_branch_key_id_supplier::ExampleBranchKeyIdSupplier;
 use aws_esdk::client as esdk_client;
-use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
-use aws_esdk::types::error::Error::AwsCryptographicMaterialProvidersError;
-use aws_esdk::key_store::types::KmsConfiguration;
-use aws_esdk::key_store::types::key_store_config::KeyStoreConfig;
 use aws_esdk::key_store::client as keystore_client;
+use aws_esdk::key_store::types::key_store_config::KeyStoreConfig;
+use aws_esdk::key_store::types::KmsConfiguration;
 use aws_esdk::material_providers::client as mpl_client;
 use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
+use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
+use aws_esdk::types::error::Error::AwsCryptographicMaterialProvidersError;
 use std::collections::HashMap;
 
 pub async fn encrypt_and_decrypt_with_keyring(
@@ -76,7 +76,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .ddb_client(ddb_client)
         .ddb_table_name(key_store_table_name)
         .logical_key_store_name(logical_key_store_name)
-        .kms_configuration(KmsConfiguration::KmsKeyArn(key_store_kms_key_id.to_string()))
+        .kms_configuration(KmsConfiguration::KmsKeyArn(
+            key_store_kms_key_id.to_string(),
+        ))
         .build()?;
 
     let key_store = keystore_client::Client::from_conf(key_store_config)?;
@@ -85,19 +87,19 @@ pub async fn encrypt_and_decrypt_with_keyring(
     let branch_key_id_a: String = create_branch_key_id(
         key_store_table_name,
         logical_key_store_name,
-        key_store_kms_key_id
-    ).await?;
+        key_store_kms_key_id,
+    )
+    .await?;
     let branch_key_id_b: String = create_branch_key_id(
         key_store_table_name,
         logical_key_store_name,
-        key_store_kms_key_id
-    ).await?;
+        key_store_kms_key_id,
+    )
+    .await?;
 
     // 5. Create a branch key supplier that maps the branch key id to a more readable format
-    let branch_key_id_supplier = ExampleBranchKeyIdSupplier::new(
-        &branch_key_id_a,
-        &branch_key_id_b
-    );
+    let branch_key_id_supplier =
+        ExampleBranchKeyIdSupplier::new(&branch_key_id_a, &branch_key_id_b);
 
     // 6. Create the Hierarchical Keyring.
     let mpl_config = MaterialProvidersConfig::builder().build()?;
@@ -124,8 +126,14 @@ pub async fn encrypt_and_decrypt_with_keyring(
         ("encryption".to_string(), "context".to_string()),
         ("is not".to_string(), "secret".to_string()),
         ("but adds".to_string(), "useful metadata".to_string()),
-        ("that can help you".to_string(), "be confident that".to_string()),
-        ("the data you are handling".to_string(), "is what you think it is".to_string()),
+        (
+            "that can help you".to_string(),
+            "be confident that".to_string(),
+        ),
+        (
+            "the data you are handling".to_string(),
+            "is what you think it is".to_string(),
+        ),
     ]);
 
     // Create encryption context for TenantB
@@ -134,14 +142,21 @@ pub async fn encrypt_and_decrypt_with_keyring(
         ("encryption".to_string(), "context".to_string()),
         ("is not".to_string(), "secret".to_string()),
         ("but adds".to_string(), "useful metadata".to_string()),
-        ("that can help you".to_string(), "be confident that".to_string()),
-        ("the data you are handling".to_string(), "is what you think it is".to_string()),
+        (
+            "that can help you".to_string(),
+            "be confident that".to_string(),
+        ),
+        (
+            "the data you are handling".to_string(),
+            "is what you think it is".to_string(),
+        ),
     ]);
 
     // 8. Encrypt the data with encryption_contextA & encryption_contextB
     let plaintext = example_data.as_bytes();
 
-    let encryption_response_a = esdk_client.encrypt()
+    let encryption_response_a = esdk_client
+        .encrypt()
         .plaintext(plaintext)
         .keyring(hierarchical_keyring.clone())
         .encryption_context(encryption_context_a.clone())
@@ -149,10 +164,11 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let ciphertext_a = encryption_response_a
-                        .ciphertext
-                        .expect("Unable to unwrap ciphertext from encryption response");
+        .ciphertext
+        .expect("Unable to unwrap ciphertext from encryption response");
 
-    let encryption_response_b = esdk_client.encrypt()
+    let encryption_response_b = esdk_client
+        .encrypt()
         .plaintext(plaintext)
         .keyring(hierarchical_keyring.clone())
         .encryption_context(encryption_context_b.clone())
@@ -160,16 +176,22 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let ciphertext_b = encryption_response_b
-                        .ciphertext
-                        .expect("Unable to unwrap ciphertext from encryption response");
+        .ciphertext
+        .expect("Unable to unwrap ciphertext from encryption response");
 
     // 9. Demonstrate that the ciphertexts and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_ne!(ciphertext_a, aws_smithy_types::Blob::new(plaintext),
-        "Ciphertext and plaintext data are the same. Invalid encryption");
+    assert_ne!(
+        ciphertext_a,
+        aws_smithy_types::Blob::new(plaintext),
+        "Ciphertext and plaintext data are the same. Invalid encryption"
+    );
 
-    assert_ne!(ciphertext_b, aws_smithy_types::Blob::new(plaintext),
-        "Ciphertext and plaintext data are the same. Invalid encryption");
+    assert_ne!(
+        ciphertext_b,
+        aws_smithy_types::Blob::new(plaintext),
+        "Ciphertext and plaintext data are the same. Invalid encryption"
+    );
 
     // 10. To attest that TenantKeyB cannot decrypt a message written by TenantKeyA,
     //    and vice versa, let's construct more restrictive hierarchical keyrings.
@@ -195,7 +217,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // Keyring with tenant B's branch key cannot decrypt data encrypted with tenant A's branch key
     // This will fail and raise a AwsCryptographicMaterialProvidersError,
     // which we swallow ONLY for demonstration purposes.
-    let decryption_response_mismatch_1 = esdk_client.decrypt()
+    let decryption_response_mismatch_1 = esdk_client
+        .decrypt()
         .ciphertext(ciphertext_a.clone())
         .keyring(hierarchical_keyring_b.clone())
         // Provide the encryption context that was supplied to the encrypt method
@@ -204,8 +227,10 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await;
 
     match decryption_response_mismatch_1 {
-        Ok(_) => panic!("Decrypt with wrong tenant's hierarchical keyring MUST \
-                            raise AwsCryptographicMaterialProvidersError"),
+        Ok(_) => panic!(
+            "Decrypt with wrong tenant's hierarchical keyring MUST \
+                            raise AwsCryptographicMaterialProvidersError"
+        ),
         Err(AwsCryptographicMaterialProvidersError { error: _e }) => (),
         _ => panic!("Unexpected error type"),
     }
@@ -213,7 +238,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // Keyring with tenant A's branch key cannot decrypt data encrypted with tenant B's branch key.
     // This will fail and raise a AwsCryptographicMaterialProvidersError,
     // which we swallow ONLY for demonstration purposes.
-    let decryption_response_mismatch_2 = esdk_client.decrypt()
+    let decryption_response_mismatch_2 = esdk_client
+        .decrypt()
         .ciphertext(ciphertext_b.clone())
         .keyring(hierarchical_keyring_a.clone())
         // Provide the encryption context that was supplied to the encrypt method
@@ -222,15 +248,18 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await;
 
     match decryption_response_mismatch_2 {
-        Ok(_) => panic!("Decrypt with wrong tenant's hierarchical keyring MUST \
-                            raise AwsCryptographicMaterialProvidersError"),
+        Ok(_) => panic!(
+            "Decrypt with wrong tenant's hierarchical keyring MUST \
+                            raise AwsCryptographicMaterialProvidersError"
+        ),
         Err(AwsCryptographicMaterialProvidersError { error: _e }) => (),
         _ => panic!("Unexpected error type"),
     }
 
     // 12. Demonstrate that data encrypted by one tenant's branch key can be decrypted by that tenant,
     //     and that the decrypted data matches the input data.
-    let decryption_response_a = esdk_client.decrypt()
+    let decryption_response_a = esdk_client
+        .decrypt()
         .ciphertext(ciphertext_a)
         .keyring(hierarchical_keyring_a)
         // Provide the encryption context that was supplied to the encrypt method
@@ -239,16 +268,20 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let decrypted_plaintext_a = decryption_response_a
-                                .plaintext
-                                .expect("Unable to unwrap plaintext from decryption response");
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext_a, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        decrypted_plaintext_a,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     // Similarly for TenantB
-    let decryption_response_b = esdk_client.decrypt()
+    let decryption_response_b = esdk_client
+        .decrypt()
         .ciphertext(ciphertext_b)
         .keyring(hierarchical_keyring_b)
         // Provide the encryption context that was supplied to the encrypt method
@@ -257,13 +290,16 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     let decrypted_plaintext_b = decryption_response_b
-                                .plaintext
-                                .expect("Unable to unwrap plaintext from decryption response");
+        .plaintext
+        .expect("Unable to unwrap plaintext from decryption response");
 
     // Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
-    assert_eq!(decrypted_plaintext_b, aws_smithy_types::Blob::new(plaintext),
-        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption");
+    assert_eq!(
+        decrypted_plaintext_b,
+        aws_smithy_types::Blob::new(plaintext),
+        "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
+    );
 
     println!("Hierarchical Keyring Example Completed Successfully");
 
@@ -279,8 +315,9 @@ pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxErr
         utils::TEST_EXAMPLE_DATA,
         utils::TEST_KEY_STORE_NAME,
         utils::TEST_LOGICAL_KEY_STORE_NAME,
-        utils::TEST_KEY_STORE_KMS_KEY_ID
-    ).await?;
+        utils::TEST_KEY_STORE_KMS_KEY_ID,
+    )
+    .await?;
 
     Ok(())
 }

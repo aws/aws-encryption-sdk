@@ -25,13 +25,13 @@ module {:extern "software.amazon.cryptography.encryptionsdk.internaldafny" } ESD
   {
     var maybeCrypto := Primitives.AtomicPrimitives();
     var cryptoX: AwsCryptographyPrimitivesTypes.IAwsCryptographicPrimitivesClient :- maybeCrypto
-      .MapFailure(e => AwsCryptographyPrimitives(e));
+    .MapFailure(e => AwsCryptographyPrimitives(e));
     assert cryptoX is Primitives.AtomicPrimitivesClient;
     var crypto := cryptoX as Primitives.AtomicPrimitivesClient;
 
     var maybeMpl := MaterialProviders.MaterialProviders();
     var mplX: AwsCryptographyMaterialProvidersTypes.IAwsCryptographicMaterialProvidersClient :- maybeMpl
-      .MapFailure(e => AwsCryptographyMaterialProviders(e));
+    .MapFailure(e => AwsCryptographyMaterialProviders(e));
     assert mplX is MaterialProviders.MaterialProvidersClient;
     var mpl := mplX as MaterialProviders.MaterialProvidersClient;
 

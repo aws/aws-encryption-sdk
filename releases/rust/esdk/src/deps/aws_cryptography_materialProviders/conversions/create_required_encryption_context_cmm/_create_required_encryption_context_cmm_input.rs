@@ -4,16 +4,16 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_materialProviders::operation::create_required_encryption_context_cmm::CreateRequiredEncryptionContextCmmInput,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::CreateRequiredEncryptionContextCMMInput,
 >{
-    ::std::rc::Rc::new(crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::CreateRequiredEncryptionContextCMMInput::CreateRequiredEncryptionContextCMMInput {
-        underlyingCMM: ::std::rc::Rc::new(match &value.underlying_cmm {
+    ::dafny_runtime::Rc::new(crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::CreateRequiredEncryptionContextCMMInput::CreateRequiredEncryptionContextCMMInput {
+        underlyingCMM: ::dafny_runtime::Rc::new(match &value.underlying_cmm {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::aws_cryptography_materialProviders::conversions::cryptographic_materials_manager::to_dafny(&x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- keyring: ::std::rc::Rc::new(match &value.keyring {
+ keyring: ::dafny_runtime::Rc::new(match &value.keyring {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::aws_cryptography_materialProviders::conversions::keyring::to_dafny(&x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
@@ -24,12 +24,12 @@ pub fn to_dafny(
 ,
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::materialproviders::internaldafny::types::CreateRequiredEncryptionContextCMMInput,
     >,
-) -> crate::deps::aws_cryptography_materialProviders::operation::create_required_encryption_context_cmm::CreateRequiredEncryptionContextCmmInput {
+) -> crate::deps::aws_cryptography_materialProviders::operation::create_required_encryption_context_cmm::CreateRequiredEncryptionContextCmmInput{
     crate::deps::aws_cryptography_materialProviders::operation::create_required_encryption_context_cmm::CreateRequiredEncryptionContextCmmInput::builder()
         .set_underlying_cmm(match (*dafny_value.underlyingCMM()).as_ref() {
     crate::r#_Wrappers_Compile::Option::Some { value } =>

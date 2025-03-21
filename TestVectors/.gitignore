@@ -15,6 +15,9 @@ runtimes/**/plaintexts/
 dafny/TestVectors/test/test.json
 dafny/TestVectors/test/decrypt-manifest.json
 
+# Include some files needed for legacy testing between JS and Go
+!runtimes/go/encrypt-manifest.json
+
 # Include directory structure for Rust TestVectors
 !dafny/TestVectors/test/plaintexts/
 !dafny/TestVectors/test/ciphertexts/

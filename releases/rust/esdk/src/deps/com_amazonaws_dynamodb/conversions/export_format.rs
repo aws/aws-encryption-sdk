@@ -5,14 +5,16 @@
 
 pub fn to_dafny(
     value: aws_sdk_dynamodb::types::ExportFormat,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExportFormat>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExportFormat,
+> {
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_dynamodb::types::ExportFormat::DynamodbJson => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExportFormat::DYNAMODB_JSON {},
 aws_sdk_dynamodb::types::ExportFormat::Ion => crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExportFormat::ION {},
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ExportFormat,
 ) -> aws_sdk_dynamodb::types::ExportFormat {

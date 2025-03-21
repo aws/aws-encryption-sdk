@@ -4,33 +4,33 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::ReplicaSettingsDescription,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReplicaSettingsDescription>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReplicaSettingsDescription>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReplicaSettingsDescription::ReplicaSettingsDescription {
         RegionName: dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&value.region_name),
- ReplicaStatus: ::std::rc::Rc::new(match &value.replica_status {
+ ReplicaStatus: ::dafny_runtime::Rc::new(match &value.replica_status {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::replica_status::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- ReplicaBillingModeSummary: ::std::rc::Rc::new(match &value.replica_billing_mode_summary {
+ ReplicaBillingModeSummary: ::dafny_runtime::Rc::new(match &value.replica_billing_mode_summary {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::billing_mode_summary::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
  ReplicaProvisionedReadCapacityUnits: crate::standard_library_conversions::olong_to_dafny(&value.replica_provisioned_read_capacity_units),
- ReplicaProvisionedReadCapacityAutoScalingSettings: ::std::rc::Rc::new(match &value.replica_provisioned_read_capacity_auto_scaling_settings {
+ ReplicaProvisionedReadCapacityAutoScalingSettings: ::dafny_runtime::Rc::new(match &value.replica_provisioned_read_capacity_auto_scaling_settings {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::auto_scaling_settings_description::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
  ReplicaProvisionedWriteCapacityUnits: crate::standard_library_conversions::olong_to_dafny(&value.replica_provisioned_write_capacity_units),
- ReplicaProvisionedWriteCapacityAutoScalingSettings: ::std::rc::Rc::new(match &value.replica_provisioned_write_capacity_auto_scaling_settings {
+ ReplicaProvisionedWriteCapacityAutoScalingSettings: ::dafny_runtime::Rc::new(match &value.replica_provisioned_write_capacity_auto_scaling_settings {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::auto_scaling_settings_description::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
- ReplicaGlobalSecondaryIndexSettings: ::std::rc::Rc::new(match &value.replica_global_secondary_index_settings {
+ ReplicaGlobalSecondaryIndexSettings: ::dafny_runtime::Rc::new(match &value.replica_global_secondary_index_settings {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| crate::deps::com_amazonaws_dynamodb::conversions::replica_global_secondary_index_settings_description::to_dafny(e)
@@ -40,16 +40,17 @@ pub fn to_dafny(
     None => crate::r#_Wrappers_Compile::Option::None {}
 })
 ,
- ReplicaTableClassSummary: ::std::rc::Rc::new(match &value.replica_table_class_summary {
+ ReplicaTableClassSummary: ::dafny_runtime::Rc::new(match &value.replica_table_class_summary {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::table_class_summary::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReplicaSettingsDescription,
     >,
 ) -> aws_sdk_dynamodb::types::ReplicaSettingsDescription {
@@ -86,7 +87,7 @@ pub fn from_dafny(
     crate::r#_Wrappers_Compile::Option::Some { value } =>
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(value,
-                |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReplicaGlobalSecondaryIndexSettingsDescription>| crate::deps::com_amazonaws_dynamodb::conversions::replica_global_secondary_index_settings_description::from_dafny(e.clone())
+                |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::ReplicaGlobalSecondaryIndexSettingsDescription>| crate::deps::com_amazonaws_dynamodb::conversions::replica_global_secondary_index_settings_description::from_dafny(e.clone())
 ,
             )
         ),

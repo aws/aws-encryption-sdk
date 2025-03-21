@@ -12,7 +12,7 @@ impl crate::deps::aws_cryptography_materialProviders::client::Client {
     /// - On success, responds with [`CreateKeyringOutput`](crate::operation::create_aws_kms_discovery_multi_keyring::CreateKeyringOutput) with field(s):
     ///   - [`keyring(Option<crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef>)`](crate::operation::create_aws_kms_discovery_multi_keyring::CreateKeyringOutput::keyring): (undocumented)
     /// - On failure, responds with [`SdkError<CreateAwsKmsDiscoveryMultiKeyringError>`](crate::operation::create_aws_kms_discovery_multi_keyring::CreateAwsKmsDiscoveryMultiKeyringError)
-    pub fn create_aws_kms_discovery_multi_keyring(&self) -> crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_discovery_multi_keyring::builders::CreateAwsKmsDiscoveryMultiKeyringFluentBuilder {
+    pub fn create_aws_kms_discovery_multi_keyring(&self) -> crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_discovery_multi_keyring::builders::CreateAwsKmsDiscoveryMultiKeyringFluentBuilder{
         crate::deps::aws_cryptography_materialProviders::operation::create_aws_kms_discovery_multi_keyring::builders::CreateAwsKmsDiscoveryMultiKeyringFluentBuilder::new(self.clone())
     }
 }

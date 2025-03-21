@@ -4,11 +4,13 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_kms::types::GrantConstraints,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GrantConstraints>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<
+    crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GrantConstraints,
+> {
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GrantConstraints::GrantConstraints {
         EncryptionContextSubset:
-::std::rc::Rc::new(match &value.encryption_context_subset {
+::dafny_runtime::Rc::new(match &value.encryption_context_subset {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::hashmap_to_dafny_map(x,
             |k| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&k),
@@ -19,7 +21,7 @@ pub fn to_dafny(
 })
 ,
  EncryptionContextEquals:
-::std::rc::Rc::new(match &value.encryption_context_equals {
+::dafny_runtime::Rc::new(match &value.encryption_context_equals {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::hashmap_to_dafny_map(x,
             |k| dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&k),
@@ -31,9 +33,10 @@ pub fn to_dafny(
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::kms::internaldafny::types::GrantConstraints,
     >,
 ) -> aws_sdk_kms::types::GrantConstraints {
@@ -61,5 +64,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
 }

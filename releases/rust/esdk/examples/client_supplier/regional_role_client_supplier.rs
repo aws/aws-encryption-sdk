@@ -1,12 +1,12 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+use super::regional_role_client_supplier_config;
 use aws_config::Region;
-use aws_esdk::material_providers::types::ClientSupplier;
+use aws_esdk::com_amazonaws_kms::client::Client as kms_client;
 use aws_esdk::material_providers::operation::get_client::GetClientInput;
 use aws_esdk::material_providers::types::error::Error;
-use aws_esdk::com_amazonaws_kms::client::Client as kms_client;
-use super::regional_role_client_supplier_config;
+use aws_esdk::material_providers::types::ClientSupplier;
 
 /*
  Example class demonstrating an implementation of a custom client supplier.
@@ -24,7 +24,8 @@ impl ClientSupplier for RegionalRoleClientSupplier {
 
         if !region_iam_role_map.contains_key(&region) {
             return Err(Error::AwsCryptographicMaterialProvidersException {
-                message: format!("Region {} is not supported by this client supplier", region).to_string(),
+                message: format!("Region {} is not supported by this client supplier", region)
+                    .to_string(),
             });
         }
 

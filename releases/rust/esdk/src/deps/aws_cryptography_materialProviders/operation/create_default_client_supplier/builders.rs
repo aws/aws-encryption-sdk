@@ -28,14 +28,16 @@ pub struct CreateDefaultClientSupplierFluentBuilder {
 }
 impl CreateDefaultClientSupplierFluentBuilder {
     /// Creates a new `CreateDefaultClientSupplier`.
-    pub(crate) fn new(client: crate::deps::aws_cryptography_materialProviders::client::Client) -> Self {
+    pub(crate) fn new(
+        client: crate::deps::aws_cryptography_materialProviders::client::Client,
+    ) -> Self {
         Self {
             client,
             inner: ::std::default::Default::default(),
         }
     }
     /// Access the CreateDefaultClientSupplier as a reference.
-    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::create_default_client_supplier::builders::CreateDefaultClientSupplierInputBuilder {
+    pub fn as_input(&self) -> &crate::deps::aws_cryptography_materialProviders::operation::create_default_client_supplier::builders::CreateDefaultClientSupplierInputBuilder{
         &self.inner
     }
     /// Sends the request and returns the response.
@@ -55,11 +57,9 @@ impl CreateDefaultClientSupplierFluentBuilder {
             .map_err(|mut e| {
 	     let msg = format!("{:?}", e);
              crate::deps::aws_cryptography_materialProviders::types::error::Error::OpaqueWithText {
-                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut dyn ::std::any::Any),
+                obj: ::dafny_runtime::Object::from_ref(&mut e as &mut ::dafny_runtime::DynAny),
 		objMessage: msg
              }})?;
         crate::deps::aws_cryptography_materialProviders::operation::create_default_client_supplier::CreateDefaultClientSupplier::send(&self.client, input).await
     }
-
-
 }

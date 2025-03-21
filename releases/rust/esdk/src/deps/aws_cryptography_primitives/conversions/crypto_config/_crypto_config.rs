@@ -5,21 +5,20 @@
 
 pub fn to_dafny(
     value: crate::deps::aws_cryptography_primitives::types::crypto_config::CryptoConfig,
-) -> ::std::rc::Rc<
+) -> ::dafny_runtime::Rc<
     crate::r#software::amazon::cryptography::primitives::internaldafny::types::CryptoConfig,
 > {
-    ::std::rc::Rc::new(to_dafny_plain(value))
+    ::dafny_runtime::Rc::new(to_dafny_plain(value))
 }
 
 #[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::primitives::internaldafny::types::CryptoConfig,
     >,
 ) -> crate::deps::aws_cryptography_primitives::types::crypto_config::CryptoConfig {
     plain_from_dafny(&*dafny_value)
 }
-
 
 #[allow(dead_code)]
 pub fn to_dafny_plain(

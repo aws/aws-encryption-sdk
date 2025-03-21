@@ -4,8 +4,8 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::SourceTableDetails,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::SourceTableDetails>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::SourceTableDetails>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::SourceTableDetails::SourceTableDetails {
         TableName: dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&value.table_name),
  TableId: dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&value.table_id),
@@ -19,22 +19,23 @@ pub fn to_dafny(
  TableCreationDateTime: crate::standard_library_conversions::timestamp_to_dafny(&value.table_creation_date_time),
  ProvisionedThroughput: crate::deps::com_amazonaws_dynamodb::conversions::provisioned_throughput::to_dafny(&value.provisioned_throughput.clone().unwrap())
 ,
- OnDemandThroughput: ::std::rc::Rc::new(match &value.on_demand_throughput {
+ OnDemandThroughput: ::dafny_runtime::Rc::new(match &value.on_demand_throughput {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::on_demand_throughput::to_dafny(x) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
  ItemCount: crate::standard_library_conversions::olong_to_dafny(&value.item_count),
- BillingMode: ::std::rc::Rc::new(match &value.billing_mode {
+ BillingMode: ::dafny_runtime::Rc::new(match &value.billing_mode {
     Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::billing_mode::to_dafny(x.clone()) },
     None => crate::_Wrappers_Compile::Option::None { }
 })
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::SourceTableDetails,
     >,
 ) -> aws_sdk_dynamodb::types::SourceTableDetails {
@@ -44,7 +45,7 @@ pub fn from_dafny(
  .set_table_arn(crate::standard_library_conversions::ostring_from_dafny(dafny_value.TableArn().clone()))
  .set_table_size_bytes(crate::standard_library_conversions::olong_from_dafny(dafny_value.TableSizeBytes().clone()))
  .set_key_schema(Some( ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(dafny_value.KeySchema(),
-    |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::KeySchemaElement>| crate::deps::com_amazonaws_dynamodb::conversions::key_schema_element::from_dafny(e.clone())
+    |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::KeySchemaElement>| crate::deps::com_amazonaws_dynamodb::conversions::key_schema_element::from_dafny(e.clone())
 ,
 )
  ))

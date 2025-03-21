@@ -5,8 +5,8 @@
 
 pub fn to_dafny(
     value: aws_sdk_kms::types::SigningAlgorithmSpec,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::SigningAlgorithmSpec>{
-    ::std::rc::Rc::new(match value {
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::kms::internaldafny::types::SigningAlgorithmSpec>{
+    ::dafny_runtime::Rc::new(match value {
         aws_sdk_kms::types::SigningAlgorithmSpec::RsassaPssSha256 => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::SigningAlgorithmSpec::RSASSA_PSS_SHA_256 {},
 aws_sdk_kms::types::SigningAlgorithmSpec::RsassaPssSha384 => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::SigningAlgorithmSpec::RSASSA_PSS_SHA_384 {},
 aws_sdk_kms::types::SigningAlgorithmSpec::RsassaPssSha512 => crate::r#software::amazon::cryptography::services::kms::internaldafny::types::SigningAlgorithmSpec::RSASSA_PSS_SHA_512 {},
@@ -20,7 +20,7 @@ aws_sdk_kms::types::SigningAlgorithmSpec::Sm2Dsa => crate::r#software::amazon::c
         _ => panic!("Unknown enum variant: {}", value),
     })
 }
- #[allow(dead_code)]
+#[allow(dead_code)]
 pub fn from_dafny(
     dafny_value: &crate::r#software::amazon::cryptography::services::kms::internaldafny::types::SigningAlgorithmSpec,
 ) -> aws_sdk_kms::types::SigningAlgorithmSpec {

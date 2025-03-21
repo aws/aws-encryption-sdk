@@ -4,14 +4,14 @@
 #[allow(dead_code)]
 pub fn to_dafny(
     value: &aws_sdk_dynamodb::types::AutoScalingSettingsDescription,
-) -> ::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AutoScalingSettingsDescription>{
-  ::std::rc::Rc::new(
+) -> ::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AutoScalingSettingsDescription>{
+    ::dafny_runtime::Rc::new(
     crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AutoScalingSettingsDescription::AutoScalingSettingsDescription {
         MinimumUnits: crate::standard_library_conversions::olong_to_dafny(&value.minimum_units),
  MaximumUnits: crate::standard_library_conversions::olong_to_dafny(&value.maximum_units),
  AutoScalingDisabled: crate::standard_library_conversions::obool_to_dafny(&value.auto_scaling_disabled),
  AutoScalingRoleArn: crate::standard_library_conversions::ostring_to_dafny(&value.auto_scaling_role_arn),
- ScalingPolicies: ::std::rc::Rc::new(match &value.scaling_policies {
+ ScalingPolicies: ::dafny_runtime::Rc::new(match &value.scaling_policies {
     Some(x) => crate::r#_Wrappers_Compile::Option::Some { value :
         ::dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(x,
             |e| crate::deps::com_amazonaws_dynamodb::conversions::auto_scaling_policy_description::to_dafny(e)
@@ -23,9 +23,10 @@ pub fn to_dafny(
 ,
     }
   )
-} #[allow(dead_code)]
+}
+#[allow(dead_code)]
 pub fn from_dafny(
-    dafny_value: ::std::rc::Rc<
+    dafny_value: ::dafny_runtime::Rc<
         crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AutoScalingSettingsDescription,
     >,
 ) -> aws_sdk_dynamodb::types::AutoScalingSettingsDescription {
@@ -38,7 +39,7 @@ pub fn from_dafny(
     crate::r#_Wrappers_Compile::Option::Some { value } =>
         Some(
             ::dafny_runtime::dafny_runtime_conversions::dafny_sequence_to_vec(value,
-                |e: &::std::rc::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AutoScalingPolicyDescription>| crate::deps::com_amazonaws_dynamodb::conversions::auto_scaling_policy_description::from_dafny(e.clone())
+                |e: &::dafny_runtime::Rc<crate::r#software::amazon::cryptography::services::dynamodb::internaldafny::types::AutoScalingPolicyDescription>| crate::deps::com_amazonaws_dynamodb::conversions::auto_scaling_policy_description::from_dafny(e.clone())
 ,
             )
         ),
@@ -46,5 +47,4 @@ pub fn from_dafny(
 }
 )
           .build()
-
 }

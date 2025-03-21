@@ -35,7 +35,7 @@ impl crate::Time::_default {
     }
 
     #[allow(non_snake_case)]
-    pub fn GetCurrentTimeStamp() -> ::std::rc::Rc<
+    pub fn GetCurrentTimeStamp() -> ::dafny_runtime::Rc<
         _Wrappers_Compile::Result<
             ::dafny_runtime::Sequence<::dafny_runtime::DafnyCharUTF16>,
             ::dafny_runtime::Sequence<::dafny_runtime::DafnyCharUTF16>,
@@ -43,7 +43,7 @@ impl crate::Time::_default {
     > {
         let now_utc = chrono::Utc::now();
         let formatted = format!("{}", now_utc.format("%Y-%m-%dT%H:%M:%S%.6fZ"));
-        ::std::rc::Rc::new(
+        ::dafny_runtime::Rc::new(
                 _Wrappers_Compile::Result::Success{value :
                 dafny_runtime::dafny_runtime_conversions::unicode_chars_false::string_to_dafny_string(&formatted)
                 }

@@ -20,7 +20,11 @@ impl UpdateUsageMetadata {
     > {
         crate::deps::aws_cryptography_materialProviders::validation::validate_aws_Pcryptography_PmaterialProviders_HUpdateUsageMetadataInput_for_CryptographicMaterialsCache_UpdateUsageMetadata(&input)
             .map_err(crate::deps::aws_cryptography_materialProviders::types::error::Error::wrap_validation_err)?;
-        cryptographic_materials_cache.inner.borrow_mut().update_usage_metadata(input)
+        cryptographic_materials_cache
+            .inner
+            .lock()
+            .unwrap()
+            .update_usage_metadata(input)
     }
 }
 

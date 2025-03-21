@@ -9,7 +9,7 @@ impl crate::deps::aws_cryptography_materialProviders::types::client_supplier::Cl
     /// - On success, responds with [`GetClientOutput`](crate::operation::get_client::GetClientOutput) with field(s):
     ///   - [`client(Option<crate::deps::com_amazonaws_kms::client::Client>)`](crate::operation::get_client::GetClientOutput::client): (undocumented)
     /// - On failure, responds with [`SdkError<GetClientError>`](crate::operation::get_client::GetClientError)
-    pub fn get_client(&self) -> crate::deps::aws_cryptography_materialProviders::operation::get_client::builders::GetClientFluentBuilder {
+    pub fn get_client(&self) -> crate::deps::aws_cryptography_materialProviders::operation::get_client::builders::GetClientFluentBuilder{
         crate::deps::aws_cryptography_materialProviders::operation::get_client::builders::GetClientFluentBuilder::new(self.clone())
     }
 }

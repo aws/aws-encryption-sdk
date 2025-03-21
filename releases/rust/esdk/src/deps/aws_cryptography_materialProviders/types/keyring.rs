@@ -3,39 +3,41 @@
 // Do not modify this file. This file is machine generated, and any changes to it will be overwritten.
 
 #[allow(missing_docs)]
-pub trait Keyring {
+pub trait Keyring: Send + Sync {
     fn on_encrypt(
-    &self,
-    input: crate::deps::aws_cryptography_materialProviders::operation::on_encrypt::OnEncryptInput,
-  ) -> Result<
-    crate::deps::aws_cryptography_materialProviders::operation::on_encrypt::OnEncryptOutput,
-    crate::deps::aws_cryptography_materialProviders::types::error::Error,
-  >;
+        &self,
+        input: crate::deps::aws_cryptography_materialProviders::operation::on_encrypt::OnEncryptInput,
+    ) -> Result<
+        crate::deps::aws_cryptography_materialProviders::operation::on_encrypt::OnEncryptOutput,
+        crate::deps::aws_cryptography_materialProviders::types::error::Error,
+    >;
 
-  fn on_decrypt(
-    &self,
-    input: crate::deps::aws_cryptography_materialProviders::operation::on_decrypt::OnDecryptInput,
-  ) -> Result<
-    crate::deps::aws_cryptography_materialProviders::operation::on_decrypt::OnDecryptOutput,
-    crate::deps::aws_cryptography_materialProviders::types::error::Error,
-  >;
+    fn on_decrypt(
+        &self,
+        input: crate::deps::aws_cryptography_materialProviders::operation::on_decrypt::OnDecryptInput,
+    ) -> Result<
+        crate::deps::aws_cryptography_materialProviders::operation::on_decrypt::OnDecryptOutput,
+        crate::deps::aws_cryptography_materialProviders::types::error::Error,
+    >;
 }
 
 #[derive(::std::clone::Clone)]
 /// A reference to a Keyring
 pub struct KeyringRef {
-  pub inner: ::std::rc::Rc<std::cell::RefCell<dyn Keyring>>
+    pub inner: ::dafny_runtime::Rc<::dafny_runtime::RefCell<dyn Keyring>>,
 }
 
-impl<T : Keyring + 'static> From<T> for KeyringRef {
+impl<T: Keyring + 'static> From<T> for KeyringRef {
     fn from(value: T) -> Self {
-        Self { inner: std::rc::Rc::new(std::cell::RefCell::new(value)) }
+        Self {
+            inner: dafny_runtime::Rc::new(::dafny_runtime::RefCell::new(value)),
+        }
     }
 }
 
 impl ::std::cmp::PartialEq for KeyringRef {
     fn eq(&self, other: &KeyringRef) -> bool {
-        ::std::rc::Rc::ptr_eq(&self.inner, &other.inner)
+        ::dafny_runtime::Rc::ptr_eq(&self.inner, &other.inner)
     }
 }
 
