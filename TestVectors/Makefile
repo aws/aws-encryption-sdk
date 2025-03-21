@@ -177,11 +177,26 @@ test_generate_vectors_java:
 	gradle -p runtimes/java run --args="encrypt-manifest --encrypt-manifest-output ."
 	gradle -p runtimes/java copyKeysJSONCurr
 
+test_generate_vectors_java_legacy_format:
+	gradle -p runtimes/java run --args="encrypt-manifest --encrypt-manifest-output . --legacy-format true"
+	gradle -p runtimes/java copyKeysJSONCurr
+
+test_generate_vectors_java_mkp_legacy_format:
+	gradle -p runtimes/java run --args="encrypt-manifest --encrypt-manifest-output ../java_mkp --legacy-format true"
+	cp dafny/TestVectors/test/keys.json runtimes/java_mkp
+
 test_generate_vectors_net: FRAMEWORK=net6.0
 test_generate_vectors_net:
 	dotnet restore runtimes/net
 	dotnet build runtimes/net
 	dotnet run --project runtimes/net --framework $(FRAMEWORK) encrypt-manifest --encrypt-manifest-output runtimes/net
+	cp dafny/TestVectors/test/keys.json runtimes/net
+
+test_generate_vectors_net_legacy_format: FRAMEWORK=net6.0
+test_generate_vectors_net_legacy_format:
+	dotnet restore runtimes/net
+	dotnet build runtimes/net
+	dotnet run --project runtimes/net --framework $(FRAMEWORK) encrypt-manifest --encrypt-manifest-output runtimes/net --legacy-format true
 	cp dafny/TestVectors/test/keys.json runtimes/net
 
 test_generate_vectors_rust:
@@ -190,12 +205,44 @@ test_generate_vectors_rust:
 	cd ../../
 	cp dafny/TestVectors/test/keys.json runtimes/rust/
 
+test_generate_vectors_rust_legacy_format:
+	cd runtimes/rust && \
+	cargo run --bin test-vectors --features="wrapped-client" --release -- encrypt-manifest --encrypt-manifest-output . --legacy-format true && \
+	cd ../../
+	cp dafny/TestVectors/test/keys.json runtimes/rust/
+
 test_generate_vectors_go:
 	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go encrypt-manifest --encrypt-manifest-output ../
 	cp dafny/TestVectors/test/keys.json runtimes/go
 
+test_generate_vectors_go_legacy_format:
+	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go encrypt-manifest --encrypt-manifest-output ../ --legacy-format true
+	cp dafny/TestVectors/test/keys.json runtimes/go
+
+test_generate_vectors_python:
+	rm -rf runtimes/python/.tox
+	python3 -m tox -c runtimes/python --verbose -e cli -- encrypt-manifest --encrypt-manifest-output runtimes/python
+	cp dafny/TestVectors/test/keys.json runtimes/python
+
+test_generate_vectors_python_legacy_format:
+	rm -rf runtimes/python/.tox
+	python3 -m tox -c runtimes/python --verbose -e cli -- encrypt-manifest --encrypt-manifest-output runtimes/python --legacy-format true
+	cp dafny/TestVectors/test/keys.json runtimes/python
+
+test_generate_vectors_python_mkp_legacy_format:
+	rm -rf runtimes/python/.tox
+	-mkdir runtimes/python_mkp
+	python3 -m tox -c runtimes/python --verbose -e cli -- encrypt-manifest --encrypt-manifest-output runtimes/python_mkp --legacy-format true
+	cp dafny/TestVectors/test/keys.json runtimes/python_mkp
+
 test_encrypt_vectors_java:
 	gradle -p runtimes/java run --args="encrypt --manifest-path . --decrypt-manifest-path ."
+
+test_encrypt_vectors_java_legacy_format:
+	gradle -p runtimes/java run --args="encrypt --manifest-path . --decrypt-manifest-path . --legacy-format true"
+
+test_encrypt_vectors_java_mkp_legacy_format:
+	masterkey=true gradle -p runtimes/java run --args="encrypt --manifest-path ../java_mkp --decrypt-manifest-path ../java_mkp --legacy-format true"
 
 test_encrypt_vectors_net: FRAMEWORK=net6.0
 test_encrypt_vectors_net:
@@ -203,22 +250,51 @@ test_encrypt_vectors_net:
 	dotnet build runtimes/net
 	dotnet run --project runtimes/net --framework $(FRAMEWORK) encrypt --manifest-path runtimes/net --decrypt-manifest-path runtimes/net
 
+test_encrypt_vectors_net_legacy_format: FRAMEWORK=net6.0
+test_encrypt_vectors_net_legacy_format:
+	dotnet restore runtimes/net
+	dotnet build runtimes/net
+	dotnet run --project runtimes/net --framework $(FRAMEWORK) encrypt --manifest-path runtimes/net --decrypt-manifest-path runtimes/net --legacy-format true
+
 test_encrypt_vectors_rust:
 	cd runtimes/rust && \
 	cargo run --bin test-vectors --features="wrapped-client" --release -- encrypt --manifest-path . --decrypt-manifest-path . && \
 	cd ../../
 
+test_encrypt_vectors_rust_legacy_format:
+	cd runtimes/rust && \
+	cargo run --bin test-vectors --features="wrapped-client" --release -- encrypt --manifest-path . --decrypt-manifest-path . --legacy-format true && \
+	cd ../../
+
 test_encrypt_vectors_go:
 	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go encrypt --manifest-path=.. --decrypt-manifest-path=..
 
+test_encrypt_vectors_go_legacy_format:
+	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go encrypt --manifest-path=.. --decrypt-manifest-path=.. --legacy-format true
+
+test_encrypt_vectors_python:
+	rm -rf runtimes/python/.tox
+	python3 -m tox -c runtimes/python --verbose -e cli -- encrypt --manifest-path runtimes/python --decrypt-manifest-path runtimes/python
+
+test_encrypt_vectors_python_legacy_format:
+	rm -rf runtimes/python/.tox
+	python3 -m tox -c runtimes/python --verbose -e cli -- encrypt --manifest-path runtimes/python --decrypt-manifest-path runtimes/python --legacy-format true
+
+test_encrypt_vectors_python_mkp_legacy_format:
+	rm -rf runtimes/python/.tox
+	python3 -m tox -c runtimes/python --verbose -e cli -- encrypt --manifest-path runtimes/python_mkp --decrypt-manifest-path runtimes/python_mkp --legacy-format true MASTERKEY
+
 test_decrypt_encrypt_vectors_java:
-	gradle -p runtimes/java run --args="decrypt --manifest-path . --manifest-name decrypt-manifest.json"
+	gradle -p runtimes/java run --args="decrypt --manifest-path . --manifest-name manifest.json"
+
+test_decrypt_encrypt_vectors_java_mkp:
+	masterkey=true gradle -p runtimes/java run --args="decrypt --manifest-path ../java_mkp --manifest-name manifest.json"
 
 test_decrypt_encrypt_vectors_net: FRAMEWORK=net6.0
 test_decrypt_encrypt_vectors_net:
 	dotnet restore runtimes/net
 	dotnet build runtimes/net
-	dotnet run --project runtimes/net --framework $(FRAMEWORK) decrypt --manifest-path runtimes/net --manifest-name decrypt-manifest.json
+	dotnet run --project runtimes/net --framework $(FRAMEWORK) decrypt --manifest-path runtimes/net --manifest-name manifest.json
 
 test_decrypt_encrypt_vectors_net_legacy: FRAMEWORK=net6.0
 test_decrypt_encrypt_vectors_net_legacy:
@@ -226,13 +302,25 @@ test_decrypt_encrypt_vectors_net_legacy:
 	dotnet build runtimes/net
 	dotnet run --project runtimes/net --framework $(FRAMEWORK) decrypt --manifest-path $(MANIFEST_PATH) --manifest-name $(MANIFEST_NAME)
 
+test_decrypt_encrypt_vectors_python_legacy:
+	rm -rf runtimes/python/.tox
+	python3 -m tox -c runtimes/python --verbose -e cli -- decrypt --manifest-path $(MANIFEST_PATH) --manifest-name $(MANIFEST_NAME)
+
 test_decrypt_encrypt_vectors_rust:
 	cd runtimes/rust && \
-	cargo run --bin test-vectors --features="wrapped-client" --release -- decrypt --manifest-path . --manifest-name decrypt-manifest.json && \
+	cargo run --bin test-vectors --features="wrapped-client" --release -- decrypt --manifest-path . --manifest-name manifest.json && \
 	cd ../../
 
 test_decrypt_encrypt_vectors_go:
-	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go decrypt --manifest-path=.. --manifest-name=decrypt-manifest.json
+	go -C runtimes/go/ImplementationFromDafny-go run ImplementationFromDafny.go decrypt --manifest-path=.. --manifest-name=manifest.json
+
+test_decrypt_encrypt_vectors_python:
+	rm -rf runtimes/python/.tox
+	python3 -m tox -c runtimes/python --verbose -e cli -- decrypt --manifest-path runtimes/python --manifest-name manifest.json
+
+test_decrypt_encrypt_vectors_python_mkp:
+	rm -rf runtimes/python/.tox
+	python3 -m tox -c runtimes/python --verbose -e cli -- decrypt --manifest-path runtimes/python_mkp --manifest-name manifest.json MASTERKEY
 
 _polymorph_dependencies:
 	@echo "No polymorphing of dependency"
@@ -248,3 +336,24 @@ _sed_types_file_add_extern:
 
 _sed_index_file_add_extern:
 	@echo "No extern to process for ESDK TestVectors"
+
+PYTHON_MODULE_NAME=aws_encryption_sdk_test_vectors
+
+TRANSLATION_RECORD_PYTHON := \
+		--translation-record ../mpl/StandardLibrary/runtimes/python/src/smithy_dafny_standard_library/internaldafny/generated/dafny_src-py.dtr \
+		--translation-record ../mpl/ComAmazonawsKms/runtimes/python/src/aws_cryptography_internal_kms/internaldafny/generated/dafny_src-py.dtr \
+		--translation-record ../mpl/ComAmazonawsDynamodb/runtimes/python/src/aws_cryptography_internal_dynamodb/internaldafny/generated/dafny_src-py.dtr \
+		--translation-record ../mpl/AwsCryptographyPrimitives/runtimes/python/src/aws_cryptography_primitives/internaldafny/generated/dafny_src-py.dtr \
+        --translation-record ../mpl/AwsCryptographicMaterialProviders/runtimes/python/src/aws_cryptographic_material_providers/internaldafny/generated/dafny_src-py.dtr \
+        --translation-record ../mpl/TestVectorsAwsCryptographicMaterialProviders/runtimes/python/src/aws_cryptography_materialproviders_test_vectors/internaldafny/generated/dafny_src-py.dtr \
+        --translation-record ../AwsEncryptionSDK/runtimes/python/src/aws_encryption_sdk_dafny/internaldafny/generated/dafny_src-py.dtr
+
+PYTHON_DEPENDENCY_MODULE_NAMES := \
+        --dependency-library-name=aws.cryptography.primitives=aws_cryptography_primitives \
+        --dependency-library-name=com.amazonaws.kms=aws_cryptography_internal_kms \
+        --dependency-library-name=com.amazonaws.dynamodb=aws_cryptography_internal_dynamodb \
+        --dependency-library-name=aws.cryptography.materialProviders=aws_cryptographic_material_providers \
+        --dependency-library-name=aws.cryptography.keyStore=aws_cryptographic_material_providers \
+        --dependency-library-name=smithy.api=aws_cryptographic_material_providers \
+        --dependency-library-name=aws.cryptography.materialProvidersTestVectorKeys=aws_cryptographic_material_providers_test_vectors \
+        --dependency-library-name=aws.cryptography.encryptionSdk=aws_encryption_sdk_dafny

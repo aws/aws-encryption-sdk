@@ -3,7 +3,7 @@
 
 include "../LibraryIndex.dfy"
 
-module {:options "/functionSyntax:4" } AllEsdkV4WithReqEc {
+module {:options "/functionSyntax:4" } AllEsdkV5WithReqEc {
   import Types = AwsCryptographyEncryptionSdkTypes
   import mplTypes = AwsCryptographyMaterialProvidersTypes
   import ESDK
@@ -17,7 +17,7 @@ module {:options "/functionSyntax:4" } AllEsdkV4WithReqEc {
   import JSONHelpers
   import EsdkManifestOptions
   import EsdkTestVectors
-  import AllEsdkV4NoReqEc
+  import AllEsdkV5NoReqEc
 
   import UUID
   import UTF8
@@ -31,7 +31,9 @@ module {:options "/functionSyntax:4" } AllEsdkV4WithReqEc {
 
   const frameSize: int64 := 512
 
-  const AllPositiveReqEcTests := AllRequiredEncryptionContextCmm.SuccessTestingRequiredEncryptionContextKeysReproducedEncryptionContext
+  const AllPositiveReqEcTests := {}
+  + AllRequiredEncryptionContextCmm.SuccessTestingRequiredEncryptionContextKeysReproducedEncryptionContext
+  + AllRequiredEncryptionContextCmm.SuccessTestingRequiredEncryptionContextKeysReproducedEncryptionContextPsi
 
   // These are only required encryption context vectors with static aes keyrings
   const AllPositiveReqEcEsdkTests :=

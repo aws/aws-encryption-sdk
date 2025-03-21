@@ -118,7 +118,7 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
       V5ToDecryptTestVector(op, keys, name, obj, version)
     case 4 =>
       :- Need(op.Decrypt?, "Err parsing manifest; expected Decrypt");
-      :- Need(clientName == "ESDK-NET", "Err; Version 4 manifest only supported for NET");
+      :- Need((clientName == "ESDK-NET") || (clientName == "aws-encryption-sdk-dafny"), "Err; Version 4 manifest only supported for NET");
       V4ToDecryptTestVector(op, keys, name, obj, version)
     case 2 =>
       // Case 2 Needs negative test vectors..
@@ -190,6 +190,7 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
     match version
     // case 1 => V1ToEncryptTestVector(op, keys, name, obj)
     case 5 => V5ToEncryptTestVector(op, keys, name, obj, version)
+    case 4 => V4ToEncryptTestVector(op, keys, name, obj, version)
     case _ => Failure("Version not supported")
   }
 
@@ -240,6 +241,61 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
               ))
     case _ => Failure("Unsupported ESDK TestVector type: " + typ)
 
+  }
+
+  function V4ToEncryptTestVector(
+    op: EsdkManifestOptions.ManifestOptions,
+    keys: KeyVectors.KeyVectorsClient,
+    name: string,
+    obj: seq<(string, JSON)>,
+    version: SupportedEncryptVersion
+  ) : Result<EsdkEncryptTestVector, string>
+    requires op.Encrypt?
+  {
+    var scenario := obj;
+
+    var plaintextLoc :- GetString(plaintextJsonKey, scenario);
+    var algorithmSuite :- GetAlgorithmInfo(scenario);
+    :- Need(algorithmSuite.id.ESDK?, "Unsupported algorithmSuiteId");
+    var frameLength :- GetOptionalPositiveLong(frameSizeJsonKey, scenario);
+
+    var masterKeys :- GetArray("master-keys", scenario);
+    var keyDescriptions :- GetKeyDescriptions(masterKeys, keys);
+    var keyDescription :- ToMultiKeyDescription(keyDescriptions);
+
+    var encryptionContextStrings :- SmallObjectToStringStringMap(encryptionContextJsonKey, scenario);
+    var encryptionContext :- utf8EncodeMap(encryptionContextStrings);
+
+    var cmm? :- GetString("cmm", scenario);
+    :- Need(cmm? == "Default", "Only Default CMM supported on encrypt-manifest version 4.");
+
+    Success(PositiveEncryptTestVector(
+              id := Some(name),
+              version := version,
+              manifestPath := op.manifestPath,
+              decryptManifestPath := op.decryptManifestOutput,
+              plaintextPath := plaintextLoc,
+              encryptDescriptions := keyDescription,
+              decryptDescriptions := keyDescription,
+              encryptionContext := Some(encryptionContext),
+              commitmentPolicy := mplTypes.FORBID_ENCRYPT_ALLOW_DECRYPT,
+              frameLength := frameLength,
+              algorithmSuiteId := Some(algorithmSuite),
+              description := name
+            ))
+  }
+
+  function GetAlgorithmInfo(
+    obj: seq<(string, JSON)>
+  ) : Result<mplTypes.AlgorithmSuiteInfo, string>
+  {
+    var algorithmSuiteHex :- GetString("algorithm", obj);
+    :- Need(HexStrings.IsLooseHexString(algorithmSuiteHex), "Not hex encoded binary");
+    var binaryId := HexStrings.FromHexString(algorithmSuiteHex);
+    // TODO change this to use AlgorithmSuiteInfoByHexString
+    AlgorithmSuites
+    .GetAlgorithmSuiteInfo(binaryId)
+    .MapFailure(e => "Invalid Suite:" + algorithmSuiteHex)
   }
 
   function V1ToDecryptTestVector(
@@ -307,13 +363,24 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
       var keyDescriptions :- GetKeyDescriptions(masterKeys, keys);
       var keyDescription :- ToMultiKeyDescription(keyDescriptions);
 
+      var newKeyDescription := if keyDescription.RSA? then
+                                 KeyVectorsTypes.RSA(
+                                   KeyVectorsTypes.RawRSA(
+                                     keyId := "rsa-4096-private",
+                                     providerId := keyDescription.RSA.providerId,
+                                     padding := keyDescription.RSA.padding
+                                   )
+                                 )
+                               else
+                                 keyDescription;
+
       Success(PositiveV1OrV2DecryptTestVector(
                 id := name,
                 version := version,
                 manifestPath := op.manifestPath,
                 ciphertextPath := ciphertextLoc[|FILE_PREPEND|..],
                 plaintextPath := plaintextLoc[|FILE_PREPEND|..],
-                decryptDescriptions := keyDescription,
+                decryptDescriptions := newKeyDescription,
                 frameLength := None,
                 algorithmSuiteId := None,
                 description :=  name,
