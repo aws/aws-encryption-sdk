@@ -36,11 +36,8 @@ module {:options "-functionSyntax:4"} EsdkManifestOptions {
         nameonly manifest: string,
         nameonly decryptManifestOutput: string,
         nameonly testName: Option<string> := None,
-<<<<<<< HEAD
-        nameonly report: PerfReport := ReportNone
-=======
+        nameonly report: PerfReport := ReportNone,
         nameonly legacyOutput: int := 5
->>>>>>> mainline
       )
     | DecryptSingle(
         nameonly keysPath: string,

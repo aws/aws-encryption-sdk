@@ -193,7 +193,7 @@ module {:extern} TestWrappedESDKMain {
       EsdkManifestOptions.Decrypt(
         manifestPath := directory + "dafny/TestVectors/test/",
         manifestFileName := "manifest.json",
-        retryPolicy := Types.NetV4_0_0_RetryPolicy.FORBID_RETRY
+        retryPolicy := Types.NetV4_0_0_RetryPolicy.FORBID_RETRY,
         report := EsdkManifestOptions.ReportFinal
       )
     );
