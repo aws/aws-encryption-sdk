@@ -251,7 +251,7 @@ module MessageBody {
       invariant |regularFrames| == (sequenceNumber - START_SEQUENCE_NUMBER) as nat
       invariant |crypto.History.AESEncrypt| - |old(crypto.History.AESEncrypt)|
              == |regularFrames|
-      invariant 0 < |regularFrames| ==> Seq.First(regularFrames).header == header;
+      invariant 0 < |regularFrames| ==> Seq.First(regularFrames).header == header
       invariant IsMessageRegularFrames(regularFrames)
 
       invariant forall i: nat, j: nat, frame: Frames.Frame, callEvent

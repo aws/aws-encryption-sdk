@@ -24,7 +24,7 @@ module TestRequiredEncryptionContext {
 
   // THIS IS A TESTING RESOURCE DO NOT USE IN A PRODUCTION ENVIRONMENT
   const keyArn := Fixtures.keyArn
-  const hierarchyKeyArn := Fixtures.hierarchyKeyArn;
+  const hierarchyKeyArn := Fixtures.hierarchyKeyArn
   const branchKeyStoreName: DDBTypes.TableName := Fixtures.branchKeyStoreName
   const logicalKeyStoreName := branchKeyStoreName
   // These tests require a keystore populated with these keys

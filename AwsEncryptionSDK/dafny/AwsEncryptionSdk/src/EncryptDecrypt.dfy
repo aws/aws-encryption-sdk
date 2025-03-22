@@ -652,7 +652,7 @@ module EncryptDecryptHelpers {
 
     ensures res.Success? ==>
               && mpl.EncryptionMaterialsHasPlaintextDataKey(res.value).Success?
-              && !res.value.algorithmSuite.commitment.IDENTITY?;
+              && !res.value.algorithmSuite.commitment.IDENTITY?
 
     ensures res.Success? ==>
               && SerializableTypes.IsESDKEncryptionContext(res.value.encryptionContext)
