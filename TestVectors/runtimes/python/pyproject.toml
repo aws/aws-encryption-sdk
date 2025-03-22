@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "aws-encryption-sdk-test-vectors"
+version = "0.1.0"
+description = ""
+authors = ["AWS Crypto Tools <aws-crypto-tools@amazon.com>"]
+packages = [
+    { include = "aws_encryption_sdk_test_vectors", from = "src" }
+]
+# Include generated internaldafny files in package distributions,
+# even though they are not included in version control
+include = ["**/internaldafny/generated/*.py"]
+
+[tool.poetry.dependencies]
+python = "^3.11.0"
+aws-cryptographic-material-providers = { path = "../../../mpl/AwsCryptographicMaterialProviders/runtimes/python", develop = false}
+aws-cryptography-internal-mpl-testvectors = { path = "../../../mpl/TestVectorsAwsCryptographicMaterialProviders/runtimes/python", develop = false}
+
+# Use the Dafny ESDK Python for type conversions to/from Dafny TestVectors code
+aws-encryption-sdk-dafny = { path = "../../../AwsEncryptionSDK/runtimes/python", develop = false}
+
+# Run TestVectors against the released native ESDK-Python
+aws-encryption-sdk = { path = "../../../dist/aws_encryption_sdk-4.0.0-py2.py3-none-any.whl", develop = false}
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.0"
+
+[build-system]
+requires = ["poetry-core<2.0.0"]
+build-backend = "poetry.core.masonry.api"

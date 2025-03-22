@@ -29,11 +29,13 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
                                                          [
                                                            Param.Opt("manifest-path", "relative path to the location of the manifest", unused := Required),
                                                            Param.Opt("decrypt-manifest-path", "relative path to the location where the decrypted manifest will be written to.", unused := Required),
-                                                           Param.Opt("test-name", "id of the test to run")
+                                                           Param.Opt("test-name", "id of the test to run"),
+                                                           Param.Opt("legacy-format", "write manifests in <= V4 format for compatibility with JS and Python runners.")
                                                          ])),
                                    Param.Command(Options("encrypt-manifest", "encrypt manifest command for test-vectors",
                                                          [
-                                                           Param.Opt("encrypt-manifest-output", "relative path of where to store the encrypt-manifest produced", unused := Required)
+                                                           Param.Opt("encrypt-manifest-output", "relative path of where to store the encrypt-manifest produced", unused := Required),
+                                                           Param.Opt("legacy-format", "write manifests in <= V4 format for compatibility with JS and Python runners.")
                                                          ]))
                                  ]);
     // The expectation is that the first argument
@@ -127,6 +129,7 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
     var manifestName? := OptValue(params, "manifest");
     var decryptManifestPath? := OptValue(params, "decrypt-manifest-path");
     var testName? := OptValue(params, "test-name");
+    var legacyFormat? := OptValue(params, "legacy-format");
 
     var manifestPath := if manifestPath?.Some? then manifestPath?.value else ".";
     var manifestName := if manifestName?.Some? then manifestName?.value else "encrypt-manifest.json";
@@ -141,7 +144,8 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
               manifestPath := if Seq.Last(manifestPath) == '/' then manifestPath else manifestPath + "/",
               manifest := manifestName,
               decryptManifestOutput := if Seq.Last(decryptManifestPath) == '/' then decryptManifestPath else decryptManifestPath + "/",
-              testName := if testName?.Some? then testName? else None
+              testName := if testName?.Some? then testName? else None,
+              legacyOutput := if legacyFormat?.Some? then 4 else 5
             ))
   }
 
@@ -151,11 +155,12 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
   {
     var encryptManifestOutput? := OptValue(params, "encrypt-manifest-output");
     var encryptManifestOutput := if encryptManifestOutput?.Some? then encryptManifestOutput?.value else ".";
+    var legacyFormat? := OptValue(params, "legacy-format");
     :- Need(0 < |encryptManifestOutput|, "Invalid encrypt manifest output length");
 
     Success(EsdkManifestOptions.EncryptManifest(
               encryptManifestOutput := if Seq.Last(encryptManifestOutput) == '/' then encryptManifestOutput else encryptManifestOutput + "/",
-              version := 5
+              version := if legacyFormat?.Some? then 4 else 5
             ))
   }
 

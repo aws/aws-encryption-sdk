@@ -43,8 +43,14 @@ module {:extern} TestWrappedESDKMain {
   }
 
   method {:test} RunManifestTests() {
-    TestGenerateEncryptManifest();
-    TestEncryptManifest();
+    TestGenerateEncryptManifest(5);
+    TestEncryptManifest(5);
+    TestDecryptManifest();
+  }
+
+  method CreateV4Manifests() {
+    TestGenerateEncryptManifest(4);
+    TestEncryptManifest(4);
     TestDecryptManifest();
   }
 
@@ -150,12 +156,12 @@ module {:extern} TestWrappedESDKMain {
     expect result.Success?;
   }
 
-  method TestGenerateEncryptManifest() {
+  method TestGenerateEncryptManifest(version: nat) {
     var directory := GetDirPrefix();
     var result := WriteVectors.WriteTestVectors(
       EsdkManifestOptions.EncryptManifest(
         encryptManifestOutput := directory + "dafny/TestVectors/test/",
-        version := 5
+        version := version
       ));
     if result.Failure? {
       print result.error;
@@ -163,14 +169,15 @@ module {:extern} TestWrappedESDKMain {
     expect result.Success?;
   }
 
-  method TestEncryptManifest() {
+  method TestEncryptManifest(version: int) {
     var directory := GetDirPrefix();
     var result := EsdkTestManifests.StartEncryptVectors(
       EsdkManifestOptions.Encrypt(
         manifestPath := directory + "dafny/TestVectors/test/",
         manifest := "encrypt-manifest.json",
         decryptManifestOutput := directory + "dafny/TestVectors/test/",
-        report := EsdkManifestOptions.ReportFinal
+        report := EsdkManifestOptions.ReportFinal,
+        legacyOutput := version
       )
     );
     if result.Failure? {
@@ -185,8 +192,8 @@ module {:extern} TestWrappedESDKMain {
     var result := EsdkTestManifests.StartDecryptVectors(
       EsdkManifestOptions.Decrypt(
         manifestPath := directory + "dafny/TestVectors/test/",
-        manifestFileName := "decrypt-manifest.json",
-        retryPolicy := Types.NetV4_0_0_RetryPolicy.FORBID_RETRY,
+        manifestFileName := "manifest.json",
+        retryPolicy := Types.NetV4_0_0_RetryPolicy.FORBID_RETRY
         report := EsdkManifestOptions.ReportFinal
       )
     );

@@ -12,7 +12,7 @@ For more details about the design and architecture of the AWS Encryption SDK, se
 
 ## Installation
 
-`go get github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk@latest`
+`go get github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk@v0.2.0`
 
 ## Examples for AWS Encryption SDK in Go
 
