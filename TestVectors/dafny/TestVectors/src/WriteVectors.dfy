@@ -108,11 +108,10 @@ module {:options "-functionSyntax:4"} WriteVectors {
     );
 
     var esdkEncryptManifestBytes :- expect API.Serialize(esdkEncryptManifests);
-    var esdkEncryptManifestBv := JSONHelpers.BytesBv(esdkEncryptManifestBytes);
 
     var _ :- expect FileIO.WriteBytesToFile(
       op.encryptManifestOutput + "encrypt-manifest.json",
-      esdkEncryptManifestBv
+      esdkEncryptManifestBytes
     );
 
     output := Success(());
@@ -155,11 +154,10 @@ module {:options "-functionSyntax:4"} WriteVectors {
     );
 
     var esdkDecryptManifestBytes :- expect API.Serialize(esdkDecryptManifest);
-    var esdkDecryptManifestBv := JSONHelpers.BytesBv(esdkDecryptManifestBytes);
 
     var _ :- expect FileIO.WriteBytesToFile(
       op.decryptManifestOutput + "manifest.json",
-      esdkDecryptManifestBv
+      esdkDecryptManifestBytes
     );
 
     output := Success(());

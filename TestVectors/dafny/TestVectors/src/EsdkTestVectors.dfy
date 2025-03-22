@@ -542,14 +542,12 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
   method ReadVectorsFile(location: string)
     returns (output: Result<seq<uint8>, string>)
   {
-    var fileBv :- FileIO.ReadBytesFromFile(location);
-    output := Success(BvToBytes(fileBv));
+    output := FileIO.ReadBytesFromFile(location);
   }
 
   method WriteVectorsFile(location: string, bytes: seq<uint8>)
     returns (output: Result<(), string>)
   {
-    var bv := BytesBv(bytes);
-    output := FileIO.WriteBytesToFile(location, bv);
+    output := FileIO.WriteBytesToFile(location, bytes);
   }
 }
