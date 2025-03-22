@@ -176,7 +176,7 @@ module V2HeaderBody {
   }
 
   // version + suiteId + messageId
-  const headerBytesToAADStart := 1 + 2 + 32;
+  const headerBytesToAADStart := 1 + 2 + 32
   predicate IsV2ExpandedAADSection(
     buffer: ReadableBuffer
   )
