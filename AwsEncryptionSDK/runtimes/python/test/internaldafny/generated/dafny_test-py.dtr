@@ -1,0 +1,12 @@
+file_format_version = "1.0"
+dafny_version = "4.9.0.0"
+[options_by_module.Fixtures]
+legacy-module-names = false
+[options_by_module.TestRequiredEncryptionContext]
+legacy-module-names = false
+[options_by_module.TestReproducedEncryptionContext]
+legacy-module-names = false
+[options_by_module.TestEncryptDecrypt]
+legacy-module-names = false
+[options_by_module.TestCreateEsdkClient]
+legacy-module-names = false

@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl/awscryptographymaterialproviderssmithygenerated"
 	"github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl/awscryptographymaterialproviderssmithygeneratedtypes"
 	"github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives/awscryptographyprimitivessmithygenerated"
+	"github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/UTF8"
 	"github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk/AwsCryptographyEncryptionSdkTypes"
 	"github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk/awscryptographyencryptionsdksmithygeneratedtypes"
 	"github.com/dafny-lang/DafnyRuntimeGo/v4/dafny"
@@ -14,7 +15,7 @@ import (
 
 func DecryptInput_FromDafny(dafnyInput AwsCryptographyEncryptionSdkTypes.DecryptInput) awscryptographyencryptionsdksmithygeneratedtypes.DecryptInput {
 
-	return awscryptographyencryptionsdksmithygeneratedtypes.DecryptInput{Ciphertext: aws_cryptography_encryptionSdk_DecryptInput_ciphertext_FromDafny(dafnyInput.Dtor_ciphertext()),
+	return awscryptographyencryptionsdksmithygeneratedtypes.DecryptInput{Ciphertext: Aws_cryptography_encryptionSdk_DecryptInput_ciphertext_FromDafny(dafnyInput.Dtor_ciphertext()),
 		MaterialsManager: func() awscryptographymaterialproviderssmithygeneratedtypes.ICryptographicMaterialsManager {
 			if dafnyInput.Dtor_materialsManager().UnwrapOr(nil) == nil {
 				return nil
@@ -27,24 +28,24 @@ func DecryptInput_FromDafny(dafnyInput AwsCryptographyEncryptionSdkTypes.Decrypt
 			}
 			return awscryptographymaterialproviderssmithygenerated.Keyring_FromDafny(dafnyInput.Dtor_keyring().UnwrapOr(nil).(AwsCryptographyMaterialProvidersTypes.IKeyring))
 		}(),
-		EncryptionContext: aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_FromDafny(dafnyInput.Dtor_encryptionContext().UnwrapOr(nil)),
+		EncryptionContext: Aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_FromDafny(dafnyInput.Dtor_encryptionContext().UnwrapOr(nil)),
 	}
 
 }
 
 func DecryptOutput_FromDafny(dafnyOutput AwsCryptographyEncryptionSdkTypes.DecryptOutput) awscryptographyencryptionsdksmithygeneratedtypes.DecryptOutput {
 
-	return awscryptographyencryptionsdksmithygeneratedtypes.DecryptOutput{Plaintext: aws_cryptography_encryptionSdk_DecryptOutput_plaintext_FromDafny(dafnyOutput.Dtor_plaintext()),
-		EncryptionContext: aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_FromDafny(dafnyOutput.Dtor_encryptionContext()),
-		AlgorithmSuiteId:  aws_cryptography_encryptionSdk_DecryptOutput_algorithmSuiteId_FromDafny(dafnyOutput.Dtor_algorithmSuiteId()),
+	return awscryptographyencryptionsdksmithygeneratedtypes.DecryptOutput{Plaintext: Aws_cryptography_encryptionSdk_DecryptOutput_plaintext_FromDafny(dafnyOutput.Dtor_plaintext()),
+		EncryptionContext: Aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_FromDafny(dafnyOutput.Dtor_encryptionContext()),
+		AlgorithmSuiteId:  Aws_cryptography_encryptionSdk_DecryptOutput_algorithmSuiteId_FromDafny(dafnyOutput.Dtor_algorithmSuiteId()),
 	}
 
 }
 
 func EncryptInput_FromDafny(dafnyInput AwsCryptographyEncryptionSdkTypes.EncryptInput) awscryptographyencryptionsdksmithygeneratedtypes.EncryptInput {
 
-	return awscryptographyencryptionsdksmithygeneratedtypes.EncryptInput{Plaintext: aws_cryptography_encryptionSdk_EncryptInput_plaintext_FromDafny(dafnyInput.Dtor_plaintext()),
-		EncryptionContext: aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_FromDafny(dafnyInput.Dtor_encryptionContext().UnwrapOr(nil)),
+	return awscryptographyencryptionsdksmithygeneratedtypes.EncryptInput{Plaintext: Aws_cryptography_encryptionSdk_EncryptInput_plaintext_FromDafny(dafnyInput.Dtor_plaintext()),
+		EncryptionContext: Aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_FromDafny(dafnyInput.Dtor_encryptionContext().UnwrapOr(nil)),
 		MaterialsManager: func() awscryptographymaterialproviderssmithygeneratedtypes.ICryptographicMaterialsManager {
 			if dafnyInput.Dtor_materialsManager().UnwrapOr(nil) == nil {
 				return nil
@@ -57,23 +58,23 @@ func EncryptInput_FromDafny(dafnyInput AwsCryptographyEncryptionSdkTypes.Encrypt
 			}
 			return awscryptographymaterialproviderssmithygenerated.Keyring_FromDafny(dafnyInput.Dtor_keyring().UnwrapOr(nil).(AwsCryptographyMaterialProvidersTypes.IKeyring))
 		}(),
-		AlgorithmSuiteId: aws_cryptography_encryptionSdk_EncryptInput_algorithmSuiteId_FromDafny(dafnyInput.Dtor_algorithmSuiteId().UnwrapOr(nil)),
-		FrameLength:      aws_cryptography_encryptionSdk_EncryptInput_frameLength_FromDafny(dafnyInput.Dtor_frameLength().UnwrapOr(nil)),
+		AlgorithmSuiteId: Aws_cryptography_encryptionSdk_EncryptInput_algorithmSuiteId_FromDafny(dafnyInput.Dtor_algorithmSuiteId().UnwrapOr(nil)),
+		FrameLength:      Aws_cryptography_encryptionSdk_EncryptInput_frameLength_FromDafny(dafnyInput.Dtor_frameLength().UnwrapOr(nil)),
 	}
 
 }
 
 func EncryptOutput_FromDafny(dafnyOutput AwsCryptographyEncryptionSdkTypes.EncryptOutput) awscryptographyencryptionsdksmithygeneratedtypes.EncryptOutput {
 
-	return awscryptographyencryptionsdksmithygeneratedtypes.EncryptOutput{Ciphertext: aws_cryptography_encryptionSdk_EncryptOutput_ciphertext_FromDafny(dafnyOutput.Dtor_ciphertext()),
-		EncryptionContext: aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_FromDafny(dafnyOutput.Dtor_encryptionContext()),
-		AlgorithmSuiteId:  aws_cryptography_encryptionSdk_EncryptOutput_algorithmSuiteId_FromDafny(dafnyOutput.Dtor_algorithmSuiteId()),
+	return awscryptographyencryptionsdksmithygeneratedtypes.EncryptOutput{Ciphertext: Aws_cryptography_encryptionSdk_EncryptOutput_ciphertext_FromDafny(dafnyOutput.Dtor_ciphertext()),
+		EncryptionContext: Aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_FromDafny(dafnyOutput.Dtor_encryptionContext()),
+		AlgorithmSuiteId:  Aws_cryptography_encryptionSdk_EncryptOutput_algorithmSuiteId_FromDafny(dafnyOutput.Dtor_algorithmSuiteId()),
 	}
 
 }
 
 func AwsEncryptionSdkException_FromDafny(dafnyOutput AwsCryptographyEncryptionSdkTypes.Error) awscryptographyencryptionsdksmithygeneratedtypes.AwsEncryptionSdkException {
-	return awscryptographyencryptionsdksmithygeneratedtypes.AwsEncryptionSdkException{Message: aws_cryptography_encryptionSdk_AwsEncryptionSdkException_message_FromDafny(dafnyOutput.Dtor_message())}
+	return awscryptographyencryptionsdksmithygeneratedtypes.AwsEncryptionSdkException{Message: Aws_cryptography_encryptionSdk_AwsEncryptionSdkException_message_FromDafny(dafnyOutput.Dtor_message())}
 
 }
 
@@ -91,15 +92,9 @@ func CollectionOfErrors_Output_FromDafny(dafnyOutput AwsCryptographyEncryptionSd
 
 	}
 	t.Message = func() string {
-		var s string
-		for i := dafny.Iterate(message); ; {
-			val, ok := i()
-			if !ok {
-				return s
-			} else {
-				s = s + string(val.(dafny.Char))
-			}
-		}
+		a := UTF8.Encode(message.(dafny.Sequence)).Dtor_value()
+		s := string(dafny.ToByteArray(a.(dafny.Sequence)))
+		return s
 	}()
 	return t
 }
@@ -133,9 +128,9 @@ func Error_FromDafny(err AwsCryptographyEncryptionSdkTypes.Error) error {
 }
 
 func AwsEncryptionSdkConfig_FromDafny(dafnyOutput AwsCryptographyEncryptionSdkTypes.AwsEncryptionSdkConfig) awscryptographyencryptionsdksmithygeneratedtypes.AwsEncryptionSdkConfig {
-	return awscryptographyencryptionsdksmithygeneratedtypes.AwsEncryptionSdkConfig{CommitmentPolicy: aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_commitmentPolicy_FromDafny(dafnyOutput.Dtor_commitmentPolicy().UnwrapOr(nil)),
-		MaxEncryptedDataKeys:  aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_maxEncryptedDataKeys_FromDafny(dafnyOutput.Dtor_maxEncryptedDataKeys().UnwrapOr(nil)),
-		NetV4_0_0_RetryPolicy: aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_netV4_0_0_RetryPolicy_FromDafny(dafnyOutput.Dtor_netV4__0__0__RetryPolicy().UnwrapOr(nil)),
+	return awscryptographyencryptionsdksmithygeneratedtypes.AwsEncryptionSdkConfig{CommitmentPolicy: Aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_commitmentPolicy_FromDafny(dafnyOutput.Dtor_commitmentPolicy().UnwrapOr(nil)),
+		MaxEncryptedDataKeys:  Aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_maxEncryptedDataKeys_FromDafny(dafnyOutput.Dtor_maxEncryptedDataKeys().UnwrapOr(nil)),
+		NetV4_0_0_RetryPolicy: Aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_netV4_0_0_RetryPolicy_FromDafny(dafnyOutput.Dtor_netV4__0__0__RetryPolicy().UnwrapOr(nil)),
 	}
 
 }
@@ -160,9 +155,9 @@ func NetV4_0_0_RetryPolicy_FromDafny(input interface{}) awscryptographyencryptio
 
 }
 
-func aws_cryptography_encryptionSdk_DecryptInput_ciphertext_FromDafny(input interface{}) []byte {
+func Aws_cryptography_encryptionSdk_DecryptInput_ciphertext_FromDafny(input interface{}) []byte {
 	return func() []byte {
-		var b []byte
+		b := []byte{}
 		if input == nil {
 			return nil
 		}
@@ -176,7 +171,7 @@ func aws_cryptography_encryptionSdk_DecryptInput_ciphertext_FromDafny(input inte
 		}
 	}()
 }
-func aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_FromDafny(input interface{}) map[string]string {
+func Aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_FromDafny(input interface{}) map[string]string {
 	var m map[string]string = make(map[string]string)
 	if input == nil {
 		return nil
@@ -186,52 +181,14 @@ func aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_FromDafny(inp
 		if !ok {
 			break
 		}
-		m[aws_cryptography_materialProviders_EncryptionContext_key_FromDafny((*val.(dafny.Tuple).IndexInt(0)))] = aws_cryptography_materialProviders_EncryptionContext_value_FromDafny((*val.(dafny.Tuple).IndexInt(1)))
+		m[awscryptographymaterialproviderssmithygenerated.Aws_cryptography_materialProviders_EncryptionContext_key_FromDafny((*val.(dafny.Tuple).IndexInt(0)))] = awscryptographymaterialproviderssmithygenerated.Aws_cryptography_materialProviders_EncryptionContext_value_FromDafny((*val.(dafny.Tuple).IndexInt(1)))
 	}
 	return m
 
 }
-func aws_cryptography_materialProviders_EncryptionContext_key_FromDafny(input interface{}) string {
-	return func() string {
-		var s string
-		for i := dafny.Iterate(input); ; {
-			val, ok := i()
-			if !ok {
-				return s
-			} else {
-				// UTF bytes should be always converted from bytes to string in go
-				// Otherwise go treats the string as a unicode codepoint
-
-				var valUint, _ = val.(uint8)
-				var byteSlice = []byte{valUint}
-				s = s + string(byteSlice)
-
-			}
-		}
-	}()
-}
-func aws_cryptography_materialProviders_EncryptionContext_value_FromDafny(input interface{}) string {
-	return func() string {
-		var s string
-		for i := dafny.Iterate(input); ; {
-			val, ok := i()
-			if !ok {
-				return s
-			} else {
-				// UTF bytes should be always converted from bytes to string in go
-				// Otherwise go treats the string as a unicode codepoint
-
-				var valUint, _ = val.(uint8)
-				var byteSlice = []byte{valUint}
-				s = s + string(byteSlice)
-
-			}
-		}
-	}()
-}
-func aws_cryptography_encryptionSdk_DecryptOutput_plaintext_FromDafny(input interface{}) []byte {
+func Aws_cryptography_encryptionSdk_DecryptOutput_plaintext_FromDafny(input interface{}) []byte {
 	return func() []byte {
-		var b []byte
+		b := []byte{}
 		if input == nil {
 			return nil
 		}
@@ -245,7 +202,7 @@ func aws_cryptography_encryptionSdk_DecryptOutput_plaintext_FromDafny(input inte
 		}
 	}()
 }
-func aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_FromDafny(input interface{}) map[string]string {
+func Aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_FromDafny(input interface{}) map[string]string {
 	var m map[string]string = make(map[string]string)
 	if input == nil {
 		return nil
@@ -255,12 +212,12 @@ func aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_FromDafny(in
 		if !ok {
 			break
 		}
-		m[aws_cryptography_materialProviders_EncryptionContext_key_FromDafny((*val.(dafny.Tuple).IndexInt(0)))] = aws_cryptography_materialProviders_EncryptionContext_value_FromDafny((*val.(dafny.Tuple).IndexInt(1)))
+		m[awscryptographymaterialproviderssmithygenerated.Aws_cryptography_materialProviders_EncryptionContext_key_FromDafny((*val.(dafny.Tuple).IndexInt(0)))] = awscryptographymaterialproviderssmithygenerated.Aws_cryptography_materialProviders_EncryptionContext_value_FromDafny((*val.(dafny.Tuple).IndexInt(1)))
 	}
 	return m
 
 }
-func aws_cryptography_encryptionSdk_DecryptOutput_algorithmSuiteId_FromDafny(input interface{}) awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId {
+func Aws_cryptography_encryptionSdk_DecryptOutput_algorithmSuiteId_FromDafny(input interface{}) awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId {
 	return func() awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId {
 		var u awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId
 		inputEnum := input.(AwsCryptographyMaterialProvidersTypes.ESDKAlgorithmSuiteId)
@@ -278,9 +235,9 @@ func aws_cryptography_encryptionSdk_DecryptOutput_algorithmSuiteId_FromDafny(inp
 		return u.Values()[index]
 	}()
 }
-func aws_cryptography_encryptionSdk_EncryptInput_plaintext_FromDafny(input interface{}) []byte {
+func Aws_cryptography_encryptionSdk_EncryptInput_plaintext_FromDafny(input interface{}) []byte {
 	return func() []byte {
-		var b []byte
+		b := []byte{}
 		if input == nil {
 			return nil
 		}
@@ -294,7 +251,7 @@ func aws_cryptography_encryptionSdk_EncryptInput_plaintext_FromDafny(input inter
 		}
 	}()
 }
-func aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_FromDafny(input interface{}) map[string]string {
+func Aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_FromDafny(input interface{}) map[string]string {
 	var m map[string]string = make(map[string]string)
 	if input == nil {
 		return nil
@@ -304,12 +261,12 @@ func aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_FromDafny(inp
 		if !ok {
 			break
 		}
-		m[aws_cryptography_materialProviders_EncryptionContext_key_FromDafny((*val.(dafny.Tuple).IndexInt(0)))] = aws_cryptography_materialProviders_EncryptionContext_value_FromDafny((*val.(dafny.Tuple).IndexInt(1)))
+		m[awscryptographymaterialproviderssmithygenerated.Aws_cryptography_materialProviders_EncryptionContext_key_FromDafny((*val.(dafny.Tuple).IndexInt(0)))] = awscryptographymaterialproviderssmithygenerated.Aws_cryptography_materialProviders_EncryptionContext_value_FromDafny((*val.(dafny.Tuple).IndexInt(1)))
 	}
 	return m
 
 }
-func aws_cryptography_encryptionSdk_EncryptInput_algorithmSuiteId_FromDafny(input interface{}) *awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId {
+func Aws_cryptography_encryptionSdk_EncryptInput_algorithmSuiteId_FromDafny(input interface{}) *awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId {
 	return func() *awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId {
 		var u awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId
 		if input == nil {
@@ -330,7 +287,7 @@ func aws_cryptography_encryptionSdk_EncryptInput_algorithmSuiteId_FromDafny(inpu
 		return &u.Values()[index]
 	}()
 }
-func aws_cryptography_encryptionSdk_EncryptInput_frameLength_FromDafny(input interface{}) *int64 {
+func Aws_cryptography_encryptionSdk_EncryptInput_frameLength_FromDafny(input interface{}) *int64 {
 	return func() *int64 {
 		var b int64
 		if input == nil {
@@ -340,9 +297,9 @@ func aws_cryptography_encryptionSdk_EncryptInput_frameLength_FromDafny(input int
 		return &b
 	}()
 }
-func aws_cryptography_encryptionSdk_EncryptOutput_ciphertext_FromDafny(input interface{}) []byte {
+func Aws_cryptography_encryptionSdk_EncryptOutput_ciphertext_FromDafny(input interface{}) []byte {
 	return func() []byte {
-		var b []byte
+		b := []byte{}
 		if input == nil {
 			return nil
 		}
@@ -356,7 +313,7 @@ func aws_cryptography_encryptionSdk_EncryptOutput_ciphertext_FromDafny(input int
 		}
 	}()
 }
-func aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_FromDafny(input interface{}) map[string]string {
+func Aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_FromDafny(input interface{}) map[string]string {
 	var m map[string]string = make(map[string]string)
 	if input == nil {
 		return nil
@@ -366,12 +323,12 @@ func aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_FromDafny(in
 		if !ok {
 			break
 		}
-		m[aws_cryptography_materialProviders_EncryptionContext_key_FromDafny((*val.(dafny.Tuple).IndexInt(0)))] = aws_cryptography_materialProviders_EncryptionContext_value_FromDafny((*val.(dafny.Tuple).IndexInt(1)))
+		m[awscryptographymaterialproviderssmithygenerated.Aws_cryptography_materialProviders_EncryptionContext_key_FromDafny((*val.(dafny.Tuple).IndexInt(0)))] = awscryptographymaterialproviderssmithygenerated.Aws_cryptography_materialProviders_EncryptionContext_value_FromDafny((*val.(dafny.Tuple).IndexInt(1)))
 	}
 	return m
 
 }
-func aws_cryptography_encryptionSdk_EncryptOutput_algorithmSuiteId_FromDafny(input interface{}) awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId {
+func Aws_cryptography_encryptionSdk_EncryptOutput_algorithmSuiteId_FromDafny(input interface{}) awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId {
 	return func() awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId {
 		var u awscryptographymaterialproviderssmithygeneratedtypes.ESDKAlgorithmSuiteId
 		inputEnum := input.(AwsCryptographyMaterialProvidersTypes.ESDKAlgorithmSuiteId)
@@ -389,20 +346,16 @@ func aws_cryptography_encryptionSdk_EncryptOutput_algorithmSuiteId_FromDafny(inp
 		return u.Values()[index]
 	}()
 }
-func aws_cryptography_encryptionSdk_AwsEncryptionSdkException_message_FromDafny(input interface{}) string {
+func Aws_cryptography_encryptionSdk_AwsEncryptionSdkException_message_FromDafny(input interface{}) string {
 	return func() string {
-		var s string
-		for i := dafny.Iterate(input); ; {
-			val, ok := i()
-			if !ok {
-				return s
-			} else {
-				s = s + string(val.(dafny.Char))
-			}
-		}
+
+		a := UTF8.Encode(input.(dafny.Sequence)).Dtor_value()
+		s := string(dafny.ToByteArray(a.(dafny.Sequence)))
+
+		return s
 	}()
 }
-func aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_commitmentPolicy_FromDafny(input interface{}) *awscryptographymaterialproviderssmithygeneratedtypes.ESDKCommitmentPolicy {
+func Aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_commitmentPolicy_FromDafny(input interface{}) *awscryptographymaterialproviderssmithygeneratedtypes.ESDKCommitmentPolicy {
 	return func() *awscryptographymaterialproviderssmithygeneratedtypes.ESDKCommitmentPolicy {
 		var u awscryptographymaterialproviderssmithygeneratedtypes.ESDKCommitmentPolicy
 		if input == nil {
@@ -423,7 +376,7 @@ func aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_commitmentPolicy_From
 		return &u.Values()[index]
 	}()
 }
-func aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_maxEncryptedDataKeys_FromDafny(input interface{}) *int64 {
+func Aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_maxEncryptedDataKeys_FromDafny(input interface{}) *int64 {
 	return func() *int64 {
 		var b int64
 		if input == nil {
@@ -433,7 +386,7 @@ func aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_maxEncryptedDataKeys_
 		return &b
 	}()
 }
-func aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_netV4_0_0_RetryPolicy_FromDafny(input interface{}) *awscryptographyencryptionsdksmithygeneratedtypes.NetV4_0_0_RetryPolicy {
+func Aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_netV4_0_0_RetryPolicy_FromDafny(input interface{}) *awscryptographyencryptionsdksmithygeneratedtypes.NetV4_0_0_RetryPolicy {
 	return func() *awscryptographyencryptionsdksmithygeneratedtypes.NetV4_0_0_RetryPolicy {
 		var u awscryptographyencryptionsdksmithygeneratedtypes.NetV4_0_0_RetryPolicy
 		if input == nil {

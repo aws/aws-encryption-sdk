@@ -4,13 +4,13 @@ go 1.23.0
 
 retract [v0.0.0-0, v0.1.1]
 
-require github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library v0.0.1
+require github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library v0.2.0
 
 require (
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb v0.0.3
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms v0.0.1
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl v0.0.1
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives v0.0.1
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb v0.2.0
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms v0.2.0
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl v0.2.0
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives v0.2.0
 	github.com/dafny-lang/DafnyRuntimeGo/v4 v4.9.2
 
 )

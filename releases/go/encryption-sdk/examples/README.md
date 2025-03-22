@@ -7,9 +7,9 @@ and how to set up some common configuration patterns.
 
 ## APIs
 
-The AWS Encryption SDK provides two high-level APIs:
-one-step APIs that process the entire operation in memory
-and streaming APIs.
+The AWS Encryption SDK provides a high-level,
+one-step API that processes encryption
+and decryption operations entirely in memory.
 
 You can find examples that demonstrate these APIs
 in the [`examples/`](./) directory.
@@ -48,6 +48,7 @@ We start with AWS KMS examples, then show how to use other wrapping keys.
 
 Keyrings are the most common way for you to configure the AWS Encryption SDK.
 They determine how the AWS Encryption SDK protects your data.
+For more information about keyrings, see the [AWS Developer Guide on using keyrings](https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/choose-keyring.html).
 You can find these examples in [`examples/keyring`](./keyring).
 
 ### Cryptographic Materials Managers
@@ -61,6 +62,7 @@ This can include things like
 enforcing the use of certain algorithm suites or encryption context settings,
 reusing data keys across messages,
 or changing how you interact with keyrings.
+For more information about cryptographic materials managers, see the [AWS Developer Guide on cryptographic materials managers](https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#crypt-materials-manager).
 You can find these examples in
 [`examples/cryptographic_materials_manager`](./cryptographicmaterialsmanager).
 

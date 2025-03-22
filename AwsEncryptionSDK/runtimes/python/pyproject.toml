@@ -1,0 +1,36 @@
+[tool.poetry]
+# Note: We should not release this library with this name.
+# We should release this library under the name `aws-encryption-sdk`.
+# But this repo's TestVectors test the released, native version of the ESDK,
+#   which has this name.
+# The names conflict, and issues arise from this.
+# When we are ready to release the Dafny-Python ESDK, we should rename this,
+#   but figure out if/how we can still test the native ESDK in this repo.
+name = "aws-encryption-sdk-dafny"
+version = "0.1.0"
+description = ""
+authors = ["AWS Crypto Tools <aws-crypto-tools@amazon.com>"]
+# Note: We should not release this library with this package name.
+# We should release this library with the package name `aws_encryption_sdk`.
+# But this repo's TestVectors test the released, native version of the ESDK,
+#   which has this name.
+# The names conflict, and issues arise from this.
+# When we are ready to release the Dafny-Python ESDK, we should rename this,
+#   but figure out if/how we can still test the native ESDK in this repo.
+packages = [
+    { include = "aws_encryption_sdk_dafny", from = "src" }
+]
+# Include generated internaldafny files in package distributions,
+# even though they are not included in version control
+include = ["**/internaldafny/generated/*.py"]
+
+[tool.poetry.dependencies]
+python = "^3.11.0"
+aws-cryptographic-material-providers = { path = "../../../mpl/AwsCryptographicMaterialProviders/runtimes/python", develop = false}
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.0"
+
+[build-system]
+requires = ["poetry-core<2.0.0"]
+build-backend = "poetry.core.masonry.api"
