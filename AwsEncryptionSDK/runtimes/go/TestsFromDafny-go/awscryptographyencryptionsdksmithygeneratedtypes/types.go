@@ -20,14 +20,14 @@ type DecryptInput struct {
 }
 
 func (input DecryptInput) Validate() error {
-	if input.aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_Validate() != nil {
-		return input.aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_Validate()
+	if input.Aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_Validate() != nil {
+		return input.Aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_Validate()
 	}
 
 	return nil
 }
 
-func (input DecryptInput) aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_Validate() error {
+func (input DecryptInput) Aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_Validate() error {
 	for key, value := range input.EncryptionContext {
 		if !utf8.ValidString(key) {
 			return fmt.Errorf("Invalid UTF bytes %s ", key)
@@ -52,14 +52,14 @@ func (input DecryptOutput) Validate() error {
 	if input.EncryptionContext == nil {
 		return fmt.Errorf("input.EncryptionContext is required but has a nil value.")
 	}
-	if input.aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_Validate() != nil {
-		return input.aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_Validate()
+	if input.Aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_Validate() != nil {
+		return input.Aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_Validate()
 	}
 
 	return nil
 }
 
-func (input DecryptOutput) aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_Validate() error {
+func (input DecryptOutput) Aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_Validate() error {
 	for key, value := range input.EncryptionContext {
 		if !utf8.ValidString(key) {
 			return fmt.Errorf("Invalid UTF bytes %s ", key)
@@ -87,8 +87,8 @@ type EncryptInput struct {
 }
 
 func (input EncryptInput) Validate() error {
-	if input.aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_Validate() != nil {
-		return input.aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_Validate()
+	if input.Aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_Validate() != nil {
+		return input.Aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_Validate()
 	}
 	if input.FrameLength != nil {
 		if *input.FrameLength < 1 {
@@ -102,7 +102,7 @@ func (input EncryptInput) Validate() error {
 	return nil
 }
 
-func (input EncryptInput) aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_Validate() error {
+func (input EncryptInput) Aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_Validate() error {
 	for key, value := range input.EncryptionContext {
 		if !utf8.ValidString(key) {
 			return fmt.Errorf("Invalid UTF bytes %s ", key)
@@ -127,14 +127,14 @@ func (input EncryptOutput) Validate() error {
 	if input.EncryptionContext == nil {
 		return fmt.Errorf("input.EncryptionContext is required but has a nil value.")
 	}
-	if input.aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_Validate() != nil {
-		return input.aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_Validate()
+	if input.Aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_Validate() != nil {
+		return input.Aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_Validate()
 	}
 
 	return nil
 }
 
-func (input EncryptOutput) aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_Validate() error {
+func (input EncryptOutput) Aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_Validate() error {
 	for key, value := range input.EncryptionContext {
 		if !utf8.ValidString(key) {
 			return fmt.Errorf("Invalid UTF bytes %s ", key)

@@ -1,0 +1,1 @@
+This is where Java MKP file will be saved

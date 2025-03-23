@@ -117,15 +117,11 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
 
   method GetRandom(n : mplTypes.PositiveInteger) returns (out : seq<uint8>)
   {
-    if n <= 100000 {
-      var p :- expect AtomicPrimitives.AtomicPrimitives();
-      out :- expect p.GenerateRandomBytes(
-        AtomicPrimitives.Types.GenerateRandomBytesInput(
-          length := n
-        ));
-    } else {
-      out := seq(n, _ => 42 as uint8);
-    }
+    var p :- expect AtomicPrimitives.AtomicPrimitives();
+    out :- expect p.GenerateRandomBytes(
+      AtomicPrimitives.Types.GenerateRandomBytesInput(
+        length := n
+      ));
   }
 
   method {:vcs_split_on_every_assert} StartEncryptVectors(
@@ -290,8 +286,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
             ==>
               SupportedEncryptVersion?(manifestData.value.version)
   {
-    var decryptManifestBv :- FileIO.ReadBytesFromFile(manifestPath + manifestFileName);
-    var decryptManifestBytes := BvToBytes(decryptManifestBv);
+    var decryptManifestBytes :- FileIO.ReadBytesFromFile(manifestPath + manifestFileName);
     var manifestJson :- API.Deserialize(decryptManifestBytes)
     .MapFailure(( e: Errors.DeserializationError ) => e.ToString());
     :- Need(manifestJson.Object?, "Not a JSON object");

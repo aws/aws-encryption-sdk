@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 include "LibraryIndex.dfy"
+include "VectorsComposition/AllEsdkV5NoReqEc.dfy"
 include "VectorsComposition/AllEsdkV4NoReqEc.dfy"
-include "VectorsComposition/AllEsdkV4WithReqEc.dfy"
+include "VectorsComposition/AllEsdkV5WithReqEc.dfy"
 include "WriteEsdkJsonManifests.dfy"
 
 module {:options "-functionSyntax:4"} WriteVectors {
@@ -20,7 +21,8 @@ module {:options "-functionSyntax:4"} WriteVectors {
   import EsdkManifestOptions
   import EsdkTestVectors
   import AllEsdkV4NoReqEc
-  import AllEsdkV4WithReqEc
+  import AllEsdkV5NoReqEc
+  import AllEsdkV5WithReqEc
   import WriteEsdkJsonManifests
 
   import UUID
@@ -28,6 +30,7 @@ module {:options "-functionSyntax:4"} WriteVectors {
   import JSON.API
   import SortedSets
   import FileIO
+  import StandardLibrary.String
   import opened Relations
   import opened Seq.MergeSort
 
@@ -80,13 +83,13 @@ module {:options "-functionSyntax:4"} WriteVectors {
 
       var id := AllAlgorithmSuites.ToHex(sortedTests[i].algorithmSuiteId.value);
       var uuid :- expect UUID.GenerateUUID();
-      var test :- WriteEsdkJsonManifests.EncryptTestVectorToJson(sortedTests[i]);
+      var test :- WriteEsdkJsonManifests.EncryptTestVectorToJson(sortedTests[i], version);
       testsJSON := testsJSON + [(uuid, test)];
     }
 
     var manifestJson := Object([
                                  ("type", String("awses-encrypt")),
-                                 ("version", Number(Int(5)))]);
+                                 ("version", Number(Int(version)))]);
 
     var clientJson := Object([
                                ("name", String("aws-encryption-sdk-dafny")),
@@ -105,11 +108,10 @@ module {:options "-functionSyntax:4"} WriteVectors {
     );
 
     var esdkEncryptManifestBytes :- expect API.Serialize(esdkEncryptManifests);
-    var esdkEncryptManifestBv := JSONHelpers.BytesBv(esdkEncryptManifestBytes);
 
     var _ :- expect FileIO.WriteBytesToFile(
       op.encryptManifestOutput + "encrypt-manifest.json",
-      esdkEncryptManifestBv
+      esdkEncryptManifestBytes
     );
 
     output := Success(());
@@ -130,13 +132,13 @@ module {:options "-functionSyntax:4"} WriteVectors {
     for i := 0 to |tests|
     {
       var name := tests[i].id;
-      var test :- WriteEsdkJsonManifests.DecryptTestVectorToJson(tests[i]);
+      var test :- WriteEsdkJsonManifests.DecryptTestVectorToJson(tests[i], op.legacyOutput);
       testsJSON := testsJSON + [(name, test)];
     }
 
     var manifestJson := Object([
                                  ("type", String("awses-decrypt")),
-                                 ("version", Number(Int(5)))]);
+                                 ("version", Number(Int(op.legacyOutput)))]);
     var clientJson := Object([
                                ("name", String("aws-encryption-sdk-dafny")),
                                ("version", String("4.1.0"))]);
@@ -152,11 +154,10 @@ module {:options "-functionSyntax:4"} WriteVectors {
     );
 
     var esdkDecryptManifestBytes :- expect API.Serialize(esdkDecryptManifest);
-    var esdkDecryptManifestBv := JSONHelpers.BytesBv(esdkDecryptManifestBytes);
 
     var _ :- expect FileIO.WriteBytesToFile(
-      op.decryptManifestOutput + "decrypt-manifest.json",
-      esdkDecryptManifestBv
+      op.decryptManifestOutput + "manifest.json",
+      esdkDecryptManifestBytes
     );
 
     output := Success(());
@@ -165,8 +166,9 @@ module {:options "-functionSyntax:4"} WriteVectors {
   function getVersionTests(version: nat): (ret: Result<set<EsdkTestVectors.EsdkEncryptTestVector>, string>)
   {
     match version
-    case 5 => Success(AllEsdkV4NoReqEc.Tests + AllEsdkV4WithReqEc.Tests)
-    case _ => Failure("Only version 4 of generate manifest is supported\n")
+    case 5 => Success(AllEsdkV5NoReqEc.Tests + AllEsdkV5WithReqEc.Tests)
+    case 4 => Success(AllEsdkV4NoReqEc.Tests)
+    case _ => Failure("Only versions >= 4 of generate manifest is supported\n")
   }
 
   predicate DescriptionLessThan(x: EsdkTestVectors.EsdkEncryptTestVector, y: EsdkTestVectors.EsdkEncryptTestVector) {
