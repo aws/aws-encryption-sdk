@@ -90,7 +90,7 @@ module {:extern} TestWrappedESDKMain {
     var result2 := EsdkTestManifests.StartDecryptVectors(
       EsdkManifestOptions.Decrypt(
         manifestPath := directory + "dafny/TestVectors/test/perf/",
-        manifestFileName := "decrypt-manifest.json",
+        manifestFileName := "manifest.json",
         retryPolicy := AllowRetry(),
         report := EsdkManifestOptions.ReportAll
       )
