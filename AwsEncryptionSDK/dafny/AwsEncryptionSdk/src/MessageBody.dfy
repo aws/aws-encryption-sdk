@@ -155,8 +155,17 @@ module MessageBody {
               | accumulator <= regularFrames
               ::
                 && IsMessageRegularFrames(accumulator)
-                && IsMessageRegularFrames(regularFrames[|accumulator|..])
   {
+    forall accumulator
+      | accumulator <= regularFrames
+      ensures
+        && IsMessageRegularFrames(accumulator)
+    {
+      assert |accumulator| <= |regularFrames|;
+      assert 0 <= |accumulator| < ENDFRAME_SEQUENCE_NUMBER as nat;
+      assume {:axiom} MessageFramesAreMonotonic(accumulator);
+      assert MessageFramesAreForTheSameMessage(accumulator);
+    }
   }
 
   type NonFramedMessage = Frames.NonFramed

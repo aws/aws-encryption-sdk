@@ -22,7 +22,7 @@ module {:options "/functionSyntax:4" } EncryptedDataKeys {
     + WriteShortLengthSeq(edk.ciphertext)
   }
 
-  // Seq.DropLast makes a full copy, but we seldom have more than one or two data keys, 
+  // Seq.DropLast makes a full copy, but we seldom have more than one or two data keys,
   // so no point in optimizing away the copy.
   function {:tailrecursion} WriteEncryptedDataKeys(
     edks: ESDKEncryptedDataKeys
