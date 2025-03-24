@@ -202,9 +202,9 @@ jobs:
           unzip valid-Net-4.0.0.zip -d valid-Net-4.0.0
 
       - name: Test Rust
-        working-directory: ${{ matrix.library }}
+        working-directory: ${{ matrix.library }}/runtimes/rust
         shell: bash
         run: |
           # Without this, running test vectors fails due to `fatal runtime error: stack overflow`
           export RUST_MIN_STACK=104857600
-          make test_rust
+          cargo test --release -- --test-threads 1 --nocapture
