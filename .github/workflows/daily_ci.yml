@@ -4,6 +4,7 @@ name: Daily CI
 on:
   schedule:
     - cron: "00 15 * * 1-5"
+  workflow_dispatch:
 
 jobs:
   getVersion:
@@ -63,12 +64,21 @@ jobs:
     with:
       dafny: ${{needs.getVersion.outputs.version}}
 
-  daily-dafny-test-vectors:
+  daily-dafny-keyring-test-vectors:
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
     needs: getVersion
-    uses: ./.github/workflows/library_interop_test_vectors.yml
+    uses: ./.github/workflows/library_interop_keyring_test_vectors.yml
     with:
       dafny: ${{needs.getVersion.outputs.version}}
+    secrets: inherit
+
+  pr-dafny-mkp-keyring-legacy-test-vectors:
+    if: github.event_name != 'schedule' || github.repository_owner == 'aws'
+    needs: getVersion
+    uses: ./.github/workflows/library_interop_mkp_test_vectors.yml
+    with:
+      dafny: ${{needs.getVersion.outputs.version}}
+    secrets: inherit
 
   daily-dafny-legacy-test-vectors:
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
