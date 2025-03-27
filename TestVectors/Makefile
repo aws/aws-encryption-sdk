@@ -337,6 +337,72 @@ _sed_types_file_add_extern:
 _sed_index_file_add_extern:
 	@echo "No extern to process for ESDK TestVectors"
 
+c_test_vectors:
+	cd aws-encryption-sdk-c/tests/TestVectors; \
+	g++ -g -ggdb --std=c++17 -o test_vectors -I../../include/ \
+	base64.cpp do_decrypt.cpp do_encrypt.cpp parse_encrypt.cpp parse_keys.cpp test_vectors.cpp \
+	-I/opt/homebrew/include/ -L/opt/homebrew/lib/ \
+	-I../../install/include/ -L../../install/lib/ -I ../../aws-encryption-sdk-cpp/include/ \
+	../../build-aws-encryption-sdk-c/Debug/libaws-encryption-sdk.dylib \
+	../../build-aws-encryption-sdk-c/aws-encryption-sdk-cpp/Debug/libaws-encryption-sdk-cpp.dylib \
+	-laws-cpp-sdk-core -laws-cpp-sdk-kms -laws-c-common -lcrypto; \
+	install_name_tool -add_rpath ../../build-aws-encryption-sdk-c/Debug/ test_vectors; \
+	install_name_tool -add_rpath ../../build-aws-encryption-sdk-c/aws-encryption-sdk-cpp/Debug/ test_vectors; \
+	install_name_tool -add_rpath ../../install/lib/ test_vectors
+
+c_test_vectors_unix:
+	cd aws-encryption-sdk-c/tests/TestVectors; \
+	ls ../../install/; \
+	ls ../../install/include/; \
+	g++ -g -ggdb --std=c++17 -o test_vectors -I../../include/ \
+	base64.cpp do_decrypt.cpp do_encrypt.cpp parse_encrypt.cpp parse_keys.cpp test_vectors.cpp \
+	-I../../install/include/ -L../../install/lib/ -I ../../aws-encryption-sdk-cpp/include/ \
+	-laws-encryption-sdk -laws-encryption-sdk-cpp \
+	-laws-cpp-sdk-core -laws-cpp-sdk-kms -laws-c-common -lcrypto
+
+test_encrypt_vectors_c_mac: c_test_vectors
+	cd aws-encryption-sdk-c/tests/TestVectors; \
+	rm -rf local; \
+	mkdir -p local; \
+	LD_LIBRARY_PATH=../../install/lib/ ./test_vectors encrypt --manifest-path ./from-dafny --decrypt-manifest-path ./local
+	mkdir -p ./runtimes/c/
+	cp aws-encryption-sdk-c/tests/TestVectors/local/*.json ./runtimes/c/
+	mv ./runtimes/c/decrypt-manifest.json ./runtimes/c/manifest.json
+	cp -r aws-encryption-sdk-c/tests/TestVectors/local/plaintexts/ ./runtimes/c/plaintexts/
+	cp -r aws-encryption-sdk-c/tests/TestVectors/local/ciphertexts/ ./runtimes/c/ciphertexts/
+
+test_encrypt_vectors_c_unix: c_test_vectors_unix
+	cd aws-encryption-sdk-c/tests/TestVectors; \
+	rm -rf local; \
+	mkdir -p local; \
+	LD_LIBRARY_PATH=../../install/lib/ ./test_vectors encrypt --manifest-path ./from-dafny --decrypt-manifest-path ./local
+	mkdir -p ./runtimes/c/
+	pwd
+	ls -l aws-encryption-sdk-c/tests/TestVectors/
+	ls -l aws-encryption-sdk-c/tests/TestVectors/local/
+	cp aws-encryption-sdk-c/tests/TestVectors/local/*.json ./runtimes/c/
+	mv ./runtimes/c/decrypt-manifest.json ./runtimes/c/manifest.json
+	cp -r aws-encryption-sdk-c/tests/TestVectors/local/plaintexts/ ./runtimes/c/plaintexts/
+	cp -r aws-encryption-sdk-c/tests/TestVectors/local/ciphertexts/ ./runtimes/c/ciphertexts/
+
+test_decrypt_encrypt_vectors_c_mac: c_test_vectors
+	mkdir -p aws-encryption-sdk-c/tests/TestVectors/local/
+	cp  ./runtimes/c/*.json aws-encryption-sdk-c/tests/TestVectors/local/
+	cp -r ./runtimes/c/plaintexts/ aws-encryption-sdk-c/tests/TestVectors/local/plaintexts/
+	cp -r ./runtimes/c/ciphertexts/ aws-encryption-sdk-c/tests/TestVectors/local/ciphertexts/
+	cd aws-encryption-sdk-c/tests/TestVectors; \
+	LD_LIBRARY_PATH=../../install/lib/ ./test_vectors decrypt --manifest-path ./local --manifest-name manifest.json
+
+test_decrypt_encrypt_vectors_c_unix: c_test_vectors_unix
+	mkdir -p aws-encryption-sdk-c/tests/TestVectors/local/
+	pwd
+	ls -l ./runtimes/c/
+	cp ./runtimes/c/*.json aws-encryption-sdk-c/tests/TestVectors/local/
+	cp -r ./runtimes/c/plaintexts/ aws-encryption-sdk-c/tests/TestVectors/local/plaintexts/
+	cp -r ./runtimes/c/ciphertexts/ aws-encryption-sdk-c/tests/TestVectors/local/ciphertexts/
+	cd aws-encryption-sdk-c/tests/TestVectors; \
+	LD_LIBRARY_PATH=../../install/lib/ ./test_vectors decrypt --manifest-path ./local --manifest-name manifest.json
+
 PYTHON_MODULE_NAME=aws_encryption_sdk_test_vectors
 
 TRANSLATION_RECORD_PYTHON := \
