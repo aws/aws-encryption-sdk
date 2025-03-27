@@ -61,8 +61,7 @@ jobs:
 
       - name: Install dependencies
         if: matrix.os != 'ubuntu-22.04'	&& matrix.language == 'c'
-        run:
-          brew install json-c
+        run: brew install json-c
 
       - name: Install LibCurl
         if: matrix.os == 'ubuntu-22.04' && matrix.language == 'c'
@@ -131,7 +130,7 @@ jobs:
           make
           make test
           make install
-  
+
         # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
         if: matrix.language == 'net'
@@ -342,8 +341,7 @@ jobs:
 
       - name: Install dependencies
         if: matrix.os != 'ubuntu-22.04'	&& matrix.decrypting_language == 'c'
-        run:
-          brew install json-c
+        run: brew install json-c
 
       - name: Install LibCurl
         if: matrix.os == 'ubuntu-22.04' && matrix.decrypting_language == 'c'
@@ -416,8 +414,7 @@ jobs:
           make
           make test
           make install
-  
-  
+
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
         if: matrix.decrypting_language == 'net'
