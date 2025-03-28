@@ -139,6 +139,10 @@ func NetV4_0_0_RetryPolicy_ToDafny(nativeInput awscryptographyencryptionsdksmith
 			if enumVal == nativeInput {
 				break
 			}
+			if index == len(nativeInput.Values()) {
+				panic("Input value did not found in enum values")
+			}
+
 		}
 		var enum interface{}
 		for allEnums, i := dafny.Iterate(AwsCryptographyEncryptionSdkTypes.CompanionStruct_NetV4__0__0__RetryPolicy_{}.AllSingletonConstructors()), 0; i < index; i++ {
@@ -208,6 +212,10 @@ func Aws_cryptography_encryptionSdk_DecryptOutput_algorithmSuiteId_ToDafny(input
 			if enumVal == input {
 				break
 			}
+			if index == len(input.Values()) {
+				panic("Input value did not found in enum values")
+			}
+
 		}
 		var enum interface{}
 		for allEnums, i := dafny.Iterate(AwsCryptographyMaterialProvidersTypes.CompanionStruct_ESDKAlgorithmSuiteId_{}.AllSingletonConstructors()), 0; i < index; i++ {
@@ -255,6 +263,7 @@ func Aws_cryptography_encryptionSdk_EncryptInput_algorithmSuiteId_ToDafny(input 
 			if enumVal == *input {
 				break
 			}
+
 		}
 		var enum interface{}
 		for allEnums, i := dafny.Iterate(AwsCryptographyMaterialProvidersTypes.CompanionStruct_ESDKAlgorithmSuiteId_{}.AllSingletonConstructors()), 0; i < index; i++ {
@@ -309,6 +318,10 @@ func Aws_cryptography_encryptionSdk_EncryptOutput_algorithmSuiteId_ToDafny(input
 			if enumVal == input {
 				break
 			}
+			if index == len(input.Values()) {
+				panic("Input value did not found in enum values")
+			}
+
 		}
 		var enum interface{}
 		for allEnums, i := dafny.Iterate(AwsCryptographyMaterialProvidersTypes.CompanionStruct_ESDKAlgorithmSuiteId_{}.AllSingletonConstructors()), 0; i < index; i++ {
@@ -346,6 +359,7 @@ func Aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_commitmentPolicy_ToDa
 			if enumVal == *input {
 				break
 			}
+
 		}
 		var enum interface{}
 		for allEnums, i := dafny.Iterate(AwsCryptographyMaterialProvidersTypes.CompanionStruct_ESDKCommitmentPolicy_{}.AllSingletonConstructors()), 0; i < index; i++ {
@@ -379,6 +393,7 @@ func Aws_cryptography_encryptionSdk_AwsEncryptionSdkConfig_netV4_0_0_RetryPolicy
 			if enumVal == *input {
 				break
 			}
+
 		}
 		var enum interface{}
 		for allEnums, i := dafny.Iterate(AwsCryptographyEncryptionSdkTypes.CompanionStruct_NetV4__0__0__RetryPolicy_{}.AllSingletonConstructors()), 0; i < index; i++ {
