@@ -15,7 +15,7 @@ type Shim struct {
 	client *awscryptographyencryptionsdksmithygenerated.Client
 }
 
-func (_static *CompanionStruct_Default___) WrappedESDK(inputConfig AwsCryptographyEncryptionSdkTypes.AwsEncryptionSdkConfig) Wrappers.Result {
+func  WrappedESDK(inputConfig AwsCryptographyEncryptionSdkTypes.AwsEncryptionSdkConfig) Wrappers.Result {
 	var nativeConfig = awscryptographyencryptionsdksmithygenerated.AwsEncryptionSdkConfig_FromDafny(inputConfig)
 	var nativeClient, nativeError = awscryptographyencryptionsdksmithygenerated.NewClient(nativeConfig)
 	if nativeError != nil {
