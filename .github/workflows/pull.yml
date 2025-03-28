@@ -56,19 +56,16 @@ jobs:
     uses: ./.github/workflows/library_interop_keyring_test_vectors.yml
     with:
       dafny: ${{needs.getVersion.outputs.version}}
-    secrets: inherit
   pr-dafny-mkp-keyring-legacy-test-vectors:
     needs: getVersion
     uses: ./.github/workflows/library_interop_mkp_test_vectors.yml
     with:
       dafny: ${{needs.getVersion.outputs.version}}
-    secrets: inherit
   pr-dafny-legacy-test-vectors:
     needs: getVersion
     uses: ./.github/workflows/library_legacy_interop_test_vectors.yml
     with:
       dafny: ${{needs.getVersion.outputs.version}}
-    secrets: inherit
   pr-ci-all-required:
     if: always()
     needs:
