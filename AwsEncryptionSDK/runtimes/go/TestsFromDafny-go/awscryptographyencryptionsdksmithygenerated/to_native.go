@@ -157,18 +157,15 @@ func NetV4_0_0_RetryPolicy_FromDafny(input interface{}) awscryptographyencryptio
 
 func Aws_cryptography_encryptionSdk_DecryptInput_ciphertext_FromDafny(input interface{}) []byte {
 	return func() []byte {
-		b := []byte{}
 		if input == nil {
 			return nil
 		}
-		for i := dafny.Iterate(input); ; {
-			val, ok := i()
-			if !ok {
-				return b
-			} else {
-				b = append(b, val.(byte))
-			}
+		a := input.(dafny.Sequence).ToArray().(dafny.GoNativeArray)
+		b := make([]byte, 0, a.Length())
+		for i := uint32(0); i < a.Length(); i++ {
+			b = append(b, a.Select(i).(byte))
 		}
+		return b
 	}()
 }
 func Aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_FromDafny(input interface{}) map[string]string {
@@ -188,18 +185,15 @@ func Aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_FromDafny(inp
 }
 func Aws_cryptography_encryptionSdk_DecryptOutput_plaintext_FromDafny(input interface{}) []byte {
 	return func() []byte {
-		b := []byte{}
 		if input == nil {
 			return nil
 		}
-		for i := dafny.Iterate(input); ; {
-			val, ok := i()
-			if !ok {
-				return b
-			} else {
-				b = append(b, val.(byte))
-			}
+		a := input.(dafny.Sequence).ToArray().(dafny.GoNativeArray)
+		b := make([]byte, 0, a.Length())
+		for i := uint32(0); i < a.Length(); i++ {
+			b = append(b, a.Select(i).(byte))
 		}
+		return b
 	}()
 }
 func Aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_FromDafny(input interface{}) map[string]string {
@@ -237,18 +231,15 @@ func Aws_cryptography_encryptionSdk_DecryptOutput_algorithmSuiteId_FromDafny(inp
 }
 func Aws_cryptography_encryptionSdk_EncryptInput_plaintext_FromDafny(input interface{}) []byte {
 	return func() []byte {
-		b := []byte{}
 		if input == nil {
 			return nil
 		}
-		for i := dafny.Iterate(input); ; {
-			val, ok := i()
-			if !ok {
-				return b
-			} else {
-				b = append(b, val.(byte))
-			}
+		a := input.(dafny.Sequence).ToArray().(dafny.GoNativeArray)
+		b := make([]byte, 0, a.Length())
+		for i := uint32(0); i < a.Length(); i++ {
+			b = append(b, a.Select(i).(byte))
 		}
+		return b
 	}()
 }
 func Aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_FromDafny(input interface{}) map[string]string {
@@ -299,18 +290,15 @@ func Aws_cryptography_encryptionSdk_EncryptInput_frameLength_FromDafny(input int
 }
 func Aws_cryptography_encryptionSdk_EncryptOutput_ciphertext_FromDafny(input interface{}) []byte {
 	return func() []byte {
-		b := []byte{}
 		if input == nil {
 			return nil
 		}
-		for i := dafny.Iterate(input); ; {
-			val, ok := i()
-			if !ok {
-				return b
-			} else {
-				b = append(b, val.(byte))
-			}
+		a := input.(dafny.Sequence).ToArray().(dafny.GoNativeArray)
+		b := make([]byte, 0, a.Length())
+		for i := uint32(0); i < a.Length(); i++ {
+			b = append(b, a.Select(i).(byte))
 		}
+		return b
 	}()
 }
 func Aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_FromDafny(input interface{}) map[string]string {
