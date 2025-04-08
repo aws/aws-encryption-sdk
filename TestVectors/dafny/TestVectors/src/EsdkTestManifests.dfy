@@ -29,15 +29,6 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
   import opened EsdkTestVectors
   import WriteVectors
   import Time
-  import OsLang
-
-  function LogFileName() : string
-  {
-    if OsLang.GetLanguageShort() == "Dotnet" then
-      "PerfLog.txt"
-    else
-      "../../PerfLog.txt"
-  }
 
   method StartDecryptVectors(
     op: EsdkManifestOptions.ManifestOptions
@@ -88,7 +79,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
       var vector := vectors[i];
       if TestDecryptVector?(vector) {
         var itime := Time.GetAbsoluteTime();
-        var pass := EsdkTestVectors.TestDecrypt(keys, vector);
+        var pass := EsdkTestVectors.TestDecrypt(keys, vector, report);
         if EsdkManifestOptions.DoReportIndividual(report) {
           var elapsed := Time.TimeSince(itime);
           Time.PrintTimeLong(elapsed, "Decrypt " + vector.id, Some(LogFileName()));
@@ -228,7 +219,7 @@ module {:options "-functionSyntax:4"} EsdkTestManifests {
           "Vector is using an algorithm suite other than ESDK"
         );
         var itime := Time.GetAbsoluteTime();
-        var pass :- EsdkTestVectors.TestEncrypt(plaintexts, keys, test);
+        var pass :- EsdkTestVectors.TestEncrypt(plaintexts, keys, test, report);
         if EsdkManifestOptions.DoReportIndividual(report) {
           var elapsed := Time.TimeSince(itime);
           Time.PrintTimeLong(elapsed, "Encrypt " + test.vector.id.UnwrapOr("unknown"), Some(LogFileName()));

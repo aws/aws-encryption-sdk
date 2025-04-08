@@ -20,6 +20,7 @@ module {:extern} TestWrappedESDKMain {
   import MPL = AwsCryptographyMaterialProvidersTypes
   import MaterialProviders
   import OsLang
+  import FileIO
 
   // Test execution directory is different for different runtimes.
   // Runtime should define an extern to return the expected test execution directory.
@@ -100,6 +101,36 @@ module {:extern} TestWrappedESDKMain {
     }
     expect result2.Success?;
   }
+
+  method {:test} TestThousandManifest() {
+    var directory := GetDirPrefix();
+    var result := EsdkTestManifests.StartEncryptVectors(
+      EsdkManifestOptions.Encrypt(
+        manifestPath := directory + "dafny/TestVectors/test/",
+        manifest := "thousand-encrypt-manifest.json",
+        decryptManifestOutput := directory + "dafny/TestVectors/test/thousand/",
+        report := EsdkManifestOptions.ReportLoop(10000)
+      )
+    );
+    if result.Failure? {
+      print "\nTestThousandManifest Encrypt Failure\n", result.error, "\n";
+    }
+    expect result.Success?;
+
+    var result2 := EsdkTestManifests.StartDecryptVectors(
+      EsdkManifestOptions.Decrypt(
+        manifestPath := directory + "dafny/TestVectors/test/thousand/",
+        manifestFileName := "manifest.json",
+        retryPolicy := AllowRetry(),
+        report := EsdkManifestOptions.ReportLoop(10000)
+      )
+    );
+    if result2.Failure? {
+      print "\nTestThousandManifest Decrypt Failure\n", result2.error, "\n";
+    }
+    expect result2.Success?;
+  }
+
 
   // Read encrypt manifests for invalid ESDK .NET v4.0.0 messages
   // These messages are expected to fail if retry option is set to FORBID_RETRY

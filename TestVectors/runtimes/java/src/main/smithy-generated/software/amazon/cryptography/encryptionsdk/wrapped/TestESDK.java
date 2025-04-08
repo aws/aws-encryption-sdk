@@ -62,11 +62,6 @@ public class TestESDK implements IAwsEncryptionSdkClient {
       final CryptoResult<byte[], ?> decryptResult;
 
       if (_prefer_mkp_over_keyring && provider != null) {
-        // Logging
-        // TODO: Make logging optional
-        System.out.println(
-          "Decrypted with MasterKeyProvider: " + provider.getClass().getName()
-        );
         decryptResult =
           this._impl.decryptData(provider, nativeInput.ciphertext().array());
         if (!Objects.isNull(nativeInput.encryptionContext())) {
@@ -95,8 +90,6 @@ public class TestESDK implements IAwsEncryptionSdkClient {
           }
         }
       } else {
-        // Logging
-        System.out.println("Decrypted with MPL Keyring/CMM");
         if (Objects.isNull(nativeInput.materialsManager())) {
           // Call decrypt with keyring
           if (Objects.isNull(nativeInput.encryptionContext())) {
@@ -195,8 +188,6 @@ public class TestESDK implements IAwsEncryptionSdkClient {
       this._impl.setEncryptionAlgorithm(cryptoAlgorithm);
 
       if (_prefer_mkp_over_keyring && provider != null) {
-        // Logging
-        System.out.println("Encrypted with: " + provider.getClass().getName());
         // Call decrypt with MKP
         if (Objects.isNull(nativeInput.encryptionContext())) {
           encryptResult =
@@ -210,8 +201,6 @@ public class TestESDK implements IAwsEncryptionSdkClient {
               );
         }
       } else {
-        // Logging
-        System.out.println("Encrypted with MPL Keyring/CMM");
         // If the CMM is null, it MUST be a Keyring
         if (Objects.isNull(nativeInput.materialsManager())) {
           // Call decrypt with keyring

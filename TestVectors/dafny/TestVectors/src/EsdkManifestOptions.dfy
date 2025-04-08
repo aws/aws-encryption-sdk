@@ -12,6 +12,7 @@ module {:options "-functionSyntax:4"} EsdkManifestOptions {
     | ReportIndividual
     | ReportFinal
     | ReportAll
+    | ReportLoop(count : nat)
 
   predicate DoReportFinal(r : PerfReport)
   {
