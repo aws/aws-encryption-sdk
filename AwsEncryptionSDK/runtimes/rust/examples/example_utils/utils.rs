@@ -126,19 +126,19 @@ pub(crate) fn x962_to_x509(
 
 fn get_nid(x: EcdhCurveSpec) -> i32 {
     match x {
-        EcdhCurveSpec::EccNistP256 {} => aws_lc_sys::NID_X9_62_prime256v1,
-        EcdhCurveSpec::EccNistP384 {} => aws_lc_sys::NID_secp384r1,
-        EcdhCurveSpec::EccNistP521 {} => aws_lc_sys::NID_secp521r1,
-        EcdhCurveSpec::Sm2 {} => panic!("No SM2 in Rust"),
+        EcdhCurveSpec::EccNistP256 => aws_lc_sys::NID_X9_62_prime256v1,
+        EcdhCurveSpec::EccNistP384 => aws_lc_sys::NID_secp384r1,
+        EcdhCurveSpec::EccNistP521 => aws_lc_sys::NID_secp521r1,
+        EcdhCurveSpec::Sm2 => panic!("No SM2 in Rust"),
     }
 }
 
 fn get_alg(x: EcdhCurveSpec) -> &'static aws_lc_rs::agreement::Algorithm {
     match x {
-        EcdhCurveSpec::EccNistP256 {} => &aws_lc_rs::agreement::ECDH_P256,
-        EcdhCurveSpec::EccNistP384 {} => &aws_lc_rs::agreement::ECDH_P384,
-        EcdhCurveSpec::EccNistP521 {} => &aws_lc_rs::agreement::ECDH_P521,
-        EcdhCurveSpec::Sm2 {} => panic!("No SM2 in Rust"),
+        EcdhCurveSpec::EccNistP256 => &aws_lc_rs::agreement::ECDH_P256,
+        EcdhCurveSpec::EccNistP384 => &aws_lc_rs::agreement::ECDH_P384,
+        EcdhCurveSpec::EccNistP521 => &aws_lc_rs::agreement::ECDH_P521,
+        EcdhCurveSpec::Sm2 => panic!("No SM2 in Rust"),
     }
 }
 
