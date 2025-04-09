@@ -1,0 +1,60 @@
+{
+    "manifest": {
+      "type": "awses-encrypt",
+      "version": 5
+    },
+    "client": {
+      "name": "aws-encryption-sdk-dafny",
+      "version": "4.1.0"
+    },
+    "keys": "file://keys.json",
+    "plaintexts": {
+        "small": 1000
+    },
+    "tests": {
+        "small-aes-256": {
+            "encryption-scenario": {
+              "type": "positive-esdk",
+              "plaintext": "small",
+              "description": "Generated RawAES aes-256",
+              "algorithmSuiteId": "0078",
+              "frame-size": 512,
+              "encryptKeyDescription": {
+                "type": "raw",
+                "key": "aes-256",
+                "provider-id": "aws-raw-vectors-persistent-aes-256",
+                "encryption-algorithm": "aes"
+              },
+              "decryptKeyDescription": {
+                "type": "raw",
+                "key": "aes-256",
+                "provider-id": "aws-raw-vectors-persistent-aes-256",
+                "encryption-algorithm": "aes"
+              },
+              "encryption-context": {},
+              "reproduced-encryption-context": {}
+            }
+          },
+          "small-aws-kms-hierarchy" : {
+            "encryption-scenario" : {
+               "type" : "positive-esdk",
+               "plaintext" : "small",
+               "description" : "Generated Hierarchy KMS static-branch-key-1",
+               "algorithmSuiteId" : "0478",
+               "frame-size" : 512,
+               "encryptKeyDescription" : {
+                  "type" : "aws-kms-hierarchy",
+                  "key" : "static-branch-key-1"
+               },
+               "decryptKeyDescription" : {
+                  "type" : "aws-kms-hierarchy",
+                  "key" : "static-branch-key-1"
+               },
+               "encryption-context" : {
+               },
+               "reproduced-encryption-context" : {
+               }
+            }
+         }
+    }
+}
