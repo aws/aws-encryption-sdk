@@ -35,11 +35,11 @@ module SerializableTypes {
   predicate method IsESDKEncryptionContext(ec: MPL.EncryptionContext) {
     && |ec| < UINT16_LIMIT
     && Length(ec) < ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH
-    && forall element <- ec.Items ::
-         && HasUint16Len(element.0)
-         && ValidUTF8Seq(element.0)
-         && HasUint16Len(element.1)
-         && ValidUTF8Seq(element.1)
+    && forall element
+         | element in (multiset(ec.Keys) + multiset(ec.Values))
+         ::
+           && HasUint16Len(element)
+           && ValidUTF8Seq(element)
   }
 
   type ESDKEncryptionContext = ec: MPL.EncryptionContext
