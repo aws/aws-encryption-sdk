@@ -149,7 +149,7 @@ module SerializableTypes {
           ==> pairs[i].key != pairs[j].key)
   }
 
-  function method {:tailrecursion} LinearLength(
+  function LinearLength(
     pairs: Linear<UTF8.ValidUTF8Bytes, UTF8.ValidUTF8Bytes>
   ):
     (ret: nat)
@@ -162,6 +162,24 @@ module SerializableTypes {
     else
       LinearLength(Seq.DropLast(pairs)) + PairLength(Seq.Last(pairs))
   }
+  by method { // because Seq.DropLast makes a full copy
+    var result : nat := 0;
+    for i := 0 to |pairs|
+      invariant result == LinearLength(pairs[..i])
+    {
+      result := result + PairLength(pairs[i]);
+      assert result == LinearLength(pairs[..i]) + PairLength(pairs[i]);
+      assert Seq.DropLast(pairs[..i+1]) == pairs[..i];
+      assert result == LinearLength(Seq.DropLast(pairs[..i+1])) + PairLength(Seq.Last(pairs[..i+1]));
+      assert result == LinearLength(pairs[..i+1]);
+
+    }
+    assert result == LinearLength(pairs[..|pairs|]);
+    assert pairs == pairs[..|pairs|];
+    assert result == LinearLength(pairs);
+    return result;
+  }
+
 
   function method PairLength(
     pair: Pair<UTF8.ValidUTF8Bytes, UTF8.ValidUTF8Bytes>

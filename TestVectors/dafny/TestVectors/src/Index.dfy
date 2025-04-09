@@ -54,13 +54,13 @@ module {:options "-functionSyntax:4"} WrappedESDKMain {
       if op?.Success? {
         var op := op?.value;
         match op
-        case Decrypt(_, _, _, _) =>
+        case Decrypt(_, _, _, _, _) =>
           var result := EsdkTestManifests.StartDecryptVectors(op);
           if result.Failure? {
             print result.error;
           }
           expect result.Success?;
-        case Encrypt(_, _, _, _, _) =>
+        case Encrypt(_, _, _, _, _, _) =>
           var result := EsdkTestManifests.StartEncryptVectors(op);
           if result.Failure? {
             print result.error;

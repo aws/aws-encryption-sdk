@@ -20,6 +20,18 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
   import KeyVectorsTypes = AwsCryptographyMaterialProvidersTestVectorKeysTypes
   import TestVectors
   import AllAlgorithmSuites
+  import EsdkManifestOptions
+  import Time
+  import OsLang
+  import StandardLibrary.String
+
+  function LogFileName() : string
+  {
+    if OsLang.GetLanguageShort() == "Dotnet" then
+      "PerfLog.txt"
+    else
+      "../../PerfLog.txt"
+  }
 
   datatype EncryptTest = EncryptTest(
     cmm: mplTypes.ICryptographicMaterialsManager,
@@ -192,20 +204,14 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
 
   method {:vcs_split_on_every_assert} TestDecrypt(
     keys: KeyVectors.KeyVectorsClient,
-    vector: EsdkDecryptTestVector
+    vector: EsdkDecryptTestVector,
+    report: EsdkManifestOptions.PerfReport
   )
     returns (output: bool)
     requires keys.ValidState()
     modifies keys.Modifies
     ensures keys.ValidState()
   {
-    if vector.algorithmSuiteId.Some? {
-      var id := AllAlgorithmSuites.ToHex(vector.algorithmSuiteId.value);
-      print "\nTEST-DECRYPT===> ", vector.id, "\n", id, " ", vector.description, "\n";
-    } else {
-      print "\nTEST-DECRYPT===> ", vector.id, "\n", vector.description, "\n";
-    }
-
     // The decrypt test vectors also test initialization
     // This is because they were developed when the MPL
     // was still part of the ESDK
@@ -213,6 +219,12 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
 
     if test?.Failure? {
       print test?.error, "\n", "\nFAILED! <-----------\n";
+      if vector.algorithmSuiteId.Some? {
+        var id := AllAlgorithmSuites.ToHex(vector.algorithmSuiteId.value);
+        print "\nTEST-DECRYPT===> ", vector.id, "\n", id, " ", vector.description, "\n\n";
+      } else {
+        print "\nTEST-DECRYPT===> ", vector.id, "\n", vector.description, "\n\n";
+      }
       return false;
     }
 
@@ -233,6 +245,26 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
       materialsManager := Some(test.cmm),
       keyring := None
     );
+
+    if report.ReportLoop? {
+      var pos := test.vector.PositiveDecryptTestVector? || test.vector.PositiveV1OrV2DecryptTestVector? || test.vector.PositiveV4DecryptTestVector?;
+      var time := Time.GetAbsoluteTime();
+      var total := report.count;
+      for i := 0 to report.count {
+        var result := test.client.Decrypt(input);
+        if pos && result.Failure? {
+          print "Aborting ReportLoop for ", test.vector.id, " because it was a positive test and it failed with ", result.error, "\n";
+          total := i;
+          break;
+        } else if !pos && result.Success? {
+          print "Aborting ReportLoop for ", test.vector.id, " because it was a negative test and it succeeded\n";
+          total := i;
+          break;
+        }
+      }
+      var elapsed := Time.TimeSince(time);
+      Time.PrintTimeLong(elapsed, "Decrypt(" + String.Base10Int2String(total) + ") " + test.vector.id, Some(LogFileName()));
+    }
 
     var result := test.client.Decrypt(input);
 
@@ -331,7 +363,8 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
   method {:vcs_split_on_every_assert} TestEncrypt(
     plaintexts: map<string, seq<uint8>>,
     keys: KeyVectors.KeyVectorsClient,
-    test: EncryptTest
+    test: EncryptTest,
+    report: EsdkManifestOptions.PerfReport
   )
     returns (output: Result<EncryptTestOutput, string>)
     requires keys.ValidState() && test.ValidState()
@@ -344,9 +377,6 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
     requires test.vector.algorithmSuiteId.Some? && test.vector.algorithmSuiteId.value.id.ESDK?
     requires test.vector.id.Some?
   {
-    var id := AllAlgorithmSuites.ToHex(test.vector.algorithmSuiteId.value);
-    print "\nTEST-ENCRYPT===> ", test.vector.id.value, "\n", id, " ", test.vector.description, "\n";
-
     // The encrypt test vectors also test initialization
     // This is because they were developed when the MPL
     // was still part of the ESDK
@@ -364,6 +394,26 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
       frameLength := frameLength,
       algorithmSuiteId := Some(test.vector.algorithmSuiteId.value.id.ESDK)
     );
+
+    if report.ReportLoop? {
+      var pos := test.vector.PositiveEncryptTestVector? || test.vector.PositiveEncryptNegativeDecryptTestVector?;
+      var time := Time.GetAbsoluteTime();
+      var total := report.count;
+      for i := 0 to report.count {
+        var result := test.client.Encrypt(input);
+        if pos && result.Failure? {
+          print "Aborting ReportLoop for ", test.vector.id.UnwrapOr("unknown"), " because it was a positive test and it failed with ", result.error, "\n";
+          total := i;
+          break;
+        } else if !pos && result.Success? {
+          print "Aborting ReportLoop for ", test.vector.id.UnwrapOr("unknown"), " because it was a negative test and it succeeded\n";
+          total := i;
+          break;
+        }
+      }
+      var elapsed := Time.TimeSince(time);
+      Time.PrintTimeLong(elapsed, "Encrypt(" + String.Base10Int2String(total) + ") " + test.vector.id.UnwrapOr("unknown"), Some(LogFileName()));
+    }
     var result := test.client.Encrypt(input);
 
     if
@@ -386,6 +436,8 @@ module {:options "-functionSyntax:4"} EsdkTestVectors {
         print result.error;
       }
       print "\nFAILED! <-----------\n";
+      var id := AllAlgorithmSuites.ToHex(test.vector.algorithmSuiteId.value);
+      print "\nTEST-ENCRYPT===> ", test.vector.id.value, "\n", id, " ", test.vector.description, "\n\n";
     }
   }
 
