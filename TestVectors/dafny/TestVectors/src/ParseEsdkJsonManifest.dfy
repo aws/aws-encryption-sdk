@@ -216,9 +216,15 @@ module {:options "-functionSyntax:4"} ParseEsdkJsonManifest {
 
     var encryptionContextStrings :- SmallObjectToStringStringMap(encryptionContextJsonKey, scenario);
     var encryptionContext :- utf8EncodeMap(encryptionContextStrings);
-    var reproducedEncryptionContextString :- SmallObjectToStringStringMap(reproducedEncryptionContextJsonKey, scenario);
-    var reproducedEncryptionContext :- utf8EncodeMap(reproducedEncryptionContextString);
+    var reproducedEncryptionContextString := SmallObjectToStringStringMap(reproducedEncryptionContextJsonKey, scenario);
     var description :- GetString("description", scenario);
+
+    // If no reproducedEncryptionContext, default to regular encryptionContext
+    var reproducedEncryptionContext :-
+      if reproducedEncryptionContextString.Success? then
+        utf8EncodeMap(reproducedEncryptionContextString.value)
+      else
+        Success(encryptionContext);
 
     match typ
     case "positive-esdk" =>
