@@ -54,9 +54,7 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
   + AllKms.Tests
   + AllKmsMrkAware.Tests
   + AllKmsMrkAwareDiscovery.Tests
-  + AllRawAES.TestsNoEc
-  + AllRawAES.TestsBasicEc
-  + AllRawAES.TestControlEc
+  + AllRawAES.Tests
   + AllRawAES.TestsWithOnePairOfHighCodePointUtf8ValuesInEc
   + AllRawRSA.Tests
   + AllMulti.Tests
@@ -74,11 +72,8 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
           plaintextPath := "",
           encryptDescriptions := keyringConfig.encryptDescription,
           decryptDescriptions := keyringConfig.decryptDescription,
-          // For now, interop with the ESDK-JS is tricky because of it's sorting of the aad.
-          // To deal with this detail we will only include encryption context in the test vector if the algorithm
-          // suite does not have an asymmetric signature.
-          reproducedEncryptionContext := if algorithmSuite.signature.ECDSA? then Some(map[]) else Some(keyringConfig.encryptionContext),
-          encryptionContext := if algorithmSuite.signature.ECDSA? then Some(map[]) else Some(keyringConfig.encryptionContext),
+          reproducedEncryptionContext := Some(keyringConfig.encryptionContext),
+          encryptionContext := Some(keyringConfig.encryptionContext),
           frameLength := Some(frameSize),
           algorithmSuiteId := Some(algorithmSuite),
           description := keyringConfig.name
