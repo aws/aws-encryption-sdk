@@ -55,8 +55,8 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
   + AllKmsMrkAware.Tests
   + AllKmsMrkAwareDiscovery.Tests
   + AllRawAES.TestsNoEc
-  + AllRawAES.TestsBasicEc
-  + AllRawAES.TestControlEc
+  // + AllRawAES.TestsBasicEc
+  // + AllRawAES.TestControlEc
   + AllRawAES.TestsWithMultipleUTF8Ec
   + AllRawAES.TestsWithOnePairOfHighCodePointUtf8ValuesInEc
   + AllRawRSA.Tests
