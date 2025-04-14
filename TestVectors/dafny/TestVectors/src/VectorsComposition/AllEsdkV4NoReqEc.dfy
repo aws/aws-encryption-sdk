@@ -57,6 +57,7 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
   + AllRawAES.TestsNoEc
   + AllRawAES.TestsBasicEc
   + AllRawAES.TestControlEc
+  + AllRawAES.TestsWithMultipleUTF8Ec
   + AllRawAES.TestsWithOnePairOfHighCodePointUtf8ValuesInEc
   + AllRawRSA.Tests
   + AllMulti.Tests
@@ -65,7 +66,7 @@ module {:options "/functionSyntax:4"} AllEsdkV4NoReqEc {
   const AllPostiveKeyringTestsNoDBESuiteNoReqEC :=
     set
       keyringConfig <- AllPositiveKeyringTestsNoReqCmmNoKmsRsa | !keyringConfig.NegativeEncryptKeyringVector?,
-      algorithmSuite <- AllAlgorithmSuites.ESDKAlgorithmSuites | algorithmSuite.commitment.None?
+      algorithmSuite <- AllAlgorithmSuites.ESDKAlgorithmSuites
       ::
         EsdkTestVectors.PositiveEncryptTestVector(
           version := 4,
