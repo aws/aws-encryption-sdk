@@ -35,6 +35,33 @@
         "reproduced-encryption-context": {}
       }
     },
+    "small-rsa-4096": {
+      "encryption-scenario": {
+        "type": "positive-esdk",
+        "plaintext": "small",
+        "description": "Generated RawRSA rsa-4096",
+        "algorithmSuiteId": "0146",
+        "frame-size": 512,
+        "encryptKeyDescription": {
+          "type": "raw",
+          "key": "rsa-4096-public",
+          "provider-id": "aws-raw-vectors-persistent-rsa-4096",
+          "encryption-algorithm": "rsa",
+          "padding-algorithm": "oaep-mgf1",
+          "padding-hash": "sha512"
+        },
+        "decryptKeyDescription": {
+          "type": "raw",
+          "key": "rsa-4096-private",
+          "provider-id": "aws-raw-vectors-persistent-rsa-4096",
+          "encryption-algorithm": "rsa",
+          "padding-algorithm": "oaep-mgf1",
+          "padding-hash": "sha512"
+        },
+        "encryption-context": {},
+        "reproduced-encryption-context": {}
+      }
+    },
     "small-aws-kms-hierarchy": {
       "encryption-scenario": {
         "type": "positive-esdk",
