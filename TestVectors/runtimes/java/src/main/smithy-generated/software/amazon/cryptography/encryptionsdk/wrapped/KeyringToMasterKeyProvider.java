@@ -137,10 +137,12 @@ public class KeyringToMasterKeyProvider {
         wrappingKey =
           getPublicKeyFromPEM(ByteBuffer(rsaKeyring.publicKey().dtor_value()));
       }
-      if (rsaKeyring.privateKey().is_Some()) {
+      if (rsaKeyring.privateKeyMaterial().is_Some()) {
         unwrappingKey =
-          getPrivateKeyFromPEM(
-            ByteBuffer(rsaKeyring.privateKey().dtor_value())
+          getPrivateKeyFromBytes(
+            ByteBuffer(
+              rsaKeyring.privateKeyMaterial().dtor_value().privateKey()
+            )
           );
       }
       String rsaWrappingAlg = getRsaWrappingAlg(rsaKeyring.paddingScheme());
@@ -242,6 +244,16 @@ public class KeyringToMasterKeyProvider {
         "IOException while reading private key PEM",
         e
       );
+    } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+      throw new RuntimeException("Error generating private key from PEM", e);
+    }
+  }
+
+  public static PrivateKey getPrivateKeyFromBytes(ByteBuffer pkcs8Key) {
+    try {
+      KeyFactory keyFactory = KeyFactory.getInstance("RSA"); // or appropriate algorithm
+      PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(pkcs8Key.array());
+      return keyFactory.generatePrivate(keySpec);
     } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
       throw new RuntimeException("Error generating private key from PEM", e);
     }
