@@ -1,63 +1,117 @@
 {
-    "manifest": {
-      "type": "awses-encrypt",
-      "version": 5
+  "manifest": {
+    "type": "awses-encrypt",
+    "version": 5
+  },
+  "client": {
+    "name": "aws-encryption-sdk-dafny",
+    "version": "4.1.0"
+  },
+  "keys": "file://keys.json",
+  "plaintexts": {
+    "large": 1000000,
+    "giant": 100000000
+  },
+  "tests": {
+    "giant-raw-rsa": {
+      "encryption-scenario": {
+        "type": "positive-esdk",
+        "plaintext": "giant",
+        "description": "Generated RawRSA rsa-4096",
+        "algorithmSuiteId": "0146",
+        "frame-size": 512,
+        "encryptKeyDescription": {
+          "type": "raw",
+          "key": "rsa-4096-public",
+          "provider-id": "aws-raw-vectors-persistent-rsa-4096",
+          "encryption-algorithm": "rsa",
+          "padding-algorithm": "oaep-mgf1",
+          "padding-hash": "sha384"
+        },
+        "decryptKeyDescription": {
+          "type": "raw",
+          "key": "rsa-4096-private",
+          "provider-id": "aws-raw-vectors-persistent-rsa-4096",
+          "encryption-algorithm": "rsa",
+          "padding-algorithm": "oaep-mgf1",
+          "padding-hash": "sha384"
+        },
+        "encryption-context": {},
+        "reproduced-encryption-context": {}
+      }
     },
-    "client": {
-      "name": "aws-encryption-sdk-dafny",
-      "version": "4.1.0"
+    "giant-raw-rsa-tiny-frame": {
+      "encryption-scenario": {
+        "type": "positive-esdk",
+        "plaintext": "large",
+        "description": "Generated RawRSA rsa-4096",
+        "algorithmSuiteId": "0146",
+        "frame-size": 4,
+        "encryptKeyDescription": {
+          "type": "raw",
+          "key": "rsa-4096-public",
+          "provider-id": "aws-raw-vectors-persistent-rsa-4096",
+          "encryption-algorithm": "rsa",
+          "padding-algorithm": "oaep-mgf1",
+          "padding-hash": "sha384"
+        },
+        "decryptKeyDescription": {
+          "type": "raw",
+          "key": "rsa-4096-private",
+          "provider-id": "aws-raw-vectors-persistent-rsa-4096",
+          "encryption-algorithm": "rsa",
+          "padding-algorithm": "oaep-mgf1",
+          "padding-hash": "sha384"
+        },
+        "encryption-context": {},
+        "reproduced-encryption-context": {}
+      }
     },
-    "keys": "file://keys.json",
-    "plaintexts": {
-        "large": 1000000,
-        "giant": 100000000
+    "giant-raw-aes-256": {
+      "encryption-scenario": {
+        "type": "positive-esdk",
+        "plaintext": "giant",
+        "description": "Generated RawAES aes-256",
+        "algorithmSuiteId": "0078",
+        "frame-size": 512,
+        "encryptKeyDescription": {
+          "type": "raw",
+          "key": "aes-256",
+          "provider-id": "aws-raw-vectors-persistent-aes-256",
+          "encryption-algorithm": "aes"
+        },
+        "decryptKeyDescription": {
+          "type": "raw",
+          "key": "aes-256",
+          "provider-id": "aws-raw-vectors-persistent-aes-256",
+          "encryption-algorithm": "aes"
+        },
+        "encryption-context": {},
+        "reproduced-encryption-context": {}
+      }
     },
-    "tests": {
-        "giant-raw-aes-256": {
-            "encryption-scenario": {
-              "type": "positive-esdk",
-              "plaintext": "giant",
-              "description": "Generated RawAES aes-256",
-              "algorithmSuiteId": "0078",
-              "frame-size": 512,
-              "encryptKeyDescription": {
-                "type": "raw",
-                "key": "aes-256",
-                "provider-id": "aws-raw-vectors-persistent-aes-256",
-                "encryption-algorithm": "aes"
-              },
-              "decryptKeyDescription": {
-                "type": "raw",
-                "key": "aes-256",
-                "provider-id": "aws-raw-vectors-persistent-aes-256",
-                "encryption-algorithm": "aes"
-              },
-              "encryption-context": {},
-              "reproduced-encryption-context": {}
-            }
-          },
-          "giant-raw-aes-256-tiny-frame": {
-            "encryption-scenario": {
-              "type": "positive-esdk",
-              "plaintext": "large",
-              "description": "Generated RawAES aes-256",
-              "algorithmSuiteId": "0078",
-              "frame-size": 4,
-              "encryptKeyDescription": {
-                "type": "raw",
-                "key": "aes-256",
-                "provider-id": "aws-raw-vectors-persistent-aes-256",
-                "encryption-algorithm": "aes"
-              },
-              "decryptKeyDescription": {
-                "type": "raw",
-                "key": "aes-256",
-                "provider-id": "aws-raw-vectors-persistent-aes-256",
-                "encryption-algorithm": "aes"
-              },
-              "encryption-context": {},
-              "reproduced-encryption-context": {}
-            }
-          }
+    "giant-raw-aes-256-tiny-frame": {
+      "encryption-scenario": {
+        "type": "positive-esdk",
+        "plaintext": "large",
+        "description": "Generated RawAES aes-256",
+        "algorithmSuiteId": "0078",
+        "frame-size": 4,
+        "encryptKeyDescription": {
+          "type": "raw",
+          "key": "aes-256",
+          "provider-id": "aws-raw-vectors-persistent-aes-256",
+          "encryption-algorithm": "aes"
+        },
+        "decryptKeyDescription": {
+          "type": "raw",
+          "key": "aes-256",
+          "provider-id": "aws-raw-vectors-persistent-aes-256",
+          "encryption-algorithm": "aes"
+        },
+        "encryption-context": {},
+        "reproduced-encryption-context": {}
+      }
     }
+  }
 }
