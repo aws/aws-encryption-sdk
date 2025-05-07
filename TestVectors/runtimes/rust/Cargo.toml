@@ -14,22 +14,22 @@ readme = "README.md"
 wrapped-client = []
 
 [dependencies]
-aws-config = "1.5.15"
-aws-lc-rs = "=1.12.2"
-aws-lc-sys = "=0.25.1"
-aws-sdk-dynamodb = "1.62.0"
-aws-sdk-kms = "1.57.0"
-aws-smithy-runtime-api = {version = "1.7.3", features = ["client"] }
-aws-smithy-types = "1.2.12"
-chrono = "0.4.39"
+aws-config = "1.6.2"
+aws-lc-rs = "=1.13.0"
+aws-lc-sys = "=0.28.2"
+aws-sdk-dynamodb = "1.73.0"
+aws-sdk-kms = "1.67.0"
+aws-smithy-runtime-api = {version = "1.8.0", features = ["client"] }
+aws-smithy-types = "1.3.1"
+chrono = "0.4.41"
 cpu-time = "1.0.0"
 dafny_runtime = { path = "../../../mpl/smithy-dafny/TestModels/dafny-dependencies/dafny_runtime_rust", features = ["sync","small-int"]}
 dashmap = "6.1.0"
-pem = "3.0.4"
-rand = "0.9.0"
-tokio = {version = "1.43.0", features = ["full"] }
-uuid = { version = "1.12.1", features = ["v4"] }
-ring = "=0.17.8"
+pem = "3.0.5"
+rand = "0.9.1"
+tokio = {version = "1.45.0", features = ["full"] }
+uuid = { version = "1.16.0", features = ["v4"] }
+ring = "=0.17.14"
 
 [dev-dependencies]
 aws-esdk-test-vectors = { path = ".", features = ["wrapped-client"] }
