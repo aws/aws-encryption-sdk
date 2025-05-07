@@ -161,9 +161,9 @@ module AwsEncryptionSdkOperations refines AbstractAwsCryptographyEncryptionSdkOp
       .MapFailure(e => Types.AwsCryptographyMaterialProviders(e));
     }
 
-      // int64 fits 9 exabytes so we're never going to actually hit this. But if we don't
-      // include this the verifier is not convinced that we can cast the size to int64
-      SequenceIsSafeBecauseItIsInMemory(input.plaintext);
+    // int64 fits 9 exabytes so we're never going to actually hit this. But if we don't
+    // include this the verifier is not convinced that we can cast the size to int64
+    SequenceIsSafeBecauseItIsInMemory(input.plaintext);
     :- Need(|input.plaintext| as uint64 < INT64_MAX_LIMIT as uint64,
             Types.AwsEncryptionSdkException(
               message := "Plaintext exceeds maximum allowed size"));

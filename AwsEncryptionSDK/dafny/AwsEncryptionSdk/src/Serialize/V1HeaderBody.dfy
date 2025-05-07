@@ -243,7 +243,7 @@ module {:options "/functionSyntax:4" } V1HeaderBody {
     ensures CorrectlyRead(buffer, res, WriteV1MessageType)
   {
     var SuccessfulRead(raw, tail) :- SerializeFunctions.Read(buffer, 1);
-    var messageType :- HeaderTypes.MessageType.Get(raw[0]).MapFailure(e => Error(e));
+    var messageType :- HeaderTypes.MessageType.Get(raw[0 as uint32]).MapFailure(e => Error(e));
 
     assert CorrectlyReadRange(buffer, tail, WriteV1MessageType(messageType)) by {
       reveal CorrectlyReadRange();
@@ -288,13 +288,13 @@ module {:options "/functionSyntax:4" } V1HeaderBody {
     ensures res.Success? ==> GetIvLength(suite) == res.value.data
   {
     var SuccessfulRead(raw, tail) :- SerializeFunctions.Read(buffer, 1);
-    :- Need(raw[0] == GetIvLength(suite), Error("HeaderIv Length does not match Algorithm Suite."));
+    :- Need(raw[0 as uint32] == GetIvLength(suite), Error("HeaderIv Length does not match Algorithm Suite."));
 
-    assert CorrectlyReadRange(buffer, tail, WriteV1HeaderIvLength(raw[0])) by {
+    assert CorrectlyReadRange(buffer, tail, WriteV1HeaderIvLength(raw[0 as uint32])) by {
       reveal CorrectlyReadRange();
     }
 
-    Success(SuccessfulRead(raw[0], tail))
+    Success(SuccessfulRead(raw[0 as uint32], tail))
   }
 
   // This is *not* a function,

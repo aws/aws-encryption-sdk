@@ -222,15 +222,15 @@ module SerializableTypes {
         if |a+b| == 0 then 0
         else Add(LinearLength(Seq.DropLast(a + b)), PairLength(Seq.Last(a+b)));
       == {assert |a+b| > 0;} // Because of the above `if` block
-        LinearLength(Seq.DropLast(a + b)) + PairLength(Seq.Last(a+b));
+        Add(LinearLength(Seq.DropLast(a + b)), PairLength(Seq.Last(a+b)));
       == {assert Seq.Last(a+b) == Seq.Last(b) && Seq.DropLast(a+b) == a + Seq.DropLast(b);} // Breaking apart (a+b)
-        LinearLength(a + Seq.DropLast(b)) + PairLength(Seq.Last(b));
+        Add(LinearLength(a + Seq.DropLast(b)), PairLength(Seq.Last(b)));
       == {LinearLengthIsDistributive(a, Seq.DropLast(b));} // This lets us break apart LinearLength(a + Seq.DropLast(b))
-        (LinearLength(a) + LinearLength(Seq.DropLast(b))) + PairLength(Seq.Last(b));
+        Add(Add(LinearLength(a), LinearLength(Seq.DropLast(b))), PairLength(Seq.Last(b)));
       == // Move () to prove associativity of +
-        LinearLength(a) + (LinearLength(Seq.DropLast(b)) + PairLength(Seq.Last(b)));
+        Add(LinearLength(a), (LinearLength(Seq.DropLast(b)), PairLength(Seq.Last(b))));
       == {assert LinearLength(Seq.DropLast(b)) + PairLength(Seq.Last(b)) == LinearLength(b);} // join the 2 parts of b back together
-        LinearLength(a) + LinearLength(b);
+        Add(LinearLength(a), LinearLength(b));
       }
     }
   }

@@ -50,13 +50,6 @@ module MessageBody {
   const ENDFRAME_SEQUENCE_NUMBER: uint32 := Frames.ENDFRAME_SEQUENCE_NUMBER
   const NONFRAMED_SEQUENCE_NUMBER: uint32 := Frames.NONFRAMED_SEQUENCE_NUMBER
 
-  function printFromFunction<T>(x: T): () {
-    ()
-  } by method {
-    print x,"\n";
-    return ();
-  }
-
   function method IVSeq(suite: MPL.AlgorithmSuiteInfo, sequenceNumber: uint32)
     :(ret: seq<uint8>)
     requires 4 <= SerializableTypes.GetIvLength(suite)
@@ -77,9 +70,7 @@ module MessageBody {
     if len == 12 then
       [0,0,0,0,0,0,0,0] + num
     else
-      var _ := printFromFunction("************ How is this not 8?? *************");
-      var _ := printFromFunction(len);
-      // I'm pretty sure we never get here
+      // We never actually get here, but maybe one day
       seq(len as nat - 4, _ => 0) + num
   }
 

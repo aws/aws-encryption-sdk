@@ -52,7 +52,7 @@ module HeaderTypes {
     {
       :- Need(x == [0x01] || x == [0x02], "Unsupported Version value.");
       Success(
-        match x[0]
+        match x[0 as uint32]
         case 0x01 => V1
         case 0x02 => V2
       )
