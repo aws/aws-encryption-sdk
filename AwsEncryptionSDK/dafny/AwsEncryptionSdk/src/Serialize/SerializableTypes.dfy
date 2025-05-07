@@ -228,7 +228,7 @@ module SerializableTypes {
       == {LinearLengthIsDistributive(a, Seq.DropLast(b));} // This lets us break apart LinearLength(a + Seq.DropLast(b))
         Add(Add(LinearLength(a), LinearLength(Seq.DropLast(b))), PairLength(Seq.Last(b)));
       == // Move () to prove associativity of +
-        Add(LinearLength(a), (LinearLength(Seq.DropLast(b)), PairLength(Seq.Last(b))));
+        Add(LinearLength(a), Add(LinearLength(Seq.DropLast(b)), PairLength(Seq.Last(b))));
       == {assert LinearLength(Seq.DropLast(b)) + PairLength(Seq.Last(b)) == LinearLength(b);} // join the 2 parts of b back together
         Add(LinearLength(a), LinearLength(b));
       }
