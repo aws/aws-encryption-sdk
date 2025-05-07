@@ -74,7 +74,7 @@ module HeaderTypes {
         nameonly encryptionContext: EncryptionContext.ESDKCanonicalEncryptionContext,
         nameonly encryptedDataKeys: ESDKEncryptedDataKeys,
         nameonly contentType: ContentType,
-        nameonly headerIvLength: nat,
+        nameonly headerIvLength: uint64,
         nameonly frameLength: uint32
       )
     | V2HeaderBody(
@@ -158,10 +158,10 @@ module HeaderTypes {
   }
 
   // TODO: push this into the `IsHeader`
-  const MESSAGE_ID_LEN_V1 := 16
-  const MESSAGE_ID_LEN_V2 := 32
+  const MESSAGE_ID_LEN_V1 := 16 as uint64
+  const MESSAGE_ID_LEN_V2 := 32 as uint64
   type MessageId = x: seq<uint8> |
-      || |x| == MESSAGE_ID_LEN_V1
-      || |x| == MESSAGE_ID_LEN_V2
+      || |x| == MESSAGE_ID_LEN_V1 as nat
+      || |x| == MESSAGE_ID_LEN_V2 as nat
     witness *
 }

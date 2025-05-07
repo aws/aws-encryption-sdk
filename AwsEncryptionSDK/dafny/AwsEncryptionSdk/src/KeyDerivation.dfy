@@ -260,7 +260,7 @@ module KeyDerivation {
 
       :- Need(
         && SerializableTypes.GetEncryptKeyLength(suite) == suite.kdf.HKDF.outputKeyLength
-        && |plaintextKey| == suite.kdf.HKDF.inputKeyLength as nat, Types.AwsEncryptionSdkException(
+        && |plaintextKey| as int32 == suite.kdf.HKDF.inputKeyLength as int32, Types.AwsEncryptionSdkException(
           message := "Invalid Materials"));
 
       keys :- ExpandKeyMaterial(messageId, plaintextKey, suite, crypto);
@@ -269,9 +269,9 @@ module KeyDerivation {
                 message := "Suites with message version 1 must not have commitment"));
 
       :- Need(match suite.kdf {
-                case IDENTITY(i) => |plaintextKey| == SerializableTypes.GetEncryptKeyLength(suite) as nat
+                case IDENTITY(i) => |plaintextKey| as int32 == SerializableTypes.GetEncryptKeyLength(suite)
                 case HKDF(hkdf) =>
-                  && |plaintextKey| == suite.kdf.HKDF.inputKeyLength as nat
+                  && |plaintextKey| as int32 == suite.kdf.HKDF.inputKeyLength
                   && suite.kdf.HKDF.outputKeyLength == SerializableTypes.GetEncryptKeyLength(suite)
                 case None => false
               }, Types.AwsEncryptionSdkException(

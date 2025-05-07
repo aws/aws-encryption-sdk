@@ -145,7 +145,7 @@ module {:options "/functionSyntax:4" } V1HeaderBody {
                                encryptionContext := encryptionContext.data,
                                encryptedDataKeys := encryptedDataKeys.data,
                                contentType := contentType.data,
-                               headerIvLength := headerIvLength.data as nat,
+                               headerIvLength := headerIvLength.data as uint64,
                                frameLength := frameLength.data
                              );
     // To prove that we can correctly read what we just wrote we have to break down the pieces
@@ -170,7 +170,7 @@ module {:options "/functionSyntax:4" } V1HeaderBody {
             assert |WriteMessageFormatVersion(version.data)| == 1;
             assert |WriteV1MessageType(messageType.data)| == 1;
             assert |WriteESDKSuiteId(suite.data)| == 2;
-            assert |WriteMessageId(messageId.data)| == HeaderTypes.MESSAGE_ID_LEN_V1;
+            assert |WriteMessageId(messageId.data)| == HeaderTypes.MESSAGE_ID_LEN_V1 as nat;
             reveal CorrectlyReadRange();
           }
           AppendToCorrectlyReadByteRange(buffer, messageId.tail, encryptionContext.tail, WriteExpandedAADSection(encryptionContext.data));
@@ -190,7 +190,7 @@ module {:options "/functionSyntax:4" } V1HeaderBody {
             assert |WriteMessageFormatVersion(version.data)| == 1;
             assert |WriteV1MessageType(messageType.data)| == 1;
             assert |WriteESDKSuiteId(suite.data)| == 2;
-            assert |WriteMessageId(messageId.data)| == HeaderTypes.MESSAGE_ID_LEN_V1;
+            assert |WriteMessageId(messageId.data)| == HeaderTypes.MESSAGE_ID_LEN_V1 as nat;
             reveal CorrectlyReadRange();
           }
           AppendToCorrectlyReadByteRange(buffer, messageId.tail, encryptionContext.tail, WriteAADSection(encryptionContext.data));
@@ -265,7 +265,7 @@ module {:options "/functionSyntax:4" } V1HeaderBody {
     :(res: ReadCorrect<ReservedBytes>)
     ensures CorrectlyRead(buffer, res, WriteV1ReservedBytes)
   {
-    var SuccessfulRead(raw, tail) :- SerializeFunctions.Read(buffer, |RESERVED_BYTES|);
+    var SuccessfulRead(raw, tail) :- SerializeFunctions.Read(buffer, |RESERVED_BYTES| as uint64);
     :- Need(raw == RESERVED_BYTES, Error("Incorrect reserved bytes."));
     var reservedBytes: ReservedBytes := raw;
     Success(SuccessfulRead(reservedBytes, tail))

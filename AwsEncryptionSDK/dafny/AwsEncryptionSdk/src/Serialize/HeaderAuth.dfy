@@ -92,8 +92,8 @@ module HeaderAuth {
               && |res.value.data.headerIv| == GetIvLength(suite) as nat
               && |res.value.data.headerAuthTag| == GetTagLength(suite) as nat
   {
-    var headerIv :- Read(buffer, GetIvLength(suite) as nat);
-    var headerAuthTag :- Read(headerIv.tail, GetTagLength(suite) as nat);
+    var headerIv :- Read(buffer, GetIvLength(suite) as uint64);
+    var headerAuthTag :- Read(headerIv.tail, GetTagLength(suite) as uint64);
 
     var auth: AESMac := HeaderTypes.HeaderAuth.AESMac(
                           headerIv := headerIv.data,
@@ -119,8 +119,8 @@ module HeaderAuth {
               && |res.value.data.headerAuthTag| == GetTagLength(suite) as nat
   {
     // TODO: probably this hardcoded iv of all 0s will go into alg suite
-    var headerIv := seq(GetIvLength(suite) as int, _ => 0);
-    var headerAuthTag :- Read(buffer, GetTagLength(suite) as nat);
+    var headerIv := GetIvLengthZeros(suite);
+    var headerAuthTag :- Read(buffer, GetTagLength(suite) as uint64);
 
     var auth: AESMac := HeaderTypes.HeaderAuth.AESMac(
                           headerIv := headerIv,

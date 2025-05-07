@@ -20,6 +20,7 @@ module MessageBody {
 
   import opened Wrappers
   import opened UInt = StandardLibrary.UInt
+  import opened StandardLibrary.MemoryMath
   import Types = AwsCryptographyEncryptionSdkTypes
   import MPL = AwsCryptographyMaterialProvidersTypes
   import Primitives = AtomicPrimitives
@@ -49,6 +50,13 @@ module MessageBody {
   const ENDFRAME_SEQUENCE_NUMBER: uint32 := Frames.ENDFRAME_SEQUENCE_NUMBER
   const NONFRAMED_SEQUENCE_NUMBER: uint32 := Frames.NONFRAMED_SEQUENCE_NUMBER
 
+  function printFromFunction<T>(x: T): () {
+    ()
+  } by method {
+    print x,"\n";
+    return ();
+  }
+
   function method IVSeq(suite: MPL.AlgorithmSuiteInfo, sequenceNumber: uint32)
     :(ret: seq<uint8>)
     requires 4 <= SerializableTypes.GetIvLength(suite)
@@ -64,7 +72,15 @@ module MessageBody {
     //# (../framework/algorithm-suites.md) that generated the message.
     ensures |ret| == SerializableTypes.GetIvLength(suite) as nat
   {
-    seq(SerializableTypes.GetIvLength(suite) as nat - 4, _ => 0) + UInt32ToSeq(sequenceNumber)
+    var len : uint8 := SerializableTypes.GetIvLength(suite);
+    var num  := UInt32ToSeq(sequenceNumber);
+    if len == 12 then
+      [0,0,0,0,0,0,0,0] + num
+    else
+      var _ := printFromFunction("************ How is this not 8?? *************");
+      var _ := printFromFunction(len);
+      // I'm pretty sure we never get here
+      seq(len as nat - 4, _ => 0) + num
   }
 
   //= compliance/data-format/message-body.txt#2.5.2.1.2
@@ -248,7 +264,7 @@ module MessageBody {
                       && frame.authTag == callEvent.output.value.authTag
               )
   {
-    var n : int, sequenceNumber := 0, START_SEQUENCE_NUMBER;
+    var n : uint64, sequenceNumber := 0, START_SEQUENCE_NUMBER;
     var regularFrames: MessageRegularFrames := [];
 
     //= compliance/client-apis/encrypt.txt#2.7
@@ -265,8 +281,9 @@ module MessageBody {
     // adding another frame puts us at < |plaintext|. This means we will never
     // consume the entire plaintext in this while loop, and will always construct
     // a final frame after exiting it.
-    while n + header.body.frameLength as nat < |plaintext|
-      invariant |plaintext| != 0 ==> 0 <= n < |plaintext|
+    SequenceIsSafeBecauseItIsInMemory(plaintext);
+    while Add(n, header.body.frameLength as uint64) < |plaintext| as uint64
+      invariant |plaintext| != 0 ==> 0 <= n as nat < |plaintext|
       invariant |plaintext| == 0 ==> 0 == n
       invariant START_SEQUENCE_NUMBER <= sequenceNumber <= ENDFRAME_SEQUENCE_NUMBER
       invariant |regularFrames| == (sequenceNumber - START_SEQUENCE_NUMBER) as nat
@@ -294,7 +311,7 @@ module MessageBody {
     {
       :- Need(sequenceNumber < ENDFRAME_SEQUENCE_NUMBER, Types.AwsEncryptionSdkException(
                 message := "too many frames"));
-      var plaintextFrame := plaintext[n..n + header.body.frameLength as nat];
+      var plaintextFrame := plaintext[n..Add(n, header.body.frameLength as uint64)];
 
       //= compliance/client-apis/encrypt.txt#2.7
       //# *  If there are enough input plaintext bytes consumable to create a
@@ -314,7 +331,7 @@ module MessageBody {
       LemmaAddingNextRegularFrame(regularFrames, regularFrame);
       regularFrames := regularFrames + [regularFrame];
 
-      n := n + header.body.frameLength as nat;
+      n := Add(n, header.body.frameLength as uint64);
 
       //= compliance/client-apis/encrypt.txt#2.7.1
       //# Otherwise, this value MUST be 1 greater than
@@ -710,7 +727,7 @@ module MessageBody {
     assert |AESDecryptHistory| == 0;
     assert SumDecryptCalls(AESDecryptHistory) == plaintext;
 
-    for i := 0 to |body.regularFrames|
+    for i : uint64 := 0 to |body.regularFrames| as uint64
       // // The goal is to assert FramesEncryptPlaintext.
       // // But this requires the final frame e.g. a FramedMessage.
       // // So I decompose this into parts
@@ -734,7 +751,7 @@ module MessageBody {
 
       AESDecryptHistory := AESDecryptHistory + [Seq.Last(crypto.History.AESDecrypt)];
       assert Seq.Last(AESDecryptHistory) == Seq.Last(crypto.History.AESDecrypt);
-      assert crypto.History.AESDecrypt[i + |old(crypto.History.AESDecrypt)|].input.iv == body.regularFrames[i].iv;
+      assert crypto.History.AESDecrypt[i as nat + |old(crypto.History.AESDecrypt)|].input.iv == body.regularFrames[i].iv;
     }
 
     var finalPlaintextSegment :- DecryptFrame(body.finalFrame, key, crypto);
@@ -977,7 +994,7 @@ module MessageBody {
   }
   by method { // because Seq.DropLast makes a full copy
     var result : seq<uint8> := [];
-    for i := 0 to |frames|
+    for i : uint64 := 0 to |frames| as uint64
       invariant IsMessageRegularFrames(frames)
       invariant IsMessageRegularFrames(frames[..i])
       invariant result == WriteMessageRegularFrames(frames[..i])
@@ -1008,7 +1025,7 @@ module MessageBody {
     requires forall frame: Frames.Frame | frame in regularFrames :: frame.header == header
     requires buffer.bytes == continuation.bytes
     requires buffer.start <= continuation.start
-    requires 0 <= continuation.start <= |buffer.bytes|
+    requires 0 <= continuation.start as nat <= |buffer.bytes|
     requires CorrectlyReadRange(buffer, continuation, buffer.bytes[buffer.start..continuation.start])
     requires CorrectlyRead(buffer, Success(SuccessfulRead(regularFrames, continuation)), WriteMessageRegularFrames)
     decreases ENDFRAME_SEQUENCE_NUMBER as nat - |regularFrames|
@@ -1043,7 +1060,8 @@ module MessageBody {
       //# Otherwise, this
       //# value MUST be 1 greater than the value of the sequence number
       //# of the previous frame.
-      :- Need(regularFrame.data.seqNum as nat == |regularFrames| + 1, Error("Sequence number out of order."));
+      SequenceIsSafeBecauseItIsInMemory(regularFrames);
+      :- Need(regularFrame.data.seqNum as uint64 == |regularFrames| as uint64 + 1, Error("Sequence number out of order."));
 
       LemmaAddingNextRegularFrame(regularFrames, regularFrame.data);
 
@@ -1097,7 +1115,7 @@ module MessageBody {
 
       var finalFrame :- Frames.ReadFinalFrame(continuation, header);
       :- Need(
-           finalFrame.data.seqNum as nat == |regularFrames| + 1,
+           finalFrame.data.seqNum as uint64 == |regularFrames| as uint64 + 1,
            Error("Sequence number out of order.")
          );
 

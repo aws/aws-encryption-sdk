@@ -30,6 +30,7 @@ module Header {
   import opened Wrappers
   import opened UTF8
   import opened SerializeFunctions
+  import opened StandardLibrary.MemoryMath
 
   datatype HeaderInfo = HeaderInfo(
     nameonly body: HeaderTypes.HeaderBody,
@@ -83,10 +84,15 @@ module Header {
     body: HeaderTypes.HeaderBody
   )
   {
+    assert body.V2HeaderBody? ==> HasUint64Len(body.suiteData) by {
+      if body.V2HeaderBody? {
+        SequenceIsSafeBecauseItIsInMemory(body.suiteData);
+      }
+    }
     && (suite.commitment.HKDF?
         ==>
           && body.V2HeaderBody?
-          && |body.suiteData| == suite.commitment.HKDF.outputKeyLength as nat)
+          && |body.suiteData| as uint64 == suite.commitment.HKDF.outputKeyLength as uint64)
     && (!suite.commitment.HKDF?
         ==>
           && body.V1HeaderBody?)

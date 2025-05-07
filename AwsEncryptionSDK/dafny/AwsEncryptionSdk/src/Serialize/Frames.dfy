@@ -119,7 +119,7 @@ module Frames {
        //# The length MUST NOT be greater than "2^36 - 32", or 64 gibibytes (64
        //# GiB), due to restrictions imposed by the implemented algorithms
        //# (../framework/algorithm-suites.md).
-    && |frame.encContent| < SAFE_MAX_ENCRYPT
+    && |frame.encContent| < SAFE_MAX_ENCRYPT as nat
   }
 
   type NonFramed = frame: Frame
@@ -135,7 +135,7 @@ module Frames {
             ==> |frame.encContent| <= 0xFFFF_FFFF
   {}
 
-  const SAFE_MAX_ENCRYPT := 0xFFFFFFFE0 // 2^36 - 32
+  const SAFE_MAX_ENCRYPT := 0xFFFFFFFE0 as uint64 // 2^36 - 32
 
   function method WriteRegularFrame(
     regularFrame: RegularFrame
@@ -160,7 +160,7 @@ module Frames {
   )
     :(res: ReadCorrect<RegularFrame>)
     ensures res.Success?
-            ==> res.value.data.header == header && res.value.tail.start <= |buffer.bytes|
+            ==> res.value.data.header == header && res.value.tail.start as nat <= |buffer.bytes|
     ensures CorrectlyRead(buffer, res, WriteRegularFrame)
   {
 
@@ -170,13 +170,13 @@ module Frames {
     assert buffer.bytes == sequenceNumber.tail.bytes by {
       reveal CorrectlyReadRange();
     }
-    var iv :- Read(sequenceNumber.tail, GetIvLength(header.suite) as nat);
-    var encContent :- Read(iv.tail, header.body.frameLength as nat);
-    var authTag :- Read(encContent.tail, GetTagLength(header.suite) as nat);
+    var iv :- Read(sequenceNumber.tail, GetIvLength(header.suite) as uint64);
+    var encContent :- Read(iv.tail, header.body.frameLength as uint64);
+    var authTag :- Read(encContent.tail, GetTagLength(header.suite) as uint64);
     assert
-      && authTag.tail.start <= |buffer.bytes|
+      && authTag.tail.start as nat <= |buffer.bytes|
       && buffer.start <= authTag.tail.start
-      && authTag.tail.start == buffer.start + |buffer.bytes[buffer.start..authTag.tail.start]|
+      && authTag.tail.start as nat == buffer.start as nat + |buffer.bytes[buffer.start..authTag.tail.start]|
     by {
       reveal CorrectlyReadRange();
     }
@@ -242,7 +242,7 @@ module Frames {
         && finalFrameSignalRes.Success?
         && var sequenceNumberRes := ReadUInt32(finalFrameSignalRes.value.tail);
         && sequenceNumberRes.Success?
-        && var ivRes := Read(sequenceNumberRes.value.tail, GetIvLength(header.suite) as nat);
+        && var ivRes := Read(sequenceNumberRes.value.tail, GetIvLength(header.suite) as uint64);
         && ivRes.Success?
         && var encContentRes := ReadUint32Seq(ivRes.value.tail);
         && encContentRes.Success?
@@ -254,7 +254,7 @@ module Frames {
     :- Need(finalFrameSignal.data == ENDFRAME_SEQUENCE_NUMBER, Error("Final frame sequence number MUST be the end-frame sequence number."));
 
     var sequenceNumber :- ReadUInt32(finalFrameSignal.tail);
-    var iv :- Read(sequenceNumber.tail, GetIvLength(header.suite) as nat);
+    var iv :- Read(sequenceNumber.tail, GetIvLength(header.suite) as uint64);
 
     //= compliance/client-apis/decrypt.txt#2.7.4
     //# If deserializing a final frame (../data-format/message-body.md#final-
@@ -265,7 +265,7 @@ module Frames {
     :- Need(contentLength.data <= header.body.frameLength, Error("Content length MUST NOT exceed the frame length."));
 
     var encContent :- ReadUint32Seq(iv.tail);
-    var authTag :- Read(encContent.tail, GetTagLength(header.suite) as nat);
+    var authTag :- Read(encContent.tail, GetTagLength(header.suite) as uint64);
     var finalFrame: FinalFrame := Frame.FinalFrame(
                                     header,
                                     sequenceNumber.data,
@@ -297,13 +297,13 @@ module Frames {
             ==> res.value.data.header == header
     ensures CorrectlyRead(buffer, res, WriteNonFramed)
   {
-    var iv :- Read(buffer, GetIvLength(header.suite) as nat);
+    var iv :- Read(buffer, GetIvLength(header.suite) as uint64);
     // Checking only the content length _before_ reading it into memory
     // is just a nice thing to do given the sizes involved.
     var contentLength :- ReadUInt64(iv.tail);
-    :- Need(contentLength.data as nat < SAFE_MAX_ENCRYPT, Error("Frame exceeds AES-GCM cryptographic safety for a single key/iv."));
+    :- Need(contentLength.data < SAFE_MAX_ENCRYPT, Error("Frame exceeds AES-GCM cryptographic safety for a single key/iv."));
     var encContent :- ReadUint64Seq(iv.tail);
-    var authTag :- Read(encContent.tail, GetTagLength(header.suite) as nat);
+    var authTag :- Read(encContent.tail, GetTagLength(header.suite) as uint64);
 
     var nonFramed: NonFramed := Frame.NonFramed(
                                   header,
