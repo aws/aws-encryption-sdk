@@ -1053,7 +1053,7 @@ module MessageBody {
       //# of the previous frame.
       SequenceIsSafeBecauseItIsInMemory(regularFrames);
       :- Need(regularFrame.data.seqNum as uint64 == |regularFrames| as uint64 + 1, Error("Sequence number out of order."));
-
+      assert regularFrame.data.seqNum as nat == |regularFrames| + 1;
       LemmaAddingNextRegularFrame(regularFrames, regularFrame.data);
 
       var nextRegularFrames: MessageRegularFrames := regularFrames + [regularFrame.data];
