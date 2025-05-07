@@ -50,7 +50,7 @@ module MessageBody {
   const ENDFRAME_SEQUENCE_NUMBER: uint32 := Frames.ENDFRAME_SEQUENCE_NUMBER
   const NONFRAMED_SEQUENCE_NUMBER: uint32 := Frames.NONFRAMED_SEQUENCE_NUMBER
 
-  function method IVSeq(suite: MPL.AlgorithmSuiteInfo, sequenceNumber: uint32)
+  function method {:opaque} IVSeq(suite: MPL.AlgorithmSuiteInfo, sequenceNumber: uint32)
     :(ret: seq<uint8>)
     requires 4 <= SerializableTypes.GetIvLength(suite)
     //= compliance/data-format/message-body.txt#2.5.2.1.2
@@ -1032,7 +1032,7 @@ module MessageBody {
     //# data), this operation MUST use the first 4 bytes of a frame to
     //# determine if the frame MUST be deserialized as a final frame
     //# (../data-format/message-body.md#final-frame) or regular frame
-    //# (../fata-format/message-body/md#regular-frame).
+    //# (../data-format/message-body/md#regular-frame).
     if (sequenceNumber.data != ENDFRAME_SEQUENCE_NUMBER) then
 
       //= compliance/client-apis/decrypt.txt#2.7.4
@@ -1110,6 +1110,7 @@ module MessageBody {
            Error("Sequence number out of order.")
          );
 
+      assert finalFrame.data.seqNum as nat == |regularFrames| + 1;
       assert MessageFramesAreMonotonic(regularFrames + [finalFrame.data]);
       assert MessageFramesAreForTheSameMessage(regularFrames + [finalFrame.data]);
 
