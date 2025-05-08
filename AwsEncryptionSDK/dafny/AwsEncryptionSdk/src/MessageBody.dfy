@@ -88,6 +88,7 @@ module MessageBody {
     ensures IVSeq(suite, m) != IVSeq(suite, n)
   {
     var paddingLength :=  SerializableTypes.GetIvLength(suite) as nat - 4;
+    reveal IVSeq;
     assert IVSeq(suite, m)[paddingLength..] == UInt32ToSeq(m);
     assert IVSeq(suite, n)[paddingLength..] == UInt32ToSeq(n);
     UInt32SeqSerializeDeserialize(m);
@@ -1059,6 +1060,7 @@ module MessageBody {
       var nextRegularFrames: MessageRegularFrames := regularFrames + [regularFrame.data];
 
       CorrectlyReadByteRange(buffer, continuation, WriteMessageRegularFrames(regularFrames));
+      assert CorrectlyReadRange(continuation, regularFrame.tail, Frames.WriteRegularFrame(regularFrame.data));
       AppendToCorrectlyReadByteRange(buffer, continuation, regularFrame.tail, Frames.WriteRegularFrame(regularFrame.data));
       assert buffer.bytes == continuation.bytes == regularFrame.tail.bytes by {
         reveal CorrectlyReadRange();
