@@ -145,7 +145,7 @@ module {:options "/functionSyntax:4" } V1HeaderBody {
                                encryptionContext := encryptionContext.data,
                                encryptedDataKeys := encryptedDataKeys.data,
                                contentType := contentType.data,
-                               headerIvLength := headerIvLength.data as nat,
+                               headerIvLength := headerIvLength.data as uint64,
                                frameLength := frameLength.data
                              );
     // To prove that we can correctly read what we just wrote we have to break down the pieces
@@ -170,7 +170,7 @@ module {:options "/functionSyntax:4" } V1HeaderBody {
             assert |WriteMessageFormatVersion(version.data)| == 1;
             assert |WriteV1MessageType(messageType.data)| == 1;
             assert |WriteESDKSuiteId(suite.data)| == 2;
-            assert |WriteMessageId(messageId.data)| == HeaderTypes.MESSAGE_ID_LEN_V1;
+            assert |WriteMessageId(messageId.data)| == HeaderTypes.MESSAGE_ID_LEN_V1 as nat;
             reveal CorrectlyReadRange();
           }
           AppendToCorrectlyReadByteRange(buffer, messageId.tail, encryptionContext.tail, WriteExpandedAADSection(encryptionContext.data));
@@ -190,7 +190,7 @@ module {:options "/functionSyntax:4" } V1HeaderBody {
             assert |WriteMessageFormatVersion(version.data)| == 1;
             assert |WriteV1MessageType(messageType.data)| == 1;
             assert |WriteESDKSuiteId(suite.data)| == 2;
-            assert |WriteMessageId(messageId.data)| == HeaderTypes.MESSAGE_ID_LEN_V1;
+            assert |WriteMessageId(messageId.data)| == HeaderTypes.MESSAGE_ID_LEN_V1 as nat;
             reveal CorrectlyReadRange();
           }
           AppendToCorrectlyReadByteRange(buffer, messageId.tail, encryptionContext.tail, WriteAADSection(encryptionContext.data));
@@ -243,7 +243,7 @@ module {:options "/functionSyntax:4" } V1HeaderBody {
     ensures CorrectlyRead(buffer, res, WriteV1MessageType)
   {
     var SuccessfulRead(raw, tail) :- SerializeFunctions.Read(buffer, 1);
-    var messageType :- HeaderTypes.MessageType.Get(raw[0]).MapFailure(e => Error(e));
+    var messageType :- HeaderTypes.MessageType.Get(raw[0 as uint32]).MapFailure(e => Error(e));
 
     assert CorrectlyReadRange(buffer, tail, WriteV1MessageType(messageType)) by {
       reveal CorrectlyReadRange();
@@ -265,7 +265,7 @@ module {:options "/functionSyntax:4" } V1HeaderBody {
     :(res: ReadCorrect<ReservedBytes>)
     ensures CorrectlyRead(buffer, res, WriteV1ReservedBytes)
   {
-    var SuccessfulRead(raw, tail) :- SerializeFunctions.Read(buffer, |RESERVED_BYTES|);
+    var SuccessfulRead(raw, tail) :- SerializeFunctions.Read(buffer, |RESERVED_BYTES| as uint64);
     :- Need(raw == RESERVED_BYTES, Error("Incorrect reserved bytes."));
     var reservedBytes: ReservedBytes := raw;
     Success(SuccessfulRead(reservedBytes, tail))
@@ -288,13 +288,13 @@ module {:options "/functionSyntax:4" } V1HeaderBody {
     ensures res.Success? ==> GetIvLength(suite) == res.value.data
   {
     var SuccessfulRead(raw, tail) :- SerializeFunctions.Read(buffer, 1);
-    :- Need(raw[0] == GetIvLength(suite), Error("HeaderIv Length does not match Algorithm Suite."));
+    :- Need(raw[0 as uint32] == GetIvLength(suite), Error("HeaderIv Length does not match Algorithm Suite."));
 
-    assert CorrectlyReadRange(buffer, tail, WriteV1HeaderIvLength(raw[0])) by {
+    assert CorrectlyReadRange(buffer, tail, WriteV1HeaderIvLength(raw[0 as uint32])) by {
       reveal CorrectlyReadRange();
     }
 
-    Success(SuccessfulRead(raw[0], tail))
+    Success(SuccessfulRead(raw[0 as uint32], tail))
   }
 
   // This is *not* a function,

@@ -119,7 +119,7 @@ module SharedHeaderFunctions {
     ensures CorrectlyRead(buffer, res, WriteContentType)
   {
     var SuccessfulRead(raw, tail) :- SerializeFunctions.Read(buffer, 1);
-    var contentType :- ContentType.Get(raw[0]).MapFailure(e => Error(e));
+    var contentType :- ContentType.Get(raw[0 as uint32]).MapFailure(e => Error(e));
 
     assert CorrectlyReadRange(buffer, tail, WriteContentType(contentType)) by {
       reveal CorrectlyReadRange();

@@ -109,7 +109,7 @@ module V2HeaderBody {
 
     var frameLength :- ReadUInt32(contentType.tail);
 
-    var suiteData :- Read(frameLength.tail, suite.data.commitment.HKDF.outputKeyLength as nat);
+    var suiteData :- Read(frameLength.tail, suite.data.commitment.HKDF.outputKeyLength as uint64);
     assert |suiteData.data| == suite.data.commitment.HKDF.outputKeyLength as nat;
 
     var body:V2HeaderBody := HeaderTypes.V2HeaderBody(
@@ -132,7 +132,7 @@ module V2HeaderBody {
           assert IsExpandedAADSection(messageId.tail) by {
             assert |WriteMessageFormatVersion(version.data)| == 1;
             assert |WriteESDKSuiteId(suite.data)| == 2;
-            assert |WriteMessageId(messageId.data)| == HeaderTypes.MESSAGE_ID_LEN_V2;
+            assert |WriteMessageId(messageId.data)| == HeaderTypes.MESSAGE_ID_LEN_V2 as nat;
             reveal CorrectlyReadRange();
           }
           AppendToCorrectlyReadByteRange(buffer, messageId.tail, encryptionContext.tail, WriteExpandedAADSection(encryptionContext.data));
@@ -148,7 +148,7 @@ module V2HeaderBody {
           assert !IsExpandedAADSection(messageId.tail) by {
             assert |WriteMessageFormatVersion(version.data)| == 1;
             assert |WriteESDKSuiteId(suite.data)| == 2;
-            assert |WriteMessageId(messageId.data)| == HeaderTypes.MESSAGE_ID_LEN_V2;
+            assert |WriteMessageId(messageId.data)| == HeaderTypes.MESSAGE_ID_LEN_V2 as nat;
             reveal CorrectlyReadRange();
           }
           AppendToCorrectlyReadByteRange(buffer, suite.tail, messageId.tail, WriteMessageId(messageId.data));
@@ -176,12 +176,12 @@ module V2HeaderBody {
   }
 
   // version + suiteId + messageId
-  const headerBytesToAADStart := 1 + 2 + 32
+  const headerBytesToAADStart := (1 + 2 + 32) as uint64
   predicate IsV2ExpandedAADSection(
     buffer: ReadableBuffer
   )
   {
-    IsExpandedAADSection(MoveStart(buffer, headerBytesToAADStart))
+    IsExpandedAADSection(MoveStart(buffer, headerBytesToAADStart as nat))
   }
 
   // This is *not* a function method,

@@ -12,6 +12,7 @@ module EncryptDecryptHelpers {
   import opened Wrappers
   import opened StandardLibrary
   import opened UInt = StandardLibrary.UInt
+  import opened StandardLibrary.MemoryMath
   import Types = AwsCryptographyEncryptionSdkTypes
   import MPL = AwsCryptographyMaterialProvidersTypes
   import MaterialProviders
@@ -359,9 +360,10 @@ module EncryptDecryptHelpers {
       ==>
         output.Fail?
   {
+    SequenceIsSafeBecauseItIsInMemory(edks);
     if
       && maxEncryptedDataKeys.Some?
-      && |edks| > maxEncryptedDataKeys.value as int
+      && |edks| as uint64 > maxEncryptedDataKeys.value as uint64
     then
       Fail(Types.AwsEncryptionSdkException( message := "Encrypted data keys exceed maxEncryptedDataKeys"))
     else
@@ -385,13 +387,13 @@ module EncryptDecryptHelpers {
       && res.Success?
       && suite.messageVersion == 1
       ==>
-        |res.value| == HeaderTypes.MESSAGE_ID_LEN_V1
+        |res.value| == HeaderTypes.MESSAGE_ID_LEN_V1 as nat
 
     ensures
       && res.Success?
       && suite.messageVersion == 2
       ==>
-        |res.value| == HeaderTypes.MESSAGE_ID_LEN_V2
+        |res.value| == HeaderTypes.MESSAGE_ID_LEN_V2 as nat
   {
     var maybeId;
     if suite.messageVersion == 1 {
@@ -551,7 +553,7 @@ module EncryptDecryptHelpers {
                     encryptionContext := encryptionContext,
                     encryptedDataKeys := encryptedDataKeys,
                     contentType := HeaderTypes.ContentType.Framed,
-                    headerIvLength := SerializableTypes.GetIvLength(suite) as nat,
+                    headerIvLength := SerializableTypes.GetIvLength(suite) as uint64,
                     frameLength := frameLength
                   )
   {
@@ -570,7 +572,7 @@ module EncryptDecryptHelpers {
           encryptionContext := encryptionContext,
           encryptedDataKeys := encryptedDataKeys,
           contentType := contentType,
-          headerIvLength := SerializableTypes.GetIvLength(suite) as nat,
+          headerIvLength := SerializableTypes.GetIvLength(suite) as uint64,
           frameLength := frameLength
         );
       case HKDF(_) => return HeaderTypes.HeaderBody.V2HeaderBody(
@@ -606,13 +608,13 @@ module EncryptDecryptHelpers {
     //# algorithm (../framework/algorithm-suites.md#encryption-algorithm)
     //# specified by the algorithm suite (../framework/algorithm-suites.md),
     //# with the following inputs:
-    var keyLength := SerializableTypes.GetEncryptKeyLength(suite) as nat;
-    :- Need(|dataKey| == keyLength,
+    var keyLength := SerializableTypes.GetEncryptKeyLength(suite);
+    SequenceIsSafeBecauseItIsInMemory(dataKey);
+    :- Need(|dataKey| as uint64 == keyLength as uint64,
             Types.AwsEncryptionSdkException( message := "Incorrect data key length"));
 
-    var ivLength := SerializableTypes.GetIvLength(suite);
     //#*  The IV has a value of 0.
-    var iv: seq<uint8> := seq(ivLength, _ => 0);
+    var iv := SerializableTypes.GetIvLengthZeros(suite);
 
     var maybeEncryptionOutput := crypto.AESEncrypt(
       Primitives.Types.AESEncryptInput(
@@ -815,8 +817,9 @@ module EncryptDecryptHelpers {
     ensures header.suiteData != expectedSuiteData ==> res.Failure?
     ensures |header.suiteData| != suite.commitment.HKDF.outputKeyLength as int ==> res.Failure?
   {
+    SequenceIsSafeBecauseItIsInMemory(header.suiteData);
     :- Need(
-      |header.suiteData| == suite.commitment.HKDF.outputKeyLength as int,
+      |header.suiteData| as uint64 == suite.commitment.HKDF.outputKeyLength as uint64,
       Types.AwsEncryptionSdkException(
         message := "Commitment key is invalid")
     );
@@ -843,11 +846,11 @@ module EncryptDecryptHelpers {
     modifies crypto.Modifies
     ensures crypto.ValidState()
 
-    requires buffer.start <= |buffer.bytes|
+    requires buffer.start as nat <= |buffer.bytes|
     requires |key| == SerializableTypes.GetEncryptKeyLength(header.suite) as nat
     ensures res.Success? ==>
               var (plaintext, tail) := res.value;
-              && buffer.start <= tail.start <= |buffer.bytes|
+              && buffer.start as nat <= tail.start as nat <= |buffer.bytes|
               && SerializeFunctions.CorrectlyReadRange(buffer, tail, buffer.bytes[buffer.start..tail.start])
   {
     assert CorrectlyReadRange(buffer, buffer, []) by { reveal CorrectlyReadRange(); }
@@ -879,11 +882,11 @@ module EncryptDecryptHelpers {
     modifies crypto.Modifies
     ensures crypto.ValidState()
 
-    requires buffer.start <= |buffer.bytes|
+    requires buffer.start as nat <= |buffer.bytes|
     requires |key| == SerializableTypes.GetEncryptKeyLength(header.suite) as nat
     ensures res.Success? ==>
               var (plaintext, tail) := res.value;
-              && buffer.start <= tail.start <= |buffer.bytes|
+              && buffer.start as nat <= tail.start as nat <= |buffer.bytes|
               && SerializeFunctions.CorrectlyReadRange(buffer, tail, buffer.bytes[buffer.start..tail.start])
   {
     var messageBody :- MessageBody.ReadNonFramedMessageBody(buffer, header)
