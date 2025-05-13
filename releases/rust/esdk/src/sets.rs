@@ -25,7 +25,7 @@ pub mod SortedSets {
         ) -> ::dafny_runtime::Sequence<::dafny_runtime::Sequence<T>> {
             let mut vec = elems.iter().cloned().collect::<Vec<_>>();
             vec.sort_by(|a, b| Self::order(a, b, less));
-            dafny_runtime::dafny_runtime_conversions::vec_to_dafny_sequence(&vec, |x| x.clone())
+            dafny_runtime::Sequence::from_array_owned(vec)
         }
 
         pub fn SetToOrderedSequence2<T: ::dafny_runtime::DafnyTypeEq>(

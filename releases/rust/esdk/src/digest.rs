@@ -27,10 +27,10 @@ impl crate::ExternDigest::_default {
             DigestAlgorithm::SHA_384 {} => &digest::SHA384,
             DigestAlgorithm::SHA_256 {} => &digest::SHA256,
         };
-        let message_vec: Vec<u8> = message.iter().collect();
-        let result = digest::digest(algorithm, &message_vec);
+        let message_vec = &message.to_array();
+        let result = digest::digest(algorithm, message_vec);
         ::dafny_runtime::Rc::new(_Wrappers_Compile::Result::Success {
-            value: result.as_ref().iter().cloned().collect(),
+            value: dafny_runtime::Sequence::from_array_owned(result.as_ref().to_vec()),
         })
     }
 }

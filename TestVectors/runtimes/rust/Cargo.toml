@@ -15,8 +15,8 @@ wrapped-client = []
 
 [dependencies]
 aws-config = "1.6.2"
-aws-lc-rs = "=1.13.0"
-aws-lc-sys = "=0.28.2"
+aws-lc-rs = "=1.13.1"
+aws-lc-sys = "=0.29.0"
 aws-sdk-dynamodb = "1.73.0"
 aws-sdk-kms = "1.67.0"
 aws-smithy-runtime-api = {version = "1.8.0", features = ["client"] }

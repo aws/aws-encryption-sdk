@@ -32,12 +32,12 @@ impl crate::HMAC::_default {
             >,
         >,
     > {
-        let key_vec: Vec<u8> = input.key().iter().collect();
-        let the_key = hmac::Key::new(convert_algorithm(input.digestAlgorithm()), &key_vec);
-        let message_vec: Vec<u8> = input.message().iter().collect();
-        let result = hmac::sign(&the_key, &message_vec);
+        let key_vec = &input.key().to_array();
+        let the_key = hmac::Key::new(convert_algorithm(input.digestAlgorithm()), key_vec);
+        let message_vec = &input.message().to_array();
+        let result = hmac::sign(&the_key, message_vec);
         ::dafny_runtime::Rc::new(_Wrappers_Compile::Result::Success {
-            value: result.as_ref().iter().cloned().collect(),
+            value: dafny_runtime::Sequence::from_array_owned(result.as_ref().to_vec()),
         })
     }
 }
@@ -66,8 +66,8 @@ pub mod HMAC {
 
     impl HMac {
         pub fn Init(&self, salt: &::dafny_runtime::Sequence<u8>) {
-            let salt: Vec<u8> = salt.iter().collect();
-            self.inner.lock().unwrap().key = Some(hmac::Key::new(self.algorithm, &salt));
+            let salt = &salt.to_array();
+            self.inner.lock().unwrap().key = Some(hmac::Key::new(self.algorithm, salt));
             let context = Some(hmac::Context::with_key(
                 self.inner.lock().unwrap().key.as_ref().unwrap(),
             ));
@@ -102,25 +102,25 @@ pub mod HMAC {
             ::dafny_runtime::Rc::new(_Wrappers_Compile::Result::Success { value: inner })
         }
         pub fn BlockUpdate(&self, block: &::dafny_runtime::Sequence<u8>) {
-            let part: Vec<u8> = block.iter().collect();
+            let part = &block.to_array();
             self.inner
                 .lock()
                 .unwrap()
                 .context
                 .as_mut()
                 .unwrap()
-                .update(&part);
+                .update(part);
         }
         pub fn GetResult(&self) -> ::dafny_runtime::Sequence<u8> {
             let is_empty = self.inner.lock().unwrap().context.is_none();
             if is_empty {
-                return [].iter().cloned().collect();
+                return dafny_runtime::Sequence::from_array_owned(vec![]);
             }
             let tag = self.inner.lock().unwrap().context.take().unwrap().sign();
             // other languages allow you to call BlockUpdate after GetResult
             // so we re-initialize to mimic that behavior
             self.re_init();
-            tag.as_ref().iter().cloned().collect()
+            dafny_runtime::Sequence::from_array_owned(tag.as_ref().to_vec())
         }
     }
 }

@@ -65,7 +65,7 @@ cargo clippy --example main
 
 # replace local path with latest dafny-runtime from crates.io
 cargo rm dafny_runtime
-cargo add dafny-runtime -F sync
+cargo add dafny-runtime -F sync -F small-int
 
 # Run cargo test and example tests
 cargo test --release

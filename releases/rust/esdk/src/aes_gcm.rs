@@ -113,10 +113,10 @@ impl AES_GCM {
         msg: &::dafny_runtime::Sequence<u8>,
         aad: &::dafny_runtime::Sequence<u8>,
     ) -> Rc<_Wrappers_Compile::Result<Rc<AESEncryptOutput>, Rc<DafnyError>>> {
-        let iv: Vec<u8> = iv.iter().collect();
-        let key: Vec<u8> = key.iter().collect();
-        let msg: Vec<u8> = msg.iter().collect();
-        let aad: Vec<u8> = aad.iter().collect();
+        let iv = &iv.to_array();
+        let key = &key.to_array();
+        let msg = &msg.to_array();
+        let aad = &aad.to_array();
 
         if *self.keyLength() as usize != key.len() {
             let msg = format!(
@@ -135,11 +135,11 @@ impl AES_GCM {
             return enc_result(&msg);
         }
 
-        match self.do_aes_encrypt(&iv, &key, &msg, &aad) {
+        match self.do_aes_encrypt(iv, key, msg, aad) {
             Ok(x) => Rc::new(_Wrappers_Compile::Result::Success {
                 value: Rc::new(AESEncryptOutput::AESEncryptOutput {
-                    cipherText: x.cipher_text.iter().cloned().collect(),
-                    authTag: x.auth_tag.iter().cloned().collect(),
+                    cipherText: dafny_runtime::Sequence::from_array_owned(x.cipher_text),
+                    authTag: dafny_runtime::Sequence::from_array_owned(x.auth_tag),
                 }),
             }),
             Err(e) => {
@@ -158,11 +158,11 @@ impl AES_GCM {
         iv: &::dafny_runtime::Sequence<u8>,
         aad: &::dafny_runtime::Sequence<u8>,
     ) -> Rc<_Wrappers_Compile::Result<::dafny_runtime::Sequence<u8>, Rc<DafnyError>>> {
-        let key: Vec<u8> = key.iter().collect();
-        let cipher_text: Vec<u8> = cipher_text.iter().collect();
-        let auth_tag: Vec<u8> = auth_tag.iter().collect();
-        let iv: Vec<u8> = iv.iter().collect();
-        let aad: Vec<u8> = aad.iter().collect();
+        let key = &key.to_array();
+        let cipher_text = &cipher_text.to_array();
+        let auth_tag = &auth_tag.to_array();
+        let iv = &iv.to_array();
+        let aad = &aad.to_array();
 
         if *self.keyLength() as usize != key.len() {
             let msg = format!(
@@ -191,9 +191,9 @@ impl AES_GCM {
             return dec_result(&msg);
         }
 
-        match self.do_aes_decrypt(&key, &cipher_text, &auth_tag, &iv, &aad) {
+        match self.do_aes_decrypt(key, cipher_text, auth_tag, iv, aad) {
             Ok(x) => Rc::new(_Wrappers_Compile::Result::Success {
-                value: x.iter().cloned().collect(),
+                value: dafny_runtime::Sequence::from_array_owned(x),
             }),
             Err(e) => {
                 let msg = format!("AES Decrypt : {}", e);
@@ -208,23 +208,18 @@ mod tests {
     use super::*;
     #[test]
     fn test_generate() {
-        let iv: ::dafny_runtime::Sequence<u8> = [1u8, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-            .iter()
-            .cloned()
-            .collect();
-        let key: ::dafny_runtime::Sequence<u8> = [
+        let iv: ::dafny_runtime::Sequence<u8> = dafny_runtime::Sequence::from_array_owned(vec![
+            1u8, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+        ]);
+        let key: ::dafny_runtime::Sequence<u8> = dafny_runtime::Sequence::from_array_owned(vec![
             2u8, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
             25, 26, 27, 28, 29, 30, 31, 32, 33,
-        ]
-        .iter()
-        .cloned()
-        .collect();
-        let msg: ::dafny_runtime::Sequence<u8> = [2u8, 4, 6, 8, 10, 12].iter().cloned().collect();
-        let aad: ::dafny_runtime::Sequence<u8> =
-            [3u8, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
-                .iter()
-                .cloned()
-                .collect();
+        ]);
+        let msg: ::dafny_runtime::Sequence<u8> =
+            dafny_runtime::Sequence::from_array_owned(vec![2u8, 4, 6, 8, 10, 12]);
+        let aad: ::dafny_runtime::Sequence<u8> = dafny_runtime::Sequence::from_array_owned(vec![
+            3u8, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+        ]);
 
         let alg = AES_GCM::AES_GCM {
             keyLength: 32,

@@ -30,11 +30,11 @@ impl crate::r#software::amazon::cryptography::services::dynamodb::internaldafny:
         let shared_config = match tokio::runtime::Handle::try_current() {
             Ok(curr) => tokio::task::block_in_place(|| {
                 curr.block_on(async {
-                    aws_config::load_defaults(aws_config::BehaviorVersion::v2024_03_28()).await
+                    aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await
                 })
             }),
             Err(_) => DAFNY_TOKIO_RUNTIME.block_on(aws_config::load_defaults(
-                aws_config::BehaviorVersion::v2024_03_28(),
+                aws_config::BehaviorVersion::latest(),
             )),
         };
         let shared_config = shared_config
@@ -58,11 +58,11 @@ impl crate::r#software::amazon::cryptography::services::dynamodb::internaldafny:
         let shared_config = match tokio::runtime::Handle::try_current() {
             Ok(curr) => tokio::task::block_in_place(|| {
                 curr.block_on(async {
-                    aws_config::load_defaults(aws_config::BehaviorVersion::v2024_03_28()).await
+                    aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await
                 })
             }),
             Err(_) => DAFNY_TOKIO_RUNTIME.block_on(aws_config::load_defaults(
-                aws_config::BehaviorVersion::v2024_03_28(),
+                aws_config::BehaviorVersion::latest(),
             )),
         };
         let inner = aws_sdk_dynamodb::Client::new(&shared_config);
