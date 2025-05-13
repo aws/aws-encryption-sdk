@@ -212,6 +212,7 @@ impl crate::r#software::amazon::cryptography::services::dynamodb::internaldafny:
 .set_condition_expression(inner_input.r#condition_expression)
 .set_expression_attribute_names(inner_input.r#expression_attribute_names)
 .set_expression_attribute_values(inner_input.r#expression_attribute_values)
+.set_return_values_on_condition_check_failure(inner_input.r#return_values_on_condition_check_failure)
         .send()
         .await
       })
@@ -565,6 +566,7 @@ impl crate::r#software::amazon::cryptography::services::dynamodb::internaldafny:
 .set_next_token(inner_input.r#next_token)
 .set_return_consumed_capacity(inner_input.r#return_consumed_capacity)
 .set_limit(inner_input.r#limit)
+.set_return_values_on_condition_check_failure(inner_input.r#return_values_on_condition_check_failure)
         .send()
         .await
       })
@@ -859,6 +861,7 @@ impl crate::r#software::amazon::cryptography::services::dynamodb::internaldafny:
 .set_condition_expression(inner_input.r#condition_expression)
 .set_expression_attribute_names(inner_input.r#expression_attribute_names)
 .set_expression_attribute_values(inner_input.r#expression_attribute_values)
+.set_return_values_on_condition_check_failure(inner_input.r#return_values_on_condition_check_failure)
         .send()
         .await
       })
@@ -1202,6 +1205,7 @@ impl crate::r#software::amazon::cryptography::services::dynamodb::internaldafny:
 .set_condition_expression(inner_input.r#condition_expression)
 .set_expression_attribute_names(inner_input.r#expression_attribute_names)
 .set_expression_attribute_values(inner_input.r#expression_attribute_values)
+.set_return_values_on_condition_check_failure(inner_input.r#return_values_on_condition_check_failure)
         .send()
         .await
       })

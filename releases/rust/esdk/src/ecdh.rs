@@ -71,7 +71,7 @@ pub mod ECDH {
         use std::ptr::null_mut;
 
         const ELEM_MAX_BITS: usize = 521;
-        const ELEM_MAX_BYTES: usize = (ELEM_MAX_BITS + 7) / 8;
+        const ELEM_MAX_BYTES: usize = ELEM_MAX_BITS.div_ceil(8);
         const PUBLIC_KEY_MAX_LEN: usize = 1 + (2 * ELEM_MAX_BYTES);
 
         // This is the value checked in the Dafny test
@@ -279,7 +279,7 @@ pub mod ECDH {
         ) -> Rc<_Wrappers_Compile::Result<::dafny_runtime::Sequence<u8>, Rc<DafnyError>>> {
             let result = get_out_of_bounds(curve_algorithm);
             Rc::new(_Wrappers_Compile::Result::Success {
-                value: result.iter().cloned().collect(),
+                value: dafny_runtime::Sequence::from_array_owned(result),
             })
         }
 
@@ -306,17 +306,17 @@ pub mod ECDH {
         ) -> Rc<_Wrappers_Compile::Result<::dafny_runtime::Sequence<u8>, Rc<DafnyError>>> {
             let result = get_infinity(curve_algorithm);
             Rc::new(_Wrappers_Compile::Result::Success {
-                value: result.iter().cloned().collect(),
+                value: dafny_runtime::Sequence::from_array_owned(result),
             })
         }
         pub fn GetPublicKey(
             curve_algorithm: &Rc<ECDHCurveSpec>,
             private_key: &Rc<crate::software::amazon::cryptography::primitives::internaldafny::types::ECCPrivateKey>,
         ) -> Rc<_Wrappers_Compile::Result<::dafny_runtime::Sequence<u8>, Rc<DafnyError>>> {
-            let private_key: Vec<u8> = private_key.pem().iter().collect();
-            match get_public_key(curve_algorithm, &private_key) {
+            let private_key = &private_key.pem().to_array();
+            match get_public_key(curve_algorithm, private_key) {
                 Ok(x) => Rc::new(_Wrappers_Compile::Result::Success {
-                    value: x.iter().cloned().collect(),
+                    value: dafny_runtime::Sequence::from_array_owned(x),
                 }),
                 Err(e) => {
                     let msg = format!("ECDH Get Public Key : {}", e);
@@ -359,8 +359,8 @@ pub mod ECDH {
             curve_algorithm: &Rc<ECDHCurveSpec>,
             public_key: &::dafny_runtime::Sequence<u8>,
         ) -> Rc<_Wrappers_Compile::Result<bool, Rc<DafnyError>>> {
-            let public_key: Vec<u8> = public_key.iter().collect();
-            match valid_public_key(curve_algorithm, &public_key) {
+            let public_key = &public_key.to_array();
+            match valid_public_key(curve_algorithm, public_key) {
                 Ok(_) => Rc::new(_Wrappers_Compile::Result::Success { value: true }),
                 Err(e) => Rc::new(_Wrappers_Compile::Result::Failure {
                     error: super::error(&e),
@@ -372,10 +372,10 @@ pub mod ECDH {
             public_key: &::dafny_runtime::Sequence<u8>,
             _curve_algorithm: &Rc<ECDHCurveSpec>,
         ) -> Rc<_Wrappers_Compile::Result<::dafny_runtime::Sequence<u8>, Rc<DafnyError>>> {
-            let public_key: Vec<u8> = public_key.iter().collect();
-            match X509_to_X962(&public_key, true, None) {
+            let public_key = &public_key.to_array();
+            match X509_to_X962(public_key, true, None) {
                 Ok(v) => Rc::new(_Wrappers_Compile::Result::Success {
-                    value: v.iter().cloned().collect(),
+                    value: dafny_runtime::Sequence::from_array_owned(v),
                 }),
                 Err(e) => {
                     let msg = format!("ECDH Compress Public Key {}", e);
@@ -390,10 +390,10 @@ pub mod ECDH {
             public_key: &::dafny_runtime::Sequence<u8>,
             curve_algorithm: &Rc<ECDHCurveSpec>,
         ) -> Rc<_Wrappers_Compile::Result<::dafny_runtime::Sequence<u8>, Rc<DafnyError>>> {
-            let public_key: Vec<u8> = public_key.iter().collect();
-            match X962_to_X509(&public_key, curve_algorithm) {
+            let public_key = &public_key.to_array();
+            match X962_to_X509(public_key, curve_algorithm) {
                 Ok(v) => Rc::new(_Wrappers_Compile::Result::Success {
-                    value: v.iter().cloned().collect(),
+                    value: dafny_runtime::Sequence::from_array_owned(v),
                 }),
                 Err(e) => {
                     let msg = format!("ECDH Decompress Public Key {}", e);
@@ -407,8 +407,8 @@ pub mod ECDH {
         pub fn ParsePublicKey(
             publicKey: &::dafny_runtime::Sequence<u8>,
         ) -> Rc<_Wrappers_Compile::Result<::dafny_runtime::Sequence<u8>, Rc<DafnyError>>> {
-            let public_key: Vec<u8> = publicKey.iter().collect();
-            match X509_to_X962(&public_key, false, None) {
+            let public_key = &publicKey.to_array();
+            match X509_to_X962(public_key, false, None) {
                 Ok(_) => Rc::new(_Wrappers_Compile::Result::Success {
                     value: publicKey.clone(),
                 }),
@@ -451,11 +451,11 @@ pub mod ECDH {
             private_key: &Rc<crate::software::amazon::cryptography::primitives::internaldafny::types::ECCPrivateKey>,
             public_key: &Rc<crate::software::amazon::cryptography::primitives::internaldafny::types::ECCPublicKey>,
         ) -> Rc<_Wrappers_Compile::Result<::dafny_runtime::Sequence<u8>, Rc<DafnyError>>> {
-            let private_key: Vec<u8> = private_key.pem().iter().collect();
-            let public_key: Vec<u8> = public_key.der().iter().collect();
-            match agree(curve_algorithm, &private_key, &public_key) {
+            let private_key = &private_key.pem().to_array();
+            let public_key = &public_key.der().to_array();
+            match agree(curve_algorithm, private_key, public_key) {
                 Ok(v) => Rc::new(_Wrappers_Compile::Result::Success {
-                    value: v.iter().cloned().collect(),
+                    value: dafny_runtime::Sequence::from_array_owned(v),
                 }),
                 Err(e) => {
                     let msg = format!("ECDH Calculate Shared Secret : {}", e);
@@ -500,8 +500,8 @@ pub mod ECDH {
             match ecdsa_key_gen(s) {
                 Ok(x) => Rc::new(_Wrappers_Compile::Result::Success {
                     value: Rc::new(crate::ECDH::EccKeyPair::EccKeyPair {
-                        publicKey: x.0.iter().cloned().collect(),
-                        privateKey: x.1.iter().cloned().collect(),
+                        publicKey: dafny_runtime::Sequence::from_array_owned(x.0),
+                        privateKey: dafny_runtime::Sequence::from_array_owned(x.1),
                     }),
                 }),
                 Err(e) => {

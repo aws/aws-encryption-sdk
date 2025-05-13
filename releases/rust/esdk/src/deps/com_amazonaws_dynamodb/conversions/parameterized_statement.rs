@@ -18,6 +18,11 @@ pub fn to_dafny(
     None => crate::r#_Wrappers_Compile::Option::None {}
 })
 ,
+ ReturnValuesOnConditionCheckFailure: ::dafny_runtime::Rc::new(match &value.return_values_on_condition_check_failure {
+    Some(x) => crate::_Wrappers_Compile::Option::Some { value: crate::deps::com_amazonaws_dynamodb::conversions::return_values_on_condition_check_failure::to_dafny(x.clone()) },
+    None => crate::_Wrappers_Compile::Option::None { }
+})
+,
     }
   )
 }
@@ -38,6 +43,13 @@ pub fn from_dafny(
             )
         ),
     _ => None
+}
+)
+ .set_return_values_on_condition_check_failure(match &**dafny_value.ReturnValuesOnConditionCheckFailure() {
+    crate::r#_Wrappers_Compile::Option::Some { value } => Some(
+        crate::deps::com_amazonaws_dynamodb::conversions::return_values_on_condition_check_failure::from_dafny(value)
+    ),
+    _ => None,
 }
 )
           .build()

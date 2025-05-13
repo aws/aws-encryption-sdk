@@ -26,11 +26,11 @@ impl crate::r#software::amazon::cryptography::services::kms::internaldafny::_def
         let shared_config = match tokio::runtime::Handle::try_current() {
             Ok(curr) => tokio::task::block_in_place(|| {
                 curr.block_on(async {
-                    aws_config::load_defaults(aws_config::BehaviorVersion::v2024_03_28()).await
+                    aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await
                 })
             }),
             Err(_) => DAFNY_TOKIO_RUNTIME.block_on(aws_config::load_defaults(
-                aws_config::BehaviorVersion::v2024_03_28(),
+                aws_config::BehaviorVersion::latest(),
             )),
         };
 
@@ -51,11 +51,11 @@ impl crate::r#software::amazon::cryptography::services::kms::internaldafny::_def
         let shared_config = match tokio::runtime::Handle::try_current() {
             Ok(curr) => tokio::task::block_in_place(|| {
                 curr.block_on(async {
-                    aws_config::load_defaults(aws_config::BehaviorVersion::v2024_03_28()).await
+                    aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await
                 })
             }),
             Err(_) => DAFNY_TOKIO_RUNTIME.block_on(aws_config::load_defaults(
-                aws_config::BehaviorVersion::v2024_03_28(),
+                aws_config::BehaviorVersion::latest(),
             )),
         };
 

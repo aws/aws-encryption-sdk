@@ -45,7 +45,7 @@ impl ClientSupplier for RegionalRoleClientSupplier {
 
         let sdk_config = tokio::task::block_in_place(|| {
             tokio::runtime::Handle::current().block_on(async {
-                aws_config::load_defaults(aws_config::BehaviorVersion::v2024_03_28()).await
+                aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await
             })
         });
         let kms_config = aws_sdk_kms::config::Builder::from(&sdk_config)
