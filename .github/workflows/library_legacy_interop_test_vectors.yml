@@ -84,6 +84,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install --upgrade tox
           pip install poetry
+        
+      - name: Install Smithy-Dafny codegen dependencies
+        if: ${{ inputs.regenerate-code }}
+        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
 
       - name: Regenerate code using smithy-dafny if necessary
         if: ${{ inputs.regenerate-code }}
