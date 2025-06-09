@@ -1,6 +1,6 @@
 [package]
 name = "aws-esdk"
-version = "1.1.0"
+version = "1.1.1"
 edition = "2021"
 rust-version = "1.81.0"
 keywords = ["cryptography", "security", "dynamodb", "encryption", "client-side"]
@@ -16,7 +16,7 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-aws-config = "1.6.2"
+aws-config = "1.6.3"
 aws-lc-rs = "=1.13.1"
 aws-lc-sys = "=0.29.0"
 aws-sdk-dynamodb = "1.73.0"
@@ -29,8 +29,8 @@ dafny_runtime = { path = "../../../mpl/smithy-dafny/TestModels/dafny-dependencie
 dashmap = "6.1.0"
 pem = "3.0.5"
 rand = "0.9.1"
-tokio = {version = "1.45.0", features = ["full"] }
-uuid = { version = "1.16.0", features = ["v4"] }
+tokio = {version = "1.45.1", features = ["full"] }
+uuid = { version = "1.17.0", features = ["v4"] }
 
 [[example]]
 name = "main"

@@ -14,7 +14,7 @@ readme = "README.md"
 wrapped-client = []
 
 [dependencies]
-aws-config = "1.6.2"
+aws-config = "1.6.3"
 aws-lc-rs = "=1.13.1"
 aws-lc-sys = "=0.29.0"
 aws-sdk-dynamodb = "1.73.0"
@@ -27,8 +27,8 @@ dafny_runtime = { path = "../../../mpl/smithy-dafny/TestModels/dafny-dependencie
 dashmap = "6.1.0"
 pem = "3.0.5"
 rand = "0.9.1"
-tokio = {version = "1.45.0", features = ["full"] }
-uuid = { version = "1.16.0", features = ["v4"] }
+tokio = {version = "1.45.1", features = ["full"] }
+uuid = { version = "1.17.0", features = ["v4"] }
 ring = "=0.17.14"
 
 [dev-dependencies]
