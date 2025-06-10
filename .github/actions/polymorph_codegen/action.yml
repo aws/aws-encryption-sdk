@@ -57,12 +57,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup Java 17 for codegen
-      uses: actions/setup-java@v4
-      with:
-        distribution: "corretto"
-        java-version: "17"
-    
     - name: Install smithy-dafny dependencies
       shell: bash
       working-directory: smithy-dafny
