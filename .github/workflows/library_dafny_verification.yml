@@ -34,7 +34,6 @@ jobs:
         run: |
           git submodule update --init libraries
           git submodule update --init --recursive mpl
-          git submodule update --init --recursive smithy-dafny
 
       # dafny-reportgenerator requires next6
       # but only 7.0 is installed on macos-13-large
