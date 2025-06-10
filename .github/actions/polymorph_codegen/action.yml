@@ -59,7 +59,7 @@ runs:
   steps:
     - name: Install smithy-dafny dependencies
       shell: bash
-      working-directory: smithy-dafny
+      working-directory: mpl/smithy-dafny
       run: |
         make mvn_local_deploy_polymorph_dependencies
 
