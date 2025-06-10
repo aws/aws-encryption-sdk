@@ -17,7 +17,7 @@ runs:
     - name: Install smithy-dafny-codegen dependencies locally
       shell: bash
       run: |
-        make -C smithy-dafny mvn_local_deploy_polymorph_dependencies
+        make -C mpl/smithy-dafny mvn_local_deploy_polymorph_dependencies
 
     - name: Setup Python, black, and docformatter for code formatting
       uses: actions/setup-python@v4
