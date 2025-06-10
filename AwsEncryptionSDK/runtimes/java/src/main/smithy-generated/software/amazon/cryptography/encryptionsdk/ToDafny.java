@@ -6,6 +6,7 @@ package software.amazon.cryptography.encryptionsdk;
 import Wrappers_Compile.Option;
 import dafny.DafnyMap;
 import dafny.DafnySequence;
+import dafny.TypeDescriptor;
 import java.lang.Byte;
 import java.lang.Character;
 import java.lang.Long;
@@ -24,6 +25,7 @@ import software.amazon.cryptography.encryptionsdk.model.AwsEncryptionSdkExceptio
 import software.amazon.cryptography.encryptionsdk.model.CollectionOfErrors;
 import software.amazon.cryptography.encryptionsdk.model.NetV4_0_0_RetryPolicy;
 import software.amazon.cryptography.encryptionsdk.model.OpaqueError;
+import software.amazon.cryptography.encryptionsdk.model.OpaqueWithTextError;
 import software.amazon.cryptography.materialproviders.internaldafny.types.ESDKAlgorithmSuiteId;
 import software.amazon.cryptography.materialproviders.internaldafny.types.ESDKCommitmentPolicy;
 import software.amazon.cryptography.materialproviders.internaldafny.types.ICryptographicMaterialsManager;
@@ -38,6 +40,9 @@ public class ToDafny {
     if (nativeValue instanceof OpaqueError) {
       return ToDafny.Error((OpaqueError) nativeValue);
     }
+    if (nativeValue instanceof OpaqueWithTextError) {
+      return ToDafny.Error((OpaqueWithTextError) nativeValue);
+    }
     if (nativeValue instanceof CollectionOfErrors) {
       return ToDafny.Error((CollectionOfErrors) nativeValue);
     }
@@ -46,6 +51,13 @@ public class ToDafny {
 
   public static Error Error(OpaqueError nativeValue) {
     return Error.create_Opaque(nativeValue.obj());
+  }
+
+  public static Error Error(OpaqueWithTextError nativeValue) {
+    return Error.create_OpaqueWithText(
+      nativeValue.obj(),
+      dafny.DafnySequence.asString(nativeValue.objMessage())
+    );
   }
 
   public static Error Error(CollectionOfErrors nativeValue) {
@@ -69,23 +81,28 @@ public class ToDafny {
     commitmentPolicy =
       Objects.nonNull(nativeValue.commitmentPolicy())
         ? Option.create_Some(
+          ESDKCommitmentPolicy._typeDescriptor(),
           software.amazon.cryptography.materialproviders.ToDafny.ESDKCommitmentPolicy(
             nativeValue.commitmentPolicy()
           )
         )
-        : Option.create_None();
+        : Option.create_None(ESDKCommitmentPolicy._typeDescriptor());
     Option<Long> maxEncryptedDataKeys;
     maxEncryptedDataKeys =
       Objects.nonNull(nativeValue.maxEncryptedDataKeys())
-        ? Option.create_Some((nativeValue.maxEncryptedDataKeys()))
-        : Option.create_None();
+        ? Option.create_Some(
+          TypeDescriptor.LONG,
+          (nativeValue.maxEncryptedDataKeys())
+        )
+        : Option.create_None(TypeDescriptor.LONG);
     Option<NetV4__0__0__RetryPolicy> netV4_0_0_RetryPolicy;
     netV4_0_0_RetryPolicy =
       Objects.nonNull(nativeValue.netV4_0_0_RetryPolicy())
         ? Option.create_Some(
+          NetV4__0__0__RetryPolicy._typeDescriptor(),
           ToDafny.NetV4_0_0_RetryPolicy(nativeValue.netV4_0_0_RetryPolicy())
         )
-        : Option.create_None();
+        : Option.create_None(NetV4__0__0__RetryPolicy._typeDescriptor());
     return new AwsEncryptionSdkConfig(
       commitmentPolicy,
       maxEncryptedDataKeys,
@@ -105,20 +122,24 @@ public class ToDafny {
     materialsManager =
       Objects.nonNull(nativeValue.materialsManager())
         ? Option.create_Some(
+          TypeDescriptor.reference(ICryptographicMaterialsManager.class),
           software.amazon.cryptography.materialproviders.ToDafny.CryptographicMaterialsManager(
             nativeValue.materialsManager()
           )
         )
-        : Option.create_None();
+        : Option.create_None(
+          TypeDescriptor.reference(ICryptographicMaterialsManager.class)
+        );
     Option<IKeyring> keyring;
     keyring =
       Objects.nonNull(nativeValue.keyring())
         ? Option.create_Some(
+          TypeDescriptor.reference(IKeyring.class),
           software.amazon.cryptography.materialproviders.ToDafny.Keyring(
             nativeValue.keyring()
           )
         )
-        : Option.create_None();
+        : Option.create_None(TypeDescriptor.reference(IKeyring.class));
     Option<
       DafnyMap<
         ? extends DafnySequence<? extends Byte>,
@@ -129,11 +150,20 @@ public class ToDafny {
       (Objects.nonNull(nativeValue.encryptionContext()) &&
           nativeValue.encryptionContext().size() > 0)
         ? Option.create_Some(
+          DafnyMap._typeDescriptor(
+            DafnySequence._typeDescriptor(TypeDescriptor.BYTE),
+            DafnySequence._typeDescriptor(TypeDescriptor.BYTE)
+          ),
           software.amazon.cryptography.materialproviders.ToDafny.EncryptionContext(
             nativeValue.encryptionContext()
           )
         )
-        : Option.create_None();
+        : Option.create_None(
+          DafnyMap._typeDescriptor(
+            DafnySequence._typeDescriptor(TypeDescriptor.BYTE),
+            DafnySequence._typeDescriptor(TypeDescriptor.BYTE)
+          )
+        );
     return new DecryptInput(
       ciphertext,
       materialsManager,
@@ -184,43 +214,57 @@ public class ToDafny {
       (Objects.nonNull(nativeValue.encryptionContext()) &&
           nativeValue.encryptionContext().size() > 0)
         ? Option.create_Some(
+          DafnyMap._typeDescriptor(
+            DafnySequence._typeDescriptor(TypeDescriptor.BYTE),
+            DafnySequence._typeDescriptor(TypeDescriptor.BYTE)
+          ),
           software.amazon.cryptography.materialproviders.ToDafny.EncryptionContext(
             nativeValue.encryptionContext()
           )
         )
-        : Option.create_None();
+        : Option.create_None(
+          DafnyMap._typeDescriptor(
+            DafnySequence._typeDescriptor(TypeDescriptor.BYTE),
+            DafnySequence._typeDescriptor(TypeDescriptor.BYTE)
+          )
+        );
     Option<ICryptographicMaterialsManager> materialsManager;
     materialsManager =
       Objects.nonNull(nativeValue.materialsManager())
         ? Option.create_Some(
+          TypeDescriptor.reference(ICryptographicMaterialsManager.class),
           software.amazon.cryptography.materialproviders.ToDafny.CryptographicMaterialsManager(
             nativeValue.materialsManager()
           )
         )
-        : Option.create_None();
+        : Option.create_None(
+          TypeDescriptor.reference(ICryptographicMaterialsManager.class)
+        );
     Option<IKeyring> keyring;
     keyring =
       Objects.nonNull(nativeValue.keyring())
         ? Option.create_Some(
+          TypeDescriptor.reference(IKeyring.class),
           software.amazon.cryptography.materialproviders.ToDafny.Keyring(
             nativeValue.keyring()
           )
         )
-        : Option.create_None();
+        : Option.create_None(TypeDescriptor.reference(IKeyring.class));
     Option<ESDKAlgorithmSuiteId> algorithmSuiteId;
     algorithmSuiteId =
       Objects.nonNull(nativeValue.algorithmSuiteId())
         ? Option.create_Some(
+          ESDKAlgorithmSuiteId._typeDescriptor(),
           software.amazon.cryptography.materialproviders.ToDafny.ESDKAlgorithmSuiteId(
             nativeValue.algorithmSuiteId()
           )
         )
-        : Option.create_None();
+        : Option.create_None(ESDKAlgorithmSuiteId._typeDescriptor());
     Option<Long> frameLength;
     frameLength =
       Objects.nonNull(nativeValue.frameLength())
-        ? Option.create_Some((nativeValue.frameLength()))
-        : Option.create_None();
+        ? Option.create_Some(TypeDescriptor.LONG, (nativeValue.frameLength()))
+        : Option.create_None(TypeDescriptor.LONG);
     return new EncryptInput(
       plaintext,
       encryptionContext,

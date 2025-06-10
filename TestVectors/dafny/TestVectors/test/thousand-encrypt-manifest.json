@@ -1,0 +1,114 @@
+{
+  "manifest": {
+    "type": "awses-encrypt",
+    "version": 5
+  },
+  "client": {
+    "name": "aws-encryption-sdk-dafny",
+    "version": "4.1.0"
+  },
+  "keys": "file://keys.json",
+  "plaintexts": {
+    "small": 1000
+  },
+  "tests": {
+    "small-aes-256": {
+      "encryption-scenario": {
+        "type": "positive-esdk",
+        "plaintext": "small",
+        "description": "Generated RawAES aes-256",
+        "algorithmSuiteId": "0078",
+        "frame-size": 512,
+        "encryptKeyDescription": {
+          "type": "raw",
+          "key": "aes-256",
+          "provider-id": "aws-raw-vectors-persistent-aes-256",
+          "encryption-algorithm": "aes"
+        },
+        "decryptKeyDescription": {
+          "type": "raw",
+          "key": "aes-256",
+          "provider-id": "aws-raw-vectors-persistent-aes-256",
+          "encryption-algorithm": "aes"
+        },
+        "encryption-context": {},
+        "reproduced-encryption-context": {}
+      }
+    },
+    "small-rsa-4096": {
+      "encryption-scenario": {
+        "type": "positive-esdk",
+        "plaintext": "small",
+        "description": "Generated RawRSA rsa-4096",
+        "algorithmSuiteId": "0146",
+        "frame-size": 512,
+        "encryptKeyDescription": {
+          "type": "raw",
+          "key": "rsa-4096-public",
+          "provider-id": "aws-raw-vectors-persistent-rsa-4096",
+          "encryption-algorithm": "rsa",
+          "padding-algorithm": "oaep-mgf1",
+          "padding-hash": "sha512"
+        },
+        "decryptKeyDescription": {
+          "type": "raw",
+          "key": "rsa-4096-private",
+          "provider-id": "aws-raw-vectors-persistent-rsa-4096",
+          "encryption-algorithm": "rsa",
+          "padding-algorithm": "oaep-mgf1",
+          "padding-hash": "sha512"
+        },
+        "encryption-context": {},
+        "reproduced-encryption-context": {}
+      }
+    },
+    "small-aws-kms-hierarchy": {
+      "encryption-scenario": {
+        "type": "positive-esdk",
+        "plaintext": "small",
+        "description": "Generated Hierarchy KMS static-branch-key-1",
+        "algorithmSuiteId": "0478",
+        "frame-size": 512,
+        "encryptKeyDescription": {
+          "type": "aws-kms-hierarchy",
+          "key": "static-branch-key-1"
+        },
+        "decryptKeyDescription": {
+          "type": "aws-kms-hierarchy",
+          "key": "static-branch-key-1"
+        },
+        "encryption-context": {},
+        "reproduced-encryption-context": {}
+      }
+    },
+    "small-hierarchy-large-ec": {
+      "encryption-scenario": {
+        "type": "positive-esdk",
+        "plaintext": "small",
+        "description": "Generated Hierarchy KMS static-branch-key-1",
+        "algorithmSuiteId": "0478",
+        "frame-size": 512,
+        "encryptKeyDescription": {
+          "type": "aws-kms-hierarchy",
+          "key": "static-branch-key-1"
+        },
+        "decryptKeyDescription": {
+          "type": "aws-kms-hierarchy",
+          "key": "static-branch-key-1"
+        },
+        "encryption-context": {
+          "AabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+          "BabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+          "CabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+          "DabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+          "EabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+          "FabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+          "GabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+          "HabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+          "IabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+          "JabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        }
+      }
+    }
+  }
+}

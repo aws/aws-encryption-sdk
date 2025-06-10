@@ -8,6 +8,7 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
   import opened StandardLibrary.UInt
   import opened Wrappers
   import opened UTF8
+  import opened StandardLibrary.MemoryMath
 
   datatype ReadProblems =
       // This _may_ be recoverable.
@@ -16,7 +17,7 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
       // a read function _may_ be able to return a datatype.
       // If the caller is at EOS,
       // then this is not recoverable.
-    | MoreNeeded(pos: nat)
+    | MoreNeeded(pos: uint64)
       // These errors should not be recoverable.
       // The data is incorrect
       // and reading the same data again will generate the same error.
@@ -29,7 +30,7 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
   // This data structure represents this information.
   datatype ReadableBuffer = ReadableBuffer(
     bytes: seq<uint8>,
-    start: nat
+    start: uint64
   )
 
   // This holds the data from a successful read.
@@ -81,7 +82,7 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     readRange: seq<uint8>
   )
   {
-    // This predicate defines what it means to correctly read a buffer. 
+    // This predicate defines what it means to correctly read a buffer.
     // `buffer` represents the state of a buffer before a read,
     // `tail` represents the returned buffer after a read,
     // and `readRange` represents the bytes read from that buffer.
@@ -89,18 +90,18 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     // and in order to have read `readRange` we need
     // the following to be true:
     && buffer.bytes == tail.bytes
-    // buffer and tail can start at the same place (i.e the beginning)
-    // as you read more, tail will grow but not larger than the size of the buffer.
-    && buffer.start <= tail.start <= |buffer.bytes|
-    // buffer and tail bytes are the same because when we splice them using buffer.start
-    // as the start all the way to end we have the same sequence
+       // buffer and tail can start at the same place (i.e the beginning)
+       // as you read more, tail will grow but not larger than the size of the buffer.
+    && buffer.start as nat <= tail.start as nat <= |buffer.bytes|
+       // buffer and tail bytes are the same because when we splice them using buffer.start
+       // as the start all the way to end we have the same sequence
     && buffer.bytes[buffer.start..] == tail.bytes[buffer.start..]
-    // the bytes read i.e. the readRange MUST be a subset of the bytes in the buffer.
-    // further it MUST be the the prefix of the bytes sliced from the buffer's start.
+       // the bytes read i.e. the readRange MUST be a subset of the bytes in the buffer.
+       // further it MUST be the the prefix of the bytes sliced from the buffer's start.
     && readRange <= buffer.bytes[buffer.start..]
-    // the start of where we have read up to so far must be equal to where the buffer starts 
-    // and the length of the sequence of what we have read.
-    && tail.start == buffer.start + |readRange|
+       // the start of where we have read up to so far must be equal to where the buffer starts
+       // and the length of the sequence of what we have read.
+    && tail.start as nat == buffer.start as nat + |readRange|
   }
 
   // Sequence ranges are complicated in Dafny.
@@ -113,7 +114,7 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     readRange: seq<uint8>
   )
     requires CorrectlyReadRange(buffer, tail, readRange)
-    ensures buffer.start <= tail.start <= |buffer.bytes|
+    ensures buffer.start as nat <= tail.start as nat <= |buffer.bytes|
     // we ensure that from buffer.start to tail.start we have correctly read that segment
     ensures CorrectlyReadRange(buffer, tail, buffer.bytes[buffer.start..tail.start])
     // once we know we have correctly read, we assert that the splice of buffer.start to tail.start
@@ -139,14 +140,14 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     tail:ReadableBuffer,
     readRange: seq<uint8>
   )
-    requires buffer.start <= verifiedTail.start <= |buffer.bytes|
-    // We require that we have correctly read up to the point where we have verified we have read to 
+    requires buffer.start as nat <= verifiedTail.start as nat <= |buffer.bytes|
+    // We require that we have correctly read up to the point where we have verified we have read to
     requires CorrectlyReadRange(buffer, verifiedTail, buffer.bytes[buffer.start..verifiedTail.start])
     // By moving the pointer to now start at verifiedTail we want to require that packing on the size of
     // readRange we stay within the bounds of the buffer.
     requires CorrectlyReadRange(verifiedTail, tail, readRange)
     // Make sure we have not read past the length of total available byte
-    ensures buffer.start <= tail.start <= |buffer.bytes|
+    ensures buffer.start as nat <= tail.start as nat <= |buffer.bytes|
     // Tail is the point of where we have read to; this point is past the verifiedTail
     // but less than the total buffer.
     ensures CorrectlyReadRange(buffer, tail, buffer.bytes[buffer.start..tail.start])
@@ -159,7 +160,7 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     reveal CorrectlyReadRange();
     CorrectlyReadByteRange(verifiedTail, tail, readRange);
   }
-  
+
   // This function is trivial,
   // but it lets `Read` have a `Write` function
   // for its `CorrectlyRead` ensures clause.
@@ -176,27 +177,28 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
 
   opaque function Read(
     buffer: ReadableBuffer,
-    length: nat
+    length: uint64
   ):
     (res: ReadBinaryCorrect<seq<uint8>>)
     // Optional elements in a data structure can be represented with a length of 0 bytes.
     ensures
-      && buffer.start + length <= |buffer.bytes|
+      && buffer.start as nat + length as nat <= |buffer.bytes|
       <==>
       && res.Success?
-      && |res.value.data| == length
+      && |res.value.data| == length as nat
     ensures
-      && |buffer.bytes| < buffer.start + length
+      && |buffer.bytes| < buffer.start as nat + length as nat
       <==>
       && res.Failure?
       && res.error.MoreNeeded?
-      && res.error.pos == buffer.start + length
+      && res.error.pos == Add(buffer.start, length)
     ensures CorrectlyRead(buffer, res, Write)
   {
     reveal CorrectlyReadRange();
 
-    var end := buffer.start + length;
-    :- Need(|buffer.bytes| >= end, MoreNeeded(end));
+    var end := Add(buffer.start, length);
+    SequenceIsSafeBecauseItIsInMemory(buffer.bytes);
+    :- Need(|buffer.bytes| as uint64 >= end, MoreNeeded(end));
 
     Success(SuccessfulRead(
               buffer.bytes[buffer.start..end],
@@ -215,7 +217,7 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     buffer: ReadableBuffer
   )
     :(res: ReadBinaryCorrect<uint16>)
-    ensures buffer.start + 2 <= |buffer.bytes| <==> res.Success?
+    ensures buffer.start as nat + 2 <= |buffer.bytes| <==> res.Success?
     ensures CorrectlyRead(buffer, res, WriteUint16)
   {
     var SuccessfulRead(uint16Bytes, tail) :- Read(buffer, 2);
@@ -234,7 +236,7 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     buffer: ReadableBuffer
   ):
     (res: ReadBinaryCorrect<uint32>)
-    ensures buffer.start + 4 <= |buffer.bytes| <==> res.Success?
+    ensures buffer.start as nat + 4 <= |buffer.bytes| <==> res.Success?
     ensures CorrectlyRead(buffer, res, WriteUint32)
   {
     var SuccessfulRead(uint32Bytes, tail) :- Read(buffer, 4);
@@ -253,7 +255,7 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     buffer: ReadableBuffer
   ):
     (res: ReadBinaryCorrect<uint64>)
-    ensures buffer.start + 8 <= |buffer.bytes| <==> res.Success?
+    ensures buffer.start as nat + 8 <= |buffer.bytes| <==> res.Success?
     ensures CorrectlyRead(buffer, res, UInt64ToSeq)
   {
     var SuccessfulRead(uint64Bytes, tail) :- Read(buffer, 8);
@@ -279,7 +281,7 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
               && |res.value.data| == ReadUInt16(buffer).value.data as nat
   {
     var length: SuccessfulRead<uint16> :- ReadUInt16(buffer);
-    var d: SuccessfulRead<Uint8Seq16> :- Read(length.tail, length.data as nat);
+    var d: SuccessfulRead<Uint8Seq16> :- Read(length.tail, length.data as uint64);
 
     assert CorrectlyReadRange(buffer, d.tail, WriteShortLengthSeq(d.data)) by {
       reveal CorrectlyReadRange();
@@ -306,7 +308,7 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
               && |res.value.data| == ReadUInt32(buffer).value.data as nat
   {
     var length :- ReadUInt32(buffer);
-    var d: SuccessfulRead<Uint8Seq32> :- Read(length.tail, length.data as nat);
+    var d: SuccessfulRead<Uint8Seq32> :- Read(length.tail, length.data as uint64);
 
     assert CorrectlyReadRange(buffer, d.tail, WriteUint32Seq(d.data)) by {
       reveal CorrectlyReadRange();
@@ -334,7 +336,7 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
               && |res.value.data| == ReadUInt64(buffer).value.data as nat
   {
     var length :- ReadUInt64(buffer);
-    var d: SuccessfulRead<Uint8Seq64> :- Read(length.tail, length.data as nat);
+    var d: SuccessfulRead<Uint8Seq64> :- Read(length.tail, length.data);
 
     assert CorrectlyReadRange(buffer, d.tail, WriteUint64Seq(d.data)) by {
       reveal CorrectlyReadRange();
@@ -357,11 +359,12 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     bytes: seq<uint8>
   )
     ensures CorrectlyReadableByteRange?(buffer, bytes)
-    ==>
-      && buffer.start <= buffer.start + |bytes| <= |buffer.bytes|
-      && CorrectlyReadRange(buffer, buffer, buffer.bytes[buffer.start..buffer.start])
+            ==>
+              && buffer.start as nat <= buffer.start as nat + |bytes| <= |buffer.bytes|
+              && CorrectlyReadRange(buffer, buffer, buffer.bytes[buffer.start..buffer.start])
   {
     reveal CorrectlyReadRange();
+    SequenceIsSafeBecauseItIsInMemory(bytes);
     CorrectlyReadRange(buffer, MoveStart(buffer, |bytes|), bytes)
   }
 
@@ -371,7 +374,8 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
   )
     :(ret: ReadableBuffer)
   {
-    buffer.(start := buffer.start + length)
+    ValueIsSafeBecauseItIsInMemory(buffer.start as nat + length);
+    buffer.(start := (buffer.start as nat + length) as uint64)
   }
 
   // Useful lemma in order to prove the completeness of advancing the read buffer
@@ -383,10 +387,10 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     readRange?: seq<uint8>
   )
     requires CorrectlyReadableByteRange?(buffer, bytes)
-    // verfified tail is what we have read and verified we have correctly read
+    // verified tail is what we have read and verified we have correctly read
     // require that it is not longer than the length of bytes available
-    requires buffer.start <= verifiedTail.start <= |buffer.bytes|
-    // In order to pack on readRange? we MUST require that we have correctly read up to 
+    requires buffer.start as nat <= verifiedTail.start as nat <= |buffer.bytes|
+    // In order to pack on readRange? we MUST require that we have correctly read up to
     // verifiedTail. We could get the completeness that packing on verifiedTail succeeded from another
     // lemma, but in order to pack on we MUST be able to read up until the verifiedTail.
     requires CorrectlyReadRange(buffer, verifiedTail, buffer.bytes[buffer.start..verifiedTail.start])
@@ -412,19 +416,19 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     requires
       // Links data to the buffer so we know these bytes are the same
       && Write(data) == bytes
-      // Here we have the buffer and we require that we can correctly read 
-      // up to the length of bytes or what we have written,
+         // Here we have the buffer and we require that we can correctly read
+         // up to the length of bytes or what we have written,
       && CorrectlyReadableByteRange?(buffer, bytes)
     ensures
       && ret.data == data
-      && Success(ret) == Read(buffer, |bytes|)
+      && Success(ret) == Read(buffer, |bytes| as uint64)
   {
     reveal CorrectlyReadRange();
-    // After we have written data and gotten its length we can read its length from
-    // the buffer and we know we can do this from our precondition.
-    ret := Read(buffer, |Write(data)|).value;
-    // After we have read what we have writen we need to prove
-    // that we can read the length of the what we wrote 
+           // After we have written data and gotten its length we can read its length from
+           // the buffer and we know we can do this from our precondition.
+    ret := Read(buffer, |Write(data)| as uint64).value;
+    // After we have read what we have written we need to prove
+    // that we can read the length of the what we wrote
     // In order to satisfy the postcondition
     CorrectlyReadByteRange(buffer, ret.tail, bytes);
   }
@@ -548,7 +552,7 @@ module {:options "/functionSyntax:4" } SerializeFunctions {
     ensures
       && ReadUint64Seq(buffer).Success?
       && ReadUint64Seq(buffer).value.data == data
-      && ReadUint64Seq(buffer).value.tail.start == buffer.start + |bytes|
+      && ReadUint64Seq(buffer).value.tail.start as nat == buffer.start as nat + |bytes|
     ensures
       && ret.data == data
       && Success(ret) == ReadUint64Seq(buffer)

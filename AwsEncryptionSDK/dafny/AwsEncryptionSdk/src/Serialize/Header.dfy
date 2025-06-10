@@ -30,6 +30,7 @@ module Header {
   import opened Wrappers
   import opened UTF8
   import opened SerializeFunctions
+  import opened StandardLibrary.MemoryMath
 
   datatype HeaderInfo = HeaderInfo(
     nameonly body: HeaderTypes.HeaderBody,
@@ -43,9 +44,9 @@ module Header {
   {
     && h.suite.id.ESDK?
     && h.suite == h.body.algorithmSuite
-    // TODO: Even though we're not yet supporting non-framed content,
-    // this assertion about non-framed messages has ripple effects on
-    // other proofs
+       // TODO: Even though we're not yet supporting non-framed content,
+       // this assertion about non-framed messages has ripple effects on
+       // other proofs
     && (h.body.contentType.NonFramed? <==> 0 == h.body.frameLength)
     && (h.body.contentType.Framed? <==> 0 < h.body.frameLength)
     && HeaderAuth?(h.suite, h.headerAuth)
@@ -72,10 +73,10 @@ module Header {
     headerAuth: HeaderTypes.HeaderAuth
   )
   {
-      && (headerAuth.AESMac?
-    ==>
-      && |headerAuth.headerIv| == GetIvLength(suite) as nat
-      && |headerAuth.headerAuthTag| == GetTagLength(suite) as nat)
+    && (headerAuth.AESMac?
+        ==>
+          && |headerAuth.headerIv| == GetIvLength(suite) as nat
+          && |headerAuth.headerAuthTag| == GetTagLength(suite) as nat)
   }
 
   predicate method {:opaque} HeaderVersionSupportsCommitment?(
@@ -83,18 +84,23 @@ module Header {
     body: HeaderTypes.HeaderBody
   )
   {
+    assert body.V2HeaderBody? ==> HasUint64Len(body.suiteData) by {
+      if body.V2HeaderBody? {
+        SequenceIsSafeBecauseItIsInMemory(body.suiteData);
+      }
+    }
     && (suite.commitment.HKDF?
-      ==>
-        && body.V2HeaderBody?
-        && |body.suiteData| == suite.commitment.HKDF.outputKeyLength as nat)
+        ==>
+          && body.V2HeaderBody?
+          && |body.suiteData| as uint64 == suite.commitment.HKDF.outputKeyLength as uint64)
     && (!suite.commitment.HKDF?
-      ==>
-        && body.V1HeaderBody?)
+        ==>
+          && body.V1HeaderBody?)
   }
 
   type Header = h: HeaderInfo
-  | IsHeader(h)
-  witness *
+    | IsHeader(h)
+    witness *
 
   // ReadHeaderBody does not support streaming at this time
   //= compliance/client-apis/decrypt.txt#2.7.1
@@ -109,9 +115,9 @@ module Header {
   //# message bytes until it has successfully deserialized a valid message
   //# header (../data-format/message-header.md).
   function method {:opaque} ReadHeaderBody(
-     buffer: ReadableBuffer,
-     maxEdks: Option<Types.CountingNumbers>,
-     mpl: MaterialProviders.MaterialProvidersClient
+    buffer: ReadableBuffer,
+    maxEdks: Option<Types.CountingNumbers>,
+    mpl: MaterialProviders.MaterialProvidersClient
   )
     :(res: ReadCorrect<HeaderTypes.HeaderBody>)
     ensures CorrectlyReadHeaderBody(buffer, res)
@@ -120,9 +126,9 @@ module Header {
     //# When the content type (Section 2.5.1.11) is non-
     //# framed, the value of this field MUST be 0.
     ensures res.Success? ==>
-      var h := res.value.data;
-      && (h.contentType.NonFramed? <==> 0 == h.frameLength)
-      && (h.contentType.Framed? <==> 0 < h.frameLength)
+              var h := res.value.data;
+              && (h.contentType.NonFramed? <==> 0 == h.frameLength)
+              && (h.contentType.Framed? <==> 0 < h.frameLength)
   {
     var version :- SharedHeaderFunctions.ReadMessageFormatVersion(buffer);
 
@@ -138,9 +144,9 @@ module Header {
     };
 
     :- Need(body.contentType.Framed? <==> body.frameLength > 0,
-      Error("Frame length must be positive if content is framed"));
+            Error("Frame length must be positive if content is framed"));
     :- Need(body.contentType.NonFramed? <==> body.frameLength == 0,
-      Error("Frame length must be zero if content is non-framed"));
+            Error("Frame length must be zero if content is non-framed"));
     Success(SuccessfulRead(body, tail))
   }
 
@@ -151,11 +157,11 @@ module Header {
   {
     res.Success?
     ==>
-    && match res.value.data
-      case V1HeaderBody(_,_,_,_,_,_,_,_) =>
-        V1HeaderBody.CorrectlyReadV1HeaderBody(buffer, res)
-      case V2HeaderBody(_,_,_,_,_,_,_) =>
-        V2HeaderBody.CorrectlyReadV2HeaderBody(buffer, res)
+      && match res.value.data
+         case V1HeaderBody(_,_,_,_,_,_,_,_) =>
+           V1HeaderBody.CorrectlyReadV1HeaderBody(buffer, res)
+         case V2HeaderBody(_,_,_,_,_,_,_) =>
+           V2HeaderBody.CorrectlyReadV2HeaderBody(buffer, res)
   }
 
   function method WriteHeaderBody(

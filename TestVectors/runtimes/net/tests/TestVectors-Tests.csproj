@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+      <RootNamespace>TEST_AWS Encryption SDK Library</RootNamespace>
+      <ImplicitUsings>enable</ImplicitUsings>
+      <Nullable>disable</Nullable>
+      <TargetFrameworks>net6.0;net48</TargetFrameworks>
+      <LangVersion>10</LangVersion>
+      <OutputType>Exe</OutputType>
+      <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    </PropertyGroup>
+  
+    <ItemGroup>
+      <!--
+        System.Collections.Immutable can be removed once dafny.msbuild is updated with
+        https://github.com/dafny-lang/dafny.msbuild/pull/10 and versioned
+      -->
+      <PackageReference Include="System.Collections.Immutable" Version="1.7.0" />
+      <!-- Work around for dafny-lang/dafny/issues/1951; remove once resolved -->
+      <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="../ESDKTestVectors.csproj" />
+      <Compile Include="TestsFromDafny.cs" />
+      <Compile Include="Extern/**" />
+    </ItemGroup>
+
+    
+    <!-- <ItemGroup>
+      <None Include="..\icon.png" Pack="true" PackagePath="" />
+      <None Include="..\README.md" Pack="true" PackagePath="" />
+    </ItemGroup> -->
+  
+  </Project>
+  

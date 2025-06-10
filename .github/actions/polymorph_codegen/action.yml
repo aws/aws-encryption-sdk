@@ -94,7 +94,7 @@ runs:
         make -C mpl/AwsCryptographicMaterialProviders setup_prettier
         make -C mpl/ComAmazonawsKms setup_prettier
         make -C mpl/ComAmazonawsDynamodb setup_prettier
-    
+
     # In the ESDK Dafny it does not make sense to run smithy dafny for java code
     # since the java esdk written natively and not through dafny
     #- name: Regenerate Java code using smithy-dafny
@@ -114,6 +114,19 @@ runs:
       shell: bash
       run: |
         make polymorph_dotnet ${{ steps.dependencies.outputs.PROJECT_DEPENDENCIES }}
+
+    # TODO: Uncomment when checking in polymorph_rust code
+    # - name: Regenerate Rust code using smithy-dafny
+    #   working-directory: ./${{ inputs.library }}
+    #   shell: bash
+    #   run: |
+    #     make polymorph_rust ${{ steps.dependencies.outputs.PROJECT_DEPENDENCIES }}
+
+    - name: Regenerate Go code using smithy-dafny
+      working-directory: ./${{ inputs.library }}
+      shell: bash
+      run: |
+        make polymorph_go
 
     - name: Check regenerated code against commited code
       # Composite action inputs seem to not actually support booleans properly for some reason

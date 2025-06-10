@@ -13,10 +13,10 @@ phases:
     commands:
       - cd ..
       # Get Dafny
-      - curl https://github.com/dafny-lang/dafny/releases/download/v4.8.0/dafny-4.8.0-x64-ubuntu-20.04.zip  -L -o dafny.zip
+      - curl https://github.com/dafny-lang/dafny/releases/download/v4.9.0/dafny-4.9.0-x64-ubuntu-20.04.zip  -L -o dafny.zip
       - unzip -qq dafny.zip && rm dafny.zip
       - export PATH="$PWD/dafny:$PATH"
-      # install mono to run net48 copied from 
+      # install mono to run net48 copied from
       # https://www.mono-project.com/download/stable/#download-lin
       - sudo apt install ca-certificates gnupg
       - sudo gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mono-official-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
@@ -24,7 +24,7 @@ phases:
       - sudo apt update
       - sudo apt-get install mono-devel -y
       # Switch back to the main directory
-      - cd aws-encryption-sdk-dafny/AwsEncryptionSDK
+      - cd aws-encryption-sdk/AwsEncryptionSDK
   pre_build:
     commands:
       - make transpile_net
@@ -33,20 +33,20 @@ phases:
       - export VERSION=`grep '<Version>' runtimes/net/ESDK.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/'`
       - sed -i.backup  "/\<ProjectReference Include=\"..\/ESDK.csproj\" \/>/d" runtimes/net/tests/Test-ESDK.csproj
       - dotnet add runtimes/net/tests/Test-ESDK.csproj package AWS.Cryptography.EncryptionSDK --version $VERSION
-      
-       # run tests
+
+        # run tests
       - TMP_ROLE=$(aws sts assume-role --role-arn "arn:aws:iam::370957321024:role/GitHub-CI-MPL-Dafny-Role-us-west-2" --role-session-name "CB-TestVectorResources")
-      - export TMP_ROLE                                                                                                                                          
-      - export AWS_ACCESS_KEY_ID=$(echo "${TMP_ROLE}" | jq -r '.Credentials.AccessKeyId')                                                                        
-      - export AWS_SECRET_ACCESS_KEY=$(echo "${TMP_ROLE}" | jq -r '.Credentials.SecretAccessKey')                                                                
-      - export AWS_SESSION_TOKEN=$(echo "${TMP_ROLE}" | jq -r '.Credentials.SessionToken')                                                                       
+      - export TMP_ROLE
+      - export AWS_ACCESS_KEY_ID=$(echo "${TMP_ROLE}" | jq -r '.Credentials.AccessKeyId')
+      - export AWS_SECRET_ACCESS_KEY=$(echo "${TMP_ROLE}" | jq -r '.Credentials.SecretAccessKey')
+      - export AWS_SESSION_TOKEN=$(echo "${TMP_ROLE}" | jq -r '.Credentials.SessionToken')
       - aws sts get-caller-identity
       - make test_net
-      
+
       # add released artifact to testvectors
       - sed -i.backup  "/\<ProjectReference Include=\"..\/..\/ESDK.csproj\" \/>/d" runtimes/net/TestVectorsNative/TestVectorLib/AWSEncryptionSDKTestVectorLib.csproj
       - dotnet add runtimes/net/TestVectorsNative/TestVectorLib/AWSEncryptionSDKTestVectorLib.csproj package AWS.Cryptography.EncryptionSDK --version $VERSION
-      
+
       # Fetch awses-decrypt/python-2.3.0.zip
       - cd ../
       - pwd
@@ -74,11 +74,10 @@ phases:
         dotnet run --project $GEN_PATH --framework net6.0 -- \
             --encrypt-manifest $GEN_PATH/resources/0006-awses-message-decryption-generation.v2.json \
             --output-dir $NET_41_VECTOR_PATH
-      
+
       # Zip the Generated Test Vectors for ESDK-JS on Mac/Linux
       - cd $NET_41_VECTOR_PATH
       - zip -qq net41.zip -r .
 
       # Decrypt Generated Test Vectors with ESDK-JS
       - npx -y @aws-crypto/integration-node decrypt -v $NET_41_VECTOR_PATH/net41.zip -c cpu
-

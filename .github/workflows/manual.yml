@@ -32,3 +32,13 @@ jobs:
     with:
       dafny: ${{ inputs.dafny }}
       regenerate-code: ${{ inputs.regenerate-code }}
+  manual-ci-rust:
+    uses: ./.github/workflows/library_rust_tests.yml
+    with:
+      dafny: ${{ inputs.dafny }}
+      regenerate-code: ${{ inputs.regenerate-code }}
+  manual-ci-go:
+    uses: ./.github/workflows/library_go_tests.yml
+    with:
+      dafny: ${{ inputs.dafny }}
+      regenerate-code: ${{ inputs.regenerate-code }}

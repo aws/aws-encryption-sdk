@@ -23,11 +23,11 @@ phases:
     commands:
       - cd ..
       # Get Dafny
-      - curl https://github.com/dafny-lang/dafny/releases/download/v4.8.0/dafny-4.8.0-x64-ubuntu-20.04.zip  -L -o dafny.zip
+      - curl https://github.com/dafny-lang/dafny/releases/download/v4.9.0/dafny-4.9.0-x64-ubuntu-20.04.zip  -L -o dafny.zip
       - unzip -qq dafny.zip && rm dafny.zip
       - export PATH="$PWD/dafny:$PATH"
       # Switch back to the main directory
-      - cd aws-encryption-sdk-dafny/AwsEncryptionSDK
+      - cd aws-encryption-sdk/AwsEncryptionSDK
   pre_build:
     commands:
       # UNIQUE_ID should be passed in as an environment variable. It is used to tie
@@ -35,7 +35,7 @@ phases:
       - echo "Using unique id for flow $UNIQUE_ID"
       - make transpile_net
       - dotnet build runtimes/net /p:Configuration=Release -nowarn:CS0162,CS0168
-      # This step assumes signing has already happened and we just need to retrieve 
+      # This step assumes signing has already happened and we just need to retrieve
       # the signed artifacts
       - export BASE=codebuild/release
       - python $BASE/retrieve_signed_assembly.py --target net6.0 --unique-id $UNIQUE_ID

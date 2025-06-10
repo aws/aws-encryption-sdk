@@ -1,0 +1,16 @@
+# Python build artifacts
+__pycache__
+**/__pycache__
+*.pyc
+src/**.egg-info/
+build
+poetry.lock
+**/poetry.lock
+dist
+
+# Dafny-generated Python
+**/internaldafny/generated/*.py
+
+# Python test artifacts
+.tox
+.pytest_cache

@@ -1,0 +1,573 @@
+# This workflow performs interoperability tests across the supported runtimes of the ESDK Dafny
+name: Library Interoperability Dafny TestVectors
+
+on:
+  workflow_call:
+    inputs:
+      dafny:
+        description: "The Dafny version to use"
+        required: true
+        type: string
+      regenerate-code:
+        description: "Regenerate code using smithy-dafny"
+        required: false
+        default: false
+        type: boolean
+
+# These interop tests are strictly only for Dafny based languages
+# or Dafny integrated languages (ESDK-Java, ESDK-Python).
+# Additionally, these tests produce the latest version of
+# test vector manifests V5. These have the ability to state how to
+# build negative test vectors and OnDecrypt constructions.
+jobs:
+  generateKeyringEncryptVectors:
+    strategy:
+      fail-fast: false
+      matrix:
+        library: [TestVectors]
+        os: [
+            # https://taskei.amazon.dev/tasks/CrypTool-5283
+            # windows-latest,
+            ubuntu-22.04,
+          ]
+        language: [java, net, rust, python, go, c]
+        # https://taskei.amazon.dev/tasks/CrypTool-5284
+        dotnet-version: ["6.0.x"]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Support longpaths on Git checkout
+        run: |
+          git config --global core.longpaths true
+
+      # TestVectors will call KMS
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+          role-session-name: InterOpTests
+          role-duration-seconds: 3600
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - name: Install OpenSSL
+        if: matrix.os != 'ubuntu-22.04' && matrix.language == 'c'
+        run: brew install openssl
+
+      - name: Install dependencies
+        if: matrix.os != 'ubuntu-22.04'	&& matrix.language == 'c'
+        run: brew install json-c
+
+      - name: Install LibCurl
+        if: matrix.os == 'ubuntu-22.04' && matrix.language == 'c'
+        run: sudo apt-get install libcurl4-openssl-dev
+
+      - name: Checkout C-ESDK
+        if: matrix.language == 'c'
+        uses: actions/checkout@v4
+        with:
+          repository: "aws/aws-encryption-sdk-c"
+          path: ./${{ matrix.library }}/aws-encryption-sdk-c
+          submodules: recursive
+
+      - name: Checkout AWS C++ SDK
+        if: matrix.language == 'c'
+        uses: actions/checkout@v4
+        with:
+          repository: "aws/aws-sdk-cpp"
+          path: ./${{ matrix.library }}/aws-encryption-sdk-c/aws-sdk-cpp
+          submodules: recursive
+
+      - name: Build and install aws-sdk-cpp
+        if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
+        run: |
+          # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
+          perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
+          mkdir -p aws-encryption-sdk-c/build-aws-sdk-cpp || true
+          mkdir -p install || true
+          cd build-aws-sdk-cpp
+          cmake -G Xcode -DTARGET_ARCH="APPLE" -DBUILD_SHARED_LIBS=ON -DBUILD_ONLY="kms" -DENABLE_UNITY_BUILD=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install ../aws-sdk-cpp
+          xcodebuild -target ALL_BUILD
+          xcodebuild -target install
+
+      - name: Build and install aws-sdk-cpp
+        if: matrix.os == 'ubuntu-22.04' && matrix.language == 'c'
+        working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
+        run: |
+          # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
+          perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
+          mkdir -p build-aws-sdk-cpp || true
+          mkdir -p install || true
+          cd build-aws-sdk-cpp
+          cmake -DBUILD_SHARED_LIBS=ON -DBUILD_ONLY="kms" -DENABLE_UNITY_BUILD=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install ../aws-sdk-cpp
+          make
+          make install
+
+      - name: Build C-ESDK
+        if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
+        run: |
+          mkdir build-aws-encryption-sdk-c || true
+          cd build-aws-encryption-sdk-c
+          cmake -G Xcode -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install -DOPENSSL_ROOT_DIR="/usr/local/opt/openssl@1.1" ../
+          xcodebuild -target ALL_BUILD
+          xcodebuild -scheme RUN_TESTS
+
+      - name: Build C-ESDK
+        if: matrix.language == 'c' && matrix.os == 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
+        # TODO-RS: Figure out how to safely add AWS credentials and add -DAWS_ENC_SDK_END_TO_END_TESTS=ON and -DAWS_ENC_SDK_KNOWN_GOOD_TESTS=ON
+        run: |
+          mkdir build-aws-encryption-sdk-c || true
+          cd build-aws-encryption-sdk-c
+          cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install ..
+          make
+          make test
+          make install
+
+        # Set up runtimes
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        if: matrix.language == 'net'
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      # Setup Java in Rust is needed for running polymorph
+      - name: Setup Java 17
+        if: matrix.language == 'java' || matrix.language == 'rust'
+        uses: actions/setup-java@v3
+        with:
+          distribution: "corretto"
+          java-version: 17
+
+      - name: Setup Python for running tests
+        if: matrix.language == 'python'
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+          architecture: x64
+      - run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade tox
+          pip install poetry
+
+      - name: Setup Rust Toolchain for GitHub CI
+        if: matrix.language == 'rust'
+        uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
+        with:
+          components: rustfmt
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Install Go imports
+        run: |
+          go install golang.org/x/tools/cmd/goimports@latest
+
+      - name: Setup NASM for Windows in Rust (aws-lc-sys)
+        if: matrix.language == 'rust' && matrix.os == 'windows-latest'
+        uses: ilammy/setup-nasm@v1
+
+      - name: Setup Dafny Rust
+        if: matrix.language == 'rust'
+        uses: ./mpl/.github/actions/setup_dafny
+        with:
+          dafny-version: nightly-2025-01-30-7db1e5f
+
+      - name: Setup Dafny Not Rust
+        if: matrix.language != 'rust'
+        uses: ./mpl/.github/actions/setup_dafny
+        with:
+          dafny-version: ${{ inputs.dafny }}
+
+      - name: Install Smithy-Dafny codegen dependencies
+        if: ${{ inputs.regenerate-code }}
+        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+
+      - name: Regenerate code using smithy-dafny if necessary
+        if: ${{ inputs.regenerate-code }}
+        uses: ./.github/actions/polymorph_codegen
+        with:
+          dafny: ${{ inputs.dafny }}
+          library: ${{ matrix.library }}
+          diff-generated-code: false
+
+      # Build implementation for each runtime
+      - name: Build ${{ matrix.library }} implementation in Java
+        if: matrix.language == 'java'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make build_java CORES=$CORES
+
+      - name: Build ${{ matrix.library }} implementation in .NET
+        if: matrix.language == 'net'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_net
+
+      - name: Install Smithy-Dafny codegen dependencies
+        if: matrix.language == 'rust'
+        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+
+      - name: Run make polymorph_rust
+        if: matrix.language == 'rust'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          make polymorph_rust
+
+      - name: Build ${{ matrix.library }} implementation in Rust
+        if: matrix.language == 'rust'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_rust CORES=$CORES
+
+      - name: Build ${{ matrix.library }} implementation in Python
+        if: matrix.language == 'python'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_python CORES=$CORES
+
+      - name: Build ${{ matrix.library }} implementation in Go
+        if: matrix.language == 'go'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_go
+
+      # TODO: Remove this after Go polymorph does not generate unwanted duplicate code.
+      - name: Purge polymorph code in Go
+        if: matrix.language == 'go'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          make purge_polymorph_code
+
+      - name: Setup gradle
+        if: matrix.language == 'java_mkp' || matrix.language == 'java'
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 7.2
+
+      - name: Create Keyring Manifests
+        if: matrix.language != 'c'
+        working-directory: ./${{ matrix.library }}
+        # Only MKP manifests will be written in the legacy format
+        run: |
+          make test_generate_vectors_${{ matrix.language }}
+
+      - name: Create Keyring Encrypt Manifests
+        if: matrix.language != 'c'
+        working-directory: ./${{ matrix.library }}
+        run: make test_encrypt_vectors_${{ matrix.language }}
+
+      - name: Create Encrypt Manifests
+        if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}
+        run: make test_encrypt_vectors_c_mac
+
+      - name: Create Encrypt Manifests
+        if: matrix.language == 'c' && matrix.os == 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}
+        run: make test_encrypt_vectors_c_unix
+
+      - name: Upload Keyring Encrypt Manifest and keys.json files
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{matrix.os}}_vector_artifact_${{matrix.language}}_${{github.sha}}
+          path: |
+            ./${{matrix.library}}/runtimes/${{matrix.language}}/*.json
+            ./${{matrix.library}}/runtimes/${{matrix.language}}/plaintexts
+            ./${{matrix.library}}/runtimes/${{matrix.language}}/ciphertexts
+
+  testInteroperablity:
+    needs: generateKeyringEncryptVectors
+    strategy:
+      fail-fast: false
+      matrix:
+        library: [TestVectors]
+        os: [
+            # https://taskei.amazon.dev/tasks/CrypTool-5283
+            # windows-latest,
+            ubuntu-22.04,
+          ]
+        encrypting_language: [java, net, rust, python, go, c]
+        decrypting_language: [java, net, rust, python, go, c]
+        # https://taskei.amazon.dev/tasks/CrypTool-5284
+        dotnet-version: ["6.0.x"]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Support longpaths on Git checkout
+        run: |
+          git config --global core.longpaths true
+
+      # TestVectors will call KMS
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+          role-session-name: InterOpTests
+          role-duration-seconds: 3600
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - name: Install OpenSSL
+        if: matrix.os != 'ubuntu-22.04' && matrix.decrypting_language == 'c'
+        run: brew install openssl
+
+      - name: Install dependencies
+        if: matrix.os != 'ubuntu-22.04'	&& matrix.decrypting_language == 'c'
+        run: brew install json-c
+
+      - name: Install LibCurl
+        if: matrix.os == 'ubuntu-22.04' && matrix.decrypting_language == 'c'
+        run: sudo apt-get install libcurl4-openssl-dev
+
+      - name: Checkout C-ESDK
+        if: matrix.decrypting_language == 'c'
+        uses: actions/checkout@v4
+        with:
+          repository: "aws/aws-encryption-sdk-c"
+          path: ./${{ matrix.library }}/aws-encryption-sdk-c
+          submodules: recursive
+
+      - name: Checkout AWS C++ SDK
+        if: matrix.decrypting_language == 'c'
+        uses: actions/checkout@v4
+        with:
+          repository: "aws/aws-sdk-cpp"
+          path: ./${{ matrix.library }}/aws-encryption-sdk-c/aws-sdk-cpp
+          submodules: recursive
+
+      - name: Build and install aws-sdk-cpp
+        if: matrix.decrypting_language == 'c' && matrix.os != 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
+        run: |
+          pwd
+          ls
+          # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
+          perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
+          mkdir -p aws-encryption-sdk-c/build-aws-sdk-cpp || true
+          mkdir -p install || true
+          cd build-aws-sdk-cpp
+          cmake -G Xcode -DTARGET_ARCH="APPLE" -DBUILD_SHARED_LIBS=ON -DBUILD_ONLY="kms" -DENABLE_UNITY_BUILD=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/aws-encryption-sdk-c/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/aws-encryption-sdk-c/install ../aws-sdk-cpp
+          xcodebuild -target ALL_BUILD
+          xcodebuild -target install
+
+      - name: Build and install aws-sdk-cpp
+        if: matrix.os == 'ubuntu-22.04' && matrix.decrypting_language == 'c'
+        working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
+        run: |
+          pwd
+          ls
+          # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
+          perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
+          mkdir -p build-aws-sdk-cpp || true
+          mkdir -p install || true
+          cd build-aws-sdk-cpp
+          cmake -DBUILD_SHARED_LIBS=ON -DBUILD_ONLY="kms" -DENABLE_UNITY_BUILD=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install ../aws-sdk-cpp
+          make
+          make install
+
+      - name: Build C-ESDK
+        if: matrix.decrypting_language == 'c' && matrix.os != 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
+        run: |
+          mkdir build-aws-encryption-sdk-c || true
+          cd build-aws-encryption-sdk-c
+          cmake -G Xcode -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install -DOPENSSL_ROOT_DIR="/usr/local/opt/openssl@1.1" ../
+          xcodebuild -target ALL_BUILD
+          xcodebuild -scheme RUN_TESTS
+
+      - name: Build C-ESDK
+        if: matrix.decrypting_language == 'c' && matrix.os == 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
+        # TODO-RS: Figure out how to safely add AWS credentials and add -DAWS_ENC_SDK_END_TO_END_TESTS=ON and -DAWS_ENC_SDK_KNOWN_GOOD_TESTS=ON
+        run: |
+          mkdir build-aws-encryption-sdk-c || true
+          cd build-aws-encryption-sdk-c
+          cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install ..
+          make
+          make test
+          make install
+
+      # Set up runtimes
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        if: matrix.decrypting_language == 'net'
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      # Setup Java in Rust is needed for running polymorph
+      - name: Setup Java 17
+        if: matrix.decrypting_language == 'java' || matrix.decrypting_language == 'rust'
+        uses: actions/setup-java@v3
+        with:
+          distribution: "corretto"
+          java-version: 17
+
+      - name: Setup Python for running tests
+        if: matrix.decrypting_language == 'python'
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+          architecture: x64
+      - run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade tox
+          pip install poetry
+
+      - name: Setup Rust Toolchain for GitHub CI
+        if: matrix.decrypting_language == 'rust'
+        uses: actions-rust-lang/setup-rust-toolchain@v1.10.1
+        with:
+          components: rustfmt
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Install Go imports
+        run: |
+          go install golang.org/x/tools/cmd/goimports@latest
+
+      - name: Setup NASM for Windows in Rust (aws-lc-sys)
+        if: matrix.decrypting_language == 'rust' && matrix.os == 'windows-latest'
+        uses: ilammy/setup-nasm@v1
+
+      - name: Setup Dafny Rust
+        if: matrix.decrypting_language == 'rust'
+        uses: ./mpl/.github/actions/setup_dafny
+        with:
+          dafny-version: nightly-2025-01-30-7db1e5f
+
+      - name: Setup Dafny Not Rust
+        if: matrix.decrypting_language != 'rust'
+        uses: ./mpl/.github/actions/setup_dafny
+        with:
+          dafny-version: ${{ inputs.dafny }}
+
+      - name: Install Smithy-Dafny codegen dependencies
+        if: ${{ inputs.regenerate-code }}
+        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+
+      - name: Regenerate code using smithy-dafny if necessary
+        if: ${{ inputs.regenerate-code }}
+        uses: ./.github/actions/polymorph_codegen
+        with:
+          dafny: ${{ inputs.dafny }}
+          library: ${{ matrix.library }}
+          diff-generated-code: false
+
+      # Build implementation for each runtime
+      - name: Build ${{ matrix.library }} implementation in Java
+        if: matrix.decrypting_language == 'java'
+        working-directory: ./${{ matrix.library }}
+        shell: bash
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make build_java CORES=$CORES
+
+      - name: Build ${{ matrix.library }} implementation in .NET
+        if: matrix.decrypting_language == 'net'
+        working-directory: ./${{ matrix.library }}
+        shell: bash
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_net
+
+      - name: Install Smithy-Dafny codegen dependencies
+        if: matrix.decrypting_language == 'rust'
+        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+
+      - name: Run make polymorph_rust
+        if: matrix.decrypting_language == 'rust'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          make polymorph_rust
+
+      - name: Build ${{ matrix.library }} implementation in Rust
+        if: matrix.decrypting_language == 'rust'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_rust CORES=$CORES
+
+      - name: Build ${{ matrix.library }} implementation in Go
+        if: matrix.decrypting_language == 'go'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_go
+
+      # TODO: Remove this after Go polymorph does not generate unwanted duplicate code.
+      - name: Purge polymorph code in Go
+        if: matrix.decrypting_language == 'go'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          make purge_polymorph_code
+
+      - name: Build ${{ matrix.library }} implementation in Python
+        if: matrix.decrypting_language == 'python'
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_python CORES=$CORES
+
+      - name: Download Encrypt Manifest Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{matrix.os}}_vector_artifact_${{matrix.encrypting_language}}_${{github.sha}}
+          path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language != 'c'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_${{matrix.decrypting_language}}
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language == 'c' && matrix.os == 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_c_unix
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language == 'c' && matrix.os != 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_c_mac

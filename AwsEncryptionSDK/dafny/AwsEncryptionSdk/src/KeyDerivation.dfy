@@ -42,9 +42,9 @@ module KeyDerivation {
     requires suite.commitment.None?
 
     requires suite.kdf.HKDF?
-    ==>
-      && |plaintextDataKey| == suite.kdf.HKDF.inputKeyLength as nat
-      && suite.kdf.HKDF.outputKeyLength == SerializableTypes.GetEncryptKeyLength(suite)
+             ==>
+               && |plaintextDataKey| == suite.kdf.HKDF.inputKeyLength as nat
+               && suite.kdf.HKDF.outputKeyLength == SerializableTypes.GetEncryptKeyLength(suite)
     requires suite.kdf.IDENTITY? ==> |plaintextDataKey| == SerializableTypes.GetEncryptKeyLength(suite) as nat
 
     requires crypto.ValidState()
@@ -91,7 +91,7 @@ module KeyDerivation {
             ikm := plaintextDataKey,
             info := suite.binaryId,
             expectedLength := hkdf.outputKeyLength
-            );
+          );
         }
         var maybeDerivedKey := crypto.Hkdf(hkdfInput);
         var derivedKey :- maybeDerivedKey.MapFailure(e => Types.AwsCryptographyPrimitives(e));
@@ -100,7 +100,7 @@ module KeyDerivation {
       }
       case None => {
         return Failure(Types.AwsEncryptionSdkException(
-          message := "None is not a valid Key Derivation Function"));
+                         message := "None is not a valid Key Derivation Function"));
       }
     }
   }
@@ -169,8 +169,8 @@ module KeyDerivation {
     //# data key using the commit key derivation (../framework/algorithm-
     //# suites.md#algorithm-suites-commit-key-derivation-settings).
     ensures res.Success? ==>
-      && res.value.commitmentKey.Some?
-      && |res.value.commitmentKey.value| == suite.commitment.HKDF.outputKeyLength as nat
+              && res.value.commitmentKey.Some?
+              && |res.value.commitmentKey.value| == suite.commitment.HKDF.outputKeyLength as nat
 
     ensures res.Success? ==> |res.value.dataKey|  == SerializableTypes.GetEncryptKeyLength(suite) as nat
 
@@ -187,7 +187,7 @@ module KeyDerivation {
     var maybePseudoRandomKey := crypto.HkdfExtract(hkdfExtractInput);
 
     var pseudoRandomKey :- maybePseudoRandomKey
-      .MapFailure(e => Types.AwsCryptographyPrimitives(e));
+    .MapFailure(e => Types.AwsCryptographyPrimitives(e));
 
     var encryptKeyInput := AwsCryptographyPrimitivesTypes.HkdfExpandInput(
       digestAlgorithm := digest,
@@ -196,22 +196,22 @@ module KeyDerivation {
       expectedLength := suite.kdf.HKDF.outputKeyLength
     );
     var commitKeyInput := encryptKeyInput.(
-      info := COMMIT_LABEL,
-      expectedLength := suite.commitment.HKDF.outputKeyLength
+    info := COMMIT_LABEL,
+    expectedLength := suite.commitment.HKDF.outputKeyLength
     );
 
     var maybeEncryptKey := crypto.HkdfExpand(encryptKeyInput);
     var maybeCommitKey := crypto.HkdfExpand(commitKeyInput);
 
     var encryptKey :- maybeEncryptKey
-      .MapFailure(e => Types.AwsCryptographyPrimitives(e));
+    .MapFailure(e => Types.AwsCryptographyPrimitives(e));
     var commitKey :- maybeCommitKey
-      .MapFailure(e => Types.AwsCryptographyPrimitives(e));
+    .MapFailure(e => Types.AwsCryptographyPrimitives(e));
 
     return Success(ExpandedKeyMaterial(
-      dataKey:=encryptKey,
-      commitmentKey:=Some(commitKey)
-    ));
+                     dataKey:=encryptKey,
+                     commitmentKey:=Some(commitKey)
+                   ));
   }
 
   /*
@@ -238,54 +238,54 @@ module KeyDerivation {
     ensures crypto.ValidState()
 
     ensures res.Success? ==>
-      |res.value.dataKey| == SerializableTypes.GetEncryptKeyLength(suite) as nat
+              |res.value.dataKey| == SerializableTypes.GetEncryptKeyLength(suite) as nat
 
     ensures
       && res.Success?
       && suite.commitment.None?
-    ==>
-      res.value.commitmentKey.None?
+      ==>
+        res.value.commitmentKey.None?
 
     ensures
       && res.Success?
       && suite.commitment.HKDF?
-    ==>
-      && res.value.commitmentKey.Some?
-      && |res.value.commitmentKey.value| == suite.commitment.HKDF.outputKeyLength as nat
+      ==>
+        && res.value.commitmentKey.Some?
+        && |res.value.commitmentKey.value| == suite.commitment.HKDF.outputKeyLength as nat
   {
     var keys : ExpandedKeyMaterial;
     if (suite.messageVersion == 2) {
       :- Need(suite.commitment.HKDF? && suite.kdf == suite.commitment, Types.AwsEncryptionSdkException(
-          message := "Suites with message version 2 must have commitment"));
+                message := "Suites with message version 2 must have commitment"));
 
       :- Need(
         && SerializableTypes.GetEncryptKeyLength(suite) == suite.kdf.HKDF.outputKeyLength
-        && |plaintextKey| == suite.kdf.HKDF.inputKeyLength as nat, Types.AwsEncryptionSdkException(
+        && |plaintextKey| as int32 == suite.kdf.HKDF.inputKeyLength as int32, Types.AwsEncryptionSdkException(
           message := "Invalid Materials"));
 
       keys :- ExpandKeyMaterial(messageId, plaintextKey, suite, crypto);
     } else if (suite.messageVersion == 1) {
       :- Need(suite.commitment.None?, Types.AwsEncryptionSdkException(
-          message := "Suites with message version 1 must not have commitment"));
+                message := "Suites with message version 1 must not have commitment"));
 
       :- Need(match suite.kdf {
-          case IDENTITY(i) => |plaintextKey| == SerializableTypes.GetEncryptKeyLength(suite) as nat
-          case HKDF(hkdf) =>
-            && |plaintextKey| == suite.kdf.HKDF.inputKeyLength as nat
-            && suite.kdf.HKDF.outputKeyLength == SerializableTypes.GetEncryptKeyLength(suite)
-          case None => false
-        }, Types.AwsEncryptionSdkException(
-        message := "Suites with message version 1 must not have commitment"));
+                case IDENTITY(i) => |plaintextKey| as int32 == SerializableTypes.GetEncryptKeyLength(suite)
+                case HKDF(hkdf) =>
+                  && |plaintextKey| as int32 == suite.kdf.HKDF.inputKeyLength
+                  && suite.kdf.HKDF.outputKeyLength == SerializableTypes.GetEncryptKeyLength(suite)
+                case None => false
+              }, Types.AwsEncryptionSdkException(
+                message := "Suites with message version 1 must not have commitment"));
 
-        if netV4_0_0_RetryPolicy == Types.NetV4_0_0_RetryPolicy.ALLOW_RETRY && onNetV4Retry {
-          keys :- DeriveKey(messageId, plaintextKey, suite, crypto, true);
-        } else {
-          keys :- DeriveKey(messageId, plaintextKey, suite, crypto, false);
-        }
-        
+      if netV4_0_0_RetryPolicy == Types.NetV4_0_0_RetryPolicy.ALLOW_RETRY && onNetV4Retry {
+        keys :- DeriveKey(messageId, plaintextKey, suite, crypto, true);
+      } else {
+        keys :- DeriveKey(messageId, plaintextKey, suite, crypto, false);
+      }
+
     } else {
       return Failure(Types.AwsEncryptionSdkException(
-          message := "Unknown message version"));
+                       message := "Unknown message version"));
     }
 
     return Success(keys);

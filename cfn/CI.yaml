@@ -17,11 +17,11 @@ Parameters:
   GitHubRepo:
     Type: String
     Description: GitHub Repo that invokes CI
-    Default: aws/aws-encryption-sdk-dafny
+    Default: aws/aws-encryption-sdk
 
 Resources:
   GitHubCIRole:
-    Type: 'AWS::IAM::Role'
+    Type: "AWS::IAM::Role"
     Properties:
       RoleName: !Sub "GitHub-CI-${ProjectName}-Role-${AWS::Region}"
       Description: "Access DDB, KMS, Resources for CI from GitHub"
@@ -30,6 +30,7 @@ Resources:
         - "arn:aws:iam::370957321024:policy/Hierarchical-GitHub-KMS-Key-Policy"
         - "arn:aws:iam::370957321024:policy/KMS-Public-CMK-EncryptDecrypt-Key-Access"
         - "arn:aws:iam::370957321024:policy/RSA-GitHub-KMS-Key-Policy"
+        - "arn:aws:iam::370957321024:policy/Github-ECDH-KMS"
       AssumeRolePolicyDocument: !Sub |
         {
           "Version": "2012-10-17",   

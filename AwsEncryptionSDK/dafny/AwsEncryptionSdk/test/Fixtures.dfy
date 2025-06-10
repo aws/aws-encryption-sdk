@@ -10,18 +10,18 @@ module Fixtures {
   import mplTypes = AwsCryptographyMaterialProvidersTypes
   import opened UInt = StandardLibrary.UInt
   import Primitives = AtomicPrimitives
-  
+
   // The following are test resources that exist in tests accounts:
 
   // THESE ARE TESTING RESOURCES DO NOT USE IN A PRODUCTION ENVIRONMENT
   const keyArn := "arn:aws:kms:us-west-2:658956600833:key/b3537ef1-d8dc-4780-9f5a-55776cbb2f7f"
   const hierarchyKeyArn := "arn:aws:kms:us-west-2:370957321024:key/9d989aa2-2f9c-438c-a745-cc57d3ad0126"
   const mkrKeyArn := "arn:aws:kms:us-west-2:370957321024:key/mrk-63d386cb70614ea59b32ad65c9315297"
-  
+
   const branchKeyStoreName := "KeyStoreDdbTable"
   const logicalKeyStoreName := branchKeyStoreName
-  const branchKeyId := "75789115-1deb-4fe3-a2ec-be9e885d1945"
-  
+  const branchKeyId := "3f43a9af-08c5-4317-b694-3d3e883dcaef"
+
   // UTF-8 encoded "aws-crypto-"
   const RESERVED_ENCRYPTION_CONTEXT: UTF8.ValidUTF8Bytes :=
     var s := [ 0x61, 0x77, 0x73, 0x2D, 0x63, 0x72, 0x79, 0x70, 0x74, 0x6F, 0x2D ];
@@ -41,7 +41,7 @@ module Fixtures {
     var valC :- expect UTF8.Encode("valC");
     var keyD :- expect UTF8.Encode("keyD");
     var valD :- expect UTF8.Encode("valD");
-    
+
     match v {
       case Empty =>
         encryptionContext := map[];
@@ -66,7 +66,7 @@ module Fixtures {
   {
     var reservedKey :- expect UTF8.Encode("aws-crypto-public-key");
     var val :- expect UTF8.Encode("not a real public key");
-    
+
     encryptionContext := map[reservedKey := val];
   }
 
@@ -126,7 +126,7 @@ module Fixtures {
   }
 
 
-  
+
   method NamespaceAndName(n: nat) returns (namespace: string, name: string)
     requires 0 <= n < 10
     ensures |namespace| < UINT16_LIMIT
@@ -136,19 +136,19 @@ module Fixtures {
     namespace := s + " Namespace";
     name := s + " Name";
   }
-  
+
   method GenerateKeyPair( keyModulusLength: primitivesTypes.RSAModulusLengthBitsToGenerate )
     returns (keys: primitivesTypes.GenerateRSAKeyPairOutput)
   {
-      var cryptoX: primitivesTypes.IAwsCryptographicPrimitivesClient :- expect Primitives.AtomicPrimitives();
-      assert cryptoX is Primitives.AtomicPrimitivesClient;
-      var crypto := cryptoX as Primitives.AtomicPrimitivesClient;
+    var cryptoX: primitivesTypes.IAwsCryptographicPrimitivesClient :- expect Primitives.AtomicPrimitives();
+    assert cryptoX is Primitives.AtomicPrimitivesClient;
+    var crypto := cryptoX as Primitives.AtomicPrimitivesClient;
 
-      keys :- expect crypto.GenerateRSAKeyPair(
+    keys :- expect crypto.GenerateRSAKeyPair(
       primitivesTypes.GenerateRSAKeyPairInput(
-          lengthBits := keyModulusLength
+        lengthBits := keyModulusLength
       )
-      );
+    );
   }
-    
+
 }

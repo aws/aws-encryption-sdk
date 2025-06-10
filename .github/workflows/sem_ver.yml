@@ -6,7 +6,7 @@ on:
 
 jobs:
   semantic-release:
-    runs-on: macos-12
+    runs-on: macos-13
     permissions:
       id-token: write
       contents: read
@@ -14,7 +14,7 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      
+
       - uses: actions/checkout@v3
         with:
           submodules: recursive

@@ -44,4 +44,4 @@ runs:
     - name: Arbitrary makefile target to force downloading Gradle
       shell: bash
       run: |
-        make -C StandardLibrary setup_net
+        make -C mpl/StandardLibrary setup_net
