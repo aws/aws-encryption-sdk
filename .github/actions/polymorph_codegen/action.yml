@@ -57,6 +57,12 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Install smithy-dafny dependencies
+      shell: bash
+      working-directory: mpl/smithy-dafny
+      run: |
+        make mvn_local_deploy_polymorph_dependencies
+
     - name: Update MPL submodule locally if requested
       if: inputs.update-and-regenerate-mpl == 'true'
       shell: bash
