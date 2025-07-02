@@ -189,7 +189,6 @@ jobs:
           dafny-version: ${{ inputs.dafny }}
 
       - name: Install Smithy-Dafny codegen dependencies
-        if: ${{ inputs.regenerate-code }}
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
 
       - name: Regenerate code using smithy-dafny if necessary
@@ -477,7 +476,6 @@ jobs:
           dafny-version: ${{ inputs.dafny }}
 
       - name: Install Smithy-Dafny codegen dependencies
-        if: ${{ inputs.regenerate-code }}
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
 
       - name: Regenerate code using smithy-dafny if necessary
