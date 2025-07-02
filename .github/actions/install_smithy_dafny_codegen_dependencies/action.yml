@@ -45,3 +45,9 @@ runs:
       shell: bash
       run: |
         make -C mpl/StandardLibrary setup_net
+
+    # Without this the if-dafny-at-least command includes "Downloading ..." output
+    - name: Arbitrary makefile target to force downloading Gradle
+      shell: bash
+      run: |
+        make -C submodules/MaterialProviders/StandardLibrary setup_net
