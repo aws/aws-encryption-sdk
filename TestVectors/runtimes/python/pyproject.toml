@@ -19,7 +19,7 @@ aws-cryptography-internal-mpl-testvectors = { path = "../../../mpl/TestVectorsAw
 aws-encryption-sdk-dafny = { path = "../../../AwsEncryptionSDK/runtimes/python", develop = false}
 
 # Run TestVectors against the released native ESDK-Python
-aws-encryption-sdk = { path = "../../../dist/aws_encryption_sdk-4.0.0-py2.py3-none-any.whl", develop = false}
+aws-encryption-sdk = ">=4.0.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.0"
