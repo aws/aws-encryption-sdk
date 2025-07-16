@@ -1,5 +1,5 @@
-# This workflow performs tests in DotNet with MPL nightly latest.
-name: Library DotNet Backwards Interop Tests
+# This workflow performs tests in Go with nightly latest versions for mpl or esdk.
+name: Library Go Backwards Interop Tests
 
 on:
   workflow_call:
