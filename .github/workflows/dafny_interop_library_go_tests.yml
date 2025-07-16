@@ -67,10 +67,10 @@ jobs:
           git pull
           git submodule update --init --recursive
           git rev-parse HEAD
-      
+
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
-      
+
       - name: Install Go
         uses: actions/setup-go@v5
         with:
@@ -100,7 +100,7 @@ jobs:
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_go CORES=$CORES
-      
+
       - name: Test Go
         working-directory: ${{ matrix.library }}
         shell: bash
