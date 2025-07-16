@@ -1,0 +1,108 @@
+# This workflow performs tests in DotNet with MPL nightly latest.
+name: Library DotNet Backwards Interop Tests
+
+on:
+  workflow_call:
+    inputs:
+      mpl-dafny:
+        description: "The Dafny version to compile the MPL with (4.2.0, dafny-nightly, etc..)"
+        required: true
+        type: string
+      mpl-commit:
+        description: "The MPL commit to use"
+        required: false
+        default: "main"
+        type: string
+      esdk-dafny:
+        description: "The Dafny version to compile the DBESDK with (4.2.0, dafny-nightly, etc..)"
+        required: true
+        type: string
+
+jobs:
+  testGo:
+    strategy:
+      fail-fast: false
+      matrix:
+        library: [TestVectors]
+        go-version: ["1.23"]
+        os: [
+            # Sed script doesn't work properly on windows
+            # windows-latest,
+            ubuntu-22.04,
+            # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
+            # macos-13,
+          ]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Support longpaths on Git checkout
+        run: |
+          git config --global core.longpaths true
+      - uses: actions/checkout@v3
+      - name: Init Submodules
+        shell: bash
+        run: |
+          git submodule update --init libraries
+          git submodule update --init --recursive mpl
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+          role-session-name: GoTests
+
+      - name: Setup MPL Dafny
+        uses: ./mpl/.github/actions/setup_dafny
+        with:
+          dafny-version: ${{ inputs.mpl-dafny }}
+
+      - name: Update MPL submodule
+        working-directory: mpl
+        run: |
+          git fetch
+          git checkout ${{inputs.mpl-commit}}
+          git pull
+          git submodule update --init --recursive
+          git rev-parse HEAD
+      
+      - name: Install Smithy-Dafny codegen dependencies
+        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+      
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Install Go imports
+        run: |
+          go install golang.org/x/tools/cmd/goimports@latest
+
+      - name: Compile MPL with Dafny ${{inputs.mpl-dafny}}
+        shell: bash
+        working-directory: mpl/TestVectorsAwsCryptographicMaterialProviders
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_go CORES=$CORES
+
+      - name: Setup ESDK Dafny
+        uses: ./mpl/.github/actions/setup_dafny
+        with:
+          dafny-version: ${{ inputs.esdk-dafny}}
+
+      - name: Build ESDK implementation
+        shell: bash
+        working-directory: ./${{ matrix.library }}
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_go CORES=$CORES
+      
+      - name: Test Go
+        working-directory: ${{ matrix.library }}
+        shell: bash
+        run: |
+          make test_go
