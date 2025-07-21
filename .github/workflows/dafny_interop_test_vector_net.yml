@@ -235,7 +235,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: matrix.os != 'windows-latest'
         with:
-          name: ${{matrix.os}}_vector_artifact
+          name: ${{matrix.os}}_vector_artifact_${{github.run_id}}
           path: AwsEncryptionSDK/net41/vectors/*.zip
 
   decrypt_net_vectors_with_js:
@@ -274,7 +274,7 @@ jobs:
       - name: Download Encrypt Manifest Artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{matrix.os}}_vector_artifact
+          name: ${{matrix.os}}_vector_artifact_${{github.run_id}}
           path: AwsEncryptionSDK/net41/vectors
 
       - uses: actions/setup-node@v4
