@@ -82,9 +82,10 @@ run_release_script() {
   run_go_tools
 
   echo "Running Go tools in releases/go/$RELEASE_DIR_NAME/examples"
-  
+
   cd "$(git rev-parse --show-toplevel)/releases/go/$RELEASE_DIR_NAME/examples" || { echo "Error: examples directory not found"; exit 1; }
   run_go_tools
+  go run main.go
   
   # Prepare for commit
   echo "creating a branch..."
