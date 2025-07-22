@@ -311,7 +311,6 @@ jobs:
             # windows-latest,
             ubuntu-22.04,
           ]
-        encrypting_language: [java, net, rust, python, go, c]
         decrypting_language: [java, net, rust, python, go, c]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
@@ -549,10 +548,169 @@ jobs:
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_python CORES=$CORES
 
+      # TestVectors will call KMS
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+          role-session-name: InterOpTests
+          role-duration-seconds: 7200
+
       - name: Download Encrypt Manifest Artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{matrix.os}}_vector_artifact_${{matrix.encrypting_language}}_${{github.sha}}
+          name: ${{matrix.os}}_vector_artifact_java_${{github.sha}}
+          path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language != 'c'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_${{matrix.decrypting_language}}
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language == 'c' && matrix.os == 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_c_unix
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language == 'c' && matrix.os != 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_c_mac
+
+      # TestVectors will call KMS
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+          role-session-name: InterOpTests
+          role-duration-seconds: 7200
+
+      - name: Download Encrypt Manifest Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{matrix.os}}_vector_artifact_net_${{github.sha}}
+          path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language != 'c'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_${{matrix.decrypting_language}}
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language == 'c' && matrix.os == 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_c_unix
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language == 'c' && matrix.os != 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_c_mac
+
+      # TestVectors will call KMS
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+          role-session-name: InterOpTests
+          role-duration-seconds: 7200
+
+      - name: Download Encrypt Manifest Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{matrix.os}}_vector_artifact_rust_${{github.sha}}
+          path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language != 'c'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_${{matrix.decrypting_language}}
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language == 'c' && matrix.os == 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_c_unix
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language == 'c' && matrix.os != 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_c_mac
+
+      # TestVectors will call KMS
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+          role-session-name: InterOpTests
+          role-duration-seconds: 7200
+
+      - name: Download Encrypt Manifest Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{matrix.os}}_vector_artifact_python_${{github.sha}}
+          path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language != 'c'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_${{matrix.decrypting_language}}
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language == 'c' && matrix.os == 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_c_unix
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language == 'c' && matrix.os != 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_c_mac
+
+      # TestVectors will call KMS
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+          role-session-name: InterOpTests
+          role-duration-seconds: 7200
+
+      - name: Download Encrypt Manifest Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{matrix.os}}_vector_artifact_go_${{github.sha}}
+          path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language != 'c'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_${{matrix.decrypting_language}}
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language == 'c' && matrix.os == 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_c_unix
+
+      - name: Decrypt Encrypt Manifest
+        if: matrix.decrypting_language == 'c' && matrix.os != 'ubuntu-22.04'
+        working-directory: ./${{ matrix.library }}
+        run: make test_decrypt_encrypt_vectors_c_mac
+
+      # TestVectors will call KMS
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+          role-session-name: InterOpTests
+          role-duration-seconds: 7200
+
+      - name: Download Encrypt Manifest Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{matrix.os}}_vector_artifact_c_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
 
       - name: Decrypt Encrypt Manifest

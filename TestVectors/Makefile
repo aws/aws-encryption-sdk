@@ -365,6 +365,7 @@ test_encrypt_vectors_c_mac: c_test_vectors
 	rm -rf local; \
 	mkdir -p local; \
 	LD_LIBRARY_PATH=../../install/lib/ ./test_vectors encrypt --manifest-path ./from-dafny --decrypt-manifest-path ./local
+	rm -rf ./runtimes/c/
 	mkdir -p ./runtimes/c/
 	cp aws-encryption-sdk-c/tests/TestVectors/local/*.json ./runtimes/c/
 	mv ./runtimes/c/decrypt-manifest.json ./runtimes/c/manifest.json
@@ -376,6 +377,7 @@ test_encrypt_vectors_c_unix: c_test_vectors_unix
 	rm -rf local; \
 	mkdir -p local; \
 	LD_LIBRARY_PATH=../../install/lib/ ./test_vectors encrypt --manifest-path ./from-dafny --decrypt-manifest-path ./local
+	rm -rf ./runtimes/c/
 	mkdir -p ./runtimes/c/
 	pwd
 	ls -l aws-encryption-sdk-c/tests/TestVectors/
@@ -386,6 +388,7 @@ test_encrypt_vectors_c_unix: c_test_vectors_unix
 	cp -r aws-encryption-sdk-c/tests/TestVectors/local/ciphertexts/ ./runtimes/c/ciphertexts/
 
 test_decrypt_encrypt_vectors_c_mac: c_test_vectors
+	rm -rf aws-encryption-sdk-c/tests/TestVectors/local/
 	mkdir -p aws-encryption-sdk-c/tests/TestVectors/local/
 	cp  ./runtimes/c/*.json aws-encryption-sdk-c/tests/TestVectors/local/
 	cp -r ./runtimes/c/plaintexts/ aws-encryption-sdk-c/tests/TestVectors/local/plaintexts/
@@ -394,6 +397,7 @@ test_decrypt_encrypt_vectors_c_mac: c_test_vectors
 	LD_LIBRARY_PATH=../../install/lib/ ./test_vectors decrypt --manifest-path ./local --manifest-name manifest.json
 
 test_decrypt_encrypt_vectors_c_unix: c_test_vectors_unix
+	rm -rf aws-encryption-sdk-c/tests/TestVectors/local/
 	mkdir -p aws-encryption-sdk-c/tests/TestVectors/local/
 	pwd
 	ls -l ./runtimes/c/
