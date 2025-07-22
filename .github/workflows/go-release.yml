@@ -47,7 +47,7 @@ jobs:
           git submodule update --init --recursive
 
       - name: Setup Dafny
-        uses: ./.github/actions/setup_dafny
+        uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: ${{ needs.get-dafny-version.outputs.version }}
 
