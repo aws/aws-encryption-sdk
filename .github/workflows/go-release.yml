@@ -1,16 +1,7 @@
 name: Go Release Automation
 
 on:
-  workflow_dispatch:
-    inputs:
-      project-name:
-        description: "Project name (e.g., AwsEncryptionSDK)"
-        required: true
-        type: string
-      version:
-        description: "Version (e.g., v0.1.0)"
-        required: true
-        type: string
+  push
 
 jobs:
   get-dafny-version:
