@@ -69,7 +69,11 @@ run_release_script() {
   rsync -av --exclude="ImplementationFromDafny.go" --exclude="ImplementationFromDafny-go.dtr" --exclude="go.sum" ./ "$(git rev-parse --show-toplevel)/releases/go/$RELEASE_DIR_NAME/"
 
   # copy examples
-  rsync -av --exclude="go.sum" ../examples "$(git rev-parse --show-toplevel)/releases/go/$RELEASE_DIR_NAME/examples"
+  cd ../examples
+  echo "Removing all replace directives from go.mod and only adding replacement for ESDK"
+  go mod edit -json | jq -r '.Replace[].Old.Path' | xargs -n1 go mod edit -dropreplace
+  go mod edit -replace=github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk=../
+  rsync -av --exclude="go.sum" ./ "$(git rev-parse --show-toplevel)/releases/go/$RELEASE_DIR_NAME/examples"
 
   # Run Go tools in releases directory
   echo "Running Go tools in releases/go/$RELEASE_DIR_NAME..."
