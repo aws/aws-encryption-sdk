@@ -87,6 +87,7 @@ run_release_script() {
   run_go_tools
   go run main.go
   
+  cd "$(git rev-parse --show-toplevel)/releases/go/$RELEASE_DIR_NAME/" || { echo "Error: releases directory not found"; exit 1; }
   # Prepare for commit
   echo "creating a branch..."
 
