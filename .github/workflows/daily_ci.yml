@@ -100,7 +100,7 @@ jobs:
         daily-ci-interop-tests,
         daily-dafny-keyring-test-vectors,
         pr-dafny-mkp-keyring-legacy-test-vectors,
-        daily-dafny-legacy-test-vectors
+        daily-dafny-legacy-test-vectors,
       ]
     if: ${{ failure() }}
     uses: aws/aws-cryptographic-material-providers-library/.github/workflows/slack-notification.yml@main

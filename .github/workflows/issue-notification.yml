@@ -10,7 +10,7 @@ jobs:
     if: github.event_name == 'issues'
     uses: aws/aws-cryptographic-material-providers-library/.github/workflows/slack-notification.yml@main
     with:
-        message: "New github issue `${{ github.event.issue.title }}`. Link: ${{ github.event.issue.html_url }}"
+      message: "New github issue `${{ github.event.issue.title }}`. Link: ${{ github.event.issue.html_url }}"
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_GHI }}
 
