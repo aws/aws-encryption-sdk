@@ -69,3 +69,5 @@ format_java_misc-check: setup_prettier
 
 setup_prettier:
 	npm i --no-save prettier@3.5.3 prettier-plugin-java@2.5
+
+
