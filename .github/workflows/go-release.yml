@@ -71,8 +71,8 @@ jobs:
       - name: Get release directory name
         id: release-dir
         run: |
-          chmod +x ./scripts/go-release-automation.sh
-          RELEASE_DIR_NAME=$(./scripts/go-release-automation.sh get_release_dir_name "${{ github.event.inputs.project-name }}" "${{ github.event.inputs.version }}")
+          chmod +x mpl/scripts/go-release-automation.sh
+          RELEASE_DIR_NAME=$(mpl/scripts/go-release-automation.sh get_release_dir_name "${{ github.event.inputs.project-name }}" "${{ github.event.inputs.version }}")
           echo "releaseDirName=$RELEASE_DIR_NAME" >> $GITHUB_OUTPUT
 
       - name: Generate a changelog
@@ -83,7 +83,7 @@ jobs:
 
       - name: Run Go release automation script
         run: |
-          ./scripts/go-release-automation.sh run_release_script ${{ github.event.inputs.project-name }} ${{ github.event.inputs.version }}
+          mpl/scripts/go-release-automation.sh run_release_script ${{ github.event.inputs.project-name }} ${{ github.event.inputs.version }}
 
       - name: Create Pull Request
         env:
