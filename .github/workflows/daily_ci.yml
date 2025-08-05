@@ -105,6 +105,6 @@ jobs:
     if: ${{ failure() }}
     uses: aws/aws-cryptographic-material-providers-library/.github/workflows/slack-notification.yml@main
     with:
-      message: "Daily CI failed on `${{ github.repository }}`."
+      message: "Daily CI failed on `${{ github.repository }}`. View run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_CI }}
