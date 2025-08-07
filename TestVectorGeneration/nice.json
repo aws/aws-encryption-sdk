@@ -1,0 +1,56 @@
+{
+  "simple.types.smithyString:SimpleString": [
+    {
+      "GetString": [
+        {
+          "input": {
+            "value": {
+              "None": null
+            }
+          },
+          "output": {
+            "value": {
+              "None": null
+            }
+          }
+        },
+        {
+          "input": {
+            "value": {
+              "Some": ""
+            }
+          },
+          "output": {
+            "value": {
+              "Some": ""
+            }
+          }
+        },
+        {
+          "input": {
+            "value": {
+              "Some": "abc"
+            }
+          },
+          "output": {
+            "value": {
+              "Some": "abc"
+            }
+          }
+        },
+        {
+          "input": {
+            "value": {
+              "Some": "Hëllø 🌍 — こんにちは世界 — مرحبا بالعالم — Здравствуй, мир!"
+            }
+          },
+          "output": {
+            "value": {
+              "Some": "Hëllø 🌍 — こんにちは世界 — مرحبا بالعالم — Здравствуй, мир!"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

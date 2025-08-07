@@ -1,0 +1,302 @@
+file_format_version = "1.0"
+dafny_version = "4.10.0.0"
+[options_by_module."TestVectorGeneration.ValueSpace"]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module."TestVectorGeneration.EnumeratedValueSpace"]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module."TestVectorGeneration.Partition"]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module."TestVectorGeneration.PartitioningScheme"]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module."TestVectorGeneration.PruningConfiguration"]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module."TestVectorGeneration.OperationModel"]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module."TestVectorGeneration.ServiceModel"]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.TestVectorGeneration]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.EmptyStringPartition]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.NonemptyStringPartition]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.StringLengthPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.AsciiPartition]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.NonAsciiPartition]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.BasicStringPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.OptionStringNone]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.OptionStringSome]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.OptionStringPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.Aes128WrappingKeyPartition]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.Aes192WrappingKeyPartition]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.Aes256WrappingKeyPartition]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.ValidAesWrappingKeyPartition]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.InvalidAesWrappingKeyPartition]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.AesWrappingKeyPartitioningScheme]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.WrappingAlgValues]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.InvalidRawAesKeyNamespacePartition]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.ValidRawAesKeyNamespacePartition]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.KeyNamespacePartitioningScheme]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.KeyNamePartitioningScheme]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.InvalidAes128PruningConfiguration]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.InvalidAes192PruningConfiguration]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.InvalidAes256PruningConfiguration]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.AbstractCreateRawAesKeyringInput]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.CreateRawAesKeyringInput]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.AbstractCreateRawAesKeyringSmokeTest]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.CreateRawAesKeyringSmokeTest]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.AbstractCreateRawAesKeyringTestService]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.CreateRawAesKeyringTestService]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.CreateRawAesKeyringInputTests]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.EmptyPlaintextPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.NonemptyPlaintextPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.PlaintextPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.EmptyEncryptionContextPartition]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.NomemptyEncryptionContextPartition]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.EncryptionContextPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.ValidKeyIdentifierPruningConfiguration]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.InvalidKeyIdentifierPruningConfiguration]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.AwsCryptographyEncryptionSdkTestRoundtripTypes]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.KeyringPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.ESDKAlgorithmSuitePartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.MinimumFrameLengthPartition]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.NonminimumFrameLengthPartition]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.FrameLengthPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.OptionalFrameLengthNonePartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.OptionalFrameLengthSomePartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.OptionalFrameLengthPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.OptionNoneEncryptionContextPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.OptionSomeEncryptionContextPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.OptionalEncryptionContextPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.OptionNoneKeyringPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.OptionSomeKeyringPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.OptionalKeyringPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.OptionNoneAlgorithmSuitePartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.OptionSomeAlgorithmSuitePartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.OptionalESDKAlgorithmSuitePartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.EncryptInputPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.DecryptInputPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.TestCrossLanguageRoundTripInputPartitioning]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.AbstractTestCrossLanguageRoundTrip]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.TestCrossLanguageRoundTrip]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.AbstractESDKTestRoundTrip]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.ESDKTestRoundTrip]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.TestsRTT]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.AbstractTestCrossLanguageRoundTripInput]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.AbstractAwsCryptographyEncryptionSdkTestRoundtripOperations]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false
+[options_by_module.AbstractAwsCryptographyEncryptionSdkTestRoundtripService]
+legacy-module-names = false
+python-module-name = "test_vectors_v2.internaldafny.generated"
+rust-sync = false

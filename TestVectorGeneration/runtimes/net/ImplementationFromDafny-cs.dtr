@@ -1,0 +1,155 @@
+file_format_version = "1.0"
+dafny_version = "4.10.0.0"
+[options_by_module."TestVectorsNameTBDModule.ValueSpace"]
+legacy-module-names = true
+rust-sync = false
+[options_by_module."TestVectorsNameTBDModule.EnumeratedValueSpace"]
+legacy-module-names = true
+rust-sync = false
+[options_by_module."TestVectorsNameTBDModule.Partition"]
+legacy-module-names = true
+rust-sync = false
+[options_by_module."TestVectorsNameTBDModule.PartitioningScheme"]
+legacy-module-names = true
+rust-sync = false
+[options_by_module."TestVectorsNameTBDModule.PruningConfiguration"]
+legacy-module-names = true
+rust-sync = false
+[options_by_module."TestVectorsNameTBDModule.ParametrizedDomainPartition"]
+legacy-module-names = true
+rust-sync = false
+[options_by_module."TestVectorsNameTBDModule.ParametrizedCompleteDomainPartitioning"]
+legacy-module-names = true
+rust-sync = false
+[options_by_module."TestVectorsNameTBDModule.OperationModel"]
+legacy-module-names = true
+rust-sync = false
+[options_by_module."TestVectorsNameTBDModule.ServiceModel"]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.TestVectorsNameTBDModule]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.ValidAes128WrappingKeyPartition]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.ValidAes192WrappingKeyPartition]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.ValidAes256WrappingKeyPartition]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.ValidAesWrappingKeyPartition]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.InvalidAesWrappingKeyPartition]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.AesWrappingKeyPartitioningScheme]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.WrappingAlgValues]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.InvalidRawAesKeyNamespacePartition]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.EmptyStringPartition]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.AsciiPartition]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.BMPPartition]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.CharacterValuePartitioning]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.ValidRawAesKeyNamespacePartition]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.KeyNamespacePartitioningScheme]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.KeyNamePartitioningScheme]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.AbstractCreateRawAesKeyringInput]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.InvalidAes128PruningConfiguration]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.InvalidAes192PruningConfiguration]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.InvalidAes256PruningConfiguration]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.CreateRawAesKeyringInput]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.AbstractCreateRawAesKeyringSmokeTest]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.OptionStringNone]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.NonemptyStringPartition]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.LengthPartitioning]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.OptionStringSome]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.OptionStringDomainModel]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.CreateRawAesKeyringSmokeTest]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.AbstractCreateRawAesKeyringTestService]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.CreateRawAesKeyringTestService]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.Tests3]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.SimpleTypesSmithyStringTypes]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.GetStringInputPartitioning]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.AbstractGetStringModel]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.GetStringModelImpl]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.AbstractSimpleTypesSmithyStringOperations]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.AbstractSimpleTypesSmithyStringService]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.SimpleStringImpl]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.SimpleString]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.AbstractSimpleStringServiceModel]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.SimpleStringServiceModel]
+legacy-module-names = true
+rust-sync = false
+[options_by_module.Tests2]
+legacy-module-names = true
+rust-sync = false
