@@ -61,7 +61,7 @@ pub mod Signature {
         }
 
         const ELEM_MAX_BITS: usize = 521;
-        const ELEM_MAX_BYTES: usize = (ELEM_MAX_BITS + 7) / 8;
+        const ELEM_MAX_BYTES: usize = ELEM_MAX_BITS.div_ceil(8);
         const PUBLIC_KEY_MAX_LEN: usize = 1 + (2 * ELEM_MAX_BYTES);
 
         pub(crate) fn sec1_compress(
@@ -134,8 +134,8 @@ pub mod Signature {
             match ecdsa_key_gen(alg) {
                 Ok(x) => Rc::new(_Wrappers_Compile::Result::Success {
                     value: Rc::new(Signature::SignatureKeyPair::SignatureKeyPair {
-                        verificationKey: x.0.iter().cloned().collect(),
-                        signingKey: x.1.iter().cloned().collect(),
+                        verificationKey: dafny_runtime::Sequence::from_array_owned(x.0),
+                        signingKey: dafny_runtime::Sequence::from_array_owned(x.1),
                     }),
                 }),
                 Err(e) => {
@@ -182,11 +182,11 @@ pub mod Signature {
             key: &::dafny_runtime::Sequence<u8>,
             msg: &::dafny_runtime::Sequence<u8>,
         ) -> Rc<_Wrappers_Compile::Result<::dafny_runtime::Sequence<u8>, Rc<DafnyError>>> {
-            let key: Vec<u8> = key.iter().collect();
-            let msg: Vec<u8> = msg.iter().collect();
-            match ecdsa_sign(alg, &key, &msg) {
+            let key = &key.to_array();
+            let msg = &msg.to_array();
+            match ecdsa_sign(alg, key, msg) {
                 Ok(x) => Rc::new(_Wrappers_Compile::Result::Success {
-                    value: x.iter().cloned().collect(),
+                    value: dafny_runtime::Sequence::from_array_owned(x),
                 }),
                 Err(e) => {
                     let msg = format!("ECDSA Sign : {}", e);
@@ -214,10 +214,10 @@ pub mod Signature {
             msg: &::dafny_runtime::Sequence<u8>,
             sig: &::dafny_runtime::Sequence<u8>,
         ) -> Rc<_Wrappers_Compile::Result<bool, Rc<DafnyError>>> {
-            let key: Vec<u8> = key.iter().collect();
-            let msg: Vec<u8> = msg.iter().collect();
-            let sig: Vec<u8> = sig.iter().collect();
-            match ecdsa_verify(alg, &key, &msg, &sig) {
+            let key = &key.to_array();
+            let msg = &msg.to_array();
+            let sig = &sig.to_array();
+            match ecdsa_verify(alg, key, msg, sig) {
                 Ok(x) => Rc::new(_Wrappers_Compile::Result::Success { value: x }),
                 Err(e) => {
                     let msg = format!("ECDSA Verify : {}", e);
@@ -248,7 +248,7 @@ pub mod Signature {
                 };
 
                 let message: ::dafny_runtime::Sequence<u8> =
-                    [1u8, 2, 3, 4, 5].iter().cloned().collect();
+                    dafny_runtime::Sequence::from_array_owned(vec![1u8, 2, 3, 4, 5]);
 
                 let sig = match &*Sign(&alg, &s_key, &message) {
                     _Wrappers_Compile::Result::Success { value } => value.clone(),

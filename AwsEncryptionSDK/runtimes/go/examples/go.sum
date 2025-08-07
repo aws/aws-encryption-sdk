@@ -1,13 +1,3 @@
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb v0.2.0 h1:kow/mXv8Hu6aLWl8rlnRDKA897tl3lRa8ALOcSDwWMQ=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb v0.2.0/go.mod h1:JHhMzDQkrbrze8jkTYbIKI0+uK2Up6UxqVUOKRUj1qo=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms v0.2.0 h1:xVK6j0MNjVrzmwzjRXnuq2BOc0mjlRWQ35Mc1OTKmjo=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms v0.2.0/go.mod h1:KMs3humzWQ5kbdPLuXukCtxt/JbKr2tPWj+jlJUF7T4=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl v0.2.0 h1:M6tCnqVjHus/wulPyXrn63Y5gcDLfzbTOw1N31h4Wr4=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl v0.2.0/go.mod h1:wTGJJgTeWcyztSEDg5ziNqgCfOty9Ml83libL4HnkqM=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives v0.2.0 h1:nvPnMVl9dUqDb7oYvJh/7SiWcccs4n0dk7WjLX1BsJ8=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives v0.2.0/go.mod h1:W9V6Mm0ULDvH1JGL7/0qkrzRYuGTaxXfgEOoT7TodQM=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library v0.2.0 h1:NhVxn86bWyWc/uOnE+oTikZdj75yOW6kMCfZNBf2x5E=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library v0.2.0/go.mod h1:m3mzHKiNiSC0LWeWX6ZAxSe6mKbJHgliux1Yu/sjCYI=
 github.com/aws/aws-sdk-go-v2 v1.33.0 h1:Evgm4DI9imD81V0WwD+TN4DCwjUMdc94TrduMLbgZJs=
 github.com/aws/aws-sdk-go-v2 v1.33.0/go.mod h1:P5WJBrYqqbWVaOxgH0X/FYYD47/nooaPOZPlQdmiN2U=
 github.com/aws/aws-sdk-go-v2/config v1.29.0 h1:Vk/u4jof33or1qAQLdofpjKV7mQQT7DcUpnYx8kdmxY=

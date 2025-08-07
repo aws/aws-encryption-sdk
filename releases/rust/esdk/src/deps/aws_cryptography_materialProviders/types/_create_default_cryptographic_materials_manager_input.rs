@@ -5,13 +5,13 @@
 #[derive(::std::clone::Clone, ::std::cmp::PartialEq, ::std::fmt::Debug)]
 /// Inputs for creating a Default Cryptographic Materials Manager.
 pub struct CreateDefaultCryptographicMaterialsManagerInput {
-    /// The Keyring that the created Default Cryprographic Materials Manager will use to wrap data keys.
+    /// The Keyring that the created Default Cryptographic Materials Manager will use to wrap data keys.
     pub keyring: ::std::option::Option<
         crate::deps::aws_cryptography_materialProviders::types::keyring::KeyringRef,
     >,
 }
 impl CreateDefaultCryptographicMaterialsManagerInput {
-    /// The Keyring that the created Default Cryprographic Materials Manager will use to wrap data keys.
+    /// The Keyring that the created Default Cryptographic Materials Manager will use to wrap data keys.
     pub fn keyring(
         &self,
     ) -> &::std::option::Option<
@@ -38,7 +38,7 @@ pub struct CreateDefaultCryptographicMaterialsManagerInputBuilder {
     >,
 }
 impl CreateDefaultCryptographicMaterialsManagerInputBuilder {
-    /// The Keyring that the created Default Cryprographic Materials Manager will use to wrap data keys.
+    /// The Keyring that the created Default Cryptographic Materials Manager will use to wrap data keys.
     pub fn keyring(
         mut self,
         input: impl ::std::convert::Into<
@@ -48,7 +48,7 @@ impl CreateDefaultCryptographicMaterialsManagerInputBuilder {
         self.keyring = ::std::option::Option::Some(input.into());
         self
     }
-    /// The Keyring that the created Default Cryprographic Materials Manager will use to wrap data keys.
+    /// The Keyring that the created Default Cryptographic Materials Manager will use to wrap data keys.
     pub fn set_keyring(
         mut self,
         input: ::std::option::Option<
@@ -58,7 +58,7 @@ impl CreateDefaultCryptographicMaterialsManagerInputBuilder {
         self.keyring = input;
         self
     }
-    /// The Keyring that the created Default Cryprographic Materials Manager will use to wrap data keys.
+    /// The Keyring that the created Default Cryptographic Materials Manager will use to wrap data keys.
     pub fn get_keyring(
         &self,
     ) -> &::std::option::Option<

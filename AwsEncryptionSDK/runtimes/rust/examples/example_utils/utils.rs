@@ -126,19 +126,19 @@ pub(crate) fn x962_to_x509(
 
 fn get_nid(x: EcdhCurveSpec) -> i32 {
     match x {
-        EcdhCurveSpec::EccNistP256 {} => aws_lc_sys::NID_X9_62_prime256v1,
-        EcdhCurveSpec::EccNistP384 {} => aws_lc_sys::NID_secp384r1,
-        EcdhCurveSpec::EccNistP521 {} => aws_lc_sys::NID_secp521r1,
-        EcdhCurveSpec::Sm2 {} => panic!("No SM2 in Rust"),
+        EcdhCurveSpec::EccNistP256 => aws_lc_sys::NID_X9_62_prime256v1,
+        EcdhCurveSpec::EccNistP384 => aws_lc_sys::NID_secp384r1,
+        EcdhCurveSpec::EccNistP521 => aws_lc_sys::NID_secp521r1,
+        EcdhCurveSpec::Sm2 => panic!("No SM2 in Rust"),
     }
 }
 
 fn get_alg(x: EcdhCurveSpec) -> &'static aws_lc_rs::agreement::Algorithm {
     match x {
-        EcdhCurveSpec::EccNistP256 {} => &aws_lc_rs::agreement::ECDH_P256,
-        EcdhCurveSpec::EccNistP384 {} => &aws_lc_rs::agreement::ECDH_P384,
-        EcdhCurveSpec::EccNistP521 {} => &aws_lc_rs::agreement::ECDH_P521,
-        EcdhCurveSpec::Sm2 {} => panic!("No SM2 in Rust"),
+        EcdhCurveSpec::EccNistP256 => &aws_lc_rs::agreement::ECDH_P256,
+        EcdhCurveSpec::EccNistP384 => &aws_lc_rs::agreement::ECDH_P384,
+        EcdhCurveSpec::EccNistP521 => &aws_lc_rs::agreement::ECDH_P521,
+        EcdhCurveSpec::Sm2 => panic!("No SM2 in Rust"),
     }
 }
 
@@ -204,18 +204,18 @@ fn generate_raw_ecc_key_pair(
     // This key is created here for example purposes only.
     let private_key =
         aws_lc_rs::agreement::PrivateKey::generate(get_alg(ecdh_curve_spec))
-            .map_err(|e| format!("{:?}", e))?;
+            .map_err(|e| format!("{e:?}"))?;
 
     let public_key = private_key
         .compute_public_key()
-        .map_err(|e| format!("{:?}", e))?;
+        .map_err(|e| format!("{e:?}"))?;
 
     let public_key: Vec<u8> = x962_to_x509(public_key.as_ref(), get_nid(ecdh_curve_spec))?;
     let public_key = pem::Pem::new("PUBLIC KEY", public_key);
     let public_key = pem::encode(&public_key);
 
     let private_key_der = AsDer::<EcPrivateKeyRfc5915Der>::as_der(&private_key)
-        .map_err(|e| format!("{:?}", e))?;
+        .map_err(|e| format!("{e:?}"))?;
     let private_key = pem::Pem::new("PRIVATE KEY", private_key_der.as_ref());
     let private_key = pem::encode(&private_key);
 

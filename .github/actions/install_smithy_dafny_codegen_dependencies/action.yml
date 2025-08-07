@@ -8,14 +8,30 @@ description: "Install Java package dependencies required to run Smithy-Dafny cod
 runs:
   using: "composite"
   steps:
-    - name: Install smithy-dafny-codegen Rust dependencies locally
-      uses: gradle/gradle-build-action@v2
+    - name: Setup Java 17 for codegen
+      uses: actions/setup-java@v3
       with:
-        arguments: :codegen-client:pTML :codegen-core:pTML :rust-runtime:pTML
-        build-root-directory: mpl/smithy-dafny/smithy-dafny-codegen-modules/smithy-rs
+        distribution: "corretto"
+        java-version: "17"
 
-    - name: Install smithy-dafny-codegen Python dependencies locally
-      uses: gradle/gradle-build-action@v2
+    - name: Install smithy-dafny-codegen dependencies locally
+      shell: bash
+      run: |
+        make -C mpl/smithy-dafny mvn_local_deploy_polymorph_dependencies
+
+    - name: Setup Python, black, and docformatter for code formatting
+      uses: actions/setup-python@v4
       with:
-        arguments: :smithy-python-codegen:pTML
-        build-root-directory: mpl/smithy-dafny/codegen/smithy-dafny-codegen-modules/smithy-python/codegen
+        python-version: ${{ matrix.python-version }}
+        architecture: x64
+    - shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade black
+        python -m pip install --upgrade docformatter
+
+    # Without this the if-dafny-at-least command includes "Downloading ..." output
+    - name: Arbitrary makefile target to force downloading Gradle
+      shell: bash
+      run: |
+        make -C mpl/StandardLibrary setup_net

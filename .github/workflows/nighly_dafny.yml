@@ -43,13 +43,38 @@ jobs:
     with:
       dafny: "nightly-latest"
       regenerate-code: true
+  getVersion:
+    uses: ./.github/workflows/dafny_version.yaml
+  dafny_nightly_backwards_interop_esdk:
+    if: github.event_name != 'schedule' || github.repository_owner == 'aws'
+    needs: getVersion
+    uses: ./.github/workflows/dafny_interop.yml
+    with:
+      mpl-dafny: ${{needs.getVersion.outputs.version}}
+      mpl-commit: "main"
+      esdk-dafny: "nightly-latest"
+  dafny_nightly_backwards_interop_mpl:
+    if: github.event_name != 'schedule' || github.repository_owner == 'aws'
+    needs: getVersion
+    uses: ./.github/workflows/dafny_interop.yml
+    with:
+      mpl-dafny: "nightly-latest"
+      mpl-commit: "main"
+      esdk-dafny: ${{needs.getVersion.outputs.version}}
 
   cut-issue-on-failure:
     runs-on: ubuntu-22.04
     permissions:
       id-token: write
       contents: read
-    needs: [dafny-nightly-verification, dafny-nightly-net]
+    needs:
+      [
+        dafny-nightly-verification,
+        dafny-nightly-net,
+        dafny-nightly-go,
+        dafny_nightly_backwards_interop_esdk,
+        dafny_nightly_backwards_interop_mpl,
+      ]
     if: ${{ always() && contains(needs.*.result, 'failure') }}
     steps:
       # We need access to the role that is able to get CI Bot Creds

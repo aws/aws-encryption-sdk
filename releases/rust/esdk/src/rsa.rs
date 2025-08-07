@@ -71,7 +71,10 @@ pub mod RSAEncryption {
             length_bits: i32,
         ) -> (::dafny_runtime::Sequence<u8>, ::dafny_runtime::Sequence<u8>) {
             match generate_key_pair(length_bits) {
-                Ok(x) => (x.0.iter().cloned().collect(), x.1.iter().cloned().collect()),
+                Ok(x) => (
+                    dafny_runtime::Sequence::from_array_owned(x.0),
+                    dafny_runtime::Sequence::from_array_owned(x.1),
+                ),
                 Err(e) => {
                     panic!("Unexpected error generating RSA Key Pair{}", e);
                 }
@@ -102,8 +105,8 @@ pub mod RSAEncryption {
         pub fn GetRSAKeyModulusLengthExtern(
             public_key: &::dafny_runtime::Sequence<u8>,
         ) -> Rc<Wrappers::Result<u32, Rc<DafnyError>>> {
-            let public_key: Vec<u8> = public_key.iter().collect();
-            match get_modulus(&public_key) {
+            let public_key = &public_key.to_array();
+            match get_modulus(public_key) {
                 Ok(v) => Rc::new(Wrappers::Result::Success { value: v }),
                 Err(e) => Rc::new(Wrappers::Result::Failure { error: error(&e) }),
             }
@@ -140,11 +143,11 @@ pub mod RSAEncryption {
             private_key: &::dafny_runtime::Sequence<u8>,
             cipher_text: &::dafny_runtime::Sequence<u8>,
         ) -> Rc<Wrappers::Result<::dafny_runtime::Sequence<u8>, Rc<DafnyError>>> {
-            let private_key: Vec<u8> = private_key.iter().collect();
-            let cipher_text: Vec<u8> = cipher_text.iter().collect();
-            match decrypt_extern(mode, &private_key, &cipher_text) {
+            let private_key = &private_key.to_array();
+            let cipher_text = &cipher_text.to_array();
+            match decrypt_extern(mode, private_key, cipher_text) {
                 Ok(x) => Rc::new(Wrappers::Result::Success {
-                    value: x.iter().cloned().collect(),
+                    value: dafny_runtime::Sequence::from_array_owned(x),
                 }),
                 Err(e) => {
                     let msg = format!("RSA Decrypt : {}", e);
@@ -182,11 +185,11 @@ pub mod RSAEncryption {
             public_key: &::dafny_runtime::Sequence<u8>,
             message: &::dafny_runtime::Sequence<u8>,
         ) -> Rc<Wrappers::Result<::dafny_runtime::Sequence<u8>, Rc<DafnyError>>> {
-            let public_key: Vec<u8> = public_key.iter().collect();
-            let message: Vec<u8> = message.iter().collect();
-            match encrypt_extern(mode, &public_key, &message) {
+            let public_key = &public_key.to_array();
+            let message = &message.to_array();
+            match encrypt_extern(mode, public_key, message) {
                 Ok(x) => Rc::new(Wrappers::Result::Success {
-                    value: x.iter().cloned().collect(),
+                    value: dafny_runtime::Sequence::from_array_owned(x),
                 }),
                 Err(e) => {
                     let msg = format!("RSA Encrypt : {}", e);
@@ -235,7 +238,7 @@ pub mod RSAEncryption {
                 let mode = RSAPaddingMode::OAEP_SHA256 {};
 
                 let plain_text: ::dafny_runtime::Sequence<u8> =
-                    [1u8, 2, 3, 4, 5].iter().cloned().collect();
+                    dafny_runtime::Sequence::from_array_owned(vec![1u8, 2, 3, 4, 5]);
 
                 let cipher: ::dafny_runtime::Sequence<u8> =
                     match &*EncryptExtern(&mode, &public_key, &plain_text) {

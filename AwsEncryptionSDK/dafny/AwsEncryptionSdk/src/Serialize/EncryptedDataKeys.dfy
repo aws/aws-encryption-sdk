@@ -22,12 +22,14 @@ module {:options "/functionSyntax:4" } EncryptedDataKeys {
     + WriteShortLengthSeq(edk.ciphertext)
   }
 
+  // Seq.DropLast makes a full copy, but we seldom have more than one or two data keys,
+  // so no point in optimizing away the copy.
   function {:tailrecursion} WriteEncryptedDataKeys(
     edks: ESDKEncryptedDataKeys
   ):
     (ret: seq<uint8>)
   {
-    if |edks| == 0 then []
+    if |edks| as uint64 == 0 then []
     else
       WriteEncryptedDataKeys(Seq.DropLast(edks)) + WriteEncryptedDataKey(Seq.Last(edks))
   }
@@ -82,7 +84,7 @@ module {:options "/functionSyntax:4" } EncryptedDataKeys {
     ensures CorrectlyRead(buffer, res, WriteEncryptedDataKeys)
     ensures res.Success? ==> count as nat == |res.value.data|
   {
-    if count as int > |accumulator| then
+    if count as uint64 > |accumulator| as uint64 then
       var SuccessfulRead(edk, newPos) :- ReadEncryptedDataKey(nextEdkStart);
       var nextAcc := accumulator + [edk];
       assert CorrectlyReadRange(buffer, newPos, WriteEncryptedDataKeys(nextAcc)) by {
@@ -104,7 +106,7 @@ module {:options "/functionSyntax:4" } EncryptedDataKeys {
 
     if
       && maxEdks.Some?
-      && count as int > maxEdks.value as int
+      && count as int64 > maxEdks.value
     then
       //= compliance/client-apis/decrypt.txt#2.7.1
       //# If the number of encrypted data keys (../framework/

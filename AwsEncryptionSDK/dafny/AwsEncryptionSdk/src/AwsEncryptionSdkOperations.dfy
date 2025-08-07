@@ -36,6 +36,7 @@ module AwsEncryptionSdkOperations refines AbstractAwsCryptographyEncryptionSdkOp
   import EncryptionContext
 
   import opened Seq
+  import opened StandardLibrary.MemoryMath
 
   datatype Config = Config(
     nameonly crypto: Primitives.AtomicPrimitivesClient,
@@ -160,9 +161,10 @@ module AwsEncryptionSdkOperations refines AbstractAwsCryptographyEncryptionSdkOp
       .MapFailure(e => Types.AwsCryptographyMaterialProviders(e));
     }
 
-      // int64 fits 9 exabytes so we're never going to actually hit this. But if we don't
-      // include this the verifier is not convinced that we can cast the size to int64
-    :- Need(|input.plaintext| < INT64_MAX_LIMIT,
+    // int64 fits 9 exabytes so we're never going to actually hit this. But if we don't
+    // include this the verifier is not convinced that we can cast the size to int64
+    SequenceIsSafeBecauseItIsInMemory(input.plaintext);
+    :- Need(|input.plaintext| as uint64 < INT64_MAX_LIMIT as uint64,
             Types.AwsEncryptionSdkException(
               message := "Plaintext exceeds maximum allowed size"));
 
@@ -316,7 +318,8 @@ module AwsEncryptionSdkOperations refines AbstractAwsCryptographyEncryptionSdkOp
       var bytes :- maybeBytes
       .MapFailure(e => Types.AwsCryptographyPrimitives(e));
 
-      :- Need(|bytes| < UINT16_LIMIT,
+      SequenceIsSafeBecauseItIsInMemory(bytes);
+      :- Need(|bytes| as uint64 < UINT16_LIMIT as uint64,
               Types.AwsEncryptionSdkException(
                 message := "Length of signature bytes is larger than the uint16 limit."));
 
@@ -527,7 +530,7 @@ module AwsEncryptionSdkOperations refines AbstractAwsCryptographyEncryptionSdkOp
     //# This default CMM MUST obtain the decryption materials required for
     //# decryption.
     // TODO :: Consider removing "Default CMM MUST obtain" from spec.
-    // It is redundent and hard to prove.
+    // It is redundant and hard to prove.
 
     //= compliance/client-apis/decrypt.txt#2.7.2
     //# This operation MUST obtain this set of decryption materials
@@ -762,8 +765,8 @@ module AwsEncryptionSdkOperations refines AbstractAwsCryptographyEncryptionSdkOp
       decMat,
       config.crypto
     );
-
-    :- Need(signature.start == |signature.bytes|,
+    SequenceIsSafeBecauseItIsInMemory(signature.bytes);
+    :- Need(signature.start == |signature.bytes| as uint64,
             Types.AwsEncryptionSdkException(
               message := "Data after message footer."));
 
@@ -818,7 +821,7 @@ module AwsEncryptionSdkOperations refines AbstractAwsCryptographyEncryptionSdkOp
   )
     requires exists readRange: seq<uint8> :: SerializeFunctions.CorrectlyReadRange(buffer, verifiedTail, readRange)
     ensures
-      && buffer.start <= verifiedTail.start <= |buffer.bytes|
+      && buffer.start as nat <= verifiedTail.start as nat <= |buffer.bytes|
       && SerializeFunctions.CorrectlyReadRange(buffer, verifiedTail, buffer.bytes[buffer.start..verifiedTail.start])
       && buffer.bytes == verifiedTail.bytes
   {
@@ -830,7 +833,7 @@ module AwsEncryptionSdkOperations refines AbstractAwsCryptographyEncryptionSdkOp
     verifiedMid: SerializeFunctions.ReadableBuffer,
     verifiedTail: SerializeFunctions.ReadableBuffer
   )
-    requires buffer.start <= verifiedMid.start <= verifiedTail.start <= |buffer.bytes|
+    requires buffer.start as nat <= verifiedMid.start as nat <= verifiedTail.start as nat <= |buffer.bytes|
     requires SerializeFunctions.CorrectlyReadRange(buffer, verifiedMid, buffer.bytes[buffer.start..verifiedMid.start])
     requires SerializeFunctions.CorrectlyReadRange(verifiedMid, verifiedTail, buffer.bytes[verifiedMid.start..verifiedTail.start])
     ensures SerializeFunctions.CorrectlyReadRange(buffer, verifiedTail, buffer.bytes[buffer.start..verifiedTail.start])

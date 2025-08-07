@@ -14,6 +14,7 @@ module {:options "/functionSyntax:4" } EncryptionContext {
   import opened Wrappers
   import opened UTF8
   import opened SerializeFunctions
+  import opened StandardLibrary.MemoryMath
 
   // There needs to be a canonical representation of the encryption context.
   // Once the encryption context has been serialized,
@@ -70,6 +71,7 @@ module {:options "/functionSyntax:4" } EncryptionContext {
     // This is needed because Dafny can not reveal the subset type by default?
     assert ESDKCanonicalEncryptionContext?(canonicalEncryptionContext);
     assert KeysAreUnique(canonicalEncryptionContext);
+    // Can't make this uint64, because Dafny explodes
     map i
       | 0 <= i < |canonicalEncryptionContext|
       :: canonicalEncryptionContext[i].key := canonicalEncryptionContext[i].value
@@ -227,9 +229,9 @@ module {:options "/functionSyntax:4" } EncryptionContext {
     var complement := Complement(ec, subEC);
 
     calc {
-      Length(complement) + Length(subEC);
+      Add(Length(complement), Length(subEC));
     ==
-      LinearLength(GetCanonicalLinearPairs(complement)) + LinearLength(GetCanonicalLinearPairs(subEC));
+      Add(LinearLength(GetCanonicalLinearPairs(complement)), LinearLength(GetCanonicalLinearPairs(subEC)));
     == {LinearLengthIsDistributive(GetCanonicalLinearPairs(complement), GetCanonicalLinearPairs(subEC));}
       LinearLength(GetCanonicalLinearPairs(complement) + GetCanonicalLinearPairs(subEC));
     == {
@@ -314,21 +316,22 @@ module {:options "/functionSyntax:4" } EncryptionContext {
         && var aad := WriteAAD(ec);
         && ret == WriteUint16(|aad| as uint16) + aad
   {
-    if |ec| == 0 then WriteUint16(0)
+    SequenceIsSafeBecauseItIsInMemory(ec);
+    if |ec| as uint64 == 0 then WriteUint16(0)
     else
       var aad := WriteAAD(ec);
       WriteUint16(|aad| as uint16) + aad
   }
 
-  // To Calculate the Authenication Only AAD for the Encryption Context,
+  // To Calculate the Authentication Only AAD for the Encryption Context,
   // the Encryption Context MUST be:
   // - filtered,
   // - Canonicalized
-  // Finally, if the result of the above is an empy Encryption Context,
+  // Finally, if the result of the above is an empty Encryption Context,
   // it is serialized as [].
   // Otherwise, it is serialized following the spec's
   // compliance/data-format/message-header.txt#2.5.1.7.2
-  // This method ONLY handles the last porition.
+  // This method ONLY handles the last portion.
   //
   // On Decrypt, the Decryption Materials' filtering is done
   // via buildEncryptionContextToOnlyAuthenticate,
@@ -344,7 +347,8 @@ module {:options "/functionSyntax:4" } EncryptionContext {
   {
     // The Serialization of No Encryption Context is NOT `[0, [0, 0]]`,
     // but `[]`.
-    if |ec| == 0 then
+    SequenceIsSafeBecauseItIsInMemory(ec);
+    if |ec| as uint64 == 0 then
       []
     else
       WriteAAD(ec)
@@ -387,24 +391,47 @@ module {:options "/functionSyntax:4" } EncryptionContext {
     WriteUint16(|ec| as uint16) + WriteAADPairs(ec)
   }
 
-  function {:tailrecursion} WriteAADPairs(
+  function WriteAADPairs(
     ec: ESDKCanonicalEncryptionContext
   ):
     (ret: seq<uint8>)
     ensures |ec| == 0
             ==>
-              && LinearLength(ec) == |ret|
+              && LinearLength(ec) as nat == |ret|
               && ret == []
     ensures |ec| != 0
             ==>
-              && LinearLength(Seq.DropLast(ec)) + PairLength(Seq.Last(ec)) == |ret|
+              && LinearLength(Seq.DropLast(ec)) as nat + PairLength(Seq.Last(ec)) as nat == |ret|
               && WriteAADPairs(Seq.DropLast(ec)) + WriteAADPair(Seq.Last(ec)) == ret
-    ensures |ret| < ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH
+    ensures |ret| < ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH as nat
   {
     if |ec| == 0 then []
     else
       assert LinearLength(Seq.DropLast(ec)) < LinearLength(ec);
       WriteAADPairs(Seq.DropLast(ec)) + WriteAADPair(Seq.Last(ec))
+  }
+  by method { // because Seq.DropLast makes a full copy
+    var result : seq<uint8> := [];
+    SequenceIsSafeBecauseItIsInMemory(ec);
+    for i : uint64 := 0 to |ec| as uint64
+      invariant ESDKCanonicalEncryptionContext?(ec)
+      invariant ESDKCanonicalEncryptionContext?(ec[..i])
+      invariant result == WriteAADPairs(ec[..i])
+    {
+      result := result + WriteAADPair(ec[i]);
+      ESDKCanonicalEncryptionContextCanBeSplit(ec);
+      assert result == WriteAADPairs(ec[..i]) + WriteAADPair(ec[i]);
+      assert Seq.DropLast(ec[..i+1]) == ec[..i];
+      assert result == WriteAADPairs(Seq.DropLast(ec[..i+1])) + WriteAADPair(Seq.Last(ec[..i+1]));
+      assert ESDKCanonicalEncryptionContext?(ec[..i]);
+      assert ESDKCanonicalEncryptionContext?(ec[..i+1]);
+      assert result == WriteAADPairs(ec[..i+1]);
+
+    }
+    assert result == WriteAADPairs(ec[..|ec|]);
+    assert ec == ec[..|ec|];
+    assert result == WriteAADPairs(ec);
+    return result;
   }
 
   //= compliance/data-format/message-header.txt#2.5.1.7.2.2
@@ -431,7 +458,7 @@ module {:options "/functionSyntax:4" } EncryptionContext {
     pair: ESDKEncryptionContextPair
   ):
     (ret: seq<uint8>)
-    ensures PairLength(pair) == |ret|
+    ensures PairLength(pair) as nat == |ret|
   {
     WriteShortLengthSeq(pair.key) + WriteShortLengthSeq(pair.value)
   }
@@ -441,7 +468,7 @@ module {:options "/functionSyntax:4" } EncryptionContext {
   )
     :(res: ReadCorrect<ESDKEncryptionContextPair>)
     ensures CorrectlyRead(buffer, res, WriteAADPair)
-    ensures res.Success? ==> PairLength(res.value.data) == res.value.tail.start - buffer.start
+    ensures res.Success? ==> (res.value.tail.start >= buffer.start) && PairLength(res.value.data) == res.value.tail.start - buffer.start
   {
     var SuccessfulRead(key, keyEnd) :- ReadShortLengthSeq(buffer);
     :- Need(ValidUTF8Seq(key), Error("Invalid Encryption Context key"));
@@ -474,10 +501,10 @@ module {:options "/functionSyntax:4" } EncryptionContext {
     ensures res.Success? ==> count as nat == |res.value.data|
     ensures CorrectlyRead(buffer, res, WriteAADPairs)
   {
-    if count as int > |accumulator| then
+    if count > |accumulator| as uint16 then
       var SuccessfulRead(pair, newPos) :- ReadAADPair(nextPair);
       :- Need(pair.key !in keys, Error("Duplicate Encryption Context key value."));
-      :- Need(newPos.start - buffer.start < ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH, Error("Encryption Context exceeds maximum length."));
+      :- Need((newPos.start >= buffer.start) && newPos.start - buffer.start < ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH, Error("Encryption Context exceeds maximum length."));
 
       var nextAcc := accumulator + [pair];
       // Calling `KeysToSet` once per pair
@@ -492,8 +519,8 @@ module {:options "/functionSyntax:4" } EncryptionContext {
         reveal KeysToSet();
       }
       assert ESDKCanonicalEncryptionContext?(nextAcc) by {
-        assert LinearLength(accumulator) == |WriteAADPairs(accumulator)|;
-        assert nextPair.start == buffer.start + |WriteAADPairs(accumulator)| by {
+        assert LinearLength(accumulator) as nat == |WriteAADPairs(accumulator)|;
+        assert nextPair.start as nat == buffer.start as nat + |WriteAADPairs(accumulator)| by {
           reveal CorrectlyReadRange();
         }
         assert LinearLength(accumulator) == nextPair.start - buffer.start;
@@ -546,7 +573,8 @@ module {:options "/functionSyntax:4" } EncryptionContext {
 
       Success(SuccessfulRead(empty, length.tail))
     else
-      :- Need(length.tail.start + length.data as nat <= |length.tail.bytes|, MoreNeeded(length.tail.start + length.data as nat));
+      SequenceIsSafeBecauseItIsInMemory(length.tail.bytes);
+      :- Need(Add(length.tail.start, length.data as uint64) <= |length.tail.bytes| as uint64, MoreNeeded(Add(length.tail.start, length.data as uint64)));
 
       var verifyCount :- ReadUInt16(length.tail);
       AppendToCorrectlyReadByteRange(buffer, length.tail, verifyCount.tail, WriteUint16(verifyCount.data));
@@ -568,7 +596,7 @@ module {:options "/functionSyntax:4" } EncryptionContext {
         :- Need(0 < verifyCount.data, Error("Encryption Context byte length exceeds pairs count."));
 
         var aad :- ReadAAD(length.tail);
-        :- Need(aad.tail.start - length.tail.start == length.data as nat, Error("AAD Length did not match stored length."));
+        :- Need((aad.tail.start >= length.tail.start) && aad.tail.start - length.tail.start == length.data as uint64, Error("AAD Length did not match stored length."));
 
         assert !IsExpandedAADSection(buffer);
         AppendToCorrectlyReadByteRange(buffer, length.tail, aad.tail, WriteAAD(aad.data));
@@ -597,10 +625,10 @@ module {:options "/functionSyntax:4" } EncryptionContext {
   {
     reveal CorrectlyReadRange();
     reveal ReadUInt16();
-    && buffer.start + 2 <= |buffer.bytes|
+    && buffer.start as nat + 2 <= |buffer.bytes|
     && var sectionLength := ReadUInt16(buffer).value;
     && sectionLength.data == 2
-    && sectionLength.tail.start + 2 <= |buffer.bytes|
+    && sectionLength.tail.start as nat + 2 <= |buffer.bytes|
     && ReadUInt16(sectionLength.tail).value.data == 0
   }
 
@@ -942,7 +970,7 @@ module {:options "/functionSyntax:4" } EncryptionContext {
       AdvanceCorrectlyReadableByteRange?(buffer, bytes, length.tail, WriteAAD(data));
 
       assert length.data == |WriteAAD(data)| as uint16;
-      assert length.tail.start + length.data as nat <= |length.tail.bytes|;
+      assert length.tail.start as nat + length.data as nat <= |length.tail.bytes|;
       assert !IsExpandedAADSection(buffer);
 
       var aad := ReadAADIsComplete(

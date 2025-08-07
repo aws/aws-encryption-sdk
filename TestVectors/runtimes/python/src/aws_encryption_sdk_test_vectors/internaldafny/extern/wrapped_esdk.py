@@ -70,7 +70,6 @@ class DafnyESDKToNativeESDKShim:
             mkp_flag = False
             if "MASTERKEY" in sys.argv:
                 mkp_flag = True
-            print("mkp_flag:", mkp_flag)
             mkp = None
             if native_encrypt_input.keyring is not None:
                 if mkp_flag:
@@ -127,7 +126,6 @@ class DafnyESDKToNativeESDKShim:
             mkp_flag = False
             if "MASTERKEY" in sys.argv:
                 mkp_flag = True
-            print("mkp_flag:", mkp_flag)
             native_esdk_input = {}
             mkp = None
             if native_decrypt_input.keyring is not None:

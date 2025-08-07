@@ -7,6 +7,7 @@ module SerializableTypes {
   import StandardLibrary
   import opened UInt = StandardLibrary.UInt
   import opened UTF8
+  import opened StandardLibrary.MemoryMath
   import MPL = AwsCryptographyMaterialProvidersTypes
   import AwsCryptographyPrimitivesTypes
   import SortedSets
@@ -30,10 +31,11 @@ module SerializableTypes {
   // The AAD section is the total length|number of pairs|key|value|key|value...
   // The total length is uint16, so the maximum length for the keys and values
   // MUST be able to include the uint16 for the number of pairs.
-  const ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH := UINT16_LIMIT - 2
+  const ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH : uint64 := UINT16_LIMIT as uint64 - 2
 
   predicate method IsESDKEncryptionContext(ec: MPL.EncryptionContext) {
-    && |ec| < UINT16_LIMIT
+    ValueIsSafeBecauseItIsInMemory(|ec|);
+    && |ec| as uint64 < UINT16_LIMIT as uint64
     && Length(ec) < ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH
     && forall element
          | element in (multiset(ec.Keys) + multiset(ec.Values))
@@ -51,6 +53,18 @@ module SerializableTypes {
   {
     match a.encrypt
     case AES_GCM(e) => e.ivLength as uint8
+  }
+
+  function method GetIvLengthZeros(a: MPL.AlgorithmSuiteInfo)
+    : (output: seq<uint8>)
+    ensures |output| == GetIvLength(a) as nat
+    ensures forall x <- output :: x == 0
+  {
+    var len := GetIvLength(a);
+    if len == 12 then
+      [0,0,0,0,0,0,0,0,0,0,0,0]
+    else
+      seq(len, _ => 0)
   }
 
   function method GetTagLength(a: MPL.AlgorithmSuiteInfo)
@@ -86,12 +100,13 @@ module SerializableTypes {
   function method Length(
     encryptionContext: MPL.EncryptionContext
   )
-    : (ret: nat)
+    : (ret: uint64)
     ensures
       var pairs := GetCanonicalLinearPairs(encryptionContext);
       && ret == LinearLength(pairs)
   {
-    if |encryptionContext| == 0 then 0 else
+    ValueIsSafeBecauseItIsInMemory(|encryptionContext|);
+    if |encryptionContext| as uint64 == 0 then 0 else
     var pairs := GetCanonicalLinearPairs(encryptionContext);
     LinearLength(pairs)
   }
@@ -149,33 +164,54 @@ module SerializableTypes {
           ==> pairs[i].key != pairs[j].key)
   }
 
-  function method {:tailrecursion} LinearLength(
+  function LinearLength(
     pairs: Linear<UTF8.ValidUTF8Bytes, UTF8.ValidUTF8Bytes>
   ):
-    (ret: nat)
+    (ret: uint64)
     ensures |pairs| == 0
             ==> ret == 0
     ensures |pairs| != 0
-            ==> ret == LinearLength(Seq.DropLast(pairs)) + PairLength(Seq.Last(pairs))
+            ==> ret as nat == LinearLength(Seq.DropLast(pairs)) as nat + PairLength(Seq.Last(pairs)) as nat
   {
     if |pairs| == 0 then 0
     else
-      LinearLength(Seq.DropLast(pairs)) + PairLength(Seq.Last(pairs))
+      Add(LinearLength(Seq.DropLast(pairs)), PairLength(Seq.Last(pairs)))
   }
+  by method { // because Seq.DropLast makes a full copy
+    var result : uint64 := 0;
+    SequenceIsSafeBecauseItIsInMemory(pairs);
+    for i : uint64 := 0 to |pairs| as uint64
+      invariant result == LinearLength(pairs[..i])
+    {
+      result := Add(result, PairLength(pairs[i]));
+      assert result == LinearLength(pairs[..i]) + PairLength(pairs[i]);
+      assert Seq.DropLast(pairs[..i+1]) == pairs[..i];
+      assert result == LinearLength(Seq.DropLast(pairs[..i+1])) + PairLength(Seq.Last(pairs[..i+1]));
+      assert result == LinearLength(pairs[..i+1]);
+
+    }
+    assert result == LinearLength(pairs[..|pairs|]);
+    assert pairs == pairs[..|pairs|];
+    assert result == LinearLength(pairs);
+    return result;
+  }
+
 
   function method PairLength(
     pair: Pair<UTF8.ValidUTF8Bytes, UTF8.ValidUTF8Bytes>
   ):
-    (ret: nat)
+    (ret: uint64)
   {
-    2 + |pair.key| + 2 + |pair.value|
+    SequenceIsSafeBecauseItIsInMemory(pair.key);
+    SequenceIsSafeBecauseItIsInMemory(pair.value);
+    Add4(2, |pair.key| as uint64, 2, |pair.value| as uint64)
   }
 
   lemma LinearLengthIsDistributive(
     a: Linear<UTF8.ValidUTF8Bytes, UTF8.ValidUTF8Bytes>,
     b: Linear<UTF8.ValidUTF8Bytes, UTF8.ValidUTF8Bytes>
   )
-    ensures LinearLength(a + b) == LinearLength(a) + LinearLength(b)
+    ensures LinearLength(a + b) == Add(LinearLength(a), LinearLength(b))
   {
     if b == [] {
       assert a + b == a;
@@ -184,17 +220,17 @@ module SerializableTypes {
         LinearLength(a + b);
       == // Definition of LinearLength
         if |a+b| == 0 then 0
-        else LinearLength(Seq.DropLast(a + b)) + PairLength(Seq.Last(a+b));
+        else Add(LinearLength(Seq.DropLast(a + b)), PairLength(Seq.Last(a+b)));
       == {assert |a+b| > 0;} // Because of the above `if` block
-        LinearLength(Seq.DropLast(a + b)) + PairLength(Seq.Last(a+b));
+        Add(LinearLength(Seq.DropLast(a + b)), PairLength(Seq.Last(a+b)));
       == {assert Seq.Last(a+b) == Seq.Last(b) && Seq.DropLast(a+b) == a + Seq.DropLast(b);} // Breaking apart (a+b)
-        LinearLength(a + Seq.DropLast(b)) + PairLength(Seq.Last(b));
+        Add(LinearLength(a + Seq.DropLast(b)), PairLength(Seq.Last(b)));
       == {LinearLengthIsDistributive(a, Seq.DropLast(b));} // This lets us break apart LinearLength(a + Seq.DropLast(b))
-        (LinearLength(a) + LinearLength(Seq.DropLast(b))) + PairLength(Seq.Last(b));
+        Add(Add(LinearLength(a), LinearLength(Seq.DropLast(b))), PairLength(Seq.Last(b)));
       == // Move () to prove associativity of +
-        LinearLength(a) + (LinearLength(Seq.DropLast(b)) + PairLength(Seq.Last(b)));
+        Add(LinearLength(a), Add(LinearLength(Seq.DropLast(b)), PairLength(Seq.Last(b))));
       == {assert LinearLength(Seq.DropLast(b)) + PairLength(Seq.Last(b)) == LinearLength(b);} // join the 2 parts of b back together
-        LinearLength(a) + LinearLength(b);
+        Add(LinearLength(a), LinearLength(b));
       }
     }
   }

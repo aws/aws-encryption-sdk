@@ -58,11 +58,11 @@ pub mod AesKdfCtr {
                 Rc<crate::software::amazon::cryptography::primitives::internaldafny::types::Error>,
             >,
         > {
-            let nonce: Vec<u8> = nonce.iter().collect();
-            let key: Vec<u8> = key.iter().collect();
-            match ctr_stream(&nonce, &key, length) {
+            let nonce = &nonce.to_array();
+            let key = &key.to_array();
+            match ctr_stream(nonce, key, length) {
                 Ok(x) => Rc::new(_Wrappers_Compile::Result::Success {
-                    value: x.iter().cloned().collect(),
+                    value: dafny_runtime::Sequence::from_array_owned(x),
                 }),
                 Err(e) => {
                     let msg = format!("Aes Kdf Ctr : {}", e);
