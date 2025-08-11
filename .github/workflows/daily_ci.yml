@@ -84,3 +84,27 @@ jobs:
     uses: ./.github/workflows/library_legacy_interop_test_vectors.yml
     with:
       dafny: ${{needs.getVersion.outputs.version}}
+
+  notify:
+    needs:
+      [
+        getVersion,
+        getVerifyVersion,
+        getFormatVersion,
+        pr-ci-format,
+        daily-ci-codegen,
+        daily-ci-verification,
+        daily-ci-net,
+        daily-ci-rust,
+        daily-ci-go,
+        daily-ci-interop-tests,
+        daily-dafny-keyring-test-vectors,
+        pr-dafny-mkp-keyring-legacy-test-vectors,
+        daily-dafny-legacy-test-vectors,
+      ]
+    if: ${{ failure() }}
+    uses: aws/aws-cryptographic-material-providers-library/.github/workflows/slack-notification.yml@main
+    with:
+      message: "Daily CI failed on `${{ github.repository }}`. View run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_CI }}
