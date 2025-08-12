@@ -101,6 +101,7 @@ import (
 	m_Sorting "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/Sorting"
 	m_StandardLibrary "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary"
 	m_StandardLibraryInterop "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibraryInterop"
+	m_StandardLibrary_MemoryMath "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_MemoryMath"
 	m_StandardLibrary_Sequence "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_Sequence"
 	m_StandardLibrary_String "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_String"
 	m_StandardLibrary_UInt "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_UInt"
@@ -127,6 +128,7 @@ var _ m__System.Dummy__
 var _ m_Wrappers.Dummy__
 var _ m_BoundedInts.Dummy__
 var _ m_StandardLibrary_UInt.Dummy__
+var _ m_StandardLibrary_MemoryMath.Dummy__
 var _ m_StandardLibrary_Sequence.Dummy__
 var _ m_StandardLibrary_String.Dummy__
 var _ m_StandardLibrary.Dummy__
@@ -151,40 +153,41 @@ var _ m_Relations.Dummy__
 var _ m_Seq_MergeSort.Dummy__
 var _ m__Math.Dummy__
 var _ m_Seq.Dummy__
-var _ m_MultiKeyring.Dummy__
-var _ m_AwsArnParsing.Dummy__
-var _ m_AwsKmsMrkAreUnique.Dummy__
 var _ m_Actions.Dummy__
-var _ m_AwsKmsMrkMatchForDecrypt.Dummy__
-var _ m_AwsKmsUtils.Dummy__
-var _ m_Constants.Dummy__
-var _ m_MaterialWrapping.Dummy__
 var _ m_CanonicalEncryptionContext.Dummy__
+var _ m_MaterialWrapping.Dummy__
 var _ m_IntermediateKeyWrapping.Dummy__
 var _ m_EdkWrapping.Dummy__
 var _ m_ErrorMessages.Dummy__
+var _ m_RawAESKeyring.Dummy__
+var _ m_AwsArnParsing.Dummy__
+var _ m_Constants.Dummy__
+var _ m_EcdhEdkWrapping.Dummy__
+var _ m_RawECDHKeyring.Dummy__
+var _ m_RawRSAKeyring.Dummy__
+var _ m_AwsKmsMrkMatchForDecrypt.Dummy__
+var _ m_AwsKmsUtils.Dummy__
 var _ m_AwsKmsKeyring.Dummy__
-var _ m_StrictMultiKeyring.Dummy__
 var _ m_AwsKmsDiscoveryKeyring.Dummy__
-var _ m_Com_Amazonaws_Kms.Dummy__
-var _ m_Com_Amazonaws_Dynamodb.Dummy__
-var _ m_DiscoveryMultiKeyring.Dummy__
-var _ m_AwsKmsMrkDiscoveryKeyring.Dummy__
-var _ m_MrkAwareDiscoveryMultiKeyring.Dummy__
-var _ m_AwsKmsMrkKeyring.Dummy__
-var _ m_MrkAwareStrictMultiKeyring.Dummy__
+var _ m_AwsKmsEcdhKeyring.Dummy__
+var _ m_FileIO.Dummy__
 var _ m_LocalCMC.Dummy__
 var _ m_SynchronizedLocalCMC.Dummy__
 var _ m_StormTracker.Dummy__
 var _ m_StormTrackingCMC.Dummy__
 var _ m_CacheConstants.Dummy__
 var _ m_AwsKmsHierarchicalKeyring.Dummy__
+var _ m_AwsKmsMrkDiscoveryKeyring.Dummy__
+var _ m_AwsKmsMrkKeyring.Dummy__
 var _ m_AwsKmsRsaKeyring.Dummy__
-var _ m_EcdhEdkWrapping.Dummy__
-var _ m_RawECDHKeyring.Dummy__
-var _ m_AwsKmsEcdhKeyring.Dummy__
-var _ m_RawAESKeyring.Dummy__
-var _ m_RawRSAKeyring.Dummy__
+var _ m_MultiKeyring.Dummy__
+var _ m_AwsKmsMrkAreUnique.Dummy__
+var _ m_StrictMultiKeyring.Dummy__
+var _ m_Com_Amazonaws_Kms.Dummy__
+var _ m_Com_Amazonaws_Dynamodb.Dummy__
+var _ m_DiscoveryMultiKeyring.Dummy__
+var _ m_MrkAwareDiscoveryMultiKeyring.Dummy__
+var _ m_MrkAwareStrictMultiKeyring.Dummy__
 var _ m_CMM.Dummy__
 var _ m_Defaults.Dummy__
 var _ m_Commitment.Dummy__
@@ -209,7 +212,6 @@ var _ m_Functions.Dummy__
 var _ m_Utf8EncodingForm.Dummy__
 var _ m_Utf16EncodingForm.Dummy__
 var _ m_UnicodeStrings.Dummy__
-var _ m_FileIO.Dummy__
 var _ m_GeneralInternals.Dummy__
 var _ m_MulInternalsNonlinear.Dummy__
 var _ m_MulInternals.Dummy__
@@ -356,7 +358,7 @@ func (_static *CompanionStruct_Default___) ReadV1HeaderBody(buffer m_SerializeFu
 												} else {
 													var _21_frameLength m_SerializeFunctions.SuccessfulRead = (_20_valueOrError11).Extract().(m_SerializeFunctions.SuccessfulRead)
 													_ = _21_frameLength
-													var _22_body m_HeaderTypes.HeaderBody = m_HeaderTypes.Companion_HeaderBody_.Create_V1HeaderBody_((_4_messageType).Dtor_data().(m_HeaderTypes.MessageType), (_6_suite).Dtor_data().(m_AwsCryptographyMaterialProvidersTypes.AlgorithmSuiteInfo), (_9_messageId).Dtor_data().(_dafny.Sequence), (_11_encryptionContext).Dtor_data().(_dafny.Sequence), (_13_encryptedDataKeys).Dtor_data().(_dafny.Sequence), (_15_contentType).Dtor_data().(m_HeaderTypes.ContentType), _dafny.IntOfUint8((_19_headerIvLength).Dtor_data().(uint8)), (_21_frameLength).Dtor_data().(uint32))
+													var _22_body m_HeaderTypes.HeaderBody = m_HeaderTypes.Companion_HeaderBody_.Create_V1HeaderBody_((_4_messageType).Dtor_data().(m_HeaderTypes.MessageType), (_6_suite).Dtor_data().(m_AwsCryptographyMaterialProvidersTypes.AlgorithmSuiteInfo), (_9_messageId).Dtor_data().(_dafny.Sequence), (_11_encryptionContext).Dtor_data().(_dafny.Sequence), (_13_encryptedDataKeys).Dtor_data().(_dafny.Sequence), (_15_contentType).Dtor_data().(m_HeaderTypes.ContentType), uint64((_19_headerIvLength).Dtor_data().(uint8)), (_21_frameLength).Dtor_data().(uint32))
 													_ = _22_body
 													return m_Wrappers.Companion_Result_.Create_Success_(m_SerializeFunctions.Companion_SuccessfulRead_.Create_SuccessfulRead_(_22_body, (_21_frameLength).Dtor_tail()))
 												}
@@ -376,7 +378,7 @@ func (_static *CompanionStruct_Default___) WriteV1MessageType(messageType m_Head
 	return _dafny.SeqOf((messageType).Serialize())
 }
 func (_static *CompanionStruct_Default___) ReadV1MessageType(buffer m_SerializeFunctions.ReadableBuffer) m_Wrappers.Result {
-	var _0_valueOrError0 m_Wrappers.Result = m_SerializeFunctions.Companion_Default___.Read(buffer, _dafny.One)
+	var _0_valueOrError0 m_Wrappers.Result = m_SerializeFunctions.Companion_Default___.Read(buffer, uint64(1))
 	_ = _0_valueOrError0
 	if (_0_valueOrError0).IsFailure() {
 		return (_0_valueOrError0).PropagateFailure()
@@ -387,9 +389,9 @@ func (_static *CompanionStruct_Default___) ReadV1MessageType(buffer m_SerializeF
 		_ = _1_raw
 		var _2_tail m_SerializeFunctions.ReadableBuffer = _let_tmp_rhs0.Get_().(m_SerializeFunctions.SuccessfulRead_SuccessfulRead).Tail
 		_ = _2_tail
-		var _3_valueOrError1 m_Wrappers.Result = (m_HeaderTypes.Companion_MessageType_.Get((_1_raw).Select(0).(uint8))).MapFailure(func(coer5 func(_dafny.Sequence) m_SerializeFunctions.ReadProblems) func(interface{}) interface{} {
-			return func(arg6 interface{}) interface{} {
-				return coer5(arg6.(_dafny.Sequence))
+		var _3_valueOrError1 m_Wrappers.Result = (m_HeaderTypes.Companion_MessageType_.Get((_1_raw).Select(uint32(uint32(0))).(uint8))).MapFailure(func(coer6 func(_dafny.Sequence) m_SerializeFunctions.ReadProblems) func(interface{}) interface{} {
+			return func(arg7 interface{}) interface{} {
+				return coer6(arg7.(_dafny.Sequence))
 			}
 		}(func(_4_e _dafny.Sequence) m_SerializeFunctions.ReadProblems {
 			return m_SerializeFunctions.Companion_ReadProblems_.Create_Error_(_4_e)
@@ -408,7 +410,7 @@ func (_static *CompanionStruct_Default___) WriteV1ReservedBytes(reservedBytes _d
 	return reservedBytes
 }
 func (_static *CompanionStruct_Default___) ReadV1ReservedBytes(buffer m_SerializeFunctions.ReadableBuffer) m_Wrappers.Result {
-	var _0_valueOrError0 m_Wrappers.Result = m_SerializeFunctions.Companion_Default___.Read(buffer, _dafny.IntOfUint32((Companion_Default___.RESERVED__BYTES()).Cardinality()))
+	var _0_valueOrError0 m_Wrappers.Result = m_SerializeFunctions.Companion_Default___.Read(buffer, uint64((Companion_Default___.RESERVED__BYTES()).Cardinality()))
 	_ = _0_valueOrError0
 	if (_0_valueOrError0).IsFailure() {
 		return (_0_valueOrError0).PropagateFailure()
@@ -434,7 +436,7 @@ func (_static *CompanionStruct_Default___) WriteV1HeaderIvLength(ivLength uint8)
 	return _dafny.SeqOf(ivLength)
 }
 func (_static *CompanionStruct_Default___) ReadV1HeaderIvLength(buffer m_SerializeFunctions.ReadableBuffer, suite m_AwsCryptographyMaterialProvidersTypes.AlgorithmSuiteInfo) m_Wrappers.Result {
-	var _0_valueOrError0 m_Wrappers.Result = m_SerializeFunctions.Companion_Default___.Read(buffer, _dafny.One)
+	var _0_valueOrError0 m_Wrappers.Result = m_SerializeFunctions.Companion_Default___.Read(buffer, uint64(1))
 	_ = _0_valueOrError0
 	if (_0_valueOrError0).IsFailure() {
 		return (_0_valueOrError0).PropagateFailure()
@@ -445,12 +447,12 @@ func (_static *CompanionStruct_Default___) ReadV1HeaderIvLength(buffer m_Seriali
 		_ = _1_raw
 		var _2_tail m_SerializeFunctions.ReadableBuffer = _let_tmp_rhs0.Get_().(m_SerializeFunctions.SuccessfulRead_SuccessfulRead).Tail
 		_ = _2_tail
-		var _3_valueOrError1 m_Wrappers.Outcome = m_Wrappers.Companion_Default___.Need(((_1_raw).Select(0).(uint8)) == (m_SerializableTypes.Companion_Default___.GetIvLength(suite)), m_SerializeFunctions.Companion_ReadProblems_.Create_Error_(_dafny.SeqOfString("HeaderIv Length does not match Algorithm Suite.")))
+		var _3_valueOrError1 m_Wrappers.Outcome = m_Wrappers.Companion_Default___.Need(((_1_raw).Select(uint32(uint32(0))).(uint8)) == (m_SerializableTypes.Companion_Default___.GetIvLength(suite)), m_SerializeFunctions.Companion_ReadProblems_.Create_Error_(_dafny.SeqOfString("HeaderIv Length does not match Algorithm Suite.")))
 		_ = _3_valueOrError1
 		if (_3_valueOrError1).IsFailure() {
 			return (_3_valueOrError1).PropagateFailure()
 		} else {
-			return m_Wrappers.Companion_Result_.Create_Success_(m_SerializeFunctions.Companion_SuccessfulRead_.Create_SuccessfulRead_((_1_raw).Select(0).(uint8), _2_tail))
+			return m_Wrappers.Companion_Result_.Create_Success_(m_SerializeFunctions.Companion_SuccessfulRead_.Create_SuccessfulRead_((_1_raw).Select(uint32(uint32(0))).(uint8), _2_tail))
 		}
 	}
 }

@@ -101,6 +101,7 @@ import (
 	m_Sorting "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/Sorting"
 	m_StandardLibrary "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary"
 	m_StandardLibraryInterop "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibraryInterop"
+	m_StandardLibrary_MemoryMath "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_MemoryMath"
 	m_StandardLibrary_Sequence "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_Sequence"
 	m_StandardLibrary_String "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_String"
 	m_StandardLibrary_UInt "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_UInt"
@@ -130,6 +131,7 @@ var _ m__System.Dummy__
 var _ m_Wrappers.Dummy__
 var _ m_BoundedInts.Dummy__
 var _ m_StandardLibrary_UInt.Dummy__
+var _ m_StandardLibrary_MemoryMath.Dummy__
 var _ m_StandardLibrary_Sequence.Dummy__
 var _ m_StandardLibrary_String.Dummy__
 var _ m_StandardLibrary.Dummy__
@@ -154,40 +156,41 @@ var _ m_Relations.Dummy__
 var _ m_Seq_MergeSort.Dummy__
 var _ m__Math.Dummy__
 var _ m_Seq.Dummy__
-var _ m_MultiKeyring.Dummy__
-var _ m_AwsArnParsing.Dummy__
-var _ m_AwsKmsMrkAreUnique.Dummy__
 var _ m_Actions.Dummy__
-var _ m_AwsKmsMrkMatchForDecrypt.Dummy__
-var _ m_AwsKmsUtils.Dummy__
-var _ m_Constants.Dummy__
-var _ m_MaterialWrapping.Dummy__
 var _ m_CanonicalEncryptionContext.Dummy__
+var _ m_MaterialWrapping.Dummy__
 var _ m_IntermediateKeyWrapping.Dummy__
 var _ m_EdkWrapping.Dummy__
 var _ m_ErrorMessages.Dummy__
+var _ m_RawAESKeyring.Dummy__
+var _ m_AwsArnParsing.Dummy__
+var _ m_Constants.Dummy__
+var _ m_EcdhEdkWrapping.Dummy__
+var _ m_RawECDHKeyring.Dummy__
+var _ m_RawRSAKeyring.Dummy__
+var _ m_AwsKmsMrkMatchForDecrypt.Dummy__
+var _ m_AwsKmsUtils.Dummy__
 var _ m_AwsKmsKeyring.Dummy__
-var _ m_StrictMultiKeyring.Dummy__
 var _ m_AwsKmsDiscoveryKeyring.Dummy__
-var _ m_Com_Amazonaws_Kms.Dummy__
-var _ m_Com_Amazonaws_Dynamodb.Dummy__
-var _ m_DiscoveryMultiKeyring.Dummy__
-var _ m_AwsKmsMrkDiscoveryKeyring.Dummy__
-var _ m_MrkAwareDiscoveryMultiKeyring.Dummy__
-var _ m_AwsKmsMrkKeyring.Dummy__
-var _ m_MrkAwareStrictMultiKeyring.Dummy__
+var _ m_AwsKmsEcdhKeyring.Dummy__
+var _ m_FileIO.Dummy__
 var _ m_LocalCMC.Dummy__
 var _ m_SynchronizedLocalCMC.Dummy__
 var _ m_StormTracker.Dummy__
 var _ m_StormTrackingCMC.Dummy__
 var _ m_CacheConstants.Dummy__
 var _ m_AwsKmsHierarchicalKeyring.Dummy__
+var _ m_AwsKmsMrkDiscoveryKeyring.Dummy__
+var _ m_AwsKmsMrkKeyring.Dummy__
 var _ m_AwsKmsRsaKeyring.Dummy__
-var _ m_EcdhEdkWrapping.Dummy__
-var _ m_RawECDHKeyring.Dummy__
-var _ m_AwsKmsEcdhKeyring.Dummy__
-var _ m_RawAESKeyring.Dummy__
-var _ m_RawRSAKeyring.Dummy__
+var _ m_MultiKeyring.Dummy__
+var _ m_AwsKmsMrkAreUnique.Dummy__
+var _ m_StrictMultiKeyring.Dummy__
+var _ m_Com_Amazonaws_Kms.Dummy__
+var _ m_Com_Amazonaws_Dynamodb.Dummy__
+var _ m_DiscoveryMultiKeyring.Dummy__
+var _ m_MrkAwareDiscoveryMultiKeyring.Dummy__
+var _ m_MrkAwareStrictMultiKeyring.Dummy__
 var _ m_CMM.Dummy__
 var _ m_Defaults.Dummy__
 var _ m_Commitment.Dummy__
@@ -212,7 +215,6 @@ var _ m_Functions.Dummy__
 var _ m_Utf8EncodingForm.Dummy__
 var _ m_Utf16EncodingForm.Dummy__
 var _ m_UnicodeStrings.Dummy__
-var _ m_FileIO.Dummy__
 var _ m_GeneralInternals.Dummy__
 var _ m_MulInternalsNonlinear.Dummy__
 var _ m_MulInternals.Dummy__
@@ -279,7 +281,7 @@ func (_this *Default__) ParentTraits_() []*_dafny.TraitID {
 var _ _dafny.TraitOffspring = &Default__{}
 
 func (_static *CompanionStruct_Default___) HeaderVersionSupportsCommitment_q(suite m_AwsCryptographyMaterialProvidersTypes.AlgorithmSuiteInfo, body m_HeaderTypes.HeaderBody) bool {
-	return (!(((suite).Dtor_commitment()).Is_HKDF()) || (((body).Is_V2HeaderBody()) && ((_dafny.IntOfUint32(((body).Dtor_suiteData()).Cardinality())).Cmp(_dafny.IntOfInt32((((suite).Dtor_commitment()).Dtor_HKDF()).Dtor_outputKeyLength())) == 0))) && (!(!(((suite).Dtor_commitment()).Is_HKDF())) || ((true) && ((body).Is_V1HeaderBody())))
+	return (!(((suite).Dtor_commitment()).Is_HKDF()) || (((body).Is_V2HeaderBody()) && ((uint64(((body).Dtor_suiteData()).Cardinality())) == (uint64((((suite).Dtor_commitment()).Dtor_HKDF()).Dtor_outputKeyLength()))))) && (!(!(((suite).Dtor_commitment()).Is_HKDF())) || ((true) && ((body).Is_V1HeaderBody())))
 }
 func (_static *CompanionStruct_Default___) ReadHeaderBody(buffer m_SerializeFunctions.ReadableBuffer, maxEdks m_Wrappers.Option, mpl *m_MaterialProviders.MaterialProvidersClient) m_Wrappers.Result {
 	var _0_valueOrError0 m_Wrappers.Result = m_SharedHeaderFunctions.Companion_Default___.ReadMessageFormatVersion(buffer)

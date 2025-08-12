@@ -101,6 +101,7 @@ import (
 	m_Sorting "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/Sorting"
 	m_StandardLibrary "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary"
 	m_StandardLibraryInterop "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibraryInterop"
+	m_StandardLibrary_MemoryMath "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_MemoryMath"
 	m_StandardLibrary_Sequence "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_Sequence"
 	m_StandardLibrary_String "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_String"
 	m_StandardLibrary_UInt "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_UInt"
@@ -133,6 +134,7 @@ var _ m__System.Dummy__
 var _ m_Wrappers.Dummy__
 var _ m_BoundedInts.Dummy__
 var _ m_StandardLibrary_UInt.Dummy__
+var _ m_StandardLibrary_MemoryMath.Dummy__
 var _ m_StandardLibrary_Sequence.Dummy__
 var _ m_StandardLibrary_String.Dummy__
 var _ m_StandardLibrary.Dummy__
@@ -157,40 +159,41 @@ var _ m_Relations.Dummy__
 var _ m_Seq_MergeSort.Dummy__
 var _ m__Math.Dummy__
 var _ m_Seq.Dummy__
-var _ m_MultiKeyring.Dummy__
-var _ m_AwsArnParsing.Dummy__
-var _ m_AwsKmsMrkAreUnique.Dummy__
 var _ m_Actions.Dummy__
-var _ m_AwsKmsMrkMatchForDecrypt.Dummy__
-var _ m_AwsKmsUtils.Dummy__
-var _ m_Constants.Dummy__
-var _ m_MaterialWrapping.Dummy__
 var _ m_CanonicalEncryptionContext.Dummy__
+var _ m_MaterialWrapping.Dummy__
 var _ m_IntermediateKeyWrapping.Dummy__
 var _ m_EdkWrapping.Dummy__
 var _ m_ErrorMessages.Dummy__
+var _ m_RawAESKeyring.Dummy__
+var _ m_AwsArnParsing.Dummy__
+var _ m_Constants.Dummy__
+var _ m_EcdhEdkWrapping.Dummy__
+var _ m_RawECDHKeyring.Dummy__
+var _ m_RawRSAKeyring.Dummy__
+var _ m_AwsKmsMrkMatchForDecrypt.Dummy__
+var _ m_AwsKmsUtils.Dummy__
 var _ m_AwsKmsKeyring.Dummy__
-var _ m_StrictMultiKeyring.Dummy__
 var _ m_AwsKmsDiscoveryKeyring.Dummy__
-var _ m_Com_Amazonaws_Kms.Dummy__
-var _ m_Com_Amazonaws_Dynamodb.Dummy__
-var _ m_DiscoveryMultiKeyring.Dummy__
-var _ m_AwsKmsMrkDiscoveryKeyring.Dummy__
-var _ m_MrkAwareDiscoveryMultiKeyring.Dummy__
-var _ m_AwsKmsMrkKeyring.Dummy__
-var _ m_MrkAwareStrictMultiKeyring.Dummy__
+var _ m_AwsKmsEcdhKeyring.Dummy__
+var _ m_FileIO.Dummy__
 var _ m_LocalCMC.Dummy__
 var _ m_SynchronizedLocalCMC.Dummy__
 var _ m_StormTracker.Dummy__
 var _ m_StormTrackingCMC.Dummy__
 var _ m_CacheConstants.Dummy__
 var _ m_AwsKmsHierarchicalKeyring.Dummy__
+var _ m_AwsKmsMrkDiscoveryKeyring.Dummy__
+var _ m_AwsKmsMrkKeyring.Dummy__
 var _ m_AwsKmsRsaKeyring.Dummy__
-var _ m_EcdhEdkWrapping.Dummy__
-var _ m_RawECDHKeyring.Dummy__
-var _ m_AwsKmsEcdhKeyring.Dummy__
-var _ m_RawAESKeyring.Dummy__
-var _ m_RawRSAKeyring.Dummy__
+var _ m_MultiKeyring.Dummy__
+var _ m_AwsKmsMrkAreUnique.Dummy__
+var _ m_StrictMultiKeyring.Dummy__
+var _ m_Com_Amazonaws_Kms.Dummy__
+var _ m_Com_Amazonaws_Dynamodb.Dummy__
+var _ m_DiscoveryMultiKeyring.Dummy__
+var _ m_MrkAwareDiscoveryMultiKeyring.Dummy__
+var _ m_MrkAwareStrictMultiKeyring.Dummy__
 var _ m_CMM.Dummy__
 var _ m_Defaults.Dummy__
 var _ m_Commitment.Dummy__
@@ -215,7 +218,6 @@ var _ m_Functions.Dummy__
 var _ m_Utf8EncodingForm.Dummy__
 var _ m_Utf16EncodingForm.Dummy__
 var _ m_UnicodeStrings.Dummy__
-var _ m_FileIO.Dummy__
 var _ m_GeneralInternals.Dummy__
 var _ m_MulInternalsNonlinear.Dummy__
 var _ m_MulInternals.Dummy__
@@ -462,7 +464,7 @@ func (_static *CompanionStruct_Default___) DeriveKeys(messageId _dafny.Sequence,
 		}
 		var _2_valueOrError1 m_Wrappers.Outcome = m_Wrappers.Companion_Outcome_.Default()
 		_ = _2_valueOrError1
-		_2_valueOrError1 = m_Wrappers.Companion_Default___.Need(((m_SerializableTypes.Companion_Default___.GetEncryptKeyLength(suite)) == ((((suite).Dtor_kdf()).Dtor_HKDF()).Dtor_outputKeyLength())) && ((_dafny.IntOfUint32((plaintextKey).Cardinality())).Cmp(_dafny.IntOfInt32((((suite).Dtor_kdf()).Dtor_HKDF()).Dtor_inputKeyLength())) == 0), m_AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsEncryptionSdkException_(_dafny.SeqOfString("Invalid Materials")))
+		_2_valueOrError1 = m_Wrappers.Companion_Default___.Need(((m_SerializableTypes.Companion_Default___.GetEncryptKeyLength(suite)) == ((((suite).Dtor_kdf()).Dtor_HKDF()).Dtor_outputKeyLength())) && ((int32((plaintextKey).Cardinality())) == ((((suite).Dtor_kdf()).Dtor_HKDF()).Dtor_inputKeyLength())), m_AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsEncryptionSdkException_(_dafny.SeqOfString("Invalid Materials")))
 		if (_2_valueOrError1).IsFailure() {
 			res = (_2_valueOrError1).PropagateFailure()
 			return res
@@ -495,14 +497,14 @@ func (_static *CompanionStruct_Default___) DeriveKeys(messageId _dafny.Sequence,
 				if _source0.Is_IDENTITY() {
 					var _6_i m_AwsCryptographyMaterialProvidersTypes.IDENTITY = _source0.Get_().(m_AwsCryptographyMaterialProvidersTypes.DerivationAlgorithm_IDENTITY).IDENTITY
 					_ = _6_i
-					return (_dafny.IntOfUint32((plaintextKey).Cardinality())).Cmp(_dafny.IntOfInt32(m_SerializableTypes.Companion_Default___.GetEncryptKeyLength(suite))) == 0
+					return (int32((plaintextKey).Cardinality())) == (m_SerializableTypes.Companion_Default___.GetEncryptKeyLength(suite))
 				}
 			}
 			{
 				if _source0.Is_HKDF() {
 					var _7_hkdf m_AwsCryptographyMaterialProvidersTypes.HKDF = _source0.Get_().(m_AwsCryptographyMaterialProvidersTypes.DerivationAlgorithm_HKDF).HKDF
 					_ = _7_hkdf
-					return ((_dafny.IntOfUint32((plaintextKey).Cardinality())).Cmp(_dafny.IntOfInt32((((suite).Dtor_kdf()).Dtor_HKDF()).Dtor_inputKeyLength())) == 0) && (((((suite).Dtor_kdf()).Dtor_HKDF()).Dtor_outputKeyLength()) == (m_SerializableTypes.Companion_Default___.GetEncryptKeyLength(suite)))
+					return ((int32((plaintextKey).Cardinality())) == ((((suite).Dtor_kdf()).Dtor_HKDF()).Dtor_inputKeyLength())) && (((((suite).Dtor_kdf()).Dtor_HKDF()).Dtor_outputKeyLength()) == (m_SerializableTypes.Companion_Default___.GetEncryptKeyLength(suite)))
 				}
 			}
 			{

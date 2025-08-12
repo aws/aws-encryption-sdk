@@ -101,6 +101,7 @@ import (
 	m_Sorting "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/Sorting"
 	m_StandardLibrary "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary"
 	m_StandardLibraryInterop "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibraryInterop"
+	m_StandardLibrary_MemoryMath "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_MemoryMath"
 	m_StandardLibrary_Sequence "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_Sequence"
 	m_StandardLibrary_String "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_String"
 	m_StandardLibrary_UInt "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_UInt"
@@ -124,6 +125,7 @@ var _ m__System.Dummy__
 var _ m_Wrappers.Dummy__
 var _ m_BoundedInts.Dummy__
 var _ m_StandardLibrary_UInt.Dummy__
+var _ m_StandardLibrary_MemoryMath.Dummy__
 var _ m_StandardLibrary_Sequence.Dummy__
 var _ m_StandardLibrary_String.Dummy__
 var _ m_StandardLibrary.Dummy__
@@ -148,40 +150,41 @@ var _ m_Relations.Dummy__
 var _ m_Seq_MergeSort.Dummy__
 var _ m__Math.Dummy__
 var _ m_Seq.Dummy__
-var _ m_MultiKeyring.Dummy__
-var _ m_AwsArnParsing.Dummy__
-var _ m_AwsKmsMrkAreUnique.Dummy__
 var _ m_Actions.Dummy__
-var _ m_AwsKmsMrkMatchForDecrypt.Dummy__
-var _ m_AwsKmsUtils.Dummy__
-var _ m_Constants.Dummy__
-var _ m_MaterialWrapping.Dummy__
 var _ m_CanonicalEncryptionContext.Dummy__
+var _ m_MaterialWrapping.Dummy__
 var _ m_IntermediateKeyWrapping.Dummy__
 var _ m_EdkWrapping.Dummy__
 var _ m_ErrorMessages.Dummy__
+var _ m_RawAESKeyring.Dummy__
+var _ m_AwsArnParsing.Dummy__
+var _ m_Constants.Dummy__
+var _ m_EcdhEdkWrapping.Dummy__
+var _ m_RawECDHKeyring.Dummy__
+var _ m_RawRSAKeyring.Dummy__
+var _ m_AwsKmsMrkMatchForDecrypt.Dummy__
+var _ m_AwsKmsUtils.Dummy__
 var _ m_AwsKmsKeyring.Dummy__
-var _ m_StrictMultiKeyring.Dummy__
 var _ m_AwsKmsDiscoveryKeyring.Dummy__
-var _ m_Com_Amazonaws_Kms.Dummy__
-var _ m_Com_Amazonaws_Dynamodb.Dummy__
-var _ m_DiscoveryMultiKeyring.Dummy__
-var _ m_AwsKmsMrkDiscoveryKeyring.Dummy__
-var _ m_MrkAwareDiscoveryMultiKeyring.Dummy__
-var _ m_AwsKmsMrkKeyring.Dummy__
-var _ m_MrkAwareStrictMultiKeyring.Dummy__
+var _ m_AwsKmsEcdhKeyring.Dummy__
+var _ m_FileIO.Dummy__
 var _ m_LocalCMC.Dummy__
 var _ m_SynchronizedLocalCMC.Dummy__
 var _ m_StormTracker.Dummy__
 var _ m_StormTrackingCMC.Dummy__
 var _ m_CacheConstants.Dummy__
 var _ m_AwsKmsHierarchicalKeyring.Dummy__
+var _ m_AwsKmsMrkDiscoveryKeyring.Dummy__
+var _ m_AwsKmsMrkKeyring.Dummy__
 var _ m_AwsKmsRsaKeyring.Dummy__
-var _ m_EcdhEdkWrapping.Dummy__
-var _ m_RawECDHKeyring.Dummy__
-var _ m_AwsKmsEcdhKeyring.Dummy__
-var _ m_RawAESKeyring.Dummy__
-var _ m_RawRSAKeyring.Dummy__
+var _ m_MultiKeyring.Dummy__
+var _ m_AwsKmsMrkAreUnique.Dummy__
+var _ m_StrictMultiKeyring.Dummy__
+var _ m_Com_Amazonaws_Kms.Dummy__
+var _ m_Com_Amazonaws_Dynamodb.Dummy__
+var _ m_DiscoveryMultiKeyring.Dummy__
+var _ m_MrkAwareDiscoveryMultiKeyring.Dummy__
+var _ m_MrkAwareStrictMultiKeyring.Dummy__
 var _ m_CMM.Dummy__
 var _ m_Defaults.Dummy__
 var _ m_Commitment.Dummy__
@@ -206,7 +209,6 @@ var _ m_Functions.Dummy__
 var _ m_Utf8EncodingForm.Dummy__
 var _ m_Utf16EncodingForm.Dummy__
 var _ m_UnicodeStrings.Dummy__
-var _ m_FileIO.Dummy__
 var _ m_GeneralInternals.Dummy__
 var _ m_MulInternalsNonlinear.Dummy__
 var _ m_MulInternals.Dummy__
@@ -287,7 +289,7 @@ func (_static *CompanionStruct_Default___) GetEncryptionContext(canonicalEncrypt
 	}()
 }
 func (_static *CompanionStruct_Default___) WriteAADSection(ec _dafny.Sequence) _dafny.Sequence {
-	if (_dafny.IntOfUint32((ec).Cardinality())).Sign() == 0 {
+	if (uint64((ec).Cardinality())) == (uint64(0)) {
 		return m_SerializeFunctions.Companion_Default___.WriteUint16(uint16(0))
 	} else {
 		var _0_aad _dafny.Sequence = Companion_Default___.WriteAAD(ec)
@@ -296,7 +298,7 @@ func (_static *CompanionStruct_Default___) WriteAADSection(ec _dafny.Sequence) _
 	}
 }
 func (_static *CompanionStruct_Default___) WriteEmptyEcOrWriteAAD(ec _dafny.Sequence) _dafny.Sequence {
-	if (_dafny.IntOfUint32((ec).Cardinality())).Sign() == 0 {
+	if (uint64((ec).Cardinality())) == (uint64(0)) {
 		return _dafny.SeqOf()
 	} else {
 		return Companion_Default___.WriteAAD(ec)
@@ -306,19 +308,19 @@ func (_static *CompanionStruct_Default___) WriteAAD(ec _dafny.Sequence) _dafny.S
 	return _dafny.Companion_Sequence_.Concatenate(m_SerializeFunctions.Companion_Default___.WriteUint16(uint16((ec).Cardinality())), Companion_Default___.WriteAADPairs(ec))
 }
 func (_static *CompanionStruct_Default___) WriteAADPairs(ec _dafny.Sequence) _dafny.Sequence {
-	var _0___accumulator _dafny.Sequence = _dafny.SeqOf()
-	_ = _0___accumulator
-	goto TAIL_CALL_START
-TAIL_CALL_START:
-	if (_dafny.IntOfUint32((ec).Cardinality())).Sign() == 0 {
-		return _dafny.Companion_Sequence_.Concatenate(_dafny.SeqOf(), _0___accumulator)
-	} else {
-		_0___accumulator = _dafny.Companion_Sequence_.Concatenate(Companion_Default___.WriteAADPair(m_Seq.Companion_Default___.Last(ec).(m_SerializableTypes.Pair)), _0___accumulator)
-		var _in0 _dafny.Sequence = m_Seq.Companion_Default___.DropLast(ec)
-		_ = _in0
-		ec = _in0
-		goto TAIL_CALL_START
+	var ret _dafny.Sequence = _dafny.EmptySeq
+	_ = ret
+	var _0_result _dafny.Sequence
+	_ = _0_result
+	_0_result = _dafny.SeqOf()
+	var _hi0 uint64 = uint64((ec).Cardinality())
+	_ = _hi0
+	for _1_i := uint64(0); _1_i < _hi0; _1_i++ {
+		_0_result = _dafny.Companion_Sequence_.Concatenate(_0_result, Companion_Default___.WriteAADPair((ec).Select(uint32(_1_i)).(m_SerializableTypes.Pair)))
 	}
+	ret = _0_result
+	return ret
+	return ret
 }
 func (_static *CompanionStruct_Default___) WriteAADPair(pair m_SerializableTypes.Pair) _dafny.Sequence {
 	return _dafny.Companion_Sequence_.Concatenate(m_SerializeFunctions.Companion_Default___.WriteShortLengthSeq((pair).Dtor_key().(_dafny.Sequence)), m_SerializeFunctions.Companion_Default___.WriteShortLengthSeq((pair).Dtor_value().(_dafny.Sequence)))
@@ -367,7 +369,7 @@ func (_static *CompanionStruct_Default___) ReadAADPair(buffer m_SerializeFunctio
 func (_static *CompanionStruct_Default___) ReadAADPairs(buffer m_SerializeFunctions.ReadableBuffer, accumulator _dafny.Sequence, keys _dafny.Set, count uint16, nextPair m_SerializeFunctions.ReadableBuffer) m_Wrappers.Result {
 	goto TAIL_CALL_START
 TAIL_CALL_START:
-	if (_dafny.IntOfUint16(count)).Cmp(_dafny.IntOfUint32((accumulator).Cardinality())) > 0 {
+	if (count) > (uint16((accumulator).Cardinality())) {
 		var _0_valueOrError0 m_Wrappers.Result = Companion_Default___.ReadAADPair(nextPair)
 		_ = _0_valueOrError0
 		if (_0_valueOrError0).IsFailure() {
@@ -384,7 +386,7 @@ TAIL_CALL_START:
 			if (_3_valueOrError1).IsFailure() {
 				return (_3_valueOrError1).PropagateFailure()
 			} else {
-				var _4_valueOrError2 m_Wrappers.Outcome = m_Wrappers.Companion_Default___.Need((((_2_newPos).Dtor_start()).Minus((buffer).Dtor_start())).Cmp(m_SerializableTypes.Companion_Default___.ESDK__CANONICAL__ENCRYPTION__CONTEXT__MAX__LENGTH()) < 0, m_SerializeFunctions.Companion_ReadProblems_.Create_Error_(_dafny.SeqOfString("Encryption Context exceeds maximum length.")))
+				var _4_valueOrError2 m_Wrappers.Outcome = m_Wrappers.Companion_Default___.Need((((_2_newPos).Dtor_start()) >= ((buffer).Dtor_start())) && ((((_2_newPos).Dtor_start())-(func() uint64 { return ((buffer).Dtor_start()) })()) < (m_SerializableTypes.Companion_Default___.ESDK__CANONICAL__ENCRYPTION__CONTEXT__MAX__LENGTH())), m_SerializeFunctions.Companion_ReadProblems_.Create_Error_(_dafny.SeqOfString("Encryption Context exceeds maximum length.")))
 				_ = _4_valueOrError2
 				if (_4_valueOrError2).IsFailure() {
 					return (_4_valueOrError2).PropagateFailure()
@@ -466,7 +468,7 @@ func (_static *CompanionStruct_Default___) ReadAADSection(buffer m_SerializeFunc
 			_ = _2_empty
 			return m_Wrappers.Companion_Result_.Create_Success_(m_SerializeFunctions.Companion_SuccessfulRead_.Create_SuccessfulRead_(_2_empty, (_1_length).Dtor_tail()))
 		} else {
-			var _3_valueOrError1 m_Wrappers.Outcome = m_Wrappers.Companion_Default___.Need(((((_1_length).Dtor_tail()).Dtor_start()).Plus(_dafny.IntOfUint16((_1_length).Dtor_data().(uint16)))).Cmp(_dafny.IntOfUint32((((_1_length).Dtor_tail()).Dtor_bytes()).Cardinality())) <= 0, m_SerializeFunctions.Companion_ReadProblems_.Create_MoreNeeded_((((_1_length).Dtor_tail()).Dtor_start()).Plus(_dafny.IntOfUint16((_1_length).Dtor_data().(uint16)))))
+			var _3_valueOrError1 m_Wrappers.Outcome = m_Wrappers.Companion_Default___.Need((m_StandardLibrary_MemoryMath.Companion_Default___.Add(((_1_length).Dtor_tail()).Dtor_start(), uint64((_1_length).Dtor_data().(uint16)))) <= (uint64((((_1_length).Dtor_tail()).Dtor_bytes()).Cardinality())), m_SerializeFunctions.Companion_ReadProblems_.Create_MoreNeeded_(m_StandardLibrary_MemoryMath.Companion_Default___.Add(((_1_length).Dtor_tail()).Dtor_start(), uint64((_1_length).Dtor_data().(uint16)))))
 			_ = _3_valueOrError1
 			if (_3_valueOrError1).IsFailure() {
 				return (_3_valueOrError1).PropagateFailure()
@@ -501,7 +503,7 @@ func (_static *CompanionStruct_Default___) ReadAADSection(buffer m_SerializeFunc
 							} else {
 								var _10_aad m_SerializeFunctions.SuccessfulRead = (_9_valueOrError5).Extract().(m_SerializeFunctions.SuccessfulRead)
 								_ = _10_aad
-								var _11_valueOrError6 m_Wrappers.Outcome = m_Wrappers.Companion_Default___.Need(((((_10_aad).Dtor_tail()).Dtor_start()).Minus(((_1_length).Dtor_tail()).Dtor_start())).Cmp(_dafny.IntOfUint16((_1_length).Dtor_data().(uint16))) == 0, m_SerializeFunctions.Companion_ReadProblems_.Create_Error_(_dafny.SeqOfString("AAD Length did not match stored length.")))
+								var _11_valueOrError6 m_Wrappers.Outcome = m_Wrappers.Companion_Default___.Need(((((_10_aad).Dtor_tail()).Dtor_start()) >= (((_1_length).Dtor_tail()).Dtor_start())) && (((((_10_aad).Dtor_tail()).Dtor_start())-(func() uint64 { return (((_1_length).Dtor_tail()).Dtor_start()) })()) == (uint64((_1_length).Dtor_data().(uint16)))), m_SerializeFunctions.Companion_ReadProblems_.Create_Error_(_dafny.SeqOfString("AAD Length did not match stored length.")))
 								_ = _11_valueOrError6
 								if (_11_valueOrError6).IsFailure() {
 									return (_11_valueOrError6).PropagateFailure()
