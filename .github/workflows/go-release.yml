@@ -84,4 +84,3 @@ jobs:
       - name: Run Go release automation script
         run: |
           mpl/scripts/go-release-automation.sh run_release_script ${{ github.event.inputs.project-name }} ${{ github.event.inputs.version }}
-          
