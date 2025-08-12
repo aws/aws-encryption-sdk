@@ -106,7 +106,7 @@ jobs:
 
           $DIFF_FILES
             " \
-            --base main \
+            --base mainline \
             --head "$BRANCH_NAME" \
             --label "golang" \
             --draft
