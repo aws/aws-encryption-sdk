@@ -84,29 +84,4 @@ jobs:
       - name: Run Go release automation script
         run: |
           mpl/scripts/go-release-automation.sh run_release_script ${{ github.event.inputs.project-name }} ${{ github.event.inputs.version }}
-
-      - name: Create Pull Request
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          PROJECT_NAME="${{ github.event.inputs.project-name }}"
-          VERSION="${{ github.event.inputs.version }}"
-
-          # Get the release directory name using the sourced function
-          RELEASE_DIR_NAME="${{ steps.release-dir.outputs.releaseDirName }}"
-
-          BRANCH_NAME="golang-release-staging-branch/$RELEASE_DIR_NAME/$VERSION"
-
-          DIFF_FILES=$(diff -qr $PROJECT_NAME/runtimes/go/ImplementationFromDafny-go releases/go/$RELEASE_DIR_NAME || true)
-
-          # Create PR using GitHub CLI
-          gh pr create \
-            --title "chore(go): Release $RELEASE_DIR_NAME Go module $VERSION" \
-            --body "This PR was automatically created by the Go Release Automation workflow. It releases version $VERSION of the $RELEASE_DIR_NAME Go module. The diff between $PROJECT_NAME/runtimes/go/ImplementationFromDafny-go and releases/go/$RELEASE_DIR_NAME is below: 
-
-          $DIFF_FILES
-            " \
-            --base mainline \
-            --head "$BRANCH_NAME" \
-            --label "golang" \
-            --draft
+          
