@@ -22,9 +22,9 @@ This table describes the current support status of each major version of the AWS
       - Next status
       - Next status date
     * - 3.x
-      - Maintenance 
       - End Of Support
-      - 2024-06-04
+      -
+      - 
     * - 4.x
       - Generally Available
       -
