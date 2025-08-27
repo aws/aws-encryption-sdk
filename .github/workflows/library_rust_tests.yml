@@ -219,5 +219,6 @@ jobs:
         shell: bash
         working-directory: ./${{ matrix.library }}/runtimes/rust
         run: |
+          # Without this, running test vectors fails due to `fatal runtime error: stack overflow`
+          export RUST_MIN_STACK=104857600
           cargo test --release --features fips -- --nocapture
-          cargo test --features fips -- --nocapture
