@@ -14,6 +14,12 @@ pub mod operation;
 pub mod types;
 pub mod validation;
 
+#[cfg(feature = "fips")]
+use aws_lc_fips_sys as aws_lc_sys_impl;
+
+#[cfg(not(feature = "fips"))]
+use aws_lc_sys as aws_lc_sys_impl;
+
 #[cfg(feature = "wrapped-client")]
 pub mod wrapped;
 
