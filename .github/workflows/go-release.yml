@@ -14,6 +14,7 @@ on:
 
 jobs:
   get-dafny-version:
+    permissions: {}
     uses: ./.github/workflows/dafny_version.yaml
 
   go-release:
@@ -21,7 +22,6 @@ jobs:
     runs-on: macos-13
     permissions:
       contents: write
-      pull-requests: write
       id-token: write
 
     steps:
