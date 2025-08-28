@@ -83,7 +83,7 @@ jobs:
 
       - name: Run Go release automation script
         run: |
-          chmod +x ./submodules/MaterialProviders/scripts/go-release-automation.sh
+          chmod +x mpl/scripts/go-release-automation.sh
           mpl/scripts/go-release-automation.sh run_release_script ${{ github.event.inputs.project-name }} ${{ github.event.inputs.version }}
 
       - name: print diff between development and release directory
