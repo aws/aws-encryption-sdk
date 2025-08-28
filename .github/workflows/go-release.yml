@@ -83,4 +83,12 @@ jobs:
 
       - name: Run Go release automation script
         run: |
+          chmod +x ./submodules/MaterialProviders/scripts/go-release-automation.sh
           mpl/scripts/go-release-automation.sh run_release_script ${{ github.event.inputs.project-name }} ${{ github.event.inputs.version }}
+
+      - name: print diff between development and release directory
+        run: |
+          RELEASE_DIR_NAME="${{ steps.release-dir.outputs.releaseDirName }}"
+          PROJECT_NAME="${{ github.event.inputs.project-name }}"
+          DIFF_FILES=$(diff -qr $PROJECT_NAME/runtimes/go/ImplementationFromDafny-go releases/go/$RELEASE_DIR_NAME || true)
+          echo $DIFF_FILES
