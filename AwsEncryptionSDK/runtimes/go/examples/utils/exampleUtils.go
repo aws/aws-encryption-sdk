@@ -157,6 +157,14 @@ func KeyStoreName() string {
 
 // Utility functions
 
+func CleanUpFiles() {
+	os.Remove(eccPrivateKeyFileNameSender)
+	os.Remove(eccPrivateKeyFileNameRecipient)
+	os.Remove(eccPublicKeyFileNameRecipient)
+	os.Remove(kmsEccPublicKeyFileNameRecipient)
+	os.Remove(kmsEccPublicKeyFileNameSender)
+}
+
 func WriteRawEcdhEccKeys(ecdhCurveSpec awscryptographyprimitivessmithygeneratedtypes.ECDHCurveSpec) error {
 	// Safety check: Validate neither file is present
 	if FileExists(eccPrivateKeyFileNameSender) ||
