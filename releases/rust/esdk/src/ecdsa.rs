@@ -55,8 +55,8 @@ pub mod Signature {
 
         fn get_nid(x: &ECDSASignatureAlgorithm) -> i32 {
             match x {
-                ECDSASignatureAlgorithm::ECDSA_P256 {} => aws_lc_sys::NID_X9_62_prime256v1,
-                ECDSASignatureAlgorithm::ECDSA_P384 {} => aws_lc_sys::NID_secp384r1,
+                ECDSASignatureAlgorithm::ECDSA_P256 {} => aws_lc_sys_impl::NID_X9_62_prime256v1,
+                ECDSASignatureAlgorithm::ECDSA_P384 {} => aws_lc_sys_impl::NID_secp384r1,
             }
         }
 
@@ -71,20 +71,20 @@ pub mod Signature {
             sec1_convert(
                 data,
                 get_nid(alg),
-                aws_lc_sys::point_conversion_form_t::POINT_CONVERSION_COMPRESSED,
+                aws_lc_sys_impl::point_conversion_form_t::POINT_CONVERSION_COMPRESSED,
             )
         }
 
         pub(crate) fn sec1_convert(
             data: &[u8],
             nid: i32,
-            form: aws_lc_sys::point_conversion_form_t,
+            form: aws_lc_sys_impl::point_conversion_form_t,
         ) -> Result<Vec<u8>, String> {
-            use aws_lc_sys::EC_GROUP_new_by_curve_name;
-            use aws_lc_sys::EC_POINT_free;
-            use aws_lc_sys::EC_POINT_new;
-            use aws_lc_sys::EC_POINT_oct2point;
-            use aws_lc_sys::EC_POINT_point2oct;
+            use aws_lc_sys_impl::EC_GROUP_new_by_curve_name;
+            use aws_lc_sys_impl::EC_POINT_free;
+            use aws_lc_sys_impl::EC_POINT_new;
+            use aws_lc_sys_impl::EC_POINT_oct2point;
+            use aws_lc_sys_impl::EC_POINT_point2oct;
             use std::ptr::null_mut;
 
             // no need to free ec_group
@@ -120,7 +120,7 @@ pub mod Signature {
         }
 
         fn ecdsa_key_gen(alg: &ECDSASignatureAlgorithm) -> Result<(Vec<u8>, Vec<u8>), String> {
-            let pair = EcdsaKeyPair::generate(get_alg(alg)).map_err(|e| format!("{:?}", e))?;
+            let pair = EcdsaKeyPair::generate(get_alg(alg)).map_err(|e| format!("{e:?}"))?;
 
             let public_key: Vec<u8> = sec1_compress(pair.public_key().as_ref(), alg)?;
             let private_key: Vec<u8> = pair.private_key().as_der().unwrap().as_ref().to_vec();
@@ -139,7 +139,7 @@ pub mod Signature {
                     }),
                 }),
                 Err(e) => {
-                    let msg = format!("ECDSA Key Gen : {}", e);
+                    let msg = format!("ECDSA Key Gen : {e}");
                     Rc::new(_Wrappers_Compile::Result::Failure { error: error(&msg) })
                 }
             }
@@ -151,11 +151,9 @@ pub mod Signature {
             msg: &[u8],
         ) -> Result<Vec<u8>, String> {
             let private_key = EcdsaKeyPair::from_private_key_der(get_alg(alg), key)
-                .map_err(|e| format!("{:?}", e))?;
+                .map_err(|e| format!("{e:?}"))?;
             let rng = SystemRandom::new();
-            let sig = private_key
-                .sign(&rng, msg)
-                .map_err(|e| format!("{:?}", e))?;
+            let sig = private_key.sign(&rng, msg).map_err(|e| format!("{e:?}"))?;
             Ok(sig.as_ref().to_vec())
         }
         fn ecdsa_sign(
@@ -189,7 +187,7 @@ pub mod Signature {
                     value: dafny_runtime::Sequence::from_array_owned(x),
                 }),
                 Err(e) => {
-                    let msg = format!("ECDSA Sign : {}", e);
+                    let msg = format!("ECDSA Sign : {e}");
                     Rc::new(_Wrappers_Compile::Result::Failure { error: error(&msg) })
                 }
             }
@@ -220,7 +218,7 @@ pub mod Signature {
             match ecdsa_verify(alg, key, msg, sig) {
                 Ok(x) => Rc::new(_Wrappers_Compile::Result::Success { value: x }),
                 Err(e) => {
-                    let msg = format!("ECDSA Verify : {}", e);
+                    let msg = format!("ECDSA Verify : {e}");
                     Rc::new(_Wrappers_Compile::Result::Failure { error: error(&msg) })
                 }
             }
@@ -236,7 +234,7 @@ pub mod Signature {
                 let key_pair = match &*ExternKeyGen(&alg) {
                     _Wrappers_Compile::Result::Success { value } => value.clone(),
                     _Wrappers_Compile::Result::Failure { error } => {
-                        panic!("ExternKeyGen Failed : {:?}", error);
+                        panic!("ExternKeyGen Failed : {error:?}");
                     }
                 };
 
@@ -250,17 +248,17 @@ pub mod Signature {
                 let message: ::dafny_runtime::Sequence<u8> =
                     dafny_runtime::Sequence::from_array_owned(vec![1u8, 2, 3, 4, 5]);
 
-                let sig = match &*Sign(&alg, &s_key, &message) {
+                let sig = match &*Sign(&alg, s_key, &message) {
                     _Wrappers_Compile::Result::Success { value } => value.clone(),
                     _Wrappers_Compile::Result::Failure { error } => {
-                        panic!("Sign Failed : {:?}", error);
+                        panic!("Sign Failed : {error:?}");
                     }
                 };
 
-                let ver: bool = match &*Verify(&alg, &v_key, &message, &sig) {
-                    _Wrappers_Compile::Result::Success { value } => value.clone(),
+                let ver: bool = match &*Verify(&alg, v_key, &message, &sig) {
+                    _Wrappers_Compile::Result::Success { value } => *value,
                     _Wrappers_Compile::Result::Failure { error } => {
-                        panic!("Verify Failed : {:?}", error);
+                        panic!("Verify Failed : {error:?}");
                     }
                 };
                 assert!(ver);
@@ -269,10 +267,10 @@ pub mod Signature {
                 sig_vec[0] = 42;
                 let sig2: ::dafny_runtime::Sequence<u8> = sig_vec.iter().cloned().collect();
                 assert!(sig != sig2);
-                let ver2: bool = match &*Verify(&alg, &v_key, &message, &sig2) {
-                    _Wrappers_Compile::Result::Success { value } => value.clone(),
+                let ver2: bool = match &*Verify(&alg, v_key, &message, &sig2) {
+                    _Wrappers_Compile::Result::Success { value } => *value,
                     _Wrappers_Compile::Result::Failure { error } => {
-                        panic!("Verify Failed : {:?}", error);
+                        panic!("Verify Failed : {error:?}");
                     }
                 };
                 assert!(!ver2);
