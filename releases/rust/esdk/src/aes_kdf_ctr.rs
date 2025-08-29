@@ -36,13 +36,13 @@ pub mod AesKdfCtr {
 
         let mut in_out_buffer = vec![0; length as usize];
 
-        let key = UnboundCipherKey::new(&AES_256, key).map_err(|e| format!("new {:?}", e))?;
-        let encrypting_key = EncryptingKey::ctr(key).map_err(|e| format!("new {:?}", e))?;
+        let key = UnboundCipherKey::new(&AES_256, key).map_err(|e| format!("new {e:?}"))?;
+        let encrypting_key = EncryptingKey::ctr(key).map_err(|e| format!("new {e:?}"))?;
         let nonce = aws_lc_rs::iv::FixedLength::<16>::from(as_array(nonce));
         let context = EncryptionContext::Iv128(nonce);
         encrypting_key
             .less_safe_encrypt(&mut in_out_buffer, context)
-            .map_err(|e| format!("new {:?}", e))?;
+            .map_err(|e| format!("new {e:?}"))?;
         Ok(in_out_buffer)
     }
 
@@ -65,7 +65,7 @@ pub mod AesKdfCtr {
                     value: dafny_runtime::Sequence::from_array_owned(x),
                 }),
                 Err(e) => {
-                    let msg = format!("Aes Kdf Ctr : {}", e);
+                    let msg = format!("Aes Kdf Ctr : {e}");
                     Rc::new(_Wrappers_Compile::Result::Failure { error: error(&msg) })
                 }
             }

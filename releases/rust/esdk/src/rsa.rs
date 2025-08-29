@@ -46,18 +46,18 @@ pub mod RSAEncryption {
         fn generate_key_pair(length_bits: i32) -> Result<(Vec<u8>, Vec<u8>), String> {
             // Generate an RSA key.
             let private_key = PrivateDecryptingKey::generate(key_size_from_length(length_bits))
-                .map_err(|e| format!("{:?}", e))?;
+                .map_err(|e| format!("{e:?}"))?;
 
             // Serialize the RSA private key to DER encoded PKCS#8 format for later usage.
             let private_key_der =
-                AsDer::<Pkcs8V1Der>::as_der(&private_key).map_err(|e| format!("{:?}", e))?;
+                AsDer::<Pkcs8V1Der>::as_der(&private_key).map_err(|e| format!("{e:?}"))?;
 
             // Retrieve the RSA public key
             let public_key = private_key.public_key();
 
             // Serialize the RSA public key to DER encoded X.509 SubjectPublicKeyInfo for later usage.
             let public_key_der =
-                AsDer::<PublicKeyX509Der>::as_der(&public_key).map_err(|e| format!("{:?}", e))?;
+                AsDer::<PublicKeyX509Der>::as_der(&public_key).map_err(|e| format!("{e:?}"))?;
 
             let public_key = pem::Pem::new("RSA PUBLIC KEY", public_key_der.as_ref());
             let public_key = pem::encode(&public_key);
@@ -76,7 +76,7 @@ pub mod RSAEncryption {
                     dafny_runtime::Sequence::from_array_owned(x.1),
                 ),
                 Err(e) => {
-                    panic!("Unexpected error generating RSA Key Pair{}", e);
+                    panic!("Unexpected error generating RSA Key Pair{e}");
                 }
             }
         }
@@ -94,10 +94,10 @@ pub mod RSAEncryption {
         }
 
         fn get_modulus(public_key: &[u8]) -> Result<u32, String> {
-            let public_key = std::str::from_utf8(public_key).map_err(|e| format!("{:?}", e))?;
-            let public_key = pem::parse(public_key).map_err(|e| format!("{:?}", e))?;
+            let public_key = std::str::from_utf8(public_key).map_err(|e| format!("{e:?}"))?;
+            let public_key = pem::parse(public_key).map_err(|e| format!("{e:?}"))?;
             let public_key = PublicEncryptingKey::from_der(public_key.contents())
-                .map_err(|e| format!("{:?}", e))?;
+                .map_err(|e| format!("{e:?}"))?;
             Ok(public_key.key_size_bits() as u32)
         }
 
@@ -118,22 +118,21 @@ pub mod RSAEncryption {
             cipher_text: &[u8],
         ) -> Result<Vec<u8>, String> {
             let private_key =
-                std::str::from_utf8(private_key).map_err(|e| format!("from_utf8 : {:?}", e))?;
-            let private_key =
-                pem::parse(private_key).map_err(|e| format!("pem::parse : {:?}", e))?;
+                std::str::from_utf8(private_key).map_err(|e| format!("from_utf8 : {e:?}"))?;
+            let private_key = pem::parse(private_key).map_err(|e| format!("pem::parse : {e:?}"))?;
             if mode == &(RSAPaddingMode::PKCS1 {}) {
                 return decrypt_pkcs1(private_key.contents(), cipher_text);
             }
             let mode = get_alg_for_padding(mode)?;
 
             let private_key = PrivateDecryptingKey::from_pkcs8(private_key.contents())
-                .map_err(|e| format!("from_pkcs8 : {:?}", e))?;
+                .map_err(|e| format!("from_pkcs8 : {e:?}"))?;
             let private_key =
-                OaepPrivateDecryptingKey::new(private_key).map_err(|e| format!("new : {:?}", e))?;
+                OaepPrivateDecryptingKey::new(private_key).map_err(|e| format!("new : {e:?}"))?;
             let mut message: Vec<u8> = vec![0; cipher_text.len()];
             let message = private_key
                 .decrypt(mode, cipher_text, &mut message, None)
-                .map_err(|e| format!("decrypt {:?}", e))?;
+                .map_err(|e| format!("decrypt {e:?}"))?;
             Ok(message.to_vec())
         }
 
@@ -150,7 +149,7 @@ pub mod RSAEncryption {
                     value: dafny_runtime::Sequence::from_array_owned(x),
                 }),
                 Err(e) => {
-                    let msg = format!("RSA Decrypt : {}", e);
+                    let msg = format!("RSA Decrypt : {e}");
                     Rc::new(Wrappers::Result::Failure { error: error(&msg) })
                 }
             }
@@ -161,21 +160,21 @@ pub mod RSAEncryption {
             public_key: &[u8],
             message: &[u8],
         ) -> Result<Vec<u8>, String> {
-            let public_key = std::str::from_utf8(public_key).map_err(|e| format!("{:?}", e))?;
-            let public_key = pem::parse(public_key).map_err(|e| format!("{:?}", e))?;
+            let public_key = std::str::from_utf8(public_key).map_err(|e| format!("{e:?}"))?;
+            let public_key = pem::parse(public_key).map_err(|e| format!("{e:?}"))?;
             if mode == &(RSAPaddingMode::PKCS1 {}) {
                 return encrypt_pkcs1(public_key.contents(), message);
             }
             let mode = get_alg_for_padding(mode)?;
 
             let public_key = PublicEncryptingKey::from_der(public_key.contents())
-                .map_err(|e| format!("{:?}", e))?;
+                .map_err(|e| format!("{e:?}"))?;
             let public_key =
-                OaepPublicEncryptingKey::new(public_key).map_err(|e| format!("{:?}", e))?;
+                OaepPublicEncryptingKey::new(public_key).map_err(|e| format!("{e:?}"))?;
             let mut ciphertext: Vec<u8> = vec![0; message.len() + public_key.key_size_bytes()];
             let cipher_text = public_key
                 .encrypt(mode, message, &mut ciphertext, None)
-                .map_err(|e| format!("{:?}", e))?;
+                .map_err(|e| format!("{e:?}"))?;
             Ok(cipher_text.to_vec())
         }
 
@@ -192,7 +191,7 @@ pub mod RSAEncryption {
                     value: dafny_runtime::Sequence::from_array_owned(x),
                 }),
                 Err(e) => {
-                    let msg = format!("RSA Encrypt : {}", e);
+                    let msg = format!("RSA Encrypt : {e}");
                     Rc::new(Wrappers::Result::Failure { error: error(&msg) })
                 }
             }
@@ -200,25 +199,25 @@ pub mod RSAEncryption {
 
         pub fn encrypt_pkcs1(public_key: &[u8], plain_text: &[u8]) -> Result<Vec<u8>, String> {
             let public_key =
-                PublicEncryptingKey::from_der(public_key).map_err(|e| format!("{:?}", e))?;
+                PublicEncryptingKey::from_der(public_key).map_err(|e| format!("{e:?}"))?;
             let public_key =
-                Pkcs1PublicEncryptingKey::new(public_key).map_err(|e| format!("{:?}", e))?;
+                Pkcs1PublicEncryptingKey::new(public_key).map_err(|e| format!("{e:?}"))?;
             let mut ciphertext: Vec<u8> = vec![0; plain_text.len() + public_key.key_size_bytes()];
             let cipher_text = public_key
                 .encrypt(plain_text, &mut ciphertext)
-                .map_err(|e| format!("{:?}", e))?;
+                .map_err(|e| format!("{e:?}"))?;
             Ok(cipher_text.to_vec())
         }
 
         pub fn decrypt_pkcs1(private_key: &[u8], cipher_text: &[u8]) -> Result<Vec<u8>, String> {
             let private_key = PrivateDecryptingKey::from_pkcs8(private_key)
-                .map_err(|e| format!("from_pkcs8 : {:?}", e))?;
-            let private_key = Pkcs1PrivateDecryptingKey::new(private_key)
-                .map_err(|e| format!("new : {:?}", e))?;
+                .map_err(|e| format!("from_pkcs8 : {e:?}"))?;
+            let private_key =
+                Pkcs1PrivateDecryptingKey::new(private_key).map_err(|e| format!("new : {e:?}"))?;
             let mut message: Vec<u8> = vec![0; cipher_text.len()];
             let message = private_key
                 .decrypt(cipher_text, &mut message)
-                .map_err(|e| format!("decrypt {:?}", e))?;
+                .map_err(|e| format!("decrypt {e:?}"))?;
             Ok(message.to_vec())
         }
 
@@ -231,7 +230,7 @@ pub mod RSAEncryption {
 
                 let modulus: u32 = match &*GetRSAKeyModulusLengthExtern(&public_key) {
                     Wrappers::Result::Success { value } => *value,
-                    Wrappers::Result::Failure { error } => panic!("{:?}", error),
+                    Wrappers::Result::Failure { error } => panic!("{error:?}"),
                 };
                 assert_eq!(modulus, 2048);
 
@@ -243,13 +242,13 @@ pub mod RSAEncryption {
                 let cipher: ::dafny_runtime::Sequence<u8> =
                     match &*EncryptExtern(&mode, &public_key, &plain_text) {
                         Wrappers::Result::Success { value } => value.clone(),
-                        Wrappers::Result::Failure { error } => panic!("{:?}", error),
+                        Wrappers::Result::Failure { error } => panic!("{error:?}"),
                     };
 
                 let message: ::dafny_runtime::Sequence<u8> =
                     match &*DecryptExtern(&mode, &private_key, &cipher) {
                         Wrappers::Result::Success { value } => value.clone(),
-                        Wrappers::Result::Failure { error } => panic!("{:?}", error),
+                        Wrappers::Result::Failure { error } => panic!("{error:?}"),
                     };
 
                 assert_eq!(plain_text, message);
