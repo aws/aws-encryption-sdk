@@ -53,6 +53,14 @@ twIDAQAB
 	testKmsEcdhKeyIdP256RecipientKeyId = "arn:aws:kms:us-west-2:370957321024:key/0265c8e9-5b6a-4055-8f70-63719e09fda5"
 )
 
+var filesCreatedByExamples = []string{
+	eccPrivateKeyFileNameSender,
+	eccPrivateKeyFileNameRecipient,
+	eccPublicKeyFileNameRecipient,
+	kmsEccPublicKeyFileNameRecipient,
+	kmsEccPublicKeyFileNameSender,
+}
+
 // Getter functions
 
 func KmsEcdhKeyIdP256SenderKeyId() string {
@@ -156,6 +164,12 @@ func KeyStoreName() string {
 }
 
 // Utility functions
+
+func CleanUpFiles() {
+	for _, file := range filesCreatedByExamples {
+		os.Remove(file)
+	}
+}
 
 func WriteRawEcdhEccKeys(ecdhCurveSpec awscryptographyprimitivessmithygeneratedtypes.ECDHCurveSpec) error {
 	// Safety check: Validate neither file is present
