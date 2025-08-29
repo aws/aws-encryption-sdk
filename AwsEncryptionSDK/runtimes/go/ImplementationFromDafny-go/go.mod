@@ -3,7 +3,7 @@ module github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk
 go 1.23.0
 
 replace (
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl => ../../../../../mpl/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl => ../../../../mpl/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go/
 	github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb => ../../../../mpl/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go/
 	github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms => ../../../../mpl/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go/
 	github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives => ../../../../mpl/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go/

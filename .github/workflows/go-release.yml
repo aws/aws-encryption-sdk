@@ -1,0 +1,94 @@
+name: Go Release Automation
+
+on:
+  workflow_dispatch:
+    inputs:
+      project-name:
+        description: "Project name (e.g., AwsEncryptionSDK)"
+        required: true
+        type: string
+      version:
+        description: "Version (e.g., v0.1.0)"
+        required: true
+        type: string
+
+jobs:
+  get-dafny-version:
+    permissions: {}
+    uses: ./.github/workflows/dafny_version.yaml
+
+  go-release:
+    needs: get-dafny-version
+    runs-on: macos-13
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Support longpaths on Git checkout
+        run: |
+          git config --global core.longpaths true
+
+      - name: Configure AWS Credentials for Tests
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+          role-session-name: GoReleaseTest
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update submodules
+        run: |
+          git submodule update --init --recursive
+
+      - name: Setup Dafny
+        uses: ./mpl/.github/actions/setup_dafny
+        with:
+          dafny-version: ${{ needs.get-dafny-version.outputs.version }}
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Install Go imports
+        run: |
+          go install golang.org/x/tools/cmd/goimports@latest
+
+      - name: Install Smithy-Dafny codegen dependencies
+        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Get release directory name
+        id: release-dir
+        run: |
+          chmod +x mpl/scripts/go-release-automation.sh
+          RELEASE_DIR_NAME=$(mpl/scripts/go-release-automation.sh get_release_dir_name "${{ github.event.inputs.project-name }}" "${{ github.event.inputs.version }}")
+          echo "releaseDirName=$RELEASE_DIR_NAME" >> $GITHUB_OUTPUT
+
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: releases/go/.git-cliff.toml
+          args: --bump -u --prepend releases/go/${{ steps.release-dir.outputs.releaseDirName }}/CHANGELOG.md
+
+      - name: Run Go release automation script
+        run: |
+          chmod +x mpl/scripts/go-release-automation.sh
+          mpl/scripts/go-release-automation.sh run_release_script ${{ github.event.inputs.project-name }} ${{ github.event.inputs.version }}
+
+      - name: print diff between development and release directory
+        run: |
+          RELEASE_DIR_NAME="${{ steps.release-dir.outputs.releaseDirName }}"
+          PROJECT_NAME="${{ github.event.inputs.project-name }}"
+          DIFF_FILES=$(diff -qr $PROJECT_NAME/runtimes/go/ImplementationFromDafny-go releases/go/$RELEASE_DIR_NAME || true)
+          echo $DIFF_FILES

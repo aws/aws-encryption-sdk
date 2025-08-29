@@ -1,0 +1,21 @@
+[git]
+tag_pattern = "^releases/go/encryption-sdk/v*"
+filter_commits = true
+commit_parsers = [
+    { message = '^feat\((go|all languages)\)', group = "Features"},
+    { message = '^fix\((go|all languages)\)', group = "Fixes"},
+    { message = '^chore\((go|all languages)\)', group = "Maintenance"},
+    { message = '^docs\((go|all languages)\)', group = "Maintenance"},
+    { message = '^revert\((go|all languages)\)', group = "Fixes"},
+    { message = '^style\((go|all languages)\)', group = "Miscellaneous"},
+    { message = '^refactor\((go|all languages)\)', group = "Miscellaneous"},
+    { message = '^perf\((go|all languages)\)', group = "Miscellaneous"},
+    { message = '^test\((go|all languages)\)', group = "Miscellaneous"},
+]
+commit_preprocessors = [
+    { pattern = '\(dafny\)', replace = '(all languages)'}
+]
+
+[changelog]
+header = "# Changelog\n\n"
+trim = true
