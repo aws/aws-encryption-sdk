@@ -24,7 +24,7 @@ impl ClientSupplier for RegionalRoleClientSupplier {
 
         if !region_iam_role_map.contains_key(&region) {
             return Err(Error::AwsCryptographicMaterialProvidersException {
-                message: format!("Region {} is not supported by this client supplier", region)
+                message: format!("Region {region} is not supported by this client supplier")
                     .to_string(),
             });
         }
