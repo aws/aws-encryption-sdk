@@ -1,0 +1,72 @@
+{
+  "metadata": {
+    "language": "rust",
+    "timestamp": "2025-09-02 09:58:25",
+    "rust_version": "unknown",
+    "cpu_count": 12,
+    "total_memory_gb": 36.0,
+    "total_tests": 3
+  },
+  "results": [
+    {
+      "test_name": "throughput",
+      "language": "rust",
+      "data_size": 52428800,
+      "concurrency": 1,
+      "encrypt_latency_ms": 281.3005416666667,
+      "decrypt_latency_ms": 193.22163933333331,
+      "end_to_end_latency_ms": 477.44256933333344,
+      "ops_per_second": 2.094341657037576,
+      "bytes_per_second": 109803819.86849166,
+      "peak_memory_mb": 0.0,
+      "memory_efficiency_ratio": 0.0,
+      "p50_latency": 458.68629100000004,
+      "p95_latency": 510.33796689999997,
+      "p99_latency": 514.92922698,
+      "timestamp": "2025-09-02 09:58:20",
+      "rust_version": "unknown",
+      "cpu_count": 12,
+      "total_memory_gb": 36.0
+    },
+    {
+      "test_name": "memory",
+      "language": "rust",
+      "data_size": 52428800,
+      "concurrency": 1,
+      "encrypt_latency_ms": 0.0,
+      "decrypt_latency_ms": 0.0,
+      "end_to_end_latency_ms": 0.0,
+      "ops_per_second": 0.0,
+      "bytes_per_second": 0.0,
+      "peak_memory_mb": 511.234375,
+      "memory_efficiency_ratio": 0.0978025000764082,
+      "p50_latency": 0.0,
+      "p95_latency": 0.0,
+      "p99_latency": 0.0,
+      "timestamp": "2025-09-02 09:58:22",
+      "rust_version": "unknown",
+      "cpu_count": 12,
+      "total_memory_gb": 36.0
+    },
+    {
+      "test_name": "concurrent",
+      "language": "rust",
+      "data_size": 52428800,
+      "concurrency": 2,
+      "encrypt_latency_ms": 0.0,
+      "decrypt_latency_ms": 0.0,
+      "end_to_end_latency_ms": 545.5738127000001,
+      "ops_per_second": 3.5961481302077907,
+      "bytes_per_second": 188541731.08903822,
+      "peak_memory_mb": 0.0,
+      "memory_efficiency_ratio": 0.0,
+      "p50_latency": 542.0582915,
+      "p95_latency": 596.2638151,
+      "p99_latency": 617.48763022,
+      "timestamp": "2025-09-02 09:58:25",
+      "rust_version": "unknown",
+      "cpu_count": 12,
+      "total_memory_gb": 36.0
+    }
+  ]
+}
