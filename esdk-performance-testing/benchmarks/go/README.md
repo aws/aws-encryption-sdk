@@ -29,6 +29,7 @@ The benchmark uses YAML configuration files. See `../../config/test-scenarios.ya
 ### Quick Mode
 
 Quick mode runs a subset of tests with reduced iterations:
+
 - Only runs test types specified in `quick_config.test_types`
 - Uses smaller data sizes from `quick_config.data_sizes.small`
 - Fewer iterations: `quick_config.iterations.measurement`
