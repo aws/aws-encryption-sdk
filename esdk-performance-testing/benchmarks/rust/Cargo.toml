@@ -48,7 +48,6 @@ stats_alloc = "0.1"
 # Async utilities
 futures = "0.3"
 
-# Override AWS SDK versions to be compatible with Rust 1.85.0
 aws-config = "1.8.6"
 aws-sdk-dynamodb = "1.73.0"
 aws-sdk-kms = "1.67.0"

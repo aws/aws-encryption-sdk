@@ -11,8 +11,20 @@ use clap::{Arg, Command};
 
 use benchmark::EsdkBenchmark;
 
-#[tokio::main]
-async fn main() -> Result<()> {
+fn main() -> Result<()> {
+    // Set larger stack size for tokio runtime
+    let rt = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(4)
+        .thread_stack_size(8 * 1024 * 1024) // 8MB stack size
+        .enable_all()
+        .build()?;
+    
+    rt.block_on(async {
+        run_benchmark().await
+    })
+}
+
+async fn run_benchmark() -> Result<()> {
     env_logger::Builder::from_default_env()
         .filter_level(log::LevelFilter::Info)
         .init();
@@ -63,7 +75,7 @@ async fn main() -> Result<()> {
     }
 
     // Run benchmarks
-    bench.run_all_benchmarks().await?;
+    bench.run_all_benchmarks(quick).await?;
 
     // Save results
     bench.save_results(output_path)?;

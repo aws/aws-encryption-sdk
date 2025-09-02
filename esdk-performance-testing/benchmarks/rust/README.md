@@ -11,7 +11,7 @@ Rust implementation of the AWS Encryption SDK performance benchmark suite.
 
 ## Prerequisites
 
-- Rust 1.70.0+ ([rustup.rs](https://rustup.rs/))
+- Rust 1.85.0+ ([rustup.rs](https://rustup.rs/))
 - Build tools (Xcode CLI Tools on macOS, build-essential on Linux)
 
 ## Quick Start
@@ -28,6 +28,7 @@ cargo build --release
 ## Configuration
 
 ### Command Line
+
 - `--config`: Path to YAML config file (required)
 - `--output`: Results output path (default: `../../results/raw-data/rust_results.json`)
 - `--quick`: Quick test mode (requires `quick_config` section in YAML)
@@ -35,6 +36,7 @@ cargo build --release
 ## Logging
 
 Default: info level. Override with `RUST_LOG`:
+
 ```bash
 RUST_LOG=debug ./target/release/esdk_benchmark --config config.yaml
 ```

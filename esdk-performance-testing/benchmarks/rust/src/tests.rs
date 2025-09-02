@@ -7,7 +7,7 @@ use chrono::Utc;
 use futures::future::join_all;
 use indicatif::{ProgressBar, ProgressStyle};
 use log::{info, warn};
-use memory_stats::{memory_stats, MemoryStats};
+use memory_stats::memory_stats;
 use rand::Rng;
 use std::collections::HashMap;
 use std::time::Instant;
@@ -54,10 +54,12 @@ impl EsdkBenchmark {
         Ok((encrypt_duration, decrypt_duration))
     }
 
-    fn should_run_test_type(&self, test_type: &str) -> bool {
-        if let Some(quick_config) = &self.config.quick_config {
-            if !quick_config.test_types.is_empty() {
-                return quick_config.test_types.contains(&test_type.to_string());
+    fn should_run_test_type(&self, test_type: &str, is_quick_mode: bool) -> bool {
+        if is_quick_mode {
+            if let Some(quick_config) = &self.config.quick_config {
+                if !quick_config.test_types.is_empty() {
+                    return quick_config.test_types.contains(&test_type.to_string());
+                }
             }
         }
         true
@@ -159,11 +161,10 @@ impl EsdkBenchmark {
 
     // === Memory Test Implementation ===
 
-    /// Runs memory usage test by continuously sampling memory during ESDK operations
-    /// Measures peak memory, average memory usage across multiple iterations
+    /// Runs memory usage test by measuring memory delta during ESDK operations
     async fn run_memory_test(&mut self, data_size: usize) -> Result<BenchmarkResult> {
         info!(
-            "Running memory test - Size: {} bytes ({} iterations, continuous sampling)",
+            "Running memory test - Size: {} bytes ({} iterations)",
             data_size, MEMORY_TEST_ITERATIONS
         );
 
@@ -174,33 +175,48 @@ impl EsdkBenchmark {
             data.into_boxed_slice()
         };
 
-        let mut peak_memory_mb = 0.0;
+        let mut peak_memory_delta_mb = 0.0;
         let mut avg_memory_samples = Vec::new();
 
         // Run iterations with memory sampling
         for i in 0..MEMORY_TEST_ITERATIONS {
+            // Force garbage collection and get baseline memory
+            std::hint::black_box(&data); // Prevent optimization
+            tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
+            
+            let baseline_memory = if let Some(stats) = memory_stats() {
+                stats.physical_mem as f64 / (1024.0 * 1024.0)
+            } else {
+                0.0
+            };
+
             let mut iteration_samples = Vec::new();
-            let mut iteration_peak = 0.0;
+            let mut iteration_peak = baseline_memory;
 
             let operation_start = Instant::now();
             
-            // Sample memory during operation
+            // Run ESDK operation with memory sampling
             let data_clone = data.clone();
             let esdk_client = self.esdk_client.clone();
             let keyring = self.raw_keyring.clone();
 
-            // Run ESDK operation
             let operation_task = tokio::spawn(async move {
                 Self::run_encrypt_decrypt_cycle_static(&esdk_client, &keyring, &data_clone).await
             });
 
-            // Sample memory while operation runs
+            // Sample memory during operation
             let mut sample_count = 0;
             while !operation_task.is_finished() {
                 if let Some(stats) = memory_stats() {
                     let current_physical = stats.physical_mem as f64 / (1024.0 * 1024.0);
+                    let delta = current_physical - baseline_memory;
 
-                    iteration_samples.push(current_physical);
+                    // Only track positive deltas for average (memory increases)
+                    if delta > 0.0 {
+                        iteration_samples.push(delta);
+                    }
+                    
+                    // Track peak regardless of sign
                     if current_physical > iteration_peak {
                         iteration_peak = current_physical;
                     }
@@ -213,55 +229,57 @@ impl EsdkBenchmark {
             let _ = operation_task.await.unwrap().unwrap();
             let operation_duration = operation_start.elapsed();
 
-            // Get final memory after operation
-            let final_stats = memory_stats().unwrap_or(MemoryStats {
+            // Get final memory delta
+            let final_stats = memory_stats().unwrap_or(memory_stats::MemoryStats {
                 physical_mem: 0,
                 virtual_mem: 0,
             });
             let final_physical = final_stats.physical_mem as f64 / (1024.0 * 1024.0);
+            let final_delta = final_physical - baseline_memory;
 
-            // Calculate metrics for this iteration
-            let iter_peak_mb = iteration_peak.max(final_physical);
+            // Calculate metrics for this iteration (memory delta from baseline)
+            let iter_peak_delta_mb = (iteration_peak - baseline_memory).max(final_delta);
 
-            let iter_avg_mb = if !iteration_samples.is_empty() {
+            let iter_avg_delta_mb = if !iteration_samples.is_empty() {
                 iteration_samples.iter().sum::<f64>() / iteration_samples.len() as f64
             } else {
-                final_physical
+                // If no positive deltas, use final delta if positive, otherwise 0
+                final_delta.max(0.0)
             };
 
             // Update global maximum
-            if iter_peak_mb > peak_memory_mb {
-                peak_memory_mb = iter_peak_mb;
+            if iter_peak_delta_mb > peak_memory_delta_mb {
+                peak_memory_delta_mb = iter_peak_delta_mb;
             }
 
-            avg_memory_samples.push(iter_avg_mb);
+            avg_memory_samples.push(iter_avg_delta_mb);
 
             info!(
-                "=== Iteration {} === Peak Heap: {:.2} MB, Avg Heap: {:.2} MB ({:?}, {} samples)",
-                i + 1, iter_peak_mb, iter_avg_mb, operation_duration, sample_count
+                "=== Iteration {} === Peak Delta: {:.2} MB, Avg Delta: {:.2} MB ({:?}, {} samples)",
+                i + 1, iter_peak_delta_mb, iter_avg_delta_mb, operation_duration, sample_count
             );
         }
 
         // Calculate overall averages
-        let overall_avg_mb = if !avg_memory_samples.is_empty() {
+        let overall_avg_delta_mb = if !avg_memory_samples.is_empty() {
             avg_memory_samples.iter().sum::<f64>() / avg_memory_samples.len() as f64
         } else {
             0.0
         };
 
         // Calculate memory efficiency
-        let memory_efficiency = if peak_memory_mb > 0.0 {
-            data_size as f64 / (peak_memory_mb * 1024.0 * 1024.0)
+        let memory_efficiency = if peak_memory_delta_mb > 0.0 {
+            data_size as f64 / (peak_memory_delta_mb * 1024.0 * 1024.0)
         } else {
             0.0
         };
 
         info!("\nMemory Summary:");
         info!(
-            "- Absolute Peak Heap: {:.2} MB (across all runs)",
-            peak_memory_mb
+            "- Peak Memory Delta: {:.2} MB (operation overhead)",
+            peak_memory_delta_mb
         );
-        info!("- Average Heap: {:.2} MB (across all runs)", overall_avg_mb);
+        info!("- Average Memory Delta: {:.2} MB (operation overhead)", overall_avg_delta_mb);
 
         let result = BenchmarkResult {
             test_name: "memory".to_string(),
@@ -273,7 +291,7 @@ impl EsdkBenchmark {
             end_to_end_latency_ms: 0.0,
             ops_per_second: 0.0,
             bytes_per_second: 0.0,
-            peak_memory_mb,
+            peak_memory_mb: peak_memory_delta_mb,
             memory_efficiency_ratio: memory_efficiency,
             p50_latency: 0.0,
             p95_latency: 0.0,
@@ -351,9 +369,12 @@ impl EsdkBenchmark {
                 for j in 0..iterations_per_worker {
                     let iter_start = Instant::now();
 
-                    // Generate data per worker to avoid large clones
-                    let mut worker_data = vec![0u8; data_size];
-                    rand::thread_rng().fill(&mut worker_data[..]);
+                    // Generate data per worker on heap to avoid stack overflow
+                    let worker_data = {
+                        let mut data = vec![0u8; data_size];
+                        rand::thread_rng().fill(&mut data[..]);
+                        data
+                    };
 
                     // Run encrypt-decrypt cycle
                     let encryption_context = HashMap::from([
@@ -505,7 +526,7 @@ impl EsdkBenchmark {
         }
     }
 
-    pub async fn run_all_benchmarks(&mut self) -> Result<()> {
+    pub async fn run_all_benchmarks(&mut self, is_quick_mode: bool) -> Result<()> {
         info!("Starting comprehensive ESDK benchmark suite");
 
         // Combine all data sizes
@@ -517,20 +538,20 @@ impl EsdkBenchmark {
         let concurrency_levels = self.config.concurrency_levels.clone();
 
         // Run test suites
-        if self.should_run_test_type("throughput") {
+        if self.should_run_test_type("throughput", is_quick_mode) {
             self.run_throughput_tests(&data_sizes, self.config.iterations.measurement)
                 .await;
         } else {
             info!("Skipping throughput tests (not in test_types)");
         }
 
-        if self.should_run_test_type("memory") {
+        if self.should_run_test_type("memory", is_quick_mode) {
             self.run_memory_tests(&data_sizes).await;
         } else {
             info!("Skipping memory tests (not in test_types)");
         }
 
-        if self.should_run_test_type("concurrency") {
+        if self.should_run_test_type("concurrency", is_quick_mode) {
             self.run_concurrency_tests(&data_sizes, &concurrency_levels)
                 .await;
         } else {
