@@ -11,7 +11,10 @@ import sys
 import psutil
 from aws_cryptographic_material_providers.mpl import AwsCryptographicMaterialProviders
 from aws_cryptographic_material_providers.mpl.config import MaterialProvidersConfig
-from aws_cryptographic_material_providers.mpl.models import AesWrappingAlg, CreateRawAesKeyringInput
+from aws_cryptographic_material_providers.mpl.models import (
+    AesWrappingAlg,
+    CreateRawAesKeyringInput,
+)
 from aws_encryption_sdk import EncryptionSDKClient, CommitmentPolicy
 from config import load_config
 

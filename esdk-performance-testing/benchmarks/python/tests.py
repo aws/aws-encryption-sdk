@@ -60,9 +60,7 @@ def run_throughput_test(
     timing_data = _collect_timing_data(benchmark, data, iterations)
 
     # Calculate statistics
-    return _create_throughput_result(
-        timing_data, data_size
-    )
+    return _create_throughput_result(timing_data, data_size)
 
 
 def _collect_timing_data(benchmark, data, iterations):
@@ -121,9 +119,7 @@ def _create_throughput_result(timing_data, data_size):
     )
 
 
-def run_memory_test(
-    benchmark, data_size: int
-) -> BenchmarkResult:
+def run_memory_test(benchmark, data_size: int) -> BenchmarkResult:
     """Run memory usage benchmark test"""
     data = os.urandom(data_size)
     iterations = 5
@@ -235,8 +231,6 @@ def _create_memory_result(
 ):
     """Create memory benchmark result"""
     peak_memory_mb = max(all_samples)
-    avg_memory_mb = sum(all_samples) / len(all_samples)
-    cumulative_allocations_mb = total_allocations / 1024 / 1024
     memory_efficiency = (
         original_data_size / (peak_memory_mb * 1024 * 1024) if peak_memory_mb > 0 else 0
     )
@@ -369,10 +363,7 @@ def _get_test_parameters(config):
 
 def _calculate_total_tests(params):
     """Calculate total number of tests to run"""
-    return (
-        len(params["data_sizes"])
-        * (1 + len(params["concurrency_levels"]) + 1)
-    )
+    return len(params["data_sizes"]) * (1 + len(params["concurrency_levels"]) + 1)
 
 
 def _run_throughput_tests(benchmark, params, results, pbar):
@@ -390,8 +381,7 @@ def _run_throughput_tests(benchmark, params, results, pbar):
             )
             results.append(result)
             benchmark.logger.info(
-                f"Throughput test completed: "
-                f"{result.ops_per_second:.2f} ops/sec"
+                f"Throughput test completed: " f"{result.ops_per_second:.2f} ops/sec"
             )
         except Exception as e:
             benchmark.logger.error(f"Throughput test failed: {e}")
