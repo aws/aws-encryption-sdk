@@ -3,6 +3,7 @@
 Test implementations for ESDK Python benchmark
 """
 
+import gc
 import os
 import statistics
 import threading
@@ -46,8 +47,6 @@ def run_throughput_test(
     benchmark,
     data_size: int,
     iterations: int,
-    algorithm_suite: str = "default",
-    frame_length: int = None,
 ) -> BenchmarkResult:
     """Run throughput benchmark test"""
     data = os.urandom(data_size)
@@ -62,7 +61,7 @@ def run_throughput_test(
 
     # Calculate statistics
     return _create_throughput_result(
-        timing_data, data_size, algorithm_suite, frame_length
+        timing_data, data_size
     )
 
 
@@ -92,7 +91,7 @@ def _collect_timing_data(benchmark, data, iterations):
     }
 
 
-def _create_throughput_result(timing_data, data_size, algorithm_suite, frame_length):
+def _create_throughput_result(timing_data, data_size):
     """Create throughput benchmark result from timing data"""
     avg_encrypt = statistics.mean(timing_data["encrypt_times"])
     avg_decrypt = statistics.mean(timing_data["decrypt_times"])
@@ -111,8 +110,6 @@ def _create_throughput_result(timing_data, data_size, algorithm_suite, frame_len
     return BenchmarkResult(
         test_name="throughput",
         data_size=data_size,
-        algorithm_suite=algorithm_suite,
-        frame_length=frame_length,
         encrypt_latency_ms=avg_encrypt,
         decrypt_latency_ms=avg_decrypt,
         end_to_end_latency_ms=avg_end_to_end,
@@ -125,7 +122,7 @@ def _create_throughput_result(timing_data, data_size, algorithm_suite, frame_len
 
 
 def run_memory_test(
-    benchmark, data_size: int, algorithm_suite: str = "default"
+    benchmark, data_size: int
 ) -> BenchmarkResult:
     """Run memory usage benchmark test"""
     data = os.urandom(data_size)
@@ -161,7 +158,6 @@ def run_memory_test(
 
     return _create_memory_result(
         data_size,
-        algorithm_suite,
         mem_usage + memory_samples,
         total_allocations,
         data_size,
@@ -235,7 +231,7 @@ def _log_memory_summary(benchmark, peaks, avgs, allocs):
 
 
 def _create_memory_result(
-    data_size, algorithm_suite, all_samples, total_allocations, original_data_size
+    data_size, all_samples, total_allocations, original_data_size
 ):
     """Create memory benchmark result"""
     peak_memory_mb = max(all_samples)
@@ -248,10 +244,7 @@ def _create_memory_result(
     return BenchmarkResult(
         test_name="memory",
         data_size=data_size,
-        algorithm_suite=algorithm_suite,
         peak_memory_mb=peak_memory_mb,
-        avg_memory_mb=avg_memory_mb,
-        cumulative_allocations_mb=cumulative_allocations_mb,
         memory_efficiency_ratio=memory_efficiency,
     )
 
@@ -369,8 +362,6 @@ def _get_test_parameters(config):
 
     return {
         "data_sizes": data_sizes,
-        "algorithm_suites": config.get("algorithm_suites", ["default"]),
-        "frame_lengths": config.get("frame_lengths", [None]),
         "concurrency_levels": config.get("concurrency_levels", [1, 2, 4]),
         "iterations": config.get("iterations", {}).get("measurement", 10),
     }
@@ -380,52 +371,47 @@ def _calculate_total_tests(params):
     """Calculate total number of tests to run"""
     return (
         len(params["data_sizes"])
-        * len(params["algorithm_suites"])
-        * (len(params["frame_lengths"]) + len(params["concurrency_levels"]) + 1)
+        * (1 + len(params["concurrency_levels"]) + 1)
     )
 
 
 def _run_throughput_tests(benchmark, params, results, pbar):
     """Run all throughput tests"""
     for data_size in params["data_sizes"]:
-        for algorithm_suite in params["algorithm_suites"]:
-            for frame_length in params["frame_lengths"]:
-                try:
-                    benchmark.logger.info(
-                        f"Running throughput test - Size: {data_size} bytes, "
-                        f"Iterations: {params['iterations']}"
-                    )
-                    result = run_throughput_test(
-                        benchmark,
-                        data_size,
-                        params["iterations"],
-                        algorithm_suite,
-                        frame_length,
-                    )
-                    results.append(result)
-                    benchmark.logger.info(
-                        f"Throughput test completed: "
-                        f"{result.ops_per_second:.2f} ops/sec"
-                    )
-                except Exception as e:
-                    benchmark.logger.error(f"Throughput test failed: {e}")
-                pbar.update(1)
+        try:
+            benchmark.logger.info(
+                f"Running throughput test - Size: {data_size} bytes, "
+                f"Iterations: {params['iterations']}"
+            )
+            result = run_throughput_test(
+                benchmark,
+                data_size,
+                params["iterations"],
+            )
+            results.append(result)
+            benchmark.logger.info(
+                f"Throughput test completed: "
+                f"{result.ops_per_second:.2f} ops/sec"
+            )
+        except Exception as e:
+            benchmark.logger.error(f"Throughput test failed: {e}")
+        pbar.update(1)
 
 
 def _run_memory_tests(benchmark, params, results, pbar):
     """Run all memory tests"""
     for data_size in params["data_sizes"]:
-        for algorithm_suite in params["algorithm_suites"]:
-            try:
-                benchmark.logger.info(f"Running memory test - Size: {data_size} bytes")
-                result = run_memory_test(benchmark, data_size, algorithm_suite)
-                results.append(result)
-                benchmark.logger.info(
-                    f"Memory test completed: {result.peak_memory_mb:.2f} MB peak"
-                )
-            except Exception as e:
-                benchmark.logger.error(f"Memory test failed: {e}")
-            pbar.update(1)
+        try:
+            benchmark.logger.info(f"Running memory test - Size: {data_size} bytes")
+            gc.collect()
+            result = run_memory_test(benchmark, data_size)
+            results.append(result)
+            benchmark.logger.info(
+                f"Memory test completed: {result.peak_memory_mb:.2f} MB peak"
+            )
+        except Exception as e:
+            benchmark.logger.error(f"Memory test failed: {e}")
+        pbar.update(1)
 
 
 def _run_concurrent_tests(benchmark, params, results, pbar):

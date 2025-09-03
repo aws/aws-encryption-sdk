@@ -5,18 +5,15 @@ Core benchmark module for ESDK Python benchmark
 
 import logging
 import multiprocessing
+import secrets
 import sys
 
 import psutil
+from aws_cryptographic_material_providers.mpl import AwsCryptographicMaterialProviders
+from aws_cryptographic_material_providers.mpl.config import MaterialProvidersConfig
+from aws_cryptographic_material_providers.mpl.models import AesWrappingAlg, CreateRawAesKeyringInput
+from aws_encryption_sdk import EncryptionSDKClient, CommitmentPolicy
 from config import load_config
-
-# ESDK imports
-try:
-    from aws_encryption_sdk import EncryptionSDKClient, CommitmentPolicy
-except ImportError as e:
-    print(f"Warning: Could not import ESDK modules: {e}")
-    print("Please install the AWS Encryption SDK: pip install aws-encryption-sdk")
-    sys.exit(1)
 
 
 class ESDKBenchmark:
@@ -66,18 +63,6 @@ class ESDKBenchmark:
 
     def _create_keyring(self):
         """Create raw AES keyring"""
-        import secrets
-        from aws_cryptographic_material_providers.mpl import (
-            AwsCryptographicMaterialProviders,
-        )
-        from aws_cryptographic_material_providers.mpl.config import (
-            MaterialProvidersConfig,
-        )
-        from aws_cryptographic_material_providers.mpl.models import (
-            AesWrappingAlg,
-            CreateRawAesKeyringInput,
-        )
-
         static_key = secrets.token_bytes(32)
         mat_prov = AwsCryptographicMaterialProviders(config=MaterialProvidersConfig())
 

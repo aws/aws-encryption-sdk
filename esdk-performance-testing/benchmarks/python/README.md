@@ -21,6 +21,13 @@ python esdk_benchmark.py --quick
 - `--output` - Path to output results file (default: `../../results/raw-data/python_results.json`)
 - `--quick` - Run with reduced iterations for faster testing
 
+## Configuration
+
+Edit `../../config/test-scenarios.yaml` for test parameters:
+
+- Data sizes (small/medium/large)
+- Iterations and concurrency levels
+
 ## Test Types
 
 - **Throughput** - Measures encryption/decryption operations per second
@@ -29,4 +36,8 @@ python esdk_benchmark.py --quick
 
 ## Output
 
-Results are saved as JSON with performance metrics including latency, throughput, memory usage, and system information.
+Results saved as JSON to `../../results/raw-data/python_results.json` with:
+
+- Performance metrics (ops/sec, latency percentiles)
+- Memory usage (peak, average, allocations, input data to memory ratio)
+- System information (CPU, memory, Python version)

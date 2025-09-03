@@ -21,8 +21,6 @@ class BenchmarkResult:
     test_name: str
     language: str = "python"
     data_size: int = 0
-    algorithm_suite: str = ""
-    frame_length: Optional[int] = None
     concurrency: int = 1
     encrypt_latency_ms: float = 0.0
     decrypt_latency_ms: float = 0.0
@@ -30,8 +28,6 @@ class BenchmarkResult:
     ops_per_second: float = 0.0
     bytes_per_second: float = 0.0
     peak_memory_mb: float = 0.0
-    avg_memory_mb: float = 0.0
-    cumulative_allocations_mb: float = 0.0
     memory_efficiency_ratio: float = 0.0
     p50_latency: float = 0.0
     p95_latency: float = 0.0
