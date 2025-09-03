@@ -21,7 +21,8 @@ tqdm>=4.65.0
 colorlog>=6.7.0
 
 # AWS and ESDK dependencies (public packages)
-aws-encryption-sdk>=3.1.0
+aws-encryption-sdk>=4.0.1
+aws-cryptographic-material-providers>=1.11.0
 boto3>=1.26.0
 botocore>=1.29.0
 cryptography>=41.0.0
