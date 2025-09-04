@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Runtime;
 using System.Text.Json;
 using CommandLine;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using ShellProgressBar;
 using YamlDotNet.Serialization;
@@ -26,71 +25,89 @@ namespace Amazon.Esdk.Benchmark;
 /// </summary>
 public class Program
 {
-    private static ILogger<Program>? _logger;
 
-    public static async Task<int> Main(string[] args)
+    public static async Task Main(string[] args)
     {
-        return await Parser.Default.ParseArguments<CommandLineOptions>(args)
-            .MapResult(
-                async options => await RunBenchmarkAsync(options),
-                errors => Task.FromResult(1)
-            );
-    }
+        var options = ParseArgs(args);
+        if (options == null) return;
 
-    private static async Task<int> RunBenchmarkAsync(CommandLineOptions options)
-    {
         try
         {
-            // Initialize logging
-            using var loggerFactory = LoggerFactory.Create(builder =>
-            {
-                builder.AddConsole();
-                builder.SetMinimumLevel(options.Verbose ? LogLevel.Debug : LogLevel.Information);
-            });
-            _logger = loggerFactory.CreateLogger<Program>();
-
-            // Initialize benchmark
-            var benchmark = new ESDKBenchmark(options.ConfigPath, _logger);
-
-            // Adjust config for quick test
+            var benchmark = new ESDKBenchmark(options.ConfigPath);
+            
             if (options.QuickTest)
             {
                 benchmark.AdjustForQuickTest();
             }
 
-            // Run benchmarks
-            var results = await benchmark.RunAllBenchmarksAsync();
-
-            // Save results
+            var results = await benchmark.RunAllBenchmarksAsync(options.QuickTest);
             await benchmark.SaveResultsAsync(options.OutputPath);
-
-            // Print summary
-            PrintSummary(results, options);
-
-            return 0;
+            PrintSummary(results, options.OutputPath);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Benchmark failed: {ex.Message}");
-            if (options.Verbose)
-            {
-                Console.Error.WriteLine(ex.StackTrace);
-            }
-            return 1;
+            Console.WriteLine($"Benchmark failed: {ex.Message}");
         }
     }
 
-    private static void PrintSummary(List<BenchmarkResult> results, CommandLineOptions options)
+    private static CommandLineOptions? ParseArgs(string[] args)
+    {
+        var options = new CommandLineOptions
+        {
+            ConfigPath = "../../config/test-scenarios.yaml",
+            OutputPath = "../../results/raw-data/net_results.json"
+        };
+        
+        for (int i = 0; i < args.Length; i++)
+        {
+            switch (args[i])
+            {
+                case "--config":
+                case "-c":
+                    if (i + 1 < args.Length) options.ConfigPath = args[++i];
+                    break;
+                case "--output":
+                case "-o":
+                    if (i + 1 < args.Length) options.OutputPath = args[++i];
+                    break;
+                case "--quick":
+                case "-q":
+                    options.QuickTest = true;
+                    break;
+                case "--help":
+                case "-h":
+                    PrintHelp();
+                    return null;
+            }
+        }
+        return options;
+    }
+
+    private static void PrintHelp()
+    {
+        Console.WriteLine("ESDK .NET Benchmark");
+        Console.WriteLine("Usage: EsdkBenchmark [options]");
+        Console.WriteLine("Options:");
+        Console.WriteLine("  --config, -c    Path to test configuration file (default: ../../config/test-scenarios.yaml)");
+        Console.WriteLine("  --output, -o    Path to output results file (default: ../../results/raw-data/net_results.json)");
+        Console.WriteLine("  --quick, -q     Run quick test with reduced iterations");
+        Console.WriteLine("  --help, -h      Show this help message");
+    }
+
+    private static void PrintSummary(List<BenchmarkResult> results, string outputPath)
     {
         Console.WriteLine("\n=== ESDK .NET Benchmark Summary ===");
         Console.WriteLine($"Total tests completed: {results.Count}");
-        Console.WriteLine($"Results saved to: {options.OutputPath}");
+        Console.WriteLine($"Results saved to: {outputPath}");
 
-        var throughputResults = results.Where(r => r.TestName == "throughput").ToList();
-        if (throughputResults.Any())
+        if (results.Any())
         {
-            var maxThroughput = throughputResults.Max(r => r.OpsPerSecond);
-            Console.WriteLine($"Maximum throughput: {maxThroughput:F2} ops/sec");
+            var throughputResults = results.Where(r => r.TestName == "throughput").ToList();
+            if (throughputResults.Any())
+            {
+                var maxThroughput = throughputResults.Max(r => r.OpsPerSecond);
+                Console.WriteLine($"Maximum throughput: {maxThroughput:F2} ops/sec");
+            }
         }
     }
 }
@@ -121,33 +138,62 @@ public class CommandLineOptions
 /// </summary>
 public class BenchmarkResult
 {
+    [JsonProperty("test_name")]
     public string TestName { get; set; } = string.Empty;
+    
+    [JsonProperty("language")]
     public string Language { get; set; } = "net";
+    
+    [JsonProperty("data_size")]
     public int DataSize { get; set; }
-    public string AlgorithmSuite { get; set; } = string.Empty;
-    public long? FrameLength { get; set; }
+    
+    [JsonProperty("concurrency")]
     public int Concurrency { get; set; }
 
     // Performance metrics
+    [JsonProperty("encrypt_latency_ms")]
     public double EncryptLatencyMs { get; set; }
+    
+    [JsonProperty("decrypt_latency_ms")]
     public double DecryptLatencyMs { get; set; }
+    
+    [JsonProperty("end_to_end_latency_ms")]
     public double EndToEndLatencyMs { get; set; }
+    
+    [JsonProperty("ops_per_second")]
     public double OpsPerSecond { get; set; }
+    
+    [JsonProperty("bytes_per_second")]
     public double BytesPerSecond { get; set; }
 
     // Memory metrics
+    [JsonProperty("peak_memory_mb")]
     public double PeakMemoryMb { get; set; }
+    
+    [JsonProperty("memory_efficiency_ratio")]
     public double MemoryEfficiencyRatio { get; set; }
 
     // Statistical metrics
+    [JsonProperty("p50_latency")]
     public double P50Latency { get; set; }
+    
+    [JsonProperty("p95_latency")]
     public double P95Latency { get; set; }
+    
+    [JsonProperty("p99_latency")]
     public double P99Latency { get; set; }
 
     // Environment info
+    [JsonProperty("timestamp")]
     public string Timestamp { get; set; } = string.Empty;
+    
+    [JsonProperty("dotnet_version")]
     public string DotNetVersion { get; set; } = string.Empty;
+    
+    [JsonProperty("cpu_count")]
     public int CpuCount { get; set; }
+    
+    [JsonProperty("total_memory_gb")]
     public double TotalMemoryGb { get; set; }
 }
 
@@ -225,7 +271,6 @@ public class QuickIterationConfig
 /// </summary>
 public class ESDKBenchmark
 {
-    private readonly ILogger _logger;
     private TestConfig _config;
     private readonly List<BenchmarkResult> _results = new();
     private readonly Random _random = new();
@@ -245,9 +290,8 @@ public class ESDKBenchmark
     private ESDK _encryptionSdk = null!;
     private IKeyring _keyring = null!;
 
-    public ESDKBenchmark(string configPath, ILogger logger)
+    public ESDKBenchmark(string configPath)
     {
-        _logger = logger;
         _config = LoadConfig(configPath);
 
         // Get system information
@@ -264,8 +308,7 @@ public class ESDKBenchmark
             throw new InvalidOperationException($"Failed to setup ESDK: {setupError}");
         }
 
-        _logger.LogInformation("Initialized ESDK Benchmark - CPU cores: {CpuCount}, Memory: {Memory:F1}GB", 
-            _cpuCount, _totalMemoryGb);
+        Console.WriteLine($"Initialized ESDK Benchmark - CPU cores: {_cpuCount}, Memory: {_totalMemoryGb:F1}GB");
     }
 
     private string? SetupEsdk()
@@ -299,7 +342,7 @@ public class ESDKBenchmark
             };
             _encryptionSdk = new ESDK(esdkConfig);
 
-            _logger.LogInformation("ESDK client initialized successfully");
+            Console.WriteLine("ESDK client initialized successfully");
             return null;
         }
         catch (Exception ex)
@@ -315,8 +358,7 @@ public class ESDKBenchmark
     {
         if (!File.Exists(configPath))
         {
-            _logger.LogWarning("Config file not found, using default configuration");
-            return CreateDefaultConfig();
+            throw new FileNotFoundException($"Config file not found: {configPath}");
         }
 
         try
@@ -331,8 +373,7 @@ public class ESDKBenchmark
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to load config file, using default configuration");
-            return CreateDefaultConfig();
+            throw new InvalidOperationException($"Failed to load config file: {ex.Message}", ex);
         }
     }
 
@@ -359,6 +400,21 @@ public class ESDKBenchmark
     }
 
     /// <summary>
+    /// Check if a test type should run based on configuration
+    /// </summary>
+    private bool ShouldRunTestType(string testType, bool isQuickMode)
+    {
+        if (isQuickMode)
+        {
+            if (_config.QuickConfig != null && _config.QuickConfig.TestTypes.Count > 0)
+            {
+                return _config.QuickConfig.TestTypes.Contains(testType);
+            }
+        }
+        return true; // Run all tests if not in quick mode or no test_types specified
+    }
+
+    /// <summary>
     /// Adjust configuration for quick test - uses quick_config from YAML
     /// </summary>
     public void AdjustForQuickTest()
@@ -370,7 +426,6 @@ public class ESDKBenchmark
                 Warmup = _config.QuickConfig.Iterations.Warmup,
                 Measurement = _config.QuickConfig.Iterations.Measurement
             };
-            // Map QuickDataSizes to DataSizes
             _config.DataSizes = new DataSizes
             {
                 Small = _config.QuickConfig.DataSizes.Small,
@@ -378,6 +433,10 @@ public class ESDKBenchmark
                 Large = new List<int>()
             };
             _config.ConcurrencyLevels = _config.QuickConfig.ConcurrencyLevels;
+        }
+        else
+        {
+            throw new InvalidOperationException("Quick mode requested but no quick_config found in config file");
         }
     }
 
@@ -474,9 +533,10 @@ public class ESDKBenchmark
     /// <summary>
     /// Run throughput test matching Go/Rust implementation
     /// </summary>
-    public BenchmarkResult? RunThroughputTest(int dataSize, int iterations)
+    public BenchmarkResult? RunThroughputTest(int dataSize, int iterations, ProgressBar? progressBar = null)
     {
-        _logger.LogInformation("Running throughput test - Size: {DataSize} bytes, Iterations: {Iterations}", dataSize, iterations);
+        Action<string> log = progressBar != null ? progressBar.WriteLine : Console.WriteLine;
+        log($"Running throughput test - Size: {dataSize} bytes, Iterations: {iterations}");
 
         var testData = GenerateTestData(dataSize);
 
@@ -486,7 +546,7 @@ public class ESDKBenchmark
             var (_, _, error) = RunEncryptDecryptCycle(testData);
             if (error != null)
             {
-                _logger.LogError("Warmup iteration {Iteration} failed: {Error}", i, error);
+                Console.WriteLine($"Warmup iteration {i} failed: {error}");
                 return null;
             }
         }
@@ -497,17 +557,6 @@ public class ESDKBenchmark
         var endToEndLatencies = new List<double>();
         long totalBytes = 0;
 
-        var progressOptions = new ProgressBarOptions
-        {
-            ProgressCharacter = '█',
-            ProgressBarOnBottom = true,
-            ForegroundColor = ConsoleColor.Cyan,
-            BackgroundColor = ConsoleColor.DarkGray,
-            ForegroundColorDone = ConsoleColor.Green
-        };
-
-        using var progressBar = new ProgressBar(iterations, "Throughput test", progressOptions);
-
         var startTime = Stopwatch.GetTimestamp();
         for (int i = 0; i < iterations; i++)
         {
@@ -515,7 +564,7 @@ public class ESDKBenchmark
             var (encryptMs, decryptMs, error) = RunEncryptDecryptCycle(testData);
             if (error != null)
             {
-                _logger.LogError("Measurement iteration {Iteration} failed: {Error}", i, error);
+                Console.WriteLine($"Measurement iteration {i} failed: {error}");
                 continue;
             }
             var iterationDuration = Stopwatch.GetElapsedTime(iterationStart).TotalMilliseconds;
@@ -524,14 +573,12 @@ public class ESDKBenchmark
             decryptLatencies.Add(decryptMs);
             endToEndLatencies.Add(iterationDuration);
             totalBytes += dataSize;
-
-            progressBar.Tick();
         }
         var totalDuration = Stopwatch.GetElapsedTime(startTime).TotalSeconds;
 
         if (!encryptLatencies.Any())
         {
-            _logger.LogError("All test iterations failed");
+            Console.WriteLine("All test iterations failed");
             return null;
         }
 
@@ -542,7 +589,7 @@ public class ESDKBenchmark
             TestName = "throughput",
             Language = "net",
             DataSize = dataSize,
-            AlgorithmSuite = "AES_256_GCM_HKDF_SHA512_COMMIT_KEY_ECDSA_P384",
+            Concurrency = 1,
             EncryptLatencyMs = Average(encryptLatencies),
             DecryptLatencyMs = Average(decryptLatencies),
             EndToEndLatencyMs = Average(endToEndLatencies),
@@ -557,8 +604,7 @@ public class ESDKBenchmark
             TotalMemoryGb = _totalMemoryGb
         };
 
-        _logger.LogInformation("Throughput test completed - Ops/sec: {OpsPerSec:F2}, MB/sec: {MBPerSec:F2}",
-            result.OpsPerSecond, result.BytesPerSecond / (1024 * 1024));
+        Console.WriteLine($"Throughput test completed - Ops/sec: {result.OpsPerSecond:F2}, MB/sec: {result.BytesPerSecond / (1024 * 1024):F2}");
 
         return result;
     }
@@ -569,10 +615,10 @@ public class ESDKBenchmark
     /// <summary>
     /// Run memory test matching Go/Rust implementation
     /// </summary>
-    public BenchmarkResult? RunMemoryTest(int dataSize)
+    public BenchmarkResult? RunMemoryTest(int dataSize, ProgressBar? progressBar = null)
     {
-        _logger.LogInformation("Running memory test - Size: {DataSize} bytes ({Iterations} iterations, continuous sampling)", 
-            dataSize, MemoryTestIterations);
+        Action<string> log = progressBar != null ? progressBar.WriteLine : Console.WriteLine;
+        log($"Running memory test - Size: {dataSize} bytes ({MemoryTestIterations} iterations, continuous sampling)");
 
         var data = GenerateTestData(dataSize);
         var peakHeap = 0.0;
@@ -606,7 +652,7 @@ public class ESDKBenchmark
 
             if (error != null)
             {
-                _logger.LogWarning("Memory test iteration {Iteration} failed: {Error}", i + 1, error);
+                Console.WriteLine($"Memory test iteration {i + 1} failed: {error}");
                 continue;
             }
 
@@ -636,19 +682,23 @@ public class ESDKBenchmark
 
             avgHeapValues.Add(iterAvgHeap);
 
-            _logger.LogDebug("Memory iteration {Iteration}: Peak={PeakMB:F2}MB, Avg={AvgMB:F2}MB, Duration={DurationMs:F2}ms",
-                i + 1, iterPeakHeap, iterAvgHeap, operationDuration.TotalMilliseconds);
+            log($"=== Iteration {i + 1} === Peak Heap: {iterPeakHeap:F2} MB, Total Allocs: {iterTotalAllocs:F2} MB, Avg Heap: {iterAvgHeap:F2} MB ({operationDuration.TotalMilliseconds:F0}ms, {continuousSamples.Count} samples)");
         }
 
         var avgHeap = avgHeapValues.Count > 0 ? avgHeapValues.Average() : 0.0;
         var memoryEfficiency = dataSize > 0 ? (dataSize / (1024.0 * 1024.0)) / Math.Max(peakHeap, 1.0) : 0.0;
+
+        log("\nMemory Summary:");
+        log($"- Absolute Peak Heap: {peakHeap:F2} MB (across all runs)");
+        log($"- Average Heap: {avgHeap:F2} MB (across all runs)");
+        log($"- Total Allocations: {peakAllocations:F2} MB (max across all runs)");
 
         var result = new BenchmarkResult
         {
             TestName = "memory",
             Language = "net",
             DataSize = dataSize,
-            AlgorithmSuite = "AES_256_GCM_HKDF_SHA512_COMMIT_KEY_ECDSA_P384",
+            Concurrency = 1,
             PeakMemoryMb = peakHeap,
             MemoryEfficiencyRatio = memoryEfficiency,
             Timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
@@ -657,7 +707,7 @@ public class ESDKBenchmark
             TotalMemoryGb = _totalMemoryGb
         };
 
-        _logger.LogInformation("Memory test completed: {PeakMB:F2} MB peak", result.PeakMemoryMb);
+        Console.WriteLine($"Memory test completed: {result.PeakMemoryMb:F2} MB peak");
         return result;
     }
 
@@ -693,10 +743,9 @@ public class ESDKBenchmark
     /// <summary>
     /// Run concurrent test matching Go/Rust implementation
     /// </summary>
-    public BenchmarkResult? RunConcurrentTest(int dataSize, int concurrency, int iterationsPerWorker)
+    public BenchmarkResult? RunConcurrentTest(int dataSize, int concurrency, int iterationsPerWorker, ProgressBar? progressBar = null)
     {
-        _logger.LogInformation("Running concurrent test - Size: {DataSize} bytes, Concurrency: {Concurrency}", 
-            dataSize, concurrency);
+        Console.WriteLine($"Running concurrent test - Size: {dataSize} bytes, Concurrency: {concurrency}");
 
         var data = GenerateTestData(dataSize);
         var allTimes = new List<double>();
@@ -719,7 +768,7 @@ public class ESDKBenchmark
                     var (_, _, error) = RunEncryptDecryptCycle(data);
                     if (error != null)
                     {
-                        _logger.LogWarning("Worker {WorkerID} iteration {Iteration} failed: {Error}", workerID, j, error);
+                        Console.WriteLine($"Worker {workerID} iteration {j} failed: {error}");
                         errorOccurred = true;
                         return;
                     }
@@ -738,7 +787,7 @@ public class ESDKBenchmark
 
         if (errorOccurred || !allTimes.Any())
         {
-            _logger.LogError("Concurrent test failed - no successful operations");
+            Console.WriteLine("Concurrent test failed - no successful operations");
             return null;
         }
 
@@ -752,7 +801,6 @@ public class ESDKBenchmark
             TestName = "concurrent",
             Language = "net",
             DataSize = dataSize,
-            AlgorithmSuite = "AES_256_GCM_HKDF_SHA512_COMMIT_KEY_ECDSA_P384",
             Concurrency = concurrency,
             EndToEndLatencyMs = Average(allTimes),
             OpsPerSecond = concurrentOpsPerSecond,
@@ -766,8 +814,7 @@ public class ESDKBenchmark
             TotalMemoryGb = _totalMemoryGb
         };
 
-        _logger.LogInformation("Concurrent test completed: {OpsPerSec:F2} ops/sec @ {Concurrency} threads", 
-            result.OpsPerSecond, concurrency);
+        Console.WriteLine($"Concurrent test completed: {result.OpsPerSecond:F2} ops/sec @ {concurrency} threads");
 
         return result;
     }
@@ -775,9 +822,9 @@ public class ESDKBenchmark
     /// <summary>
     /// Run all configured benchmark tests - matches Java structure
     /// </summary>
-    public async Task<List<BenchmarkResult>> RunAllBenchmarksAsync()
+    public async Task<List<BenchmarkResult>> RunAllBenchmarksAsync(bool isQuickMode = false)
     {
-        _logger.LogInformation("Starting comprehensive ESDK benchmark suite");
+        Console.WriteLine("Starting comprehensive ESDK benchmark suite");
 
         var allResults = new List<BenchmarkResult>();
 
@@ -793,90 +840,111 @@ public class ESDKBenchmark
 
         var totalTests = dataSizes.Count * (concurrencyLevels.Count + 2);
 
-        _logger.LogInformation("Running {TotalTests} total tests", totalTests);
+        Console.WriteLine($"Running {totalTests} total tests");
 
-        var overallProgressOptions = new ProgressBarOptions
+        var progressOptions = new ProgressBarOptions
         {
             ProgressCharacter = '█',
             ProgressBarOnBottom = true,
             ForegroundColor = ConsoleColor.Green,
-            BackgroundColor = ConsoleColor.DarkGray
+            BackgroundColor = ConsoleColor.DarkGray,
+            CollapseWhenFinished = false,
+            DisplayTimeInRealTime = true,
+            ShowEstimatedDuration = true
         };
 
-        using var overallProgress = new ProgressBar(totalTests, "Running benchmarks", overallProgressOptions);
+        using var overallProgress = new ProgressBar(totalTests, "Overall Progress", progressOptions);
+        int completedTests = 0;
 
         // Throughput tests
-        foreach (var dataSize in dataSizes)
+        if (ShouldRunTestType("throughput", isQuickMode))
         {
-            overallProgress.Message = $"Throughput test: {dataSize:N0} bytes";
-            
-            try
+            overallProgress.WriteLine("Running throughput tests...");
+            foreach (var dataSize in dataSizes)
             {
-                var result = RunThroughputTest(dataSize, iterations);
-                if (result != null)
-                {
-                    _logger.LogInformation("Throughput test completed: {OpsPerSecond:F2} ops/sec", result.OpsPerSecond);
-                    allResults.Add(result);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Throughput test failed");
-            }
-            
-            overallProgress.Tick();
-        }
-
-        // Memory tests
-        foreach (var dataSize in dataSizes)
-        {
-            overallProgress.Message = $"Memory test: {dataSize:N0} bytes";
-            
-            try
-            {
-                var result = RunMemoryTest(dataSize);
-                if (result != null)
-                {
-                    _logger.LogInformation("Memory test completed: {PeakMemory:F2} MB peak", result.PeakMemoryMb);
-                    allResults.Add(result);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Memory test failed");
-            }
-            
-            overallProgress.Tick();
-        }
-
-        // Concurrent tests
-        foreach (var dataSize in dataSizes)
-        {
-            foreach (var concurrency in concurrencyLevels.Where(c => c > 1))
-            {
-                overallProgress.Message = $"Concurrent test: {dataSize:N0} bytes @ {concurrency} threads";
-                
                 try
                 {
-                    var result = RunConcurrentTest(dataSize, concurrency, 5);
+                    var result = RunThroughputTest(dataSize, iterations, overallProgress);
                     if (result != null)
                     {
-                        _logger.LogInformation("Concurrent test completed: {OpsPerSecond:F2} ops/sec @ {Concurrency} threads", 
-                            result.OpsPerSecond, concurrency);
                         allResults.Add(result);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Concurrent test failed");
+                    overallProgress.WriteLine($"Throughput test failed: {ex.Message}");
                 }
                 
+                completedTests++;
                 overallProgress.Tick();
             }
         }
+        else
+        {
+            overallProgress.WriteLine("Skipping throughput tests (not in test_types)");
+        }
+
+        // Memory tests
+        if (ShouldRunTestType("memory", isQuickMode))
+        {
+            overallProgress.WriteLine("Running memory tests...");
+            foreach (var dataSize in dataSizes)
+            {
+                try
+                {
+                    var result = RunMemoryTest(dataSize, overallProgress);
+                    if (result != null)
+                    {
+                        allResults.Add(result);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    overallProgress.WriteLine($"Memory test failed: {ex.Message}");
+                }
+                
+                completedTests++;
+                overallProgress.Tick();
+            }
+        }
+        else
+        {
+            overallProgress.WriteLine("Skipping memory tests (not in test_types)");
+        }
+
+        // Concurrent tests
+        if (ShouldRunTestType("concurrency", isQuickMode))
+        {
+            overallProgress.WriteLine("Running concurrency tests...");
+            foreach (var dataSize in dataSizes)
+            {
+                foreach (var concurrency in concurrencyLevels.Where(c => c > 1))
+                {
+                    try
+                    {
+                        var result = RunConcurrentTest(dataSize, concurrency, 5, overallProgress);
+                        if (result != null)
+                        {
+                            allResults.Add(result);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        overallProgress.WriteLine($"Concurrent test failed: {ex.Message}");
+                    }
+                    
+                    completedTests++;
+                    overallProgress.Tick();
+                }
+            }
+        }
+        else
+        {
+            overallProgress.WriteLine("Skipping concurrency tests (not in test_types)");
+        }
 
         _results.AddRange(allResults);
-        _logger.LogInformation("Benchmark suite completed. Total results: {ResultCount}", allResults.Count);
+        Console.WriteLine($"Benchmark suite completed. Total results: {allResults.Count}");
         return allResults;
     }
 
@@ -892,13 +960,13 @@ public class ESDKBenchmark
             Directory.CreateDirectory(outputDir);
         }
 
-        // Prepare results data - matches Java structure
+        // Prepare results data - matches other languages structure
         var resultsData = new
         {
             metadata = new
             {
                 language = "net",
-                timestamp = DateTime.UtcNow.ToString("O"),
+                timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                 dotnet_version = Environment.Version.ToString(),
                 cpu_count = _cpuCount,
                 total_memory_gb = _totalMemoryGb,
@@ -911,7 +979,7 @@ public class ESDKBenchmark
         var json = JsonConvert.SerializeObject(resultsData, Formatting.Indented);
         await File.WriteAllTextAsync(outputPath, json);
 
-        _logger.LogInformation("Results saved to {OutputPath}", outputPath);
+        Console.WriteLine($"Results saved to {outputPath}");
     }
 
     /// <summary>
