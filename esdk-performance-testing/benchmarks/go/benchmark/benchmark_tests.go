@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"runtime"
 	"runtime/metrics"
 	"sort"
@@ -117,8 +118,11 @@ func (b *ESDKBenchmark) runThroughputTest(dataSize int, iterations int) (*Benchm
 		endToEndLatencies = append(endToEndLatencies, iterationDuration)
 		totalBytes += int64(dataSize)
 
+		os.Stdout.Sync()
 		bar.Add(1)
+		fmt.Println()
 	}
+	fmt.Println()
 	totalDuration := time.Since(startTime).Seconds()
 
 	// Calculate metrics
@@ -267,11 +271,14 @@ func (b *ESDKBenchmark) runMemoryTest(dataSize int) (*BenchmarkResult, error) {
 		}
 		avgHeapValues = append(avgHeapValues, iterAvgHeap)
 
-		log.Printf("=== Iteration %d === Peak Heap: %.2f MB, Total Allocs: %.2f MB, Avg Heap: %.2f MB (%v, %d samples)",
+		log.Printf("=== Iteration %d === Peak Heap: %.2f MB, Total Allocs: %.2f MB, Avg Heap: %.2f MB (%v, %d samples)\n",
 			i+1, iterPeakHeap, iterTotalAllocs, iterAvgHeap, operationDuration, len(continuousSamples))
 
+		os.Stdout.Sync()
 		bar.Add(1)
+		fmt.Println()
 	}
+	fmt.Println()
 
 	if len(avgHeapValues) == 0 {
 		return nil, fmt.Errorf("all memory test iterations failed")
@@ -340,7 +347,9 @@ func (b *ESDKBenchmark) runConcurrentTest(dataSize int, concurrency int, iterati
 					return
 				}
 				workerTimes = append(workerTimes, time.Since(iterStart).Seconds()*1000)
+				os.Stdout.Sync()
 				bar.Add(1)
+				fmt.Println()
 			}
 
 			timesMutex.Lock()
@@ -350,6 +359,7 @@ func (b *ESDKBenchmark) runConcurrentTest(dataSize int, concurrency int, iterati
 	}
 
 	wg.Wait()
+	fmt.Println()
 	totalDuration := time.Since(startTime).Seconds()
 
 	// Check for errors
@@ -399,6 +409,7 @@ func (b *ESDKBenchmark) runThroughputTests(dataSizes []int, iterations int, over
 			b.Results = append(b.Results, *result)
 			log.Printf("Throughput test completed: %.2f ops/sec", result.OpsPerSecond)
 		}
+		os.Stdout.Sync()
 		overallBar.Add(1)
 	}
 }
@@ -414,6 +425,7 @@ func (b *ESDKBenchmark) runMemoryTests(dataSizes []int, overallBar *progressbar.
 			b.Results = append(b.Results, *result)
 			log.Printf("Memory test completed: %.2f MB peak", result.PeakMemoryMB)
 		}
+		os.Stdout.Sync()
 		overallBar.Add(1)
 	}
 }
@@ -431,6 +443,7 @@ func (b *ESDKBenchmark) runConcurrencyTests(dataSizes []int, concurrencyLevels [
 					b.Results = append(b.Results, *result)
 					log.Printf("Concurrent test completed: %.2f ops/sec @ %d threads", result.OpsPerSecond, concurrency)
 				}
+				os.Stdout.Sync()
 				overallBar.Add(1)
 			}
 		}
