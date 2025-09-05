@@ -199,6 +199,12 @@ func (b *ESDKBenchmark) runMemoryTest(dataSize int) (*BenchmarkResult, error) {
 	var peakHeap, peakAllocations float64
 	var avgHeapValues []float64
 
+	bar := progressbar.NewOptions(MemoryTestIterations,
+		progressbar.OptionSetDescription("Memory test"),
+		progressbar.OptionShowCount(),
+		progressbar.OptionSetWidth(50),
+	)
+
 	// Run iterations
 	for i := 0; i < MemoryTestIterations; i++ {
 		runtime.GC()
@@ -263,6 +269,8 @@ func (b *ESDKBenchmark) runMemoryTest(dataSize int) (*BenchmarkResult, error) {
 
 		log.Printf("=== Iteration %d === Peak Heap: %.2f MB, Total Allocs: %.2f MB, Avg Heap: %.2f MB (%v, %d samples)",
 			i+1, iterPeakHeap, iterTotalAllocs, iterAvgHeap, operationDuration, len(continuousSamples))
+
+		bar.Add(1)
 	}
 
 	if len(avgHeapValues) == 0 {
@@ -307,6 +315,13 @@ func (b *ESDKBenchmark) runConcurrentTest(dataSize int, concurrency int, iterati
 	var timesMutex sync.Mutex
 	var wg sync.WaitGroup
 
+	totalOps := concurrency * iterationsPerWorker
+	bar := progressbar.NewOptions(totalOps,
+		progressbar.OptionSetDescription("Concurrent test"),
+		progressbar.OptionShowCount(),
+		progressbar.OptionSetWidth(50),
+	)
+
 	errorChan := make(chan error, concurrency)
 	startTime := time.Now()
 
@@ -325,6 +340,7 @@ func (b *ESDKBenchmark) runConcurrentTest(dataSize int, concurrency int, iterati
 					return
 				}
 				workerTimes = append(workerTimes, time.Since(iterStart).Seconds()*1000)
+				bar.Add(1)
 			}
 
 			timesMutex.Lock()
@@ -344,7 +360,6 @@ func (b *ESDKBenchmark) runConcurrentTest(dataSize int, concurrency int, iterati
 	}
 
 	// Calculate metrics
-	totalOps := concurrency * iterationsPerWorker
 	totalBytes := int64(totalOps * dataSize)
 
 	sort.Float64s(allTimes)
@@ -374,35 +389,37 @@ func (b *ESDKBenchmark) runConcurrentTest(dataSize int, concurrency int, iterati
 // === Test Orchestration ===
 
 // runThroughputTests executes all throughput tests
-func (b *ESDKBenchmark) runThroughputTests(dataSizes []int, iterations int) {
+func (b *ESDKBenchmark) runThroughputTests(dataSizes []int, iterations int, overallBar *progressbar.ProgressBar) {
 	log.Println("Running throughput tests...")
 	for _, dataSize := range dataSizes {
 		result, err := b.runThroughputTest(dataSize, iterations)
 		if err != nil {
 			log.Printf("Throughput test failed: %v", err)
-			continue
+		} else {
+			b.Results = append(b.Results, *result)
+			log.Printf("Throughput test completed: %.2f ops/sec", result.OpsPerSecond)
 		}
-		b.Results = append(b.Results, *result)
-		log.Printf("Throughput test completed: %.2f ops/sec", result.OpsPerSecond)
+		overallBar.Add(1)
 	}
 }
 
 // runMemoryTests executes all memory tests
-func (b *ESDKBenchmark) runMemoryTests(dataSizes []int) {
+func (b *ESDKBenchmark) runMemoryTests(dataSizes []int, overallBar *progressbar.ProgressBar) {
 	log.Println("Running memory tests...")
 	for _, dataSize := range dataSizes {
 		result, err := b.runMemoryTest(dataSize)
 		if err != nil {
 			log.Printf("Memory test failed: %v", err)
-			continue
+		} else {
+			b.Results = append(b.Results, *result)
+			log.Printf("Memory test completed: %.2f MB peak", result.PeakMemoryMB)
 		}
-		b.Results = append(b.Results, *result)
-		log.Printf("Memory test completed: %.2f MB peak", result.PeakMemoryMB)
+		overallBar.Add(1)
 	}
 }
 
 // runConcurrencyTests executes all concurrency tests
-func (b *ESDKBenchmark) runConcurrencyTests(dataSizes []int, concurrencyLevels []int) {
+func (b *ESDKBenchmark) runConcurrencyTests(dataSizes []int, concurrencyLevels []int, overallBar *progressbar.ProgressBar) {
 	log.Println("Running concurrency tests...")
 	for _, dataSize := range dataSizes {
 		for _, concurrency := range concurrencyLevels {
@@ -410,10 +427,11 @@ func (b *ESDKBenchmark) runConcurrencyTests(dataSizes []int, concurrencyLevels [
 				result, err := b.runConcurrentTest(dataSize, concurrency, 5)
 				if err != nil {
 					log.Printf("Concurrent test failed: %v", err)
-					continue
+				} else {
+					b.Results = append(b.Results, *result)
+					log.Printf("Concurrent test completed: %.2f ops/sec @ %d threads", result.OpsPerSecond, concurrency)
 				}
-				b.Results = append(b.Results, *result)
-				log.Printf("Concurrent test completed: %.2f ops/sec @ %d threads", result.OpsPerSecond, concurrency)
+				overallBar.Add(1)
 			}
 		}
 	}
@@ -429,21 +447,45 @@ func (b *ESDKBenchmark) RunAllBenchmarks() error {
 		dataSizes = append(dataSizes, sizes...)
 	}
 
+	// Calculate total tests for progress tracking
+	totalTests := 0
+	if b.shouldRunTestType("throughput") {
+		totalTests += len(dataSizes)
+	}
+	if b.shouldRunTestType("memory") {
+		totalTests += len(dataSizes)
+	}
+	if b.shouldRunTestType("concurrency") {
+		for range dataSizes {
+			for _, concurrency := range b.Config.ConcurrencyLevels {
+				if concurrency > 1 {
+					totalTests++
+				}
+			}
+		}
+	}
+
+	overallBar := progressbar.NewOptions(totalTests,
+		progressbar.OptionSetDescription("Overall progress"),
+		progressbar.OptionShowCount(),
+		progressbar.OptionSetWidth(50),
+	)
+
 	// Run test suites
 	if b.shouldRunTestType("throughput") {
-		b.runThroughputTests(dataSizes, b.Config.Iterations.Measurement)
+		b.runThroughputTests(dataSizes, b.Config.Iterations.Measurement, overallBar)
 	} else {
 		log.Println("Skipping throughput tests (not in test_types)")
 	}
 
 	if b.shouldRunTestType("memory") {
-		b.runMemoryTests(dataSizes)
+		b.runMemoryTests(dataSizes, overallBar)
 	} else {
 		log.Println("Skipping memory tests (not in test_types)")
 	}
 
 	if b.shouldRunTestType("concurrency") {
-		b.runConcurrencyTests(dataSizes, b.Config.ConcurrencyLevels)
+		b.runConcurrencyTests(dataSizes, b.Config.ConcurrencyLevels, overallBar)
 	} else {
 		log.Println("Skipping concurrency tests (not in test_types)")
 	}
