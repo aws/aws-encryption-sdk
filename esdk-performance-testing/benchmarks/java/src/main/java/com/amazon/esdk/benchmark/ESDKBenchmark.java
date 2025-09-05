@@ -81,9 +81,7 @@ public final class ESDKBenchmark {
     );
   }
 
-  /**
-   * Run a single encrypt-decrypt cycle and measure performance
-   */
+  /** Run a single encrypt-decrypt cycle and measure performance */
   public EncryptDecryptResult runEncryptDecryptCycle(final byte[] data) {
     final var encryptionContext = Collections.singletonMap(
       "purpose",
@@ -176,8 +174,14 @@ public final class ESDKBenchmark {
             );
           }
         } catch (final Exception e) {
-          System.err.println("Throughput test failed: " + e.getMessage());
+          System.err.println(
+            "Throughput test failed for data size " +
+            dataSize +
+            " bytes: " +
+            e.getMessage()
+          );
         }
+        System.out.flush();
         pb.step();
         System.out.flush();
       }
@@ -194,8 +198,14 @@ public final class ESDKBenchmark {
           );
           System.out.flush();
         } catch (final Exception e) {
-          System.err.println("Memory test failed: " + e.getMessage());
+          System.err.println(
+            "Memory test failed for data size " +
+            dataSize +
+            " bytes: " +
+            e.getMessage()
+          );
         }
+        System.out.flush();
         pb.step();
         System.out.flush();
       }
@@ -220,8 +230,16 @@ public final class ESDKBenchmark {
                 " threads"
               );
             } catch (final Exception e) {
-              System.err.println("Concurrent test failed: " + e.getMessage());
+              System.err.println(
+                "Concurrent test failed for data size " +
+                dataSize +
+                " bytes with " +
+                concurrency +
+                " threads: " +
+                e.getMessage()
+              );
             }
+            System.out.flush();
             pb.step();
             System.out.flush();
           }

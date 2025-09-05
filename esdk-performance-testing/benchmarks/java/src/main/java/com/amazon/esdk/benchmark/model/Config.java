@@ -29,9 +29,7 @@ public final class Config {
   @JsonProperty("quick_config")
   public QuickConfig quickConfig;
 
-  /**
-   * Load test configuration from YAML file
-   */
+  /** Load test configuration from YAML file */
   public static Config loadConfig(String configPath) throws IOException {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     File configFile = new File(configPath);
@@ -44,9 +42,7 @@ public final class Config {
     return mapper.readValue(configFile, Config.class);
   }
 
-  /**
-   * Adjust configuration for quick test
-   */
+  /** Adjust configuration for quick test */
   public void adjustForQuickTest() {
     this.iterations = quickConfig.iterations;
 

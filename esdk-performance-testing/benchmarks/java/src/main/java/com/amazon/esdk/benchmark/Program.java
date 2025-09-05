@@ -15,20 +15,20 @@ public final class Program {
     if (options == null) return;
 
     try {
-      final ESDKBenchmark benchmark = new ESDKBenchmark(options.configPath);
+      final ESDKBenchmark benchmark = new ESDKBenchmark(options.configPath());
 
-      if (options.quickTest) {
+      if (options.quickTest()) {
         benchmark.config.adjustForQuickTest();
       }
 
       final List<TestResult> results = benchmark.runAllBenchmarks();
       Report.saveResults(
         results,
-        options.outputPath,
+        options.outputPath(),
         benchmark.cpuCount,
         benchmark.totalMemoryMB
       );
-      printSummary(results, options.outputPath);
+      printSummary(results, options.outputPath());
     } catch (final Exception ex) {
       System.out.println("Benchmark failed: " + ex.getMessage());
     }
@@ -36,25 +36,24 @@ public final class Program {
 
   private static CommandLineOptions parseArgs(final String[] args) {
     // Default options
-    final CommandLineOptions options = new CommandLineOptions();
-    options.configPath = "../../config/test-scenarios.yaml";
-    options.outputPath = "../../results/raw-data/java_results.json";
-    options.quickTest = false;
+    String configPath = "../../config/test-scenarios.yaml";
+    String outputPath = "../../results/raw-data/java_results.json";
+    boolean quickTest = false;
 
     // Simple argument parsing
     for (int i = 0; i < args.length; i++) {
       switch (args[i]) {
         case "--config":
         case "-c":
-          if (i + 1 < args.length) options.configPath = args[++i];
+          if (i + 1 < args.length) configPath = args[++i];
           break;
         case "--output":
         case "-o":
-          if (i + 1 < args.length) options.outputPath = args[++i];
+          if (i + 1 < args.length) outputPath = args[++i];
           break;
         case "--quick":
         case "-q":
-          options.quickTest = true;
+          quickTest = true;
           break;
         case "--help":
         case "-h":
@@ -63,7 +62,7 @@ public final class Program {
       }
     }
 
-    return options;
+    return new CommandLineOptions(configPath, outputPath, quickTest);
   }
 
   private static void printUsage() {
@@ -113,10 +112,9 @@ public final class Program {
     }
   }
 
-  public static final class CommandLineOptions {
-
-    public String configPath;
-    public String outputPath;
-    public boolean quickTest;
-  }
+  public record CommandLineOptions(
+    String configPath,
+    String outputPath,
+    boolean quickTest
+  ) {}
 }
