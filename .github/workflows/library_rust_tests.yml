@@ -68,12 +68,6 @@ jobs:
         if: matrix.os == 'windows-latest'
         uses: ilammy/setup-nasm@v1
 
-      # Go is needed for aws-lc-FIPS
-      - name: Install Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ">=1.18"
-
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
 

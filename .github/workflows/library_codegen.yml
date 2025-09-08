@@ -68,10 +68,6 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
-      - name: Install Go imports
-        run: |
-          go install golang.org/x/tools/cmd/goimports@latest
-
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
 
