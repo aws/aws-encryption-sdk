@@ -105,6 +105,7 @@ public partial class ESDKBenchmark
         try
         {
             var gcMemoryInfo = GC.GetGCMemoryInfo();
+            // Convert from bytes to GB
             return gcMemoryInfo.TotalAvailableMemoryBytes / (1024.0 * 1024.0 * 1024.0);
         }
         catch

@@ -206,6 +206,7 @@ public partial class ESDKBenchmark
                 var currentHeap = GC.GetTotalMemory(false);
                 var currentAllocs = GC.GetTotalAllocatedBytes(false);
 
+                // Convert from bytes to MB
                 var heapMB = (currentHeap - baselineHeap) / (1024.0 * 1024.0);
                 var allocsMB = ((long)currentAllocs - (long)baselineAllocs) / (1024.0 * 1024.0);
 

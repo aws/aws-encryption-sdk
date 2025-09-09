@@ -181,6 +181,7 @@ public static class BenchmarkResultsHelper
 
     public static BenchmarkResult CreateMemoryResult(double peakMemoryMb, double avgMemoryMb, int dataSize, int cpuCount, double totalMemoryGb)
     {
+        // Convert memory from MB to bytes since data size is in bytes
         var memoryEfficiency = peakMemoryMb > 0 ? dataSize / (peakMemoryMb * 1024 * 1024) : 0.0;
 
         return new BenchmarkResult
