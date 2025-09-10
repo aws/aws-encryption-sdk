@@ -1,7 +1,7 @@
 [package]
 name = "esdk-benchmark"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [[bin]]
 name = "esdk_benchmark"
@@ -9,10 +9,11 @@ path = "src/main.rs"
 
 [dependencies]
 # AWS Encryption SDK
+# aws-esdk = { path = "/Users/ajewell/esdk_rust/esdk" }
 aws-esdk = { path = "../../../AwsEncryptionSDK/runtimes/rust" }
 
 # Async runtime
-tokio = { version = "1.0", features = ["full"] }
+tokio = { version = "1.47", features = ["full"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -20,41 +21,42 @@ serde_json = "1.0"
 serde_yaml = "0.9"
 
 # CLI and progress
-clap = { version = "4.0", features = ["derive"] }
-indicatif = "0.17"
+clap = { version = "4.5", features = ["derive"] }
+indicatif = "0.18"
 
 # Statistics and benchmarking
 hdrhistogram = "7.5"
-rand = "0.8"
+rand = "0.9"
 
 # System info
-sysinfo = "0.30"
+sysinfo = "0.37"
 
 # Error handling
 anyhow = "1.0"
-thiserror = "1.0"
+thiserror = "2.0"
 
 # Logging
 log = "0.4"
-env_logger = "0.10"
+env_logger = "0.11"
 
 # Time
 chrono = { version = "0.4", features = ["serde"] }
 
 # Memory profiling
-memory-stats = "1.0"
+memory-stats = "1.2"
 stats_alloc = "0.1"
 
 # Async utilities
 futures = "0.3"
 
 aws-config = "1.8.6"
-aws-sdk-dynamodb = "1.73.0"
-aws-sdk-kms = "1.67.0"
-aws-sdk-sso = "1.69.0"
-aws-sdk-ssooidc = "1.69.0"
-aws-sdk-sts = "1.69.0"
-aws-smithy-types = "1.2"
+aws-sdk-dynamodb = "1.92.0"
+aws-sdk-kms = "1.86.0"
+aws-sdk-sso = "1.83.0"
+aws-sdk-ssooidc = "1.84.0"
+aws-sdk-sts = "1.85.0"
+aws-smithy-types = "1.3"
+cpu-time = "1.0.0"
 
 [dev-dependencies]
-criterion = { version = "0.5", features = ["html_reports"] }
+criterion = { version = "0.7", features = ["html_reports"] }

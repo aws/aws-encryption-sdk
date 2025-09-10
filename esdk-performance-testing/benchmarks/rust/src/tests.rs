@@ -1,6 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::alloc;
 use anyhow::Result;
 use aws_esdk::client as esdk_client;
 use chrono::Utc;
@@ -13,7 +14,7 @@ use std::collections::HashMap;
 use std::time::Instant;
 
 use crate::benchmark::{EsdkBenchmark, MEMORY_TEST_ITERATIONS};
-use crate::results::{average, percentile, BenchmarkResult};
+use crate::results::{BenchmarkResult, average, percentile};
 
 impl EsdkBenchmark {
     // === Helper Functions ===
@@ -81,7 +82,7 @@ impl EsdkBenchmark {
         // Generate test data on heap to avoid stack overflow
         let data = {
             let mut data = vec![0u8; data_size];
-            rand::thread_rng().fill(&mut data[..]);
+            rand::rng().fill(&mut data[..]);
             data.into_boxed_slice()
         };
 
@@ -109,6 +110,7 @@ impl EsdkBenchmark {
         pb.set_message("Throughput test");
 
         let start_time = Instant::now();
+        let alloc = alloc::ResourceTracker::new();
         for i in 0..iterations {
             let iteration_start = Instant::now();
             let (encrypt_ms, decrypt_ms) = self
@@ -148,6 +150,7 @@ impl EsdkBenchmark {
             rust_version: std::env::var("RUSTC_VERSION").unwrap_or_else(|_| "unknown".to_string()),
             cpu_count: self.cpu_count,
             total_memory_gb: self.total_memory_gb,
+            alloc: alloc.get_results(),
         };
 
         info!(
@@ -171,19 +174,20 @@ impl EsdkBenchmark {
         // Generate test data on heap to avoid stack overflow
         let data = {
             let mut data = vec![0u8; data_size];
-            rand::thread_rng().fill(&mut data[..]);
+            rand::rng().fill(&mut data[..]);
             data.into_boxed_slice()
         };
 
         let mut peak_memory_delta_mb = 0.0;
         let mut avg_memory_samples = Vec::new();
+        let alloc = alloc::ResourceTracker::new();
 
         // Run iterations with memory sampling
         for i in 0..MEMORY_TEST_ITERATIONS {
             // Force garbage collection and get baseline memory
             std::hint::black_box(&data); // Prevent optimization
             tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
-            
+
             let baseline_memory = if let Some(stats) = memory_stats() {
                 stats.physical_mem as f64 / (1024.0 * 1024.0)
             } else {
@@ -194,7 +198,7 @@ impl EsdkBenchmark {
             let mut iteration_peak = baseline_memory;
 
             let operation_start = Instant::now();
-            
+
             // Run ESDK operation with memory sampling
             let data_clone = data.clone();
             let esdk_client = self.esdk_client.clone();
@@ -215,7 +219,7 @@ impl EsdkBenchmark {
                     if delta > 0.0 {
                         iteration_samples.push(delta);
                     }
-                    
+
                     // Track peak regardless of sign
                     if current_physical > iteration_peak {
                         iteration_peak = current_physical;
@@ -256,7 +260,11 @@ impl EsdkBenchmark {
 
             info!(
                 "=== Iteration {} === Peak Delta: {:.2} MB, Avg Delta: {:.2} MB ({:?}, {} samples)",
-                i + 1, iter_peak_delta_mb, iter_avg_delta_mb, operation_duration, sample_count
+                i + 1,
+                iter_peak_delta_mb,
+                iter_avg_delta_mb,
+                operation_duration,
+                sample_count
             );
         }
 
@@ -279,7 +287,10 @@ impl EsdkBenchmark {
             "- Peak Memory Delta: {:.2} MB (operation overhead)",
             peak_memory_delta_mb
         );
-        info!("- Average Memory Delta: {:.2} MB (operation overhead)", overall_avg_delta_mb);
+        info!(
+            "- Average Memory Delta: {:.2} MB (operation overhead)",
+            overall_avg_delta_mb
+        );
 
         let result = BenchmarkResult {
             test_name: "memory".to_string(),
@@ -300,6 +311,7 @@ impl EsdkBenchmark {
             rust_version: std::env::var("RUSTC_VERSION").unwrap_or_else(|_| "unknown".to_string()),
             cpu_count: self.cpu_count,
             total_memory_gb: self.total_memory_gb,
+            alloc: alloc.get_results(),
         };
 
         Ok(result)
@@ -372,7 +384,7 @@ impl EsdkBenchmark {
                     // Generate data per worker on heap to avoid stack overflow
                     let worker_data = {
                         let mut data = vec![0u8; data_size];
-                        rand::thread_rng().fill(&mut data[..]);
+                        rand::rng().fill(&mut data[..]);
                         data
                     };
 
@@ -421,6 +433,7 @@ impl EsdkBenchmark {
         }
 
         let start_time = Instant::now();
+        let alloc = alloc::ResourceTracker::new();
         let results = join_all(tasks).await;
         let total_duration = start_time.elapsed().as_secs_f64();
 
@@ -455,6 +468,7 @@ impl EsdkBenchmark {
             rust_version: std::env::var("RUSTC_VERSION").unwrap_or_else(|_| "unknown".to_string()),
             cpu_count: self.cpu_count,
             total_memory_gb: self.total_memory_gb,
+            alloc: alloc.get_results(),
         };
 
         info!(
@@ -557,7 +571,6 @@ impl EsdkBenchmark {
         } else {
             info!("Skipping concurrency tests (not in test_types)");
         }
-
         info!(
             "Benchmark suite completed. Total results: {}",
             self.results.len()
