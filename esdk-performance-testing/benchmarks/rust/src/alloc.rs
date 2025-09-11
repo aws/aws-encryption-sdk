@@ -1,6 +1,5 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-#![allow(dead_code)]
 use serde::Serialize;
 use std::sync::atomic::AtomicIsize;
 use std::sync::atomic::Ordering;
@@ -23,19 +22,13 @@ pub struct ResourceResults {
 
 impl ResourceTracker {
     pub fn new() -> Self {
+        clear_max();
         Self {
             count: get_counter(),
             total: get_total(),
             net_total: get_net_total(),
             net_count: get_net_counter(),
         }
-    }
-    pub fn report_leak(&self) {
-        println!(
-            "{} outstanding allocations totalling {} bytes.",
-            get_net_counter(),
-            get_net_total()
-        );
     }
     pub fn get_results(&self) -> ResourceResults {
         ResourceResults {
@@ -48,11 +41,22 @@ impl ResourceTracker {
     }
 }
 
+// total number of allocations made over the life of the program
 static COUNTER: AtomicIsize = AtomicIsize::new(0);
+
+// total number of bytes allocated over the life of the program
 static TOTAL: AtomicIsize = AtomicIsize::new(0);
 
+// number allocations not yet deallocated
 static NET_COUNTER: AtomicIsize = AtomicIsize::new(0);
+
+// number bytes not yet deallocated
 static NET_TOTAL: AtomicIsize = AtomicIsize::new(0);
+
+// the peak value reached by NET_TOTAL
+// This is reset whenever a ResourceTracker is created
+// so it gives the right answer for a single operation
+// but it does not handle nested ResourceTrackers correctly.
 static MAX_NET_TOTAL: AtomicIsize = AtomicIsize::new(0);
 
 fn add_to_counter(inc: isize) {
