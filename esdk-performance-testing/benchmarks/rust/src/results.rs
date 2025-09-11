@@ -1,6 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::alloc;
 use anyhow::Result;
 use chrono::Utc;
 use serde::Serialize;
@@ -28,6 +29,7 @@ pub struct BenchmarkResult {
     pub rust_version: String,
     pub cpu_count: usize,
     pub total_memory_gb: f64,
+    pub alloc: alloc::ResourceResults,
 }
 
 #[derive(Debug, Serialize)]

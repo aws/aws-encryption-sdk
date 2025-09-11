@@ -4,15 +4,15 @@
 use anyhow::{Context, Result};
 use aws_esdk::client as esdk_client;
 use aws_esdk::material_providers::client as mpl_client;
-use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
 use aws_esdk::material_providers::types::AesWrappingAlg;
 use aws_esdk::material_providers::types::EsdkCommitmentPolicy;
+use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
 use aws_esdk::types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 use log::info;
 use rand::Rng;
 use sysinfo::System;
 
-use crate::config::{load_config, TestConfig};
+use crate::config::{TestConfig, load_config};
 use crate::results::BenchmarkResult;
 
 // Constants for memory testing
@@ -72,7 +72,7 @@ impl EsdkBenchmark {
 
         // Create default AES-256 keyring
         let mut key = [0u8; 32]; // 256-bit key
-        rand::thread_rng().fill(&mut key);
+        rand::rng().fill(&mut key);
 
         let raw_keyring = mpl_client
             .create_raw_aes_keyring()
