@@ -11,18 +11,22 @@ Rust implementation of the AWS Encryption SDK performance benchmark suite.
 
 ## Prerequisites
 
-- Rust 1.85.0+ ([rustup.rs](https://rustup.rs/))
+- Rust 1.86.0+ ([rustup.rs](https://rustup.rs/))
 - Build tools (Xcode CLI Tools on macOS, build-essential on Linux)
 
 ## Quick Start
 
 ```bash
+# If necessary, build the ESDK and return here
+cd ../../../AwsEncryptionSDK/
+make polymorph_rust transpile_rust
+cd ../esdk-performance-testing/benchmarks/rust/
+
 # Build and run
-cargo build --release
-./target/release/esdk_benchmark --config ../../config/test-scenarios.yaml
+cargo run --release -- --config ../../config/test-scenarios.yaml
 
 # Quick test (requires quick_config in YAML)
-./target/release/esdk_benchmark --quick
+cargo run --release -- --quick
 ```
 
 ## Configuration

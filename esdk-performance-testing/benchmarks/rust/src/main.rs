@@ -1,6 +1,9 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+#![allow(clippy::collapsible_if)]
+
+mod alloc;
 mod benchmark;
 mod config;
 mod results;
@@ -18,10 +21,8 @@ fn main() -> Result<()> {
         .thread_stack_size(8 * 1024 * 1024) // 8MB stack size
         .enable_all()
         .build()?;
-    
-    rt.block_on(async {
-        run_benchmark().await
-    })
+
+    rt.block_on(async { run_benchmark().await })
 }
 
 async fn run_benchmark() -> Result<()> {
@@ -63,9 +64,10 @@ async fn run_benchmark() -> Result<()> {
 
     // Adjust config for quick test
     if quick {
-        let quick_config = bench.config.quick_config.as_ref()
-            .ok_or_else(|| anyhow::anyhow!("Quick mode requested but no quick_config found in config file"))?;
-        
+        let quick_config = bench.config.quick_config.as_ref().ok_or_else(|| {
+            anyhow::anyhow!("Quick mode requested but no quick_config found in config file")
+        })?;
+
         bench.config.iterations.measurement = quick_config.iterations.measurement;
         bench.config.iterations.warmup = quick_config.iterations.warmup;
         bench.config.data_sizes.small = quick_config.data_sizes.small.clone();
