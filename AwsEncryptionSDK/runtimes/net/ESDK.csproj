@@ -30,7 +30,6 @@
 
   <ItemGroup>
       <!-- TODO: manually upgraded to match the latest from MPL, is that reasonable? -->
-      <PackageReference Include="AWSSDK.Core" Version="3.7.*" />
       <PackageReference Include="DafnyRuntime" Version="4.9.0" />
       <PackageReference Include="BouncyCastle.Cryptography" Version="2.3.1" />
       <ProjectReference Include="../../../mpl/AwsCryptographicMaterialProviders/runtimes/net/MPL.csproj" />
