@@ -160,12 +160,7 @@ func Aws_cryptography_encryptionSdk_DecryptInput_ciphertext_FromDafny(input inte
 		if input == nil {
 			return nil
 		}
-		a := input.(dafny.Sequence).ToArray().(dafny.GoNativeArray)
-		b := make([]byte, 0, a.Length())
-		for i := uint32(0); i < a.Length(); i++ {
-			b = append(b, a.Select(i).(byte))
-		}
-		return b
+		return dafny.ToByteArray(input.(dafny.Sequence))
 	}()
 }
 func Aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_FromDafny(input interface{}) map[string]string {
@@ -188,12 +183,7 @@ func Aws_cryptography_encryptionSdk_DecryptOutput_plaintext_FromDafny(input inte
 		if input == nil {
 			return nil
 		}
-		a := input.(dafny.Sequence).ToArray().(dafny.GoNativeArray)
-		b := make([]byte, 0, a.Length())
-		for i := uint32(0); i < a.Length(); i++ {
-			b = append(b, a.Select(i).(byte))
-		}
-		return b
+		return dafny.ToByteArray(input.(dafny.Sequence))
 	}()
 }
 func Aws_cryptography_encryptionSdk_DecryptOutput_encryptionContext_FromDafny(input interface{}) map[string]string {
@@ -234,12 +224,7 @@ func Aws_cryptography_encryptionSdk_EncryptInput_plaintext_FromDafny(input inter
 		if input == nil {
 			return nil
 		}
-		a := input.(dafny.Sequence).ToArray().(dafny.GoNativeArray)
-		b := make([]byte, 0, a.Length())
-		for i := uint32(0); i < a.Length(); i++ {
-			b = append(b, a.Select(i).(byte))
-		}
-		return b
+		return dafny.ToByteArray(input.(dafny.Sequence))
 	}()
 }
 func Aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_FromDafny(input interface{}) map[string]string {
@@ -293,12 +278,7 @@ func Aws_cryptography_encryptionSdk_EncryptOutput_ciphertext_FromDafny(input int
 		if input == nil {
 			return nil
 		}
-		a := input.(dafny.Sequence).ToArray().(dafny.GoNativeArray)
-		b := make([]byte, 0, a.Length())
-		for i := uint32(0); i < a.Length(); i++ {
-			b = append(b, a.Select(i).(byte))
-		}
-		return b
+		return dafny.ToByteArray(input.(dafny.Sequence))
 	}()
 }
 func Aws_cryptography_encryptionSdk_EncryptOutput_encryptionContext_FromDafny(input interface{}) map[string]string {
