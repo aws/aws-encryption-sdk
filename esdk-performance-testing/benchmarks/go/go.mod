@@ -4,6 +4,16 @@ go 1.23.0
 
 replace github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk => ../../../AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go
 
+replace github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb => ../../../mpl/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go
+
+replace github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms => ../../../mpl/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go
+
+replace github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives => ../../../mpl/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go
+
+replace github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library => ../../../mpl/StandardLibrary/runtimes/go/ImplementationFromDafny-go
+
+replace github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl => ../../../mpl/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go
+
 require (
 	github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl v0.2.2
 	github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk v0.0.0-00010101000000-000000000000
@@ -33,7 +43,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.33.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.38.0 // indirect
 	github.com/aws/smithy-go v1.22.5 // indirect
-	github.com/dafny-lang/DafnyRuntimeGo/v4 v4.11.0 // indirect
+	github.com/dafny-lang/DafnyRuntimeGo/v4 v4.11.1 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect

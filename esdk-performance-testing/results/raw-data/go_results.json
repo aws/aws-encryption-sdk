@@ -1,0 +1,72 @@
+{
+  "metadata": {
+    "cpu_count": 12,
+    "go_version": "go1.23.0",
+    "language": "go",
+    "timestamp": "2025-09-26 10:13:59",
+    "total_memory_gb": 36,
+    "total_tests": 3
+  },
+  "results": [
+    {
+      "test_name": "throughput",
+      "language": "go",
+      "data_size": 52428800,
+      "concurrency": 1,
+      "encrypt_latency_ms": 526.4633606666667,
+      "decrypt_latency_ms": 509.1082363333333,
+      "end_to_end_latency_ms": 1036.6499443333332,
+      "ops_per_second": 0.9645829136841684,
+      "bytes_per_second": 50571924.66496453,
+      "peak_memory_mb": 0,
+      "memory_efficiency_ratio": 0,
+      "p50_latency": 1034.56870342,
+      "p95_latency": 1034.572749298,
+      "p99_latency": 1034.5731089316,
+      "timestamp": "2025-09-26 10:13:47",
+      "go_version": "go1.23.0",
+      "cpu_count": 12,
+      "total_memory_gb": 36
+    },
+    {
+      "test_name": "memory",
+      "language": "go",
+      "data_size": 52428800,
+      "concurrency": 1,
+      "encrypt_latency_ms": 0,
+      "decrypt_latency_ms": 0,
+      "end_to_end_latency_ms": 0,
+      "ops_per_second": 0,
+      "bytes_per_second": 0,
+      "peak_memory_mb": 1027.3083801269531,
+      "memory_efficiency_ratio": 0.11267139711613851,
+      "p50_latency": 0,
+      "p95_latency": 0,
+      "p99_latency": 0,
+      "timestamp": "2025-09-26 10:13:53",
+      "go_version": "go1.23.0",
+      "cpu_count": 12,
+      "total_memory_gb": 36
+    },
+    {
+      "test_name": "concurrent",
+      "language": "go",
+      "data_size": 52428800,
+      "concurrency": 2,
+      "encrypt_latency_ms": 0,
+      "decrypt_latency_ms": 0,
+      "end_to_end_latency_ms": 1165.2742832,
+      "ops_per_second": 1.6921494145088993,
+      "bytes_per_second": 88717363.22340418,
+      "peak_memory_mb": 0,
+      "memory_efficiency_ratio": 0,
+      "p50_latency": 1094.3249817649998,
+      "p95_latency": 1095.1497406534997,
+      "p99_latency": 1095.2230525547,
+      "timestamp": "2025-09-26 10:13:59",
+      "go_version": "go1.23.0",
+      "cpu_count": 12,
+      "total_memory_gb": 36
+    }
+  ]
+}

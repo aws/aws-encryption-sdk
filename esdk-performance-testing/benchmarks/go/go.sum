@@ -1,13 +1,3 @@
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb v0.2.2 h1:1CYvKblXRaPB9B0cdN/xWVOXvii2AQHgdcbTlI5F8Oc=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb v0.2.2/go.mod h1:vb/jlzf5XQSD5O3Po50VX6j6JyzcWs3wPoV7foewmJs=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms v0.2.2 h1:0x9qTjQeW8fkP+/kuRw2drLDZM617rr8h6kcUetBjKE=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms v0.2.2/go.mod h1:2wGHS+a/Dg21W3cnFDYbOu33d6eQUS52Ff/uAE2vIu8=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl v0.2.2 h1:gXYtIJfwt+5gOmo7zg/TDb0l1cz5XgnWR0/opB0OyyA=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl v0.2.2/go.mod h1:9yccmncslXtxhE4vyg1ZKaTWEe5xyNljrt3glFtMN4g=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives v0.2.2 h1:tBPXcmQVmf0ILx5eY++l64+yp04AFlHeKqpli0YDQBc=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives v0.2.2/go.mod h1:mSUejB7V5Wo23naCw2ORAJ+5ZJkyaSvB6hQbKPVXNuA=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library v0.2.2 h1:k/OqY+NJcTlFByY1WcM6dF5ZC4kIZtZ8b3A9kRVAj8Y=
-github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library v0.2.2/go.mod h1:j4QF5oVY9L1yNZrzoDu3l3d8TRh53uBw3FLZCL7xCTk=
 github.com/aws/aws-sdk-go-v2 v1.38.1 h1:j7sc33amE74Rz0M/PoCpsZQ6OunLqys/m5antM0J+Z8=
 github.com/aws/aws-sdk-go-v2 v1.38.1/go.mod h1:9Q0OoGQoboYIAJyslFyF1f5K1Ryddop8gqMhWx/n4Wg=
 github.com/aws/aws-sdk-go-v2/config v1.31.2 h1:NOaSZpVGEH2Np/c1toSeW0jooNl+9ALmsUTZ8YvkJR0=
@@ -40,8 +30,8 @@ github.com/aws/aws-sdk-go-v2/service/sts v1.38.0 h1:iV1Ko4Em/lkJIsoKyGfc0nQySi+v
 github.com/aws/aws-sdk-go-v2/service/sts v1.38.0/go.mod h1:bEPcjW7IbolPfK67G1nilqWyoxYMSPrDiIQ3RdIdKgo=
 github.com/aws/smithy-go v1.22.5 h1:P9ATCXPMb2mPjYBgueqJNCA5S9UfktsW0tTxi+a7eqw=
 github.com/aws/smithy-go v1.22.5/go.mod h1:t1ufH5HMublsJYulve2RKmHDC15xu1f26kHCp/HgceI=
-github.com/dafny-lang/DafnyRuntimeGo/v4 v4.11.0 h1:wJhHuhD9thOc0GXojfW8DJ/n7G8prW+1nUL5O3lvzs0=
-github.com/dafny-lang/DafnyRuntimeGo/v4 v4.11.0/go.mod h1:l2Tm4N2DKuq3ljONC2vOATeM9PUpXbIc8SgXdwwqEto=
+github.com/dafny-lang/DafnyRuntimeGo/v4 v4.11.1 h1:tTQ9M9HCUaf2SXqutj2vmMqJKJpefWMSqx1niqTqi8M=
+github.com/dafny-lang/DafnyRuntimeGo/v4 v4.11.1/go.mod h1:l2Tm4N2DKuq3ljONC2vOATeM9PUpXbIc8SgXdwwqEto=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
