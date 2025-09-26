@@ -56,7 +56,7 @@ jobs:
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
         with:
-          dafny-version: nightly-2025-01-30-7db1e5f
+          dafny-version: 4.10.0
 
       - name: Setup Java 17 for codegen
         uses: actions/setup-java@v3
@@ -148,7 +148,7 @@ jobs:
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
         with:
-          dafny-version: nightly-2025-01-30-7db1e5f
+          dafny-version: 4.10.0
 
       - name: Setup Java 17 for codegen
         uses: actions/setup-java@v3

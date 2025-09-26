@@ -171,7 +171,7 @@ jobs:
         if: matrix.language == 'rust'
         uses: ./mpl/.github/actions/setup_dafny
         with:
-          dafny-version: nightly-2025-01-30-7db1e5f
+          dafny-version: 4.10.0
 
       - name: Setup Dafny Not Rust
         if: matrix.language != 'rust'
@@ -448,7 +448,7 @@ jobs:
         if: matrix.decrypting_language == 'rust'
         uses: ./mpl/.github/actions/setup_dafny
         with:
-          dafny-version: nightly-2025-01-30-7db1e5f
+          dafny-version: 4.10.0
 
       - name: Setup Dafny Not Rust
         if: matrix.decrypting_language != 'rust'
