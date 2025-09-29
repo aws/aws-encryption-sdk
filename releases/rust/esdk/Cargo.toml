@@ -1,8 +1,8 @@
 [package]
 name = "aws-esdk"
-version = "1.1.1"
+version = "1.2.0"
 edition = "2021"
-rust-version = "1.81.0"
+rust-version = "1.86.0"
 keywords = ["cryptography", "security", "dynamodb", "encryption", "client-side"]
 license = "ISC AND (Apache-2.0 OR ISC)"
 description = "aws-esdk is a library for implementing client side encryption."
@@ -16,21 +16,27 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-aws-config = "1.6.3"
-aws-lc-rs = "=1.13.1"
-aws-lc-sys = "=0.29.0"
-aws-sdk-dynamodb = "1.73.0"
-aws-sdk-kms = "1.67.0"
-aws-smithy-runtime-api = {version = "1.8.0", features = ["client"] }
-aws-smithy-types = "1.3.1"
+aws-config = "1.8.5"
+aws-lc-rs = {version = "1.13.3"}
+aws-lc-sys = { version = "0.30", optional = true }
+aws-lc-fips-sys = { version = "0.13", optional = true }
+aws-sdk-dynamodb = "1.90.0"
+aws-sdk-kms = "1.84.0"
+aws-smithy-runtime-api = {version = "1.9.0", features = ["client"] }
+aws-smithy-types = "1.3.2"
 chrono = "0.4.41"
 cpu-time = "1.0.0"
-dafny-runtime = { version = "0.3.1", features = ["sync", "small-int"] }
 dashmap = "6.1.0"
 pem = "3.0.5"
-rand = "0.9.1"
-tokio = {version = "1.45.1", features = ["full"] }
-uuid = { version = "1.17.0", features = ["v4"] }
+rand = "0.9.2"
+tokio = {version = "1.47.1", features = ["full"] }
+uuid = { version = "1.18.0", features = ["v4"] }
+dafny-runtime = { version = "0.3.1", features = ["sync", "small-int"] }
 
 [[example]]
 name = "main"
+
+[features]
+fips = ["aws-lc-rs/fips", "dep:aws-lc-fips-sys"]
+non-fips = ["aws-lc-rs/aws-lc-sys", "dep:aws-lc-sys"]
+default = ["non-fips"]

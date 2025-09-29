@@ -37,7 +37,7 @@ impl From<BoxError> for BoxError2 {
 
 impl<T: std::fmt::Debug> From<T> for BoxError {
     fn from(error: T) -> Self {
-        let my_str = format!("{:?}", error);
+        let my_str = format!("{error:?}");
         BoxError(my_str)
     }
 }

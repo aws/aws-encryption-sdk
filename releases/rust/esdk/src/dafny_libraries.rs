@@ -17,7 +17,9 @@ pub mod DafnyLibraries {
     }
 
     impl<K: ::dafny_runtime::DafnyTypeEq, V: ::dafny_runtime::DafnyTypeEq> MutableMap<K, V> {
-        pub fn _allocate_object() -> ::dafny_runtime::Object<Self> {
+        // bytesKeys should be set using ctor but it does not because of Dafny bug
+        // https://github.com/dafny-lang/dafny/issues/6333
+        pub fn _allocate_object(_bytes_keys: bool) -> ::dafny_runtime::Object<Self> {
             ::dafny_runtime::Object::new(MutableMap {
                 map: DashMap::new(),
             })

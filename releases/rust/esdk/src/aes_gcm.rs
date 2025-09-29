@@ -73,13 +73,13 @@ impl AES_GCM {
     ) -> Result<DoAESEncryptOutput, String> {
         let alg = self.get_alg()?;
         let mut in_out_buffer = Vec::from(msg);
-        let key = UnboundKey::new(alg, key).map_err(|e| format!("new {:?}", e))?;
+        let key = UnboundKey::new(alg, key).map_err(|e| format!("new {e:?}"))?;
         let nonce = Nonce::assume_unique_for_key(iv.try_into().unwrap());
         let key = LessSafeKey::new(key);
         let aad = Aad::from(aad);
         let tag = key
             .seal_in_place_separate_tag(nonce, aad, &mut in_out_buffer)
-            .map_err(|e| format!("Seal {:?}", e))?;
+            .map_err(|e| format!("Seal {e:?}"))?;
         Ok(DoAESEncryptOutput {
             cipher_text: in_out_buffer,
             auth_tag: Vec::from(tag.as_ref()),
@@ -96,12 +96,12 @@ impl AES_GCM {
     ) -> Result<Vec<u8>, String> {
         let alg = self.get_alg()?;
         let mut out_buffer = Vec::from(cipher_text);
-        let key = UnboundKey::new(alg, key).map_err(|e| format!("new {:?}", e))?;
+        let key = UnboundKey::new(alg, key).map_err(|e| format!("new {e:?}"))?;
         let nonce = Nonce::assume_unique_for_key(iv.try_into().unwrap());
         let key = LessSafeKey::new(key);
         let aad = Aad::from(aad);
         key.open_separate_gather(nonce, aad, cipher_text, auth_tag, &mut out_buffer)
-            .map_err(|e| format!("gather {:?}", e))?;
+            .map_err(|e| format!("gather {e:?}"))?;
         Ok(out_buffer)
     }
 
@@ -143,7 +143,7 @@ impl AES_GCM {
                 }),
             }),
             Err(e) => {
-                let msg = format!("AES Encrypt : {}", e);
+                let msg = format!("AES Encrypt : {e}");
                 enc_result(&msg)
             }
         }
@@ -196,7 +196,7 @@ impl AES_GCM {
                 value: dafny_runtime::Sequence::from_array_owned(x),
             }),
             Err(e) => {
-                let msg = format!("AES Decrypt : {}", e);
+                let msg = format!("AES Decrypt : {e}");
                 dec_result(&msg)
             }
         }
@@ -229,7 +229,7 @@ mod tests {
         let cipher = match &*alg.AESEncryptExtern(&iv, &key, &msg, &aad) {
             _Wrappers_Compile::Result::Success { value } => value.clone(),
             _Wrappers_Compile::Result::Failure { error } => {
-                panic!("AESEncryptExtern Failed : {:?}", error);
+                panic!("AESEncryptExtern Failed : {error:?}");
             }
         };
 
@@ -240,10 +240,10 @@ mod tests {
             } => (cipherText, authTag),
         };
 
-        let output = match &*alg.AESDecryptExtern(&key, &cipher_text, &auth_tag, &iv, &aad) {
+        let output = match &*alg.AESDecryptExtern(&key, cipher_text, auth_tag, &iv, &aad) {
             _Wrappers_Compile::Result::Success { value } => value.clone(),
             _Wrappers_Compile::Result::Failure { error } => {
-                panic!("AESEncryptExtern Failed : {:?}", error);
+                panic!("AESEncryptExtern Failed : {error:?}");
             }
         };
 

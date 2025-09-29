@@ -1,0 +1,46 @@
+# ESDK Performance Test Scenarios Configuration
+
+# Data sizes to test (in bytes)
+# Categories are for organization only - code processes all sizes regardless of category
+data_sizes:
+  small:
+    - 1024 # 1KB
+    - 5120 # 5KB
+    - 10240 # 10KB
+  medium:
+    - 102400 # 100KB
+    - 512000 # 500KB
+    - 1048576 # 1MB
+  large:
+    - 10485760 # 10MB
+    - 52428800 # 50MB
+    - 104857600 # 100MB
+
+# Quick test configuration (reduced test set for faster execution)
+quick_config:
+  data_sizes:
+    small:
+      - 52428800 # 50MB only for quick mode
+  iterations:
+    warmup: 3 # Reduced warmup iterations
+    measurement: 3 # Reduced measurement iterations
+  concurrency_levels:
+    - 1
+    - 2
+  test_types:
+    - "throughput"
+    - "memory"
+    - "concurrency"
+
+# Test iterations for statistical significance
+iterations:
+  warmup: 5 # Warmup iterations (not counted)
+  measurement: 10 # Measurement iterations
+
+# Concurrency levels to test
+concurrency_levels:
+  - 1
+  - 2
+  - 4
+  - 8
+  - 16

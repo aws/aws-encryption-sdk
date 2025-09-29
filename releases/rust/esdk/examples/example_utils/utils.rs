@@ -205,18 +205,18 @@ fn generate_raw_ecc_key_pair(
     // P256, P384, or P521.
     // This key is created here for example purposes only.
     let private_key = aws_lc_rs::agreement::PrivateKey::generate(get_alg(ecdh_curve_spec))
-        .map_err(|e| format!("{:?}", e))?;
+        .map_err(|e| format!("{e:?}"))?;
 
     let public_key = private_key
         .compute_public_key()
-        .map_err(|e| format!("{:?}", e))?;
+        .map_err(|e| format!("{e:?}"))?;
 
     let public_key: Vec<u8> = x962_to_x509(public_key.as_ref(), get_nid(ecdh_curve_spec))?;
     let public_key = pem::Pem::new("PUBLIC KEY", public_key);
     let public_key = pem::encode(&public_key);
 
     let private_key_der =
-        AsDer::<EcPrivateKeyRfc5915Der>::as_der(&private_key).map_err(|e| format!("{:?}", e))?;
+        AsDer::<EcPrivateKeyRfc5915Der>::as_der(&private_key).map_err(|e| format!("{e:?}"))?;
     let private_key = pem::Pem::new("PRIVATE KEY", private_key_der.as_ref());
     let private_key = pem::encode(&private_key);
 

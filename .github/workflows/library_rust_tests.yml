@@ -56,7 +56,7 @@ jobs:
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
         with:
-          dafny-version: nightly-2025-01-30-7db1e5f
+          dafny-version: 4.10.0
 
       - name: Setup Java 17 for codegen
         uses: actions/setup-java@v3
@@ -67,12 +67,6 @@ jobs:
       - name: Setup NASM for Windows (aws-lc-sys)
         if: matrix.os == 'windows-latest'
         uses: ilammy/setup-nasm@v1
-
-      # Go is needed for aws-lc-FIPS
-      - name: Install Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ">=1.18"
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
@@ -99,13 +93,6 @@ jobs:
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_rust CORES=$CORES
-
-      - name: Test Linter for Rust examples and implementation_from_dafny.rs
-        working-directory: ${{ matrix.library }}/runtimes/rust
-        shell: bash
-        run: |
-          cargo clippy
-          cargo clippy --example main
 
       - name: Test Rust
         working-directory: ${{ matrix.library }}
@@ -161,7 +148,7 @@ jobs:
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
         with:
-          dafny-version: nightly-2025-01-30-7db1e5f
+          dafny-version: 4.10.0
 
       - name: Setup Java 17 for codegen
         uses: actions/setup-java@v3

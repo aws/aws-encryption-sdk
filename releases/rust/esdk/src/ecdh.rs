@@ -22,14 +22,14 @@ pub mod ECDH {
         use crate::software::amazon::cryptography::primitives::internaldafny::types::ECDHCurveSpec;
         use crate::software::amazon::cryptography::primitives::internaldafny::types::Error as DafnyError;
         use crate::*;
-        use aws_lc_sys;
+        use aws_lc_sys_impl;
         use dafny_runtime::Rc;
 
         fn get_nid(x: &ECDHCurveSpec) -> i32 {
             match x {
-                ECDHCurveSpec::ECC_NIST_P256 {} => aws_lc_sys::NID_X9_62_prime256v1,
-                ECDHCurveSpec::ECC_NIST_P384 {} => aws_lc_sys::NID_secp384r1,
-                ECDHCurveSpec::ECC_NIST_P521 {} => aws_lc_sys::NID_secp521r1,
+                ECDHCurveSpec::ECC_NIST_P256 {} => aws_lc_sys_impl::NID_X9_62_prime256v1,
+                ECDHCurveSpec::ECC_NIST_P384 {} => aws_lc_sys_impl::NID_secp384r1,
+                ECDHCurveSpec::ECC_NIST_P521 {} => aws_lc_sys_impl::NID_secp521r1,
                 ECDHCurveSpec::SM2 {} => panic!("No SM2 in Rust"),
             }
         }
@@ -45,29 +45,29 @@ pub mod ECDH {
             }
         }
 
-        use aws_lc_sys::CBB_finish;
-        use aws_lc_sys::CBB_init;
-        use aws_lc_sys::EC_GROUP_get_curve_name;
-        use aws_lc_sys::EC_GROUP_new_by_curve_name;
-        use aws_lc_sys::EC_KEY_get0_group;
-        use aws_lc_sys::EC_KEY_get0_public_key;
-        use aws_lc_sys::EC_KEY_new_by_curve_name;
-        use aws_lc_sys::EC_KEY_set_public_key;
-        use aws_lc_sys::EC_POINT_free;
-        use aws_lc_sys::EC_POINT_new;
-        use aws_lc_sys::EC_POINT_oct2point;
-        use aws_lc_sys::EC_POINT_point2oct;
-        use aws_lc_sys::EVP_PKEY_assign_EC_KEY;
-        use aws_lc_sys::EVP_PKEY_free;
-        use aws_lc_sys::EVP_PKEY_get0_EC_KEY;
-        use aws_lc_sys::EVP_PKEY_new;
-        use aws_lc_sys::EVP_PKEY_size;
-        use aws_lc_sys::EVP_marshal_public_key;
-        use aws_lc_sys::EVP_parse_public_key;
-        use aws_lc_sys::OPENSSL_free;
-        use aws_lc_sys::CBB;
-        use aws_lc_sys::CBS;
-        use aws_lc_sys::EVP_PKEY_EC;
+        use aws_lc_sys_impl::CBB_finish;
+        use aws_lc_sys_impl::CBB_init;
+        use aws_lc_sys_impl::EC_GROUP_get_curve_name;
+        use aws_lc_sys_impl::EC_GROUP_new_by_curve_name;
+        use aws_lc_sys_impl::EC_KEY_get0_group;
+        use aws_lc_sys_impl::EC_KEY_get0_public_key;
+        use aws_lc_sys_impl::EC_KEY_new_by_curve_name;
+        use aws_lc_sys_impl::EC_KEY_set_public_key;
+        use aws_lc_sys_impl::EC_POINT_free;
+        use aws_lc_sys_impl::EC_POINT_new;
+        use aws_lc_sys_impl::EC_POINT_oct2point;
+        use aws_lc_sys_impl::EC_POINT_point2oct;
+        use aws_lc_sys_impl::EVP_PKEY_assign_EC_KEY;
+        use aws_lc_sys_impl::EVP_PKEY_free;
+        use aws_lc_sys_impl::EVP_PKEY_get0_EC_KEY;
+        use aws_lc_sys_impl::EVP_PKEY_new;
+        use aws_lc_sys_impl::EVP_PKEY_size;
+        use aws_lc_sys_impl::EVP_marshal_public_key;
+        use aws_lc_sys_impl::EVP_parse_public_key;
+        use aws_lc_sys_impl::OPENSSL_free;
+        use aws_lc_sys_impl::CBB;
+        use aws_lc_sys_impl::CBS;
+        use aws_lc_sys_impl::EVP_PKEY_EC;
         use std::ptr::null_mut;
 
         const ELEM_MAX_BITS: usize = 521;
@@ -106,9 +106,9 @@ pub mod ECDH {
             }
 
             let comp = if compress {
-                aws_lc_sys::point_conversion_form_t::POINT_CONVERSION_COMPRESSED
+                aws_lc_sys_impl::point_conversion_form_t::POINT_CONVERSION_COMPRESSED
             } else {
-                aws_lc_sys::point_conversion_form_t::POINT_CONVERSION_UNCOMPRESSED
+                aws_lc_sys_impl::point_conversion_form_t::POINT_CONVERSION_UNCOMPRESSED
             };
 
             let mut out_buf = [0u8; PUBLIC_KEY_MAX_LEN];
@@ -184,7 +184,7 @@ pub mod ECDH {
         ) -> Result<Vec<u8>, String> {
             let mut out = null_mut();
             let evp_pkey = unsafe {
-                aws_lc_sys::d2i_PrivateKey(
+                aws_lc_sys_impl::d2i_PrivateKey(
                     EVP_PKEY_EC,
                     &mut out,
                     &mut key_bytes.as_ptr(),
@@ -234,8 +234,8 @@ pub mod ECDH {
             Ok(slice)
         }
         fn get_public_key(alg: &ECDHCurveSpec, pem: &[u8]) -> Result<Vec<u8>, String> {
-            let pem = std::str::from_utf8(pem).map_err(|e| format!("{:?}", e))?;
-            let private_key = pem::parse(pem).map_err(|e| format!("{:?}", e))?;
+            let pem = std::str::from_utf8(pem).map_err(|e| format!("{e:?}"))?;
+            let private_key = pem::parse(pem).map_err(|e| format!("{e:?}"))?;
             inner_get_public_key(private_key.contents(), get_nid(alg))
         }
 
@@ -319,7 +319,7 @@ pub mod ECDH {
                     value: dafny_runtime::Sequence::from_array_owned(x),
                 }),
                 Err(e) => {
-                    let msg = format!("ECDH Get Public Key : {}", e);
+                    let msg = format!("ECDH Get Public Key : {e}");
                     Rc::new(_Wrappers_Compile::Result::Failure {
                         error: super::error(&msg),
                     })
@@ -340,7 +340,7 @@ pub mod ECDH {
             }
             let ec_key = unsafe { EVP_PKEY_get0_EC_KEY(evp_pkey) };
 
-            if unsafe { aws_lc_sys::EC_KEY_check_fips(ec_key) } != 1 {
+            if unsafe { aws_lc_sys_impl::EC_KEY_check_fips(ec_key) } != 1 {
                 return Err(INVALID_KEY.to_string());
             }
             let ec_group = unsafe { EC_KEY_get0_group(ec_key) };
@@ -378,7 +378,7 @@ pub mod ECDH {
                     value: dafny_runtime::Sequence::from_array_owned(v),
                 }),
                 Err(e) => {
-                    let msg = format!("ECDH Compress Public Key {}", e);
+                    let msg = format!("ECDH Compress Public Key {e}");
                     Rc::new(_Wrappers_Compile::Result::Failure {
                         error: super::error(&msg),
                     })
@@ -396,7 +396,7 @@ pub mod ECDH {
                     value: dafny_runtime::Sequence::from_array_owned(v),
                 }),
                 Err(e) => {
-                    let msg = format!("ECDH Decompress Public Key {}", e);
+                    let msg = format!("ECDH Decompress Public Key {e}");
                     Rc::new(_Wrappers_Compile::Result::Failure {
                         error: super::error(&msg),
                     })
@@ -429,13 +429,13 @@ pub mod ECDH {
             private_key_pem: &[u8],
             public_key_der: &[u8],
         ) -> Result<Vec<u8>, String> {
-            let pem = std::str::from_utf8(private_key_pem).map_err(|e| format!("{:?}", e))?;
-            let private_key = pem::parse(pem).map_err(|e| format!("{:?}", e))?;
+            let pem = std::str::from_utf8(private_key_pem).map_err(|e| format!("{e:?}"))?;
+            let private_key = pem::parse(pem).map_err(|e| format!("{e:?}"))?;
             let private_key = aws_lc_rs::agreement::PrivateKey::from_private_key_der(
                 super::ECCUtils::get_alg(curve_algorithm),
                 private_key.contents(),
             )
-            .map_err(|e| format!("{:?}", e))?;
+            .map_err(|e| format!("{e:?}"))?;
             let public_key = super::ECCUtils::X509_to_X962(public_key_der, false, None)?;
             let public_key = aws_lc_rs::agreement::UnparsedPublicKey::new(
                 super::ECCUtils::get_alg(curve_algorithm),
@@ -458,7 +458,7 @@ pub mod ECDH {
                     value: dafny_runtime::Sequence::from_array_owned(v),
                 }),
                 Err(e) => {
-                    let msg = format!("ECDH Calculate Shared Secret : {}", e);
+                    let msg = format!("ECDH Calculate Shared Secret : {e}");
                     Rc::new(_Wrappers_Compile::Result::Failure {
                         error: super::error(&msg),
                     })
@@ -477,16 +477,16 @@ pub mod ECDH {
         fn ecdsa_key_gen(alg: &ECDHCurveSpec) -> Result<(Vec<u8>, Vec<u8>), String> {
             let private_key =
                 aws_lc_rs::agreement::PrivateKey::generate(super::ECCUtils::get_alg(alg))
-                    .map_err(|e| format!("{:?}", e))?;
+                    .map_err(|e| format!("{e:?}"))?;
 
             let public_key = private_key
                 .compute_public_key()
-                .map_err(|e| format!("{:?}", e))?;
+                .map_err(|e| format!("{e:?}"))?;
 
             let public_key: Vec<u8> = super::ECCUtils::X962_to_X509(public_key.as_ref(), alg)?;
 
             let private_key_der = AsDer::<EcPrivateKeyRfc5915Der>::as_der(&private_key)
-                .map_err(|e| format!("{:?}", e))?;
+                .map_err(|e| format!("{e:?}"))?;
             let private_key = pem::Pem::new("PRIVATE KEY", private_key_der.as_ref());
             let private_key = pem::encode(&private_key);
             let private_key: Vec<u8> = private_key.into_bytes();
@@ -505,7 +505,7 @@ pub mod ECDH {
                     }),
                 }),
                 Err(e) => {
-                    let msg = format!("ECDH Generate Key Pair : {}", e);
+                    let msg = format!("ECDH Generate Key Pair : {e}");
                     Rc::new(_Wrappers_Compile::Result::Failure {
                         error: super::error(&msg),
                     })
@@ -526,12 +526,12 @@ pub mod ECDH {
 
             let pair: crate::ECDH::EccKeyPair = match &*KeyGeneration::GenerateKeyPair(&alg) {
                 _Wrappers_Compile::Result::Success { value } => (**value).clone(),
-                _Wrappers_Compile::Result::Failure { error } => panic!("{:?}", error),
+                _Wrappers_Compile::Result::Failure { error } => panic!("{error:?}"),
             };
 
             match &*ECCUtils::ValidatePublicKey(&alg, pair.publicKey()) {
                 _Wrappers_Compile::Result::Success { .. } => {}
-                _Wrappers_Compile::Result::Failure { error } => panic!("{:?}", error),
+                _Wrappers_Compile::Result::Failure { error } => panic!("{error:?}"),
             };
         }
     }

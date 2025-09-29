@@ -159,14 +159,10 @@ func NetV4_0_0_RetryPolicy_ToDafny(nativeInput awscryptographyencryptionsdksmith
 
 func Aws_cryptography_encryptionSdk_DecryptInput_ciphertext_ToDafny(input []byte) dafny.Sequence {
 	return func() dafny.Sequence {
-		v := make([]interface{}, 0, len(input))
 		if input == nil {
 			return nil
 		}
-		for _, e := range input {
-			v = append(v, e)
-		}
-		return dafny.SeqFromArray(v, false)
+		return dafny.SeqOfBytes(input)
 	}()
 }
 
@@ -182,14 +178,10 @@ func Aws_cryptography_encryptionSdk_DecryptInput_encryptionContext_ToDafny(input
 
 func Aws_cryptography_encryptionSdk_DecryptOutput_plaintext_ToDafny(input []byte) dafny.Sequence {
 	return func() dafny.Sequence {
-		v := make([]interface{}, 0, len(input))
 		if input == nil {
 			return nil
 		}
-		for _, e := range input {
-			v = append(v, e)
-		}
-		return dafny.SeqFromArray(v, false)
+		return dafny.SeqOfBytes(input)
 	}()
 }
 
@@ -231,14 +223,10 @@ func Aws_cryptography_encryptionSdk_DecryptOutput_algorithmSuiteId_ToDafny(input
 
 func Aws_cryptography_encryptionSdk_EncryptInput_plaintext_ToDafny(input []byte) dafny.Sequence {
 	return func() dafny.Sequence {
-		v := make([]interface{}, 0, len(input))
 		if input == nil {
 			return nil
 		}
-		for _, e := range input {
-			v = append(v, e)
-		}
-		return dafny.SeqFromArray(v, false)
+		return dafny.SeqOfBytes(input)
 	}()
 }
 
@@ -288,14 +276,10 @@ func Aws_cryptography_encryptionSdk_EncryptInput_frameLength_ToDafny(input *int6
 
 func Aws_cryptography_encryptionSdk_EncryptOutput_ciphertext_ToDafny(input []byte) dafny.Sequence {
 	return func() dafny.Sequence {
-		v := make([]interface{}, 0, len(input))
 		if input == nil {
 			return nil
 		}
-		for _, e := range input {
-			v = append(v, e)
-		}
-		return dafny.SeqFromArray(v, false)
+		return dafny.SeqOfBytes(input)
 	}()
 }
 

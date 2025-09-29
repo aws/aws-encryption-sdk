@@ -75,6 +75,12 @@ pub mod operation;
 /// Types for the transform client.
 pub mod types;
 
+#[cfg(feature = "fips")]
+use aws_lc_fips_sys as aws_lc_sys_impl;
+
+#[cfg(not(feature = "fips"))]
+use aws_lc_sys as aws_lc_sys_impl;
+
 pub use client::Client;
 pub use types::aws_encryption_sdk_config::AwsEncryptionSdkConfig;
 
