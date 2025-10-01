@@ -48,4 +48,4 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 )
 
-replace github.com/dafny-lang/DafnyRuntimeGo/v4 => /Users/scchatur/workplace/DafnyGoLib/v4/DafnyRuntimeGo/v4
+replace github.com/dafny-lang/DafnyRuntimeGo/v4 => ../../../../esdk-performance-testing/benchmarks/go/DafnyRuntimeGo/v4
