@@ -45,3 +45,5 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 )
+
+replace github.com/dafny-lang/DafnyRuntimeGo/v4 => /Users/scchatur/workplace/DafnyGoLib/v4/DafnyRuntimeGo/v4
