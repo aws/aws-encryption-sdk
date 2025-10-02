@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         library: [AwsEncryptionSDK, TestVectors]
-        os: [macos-13]
+        os: [macos-14]
     runs-on: ${{ matrix.os }}
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -36,7 +36,7 @@ jobs:
           git submodule update --init --recursive mpl
 
       # dafny-reportgenerator requires next6
-      # but only 7.0 is installed on macos-13-large
+      # but only 7.0 is installed on macos-14-large
       - name: Setup .NET Core SDK '6.0.x'
         uses: actions/setup-dotnet@v3
         with:
