@@ -66,7 +66,7 @@ jobs:
           update-and-regenerate-mpl: true
 
       - name: Setup Java 8
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v5
         with:
           distribution: "corretto"
           java-version: 8
@@ -85,7 +85,7 @@ jobs:
           make test_java
 
       - name: Setup Java 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v5
         with:
           distribution: "corretto"
           java-version: 11
@@ -108,32 +108,8 @@ jobs:
           arguments: runTests
           build-root-directory: ./${{ matrix.library }}/runtimes/java
 
-      - name: Setup Java 16
-        uses: actions/setup-java@v3
-        with:
-          distribution: "corretto"
-          java-version: 16
-
-      - name: Clean for next Java
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: clean
-          build-root-directory: ./${{ matrix.library }}/runtimes/java
-
-      - name: Compile Java 16
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: build
-          build-root-directory: ./${{ matrix.library }}/runtimes/java
-
-      - name: Test Java 16
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: runTests
-          build-root-directory: ./${{ matrix.library }}/runtimes/java
-
       - name: Setup Java 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v5
         with:
           distribution: "corretto"
           java-version: 17

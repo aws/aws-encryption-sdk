@@ -55,7 +55,7 @@ jobs:
         run: echo '{"sdk":{"rollForward":"latestFeature","version":"6.0.0"}}' > ./global.json
 
       - name: Setup Java 17 for codegen
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v5
         with:
           distribution: "corretto"
           java-version: "17"
