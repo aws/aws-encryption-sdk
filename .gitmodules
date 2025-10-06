@@ -8,6 +8,3 @@
 [submodule "mpl"]
 	path = mpl
 	url = https://github.com/aws/aws-cryptographic-material-providers-library-dafny.git
-[submodule "smithy-dafny"]
-	path = smithy-dafny
-	url = https://github.com/awslabs/smithy-dafny
