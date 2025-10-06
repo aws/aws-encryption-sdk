@@ -10,4 +10,4 @@
 	url = https://github.com/aws/aws-cryptographic-material-providers-library-dafny.git
 [submodule "smithy-dafny"]
 	path = smithy-dafny
-	url = git@github.com:smithy-lang/smithy-dafny.git
+	url = https://github.com/smithy-lang/smithy-dafny.git
