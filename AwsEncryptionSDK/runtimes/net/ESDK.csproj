@@ -30,7 +30,6 @@
 
   <ItemGroup>
       <PackageReference Include="DafnyRuntime" Version="[4.2.0,4.8.0]" />
-      <PackageReference Include="BouncyCastle.Cryptography" Version="2.2.1" />
       <PackageReference Include="AWS.Cryptography.MaterialProviders" Version="[1.7.6]" />
       <!--
         System.Collections.Immutable can be removed once dafny.msbuild is updated with
