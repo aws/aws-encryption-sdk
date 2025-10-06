@@ -15,7 +15,7 @@ module EncryptDecryptHelpers {
   import Types = AwsCryptographyEncryptionSdkTypes
   import MPL = AwsCryptographyMaterialProvidersTypes
   import MaterialProviders
-  import Aws.Cryptography.Primitives
+  import Primitives = AtomicPrimitives
   import MessageBody
   import SerializableTypes
   import opened SerializeFunctions

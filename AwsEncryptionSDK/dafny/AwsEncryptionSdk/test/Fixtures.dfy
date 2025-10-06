@@ -9,7 +9,7 @@ module Fixtures {
   import primitivesTypes = AwsCryptographyPrimitivesTypes
   import mplTypes = AwsCryptographyMaterialProvidersTypes
   import opened UInt = StandardLibrary.UInt
-  import Aws.Cryptography.Primitives
+  import Primitives = AtomicPrimitives
   
   // The following are test resources that exist in tests accounts:
 

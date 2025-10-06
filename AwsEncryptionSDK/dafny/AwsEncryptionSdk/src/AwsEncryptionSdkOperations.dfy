@@ -17,7 +17,7 @@ include "Serialize/EncryptionContext.dfy"
 
 module AwsEncryptionSdkOperations refines AbstractAwsCryptographyEncryptionSdkOperations {
 
-  import Aws.Cryptography.Primitives
+  import Primitives = AtomicPrimitives
   import MPL = AwsCryptographyMaterialProvidersTypes
   import MaterialProviders
   import EncryptDecryptHelpers
