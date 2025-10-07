@@ -8,7 +8,7 @@
       <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
       <IsPackable>true</IsPackable>
       
-      <Version>4.1.0</Version>
+      <Version>4.1.1</Version>
 
       <AssemblyName>AWS.Cryptography.EncryptionSDK</AssemblyName>
       <PackageId>AWS.Cryptography.EncryptionSDK</PackageId>
@@ -30,9 +30,8 @@
 
   <ItemGroup>
       <!-- TODO: manually upgraded to match the latest from MPL, is that reasonable? -->
-      <PackageReference Include="DafnyRuntime" Version="4.9.0" />
-      <PackageReference Include="BouncyCastle.Cryptography" Version="2.3.1" />
-      <ProjectReference Include="../../../mpl/AwsCryptographicMaterialProviders/runtimes/net/MPL.csproj" />
+      <PackageReference Include="DafnyRuntime" Version="[4.9.0]" />
+      <PackageReference Include="AWS.Cryptography.MaterialProviders" Version="[1.7.6]" />
       <!--
         System.Collections.Immutable can be removed once dafny.msbuild is updated with
         https://github.com/dafny-lang/dafny.msbuild/pull/10 and versioned
