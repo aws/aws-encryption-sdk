@@ -1065,7 +1065,6 @@ module TestRequiredEncryptionContext {
     returns (output: mplTypes.IKeyring)
     ensures output.ValidState() && fresh(output) && fresh(output.History) && fresh(output.Modifies)
   {
-    var branchKeyId := BRANCH_KEY_ID;
     var ttl : mplTypes.PositiveLong := (1 * 60000) * 10;
     var mpl :- expect MaterialProviders.MaterialProviders();
 
@@ -1085,6 +1084,16 @@ module TestRequiredEncryptionContext {
 
     var keyStore :- expect KeyStore.KeyStore(keyStoreConfig);
 
+    // Try to create a new branch key instead of using the hardcoded one
+    print "Creating new branch key for hierarchical keyring...\n";
+    var createKeyResult := keyStore.CreateKey(KeyStoreTypes.CreateKeyInput());
+    var branchKeyId := if createKeyResult.Success? then 
+      createKeyResult.value.branchKeyIdentifier 
+    else 
+      BRANCH_KEY_ID; // fallback to hardcoded ID if creation fails
+    
+    print "Using branch key: ", branchKeyId, "\n";
+
     output :- expect mpl.CreateAwsKmsHierarchicalKeyring(
       mplTypes.CreateAwsKmsHierarchicalKeyringInput(
         branchKeyId := Some(branchKeyId),
@@ -1093,6 +1102,8 @@ module TestRequiredEncryptionContext {
         ttlSeconds := ttl,
         cache := None
       ));
+    
+    print "Hierarchical keyring created successfully\n";
   }
 
   method GetRsaKeyring()

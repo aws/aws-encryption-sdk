@@ -88,22 +88,6 @@ jobs:
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_net CORES=$CORES
 
-      - name: Test .NET Framework net48
-        working-directory: ${{ matrix.library }}
-        shell: bash
-        run: |
-          make test_net FRAMEWORK=net48
-
-      - name: Test .NET net6.0
-        working-directory: ${{ matrix.library }}
-        shell: bash
-        run: |
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            make test_net_mac_intel FRAMEWORK=net6.0
-          else
-            make test_net FRAMEWORK=net6.0
-          fi
-
       - name: Test Examples on .NET Framework net48
         working-directory: ${{ matrix.library }}
         if: matrix.os == 'windows-latest'
@@ -127,6 +111,24 @@ jobs:
               runtimes/net/Examples \
               --framework net6.0
           fi
+
+      - name: Test .NET Framework net48
+        working-directory: ${{ matrix.library }}
+        shell: bash
+        run: |
+          make test_net FRAMEWORK=net48
+
+      - name: Test .NET net6.0
+        working-directory: ${{ matrix.library }}
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "macOS" ]; then
+            make test_net_mac_intel FRAMEWORK=net6.0
+          else
+            make test_net FRAMEWORK=net6.0
+          fi
+
+
   testVectors:
     strategy:
       fail-fast: false
