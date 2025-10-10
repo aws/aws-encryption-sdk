@@ -58,7 +58,7 @@ module TestRequiredEncryptionContext {
                                         plaintext := asdf,
                                         encryptionContext := Some(encryptionContext),
                                         materialsManager := None,
-                                        keyring := Some(kmsKeyring),
+                                        keyring := Some(hKeyring),
                                         algorithmSuiteId := None,
                                         frameLength := None
                                       ));
@@ -70,7 +70,7 @@ module TestRequiredEncryptionContext {
     var decryptOutput := esdk.Decrypt(Types.DecryptInput(
                                         ciphertext := esdkCiphertext,
                                         materialsManager := None,
-                                        keyring := Some(kmsKeyring),
+                                        keyring := Some(hKeyring),
                                         encryptionContext := Some(encryptionContext)
                                       ));
 
