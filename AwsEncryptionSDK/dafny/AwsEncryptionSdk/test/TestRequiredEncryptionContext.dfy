@@ -1133,20 +1133,60 @@ module TestRequiredEncryptionContext {
     ensures output.ValidState() && fresh(output) && fresh(output.History) && fresh(output.Modifies)
   {
     var kmsKey :=  Fixtures.keyArn;
+    print "=== GetKmsKeyring ===\n";
+    print "Using KMS Key ARN: ", kmsKey, "\n";
+    
     var defaultConfig := ESDK.DefaultAwsEncryptionSdkConfig();
-    var esdk :- expect ESDK.ESDK(config := defaultConfig);
-    var mpl :- expect MaterialProviders.MaterialProviders();
-    var clientSupplier :- expect mpl.CreateDefaultClientSupplier(mplTypes.CreateDefaultClientSupplierInput);
-    var kmsClient :- expect clientSupplier.GetClient(mplTypes.GetClientInput(region := "us-west-2"));
+    var esdkResult := ESDK.ESDK(config := defaultConfig);
+    if esdkResult.Failure? {
+      print "ESDK creation failed: ", esdkResult.error, "\n";
+      expect false;
+    }
+    var esdk := esdkResult.value;
+    print "ESDK created successfully\n";
+    
+    var mplResult := MaterialProviders.MaterialProviders();
+    if mplResult.Failure? {
+      print "MaterialProviders creation failed: ", mplResult.error, "\n";
+      expect false;
+    }
+    var mpl := mplResult.value;
+    print "MaterialProviders created successfully\n";
+    
+    var clientSupplierResult := mpl.CreateDefaultClientSupplier(mplTypes.CreateDefaultClientSupplierInput);
+    if clientSupplierResult.Failure? {
+      print "Client supplier creation failed: ", clientSupplierResult.error, "\n";
+      expect false;
+    }
+    var clientSupplier := clientSupplierResult.value;
+    print "Client supplier created successfully\n";
+    
+    var kmsClientResult := clientSupplier.GetClient(mplTypes.GetClientInput(region := "us-west-2"));
+    if kmsClientResult.Failure? {
+      print "KMS client creation failed: ", kmsClientResult.error, "\n";
+      expect false;
+    }
+    var kmsClient := kmsClientResult.value;
+    print "KMS client created successfully\n";
 
-    output :- expect mpl.CreateAwsKmsKeyring(
+    var keyringResult := mpl.CreateAwsKmsKeyring(
       mplTypes.CreateAwsKmsKeyringInput(
         kmsKeyId := kmsKey,
         kmsClient := kmsClient,
         grantTokens := None
       )
     );
-
+    
+    if keyringResult.Failure? {
+      print "KMS keyring creation failed: ", keyringResult.error, "\n";
+      print "This is likely due to account access issues\n";
+      print "Expected account: 370957321024 (from assumed role)\n";
+      print "Key account: Check if key ARN matches assumed role account\n";
+      expect false;
+    }
+    
+    output := keyringResult.value;
+    print "KMS keyring created successfully\n";
   }
 
-} 
+}
