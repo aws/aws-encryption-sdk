@@ -19,7 +19,7 @@ jobs:
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
     strategy:
       matrix:
-        os: [macos-14]
+        os: [macos-15]
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -32,7 +32,7 @@ jobs:
         run: |
           git config --global core.longpaths true
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
 

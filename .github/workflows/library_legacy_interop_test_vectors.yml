@@ -51,16 +51,23 @@ jobs:
         run: |
           git config --global core.longpaths true
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: "recursive"
 
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
         if: matrix.language == 'net'
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Setup Java 8
+        if: matrix.language == 'java'
+        uses: actions/setup-java@v5
+        with:
+          distribution: "corretto"
+          java-version: 8
 
       - name: Setup Java 17
         if: matrix.language == 'java'
@@ -76,7 +83,7 @@ jobs:
 
       - name: Setup Python for running tests
         if: matrix.language == 'python'
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: 3.11
           architecture: x64
@@ -124,15 +131,9 @@ jobs:
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_python CORES=$CORES
 
-      - name: Setup gradle
-        if: matrix.language == 'java'
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: 7.2
-
       # TestVectors will call KMS
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2

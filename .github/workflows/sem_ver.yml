@@ -6,7 +6,7 @@ on:
 
 jobs:
   semantic-release:
-    runs-on: macos-14
+    runs-on: macos-15
     permissions:
       id-token: write
       contents: read
@@ -15,19 +15,19 @@ jobs:
         run: |
           git config --global core.longpaths true
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
       # We need access to the role that is able to get CI Bot Creds
       - name: Configure AWS Credentials for Release
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::587316601012:role/GitHub-CI-CI-Bot-Credential-Access-Role-us-west-2
           role-session-name: CI_Bot_Release
 
       - name: Upgrade Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 21
 
@@ -48,6 +48,6 @@ jobs:
 
       # Test to see if we can setup semantic release
       - name: Test Semantic Release Installation
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - run: |
           make setup_semantic_release

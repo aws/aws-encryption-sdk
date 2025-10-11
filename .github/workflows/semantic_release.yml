@@ -15,7 +15,7 @@ jobs:
     # privileged operation, so we must make sure this list of users is a subset of the users labeled as maintainers of
     # https://github.com/orgs/aws/teams/aws-crypto-tools
     if: contains('["seebees","texastony","ShubhamChaturvedi7","lucasmcdonald3","josecorella","imabhichow","rishav-karanjit","antonf-amzn","justplaz","ajewellamz","RitvikKapila"]', github.actor)
-    runs-on: macos-14
+    runs-on: macos-15
     permissions:
       id-token: write
       contents: write
@@ -23,20 +23,20 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       # We only pull in the submodules we need to build the library
       - run: git submodule update --init libraries
 
       # We need access to the role that is able to get CI Bot Creds
       - name: Configure AWS Credentials for Release
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::587316601012:role/GitHub-CI-CI-Bot-Credential-Access-Role-us-west-2
           role-session-name: CI_Bot_Release
 
       - name: Upgrade Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 21
 

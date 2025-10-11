@@ -19,7 +19,7 @@ jobs:
 
   go-release:
     needs: get-dafny-version
-    runs-on: macos-14
+    runs-on: macos-15
     permissions:
       contents: write
       id-token: write
@@ -30,14 +30,14 @@ jobs:
           git config --global core.longpaths true
 
       - name: Configure AWS Credentials for Tests
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: GoReleaseTest
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
