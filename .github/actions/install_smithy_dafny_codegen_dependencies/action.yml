@@ -38,7 +38,7 @@ runs:
     - name: Install Go imports
       shell: bash
       run: |
-        go install golang.org/x/tools/cmd/goimports@0.36.0
+        go install golang.org/x/tools/cmd/goimports@v0.36.0
 
     # Without this the if-dafny-at-least command includes "Downloading ..." output
     - name: Arbitrary makefile target to force downloading Gradle
