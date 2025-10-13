@@ -116,11 +116,11 @@ runs:
     #   run: |
     #     make polymorph_rust ${{ steps.dependencies.outputs.PROJECT_DEPENDENCIES }}
 
-    - name: Regenerate Go code using smithy-dafny
-      working-directory: ./${{ inputs.library }}
-      shell: bash
-      run: |
-        make polymorph_go
+    # - name: Regenerate Go code using smithy-dafny
+    #   working-directory: ./${{ inputs.library }}
+    #   shell: bash
+    #   run: |
+    #     make polymorph_go
 
     - name: Check regenerated code against commited code
       # Composite action inputs seem to not actually support booleans properly for some reason
