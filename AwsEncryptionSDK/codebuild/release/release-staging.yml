@@ -82,6 +82,9 @@ phases:
       - aws sts get-caller-identity
       - make test_net
 
+      # Also transpile MPL test vectors which are needed for ESDK tests
+      - cd ../mpl/TestVectorsAwsCryptographicMaterialProviders && make transpile_implementation_net && cd ../../AwsEncryptionSDK
+
       # add staged artifact to testvectors
       - sed -i.backup  "/\<ProjectReference Include=\"..\/..\/ESDK.csproj\" \/>/d" runtimes/net/TestVectorsNative/TestVectorLib/AWSEncryptionSDKTestVectorLib.csproj
       - dotnet add runtimes/net/TestVectorsNative/TestVectorLib/AWSEncryptionSDKTestVectorLib.csproj package AWS.Cryptography.EncryptionSDK --version $VERSION

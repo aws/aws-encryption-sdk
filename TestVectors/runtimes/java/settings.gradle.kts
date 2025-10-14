@@ -8,4 +8,3 @@
  */
 
 rootProject.name = "TestVectors"
-include("lib")
