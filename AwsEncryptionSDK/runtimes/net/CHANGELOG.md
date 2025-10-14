@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.1.1
+
+### Notes
+
+Update .csproj files to prevent use of AWS-SDK-NET V4
+
 ## 4.1.0
 
 ### Notes

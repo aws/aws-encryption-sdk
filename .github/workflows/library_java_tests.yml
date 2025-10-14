@@ -25,7 +25,7 @@ jobs:
           # TODO just test on mac for now
           #windows-latest,
           #ubuntu-latest,
-          macos-12
+          macos-15
         ]
     runs-on: ${{ matrix.os }}
     permissions:

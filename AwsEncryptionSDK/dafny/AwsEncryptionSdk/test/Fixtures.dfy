@@ -20,7 +20,7 @@ module Fixtures {
   
   const branchKeyStoreName := "KeyStoreDdbTable"
   const logicalKeyStoreName := branchKeyStoreName
-  const branchKeyId := "75789115-1deb-4fe3-a2ec-be9e885d1945"
+  const branchKeyId := "3f43a9af-08c5-4317-b694-3d3e883dcaef"
   
   // UTF-8 encoded "aws-crypto-"
   const RESERVED_ENCRYPTION_CONTEXT: UTF8.ValidUTF8Bytes :=

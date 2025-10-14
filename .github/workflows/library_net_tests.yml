@@ -33,7 +33,7 @@ jobs:
         os: [
           windows-latest,
           ubuntu-latest,
-          macos-12,
+          macos-15,
         ]
     runs-on: ${{ matrix.os }}
     permissions:
