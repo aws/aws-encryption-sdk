@@ -230,25 +230,6 @@ pub(crate) async fn get_aws_kms_keyring(
     Ok(keyring)
 }
 
-// pub(crate) async fn get_hierarchy_keyring(
-//     key: &Key,
-//     mpl: &mpl_client,
-//     kms: &aws_sdk_kms::Client,
-// ) -> Result<KeyringRef> {
-
-//     // var keyStore := CreateStaticKeyStores.CreateStaticKeyStore(material.value);
-
-//     let keyring = mpl
-//         .create_aws_kms_hierarchical_keyring()
-//     //     branchKeyId := Some(material.value.keyIdentifier),
-//         .key_store(key_store.clone())
-//         .ttl_seconds(600)
-//         .send()
-//         .await?;
-
-//     Ok(keyring)
-// }
-
 pub(crate) async fn get_aws_kms_mrk_keyring(
     key: &Key,
     mpl: &mpl_client,
@@ -399,7 +380,6 @@ pub(crate) async fn get_keyring(
 ) -> Result<KeyringRef> {
     let key = get_key(keydesc, keys);
 
-    // get_key(child, keys),
     match keydesc.kind.as_str() {
         "aws-kms" => get_aws_kms_keyring(key, mpl, &kms[DFLT_REGION]).await,
         "aws-kms-rsa" => get_aws_kms_rsa_keyring(keydesc, key, mpl, &kms[DFLT_REGION]).await,
@@ -455,7 +435,6 @@ pub(crate) async fn run_decrypt_tests(
     let esdk = crate::client::Client::from_conf(esdk_config)?;
     let kms = make_kms_map().await;
     let mut res = TestResults::default();
-    // println!("\nKEYS\n, {keys:?}");
     for test in tests {
         res.total += 1;
         if test.decrypt_key_description.kind == "aws-kms-hierarchy" {

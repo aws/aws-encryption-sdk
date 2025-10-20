@@ -9,14 +9,6 @@ use aws_mpl_rs::types::EsdkAlgorithmSuiteId;
 use aws_mpl_rs::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef as CmmRef;
 use serde_json::Value as JsonValue;
 
-// pub(crate) const fn aws_cryptosdk_algorithm_is_committing(alg_id: EsdkAlgorithmSuiteId) -> bool {
-//     matches!(
-//         alg_id,
-//         EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey
-//             | EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384
-//     )
-// }
-
 pub(crate) fn write_file(filename: &str, data: &[u8], dir: &str) -> Result<()> {
     let filename = trim_filename(filename);
     let name = format!("{dir}/{filename}");
@@ -70,11 +62,6 @@ pub(crate) async fn run_encrypt_test(
     plaintexts: &PlainTexts,
     dir: &str,
 ) -> Result<JsonValue> {
-    // if (AWS_OP_SUCCESS != aws_cryptosdk_default_cmm_set_alg_id(cmm, test.algId)) {
-    //     printf("failed to set algorithm ID: %s %s", test.algorithmSuiteId.c_str(), ERROR);
-    //     return results.bump(Result::Fail, test);
-    // }
-
     let plaintext = &plaintexts[&test.plaintext];
     let encrypt_input = EncryptInputBuilder::default()
         .plaintext(plaintext)

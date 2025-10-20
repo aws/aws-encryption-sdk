@@ -61,10 +61,6 @@ pub(crate) fn read_content_type(
     }
 }
 
-// predicate ESDKAlgorithmSuite?(a: MPL.AlgorithmSuiteInfo) {
-//   a.id.ESDK?
-// }
-
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct V1HeaderBody {
     pub(crate) message_type: MessageType,

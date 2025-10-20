@@ -151,8 +151,9 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 enc_content.len() as u64,
                 &mut aad,
             );
+            #[allow(clippy::redundant_else)]
             if enc_content.is_empty() {
-                // final frame is empty, to return last full frame
+                // final frame is empty, so return last full frame
                 let mut empty_result = Vec::new();
                 aes_decrypt(
                     alg,
@@ -163,7 +164,6 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                     &aad,
                     &mut empty_result[..],
                 )?;
-                return Ok(result);
             } else {
                 // write previous frame's data, now that we know we have another frame.
                 if expected_frame != START_SEQUENCE_NUMBER {
@@ -182,8 +182,8 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                     &mut result[0..enc_content.len()],
                 )?;
                 result.resize(enc_content.len(), 0);
-                return Ok(result);
             }
+            return Ok(result);
         }
         if seq_num != expected_frame {
             return Err("Sequence number out of order.".into());

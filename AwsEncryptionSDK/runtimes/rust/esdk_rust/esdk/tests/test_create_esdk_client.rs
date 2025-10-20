@@ -82,5 +82,10 @@ async fn test_net_retry_flag() {
     // Decrypt v4.0.0 message with the default configuration which is to retry
     // and expect decryption to pass
     let expect_success = esdk_retry.decrypt(&input).await.unwrap();
+    println!(
+        "{} {}",
+        expect_success.plaintext.len(),
+        expected_message.len()
+    );
     assert!(expect_success.plaintext == expected_message);
 }

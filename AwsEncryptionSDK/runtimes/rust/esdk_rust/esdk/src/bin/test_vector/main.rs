@@ -30,8 +30,8 @@ enum Commands {
         test_name: String,
     },
 }
- #[tokio::main]
- async fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match &cli.command {
@@ -39,12 +39,26 @@ enum Commands {
             manifest_path,
             decrypt_manifest_path,
             test_name,
-        } => aws_esdk::test_vectors::run_tests::encrypt_test_vectors(manifest_path, decrypt_manifest_path, test_name).await,
+        } => {
+            aws_esdk::test_vectors::run_tests::encrypt_test_vectors(
+                manifest_path,
+                decrypt_manifest_path,
+                test_name,
+            )
+            .await
+        }
         Commands::Decrypt {
             manifest_path,
             manifest_name,
             test_name,
-        } => aws_esdk::test_vectors::run_tests::decrypt_test_vectors(manifest_path, manifest_name, test_name).await,
+        } => {
+            aws_esdk::test_vectors::run_tests::decrypt_test_vectors(
+                manifest_path,
+                manifest_name,
+                test_name,
+            )
+            .await
+        }
     }
 }
 

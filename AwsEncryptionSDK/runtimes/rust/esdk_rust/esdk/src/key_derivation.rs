@@ -14,13 +14,6 @@ pub(crate) struct ExpandedKeyMaterial {
     pub(crate) data_key: Vec<u8>,
     pub(crate) commitment_key: Option<Vec<u8>>,
 }
-/*
-    requires suite.kdf.HKDF?
-             ==>
-               && |plaintextDataKey| == suite.kdf.HKDF.inputKeyLength as nat
-               && suite.kdf.HKDF.outputKeyLength == SerializableTypes.GetEncryptKeyLength(suite)
-
-*/
 
 fn get_kdf_outlen(suite: &AlgorithmSuiteInfo) -> Result<i32, Error> {
     match suite.kdf.as_ref().unwrap() {
@@ -61,18 +54,9 @@ pub(crate) async fn derive_key(
     if suite.message_version.unwrap() != 1 {
         return Err("Validation Error 5".into());
     }
-    // if suite.commitment.is_some() {
-    //     return Err("Validation Error 6".into());
-    // }
     if !valid_derivation_alg(suite.kdf.as_ref().unwrap(), suite, plaintext_data_key.len()) {
         return Err("Validation Error 7".into());
     }
-
-    // ensures res.Success? ==> |res.value.dataKey| == SerializableTypes.GetEncryptKeyLength(suite) as nat
-    // ensures res.Success? ==> IsDerivedKey(res.value.dataKey)
-    // ensures res.Success? ==> res.value.commitmentKey.None?
-    // ensures res.Success? ==> suite.kdf.IDENTITY? || suite.kdf.HKDF?
-    // ensures suite.kdf.None? ==> res.Failure?
 
     //= compliance/client-apis/encrypt.txt#2.6.1
     //# The algorithm used to derive a data key from the
@@ -93,7 +77,6 @@ pub(crate) async fn derive_key(
             commitment_key: None,
         }),
         DerivationAlgorithm::Hkdf(hkdf) => {
-            // let hkdf_input_builder: aws_mpl_rs::aws_cryptography_primitives::types::builders::HkdfInputBuilder = aws_mpl_rs::deps::aws_cryptography_primitives::types::HkdfInput::builder()
             let hkdf_builder = crypto
                 .hkdf()
                 .digest_algorithm(hkdf.hmac.unwrap())
@@ -174,11 +157,6 @@ pub(crate) async fn expand_key_material(
     //# algorithm-suites.md#commit-key) MUST be derived from the plaintext
     //# data key using the commit key derivation (../framework/algorithm-
     //# suites.md#algorithm-suites-commit-key-derivation-settings).
-    // ensures res.Success? ==>
-    //           && res.value.commitmentKey.Some?
-    //           && |res.value.commitmentKey.value| == suite.commitment.HKDF.outputKeyLength as nat
-
-    // ensures res.Success? ==> |res.value.dataKey|  == SerializableTypes.GetEncryptKeyLength(suite) as nat
 
     let (digest, commit_len) = match &suite.commitment.as_ref().unwrap() {
         DerivationAlgorithm::Hkdf(hkdf) => (hkdf.hmac.unwrap(), hkdf.output_key_length.unwrap()),

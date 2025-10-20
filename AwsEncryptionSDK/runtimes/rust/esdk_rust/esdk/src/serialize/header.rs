@@ -71,7 +71,7 @@ pub(crate) fn read_header_body(
             }
         }
         ContentType::NonFramed => {
-            if result.frame_length() > 0 {
+            if result.frame_length() != 0 {
                 return ser_err("Frame length must be zero if content is non-framed");
             }
         }

@@ -50,10 +50,11 @@ impl Client {
         let frame_length = input
             .frame_length
             .unwrap_or(encrypt_decrypt::DEFAULT_FRAME_LENGTH);
-        let frames = input.plaintext.len().div_ceil(frame_length);
+        let frame_length_usize = frame_length as usize;
+        let frames = input.plaintext.len().div_ceil(frame_length_usize);
         let iv_len = 12_usize;
         let auth_len = 16_usize;
-        let frame_len = frame_length + iv_len + auth_len + 4;
+        let frame_len = frame_length_usize + iv_len + auth_len + 4;
         let header_overhead = 1024_usize;
         let total_size = frames * frame_len + header_overhead;
 
@@ -110,14 +111,14 @@ async fn internal_encrypt(
     input_keyring: Option<aws_mpl_rs::types::keyring::KeyringRef>,
     input_encryption_context: Option<&EncryptionContext>,
     algorithm_suite_id: Option<aws_mpl_rs::types::EsdkAlgorithmSuiteId>,
-    frame_length: Option<usize>,
+    frame_length: Option<u32>,
 ) -> Result<EncryptStreamOutput, Error> {
     //= compliance/client-apis/encrypt.txt#2.4.6
     //# This value
     //# MUST be greater than 0 and MUST NOT exceed the value 2^32 - 1.
     let frame_length = if let Some(in_len) = frame_length {
         #[allow(clippy::checked_conversions)] // u32::MAX fits in a usize in real life
-        if in_len > 0 && in_len <= u32::MAX as usize {
+        if in_len != 0 {
             in_len
         } else {
             return Err("FrameLength must be greater than 0 and less than 2^32".into());
@@ -234,7 +235,7 @@ async fn internal_encrypt(
         materials.encryption_context.as_ref().unwrap(),
         materials.required_encryption_context_keys.as_ref().unwrap(),
         encrypted_data_keys,
-        frame_length as u32,
+        frame_length,
         &derived_data_keys,
     )?;
     let mut dw = DigestWriter::from_old_ecdsa(suite.signature.as_ref().unwrap())?;
@@ -329,10 +330,6 @@ impl Client {
         })
     }
 }
-
-// pub encryption_context: Option<&'a EncryptionContext>,
-// pub keyring: Option<KeyringRef>,
-// pub materials_manager: Option<CryptographicMaterialsManagerRef>,
 
 async fn internal_decrypt(
     config: &Config,
@@ -557,16 +554,18 @@ async fn internal_decrypt(
             )?
         }
         ContentType::Framed => {
-            // if dec_mat.verification_key.is_some() && safety_needed.yes() {
-            //     return Err("Streaming Interface can return data before signature has been validated. Set `i_accept_the_danger` in the DecryptStreamInput struct if this is ok.".into());
-            // }
             let fail_if_multi_frame = dec_mat.verification_key.is_some() && safety_needed.yes();
 
             //= compliance/client-apis/decrypt.txt#2.7.4
             //# If this decryption fails, this operation MUST immediately halt and
             //# fail.
             message_body::read_and_decrypt_framed_message_body(
-                ciphertext, plaintext, &header, &key, &mut dw, fail_if_multi_frame
+                ciphertext,
+                plaintext,
+                &header,
+                &key,
+                &mut dw,
+                fail_if_multi_frame,
             )?
         }
     };
@@ -576,7 +575,7 @@ async fn internal_decrypt(
         //# If this verification is not successful, this operation MUST
         //# immediately halt and fail.
         let mut noop = NoopWriter;
-        encrypt_decrypt::verify_signature2(ciphertext, dw.context.unwrap(), dec_mat, &mut noop)?;
+        encrypt_decrypt::verify_signature(ciphertext, dw.context.unwrap(), dec_mat, &mut noop)?;
     }
     // now that we have verified the signature, we can write the last frame of data
     serialize_functions::write_bytes(plaintext, &last_frame)?;

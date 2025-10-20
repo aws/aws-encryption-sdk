@@ -23,13 +23,6 @@ pub(crate) fn read_canonical_ec(
     }
     Ok(result)
 }
-// pub(crate) fn read_ec(
-//     r: &mut dyn SafeRead,
-//     raw: &mut dyn SafeWrite,
-// ) -> Result<ESDKEncryptionContext, Error> {
-//     let pairs = read_canonical_ec(r, raw)?;
-//     Ok(from_canonical_pairs(pairs))
-// }
 
 //= compliance/data-format/message-header.txt#2.5.1.7
 //# The following table describes the fields that form the AAD.  The
@@ -54,7 +47,6 @@ pub(crate) fn write_empty_ec_or_write_aad(
     if data.is_empty() {
         Ok(())
     } else {
-        // write_canonical_ec(w, data)
         write_aad(w, data)
     }
 }
@@ -80,7 +72,6 @@ pub(crate) fn write_aad_section(
     write_aad(w, data)
 }
 
-// WriteAAD
 pub(crate) fn write_aad(
     w: &mut dyn SafeWrite,
     data: &ESDKCanonicalEncryptionContext,

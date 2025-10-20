@@ -125,7 +125,6 @@ pub(crate) fn read_v1_header_body(
 ) -> Result<V1HeaderBody, Error> {
     let message_type = read_msg_type(r, raw)?;
     let algorithm_suite = read_esdk_suite_id(r, mpl, raw)?;
-    // :- Need(suite.data.commitment.None?, Error("Algorithm suite must not support commitment."));
     let message_id = read_message_id_v1(r, raw)?;
     let encryption_context: Vec<(String, String)> = read_canonical_ec(r, raw)?;
     let encrypted_data_keys = read_edks(r, max_edks, raw)?;

@@ -15,9 +15,7 @@ use crate::types::EncryptionContext;
 use crate::types::{SafeRead, SafeWrite};
 
 use aws_mpl_primitives::ecdsa_verify_context;
-use aws_mpl_primitives::{
-    EcdsaSignatureAlgorithm, aes_encrypt, ecdsa_verify, generate_random_bytes,
-};
+use aws_mpl_primitives::{EcdsaSignatureAlgorithm, aes_encrypt, generate_random_bytes};
 use aws_mpl_rs::types::AlgorithmSuiteInfo;
 use aws_mpl_rs::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
 
@@ -25,9 +23,8 @@ use aws_mpl_rs::types::cryptographic_materials_manager::CryptographicMaterialsMa
 //= type=implication
 //# This
 //# value MUST default to 4096 bytes.
-pub(crate) const DEFAULT_FRAME_LENGTH: usize = 4096;
+pub(crate) const DEFAULT_FRAME_LENGTH: u32 = 4096;
 
-// UTF-8 encoded "aws-crypto-"
 const RESERVED_ENCRYPTION_CONTEXT: &str = "aws-crypto-";
 
 pub(crate) fn encrypt_and_serialize(
@@ -38,18 +35,15 @@ pub(crate) fn encrypt_and_serialize(
     dw: &mut DigestWriter,
 ) -> Result<(), Error> {
     let frame_length = header.body.frame_length() as usize;
-    // let frames = plaintext.len().div_ceil(frame_length);
     let iv_len = get_iv_length(&header.suite) as usize;
     let auth_len = get_tag_length(&header.suite) as usize;
     let frame_len = frame_length + iv_len + auth_len + 4;
-    // let total_size = frames * frame_len + header.raw_header.len() + iv_len + auth_len + 128;
     let mut w = Vec::with_capacity(frame_len);
     write_bytes(&mut w, &header.raw_header)?;
     write_header_auth_tag(&mut w, &header.header_auth, &header.suite)?;
     write_bytes(out, &w)?;
     write_bytes(dw, &w)?;
 
-    // let mut n: usize = 0;
     let mut sequence_number = START_SEQUENCE_NUMBER;
     let alg = get_aes_alg(&header.suite);
 
@@ -57,12 +51,16 @@ pub(crate) fn encrypt_and_serialize(
     let mut plaintext_frame = vec![0; frame_length];
     let mut aad = Vec::new();
     let mut in_size: usize;
-    // let mut foo = 0u8;
+    let mut next_char: Option<u8> = None;
+
     loop {
         w.clear();
-        // in_size = read_up_to(plaintext, &mut [foo])?;
-        in_size = read_up_to(plaintext, &mut plaintext_frame)?;
+        in_size = read_up_to_peek(plaintext, &mut plaintext_frame, next_char)?;
         if in_size != frame_length {
+            break;
+        }
+        next_char = read_opt_u8(plaintext)?;
+        if next_char.is_none() {
             break;
         }
         if sequence_number == ENDFRAME_SEQUENCE_NUMBER {
@@ -133,59 +131,7 @@ pub(crate) const fn ecdsa_alg(
     }
 }
 
-// consume and verify signature
-#[allow(dead_code)]
 pub(crate) fn verify_signature(
-    r: &mut dyn SafeRead,
-    msg: &[u8],
-    dec_mat: aws_mpl_rs::types::DecryptionMaterials,
-    raw: &mut dyn SafeWrite,
-) -> Result<(), Error> {
-    //= compliance/client-apis/decrypt.txt#2.7
-    //= type=implication
-    //# Otherwise this operation MUST NOT perform this
-    //# step.
-    if dec_mat.verification_key.is_none() {
-        return Ok(());
-    }
-
-    //= compliance/client-apis/decrypt.txt#2.7.5
-    //# If the algorithm suite has a signature algorithm, this operation MUST
-    //# verify the message footer using the specified signature algorithm.
-
-    //= compliance/client-apis/decrypt.txt#2.7
-    //# ./framework/algorithm-
-    //# suites.md#signature-algorithm), this operation MUST perform
-    //# this step.
-
-    //= compliance/client-apis/decrypt.txt#2.7.5
-    //# After deserializing the body, this operation MUST deserialize the
-    //# next encrypted message bytes as the message footer (../data-format/
-    //# message-footer.md).
-
-    let signature = read_seq_u16(r, raw)?;
-    let ecdsa_params = get_ecdsa_alg(&dec_mat.algorithm_suite.unwrap().signature.unwrap())?;
-    let data_to_sign = &msg[0..msg.len() - signature.len() - 2];
-    //= compliance/client-apis/decrypt.txt#2.7.5
-    //# Once the message footer is deserialized, this operation MUST use the
-    //# signature algorithm (../framework/algorithm-suites.md#signature-
-    //# algorithm) from the algorithm suite (../framework/algorithm-
-    //# suites.md) in the decryption materials to verify the encrypted
-    //# message, with the following inputs:
-    let valid = ecdsa_verify(
-        ecdsa_alg(ecdsa_params),
-        dec_mat.verification_key.unwrap().as_ref(),
-        data_to_sign,
-        &signature,
-    )?;
-
-    if !valid {
-        return Err("InvalidSignature".into());
-    }
-    Ok(())
-}
-
-pub(crate) fn verify_signature2(
     r: &mut dyn SafeRead,
     context: aws_mpl_primitives::DigestContext,
     dec_mat: aws_mpl_rs::types::DecryptionMaterials,
@@ -215,7 +161,6 @@ pub(crate) fn verify_signature2(
 
     let signature = read_seq_u16(r, raw)?;
     let ecdsa_params = get_ecdsa_alg(&dec_mat.algorithm_suite.unwrap().signature.unwrap())?;
-    // let data_to_sign = &msg[0..msg.len() - signature.len() - 2];
     //= compliance/client-apis/decrypt.txt#2.7.5
     //# Once the message footer is deserialized, this operation MUST use the
     //# signature algorithm (../framework/algorithm-suites.md#signature-
@@ -308,14 +253,6 @@ pub(crate) fn build_header_for_encrypt(
     frame_length: u32,
     derived_data_keys: &key_derivation::ExpandedKeyMaterial,
 ) -> Result<HeaderInfo, Error> {
-    // requires !suite.commitment.IDENTITY?
-    // requires SerializableTypes.IsESDKEncryptionContext(encryptionContext)
-    //     requires suite.commitment.HKDF? ==>
-    //            && derivedDataKeys.commitmentKey.Some?
-    //            && |derivedDataKeys.commitmentKey.value| == suite.commitment.HKDF.outputKeyLength as int
-
-    // requires frameLength > 0
-
     //= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-the-header
     //# - [AAD](../data-format/message-header.md#aad): MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
     //#  in the [encryption materials](../framework/structures.md#encryption-materials),
@@ -607,8 +544,6 @@ pub(crate) fn validate_suite_data(
     header: &HeaderBody,
     expected_suite_data: &[u8],
 ) -> Result<(), Error> {
-    //     requires suite.commitment.HKDF?
-
     //= compliance/client-apis/decrypt.txt#2.7.2
     //# The derived commit key MUST equal the commit key stored in the message
     //# header.
@@ -631,23 +566,6 @@ pub(crate) fn validate_suite_data(
 
     Ok(())
 }
-
-// pub(crate) fn read_and_decrypt_framed_message_body(
-//     r: &mut dyn SafeRead,
-//     header: &header::HeaderInfo,
-//     key: &[u8],
-//     raw: &mut dyn SafeWrite,
-// ) -> Result<Vec<u8>, Error> {
-//     //= compliance/client-apis/decrypt.txt#2.7.3
-//     //# The message header MUST be read and parsed as follows.
-//     let message_body = read_framed_message_body(r, header, raw)?;
-
-//     //= compliance/client-apis/decrypt.txt#2.7.3
-//     //# The message body MUST be read and decrypted as follows.
-//     let plaintext = decrypt_framed_message_body(&message_body, key)?;
-
-//     Ok(plaintext)
-// }
 
 pub(crate) fn read_and_decrypt_non_framed_message_body(
     r: &mut dyn SafeRead,

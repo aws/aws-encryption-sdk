@@ -39,6 +39,26 @@ pub(crate) fn read_up_to(this: &mut dyn SafeRead, buf: &mut [u8]) -> Result<usiz
     }
 }
 
+pub(crate) fn read_up_to_peek(
+    this: &mut dyn SafeRead,
+    buf: &mut [u8],
+    first: Option<u8>,
+) -> Result<usize, Error> {
+    if buf.is_empty() {
+        return Ok(0);
+    }
+    match first {
+        Some(f) => {
+            buf[0] = f;
+            match read_up_to(this, &mut buf[1..]) {
+                Ok(n) => Ok(n + 1),
+                Err(e) => Err(e),
+            }
+        }
+        None => read_up_to(this, buf),
+    }
+}
+
 #[track_caller]
 fn ser_utf8(item: std::string::FromUtf8Error) -> Error {
     Error {
@@ -99,6 +119,22 @@ pub(crate) fn read_u8(r: &mut dyn SafeRead, raw: &mut dyn SafeWrite) -> Result<u
     read_bytes(r, &mut result, raw)?;
     Ok(result[0])
 }
+
+pub(crate) fn read_opt_u8(r: &mut dyn SafeRead) -> Result<Option<u8>, Error> {
+    let mut result = [0u8; 1];
+    match r.read_exact(&mut result) {
+        Ok(()) => Ok(Some(result[0])),
+        Err(e) => match e.kind() {
+            std::io::ErrorKind::UnexpectedEof => Ok(None),
+            _ => Err(Error {
+                kind: ErrorKind::SerializationError("IO Error".into()),
+                cause: Some(Box::new(e)),
+                backtrace: Backtrace::capture(),
+            }),
+        },
+    }
+}
+
 pub(crate) fn read_u16(r: &mut dyn SafeRead, raw: &mut dyn SafeWrite) -> Result<u16, Error> {
     let mut result = [0u8; 2];
     read_bytes(r, &mut result, raw)?;

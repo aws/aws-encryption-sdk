@@ -1,7 +1,11 @@
 use crate::test_vectors::do_decrypt::read_json;
 use anyhow::Result;
 
-pub async fn decrypt_test_vectors(manifest_path: &str, manifest_name: &str, _test_name : &str) -> Result<()> {
+pub async fn decrypt_test_vectors(
+    manifest_path: &str,
+    manifest_name: &str,
+    _test_name: &str,
+) -> Result<()> {
     let json_data_base = read_json(manifest_name, manifest_path)?;
     let json_data = json_data_base.as_object().unwrap();
 
@@ -38,7 +42,11 @@ pub async fn decrypt_test_vectors(manifest_path: &str, manifest_name: &str, _tes
     Ok(())
 }
 
-pub async fn encrypt_test_vectors(encrypt_path: &str, decrypt_path: &str, _test_name : &str) -> Result<()> {
+pub async fn encrypt_test_vectors(
+    encrypt_path: &str,
+    decrypt_path: &str,
+    _test_name: &str,
+) -> Result<()> {
     drop(std::fs::remove_dir_all(format!(
         "{encrypt_path}/plaintexts"
     )));
