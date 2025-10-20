@@ -1,7 +1,7 @@
 use crate::test_vectors::do_decrypt::read_json;
 use anyhow::Result;
 
-pub async fn do_decrypt(manifest_path: &str, manifest_name: &str) -> Result<()> {
+pub async fn decrypt_test_vectors(manifest_path: &str, manifest_name: &str, _test_name : &str) -> Result<()> {
     let json_data_base = read_json(manifest_name, manifest_path)?;
     let json_data = json_data_base.as_object().unwrap();
 
@@ -38,7 +38,7 @@ pub async fn do_decrypt(manifest_path: &str, manifest_name: &str) -> Result<()> 
     Ok(())
 }
 
-pub async fn do_encrypt(encrypt_path: &str, decrypt_path: &str) -> Result<()> {
+pub async fn encrypt_test_vectors(encrypt_path: &str, decrypt_path: &str, _test_name : &str) -> Result<()> {
     drop(std::fs::remove_dir_all(format!(
         "{encrypt_path}/plaintexts"
     )));
@@ -96,32 +96,30 @@ pub async fn do_encrypt(encrypt_path: &str, decrypt_path: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    // #[tokio::test(flavor = "multi_thread")]
-    // async fn test_do_decrypt() {
-    //     let manifest_path = "test_vectors_java";
-    //     let manifest_name = "decrypt-manifest.json";
-    //     let result = do_decrypt(manifest_path, manifest_name).await;
-    //     println!("{result:?}");
-    //     assert!(result.is_ok());
-    // }
+    #[tokio::test(flavor = "multi_thread")]
+    async fn test_do_decrypt() {
+        let manifest_path = "test_vectors_java";
+        let manifest_name = "decrypt-manifest.json";
+        let result = decrypt_test_vectors(manifest_path, manifest_name, "").await;
+        assert!(result.is_ok());
+    }
 
-    // #[tokio::test(flavor = "multi_thread")]
-    // async fn test_python_decrypt() {
-    //     let manifest_path = "test_vectors_python";
-    //     let manifest_name = "decrypt_message.json";
-    //     let result = do_decrypt(manifest_path, manifest_name).await;
-    //     println!("{result:?}");
-    //     assert!(result.is_ok());
-    // }
+    #[tokio::test(flavor = "multi_thread")]
+    async fn test_python_decrypt() {
+        let manifest_path = "test_vectors_python";
+        let manifest_name = "decrypt_message.json";
+        let result = decrypt_test_vectors(manifest_path, manifest_name, "").await;
+        assert!(result.is_ok());
+    }
     #[tokio::test(flavor = "multi_thread")]
     async fn test_do_encrypt() {
         let manifest_path = "test_vectors_rust";
         let manifest_name = "decrypt-manifest.json";
 
-        let result = do_encrypt(manifest_path, manifest_path).await;
+        let result = encrypt_test_vectors(manifest_path, manifest_path, "").await;
         assert!(result.is_ok());
 
-        let result = do_decrypt(manifest_path, manifest_name).await;
+        let result = decrypt_test_vectors(manifest_path, manifest_name, "").await;
         assert!(result.is_ok());
     }
 }

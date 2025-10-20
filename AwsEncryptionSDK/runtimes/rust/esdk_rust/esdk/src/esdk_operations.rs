@@ -557,15 +557,16 @@ async fn internal_decrypt(
             )?
         }
         ContentType::Framed => {
-            if dec_mat.verification_key.is_some() && safety_needed.yes() {
-                return Err("Streaming Interface can return data before signature has been validated. Set `i_accept_the_danger` in the DecryptStreamInput struct if this is ok.".into());
-            }
+            // if dec_mat.verification_key.is_some() && safety_needed.yes() {
+            //     return Err("Streaming Interface can return data before signature has been validated. Set `i_accept_the_danger` in the DecryptStreamInput struct if this is ok.".into());
+            // }
+            let fail_if_multi_frame = dec_mat.verification_key.is_some() && safety_needed.yes();
 
             //= compliance/client-apis/decrypt.txt#2.7.4
             //# If this decryption fails, this operation MUST immediately halt and
             //# fail.
             message_body::read_and_decrypt_framed_message_body(
-                ciphertext, plaintext, &header, &key, &mut dw,
+                ciphertext, plaintext, &header, &key, &mut dw, fail_if_multi_frame
             )?
         }
     };

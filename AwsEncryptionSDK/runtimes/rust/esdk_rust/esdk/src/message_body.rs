@@ -110,15 +110,15 @@ pub(crate) fn body_aad2(
     result.extend_from_slice(&length.to_be_bytes());
 }
 
-// FIXME -- if last frame is empty, return penultimate frame.
 pub(crate) fn read_and_decrypt_framed_message_body(
     r: &mut dyn SafeRead,
     w: &mut dyn SafeWrite,
     header: &HeaderInfo,
     key: &[u8],
     raw: &mut dyn SafeWrite,
+    fail_if_multi_frame: bool,
 ) -> Result<Vec<u8>, Error> {
-    let mut expected_frame = START_SEQUENCE_NUMBER;
+    let mut expected_frame: u32 = START_SEQUENCE_NUMBER;
     let mut iv = vec![0u8; get_iv_length(&header.suite) as usize];
     let mut auth_tag = vec![0u8; get_tag_length(&header.suite) as usize];
     let alg = get_aes_alg(&header.suite);
@@ -151,20 +151,49 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 enc_content.len() as u64,
                 &mut aad,
             );
-            aes_decrypt(
-                alg,
-                key,
-                &enc_content,
-                &auth_tag,
-                &iv,
-                &aad,
-                &mut result[0..enc_content.len()],
-            )?;
-            result.resize(enc_content.len(), 0);
-            return Ok(result);
+            if enc_content.is_empty() {
+                // final frame is empty, to return last full frame
+                let mut empty_result = Vec::new();
+                aes_decrypt(
+                    alg,
+                    key,
+                    &enc_content,
+                    &auth_tag,
+                    &iv,
+                    &aad,
+                    &mut empty_result[..],
+                )?;
+                return Ok(result);
+            } else {
+                // write previous frame's data, now that we know we have another frame.
+                if expected_frame != START_SEQUENCE_NUMBER {
+                    if fail_if_multi_frame {
+                        return Err("Streaming Interface can return data before signature has been validated. Set `i_accept_the_danger` in the DecryptStreamInput struct if this is ok.".into());
+                    }
+                    serialize_functions::write_bytes(w, &result)?;
+                }
+                aes_decrypt(
+                    alg,
+                    key,
+                    &enc_content,
+                    &auth_tag,
+                    &iv,
+                    &aad,
+                    &mut result[0..enc_content.len()],
+                )?;
+                result.resize(enc_content.len(), 0);
+                return Ok(result);
+            }
         }
         if seq_num != expected_frame {
             return Err("Sequence number out of order.".into());
+        }
+        // write previous frame's data, now that we know we have another frame.
+        if expected_frame != START_SEQUENCE_NUMBER {
+            if fail_if_multi_frame {
+                return Err("Streaming Interface can return data before signature has been validated. Set `i_accept_the_danger` in the DecryptStreamInput struct if this is ok.".into());
+            }
+            serialize_functions::write_bytes(w, &result)?;
         }
         expected_frame += 1;
         read_bytes(r, &mut iv, raw)?;
@@ -178,6 +207,5 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             &mut aad,
         );
         aes_decrypt(alg, key, &enc_content, &auth_tag, &iv, &aad, &mut result)?;
-        serialize_functions::write_bytes(w, &result)?;
     }
 }
