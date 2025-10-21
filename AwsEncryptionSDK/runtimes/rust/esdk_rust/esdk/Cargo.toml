@@ -13,7 +13,7 @@ aws-mpl-primitives = { path = "/Users/ajewell/esdk_rust/prim" }
 derivative = "2.2.0"
 derive_builder = "0.20.2"
 
-clap = { version = "4.5.49", features = ["derive"], optional = true }
+clap = { version = "4.5.50", features = ["derive"], optional = true }
 serde_json = { version = "1.0.145", optional = true }
 anyhow = { version = "1.0.100", optional = true }
 base64 = { version = "0.22.1", optional = true }
@@ -38,5 +38,6 @@ path = "src/bin/test_vector/main.rs"
 required-features = ["test_vectors"]  # Only build binary when cli feature is enabled
 
 [features]
-default = []
+# default = []
+default = ["test_vectors"]
 test_vectors = ["clap", "serde_json", "anyhow", "base64", "aws-sdk-kms",  "aws-config"]  # Users can enable with --features test_vectors

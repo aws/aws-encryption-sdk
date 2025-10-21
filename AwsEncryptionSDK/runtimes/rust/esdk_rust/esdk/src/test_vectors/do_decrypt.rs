@@ -435,18 +435,21 @@ pub(crate) async fn run_decrypt_tests(
     let esdk = crate::client::Client::from_conf(esdk_config)?;
     let kms = make_kms_map().await;
     let mut res = TestResults::default();
+    let mut num_non = 0;
     for test in tests {
         res.total += 1;
         if test.decrypt_key_description.kind == "aws-kms-hierarchy" {
             res.skipped += 1;
         } else if test.decrypt_key_description.kind == "aws-kms-ecdh" {
             res.skipped += 1;
-        } else if test.decrypt_key_description.kind != "raw" {
+        } else if test.decrypt_key_description.kind == "unknown" {
             res.skipped += 1;
-        } else if test.decrypt_key_description.kind.is_empty() {
-            println!("XXXXXXXXXXXXXX EMPTY XXXXXXXXXX");
+        } else if test.decrypt_key_description.kind != "raw" && num_non > 5 {
             res.skipped += 1;
         } else {
+            if test.decrypt_key_description.kind != "raw" {
+                num_non += 1;
+            }
             let cmm = get_cmm(&test.decrypt_key_description, keys, &mpl, &kms).await?;
             match run_decrypt_test(&esdk, test, cmm, dir).await {
                 Ok(()) => {

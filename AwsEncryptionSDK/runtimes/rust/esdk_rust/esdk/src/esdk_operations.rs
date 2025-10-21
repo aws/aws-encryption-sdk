@@ -93,7 +93,7 @@ impl Client {
             &self.config,
             plaintext,
             ciphertext,
-            0,
+            input.data_size.unwrap_or(usize::MAX),
             input.materials_manager.clone(),
             input.keyring.clone(),
             input.encryption_context,
