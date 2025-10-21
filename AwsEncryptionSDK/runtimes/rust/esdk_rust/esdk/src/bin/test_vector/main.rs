@@ -39,26 +39,12 @@ async fn main() -> Result<()> {
             manifest_path,
             decrypt_manifest_path,
             test_name,
-        } => {
-            aws_esdk::test_vectors::run_tests::encrypt_test_vectors(
-                manifest_path,
-                decrypt_manifest_path,
-                test_name,
-            )
-            .await
-        }
+        } => aws_esdk::encrypt_test_vectors(manifest_path, decrypt_manifest_path, test_name).await,
         Commands::Decrypt {
             manifest_path,
             manifest_name,
             test_name,
-        } => {
-            aws_esdk::test_vectors::run_tests::decrypt_test_vectors(
-                manifest_path,
-                manifest_name,
-                test_name,
-            )
-            .await
-        }
+        } => aws_esdk::decrypt_test_vectors(manifest_path, manifest_name, test_name).await,
     }
 }
 

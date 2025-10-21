@@ -24,11 +24,11 @@ For more information on KMS Key identifiers, see
 https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
-use aws_esdk::client as esdk_client;
-use aws_esdk::material_providers::client as mpl_client;
-use aws_esdk::material_providers::types::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
-use aws_esdk::types::*;
+use aws_esdk::Client as EsdkClient;
+use aws_esdk::*;
+use aws_mpl_rs::client as mpl_client;
+use aws_mpl_rs::types::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
@@ -45,7 +45,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     let esdk_config = AwsEncryptionSdkConfigBuilder::default()
         .commitment_policy(ForbidEncryptAllowDecrypt)
         .build()?;
-    let esdk_client = esdk_client::Client::from_conf(esdk_config)?;
+    let esdk_client = EsdkClient::from_conf(esdk_config)?;
 
     // 2. Create a KMS client.
     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;

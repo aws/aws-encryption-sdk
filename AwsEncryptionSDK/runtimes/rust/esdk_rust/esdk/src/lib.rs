@@ -1,3 +1,6 @@
+//! This is an awesome crate
+//!
+
 #![warn(
     absolute_paths_not_starting_with_crate,
     deprecated_in_future,
@@ -9,7 +12,7 @@
     macro_use_extern_crate,
     missing_debug_implementations,
     missing_copy_implementations,
-    // missing_docs,
+    missing_docs,
     non_ascii_idents,
     // non_exhaustive_omitted_patterns, unstable
     noop_method_call,
@@ -68,12 +71,17 @@
 // #[allow(lint_name, reason = "Your explanation here")]
 // #[warn(clippy::allow_attributes_without_reason)] // REMOVE
 
-pub mod client;
-pub mod error;
-pub mod esdk_operations;
+mod client;
+pub use client::*;
+mod error;
+pub use error::*;
+mod esdk_operations;
 #[cfg(feature = "test_vectors")]
-pub mod test_vectors;
-pub mod types;
+mod test_vectors;
+#[cfg(feature = "test_vectors")]
+pub use test_vectors::*;
+mod types;
+pub use types::*;
 
 pub(crate) mod alloc;
 pub(crate) mod encrypt_decrypt;
@@ -83,5 +91,4 @@ pub(crate) mod serialize;
 
 pub use error::Error;
 
-pub use aws_mpl_rs as material_providers; // remove this and change all the examples
-pub use aws_mpl_rs::aws_cryptography_keyStore as key_store;
+// pub use aws_mpl_rs::aws_cryptography_keyStore as key_store;

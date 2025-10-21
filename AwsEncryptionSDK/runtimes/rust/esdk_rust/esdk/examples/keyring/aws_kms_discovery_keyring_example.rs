@@ -36,9 +36,9 @@ For more information on KMS Key identifiers, see
 https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
-use aws_esdk::client::Client as esdk_client;
-use aws_esdk::material_providers::types::DiscoveryFilter;
-use aws_esdk::types::*;
+use aws_esdk::Client as EsdkClient;
+use aws_esdk::*;
+use aws_mpl_rs::types::DiscoveryFilter;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
@@ -51,8 +51,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // which enforces that this client only encrypts using committing algorithm suites and enforces
     // that this client will only decrypt encrypted messages that were created with a committing
     // algorithm suite.
-    let esdk_config = AwsEncryptionSdkConfig::default();
-    let esdk_client = esdk_client::from_conf(esdk_config)?;
+    let esdk_client = EsdkClient::default();
 
     // 2. Create a KMS client.
     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
@@ -79,7 +78,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 4. Create the keyring that determines how your data keys are protected.
     //    Although this example highlights Discovery keyrings, Discovery keyrings cannot
     //    be used to encrypt, so for encryption we create a KMS keyring without discovery mode.
-    let mpl = esdk_client::mpl()?;
+    let mpl = EsdkClient::mpl()?;
 
     let encrypt_kms_keyring = mpl
         .create_aws_kms_keyring()

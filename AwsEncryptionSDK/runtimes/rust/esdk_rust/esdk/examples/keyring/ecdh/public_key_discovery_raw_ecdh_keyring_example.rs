@@ -48,14 +48,14 @@ use crate::example_utils::utils::EXAMPLE_ECC_PRIVATE_KEY_FILENAME_RECIPIENT;
 use crate::example_utils::utils::EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT;
 use crate::example_utils::utils::exists;
 use crate::example_utils::utils::write_raw_ecdh_ecc_keys;
-use aws_esdk::client as esdk_client;
-use aws_esdk::material_providers::client as mpl_client;
-use aws_esdk::material_providers::types::EphemeralPrivateKeyToStaticPublicKeyInput;
-use aws_esdk::material_providers::types::PublicKeyDiscoveryInput;
-use aws_esdk::material_providers::types::RawEcdhStaticConfigurations;
-use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
-use aws_esdk::types::*;
+use aws_esdk::Client as EsdkClient;
+use aws_esdk::*;
 use aws_mpl_rs::aws_cryptography_primitives::types::EcdhCurveSpec;
+use aws_mpl_rs::client as mpl_client;
+use aws_mpl_rs::types::EphemeralPrivateKeyToStaticPublicKeyInput;
+use aws_mpl_rs::types::PublicKeyDiscoveryInput;
+use aws_mpl_rs::types::RawEcdhStaticConfigurations;
+use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
 use pem::parse;
 use std::fs::File;
 use std::io::Read;
@@ -71,7 +71,7 @@ pub async fn decrypt_with_keyring(
     // that this client will only decrypt encrypted messages that were created with a committing
     // algorithm suite.
     let esdk_config = AwsEncryptionSdkConfig::default();
-    let esdk_client = esdk_client::Client::from_conf(esdk_config)?;
+    let esdk_client = EsdkClient::from_conf(esdk_config)?;
 
     let mpl_config = MaterialProvidersConfig::builder().build()?;
     let mpl = mpl_client::Client::from_conf(mpl_config)?;
@@ -197,7 +197,7 @@ async fn get_ciphertext(
     example_data: &str,
     ecdh_curve_spec: EcdhCurveSpec,
     encryption_context: &EncryptionContext,
-    esdk_client: &esdk_client::Client,
+    esdk_client: &EsdkClient,
     mpl: &mpl_client::Client,
 ) -> Result<Vec<u8>, crate::BoxError> {
     // 1. Load keys from UTF-8 encoded PEM files.

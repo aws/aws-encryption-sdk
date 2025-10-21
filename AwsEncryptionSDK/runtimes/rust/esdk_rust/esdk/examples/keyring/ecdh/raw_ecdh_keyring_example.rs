@@ -51,13 +51,13 @@ use crate::example_utils::utils::EXAMPLE_ECC_PRIVATE_KEY_FILENAME_SENDER;
 use crate::example_utils::utils::EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT;
 use crate::example_utils::utils::exists;
 use crate::example_utils::utils::write_raw_ecdh_ecc_keys;
-use aws_esdk::client as esdk_client;
-use aws_esdk::material_providers::client as mpl_client;
-use aws_esdk::material_providers::types::RawEcdhStaticConfigurations;
-use aws_esdk::material_providers::types::RawPrivateKeyToStaticPublicKeyInput;
-use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
-use aws_esdk::types::*;
+use aws_esdk::Client as EsdkClient;
+use aws_esdk::*;
 use aws_mpl_rs::aws_cryptography_primitives::types::EcdhCurveSpec;
+use aws_mpl_rs::client as mpl_client;
+use aws_mpl_rs::types::RawEcdhStaticConfigurations;
+use aws_mpl_rs::types::RawPrivateKeyToStaticPublicKeyInput;
+use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
 use pem::parse;
 use std::fs::File;
 use std::io::Read;
@@ -73,7 +73,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // that this client will only decrypt encrypted messages that were created with a committing
     // algorithm suite.
     let esdk_config = AwsEncryptionSdkConfig::default();
-    let esdk_client = esdk_client::Client::from_conf(esdk_config)?;
+    let esdk_client = EsdkClient::from_conf(esdk_config)?;
 
     // 2. Create encryption context.
     // Remember that your encryption context is NOT SECRET.

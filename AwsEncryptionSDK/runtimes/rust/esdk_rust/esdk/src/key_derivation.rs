@@ -218,7 +218,7 @@ pub(crate) async fn derive_keys(
     suite: &AlgorithmSuiteInfo,
     crypto: &aws_mpl_rs::aws_cryptography_primitives::client::Client,
     // TODO Post-#619: Refactor, breaking Net v4.0.0 logic out into independent method
-    netv4_0_0_retry_policy: types::NetV400RetryPolicy,
+    netv4_0_0_retry_policy: NetV400RetryPolicy,
     on_net_v4_retry: bool,
 ) -> Result<ExpandedKeyMaterial, Error> {
     if message_id.is_empty() {
@@ -231,8 +231,7 @@ pub(crate) async fn derive_keys(
     if suite.message_version.unwrap() == 2 {
         expand_key_material(message_id, plaintext_key, suite, crypto).await
     } else if suite.message_version.unwrap() == 1 {
-        let retry =
-            netv4_0_0_retry_policy == types::NetV400RetryPolicy::AllowRetry && on_net_v4_retry;
+        let retry = netv4_0_0_retry_policy == NetV400RetryPolicy::AllowRetry && on_net_v4_retry;
         derive_key(message_id, plaintext_key, suite, crypto, retry).await
     } else {
         Err("Unknown Message Version".into())

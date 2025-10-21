@@ -11,8 +11,6 @@ use crate::serialize::serializable_types::*;
 use crate::serialize::serialize_functions::*;
 use crate::serialize::v2_header_body::get_hkdf;
 use crate::serialize::*;
-use crate::types::EncryptionContext;
-use crate::types::{SafeRead, SafeWrite};
 
 use aws_mpl_primitives::ecdsa_verify_context;
 use aws_mpl_primitives::{EcdsaSignatureAlgorithm, aes_encrypt, generate_random_bytes};

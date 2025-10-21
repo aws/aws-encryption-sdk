@@ -16,12 +16,12 @@ For more information on limiting EDKs, see
 https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/configure.html#config-limit-keys
 */
 
-use aws_esdk::client as esdk_client;
-use aws_esdk::material_providers::client as mpl_client;
-use aws_esdk::material_providers::types::AesWrappingAlg;
-use aws_esdk::material_providers::types::keyring::KeyringRef;
-use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
-use aws_esdk::types::*;
+use aws_esdk::Client as EsdkClient;
+use aws_esdk::*;
+use aws_mpl_rs::client as mpl_client;
+use aws_mpl_rs::types::AesWrappingAlg;
+use aws_mpl_rs::types::keyring::KeyringRef;
+use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
 use rand::TryRngCore;
 
 pub async fn encrypt_and_decrypt_with_keyring(
@@ -37,7 +37,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     let esdk_config = AwsEncryptionSdkConfigBuilder::default()
         .max_encrypted_data_keys(max_encrypted_data_keys)
         .build()?;
-    let esdk_client = esdk_client::Client::from_conf(esdk_config)?;
+    let esdk_client = EsdkClient::from_conf(esdk_config)?;
 
     // 2. The key namespace and key name are defined by you.
     // and are used by the Raw AES keyring to determine
@@ -145,7 +145,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     let esdk_config = AwsEncryptionSdkConfigBuilder::default()
         .max_encrypted_data_keys(max_encrypted_data_keys - 1)
         .build()?;
-    let esdk_client_incorrect_max_encrypted_keys = esdk_client::Client::from_conf(esdk_config)?;
+    let esdk_client_incorrect_max_encrypted_keys = EsdkClient::from_conf(esdk_config)?;
 
     decrypt_input.keyring = Some(multi_keyring);
     let decryption_response_incorrect_max_encrypted_keys = esdk_client_incorrect_max_encrypted_keys

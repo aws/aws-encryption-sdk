@@ -39,11 +39,11 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
 use aws_config::Region;
-use aws_esdk::client as esdk_client;
-use aws_esdk::material_providers::client as mpl_client;
-use aws_esdk::material_providers::types::DiscoveryFilter;
-use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
-use aws_esdk::types::*;
+use aws_esdk::Client as EsdkClient;
+use aws_esdk::*;
+use aws_mpl_rs::client as mpl_client;
+use aws_mpl_rs::types::DiscoveryFilter;
+use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
@@ -57,8 +57,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // which enforces that this client only encrypts using committing algorithm suites and enforces
     // that this client will only decrypt encrypted messages that were created with a committing
     // algorithm suite.
-    let esdk_config = AwsEncryptionSdkConfig::default();
-    let esdk_client = esdk_client::Client::from_conf(esdk_config)?;
+    let esdk_client = EsdkClient::default();
 
     // 2. Create encryption context.
     // Remember that your encryption context is NOT SECRET.

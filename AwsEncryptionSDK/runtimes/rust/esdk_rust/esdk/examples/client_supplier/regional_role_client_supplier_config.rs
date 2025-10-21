@@ -1,7 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use aws_esdk::types::EncryptionContext;
+use aws_esdk::EncryptionContext;
 
 /*
  Class containing config for the RegionalRoleClientSupplier.

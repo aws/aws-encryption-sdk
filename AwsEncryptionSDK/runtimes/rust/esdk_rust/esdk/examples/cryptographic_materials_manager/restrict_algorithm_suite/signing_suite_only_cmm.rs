@@ -1,18 +1,18 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use aws_esdk::material_providers::client as mpl_client;
-use aws_esdk::material_providers::operation::decrypt_materials::DecryptMaterialsInput;
-use aws_esdk::material_providers::operation::decrypt_materials::DecryptMaterialsOutput;
-use aws_esdk::material_providers::operation::get_encryption_materials::GetEncryptionMaterialsInput;
-use aws_esdk::material_providers::operation::get_encryption_materials::GetEncryptionMaterialsOutput;
-use aws_esdk::material_providers::types::AlgorithmSuiteId;
-use aws_esdk::material_providers::types::EsdkAlgorithmSuiteId;
-use aws_esdk::material_providers::types::cryptographic_materials_manager::CryptographicMaterialsManager;
-use aws_esdk::material_providers::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
-use aws_esdk::material_providers::types::error::Error;
-use aws_esdk::material_providers::types::keyring::KeyringRef;
-use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
+use aws_mpl_rs::client as mpl_client;
+use aws_mpl_rs::operation::decrypt_materials::DecryptMaterialsInput;
+use aws_mpl_rs::operation::decrypt_materials::DecryptMaterialsOutput;
+use aws_mpl_rs::operation::get_encryption_materials::GetEncryptionMaterialsInput;
+use aws_mpl_rs::operation::get_encryption_materials::GetEncryptionMaterialsOutput;
+use aws_mpl_rs::types::AlgorithmSuiteId;
+use aws_mpl_rs::types::EsdkAlgorithmSuiteId;
+use aws_mpl_rs::types::cryptographic_materials_manager::CryptographicMaterialsManager;
+use aws_mpl_rs::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
+use aws_mpl_rs::types::error::Error;
+use aws_mpl_rs::types::keyring::KeyringRef;
+use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
 use std::vec::Vec;
 
 /*

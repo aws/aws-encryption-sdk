@@ -41,6 +41,7 @@ impl ProtectionNeeded {
 }
 
 impl Client {
+    /// Decrypt slice into Vec
     pub async fn encrypt(&self, input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
         input.validate()?;
 
@@ -78,6 +79,8 @@ impl Client {
             algorithm_suite_id: out.algorithm_suite_id,
         })
     }
+
+    /// Encrypt dyn Read into dyn Write
     pub async fn encrypt_stream(
         &self,
         plaintext: &mut dyn SafeRead,
@@ -278,6 +281,7 @@ fn get_esdk_id(
 }
 
 impl Client {
+    /// Decrypt dyn Read into dyn Write
     pub async fn decrypt_stream(
         &self,
         ciphertext: &mut dyn SafeRead,
@@ -298,6 +302,7 @@ impl Client {
         .await
     }
 
+    /// Decrypt slice into Vec
     pub async fn decrypt(&self, input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
         input.validate()?;
 

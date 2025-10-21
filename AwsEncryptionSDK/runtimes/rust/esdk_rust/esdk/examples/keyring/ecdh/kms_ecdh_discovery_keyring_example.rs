@@ -29,14 +29,14 @@ https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-kms-ecdh-k
 
 use crate::example_utils::utils::TEST_KMS_ECDH_KEY_ID_P256_SENDER;
 use crate::example_utils::utils::generate_kms_ecc_public_key;
-use aws_esdk::client as esdk_client;
-use aws_esdk::material_providers::client as mpl_client;
-use aws_esdk::material_providers::types::KmsEcdhStaticConfigurations;
-use aws_esdk::material_providers::types::KmsPrivateKeyToStaticPublicKeyInput;
-use aws_esdk::material_providers::types::KmsPublicKeyDiscoveryInput;
-use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
-use aws_esdk::types::*;
+use aws_esdk::Client as EsdkClient;
+use aws_esdk::*;
 use aws_mpl_rs::aws_cryptography_primitives::types::EcdhCurveSpec;
+use aws_mpl_rs::client as mpl_client;
+use aws_mpl_rs::types::KmsEcdhStaticConfigurations;
+use aws_mpl_rs::types::KmsPrivateKeyToStaticPublicKeyInput;
+use aws_mpl_rs::types::KmsPublicKeyDiscoveryInput;
+use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
 
 pub async fn decrypt_with_keyring(
     example_data: &str,
@@ -49,7 +49,7 @@ pub async fn decrypt_with_keyring(
     // that this client will only decrypt encrypted messages that were created with a committing
     // algorithm suite.
     let esdk_config = AwsEncryptionSdkConfig::default();
-    let esdk_client = esdk_client::Client::from_conf(esdk_config)?;
+    let esdk_client = EsdkClient::from_conf(esdk_config)?;
 
     // 2. Create a KMS client.
     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
@@ -154,7 +154,7 @@ async fn get_ciphertext(
     ecc_recipient_key_arn: &str,
     ecdh_curve_spec: EcdhCurveSpec,
     kms_client: aws_sdk_kms::Client,
-    esdk_client: &esdk_client::Client,
+    esdk_client: &EsdkClient,
 ) -> Result<Vec<u8>, crate::BoxError> {
     // 1. Create the public keys for sender and recipient
     // Recipient keys are taken as input for this example

@@ -23,11 +23,11 @@ For more information on how to use Raw AES keyrings, see
 https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-raw-aes-keyring.html
 */
 
-use aws_esdk::client as esdk_client;
-use aws_esdk::material_providers::client as mpl_client;
-use aws_esdk::material_providers::types::AesWrappingAlg;
-use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
-use aws_esdk::types::*;
+use aws_esdk::Client as EsdkClient;
+use aws_esdk::*;
+use aws_mpl_rs::client as mpl_client;
+use aws_mpl_rs::types::AesWrappingAlg;
+use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
 use rand::TryRngCore;
 
 pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), crate::BoxError> {
@@ -37,7 +37,7 @@ pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), 
     // that this client will only decrypt encrypted messages that were created with a committing
     // algorithm suite.
     let esdk_config = AwsEncryptionSdkConfig::default();
-    let esdk_client = esdk_client::Client::from_conf(esdk_config)?;
+    let esdk_client = EsdkClient::from_conf(esdk_config)?;
 
     // 2. The key namespace and key name are defined by you.
     // and are used by the Raw AES keyring to determine
