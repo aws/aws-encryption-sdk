@@ -71,11 +71,12 @@
 // #[allow(lint_name, reason = "Your explanation here")]
 // #[warn(clippy::allow_attributes_without_reason)] // REMOVE
 
-mod client;
-pub use client::*;
+// mod client;
+// pub use client::*;
 mod error;
 pub use error::*;
 mod esdk_operations;
+pub use esdk_operations::*;
 #[cfg(feature = "test_vectors")]
 mod test_vectors;
 #[cfg(feature = "test_vectors")]

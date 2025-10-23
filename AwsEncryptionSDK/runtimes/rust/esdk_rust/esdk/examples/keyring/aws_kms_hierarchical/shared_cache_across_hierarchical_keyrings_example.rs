@@ -63,7 +63,6 @@
 */
 
 use super::create_branch_key_id::create_branch_key_id;
-use aws_esdk::Client as EsdkClient;
 use aws_esdk::*;
 use aws_mpl_rs::aws_cryptography_keyStore::client as keystore_client;
 use aws_mpl_rs::aws_cryptography_keyStore::types::KmsConfiguration;
@@ -106,14 +105,6 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // pass it to different Hierarchical Keyrings, it will still point to the same
     // underlying cache, and increment the reference count accordingly.
     let shared_cache: CacheType = CacheType::Shared(shared_cryptographic_materials_cache);
-
-    // 2. Instantiate the encryption SDK client.
-    // This builds the default client with the RequireEncryptRequireDecrypt commitment policy,
-    // which enforces that this client only encrypts using committing algorithm suites and enforces
-    // that this client will only decrypt encrypted messages that were created with a committing
-    // algorithm suite.
-    let esdk_config = AwsEncryptionSdkConfig::default();
-    let esdk_client = EsdkClient::from_conf(esdk_config)?;
 
     // 3. Configure your Key Store resource key_store1.
     //    This SHOULD be the same configuration that you used
@@ -190,7 +181,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .keyring(keyring1.clone())
         .encryption_context(&encryption_context)
         .build()?;
-    let encryption_response1 = esdk_client.encrypt(&encrypt_input).await?;
+    let encryption_response1 = encrypt(&encrypt_input).await?;
 
     let ciphertext1 = encryption_response1.ciphertext;
 
@@ -208,7 +199,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         // Provide the encryption context that was supplied to the encrypt method
         .encryption_context(&encryption_context)
         .build()?;
-    let decryption_response1 = esdk_client.decrypt(&decrypt_input).await?;
+    let decryption_response1 = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext1 = decryption_response1.plaintext;
     // 10. Demonstrate that the decrypted plaintext is identical to the original plaintext.
@@ -262,7 +253,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 13. This encrypt-decrypt roundtrip with HK2 will experience Cache HITS from previous HK1 roundtrip
     // Encrypt the data for encryption_context using keyring2
     encrypt_input.keyring = Some(keyring2.clone());
-    let encryption_response2 = esdk_client.encrypt(&encrypt_input).await?;
+    let encryption_response2 = encrypt(&encrypt_input).await?;
     let ciphertext2 = encryption_response2.ciphertext;
 
     // 14. Demonstrate that the ciphertexts and plaintext are different.
@@ -275,7 +266,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 15. Decrypt your encrypted data using the same keyring HK2 you used on encrypt.
     decrypt_input.ciphertext = &ciphertext2;
     decrypt_input.keyring = Some(keyring2);
-    let decryption_response2 = esdk_client.decrypt(&decrypt_input).await?;
+    let decryption_response2 = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext2 = decryption_response2.plaintext;
 

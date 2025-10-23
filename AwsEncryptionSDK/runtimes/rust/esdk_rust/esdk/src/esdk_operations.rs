@@ -1,8 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::client::Client;
-use crate::client::Config;
+// use crate::client::Client;
 use crate::encrypt_decrypt;
 use crate::error::Error;
 use crate::key_derivation;
@@ -14,6 +13,7 @@ use crate::serialize::serialize_functions::write_seq_u16;
 use crate::serialize::*;
 use crate::types::*;
 use aws_mpl_primitives::*;
+use aws_mpl_rs::types::EsdkCommitmentPolicy;
 use aws_mpl_rs::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -32,113 +32,95 @@ impl ProtectionNeeded {
     }
 
     // if overridden set to true, no safety needed
-    const fn needs_protection(overridden: Option<bool>) -> Self {
-        match overridden {
-            Some(true) => Self::No,
-            Some(false) | None => Self::Yes,
-        }
+    const fn needs_protection(overridden: bool) -> Self {
+        if overridden { Self::No } else { Self::Yes }
     }
 }
 
-impl Client {
-    /// Decrypt slice into Vec
-    pub async fn encrypt(&self, input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
-        input.validate()?;
+// impl Client {
+//     /// Decrypt slice into Vec
+//     pub async fn encrypt(&self, input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
+//         encrypt(input).await
+//     }
+// }
 
-        let mut cursor: std::io::Cursor<&[u8]> = std::io::Cursor::new(input.plaintext);
+/// Decrypt slice into Vec
+pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
+    input.validate()?;
 
-        // calculate reasonable upper bound for ciphertext size, to minimize allocations.
-        let frame_length = input
-            .frame_length
-            .unwrap_or(encrypt_decrypt::DEFAULT_FRAME_LENGTH);
-        let frame_length_usize = frame_length as usize;
-        let frames = input.plaintext.len().div_ceil(frame_length_usize);
-        let iv_len = 12_usize;
-        let auth_len = 16_usize;
-        let frame_len = frame_length_usize + iv_len + auth_len + 4;
-        let header_overhead = 1024_usize;
-        let total_size = frames * frame_len + header_overhead;
+    let mut cursor: std::io::Cursor<&[u8]> = std::io::Cursor::new(input.plaintext);
 
-        let mut ciphertext: Vec<u8> = Vec::with_capacity(total_size);
-        let out = internal_encrypt(
-            &self.config,
-            &mut cursor,
-            &mut ciphertext,
-            input.plaintext.len(),
-            input.materials_manager.clone(),
-            input.keyring.clone(),
-            input.encryption_context,
-            input.algorithm_suite_id,
-            input.frame_length,
-        )
-        .await?;
+    // calculate reasonable upper bound for ciphertext size, to minimize allocations.
+    let frame_length_usize = input.frame_length as usize;
+    let frames = input.plaintext.len().div_ceil(frame_length_usize);
+    let iv_len = 12_usize;
+    let auth_len = 16_usize;
+    let frame_len = frame_length_usize + iv_len + auth_len + 4;
+    let header_overhead = 1024_usize;
+    let total_size = frames * frame_len + header_overhead;
 
-        Ok(EncryptOutput {
-            ciphertext,
-            encryption_context: out.encryption_context,
-            algorithm_suite_id: out.algorithm_suite_id,
-        })
-    }
+    let mut ciphertext: Vec<u8> = Vec::with_capacity(total_size);
+    let out = internal_encrypt(
+        &mut cursor,
+        &mut ciphertext,
+        input.plaintext.len(),
+        input.materials_manager.clone(),
+        input.keyring.clone(),
+        input.encryption_context,
+        input.algorithm_suite_id,
+        input.frame_length,
+        input.max_encrypted_data_keys,
+        input.commitment_policy,
+    )
+    .await?;
 
-    /// Encrypt dyn Read into dyn Write
-    pub async fn encrypt_stream(
-        &self,
-        plaintext: &mut dyn SafeRead,
-        ciphertext: &mut dyn SafeWrite,
-        input: &EncryptStreamInput<'_>,
-    ) -> Result<EncryptStreamOutput, Error> {
-        input.validate()?;
+    Ok(EncryptOutput {
+        ciphertext,
+        encryption_context: out.encryption_context,
+        algorithm_suite_id: out.algorithm_suite_id,
+    })
+}
 
-        internal_encrypt(
-            &self.config,
-            plaintext,
-            ciphertext,
-            input.data_size.unwrap_or(usize::MAX),
-            input.materials_manager.clone(),
-            input.keyring.clone(),
-            input.encryption_context,
-            input.algorithm_suite_id,
-            input.frame_length,
-        )
-        .await
-    }
+/// Encrypt dyn Read into dyn Write
+pub async fn encrypt_stream(
+    plaintext: &mut dyn SafeRead,
+    ciphertext: &mut dyn SafeWrite,
+    input: &EncryptStreamInput<'_>,
+) -> Result<EncryptStreamOutput, Error> {
+    input.validate()?;
+
+    internal_encrypt(
+        plaintext,
+        ciphertext,
+        input.data_size.unwrap_or(usize::MAX),
+        input.materials_manager.clone(),
+        input.keyring.clone(),
+        input.encryption_context,
+        input.algorithm_suite_id,
+        input.frame_length,
+        input.max_encrypted_data_keys,
+        input.commitment_policy,
+    )
+    .await
 }
 
 #[allow(clippy::too_many_arguments)]
 async fn internal_encrypt(
-    config: &Config,
     plaintext: &mut dyn SafeRead,
     ciphertext: &mut dyn SafeWrite,
     plaintext_len: usize,
     input_cmm: Option<CryptographicMaterialsManagerRef>,
     input_keyring: Option<aws_mpl_rs::types::keyring::KeyringRef>,
-    input_encryption_context: Option<&EncryptionContext>,
+    encryption_context: &EncryptionContext,
     algorithm_suite_id: Option<aws_mpl_rs::types::EsdkAlgorithmSuiteId>,
-    frame_length: Option<u32>,
+    frame_length: u32,
+    max_encrypted_data_keys: Option<usize>,
+    commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<EncryptStreamOutput, Error> {
-    //= compliance/client-apis/encrypt.txt#2.4.6
-    //# This value
-    //# MUST be greater than 0 and MUST NOT exceed the value 2^32 - 1.
-    let frame_length = if let Some(in_len) = frame_length {
-        #[allow(clippy::checked_conversions)] // u32::MAX fits in a usize in real life
-        if in_len != 0 {
-            in_len
-        } else {
-            return Err("FrameLength must be greater than 0 and less than 2^32".into());
-        }
-    } else {
-        encrypt_decrypt::DEFAULT_FRAME_LENGTH
-    };
-    encrypt_decrypt::validate_encryption_context(input_encryption_context)?;
+    encrypt_decrypt::validate_encryption_context(encryption_context)?;
 
-    let empty_ec = EncryptionContext::new();
-    let encryption_context = if let Some(encryption_context) = input_encryption_context {
-        encryption_context
-    } else {
-        &empty_ec
-    };
-
-    let cmm = encrypt_decrypt::create_cmm_from_input(&config.mpl, input_cmm, input_keyring).await?;
+    let mpl = mpl()?;
+    let cmm = encrypt_decrypt::create_cmm_from_input(&mpl, input_cmm, input_keyring).await?;
 
     //= compliance/client-apis/encrypt.txt#2.4.5
     //# The algorithm suite (../framework/algorithm-suite.md) that SHOULD be
@@ -165,13 +147,9 @@ async fn internal_encrypt(
     //# a Key Commitment (../framework/algorithm-suites.md#algorithm-
     //# suites-encryption-key-derivation-settings) value of True
     if let Some(ref id) = algorithm_suite_id {
-        config
-            .mpl
-            .validate_commitment_policy_on_encrypt()
+        mpl.validate_commitment_policy_on_encrypt()
             .algorithm(id.clone())
-            .commitment_policy(aws_mpl_rs::types::CommitmentPolicy::Esdk(
-                config.commitment_policy,
-            ))
+            .commitment_policy(aws_mpl_rs::types::CommitmentPolicy::Esdk(commitment_policy))
             .send()
             .await?;
     }
@@ -184,8 +162,8 @@ async fn internal_encrypt(
         //# *  Max Plaintext Length: If the input plaintext (Section 2.4.1) has
         //# known length, this length MUST be used.
         plaintext_len as i64,
-        config.commitment_policy,
-        &config.mpl,
+        commitment_policy,
+        &mpl,
     )
     .await?;
 
@@ -206,7 +184,7 @@ async fn internal_encrypt(
     //# client (client.md) encrypt MUST yield an error.
     let encrypted_data_keys = materials.encrypted_data_keys.as_ref().unwrap();
     encrypt_decrypt::validate_max_encrypted_data_keys(
-        config.max_encrypted_data_keys,
+        max_encrypted_data_keys,
         encrypted_data_keys,
     )?;
 
@@ -220,16 +198,12 @@ async fn internal_encrypt(
         encrypt_decrypt::generate_message_id(materials.algorithm_suite.as_ref().unwrap())?;
 
     // TODO Post-#619: Remove Net v4.0.0 references
-    // TODO Post-#619: Formally Verify Message ID is in info of HKDF
     let derived_data_keys = key_derivation::derive_keys(
         &message_id,
         materials.plaintext_data_key.as_ref().unwrap().as_ref(),
         materials.algorithm_suite.as_ref().unwrap(),
-        &config.crypto,
-        config.netv4_0_0_retry_policy,
         false,
-    )
-    .await?;
+    )?;
 
     let suite = materials.algorithm_suite.as_ref().unwrap();
     let header = encrypt_decrypt::build_header_for_encrypt(
@@ -280,79 +254,84 @@ fn get_esdk_id(
     }
 }
 
-impl Client {
-    /// Decrypt dyn Read into dyn Write
-    pub async fn decrypt_stream(
-        &self,
-        ciphertext: &mut dyn SafeRead,
-        plaintext: &mut dyn SafeWrite,
-        input: &DecryptStreamInput<'_>,
-    ) -> Result<DecryptStreamOutput, Error> {
-        input.validate()?;
+/// Decrypt dyn Read into dyn Write
+pub async fn decrypt_stream(
+    ciphertext: &mut dyn SafeRead,
+    plaintext: &mut dyn SafeWrite,
+    input: &DecryptStreamInput<'_>,
+) -> Result<DecryptStreamOutput, Error> {
+    input.validate()?;
 
-        internal_decrypt(
-            &self.config,
-            ciphertext,
-            plaintext,
-            input.materials_manager.clone(),
-            input.keyring.clone(),
-            input.encryption_context,
-            ProtectionNeeded::needs_protection(input.i_accept_the_danger),
-        )
-        .await
-    }
-
-    /// Decrypt slice into Vec
-    pub async fn decrypt(&self, input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
-        input.validate()?;
-
-        //= compliance/client-apis/decrypt.txt#2.7.1
-        //# Given encrypted message bytes, this operation MUST process those
-        //# bytes sequentially, deserializing those bytes according to the
-        //# message format (../data-format/message.md).
-
-        let mut cursor: std::io::Cursor<&[u8]> = std::io::Cursor::new(input.ciphertext);
-        let mut plaintext: Vec<u8> = Vec::with_capacity(input.ciphertext.len());
-        let out = internal_decrypt(
-            &self.config,
-            &mut cursor,
-            &mut plaintext,
-            input.materials_manager.clone(),
-            input.keyring.clone(),
-            input.encryption_context,
-            ProtectionNeeded::No, // Customer cannot see any partial results
-        )
-        .await?;
-
-        if cursor.position() != input.ciphertext.len() as u64 {
-            return Err("Data after message footer.".into());
-        }
-
-        Ok(DecryptOutput {
-            plaintext,
-            encryption_context: out.encryption_context,
-            algorithm_suite_id: out.algorithm_suite_id,
-        })
-    }
+    internal_decrypt(
+        ciphertext,
+        plaintext,
+        input.materials_manager.clone(),
+        input.keyring.clone(),
+        input.encryption_context,
+        input.net_v4_retry_policy,
+        ProtectionNeeded::needs_protection(input.i_accept_the_danger),
+        input.max_encrypted_data_keys,
+        input.commitment_policy,
+    )
+    .await
 }
 
+// impl Client {
+//     /// Decrypt slice into Vec
+//     pub async fn decrypt(&self, input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
+//         decrypt(input).await
+//     }
+// }
+
+/// Decrypt slice into Vec
+pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
+    input.validate()?;
+
+    //= compliance/client-apis/decrypt.txt#2.7.1
+    //# Given encrypted message bytes, this operation MUST process those
+    //# bytes sequentially, deserializing those bytes according to the
+    //# message format (../data-format/message.md).
+
+    let mut cursor: std::io::Cursor<&[u8]> = std::io::Cursor::new(input.ciphertext);
+    let mut plaintext: Vec<u8> = Vec::with_capacity(input.ciphertext.len());
+    let out = internal_decrypt(
+        &mut cursor,
+        &mut plaintext,
+        input.materials_manager.clone(),
+        input.keyring.clone(),
+        input.encryption_context,
+        input.net_v4_retry_policy,
+        ProtectionNeeded::No, // Customer cannot see any partial results
+        input.max_encrypted_data_keys,
+        input.commitment_policy,
+    )
+    .await?;
+
+    if cursor.position() != input.ciphertext.len() as u64 {
+        return Err("Data after message footer.".into());
+    }
+
+    Ok(DecryptOutput {
+        plaintext,
+        encryption_context: out.encryption_context,
+        algorithm_suite_id: out.algorithm_suite_id,
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
 async fn internal_decrypt(
-    config: &Config,
     ciphertext: &mut dyn SafeRead,
     plaintext: &mut dyn SafeWrite,
     input_cmm: Option<CryptographicMaterialsManagerRef>,
     input_keyring: Option<aws_mpl_rs::types::keyring::KeyringRef>,
-    input_encryption_context: Option<&EncryptionContext>,
+    encryption_context: &EncryptionContext,
+    net_v4_retry_policy: NetV400RetryPolicy,
     safety_needed: ProtectionNeeded,
+    max_encrypted_data_keys: Option<usize>,
+    commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<DecryptStreamOutput, Error> {
-    let empty_ec = EncryptionContext::new();
-    let encryption_context = if let Some(encryption_context) = input_encryption_context {
-        encryption_context
-    } else {
-        &empty_ec
-    };
-
-    let cmm = encrypt_decrypt::create_cmm_from_input(&config.mpl, input_cmm, input_keyring).await?;
+    let mpl = mpl()?;
+    let cmm = encrypt_decrypt::create_cmm_from_input(&mpl, input_cmm, input_keyring).await?;
 
     //= compliance/client-apis/decrypt.txt#2.5.1.1
     //= type=TODO
@@ -362,25 +341,17 @@ async fn internal_decrypt(
     //# (../data-format/message-header.md#type) and fail with a more specific
     //# error message.
     let mut raw_header = Vec::new();
-    let header_body = header::read_header_body(
-        ciphertext,
-        config.max_encrypted_data_keys,
-        &config.mpl,
-        &mut raw_header,
-    )?;
+    let header_body =
+        header::read_header_body(ciphertext, max_encrypted_data_keys, &mpl, &mut raw_header)?;
 
     //= compliance/client-apis/decrypt.txt#2.7.2
     //# If the
     //# algorithm suite is not supported by the commitment policy
     //# (client.md#commitment-policy) configured in the client (client.md)
     //# decrypt MUST yield an error.
-    config
-        .mpl
-        .validate_commitment_policy_on_decrypt()
+    mpl.validate_commitment_policy_on_decrypt()
         .algorithm(header_body.algorithm_suite().id.as_ref().unwrap().clone())
-        .commitment_policy(aws_mpl_rs::types::CommitmentPolicy::Esdk(
-            config.commitment_policy,
-        ))
+        .commitment_policy(aws_mpl_rs::types::CommitmentPolicy::Esdk(commitment_policy))
         .send()
         .await?;
 
@@ -404,8 +375,8 @@ async fn internal_decrypt(
         header_body.algorithm_suite().id.as_ref().unwrap().clone(),
         &header_body,
         encryption_context,
-        config.commitment_policy,
-        &config.mpl,
+        commitment_policy,
+        &mpl,
     )
     .await?;
 
@@ -428,11 +399,8 @@ async fn internal_decrypt(
         header_body.message_id(),
         dec_mat.plaintext_data_key.as_ref().unwrap().as_ref(),
         suite,
-        &config.crypto,
-        config.netv4_0_0_retry_policy,
         false,
-    )
-    .await?;
+    )?;
 
     if !header::header_version_supports_commitment(suite, &header_body) {
         return Err("Invalid commitment values found in header body.".into());
@@ -492,17 +460,13 @@ async fn internal_decrypt(
     // use EncryptionContext.WriteAAD to serialize the
     // the Canonical Required Encryption Context.
 
-    if maybe_header_auth.is_err() && config.netv4_0_0_retry_policy == NetV400RetryPolicy::AllowRetry
-    {
+    if maybe_header_auth.is_err() && net_v4_retry_policy == NetV400RetryPolicy::AllowRetry {
         let derived_data_keys = key_derivation::derive_keys(
             header_body.message_id(),
             dec_mat.plaintext_data_key.as_ref().unwrap().as_ref(),
             suite,
-            &config.crypto,
-            config.netv4_0_0_retry_policy,
             true,
-        )
-        .await?;
+        )?;
         let mut serialized_req_encryption_context_v4 = Vec::new();
         encryption_context::write_aad(
             &mut serialized_req_encryption_context_v4,

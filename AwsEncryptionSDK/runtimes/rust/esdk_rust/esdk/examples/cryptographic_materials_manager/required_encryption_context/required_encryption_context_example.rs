@@ -8,7 +8,6 @@ on encrypt such that they will not be stored on the message, but WILL be include
 On decrypt, the client MUST supply the key/value pair(s) that were not stored to successfully decrypt the message.
 */
 
-use aws_esdk::Client as EsdkClient;
 use aws_esdk::*;
 use aws_mpl_rs::client as mpl_client;
 use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
@@ -18,14 +17,6 @@ pub async fn encrypt_and_decrypt_with_cmm(
     example_data: &str,
     kms_key_id: &str,
 ) -> Result<(), crate::BoxError> {
-    // 1. Instantiate the encryption SDK client.
-    // This builds the default client with the RequireEncryptRequireDecrypt commitment policy,
-    // which enforces that this client only encrypts using committing algorithm suites and enforces
-    // that this client will only decrypt encrypted messages that were created with a committing
-    // algorithm suite.
-    let esdk_config = AwsEncryptionSdkConfig::default();
-    let esdk_client = EsdkClient::from_conf(esdk_config)?;
-
     // 2. Create a KMS client.
     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
     let kms_client = aws_sdk_kms::Client::new(&sdk_config);
@@ -93,7 +84,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
         .materials_manager(required_ec_cmm.clone())
         .encryption_context(&encryption_context)
         .build()?;
-    let encryption_response = esdk_client.encrypt(&encrypt_input).await?;
+    let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
 
@@ -111,7 +102,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
         // Provide the encryption context that was supplied to the encrypt method
         .encryption_context(&encryption_context)
         .build()?;
-    let decryption_response = esdk_client.decrypt(&decrypt_input).await?;
+    let decryption_response = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext = decryption_response.plaintext;
 
@@ -126,8 +117,8 @@ pub async fn encrypt_and_decrypt_with_cmm(
     // you used on encrypt, but we won't pass the encryption context we DID NOT store on the message.
     // This will fail
     decrypt_input.materials_manager = Some(required_ec_cmm.clone());
-    decrypt_input.encryption_context = None;
-    let decryption_response_without_ec = esdk_client.decrypt(&decrypt_input).await;
+    decrypt_input.encryption_context = empty_ec();
+    let decryption_response_without_ec = decrypt(&decrypt_input).await;
 
     if decryption_response_without_ec.is_ok() {
         panic!(
@@ -144,9 +135,9 @@ pub async fn encrypt_and_decrypt_with_cmm(
     ]);
 
     decrypt_input.materials_manager = Some(required_ec_cmm);
-    decrypt_input.encryption_context = Some(&reproduced_encryption_context);
+    decrypt_input.encryption_context = &reproduced_encryption_context;
 
-    let decryption_response_with_reproduced_ec = esdk_client.decrypt(&decrypt_input).await?;
+    let decryption_response_with_reproduced_ec = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext_with_reproduced_ec = decryption_response_with_reproduced_ec.plaintext;
 
@@ -162,8 +153,8 @@ pub async fn encrypt_and_decrypt_with_cmm(
 
     // This will pass
     decrypt_input.materials_manager = Some(underlying_cmm);
-    decrypt_input.encryption_context = Some(&encryption_context);
-    let decryption_response_with_ec_underlying_cmm = esdk_client.decrypt(&decrypt_input).await?;
+    decrypt_input.encryption_context = &encryption_context;
+    let decryption_response_with_ec_underlying_cmm = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext_with_ec_underlying_cmm =
         decryption_response_with_ec_underlying_cmm.plaintext;
@@ -176,8 +167,8 @@ pub async fn encrypt_and_decrypt_with_cmm(
     );
 
     // This will fail
-    decrypt_input.encryption_context = None;
-    let decryption_response_without_ec_underlying_cmm = esdk_client.decrypt(&decrypt_input).await;
+    decrypt_input.encryption_context = empty_ec();
+    let decryption_response_without_ec_underlying_cmm = decrypt(&decrypt_input).await;
 
     if decryption_response_without_ec_underlying_cmm.is_ok() {
         panic!(

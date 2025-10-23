@@ -1,7 +1,7 @@
 use crate::test_vectors::do_decrypt::read_json;
 use anyhow::Result;
 
-/// Decrypt and verify the decryption test vectors
+/// Decrypt and verify the decryption test vectors. Enabled with `features = "test_vectors"`.
 pub async fn decrypt_test_vectors(
     manifest_path: &str,
     manifest_name: &str,
@@ -43,7 +43,7 @@ pub async fn decrypt_test_vectors(
     Ok(())
 }
 
-/// Encrypt the encryption test vectors, creating decryption test vectors
+/// Encrypt the encryption test vectors, creating decryption test vectors. Enabled with `features = "test_vectors"`
 pub async fn encrypt_test_vectors(
     encrypt_path: &str,
     decrypt_path: &str,

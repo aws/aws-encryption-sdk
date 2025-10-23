@@ -36,7 +36,6 @@ For more information on KMS Key identifiers, see
 https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
-use aws_esdk::Client as EsdkClient;
 use aws_esdk::*;
 use aws_mpl_rs::types::DiscoveryFilter;
 
@@ -46,13 +45,6 @@ pub async fn encrypt_and_decrypt_with_keyring(
     aws_account_id: &str,
     // ) -> Result<(), crate::BoxError> {
 ) -> Result<(), Error> {
-    // 1. Instantiate the encryption SDK client.
-    // This builds the default client with the RequireEncryptRequireDecrypt commitment policy,
-    // which enforces that this client only encrypts using committing algorithm suites and enforces
-    // that this client will only decrypt encrypted messages that were created with a committing
-    // algorithm suite.
-    let esdk_client = EsdkClient::default();
-
     // 2. Create a KMS client.
     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
     let kms_client = aws_sdk_kms::Client::new(&sdk_config);
@@ -78,7 +70,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 4. Create the keyring that determines how your data keys are protected.
     //    Although this example highlights Discovery keyrings, Discovery keyrings cannot
     //    be used to encrypt, so for encryption we create a KMS keyring without discovery mode.
-    let mpl = EsdkClient::mpl()?;
+    let mpl = mpl()?;
 
     let encrypt_kms_keyring = mpl
         .create_aws_kms_keyring()
@@ -95,7 +87,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .keyring(encrypt_kms_keyring)
         .encryption_context(&encryption_context)
         .build()?;
-    let encryption_response = esdk_client.encrypt(&encrypt_input).await?;
+    let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
 
@@ -139,7 +131,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .keyring(discovery_keyring)
         .encryption_context(&encryption_context)
         .build()?;
-    let decryption_response = esdk_client.decrypt(&decrypt_input).await?;
+    let decryption_response = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext = decryption_response.plaintext;
 
@@ -170,7 +162,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // Account ID's for the KMS keyring used for encryption.
     // This should throw an AwsCryptographicMaterialProvidersError exception
     decrypt_input.keyring = Some(discovery_keyring_bob);
-    let decryption_response_bob = esdk_client.decrypt(&decrypt_input).await;
+    let decryption_response_bob = decrypt(&decrypt_input).await;
 
     if decryption_response_bob.is_ok() {
         panic!(

@@ -41,7 +41,6 @@ For more information on KMS Key identifiers, see
 https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
-use aws_esdk::Client as EsdkClient;
 use aws_esdk::*;
 use aws_mpl_rs::client as mpl_client;
 use aws_mpl_rs::types::AesWrappingAlg;
@@ -52,14 +51,6 @@ pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
     kms_key_id: &str,
 ) -> Result<(), crate::BoxError> {
-    // 1. Instantiate the encryption SDK client.
-    // This builds the default client with the RequireEncryptRequireDecrypt commitment policy,
-    // which enforces that this client only encrypts using committing algorithm suites and enforces
-    // that this client will only decrypt encrypted messages that were created with a committing
-    // algorithm suite.
-    let esdk_config = AwsEncryptionSdkConfig::default();
-    let esdk_client = EsdkClient::from_conf(esdk_config)?;
-
     // 2. Create a KMS client.
     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
     let kms_client = aws_sdk_kms::Client::new(&sdk_config);
@@ -134,7 +125,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .keyring(multi_keyring.clone())
         .encryption_context(&encryption_context)
         .build()?;
-    let encryption_response = esdk_client.encrypt(&encrypt_input).await?;
+    let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
 
@@ -152,7 +143,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         // Provide the encryption context that was supplied to the encrypt method
         .encryption_context(&encryption_context)
         .build()?;
-    let decryption_response_multi_keyring = esdk_client.decrypt(&decrypt_input).await?;
+    let decryption_response_multi_keyring = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext_multi_keyring = decryption_response_multi_keyring.plaintext;
 
@@ -172,7 +163,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 10a. Decrypt your encrypted data using the kms_keyring.
     decrypt_input.keyring = Some(kms_keyring);
-    let decryption_response_kms_keyring = esdk_client.decrypt(&decrypt_input).await?;
+    let decryption_response_kms_keyring = decrypt(&decrypt_input).await?;
     let decrypted_plaintext_kms_keyring = decryption_response_kms_keyring.plaintext;
 
     // 10b. Demonstrate that the decrypted plaintext is identical to the original plaintext.
@@ -188,7 +179,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 11a. Decrypt your encrypted data using the raw_aes_keyring.
     decrypt_input.keyring = Some(raw_aes_keyring);
-    let decryption_response_raw_aes_keyring = esdk_client.decrypt(&decrypt_input).await?;
+    let decryption_response_raw_aes_keyring = decrypt(&decrypt_input).await?;
     let decrypted_plaintext_raw_aes_keyring = decryption_response_raw_aes_keyring.plaintext;
 
     // 11b. Demonstrate that the decrypted plaintext is identical to the original plaintext.

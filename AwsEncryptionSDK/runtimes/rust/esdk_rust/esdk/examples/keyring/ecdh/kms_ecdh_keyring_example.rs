@@ -45,7 +45,6 @@ use crate::example_utils::utils::EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_RECIPIENT;
 use crate::example_utils::utils::EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_SENDER;
 use crate::example_utils::utils::exists;
 use crate::example_utils::utils::write_kms_ecdh_ecc_public_key;
-use aws_esdk::Client as EsdkClient;
 use aws_esdk::*;
 use aws_mpl_rs::aws_cryptography_primitives::types::EcdhCurveSpec;
 use aws_mpl_rs::client as mpl_client;
@@ -64,14 +63,6 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 1. If ecc_recipient_key_arn is not provided, set the private key for the recipient to TEST_KMS_ECDH_KEY_ID_P256_RECIPIENT
     let ecc_recipient_key_arn = ecc_recipient_key_arn
         .unwrap_or(crate::example_utils::utils::TEST_KMS_ECDH_KEY_ID_P256_RECIPIENT);
-
-    // 2. Instantiate the encryption SDK client.
-    // This builds the default client with the RequireEncryptRequireDecrypt commitment policy,
-    // which enforces that this client only encrypts using committing algorithm suites and enforces
-    // that this client will only decrypt encrypted messages that were created with a committing
-    // algorithm suite.
-    let esdk_config = AwsEncryptionSdkConfig::default();
-    let esdk_client = EsdkClient::from_conf(esdk_config)?;
 
     // 3. Create a KMS client.
     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
@@ -176,7 +167,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .keyring(kms_ecdh_keyring.clone())
         .encryption_context(&encryption_context)
         .build()?;
-    let encryption_response = esdk_client.encrypt(&encrypt_input).await?;
+    let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
 
@@ -194,7 +185,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         // Provide the encryption context that was supplied to the encrypt method
         .encryption_context(&encryption_context)
         .build()?;
-    let decryption_response = esdk_client.decrypt(&decrypt_input).await?;
+    let decryption_response = decrypt(&decrypt_input).await?;
     let decrypted_plaintext = decryption_response.plaintext;
 
     // 12. Demonstrate that the decrypted plaintext is identical to the original plaintext.

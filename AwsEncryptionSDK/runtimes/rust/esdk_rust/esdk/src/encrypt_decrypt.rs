@@ -81,6 +81,8 @@ pub(crate) fn encrypt_and_serialize(
 
         sequence_number += 1;
     }
+    // Final frame should not be empty, unless the whole plaintext was empty
+    debug_assert!(in_size > 0 || sequence_number == START_SEQUENCE_NUMBER);
     iv_seq(sequence_number, &mut iv);
     w.clear();
 
@@ -178,14 +180,12 @@ pub(crate) fn verify_signature(
     Ok(())
 }
 
-pub(crate) fn validate_encryption_context(input: Option<&EncryptionContext>) -> Result<(), Error> {
-    if let Some(ec) = input {
-        for key in ec.keys() {
-            if key.starts_with(RESERVED_ENCRYPTION_CONTEXT) {
-                return Err(
-                    "Encryption context keys cannot contain reserved prefix 'aws-crypto-'".into(),
-                );
-            }
+pub(crate) fn validate_encryption_context(ec: &EncryptionContext) -> Result<(), Error> {
+    for key in ec.keys() {
+        if key.starts_with(RESERVED_ENCRYPTION_CONTEXT) {
+            return Err(
+                "Encryption context keys cannot contain reserved prefix 'aws-crypto-'".into(),
+            );
         }
     }
     Ok(())

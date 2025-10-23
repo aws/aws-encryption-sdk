@@ -16,7 +16,6 @@
 */
 
 use super::regional_role_client_supplier::RegionalRoleClientSupplier;
-use aws_esdk::Client as EsdkClient;
 use aws_esdk::*;
 use aws_mpl_rs::client as mpl_client;
 use aws_mpl_rs::types::DiscoveryFilter;
@@ -29,14 +28,6 @@ pub async fn encrypt_and_decrypt_with_keyring(
     aws_account_id: &str,
     aws_regions: Vec<String>,
 ) -> Result<(), crate::BoxError> {
-    // 1. Instantiate the encryption SDK client.
-    // This builds the default client with the RequireEncryptRequireDecrypt commitment policy,
-    // which enforces that this client only encrypts using committing algorithm suites and enforces
-    // that this client will only decrypt encrypted messages that were created with a committing
-    // algorithm suite.
-    let esdk_config = AwsEncryptionSdkConfig::default();
-    let esdk_client = EsdkClient::from_conf(esdk_config)?;
-
     // 2. Create encryption context.
     // Remember that your encryption context is NOT SECRET.
     // For more information, see
@@ -84,7 +75,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .keyring(mrk_keyring_with_client_supplier)
         .encryption_context(&encryption_context)
         .build()?;
-    let encryption_response = esdk_client.encrypt(&encrypt_input).await?;
+    let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
 
@@ -134,7 +125,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         // Provide the encryption context that was supplied to the encrypt method
         .encryption_context(&encryption_context)
         .build()?;
-    let decryption_response = esdk_client.decrypt(&decrypt_input).await?;
+    let decryption_response = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext = decryption_response.plaintext;
 

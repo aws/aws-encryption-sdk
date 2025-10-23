@@ -1,13 +1,14 @@
 use super::do_decrypt::trim_filename;
 use super::do_decrypt::{get_cmm, make_kms_map};
 use crate::test_vectors::types::*;
-use crate::types::EncryptInputBuilder;
+use crate::{EncryptInputBuilder, encrypt};
 use anyhow::Result;
 use aws_mpl_primitives::generate_random_bytes;
 use aws_mpl_rs::client::Client as mpl_client;
 use aws_mpl_rs::types::EsdkAlgorithmSuiteId;
 use aws_mpl_rs::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef as CmmRef;
 use serde_json::Value as JsonValue;
+use aws_mpl_rs::types::EsdkCommitmentPolicy;
 
 pub(crate) fn write_file(filename: &str, data: &[u8], dir: &str) -> Result<()> {
     let filename = trim_filename(filename);
@@ -56,7 +57,6 @@ fn make_decrypt_json(test: &EncryptTest, ciphertext_result: &[u8], dir: &str) ->
 }
 
 pub(crate) async fn run_encrypt_test(
-    client: &crate::client::Client,
     test: &EncryptTest,
     cmm: CmmRef,
     plaintexts: &PlainTexts,
@@ -68,10 +68,11 @@ pub(crate) async fn run_encrypt_test(
         .materials_manager(cmm)
         .algorithm_suite_id(test.alg_id)
         .encryption_context(&test.encryption_context)
+        .commitment_policy(policy(test.alg_id))
         .build()
         .unwrap();
 
-    let encrypt_output = client.encrypt(&encrypt_input).await?;
+    let encrypt_output = encrypt(&encrypt_input).await?;
 
     make_decrypt_json(test, encrypt_output.ciphertext.as_ref(), dir)
 }
@@ -84,12 +85,16 @@ pub(crate) const fn is_committing(id: EsdkAlgorithmSuiteId) -> bool {
     )
 }
 
-pub(crate) const fn client<'a>(
-    id: EsdkAlgorithmSuiteId,
-    require: &'a crate::client::Client,
-    forbid: &'a crate::client::Client,
-) -> &'a crate::client::Client {
-    if is_committing(id) { require } else { forbid }
+
+pub(crate) const fn policy(
+    id: EsdkAlgorithmSuiteId
+) -> EsdkCommitmentPolicy
+{
+    if is_committing(id) {
+        EsdkCommitmentPolicy::RequireEncryptAllowDecrypt
+    } else {
+        EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt
+    }
 }
 
 #[allow(clippy::if_same_then_else)]
@@ -102,14 +107,6 @@ pub(crate) async fn run_encrypt_tests(
 ) -> Result<JsonValue> {
     let mpl_config = aws_mpl_rs::types::MaterialProvidersConfig::builder().build()?;
     let mpl = mpl_client::from_conf(mpl_config)?;
-    let esdk_config = crate::types::AwsEncryptionSdkConfigBuilder::default()
-        .commitment_policy(aws_mpl_rs::types::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt)
-        .build()?;
-    let forbid = crate::client::Client::from_conf(esdk_config)?;
-    let esdk_config = crate::types::AwsEncryptionSdkConfigBuilder::default()
-        .commitment_policy(aws_mpl_rs::types::EsdkCommitmentPolicy::RequireEncryptAllowDecrypt)
-        .build()?;
-    let require = crate::client::Client::from_conf(esdk_config)?;
     let kms = make_kms_map().await;
 
     std::fs::create_dir_all(format!("{dir}/ciphertexts"))?;
@@ -134,7 +131,6 @@ pub(crate) async fn run_encrypt_tests(
         } else {
             let cmm = get_cmm(&test.encrypt_key_description, keys, &mpl, &kms).await?;
             match run_encrypt_test(
-                client(test.alg_id, &require, &forbid),
                 test,
                 cmm,
                 plaintexts,

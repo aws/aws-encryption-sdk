@@ -40,23 +40,40 @@ const fn valid_derivation_alg(
         _ => true,
     }
 }
+
+const fn get_hkdf_alg(alg : aws_mpl_rs::aws_cryptography_primitives::types::DigestAlgorithm) -> aws_mpl_primitives::DigestAlg {
+    match alg {
+        aws_mpl_rs::aws_cryptography_primitives::types::DigestAlgorithm::Sha256 => aws_mpl_primitives::DigestAlg::Sha256,
+        aws_mpl_rs::aws_cryptography_primitives::types::DigestAlgorithm::Sha384 => aws_mpl_primitives::DigestAlg::Sha384,
+        aws_mpl_rs::aws_cryptography_primitives::types::DigestAlgorithm::Sha512 => aws_mpl_primitives::DigestAlg::Sha512,
+    }
+}
+
+fn digest_length(alg : aws_mpl_primitives::DigestAlg) -> Result<usize, Error> {
+    match alg {
+        aws_mpl_primitives::DigestAlg::Sha256 => Ok(32),
+        aws_mpl_primitives::DigestAlg::Sha384 => Ok(48),
+        aws_mpl_primitives::DigestAlg::Sha512 => Ok(64),
+        _ => Err("Unknown DigestAlg".into()),
+    }
+}
+
 // Derives a single data key from an input plaintext data key, using "v1"-style
 // key derivation (that is, no key commitment).
-pub(crate) async fn derive_key(
+pub(crate) fn derive_key(
     message_id: &MessageId,
     plaintext_data_key: &[u8],
     suite: &AlgorithmSuiteInfo,
-    crypto: &aws_mpl_rs::aws_cryptography_primitives::client::Client,
     // TODO Post-#619: Refactor, breaking Net v4.0.0 logic out into independent method
     on_net_v4_retry: bool,
 ) -> Result<ExpandedKeyMaterial, Error> {
     // This should only be used for v1 algorithms
-    if suite.message_version.unwrap() != 1 {
-        return Err("Validation Error 5".into());
-    }
-    if !valid_derivation_alg(suite.kdf.as_ref().unwrap(), suite, plaintext_data_key.len()) {
-        return Err("Validation Error 7".into());
-    }
+    debug_assert!(suite.message_version.unwrap() == 1);
+    debug_assert!(valid_derivation_alg(
+        suite.kdf.as_ref().unwrap(),
+        suite,
+        plaintext_data_key.len()
+    ));
 
     //= compliance/client-apis/encrypt.txt#2.6.1
     //# The algorithm used to derive a data key from the
@@ -77,27 +94,17 @@ pub(crate) async fn derive_key(
             commitment_key: None,
         }),
         DerivationAlgorithm::Hkdf(hkdf) => {
-            let hkdf_builder = crypto
-                .hkdf()
-                .digest_algorithm(hkdf.hmac.unwrap())
-                .ikm(plaintext_data_key)
-                .expected_length(hkdf.output_key_length.unwrap());
-            let derived_key = if on_net_v4_retry {
-                hkdf_builder
-                    .info(suite.binary_id.as_ref().unwrap().as_ref())
-                    .send()
-                    .await
-                    .unwrap()
+            let alg = get_hkdf_alg(hkdf.hmac.unwrap());
+            let salt = vec![0u8; digest_length(alg)?];
+            let mut derived_key = vec![0u8; hkdf.output_key_length.unwrap() as usize];
+            if on_net_v4_retry {
+                aws_mpl_primitives::hkdf(alg, &salt, plaintext_data_key, message_id, &mut derived_key)?;
             } else {
-                hkdf_builder
-                    .info([suite.binary_id.as_ref().unwrap().as_ref(), message_id].concat())
-                    .send()
-                    .await
-                    .unwrap()
-            };
+                aws_mpl_primitives::hkdf(alg, &salt, plaintext_data_key, &[suite.binary_id.as_ref().unwrap().as_ref(), message_id].concat(), &mut derived_key)?;
+            }
 
             Ok(ExpandedKeyMaterial {
-                data_key: derived_key.into(),
+                data_key: derived_key,
                 commitment_key: None,
             })
         }
@@ -113,11 +120,10 @@ const KEY_LABEL: &str = "DERIVEKEY";
  * Derives keys from an input plaintext data key, using "v2"-style
  * key derivation (that is, including key commitment).
  */
-pub(crate) async fn expand_key_material(
+pub(crate) fn expand_key_material(
     message_id: &MessageId,
     plaintext_key: &[u8],
     suite: &AlgorithmSuiteInfo,
-    crypto: &aws_mpl_rs::aws_cryptography_primitives::client::Client,
 ) -> Result<ExpandedKeyMaterial, Error> {
     // This should only be used for v2 algorithms
     if suite.message_version.unwrap() != 2 {
@@ -167,44 +173,22 @@ pub(crate) async fn expand_key_material(
             return Err("Unknown is not a valid Commitment Algorithm".into());
         }
     };
+    let alg = get_hkdf_alg(digest);
     let info = [
         suite.binary_id.as_ref().unwrap().as_ref(),
         KEY_LABEL.as_bytes(),
     ]
     .concat();
 
-    let pseudo_random_key = crypto
-        .hkdf_extract()
-        .digest_algorithm(digest)
-        .salt(message_id.clone())
-        .ikm(plaintext_key)
-        .send()
-        .await
-        .unwrap();
-
-    let encrypt_key = crypto
-        .hkdf_expand()
-        .digest_algorithm(digest)
-        .prk(pseudo_random_key.clone())
-        .info(info)
-        .expected_length(get_kdf_outlen(suite)?)
-        .send()
-        .await
-        .unwrap();
-
-    let commit_key = crypto
-        .hkdf_expand()
-        .digest_algorithm(digest)
-        .prk(pseudo_random_key)
-        .info(COMMIT_LABEL.as_bytes())
-        .expected_length(commit_len)
-        .send()
-        .await
-        .unwrap();
+    let pseudo_random_key = aws_mpl_primitives::hkdf_extract(alg, message_id, plaintext_key);
+    let mut encrypt_key = vec![0u8; get_kdf_outlen(suite)? as usize];
+    let mut commit_key = vec![0u8; commit_len as usize];
+    aws_mpl_primitives::hkdf_expand(&pseudo_random_key, &info, &mut encrypt_key)?;
+    aws_mpl_primitives::hkdf_expand(&pseudo_random_key, COMMIT_LABEL.as_bytes(), &mut commit_key)?;
 
     Ok(ExpandedKeyMaterial {
-        data_key: encrypt_key.into(),
-        commitment_key: Some(commit_key.into()),
+        data_key: encrypt_key,
+        commitment_key: Some(commit_key),
     })
 }
 
@@ -212,27 +196,19 @@ pub(crate) async fn expand_key_material(
  * Derives key material for encryption/decryption. Delegates out to specific methods
  * based on the input algorithm suite.
  */
-pub(crate) async fn derive_keys(
+pub(crate) fn derive_keys(
     message_id: &MessageId,
     plaintext_key: &[u8],
     suite: &AlgorithmSuiteInfo,
-    crypto: &aws_mpl_rs::aws_cryptography_primitives::client::Client,
-    // TODO Post-#619: Refactor, breaking Net v4.0.0 logic out into independent method
-    netv4_0_0_retry_policy: NetV400RetryPolicy,
     on_net_v4_retry: bool,
 ) -> Result<ExpandedKeyMaterial, Error> {
-    if message_id.is_empty() {
-        return Err("Validation Error 12".into());
-    }
-    if get_encrypt_key_length(suite) as usize != plaintext_key.len() {
-        return Err("Validation Error 13".into());
-    }
+    debug_assert!(!message_id.is_empty());
+    debug_assert!(get_encrypt_key_length(suite) as usize == plaintext_key.len());
 
     if suite.message_version.unwrap() == 2 {
-        expand_key_material(message_id, plaintext_key, suite, crypto).await
+        expand_key_material(message_id, plaintext_key, suite)
     } else if suite.message_version.unwrap() == 1 {
-        let retry = netv4_0_0_retry_policy == NetV400RetryPolicy::AllowRetry && on_net_v4_retry;
-        derive_key(message_id, plaintext_key, suite, crypto, retry).await
+        derive_key(message_id, plaintext_key, suite, on_net_v4_retry)
     } else {
         Err("Unknown Message Version".into())
     }

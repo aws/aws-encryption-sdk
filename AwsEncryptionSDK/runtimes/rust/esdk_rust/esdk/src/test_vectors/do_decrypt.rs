@@ -3,9 +3,8 @@
 use crate::test_vectors::types::*;
 use anyhow::Result;
 use aws_config::Region;
-// use aws_mpl_rs::aws_cryptography_primitives::client::Client as crypto_client;
 use crate::test_vectors::parse_keys::decode_base64;
-use crate::types::DecryptInputBuilder;
+use crate::{DecryptInputBuilder, decrypt};
 use aws_mpl_rs::aws_cryptography_primitives::types::EcdhCurveSpec;
 use aws_mpl_rs::client::Client as mpl_client;
 use aws_mpl_rs::types::DiscoveryFilter;
@@ -71,7 +70,6 @@ pub(crate) fn write_json(data: &JsonValue, name: &str) -> Result<()> {
 }
 
 pub(crate) async fn run_decrypt_test(
-    client: &crate::client::Client,
     test: &EncryptTest,
     cmm: CmmRef,
     dir: &str,
@@ -83,8 +81,9 @@ pub(crate) async fn run_decrypt_test(
         .ciphertext(&ciphertext)
         .materials_manager(cmm)
         .encryption_context(&test.reproduced_encryption_context)
+        .commitment_policy(aws_mpl_rs::types::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt)
         .build()?;
-    let decrypt_output = client.decrypt(&decrypt_input).await?;
+    let decrypt_output = decrypt(&decrypt_input).await?;
 
     if decrypt_output.plaintext.as_ref() != plaintext {
         anyhow::bail!("Decrypted ciphertext did not match expected plaintext.");
@@ -429,10 +428,6 @@ pub(crate) async fn run_decrypt_tests(
 ) -> Result<TestResults> {
     let mpl_config = aws_mpl_rs::types::MaterialProvidersConfig::builder().build()?;
     let mpl = mpl_client::from_conf(mpl_config)?;
-    let esdk_config = crate::types::AwsEncryptionSdkConfigBuilder::default()
-        .commitment_policy(aws_mpl_rs::types::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt)
-        .build()?;
-    let esdk = crate::client::Client::from_conf(esdk_config)?;
     let kms = make_kms_map().await;
     let mut res = TestResults::default();
     let mut num_non = 0;
@@ -451,7 +446,7 @@ pub(crate) async fn run_decrypt_tests(
                 num_non += 1;
             }
             let cmm = get_cmm(&test.decrypt_key_description, keys, &mpl, &kms).await?;
-            match run_decrypt_test(&esdk, test, cmm, dir).await {
+            match run_decrypt_test(test, cmm, dir).await {
                 Ok(()) => {
                     // println!(
                     //     "Test Passed {} {} {}",

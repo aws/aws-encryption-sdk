@@ -248,7 +248,7 @@ pub async fn main() -> Result<(), BoxError2> {
     .await?;
 
     // max_encrypted_data_keys MUST be greater than 0
-    let max_encrypted_data_keys: u16 = 3;
+    let max_encrypted_data_keys: usize = 3;
 
     limit_encrypted_data_keys_example::encrypt_and_decrypt_with_keyring(
         utils::TEST_EXAMPLE_DATA,

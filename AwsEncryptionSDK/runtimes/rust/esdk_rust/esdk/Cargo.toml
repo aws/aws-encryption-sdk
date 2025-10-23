@@ -35,9 +35,17 @@ name = "main"
 [[bin]]
 name = "test_vector"
 path = "src/bin/test_vector/main.rs"
-required-features = ["test_vectors"]  # Only build binary when cli feature is enabled
+required-features = ["test_vectors"]  # Only build binary when test_vectors feature is enabled
+
+[package.metadata.docs.rs]
+features = ["test_vectors"]
+rustdoc-args = [
+    "--generate-link-to-definition",
+    "--generate-macro-expansion",
+]
 
 [features]
 # default = []
 default = ["test_vectors"]
 test_vectors = ["clap", "serde_json", "anyhow", "base64", "aws-sdk-kms",  "aws-config"]  # Users can enable with --features test_vectors
+fips = ["aws-mpl-primitives/fips"]

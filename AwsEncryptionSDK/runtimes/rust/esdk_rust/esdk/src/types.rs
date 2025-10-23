@@ -4,11 +4,29 @@
 #![allow(single_use_lifetimes)] // because derive_builder
 
 use crate::Error;
-/// Types for the `AwsEncryptionSdkConfig`
 use aws_mpl_rs::types::EsdkCommitmentPolicy;
 use aws_mpl_rs::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
 use aws_mpl_rs::types::keyring::KeyringRef;
+use derivative::Derivative;
 use derive_builder::Builder;
+
+use std::sync::LazyLock;
+
+static EMPTY_EC: LazyLock<EncryptionContext> = LazyLock::new(EncryptionContext::new);
+
+#[must_use]
+/// Convenience function to return a reference to an empty `EncryptionContext`.
+pub fn empty_ec() -> &'static EncryptionContext {
+    &EMPTY_EC
+}
+
+/// Convenience function to return an `MaterialProviders` Client.
+pub fn mpl() -> Result<aws_mpl_rs::Client, Error> {
+    let m = aws_mpl_rs::Client::from_conf(
+        aws_mpl_rs::types::MaterialProvidersConfig::builder().build()?,
+    )?;
+    Ok(m)
+}
 
 /// Output Stream
 pub trait SafeWrite: std::io::Write + Send + Sync {}
@@ -73,6 +91,11 @@ pub enum NetV400RetryPolicy {
     /// Retry on failure
     AllowRetry,
 }
+impl Default for NetV400RetryPolicy {
+    fn default() -> Self {
+        Self::AllowRetry
+    }
+}
 
 impl ::std::fmt::Display for NetV400RetryPolicy {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
@@ -83,33 +106,9 @@ impl ::std::fmt::Display for NetV400RetryPolicy {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Copy, Default, Builder)]
-#[builder(setter(into, strip_option), default)]
-#[builder(build_fn(error = "Error"))]
-#[non_exhaustive]
-/// Input for `Client` creation
-pub struct AwsEncryptionSdkConfig {
-    /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
-    pub commitment_policy: Option<EsdkCommitmentPolicy>,
-    /// default is no limit
-    pub max_encrypted_data_keys: Option<usize>,
-    /// default is `NetV400RetryPolicy::AllowRetry`
-    pub net_v4_0_0_retry_policy: Option<NetV400RetryPolicy>,
-}
-
-impl AwsEncryptionSdkConfig {
-    pub(crate) fn validate(&self) -> Result<(), Error> {
-        if self.max_encrypted_data_keys == Some(0) {
-            Err(crate::error::val_err(
-                "max_encrypted_data_keys must not be zero",
-            ))
-        } else {
-            Ok(())
-        }
-    }
-}
-
-#[derive(Debug, PartialEq, Clone, Default, Builder)]
+// aws_esdk::material_providers::types::EsdkCommitmentPolicy
+#[derive(Debug, PartialEq, Clone, Builder, Derivative)]
+#[derivative(Default)]
 #[builder(setter(into, strip_option), default)]
 #[builder(build_fn(error = "Error"))]
 #[non_exhaustive]
@@ -118,9 +117,11 @@ pub struct EncryptInput<'a> {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
     pub algorithm_suite_id: Option<aws_mpl_rs::types::EsdkAlgorithmSuiteId>,
     /// Key-Value pairs to associate with the encrypted data
-    pub encryption_context: Option<&'a EncryptionContext>,
+    #[derivative(Default(value = "empty_ec()"))]
+    pub encryption_context: &'a EncryptionContext,
     /// Bytes of plaintext data per frame. Default 4096.
-    pub frame_length: Option<u32>,
+    #[derivative(Default(value = "crate::encrypt_decrypt::DEFAULT_FRAME_LENGTH"))]
+    pub frame_length: u32,
     /// Exactly one of `keyring` or `materials_manager` must be set
     pub keyring: Option<KeyringRef>,
     /// Exactly one of `keyring` or `materials_manager` must be set
@@ -128,11 +129,22 @@ pub struct EncryptInput<'a> {
     #[builder(setter(into = false))]
     /// data to be encrypted
     pub plaintext: &'a [u8],
+    /// default is no limit
+    pub max_encrypted_data_keys: Option<usize>,
+    /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
+    #[derivative(Default(
+        value = "aws_mpl_rs::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt"
+    ))]
+    pub commitment_policy: EsdkCommitmentPolicy,
 }
 
 impl EncryptInput<'_> {
     pub(crate) fn validate(&self) -> Result<(), Error> {
-        if self.frame_length == Some(0) {
+        if self.max_encrypted_data_keys == Some(0) {
+            Err(crate::error::val_err(
+                "max_encrypted_data_keys must not be zero",
+            ))
+        } else if self.frame_length == 0 {
             Err(crate::error::val_err("frame_length must not be zero"))
         } else if self.keyring.is_none() && self.materials_manager.is_none() {
             Err(crate::error::val_err(
@@ -148,7 +160,8 @@ impl EncryptInput<'_> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Default, Builder)]
+#[derive(Debug, PartialEq, Clone, Builder, Derivative)]
+#[derivative(Default)]
 #[builder(setter(into, strip_option), default)]
 #[builder(build_fn(error = "Error"))]
 #[non_exhaustive]
@@ -157,9 +170,11 @@ pub struct EncryptStreamInput<'a> {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
     pub algorithm_suite_id: Option<aws_mpl_rs::types::EsdkAlgorithmSuiteId>,
     /// Key-Value pairs to associate with the encrypted data
-    pub encryption_context: Option<&'a EncryptionContext>,
+    #[derivative(Default(value = "empty_ec()"))]
+    pub encryption_context: &'a EncryptionContext,
     /// Bytes of plaintext data per frame. Default 4096.
-    pub frame_length: Option<u32>,
+    #[derivative(Default(value = "crate::encrypt_decrypt::DEFAULT_FRAME_LENGTH"))]
+    pub frame_length: u32,
     /// Exactly one of `keyring` or `materials_manager` must be set
     pub keyring: Option<KeyringRef>,
     /// Exactly one of `keyring` or `materials_manager` must be set
@@ -167,11 +182,22 @@ pub struct EncryptStreamInput<'a> {
     /// The expected size of the input data stream.
     /// This is only important if you cmm or keyring care about such things, which most don't.
     pub data_size: Option<usize>,
+    /// default is no limit
+    pub max_encrypted_data_keys: Option<usize>,
+    /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
+    #[derivative(Default(
+        value = "aws_mpl_rs::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt"
+    ))]
+    pub commitment_policy: EsdkCommitmentPolicy,
 }
 
 impl EncryptStreamInput<'_> {
     pub(crate) fn validate(&self) -> Result<(), Error> {
-        if self.frame_length == Some(0) {
+        if self.max_encrypted_data_keys == Some(0) {
+            Err(crate::error::val_err(
+                "max_encrypted_data_keys must not be zero",
+            ))
+        } else if self.frame_length == 0 {
             Err(crate::error::val_err("frame_length must not be zero"))
         } else if self.keyring.is_none() && self.materials_manager.is_none() {
             Err(crate::error::val_err(
@@ -187,7 +213,8 @@ impl EncryptStreamInput<'_> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Default, Builder)]
+#[derive(Debug, PartialEq, Clone, Builder, Derivative)]
+#[derivative(Default)]
 #[builder(setter(into, strip_option), default)]
 #[builder(build_fn(error = "Error"))]
 #[non_exhaustive]
@@ -197,20 +224,33 @@ pub struct DecryptInput<'a> {
     /// data to be decrypted
     pub ciphertext: &'a [u8],
     /// Key-Value pairs to associate with the encrypted data
-    pub encryption_context: Option<&'a EncryptionContext>,
+    #[derivative(Default(value = "empty_ec()"))]
+    pub encryption_context: &'a EncryptionContext,
     /// Exactly one of `keyring` or `materials_manager` must be set
     pub keyring: Option<KeyringRef>,
     /// Exactly one of `keyring` or `materials_manager` must be set
     pub materials_manager: Option<CryptographicMaterialsManagerRef>,
+    /// default is `NetV400RetryPolicy::AllowRetry`
+    pub net_v4_retry_policy: NetV400RetryPolicy,
+    /// default is no limit
+    pub max_encrypted_data_keys: Option<usize>,
+    /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
+    #[derivative(Default(
+        value = "aws_mpl_rs::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt"
+    ))]
+    pub commitment_policy: EsdkCommitmentPolicy,
 }
-#[derive(Debug, PartialEq, Clone, Default, Builder)]
+
+#[derive(Debug, PartialEq, Clone, Builder, Derivative)]
+#[derivative(Default)]
 #[builder(setter(into, strip_option), default)]
 #[builder(build_fn(error = "Error"))]
 #[non_exhaustive]
 /// Input for `Client::decrypt_stream`
 pub struct DecryptStreamInput<'a> {
     /// Key-Value pairs to associate with the encrypted data
-    pub encryption_context: Option<&'a EncryptionContext>,
+    #[derivative(Default(value = "empty_ec()"))]
+    pub encryption_context: &'a EncryptionContext,
     /// Exactly one of `keyring` or `materials_manager` must be set
     pub keyring: Option<KeyringRef>,
     /// Exactly one of `keyring` or `materials_manager` must be set
@@ -221,12 +261,25 @@ pub struct DecryptStreamInput<'a> {
     /// already received. If you are willing to accept this, set `i_accept_the_danger` to true.
     /// If verification fails, at least one byte will not have been written to the output stream.
     /// If the ciphertext involves only one frame, then no danger exists, and this flag is not needed.
-    pub i_accept_the_danger: Option<bool>,
+    pub i_accept_the_danger: bool,
+    /// default is `NetV400RetryPolicy::AllowRetry`
+    pub net_v4_retry_policy: NetV400RetryPolicy,
+    /// default is no limit
+    pub max_encrypted_data_keys: Option<usize>,
+    /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
+    #[derivative(Default(
+        value = "aws_mpl_rs::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt"
+    ))]
+    pub commitment_policy: EsdkCommitmentPolicy,
 }
 
 impl DecryptInput<'_> {
     pub(crate) fn validate(&self) -> Result<(), Error> {
-        if self.keyring.is_none() && self.materials_manager.is_none() {
+        if self.max_encrypted_data_keys == Some(0) {
+            Err(crate::error::val_err(
+                "max_encrypted_data_keys must not be zero",
+            ))
+        } else if self.keyring.is_none() && self.materials_manager.is_none() {
             Err(crate::error::val_err(
                 "Either keyring or materials_manager must be set.",
             ))
@@ -242,7 +295,11 @@ impl DecryptInput<'_> {
 
 impl DecryptStreamInput<'_> {
     pub(crate) fn validate(&self) -> Result<(), Error> {
-        if self.keyring.is_none() && self.materials_manager.is_none() {
+        if self.max_encrypted_data_keys == Some(0) {
+            Err(crate::error::val_err(
+                "max_encrypted_data_keys must not be zero",
+            ))
+        } else if self.keyring.is_none() && self.materials_manager.is_none() {
             Err(crate::error::val_err(
                 "Either keyring or materials_manager must be set.",
             ))

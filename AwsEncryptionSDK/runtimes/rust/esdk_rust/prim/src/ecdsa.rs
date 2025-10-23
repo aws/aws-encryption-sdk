@@ -1,18 +1,13 @@
 use crate::Error;
 use crate::serr;
+use crate::DigestAlg;
+
 use aws_lc_rs::rand::SystemRandom;
 use aws_lc_rs::signature::EcdsaKeyPair;
 use aws_lc_rs::signature::EcdsaSigningAlgorithm;
 use aws_lc_rs::signature::EcdsaVerificationAlgorithm;
 use aws_lc_rs::signature::UnparsedPublicKey;
 
-#[derive(Debug, Copy, Clone)]
-#[non_exhaustive]
-pub enum DigestAlg {
-    Sha256,
-    Sha384,
-    Sha512,
-}
 #[derive(Clone)]
 #[allow(missing_debug_implementations)] // because aws_lc_rs::digest::Context has no Debug
 pub struct DigestContext {

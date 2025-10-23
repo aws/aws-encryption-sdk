@@ -39,7 +39,6 @@
 
 use super::create_branch_key_id::create_branch_key_id;
 use super::example_branch_key_id_supplier::ExampleBranchKeyIdSupplier;
-use aws_esdk::Client as EsdkClient;
 use aws_esdk::*;
 use aws_mpl_rs::aws_cryptography_keyStore::client as keystore_client;
 use aws_mpl_rs::aws_cryptography_keyStore::types::KmsConfiguration;
@@ -53,14 +52,6 @@ pub async fn encrypt_and_decrypt_with_keyring(
     logical_key_store_name: &str,
     key_store_kms_key_id: &str,
 ) -> Result<(), crate::BoxError> {
-    // 1. Instantiate the encryption SDK client.
-    // This builds the default client with the RequireEncryptRequireDecrypt commitment policy,
-    // which enforces that this client only encrypts using committing algorithm suites and enforces
-    // that this client will only decrypt encrypted messages that were created with a committing
-    // algorithm suite.
-    let esdk_config = AwsEncryptionSdkConfig::default();
-    let esdk_client = EsdkClient::from_conf(esdk_config)?;
-
     // 2. Create a KMS client and DynamoDB client.
     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
     let kms_client = aws_sdk_kms::Client::new(&sdk_config);
@@ -158,12 +149,12 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .keyring(hierarchical_keyring.clone())
         .encryption_context(&encryption_context_a)
         .build()?;
-    let encryption_response_a = esdk_client.encrypt(&encrypt_input).await?;
+    let encryption_response_a = encrypt(&encrypt_input).await?;
 
     let ciphertext_a = encryption_response_a.ciphertext;
 
-    encrypt_input.encryption_context = Some(&encryption_context_b);
-    let encryption_response_b = esdk_client.encrypt(&encrypt_input).await?;
+    encrypt_input.encryption_context = &encryption_context_b;
+    let encryption_response_b = encrypt(&encrypt_input).await?;
 
     let ciphertext_b = encryption_response_b.ciphertext;
 
@@ -209,7 +200,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         // Provide the encryption context that was supplied to the encrypt method
         .encryption_context(&encryption_context_a)
         .build()?;
-    let decryption_response_mismatch_1 = esdk_client.decrypt(&decrypt_input).await;
+    let decryption_response_mismatch_1 = decrypt(&decrypt_input).await;
 
     if decryption_response_mismatch_1.is_ok() {
         panic!(
@@ -222,8 +213,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // which we swallow ONLY for demonstration purposes.
     decrypt_input.ciphertext = &ciphertext_b;
     decrypt_input.keyring = Some(hierarchical_keyring_a.clone());
-    decrypt_input.encryption_context = Some(&encryption_context_b);
-    let decryption_response_mismatch_2 = esdk_client.decrypt(&decrypt_input).await;
+    decrypt_input.encryption_context = &encryption_context_b;
+    let decryption_response_mismatch_2 = decrypt(&decrypt_input).await;
 
     if decryption_response_mismatch_2.is_ok() {
         panic!(
@@ -234,8 +225,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 12. Demonstrate that data encrypted by one tenant's branch key can be decrypted by that tenant,
     //     and that the decrypted data matches the input data.
     decrypt_input.ciphertext = &ciphertext_a;
-    decrypt_input.encryption_context = Some(&encryption_context_a);
-    let decryption_response_a = esdk_client.decrypt(&decrypt_input).await?;
+    decrypt_input.encryption_context = &encryption_context_a;
+    let decryption_response_a = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext_a = decryption_response_a.plaintext;
 
@@ -248,9 +239,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // Similarly for TenantB
     decrypt_input.ciphertext = &ciphertext_b;
-    decrypt_input.encryption_context = Some(&encryption_context_b);
+    decrypt_input.encryption_context = &encryption_context_b;
     decrypt_input.keyring = Some(hierarchical_keyring_b.clone());
-    let decryption_response_b = esdk_client.decrypt(&decrypt_input).await?;
+    let decryption_response_b = decrypt(&decrypt_input).await?;
     let decrypted_plaintext_b = decryption_response_b.plaintext;
 
     // Demonstrate that the decrypted plaintext is identical to the original plaintext.

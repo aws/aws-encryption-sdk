@@ -24,7 +24,6 @@ For more information on KMS Key identifiers, see
 https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
-use aws_esdk::Client as EsdkClient;
 use aws_esdk::*;
 use aws_mpl_rs::client as mpl_client;
 use aws_mpl_rs::types::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
@@ -34,19 +33,6 @@ pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
     kms_key_id: &str,
 ) -> Result<(), crate::BoxError> {
-    // 1. Instantiate the encryption SDK client.
-    // This example builds the client with the ForbidEncryptAllowDecrypt commitment policy,
-    // which enforces that this client cannot encrypt with key commitment
-    // and it can decrypt ciphertexts encrypted with or without key commitment.
-    // The default commitment policy if you were to build the client like in
-    // the `keyring/aws_kms_keyring_example.rs` is RequireEncryptRequireDecrypt.
-    // We recommend that AWS Encryption SDK users use the default commitment policy
-    // (RequireEncryptRequireDecrypt) whenever possible.
-    let esdk_config = AwsEncryptionSdkConfigBuilder::default()
-        .commitment_policy(ForbidEncryptAllowDecrypt)
-        .build()?;
-    let esdk_client = EsdkClient::from_conf(esdk_config)?;
-
     // 2. Create a KMS client.
     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
     let kms_client = aws_sdk_kms::Client::new(&sdk_config);
@@ -97,8 +83,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .plaintext(plaintext)
         .keyring(kms_keyring.clone())
         .encryption_context(&encryption_context)
+        .commitment_policy(ForbidEncryptAllowDecrypt)
         .build()?;
-    let encryption_response = esdk_client.encrypt(&encrypt_input).await?;
+    let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
 
@@ -115,8 +102,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .keyring(kms_keyring)
         // Provide the encryption context that was supplied to the encrypt method
         .encryption_context(&encryption_context)
+        .commitment_policy(ForbidEncryptAllowDecrypt)
         .build()?;
-    let decryption_response = esdk_client.decrypt(&decrypt_input).await?;
+    let decryption_response = decrypt(&decrypt_input).await?;
     let decrypted_plaintext = decryption_response.plaintext;
 
     // 8. Demonstrate that the decrypted plaintext is identical to the original plaintext.

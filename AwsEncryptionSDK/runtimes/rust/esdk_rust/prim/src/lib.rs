@@ -65,12 +65,22 @@
 #![allow(clippy::too_many_lines)] // disagree
 #![allow(unused_crate_dependencies)] // broken
 
-pub mod ecdsa;
+mod ecdsa;
 pub use ecdsa::*;
+mod hkdf;
+pub use hkdf::*;
 
 use aws_lc_rs::aead::{Aad, LessSafeKey, Nonce, UnboundKey};
 use aws_lc_rs::rand;
 use std::backtrace::Backtrace;
+
+#[derive(Debug, Copy, Clone)]
+#[non_exhaustive]
+pub enum DigestAlg {
+    Sha256,
+    Sha384,
+    Sha512,
+}
 
 #[derive(Debug)]
 #[non_exhaustive]

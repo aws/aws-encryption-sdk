@@ -7,7 +7,6 @@
 */
 
 use super::signing_suite_only_cmm::SigningSuiteOnlyCMM;
-use aws_esdk::Client as EsdkClient;
 use aws_esdk::*;
 use aws_mpl_rs::client as mpl_client;
 use aws_mpl_rs::types::EsdkAlgorithmSuiteId;
@@ -18,14 +17,6 @@ pub async fn encrypt_and_decrypt_with_cmm(
     example_data: &str,
     kms_key_id: &str,
 ) -> Result<(), crate::BoxError> {
-    // 1. Instantiate the encryption SDK client.
-    // This builds the default client with the RequireEncryptRequireDecrypt commitment policy,
-    // which enforces that this client only encrypts using committing algorithm suites and enforces
-    // that this client will only decrypt encrypted messages that were created with a committing
-    // algorithm suite.
-    let esdk_config = AwsEncryptionSdkConfig::default();
-    let esdk_client = EsdkClient::from_conf(esdk_config)?;
-
     // 2. Create a KMS client.
     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
     let kms_client = aws_sdk_kms::Client::new(&sdk_config);
@@ -75,7 +66,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
         .encryption_context(&encryption_context)
         .algorithm_suite_id(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384)
         .build()?;
-    let encryption_response = esdk_client.encrypt(&encrypt_input).await?;
+    let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
 
@@ -93,7 +84,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
         // Provide the encryption context that was supplied to the encrypt method
         .encryption_context(&encryption_context)
         .build()?;
-    let decryption_response = esdk_client.decrypt(&decrypt_input).await?;
+    let decryption_response = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext = decryption_response.plaintext;
 
@@ -107,7 +98,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
     // 9. Demonstrate that a Non Signing Algorithm Suite will be rejected
     // by the CMM.
     encrypt_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
-    let encryption_response_non_signing = esdk_client.encrypt(&encrypt_input).await;
+    let encryption_response_non_signing = encrypt(&encrypt_input).await;
 
     if encryption_response_non_signing.is_ok() {
         panic!(

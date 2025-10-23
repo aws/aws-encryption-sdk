@@ -29,7 +29,6 @@ https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-kms-ecdh-k
 
 use crate::example_utils::utils::TEST_KMS_ECDH_KEY_ID_P256_SENDER;
 use crate::example_utils::utils::generate_kms_ecc_public_key;
-use aws_esdk::Client as EsdkClient;
 use aws_esdk::*;
 use aws_mpl_rs::aws_cryptography_primitives::types::EcdhCurveSpec;
 use aws_mpl_rs::client as mpl_client;
@@ -43,14 +42,6 @@ pub async fn decrypt_with_keyring(
     ecdh_curve_spec: EcdhCurveSpec,
     ecc_recipient_key_arn: &str,
 ) -> Result<(), crate::BoxError> {
-    // 1. Instantiate the encryption SDK client.
-    // This builds the default client with the RequireEncryptRequireDecrypt commitment policy,
-    // which enforces that this client only encrypts using committing algorithm suites and enforces
-    // that this client will only decrypt encrypted messages that were created with a committing
-    // algorithm suite.
-    let esdk_config = AwsEncryptionSdkConfig::default();
-    let esdk_client = EsdkClient::from_conf(esdk_config)?;
-
     // 2. Create a KMS client.
     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
     let kms_client = aws_sdk_kms::Client::new(&sdk_config);
@@ -121,7 +112,6 @@ pub async fn decrypt_with_keyring(
         ecc_recipient_key_arn,
         ecdh_curve_spec,
         kms_client,
-        &esdk_client,
     )
     .await?;
 
@@ -132,7 +122,7 @@ pub async fn decrypt_with_keyring(
         // Provide the encryption context that was supplied to the encrypt method
         .encryption_context(&encryption_context)
         .build()?;
-    let decryption_response = esdk_client.decrypt(&decrypt_input).await?;
+    let decryption_response = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext = decryption_response.plaintext;
 
@@ -154,7 +144,6 @@ async fn get_ciphertext(
     ecc_recipient_key_arn: &str,
     ecdh_curve_spec: EcdhCurveSpec,
     kms_client: aws_sdk_kms::Client,
-    esdk_client: &EsdkClient,
 ) -> Result<Vec<u8>, crate::BoxError> {
     // 1. Create the public keys for sender and recipient
     // Recipient keys are taken as input for this example
@@ -197,7 +186,7 @@ async fn get_ciphertext(
         .keyring(kms_ecdh_keyring)
         .encryption_context(encryption_context)
         .build()?;
-    let encryption_response = esdk_client.encrypt(&encrypt_input).await?;
+    let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
 

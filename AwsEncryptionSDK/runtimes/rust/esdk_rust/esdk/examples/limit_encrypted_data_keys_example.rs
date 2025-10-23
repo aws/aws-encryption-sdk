@@ -16,7 +16,6 @@ For more information on limiting EDKs, see
 https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/configure.html#config-limit-keys
 */
 
-use aws_esdk::Client as EsdkClient;
 use aws_esdk::*;
 use aws_mpl_rs::client as mpl_client;
 use aws_mpl_rs::types::AesWrappingAlg;
@@ -26,19 +25,8 @@ use rand::TryRngCore;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
-    max_encrypted_data_keys: u16,
+    max_encrypted_data_keys: usize,
 ) -> Result<(), crate::BoxError> {
-    // 1. Instantiate the encryption SDK client.
-    // This builds the default client with the RequireEncryptRequireDecrypt commitment policy,
-    // which enforces that this client only encrypts using committing algorithm suites and enforces
-    // that this client will only decrypt encrypted messages that were created with a committing
-    // algorithm suite.
-    // Also, set the EncryptionSDK's max_encrypted_data_keys parameter here
-    let esdk_config = AwsEncryptionSdkConfigBuilder::default()
-        .max_encrypted_data_keys(max_encrypted_data_keys)
-        .build()?;
-    let esdk_client = EsdkClient::from_conf(esdk_config)?;
-
     // 2. The key namespace and key name are defined by you.
     // and are used by the Raw AES keyring to determine
     // whether it should attempt to decrypt an encrypted data key.
@@ -111,8 +99,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .plaintext(plaintext)
         .keyring(multi_keyring.clone())
         .encryption_context(&encryption_context)
+        .max_encrypted_data_keys(max_encrypted_data_keys)
         .build()?;
-    let encryption_response = esdk_client.encrypt(&encrypt_input).await?;
+    let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
 
@@ -129,8 +118,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .keyring(multi_keyring.clone())
         // Provide the encryption context that was supplied to the encrypt method
         .encryption_context(&encryption_context)
+        .max_encrypted_data_keys(max_encrypted_data_keys)
         .build()?;
-    let decryption_response = esdk_client.decrypt(&decrypt_input).await?;
+    let decryption_response = decrypt(&decrypt_input).await?;
     let decrypted_plaintext = decryption_response.plaintext;
 
     // 9. Demonstrate that the decrypted plaintext is identical to the original plaintext.
@@ -142,15 +132,10 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 10. Demonstrate that an EncryptionSDK with a lower MaxEncryptedDataKeys
     // will fail to decrypt the encrypted message.
-    let esdk_config = AwsEncryptionSdkConfigBuilder::default()
-        .max_encrypted_data_keys(max_encrypted_data_keys - 1)
-        .build()?;
-    let esdk_client_incorrect_max_encrypted_keys = EsdkClient::from_conf(esdk_config)?;
-
     decrypt_input.keyring = Some(multi_keyring);
-    let decryption_response_incorrect_max_encrypted_keys = esdk_client_incorrect_max_encrypted_keys
-        .decrypt(&decrypt_input)
-        .await;
+    decrypt_input.max_encrypted_data_keys = Some(max_encrypted_data_keys - 1);
+
+    let decryption_response_incorrect_max_encrypted_keys = decrypt(&decrypt_input).await;
 
     if decryption_response_incorrect_max_encrypted_keys.is_ok() {
         panic!(
@@ -180,7 +165,7 @@ pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxErr
     use crate::example_utils::utils;
 
     // max_encrypted_data_keys MUST be greater than 0
-    let max_encrypted_data_keys: u16 = 3;
+    let max_encrypted_data_keys: usize = 3;
 
     encrypt_and_decrypt_with_keyring(utils::TEST_EXAMPLE_DATA, max_encrypted_data_keys).await?;
 
