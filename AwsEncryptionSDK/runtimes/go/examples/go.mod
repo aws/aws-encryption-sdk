@@ -12,9 +12,9 @@ replace (
 )
 
 require (
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl v0.2.2
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives v0.2.2
-	github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk v0.2.2
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl v0.3.0
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives v0.3.0
+	github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk v0.3.0
 	github.com/aws/aws-sdk-go-v2/config v1.29.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.53
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.39.4
@@ -24,9 +24,9 @@ require (
 )
 
 require (
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb v0.2.2 // indirect
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms v0.2.2 // indirect
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library v0.2.2 // indirect
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb v0.3.0 // indirect
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms v0.3.0 // indirect
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library v0.3.0 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.33.0 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.24 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.28 // indirect
@@ -38,6 +38,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.24.10 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.28.9 // indirect
 	github.com/aws/smithy-go v1.22.1 // indirect
-	github.com/dafny-lang/DafnyRuntimeGo/v4 v4.11.1 // indirect
+	github.com/dafny-lang/DafnyRuntimeGo/v4 v4.11.2 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 )
