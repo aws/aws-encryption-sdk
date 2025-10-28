@@ -34,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-22.04, macos-13]
+        os: [windows-latest, ubuntu-22.04, macos-15]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
@@ -46,13 +46,13 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
           fetch-depth: 0
 
       - name: Setup .NET Core SDK 6
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: "6.0.x"
 
@@ -75,7 +75,7 @@ jobs:
         run: make setup_net
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2

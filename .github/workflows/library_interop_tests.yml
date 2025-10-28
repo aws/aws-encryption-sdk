@@ -28,7 +28,7 @@ jobs:
             windows-latest,
             ubuntu-22.04,
             # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
-            # macos-13,
+            # macos-15,
           ]
     runs-on: ${{ matrix.os }}
     permissions:
@@ -41,7 +41,7 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
       - name: Init Submodules
         shell: bash
         run: |
@@ -49,14 +49,14 @@ jobs:
           git submodule update --init --recursive mpl
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: NetTests
 
       - name: Setup .NET Core SDK 6
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: "6.0.x"
 
@@ -126,7 +126,7 @@ jobs:
         os: [
             ubuntu-22.04,
             # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
-            # macos-13,
+            # macos-15,
           ]
     runs-on: ${{ matrix.os }}
     permissions:
@@ -139,7 +139,7 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
       - name: Init Submodules
         shell: bash
         run: |
@@ -147,14 +147,14 @@ jobs:
           git submodule update --init --recursive mpl
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: NetTests
 
       - name: Setup .NET Core SDK 6
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: "6.0.x"
 
@@ -228,7 +228,7 @@ jobs:
         os: [
             ubuntu-22.04,
             # https://t.corp.amazon.com/P205755286
-            # macos-13
+            # macos-15
           ]
     runs-on: ${{ matrix.os }}
     permissions:
@@ -238,7 +238,7 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
       - name: Init Submodules
         shell: bash
         run: |
@@ -246,7 +246,7 @@ jobs:
           git submodule update --init --recursive mpl
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
@@ -264,7 +264,7 @@ jobs:
           name: ${{matrix.os}}_vector_artifact
           path: AwsEncryptionSDK/net41/vectors
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 17
 

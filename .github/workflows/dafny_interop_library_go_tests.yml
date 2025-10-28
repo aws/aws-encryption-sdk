@@ -30,7 +30,7 @@ jobs:
             # windows-latest,
             ubuntu-22.04,
             # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
-            # macos-13,
+            # macos-15,
           ]
     runs-on: ${{ matrix.os }}
     permissions:
@@ -40,7 +40,7 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Init Submodules
         shell: bash
         run: |
@@ -48,7 +48,7 @@ jobs:
           git submodule update --init --recursive mpl
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
@@ -72,7 +72,7 @@ jobs:
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
 
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go-version }}
 
