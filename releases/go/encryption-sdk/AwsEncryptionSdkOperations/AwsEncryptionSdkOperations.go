@@ -101,6 +101,7 @@ import (
 	m_Sorting "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/Sorting"
 	m_StandardLibrary "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary"
 	m_StandardLibraryInterop "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibraryInterop"
+	m_StandardLibrary_MemoryMath "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_MemoryMath"
 	m_StandardLibrary_Sequence "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_Sequence"
 	m_StandardLibrary_String "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_String"
 	m_StandardLibrary_UInt "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_UInt"
@@ -136,6 +137,7 @@ var _ m__System.Dummy__
 var _ m_Wrappers.Dummy__
 var _ m_BoundedInts.Dummy__
 var _ m_StandardLibrary_UInt.Dummy__
+var _ m_StandardLibrary_MemoryMath.Dummy__
 var _ m_StandardLibrary_Sequence.Dummy__
 var _ m_StandardLibrary_String.Dummy__
 var _ m_StandardLibrary.Dummy__
@@ -160,40 +162,41 @@ var _ m_Relations.Dummy__
 var _ m_Seq_MergeSort.Dummy__
 var _ m__Math.Dummy__
 var _ m_Seq.Dummy__
-var _ m_MultiKeyring.Dummy__
-var _ m_AwsArnParsing.Dummy__
-var _ m_AwsKmsMrkAreUnique.Dummy__
 var _ m_Actions.Dummy__
-var _ m_AwsKmsMrkMatchForDecrypt.Dummy__
-var _ m_AwsKmsUtils.Dummy__
-var _ m_Constants.Dummy__
-var _ m_MaterialWrapping.Dummy__
 var _ m_CanonicalEncryptionContext.Dummy__
+var _ m_MaterialWrapping.Dummy__
 var _ m_IntermediateKeyWrapping.Dummy__
 var _ m_EdkWrapping.Dummy__
 var _ m_ErrorMessages.Dummy__
+var _ m_RawAESKeyring.Dummy__
+var _ m_AwsArnParsing.Dummy__
+var _ m_Constants.Dummy__
+var _ m_EcdhEdkWrapping.Dummy__
+var _ m_RawECDHKeyring.Dummy__
+var _ m_RawRSAKeyring.Dummy__
+var _ m_AwsKmsMrkMatchForDecrypt.Dummy__
+var _ m_AwsKmsUtils.Dummy__
 var _ m_AwsKmsKeyring.Dummy__
-var _ m_StrictMultiKeyring.Dummy__
 var _ m_AwsKmsDiscoveryKeyring.Dummy__
-var _ m_Com_Amazonaws_Kms.Dummy__
-var _ m_Com_Amazonaws_Dynamodb.Dummy__
-var _ m_DiscoveryMultiKeyring.Dummy__
-var _ m_AwsKmsMrkDiscoveryKeyring.Dummy__
-var _ m_MrkAwareDiscoveryMultiKeyring.Dummy__
-var _ m_AwsKmsMrkKeyring.Dummy__
-var _ m_MrkAwareStrictMultiKeyring.Dummy__
+var _ m_AwsKmsEcdhKeyring.Dummy__
+var _ m_FileIO.Dummy__
 var _ m_LocalCMC.Dummy__
 var _ m_SynchronizedLocalCMC.Dummy__
 var _ m_StormTracker.Dummy__
 var _ m_StormTrackingCMC.Dummy__
 var _ m_CacheConstants.Dummy__
 var _ m_AwsKmsHierarchicalKeyring.Dummy__
+var _ m_AwsKmsMrkDiscoveryKeyring.Dummy__
+var _ m_AwsKmsMrkKeyring.Dummy__
 var _ m_AwsKmsRsaKeyring.Dummy__
-var _ m_EcdhEdkWrapping.Dummy__
-var _ m_RawECDHKeyring.Dummy__
-var _ m_AwsKmsEcdhKeyring.Dummy__
-var _ m_RawAESKeyring.Dummy__
-var _ m_RawRSAKeyring.Dummy__
+var _ m_MultiKeyring.Dummy__
+var _ m_AwsKmsMrkAreUnique.Dummy__
+var _ m_StrictMultiKeyring.Dummy__
+var _ m_Com_Amazonaws_Kms.Dummy__
+var _ m_Com_Amazonaws_Dynamodb.Dummy__
+var _ m_DiscoveryMultiKeyring.Dummy__
+var _ m_MrkAwareDiscoveryMultiKeyring.Dummy__
+var _ m_MrkAwareStrictMultiKeyring.Dummy__
 var _ m_CMM.Dummy__
 var _ m_Defaults.Dummy__
 var _ m_Commitment.Dummy__
@@ -218,7 +221,6 @@ var _ m_Functions.Dummy__
 var _ m_Utf8EncodingForm.Dummy__
 var _ m_Utf16EncodingForm.Dummy__
 var _ m_UnicodeStrings.Dummy__
-var _ m_FileIO.Dummy__
 var _ m_GeneralInternals.Dummy__
 var _ m_MulInternalsNonlinear.Dummy__
 var _ m_MulInternals.Dummy__
@@ -349,9 +351,9 @@ func (_static *CompanionStruct_Default___) Encrypt(config Config, input m_AwsCry
 	if (_7_algorithmSuiteId).Is_Some() {
 		var _8_valueOrError4 m_Wrappers.Result = m_Wrappers.Companion_Result_.Default(_dafny.TupleOf())
 		_ = _8_valueOrError4
-		_8_valueOrError4 = (((config).Dtor_mpl()).ValidateCommitmentPolicyOnEncrypt(m_AwsCryptographyMaterialProvidersTypes.Companion_ValidateCommitmentPolicyOnEncryptInput_.Create_ValidateCommitmentPolicyOnEncryptInput_((_7_algorithmSuiteId).Dtor_value().(m_AwsCryptographyMaterialProvidersTypes.AlgorithmSuiteId), m_AwsCryptographyMaterialProvidersTypes.Companion_CommitmentPolicy_.Create_ESDK_((config).Dtor_commitmentPolicy())))).MapFailure(func(coer30 func(m_AwsCryptographyMaterialProvidersTypes.Error) m_AwsCryptographyEncryptionSdkTypes.Error) func(interface{}) interface{} {
-			return func(arg31 interface{}) interface{} {
-				return coer30(arg31.(m_AwsCryptographyMaterialProvidersTypes.Error))
+		_8_valueOrError4 = (((config).Dtor_mpl()).ValidateCommitmentPolicyOnEncrypt(m_AwsCryptographyMaterialProvidersTypes.Companion_ValidateCommitmentPolicyOnEncryptInput_.Create_ValidateCommitmentPolicyOnEncryptInput_((_7_algorithmSuiteId).Dtor_value().(m_AwsCryptographyMaterialProvidersTypes.AlgorithmSuiteId), m_AwsCryptographyMaterialProvidersTypes.Companion_CommitmentPolicy_.Create_ESDK_((config).Dtor_commitmentPolicy())))).MapFailure(func(coer29 func(m_AwsCryptographyMaterialProvidersTypes.Error) m_AwsCryptographyEncryptionSdkTypes.Error) func(interface{}) interface{} {
+			return func(arg30 interface{}) interface{} {
+				return coer29(arg30.(m_AwsCryptographyMaterialProvidersTypes.Error))
 			}
 		}(func(_9_e m_AwsCryptographyMaterialProvidersTypes.Error) m_AwsCryptographyEncryptionSdkTypes.Error {
 			return m_AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsCryptographyMaterialProviders_(_9_e)
@@ -366,7 +368,7 @@ func (_static *CompanionStruct_Default___) Encrypt(config Config, input m_AwsCry
 	}
 	var _11_valueOrError5 m_Wrappers.Outcome = m_Wrappers.Companion_Outcome_.Default()
 	_ = _11_valueOrError5
-	_11_valueOrError5 = m_Wrappers.Companion_Default___.Need((_dafny.IntOfUint32(((input).Dtor_plaintext()).Cardinality())).Cmp(m_StandardLibrary_UInt.Companion_Default___.INT64__MAX__LIMIT()) < 0, m_AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsEncryptionSdkException_(_dafny.SeqOfString("Plaintext exceeds maximum allowed size")))
+	_11_valueOrError5 = m_Wrappers.Companion_Default___.Need((uint64(((input).Dtor_plaintext()).Cardinality())) < ((m_StandardLibrary_UInt.Companion_Default___.INT64__MAX__LIMIT()).Uint64()), m_AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsEncryptionSdkException_(_dafny.SeqOfString("Plaintext exceeds maximum allowed size")))
 	if (_11_valueOrError5).IsFailure() {
 		output = (_11_valueOrError5).PropagateFailure()
 		return output
@@ -422,9 +424,9 @@ func (_static *CompanionStruct_Default___) Encrypt(config Config, input m_AwsCry
 	_19_maybeDerivedDataKeys = _out3
 	var _20_valueOrError10 m_Wrappers.Result = m_Wrappers.Companion_Result_.Default(m_KeyDerivation.Companion_ExpandedKeyMaterial_.Default())
 	_ = _20_valueOrError10
-	_20_valueOrError10 = (_19_maybeDerivedDataKeys).MapFailure(func(coer31 func(m_AwsCryptographyEncryptionSdkTypes.Error) m_AwsCryptographyEncryptionSdkTypes.Error) func(interface{}) interface{} {
-		return func(arg32 interface{}) interface{} {
-			return coer31(arg32.(m_AwsCryptographyEncryptionSdkTypes.Error))
+	_20_valueOrError10 = (_19_maybeDerivedDataKeys).MapFailure(func(coer30 func(m_AwsCryptographyEncryptionSdkTypes.Error) m_AwsCryptographyEncryptionSdkTypes.Error) func(interface{}) interface{} {
+		return func(arg31 interface{}) interface{} {
+			return coer30(arg31.(m_AwsCryptographyEncryptionSdkTypes.Error))
 		}
 	}(func(_21_e m_AwsCryptographyEncryptionSdkTypes.Error) m_AwsCryptographyEncryptionSdkTypes.Error {
 		return m_AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsEncryptionSdkException_(_dafny.SeqOfString("Failed to derive data keys"))
@@ -506,9 +508,9 @@ func (_static *CompanionStruct_Default___) SignAndSerializeMessage(config Config
 		_4_maybeBytes = _out0
 		var _5_valueOrError2 m_Wrappers.Result = m_Wrappers.Companion_Result_.Default(_dafny.EmptySeq)
 		_ = _5_valueOrError2
-		_5_valueOrError2 = (_4_maybeBytes).MapFailure(func(coer32 func(m_AwsCryptographyPrimitivesTypes.Error) m_AwsCryptographyEncryptionSdkTypes.Error) func(interface{}) interface{} {
-			return func(arg33 interface{}) interface{} {
-				return coer32(arg33.(m_AwsCryptographyPrimitivesTypes.Error))
+		_5_valueOrError2 = (_4_maybeBytes).MapFailure(func(coer31 func(m_AwsCryptographyPrimitivesTypes.Error) m_AwsCryptographyEncryptionSdkTypes.Error) func(interface{}) interface{} {
+			return func(arg32 interface{}) interface{} {
+				return coer31(arg32.(m_AwsCryptographyPrimitivesTypes.Error))
 			}
 		}(func(_6_e m_AwsCryptographyPrimitivesTypes.Error) m_AwsCryptographyEncryptionSdkTypes.Error {
 			return m_AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsCryptographyPrimitives_(_6_e)
@@ -522,7 +524,7 @@ func (_static *CompanionStruct_Default___) SignAndSerializeMessage(config Config
 		_7_bytes = (_5_valueOrError2).Extract().(_dafny.Sequence)
 		var _8_valueOrError3 m_Wrappers.Outcome = m_Wrappers.Companion_Outcome_.Default()
 		_ = _8_valueOrError3
-		_8_valueOrError3 = m_Wrappers.Companion_Default___.Need((_dafny.IntOfUint32((_7_bytes).Cardinality())).Cmp(m_StandardLibrary_UInt.Companion_Default___.UINT16__LIMIT()) < 0, m_AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsEncryptionSdkException_(_dafny.SeqOfString("Length of signature bytes is larger than the uint16 limit.")))
+		_8_valueOrError3 = m_Wrappers.Companion_Default___.Need((uint64((_7_bytes).Cardinality())) < ((m_StandardLibrary_UInt.Companion_Default___.UINT16__LIMIT()).Uint64()), m_AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsEncryptionSdkException_(_dafny.SeqOfString("Length of signature bytes is larger than the uint16 limit.")))
 		if (_8_valueOrError3).IsFailure() {
 			output = (_8_valueOrError3).PropagateFailure()
 			return output
@@ -567,7 +569,7 @@ func (_static *CompanionStruct_Default___) Decrypt(config Config, input m_AwsCry
 	_1_cmm = m_AwsCryptographyMaterialProvidersTypes.Companion_ICryptographicMaterialsManager_.CastTo_((_0_valueOrError0).Extract())
 	var _2_buffer m_SerializeFunctions.ReadableBuffer
 	_ = _2_buffer
-	_2_buffer = m_SerializeFunctions.Companion_ReadableBuffer_.Create_ReadableBuffer_((input).Dtor_ciphertext(), _dafny.Zero)
+	_2_buffer = m_SerializeFunctions.Companion_ReadableBuffer_.Create_ReadableBuffer_((input).Dtor_ciphertext(), uint64(0))
 	var _out1 m_Wrappers.Result
 	_ = _out1
 	_out1 = Companion_Default___.InternalDecrypt(config, _1_cmm, _2_buffer, (input).Dtor_encryptionContext())
@@ -582,9 +584,9 @@ func (_static *CompanionStruct_Default___) InternalDecrypt(config Config, cmm m_
 	_0_v4Retry = false
 	var _1_valueOrError0 m_Wrappers.Result = m_Wrappers.Result{}
 	_ = _1_valueOrError0
-	_1_valueOrError0 = (m_Header.Companion_Default___.ReadHeaderBody(buffer, (config).Dtor_maxEncryptedDataKeys(), (config).Dtor_mpl())).MapFailure(func(coer33 func(m_SerializeFunctions.ReadProblems) m_AwsCryptographyEncryptionSdkTypes.Error) func(interface{}) interface{} {
-		return func(arg34 interface{}) interface{} {
-			return coer33(arg34.(m_SerializeFunctions.ReadProblems))
+	_1_valueOrError0 = (m_Header.Companion_Default___.ReadHeaderBody(buffer, (config).Dtor_maxEncryptedDataKeys(), (config).Dtor_mpl())).MapFailure(func(coer32 func(m_SerializeFunctions.ReadProblems) m_AwsCryptographyEncryptionSdkTypes.Error) func(interface{}) interface{} {
+		return func(arg33 interface{}) interface{} {
+			return coer32(arg33.(m_SerializeFunctions.ReadProblems))
 		}
 	}(m_EncryptDecryptHelpers.Companion_Default___.MapSerializeFailure(_dafny.SeqOfString(": ReadHeaderBody"))))
 	if (_1_valueOrError0).IsFailure() {
@@ -596,15 +598,15 @@ func (_static *CompanionStruct_Default___) InternalDecrypt(config Config, cmm m_
 	_2_headerBody = (_1_valueOrError0).Extract().(m_SerializeFunctions.SuccessfulRead)
 	var _3_rawHeader _dafny.Sequence
 	_ = _3_rawHeader
-	_3_rawHeader = ((buffer).Dtor_bytes()).Subsequence(((buffer).Dtor_start()).Uint32(), (((_2_headerBody).Dtor_tail()).Dtor_start()).Uint32())
+	_3_rawHeader = ((buffer).Dtor_bytes()).Subsequence(uint32((buffer).Dtor_start()), uint32(((_2_headerBody).Dtor_tail()).Dtor_start()))
 	var _4_algorithmSuite m_AwsCryptographyMaterialProvidersTypes.AlgorithmSuiteInfo
 	_ = _4_algorithmSuite
 	_4_algorithmSuite = ((_2_headerBody).Dtor_data().(m_HeaderTypes.HeaderBody)).Dtor_algorithmSuite()
 	var _5_valueOrError1 m_Wrappers.Result = m_Wrappers.Companion_Result_.Default(_dafny.TupleOf())
 	_ = _5_valueOrError1
-	_5_valueOrError1 = (((config).Dtor_mpl()).ValidateCommitmentPolicyOnDecrypt(m_AwsCryptographyMaterialProvidersTypes.Companion_ValidateCommitmentPolicyOnDecryptInput_.Create_ValidateCommitmentPolicyOnDecryptInput_((_4_algorithmSuite).Dtor_id(), m_AwsCryptographyMaterialProvidersTypes.Companion_CommitmentPolicy_.Create_ESDK_((config).Dtor_commitmentPolicy())))).MapFailure(func(coer34 func(m_AwsCryptographyMaterialProvidersTypes.Error) m_AwsCryptographyEncryptionSdkTypes.Error) func(interface{}) interface{} {
-		return func(arg35 interface{}) interface{} {
-			return coer34(arg35.(m_AwsCryptographyMaterialProvidersTypes.Error))
+	_5_valueOrError1 = (((config).Dtor_mpl()).ValidateCommitmentPolicyOnDecrypt(m_AwsCryptographyMaterialProvidersTypes.Companion_ValidateCommitmentPolicyOnDecryptInput_.Create_ValidateCommitmentPolicyOnDecryptInput_((_4_algorithmSuite).Dtor_id(), m_AwsCryptographyMaterialProvidersTypes.Companion_CommitmentPolicy_.Create_ESDK_((config).Dtor_commitmentPolicy())))).MapFailure(func(coer33 func(m_AwsCryptographyMaterialProvidersTypes.Error) m_AwsCryptographyEncryptionSdkTypes.Error) func(interface{}) interface{} {
+		return func(arg34 interface{}) interface{} {
+			return coer33(arg34.(m_AwsCryptographyMaterialProvidersTypes.Error))
 		}
 	}(func(_6_e m_AwsCryptographyMaterialProvidersTypes.Error) m_AwsCryptographyEncryptionSdkTypes.Error {
 		return m_AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsCryptographyMaterialProviders_(_6_e)
@@ -641,9 +643,9 @@ func (_static *CompanionStruct_Default___) InternalDecrypt(config Config, cmm m_
 	}
 	var _12_valueOrError4 m_Wrappers.Result = m_Wrappers.Result{}
 	_ = _12_valueOrError4
-	_12_valueOrError4 = (m_HeaderAuth.Companion_Default___.ReadHeaderAuthTag((_2_headerBody).Dtor_tail(), _10_suite)).MapFailure(func(coer35 func(m_SerializeFunctions.ReadProblems) m_AwsCryptographyEncryptionSdkTypes.Error) func(interface{}) interface{} {
-		return func(arg36 interface{}) interface{} {
-			return coer35(arg36.(m_SerializeFunctions.ReadProblems))
+	_12_valueOrError4 = (m_HeaderAuth.Companion_Default___.ReadHeaderAuthTag((_2_headerBody).Dtor_tail(), _10_suite)).MapFailure(func(coer34 func(m_SerializeFunctions.ReadProblems) m_AwsCryptographyEncryptionSdkTypes.Error) func(interface{}) interface{} {
+		return func(arg35 interface{}) interface{} {
+			return coer34(arg35.(m_SerializeFunctions.ReadProblems))
 		}
 	}(m_EncryptDecryptHelpers.Companion_Default___.MapSerializeFailure(_dafny.SeqOfString(": ReadHeaderAuthTag"))))
 	if (_12_valueOrError4).IsFailure() {
@@ -731,9 +733,9 @@ func (_static *CompanionStruct_Default___) InternalDecrypt(config Config, cmm m_
 	}
 	var _26_valueOrError9 m_Wrappers.Result = m_Wrappers.Companion_Result_.Default(_dafny.EmptySeq)
 	_ = _26_valueOrError9
-	_26_valueOrError9 = (_24_maybeHeaderAuth).MapFailure(func(coer36 func(m_AwsCryptographyPrimitivesTypes.Error) m_AwsCryptographyEncryptionSdkTypes.Error) func(interface{}) interface{} {
-		return func(arg37 interface{}) interface{} {
-			return coer36(arg37.(m_AwsCryptographyPrimitivesTypes.Error))
+	_26_valueOrError9 = (_24_maybeHeaderAuth).MapFailure(func(coer35 func(m_AwsCryptographyPrimitivesTypes.Error) m_AwsCryptographyEncryptionSdkTypes.Error) func(interface{}) interface{} {
+		return func(arg36 interface{}) interface{} {
+			return coer35(arg36.(m_AwsCryptographyPrimitivesTypes.Error))
 		}
 	}(func(_27_e m_AwsCryptographyPrimitivesTypes.Error) m_AwsCryptographyEncryptionSdkTypes.Error {
 		return m_AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsCryptographyPrimitives_(_27_e)
@@ -802,7 +804,7 @@ Lmatch0:
 	_ = _37_valueOrError12
 	var _out8 m_Wrappers.Result
 	_ = _out8
-	_out8 = m_EncryptDecryptHelpers.Companion_Default___.VerifySignature(_32_messageBodyTail, ((_32_messageBodyTail).Dtor_bytes()).Subsequence(((buffer).Dtor_start()).Uint32(), ((_32_messageBodyTail).Dtor_start()).Uint32()), _9_decMat, (config).Dtor_crypto())
+	_out8 = m_EncryptDecryptHelpers.Companion_Default___.VerifySignature(_32_messageBodyTail, ((_32_messageBodyTail).Dtor_bytes()).Subsequence(uint32((buffer).Dtor_start()), uint32((_32_messageBodyTail).Dtor_start())), _9_decMat, (config).Dtor_crypto())
 	_37_valueOrError12 = _out8
 	if (_37_valueOrError12).IsFailure() {
 		output = (_37_valueOrError12).PropagateFailure()
@@ -813,7 +815,7 @@ Lmatch0:
 	_38_signature = (_37_valueOrError12).Extract().(m_SerializeFunctions.ReadableBuffer)
 	var _39_valueOrError13 m_Wrappers.Outcome = m_Wrappers.Companion_Outcome_.Default()
 	_ = _39_valueOrError13
-	_39_valueOrError13 = m_Wrappers.Companion_Default___.Need(((_38_signature).Dtor_start()).Cmp(_dafny.IntOfUint32(((_38_signature).Dtor_bytes()).Cardinality())) == 0, m_AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsEncryptionSdkException_(_dafny.SeqOfString("Data after message footer.")))
+	_39_valueOrError13 = m_Wrappers.Companion_Default___.Need(((_38_signature).Dtor_start()) == (uint64(((_38_signature).Dtor_bytes()).Cardinality())), m_AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsEncryptionSdkException_(_dafny.SeqOfString("Data after message footer.")))
 	if (_39_valueOrError13).IsFailure() {
 		output = (_39_valueOrError13).PropagateFailure()
 		return output

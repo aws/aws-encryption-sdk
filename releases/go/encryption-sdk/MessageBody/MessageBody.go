@@ -101,6 +101,7 @@ import (
 	m_Sorting "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/Sorting"
 	m_StandardLibrary "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary"
 	m_StandardLibraryInterop "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibraryInterop"
+	m_StandardLibrary_MemoryMath "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_MemoryMath"
 	m_StandardLibrary_Sequence "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_Sequence"
 	m_StandardLibrary_String "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_String"
 	m_StandardLibrary_UInt "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_UInt"
@@ -133,6 +134,7 @@ var _ m__System.Dummy__
 var _ m_Wrappers.Dummy__
 var _ m_BoundedInts.Dummy__
 var _ m_StandardLibrary_UInt.Dummy__
+var _ m_StandardLibrary_MemoryMath.Dummy__
 var _ m_StandardLibrary_Sequence.Dummy__
 var _ m_StandardLibrary_String.Dummy__
 var _ m_StandardLibrary.Dummy__
@@ -157,40 +159,41 @@ var _ m_Relations.Dummy__
 var _ m_Seq_MergeSort.Dummy__
 var _ m__Math.Dummy__
 var _ m_Seq.Dummy__
-var _ m_MultiKeyring.Dummy__
-var _ m_AwsArnParsing.Dummy__
-var _ m_AwsKmsMrkAreUnique.Dummy__
 var _ m_Actions.Dummy__
-var _ m_AwsKmsMrkMatchForDecrypt.Dummy__
-var _ m_AwsKmsUtils.Dummy__
-var _ m_Constants.Dummy__
-var _ m_MaterialWrapping.Dummy__
 var _ m_CanonicalEncryptionContext.Dummy__
+var _ m_MaterialWrapping.Dummy__
 var _ m_IntermediateKeyWrapping.Dummy__
 var _ m_EdkWrapping.Dummy__
 var _ m_ErrorMessages.Dummy__
+var _ m_RawAESKeyring.Dummy__
+var _ m_AwsArnParsing.Dummy__
+var _ m_Constants.Dummy__
+var _ m_EcdhEdkWrapping.Dummy__
+var _ m_RawECDHKeyring.Dummy__
+var _ m_RawRSAKeyring.Dummy__
+var _ m_AwsKmsMrkMatchForDecrypt.Dummy__
+var _ m_AwsKmsUtils.Dummy__
 var _ m_AwsKmsKeyring.Dummy__
-var _ m_StrictMultiKeyring.Dummy__
 var _ m_AwsKmsDiscoveryKeyring.Dummy__
-var _ m_Com_Amazonaws_Kms.Dummy__
-var _ m_Com_Amazonaws_Dynamodb.Dummy__
-var _ m_DiscoveryMultiKeyring.Dummy__
-var _ m_AwsKmsMrkDiscoveryKeyring.Dummy__
-var _ m_MrkAwareDiscoveryMultiKeyring.Dummy__
-var _ m_AwsKmsMrkKeyring.Dummy__
-var _ m_MrkAwareStrictMultiKeyring.Dummy__
+var _ m_AwsKmsEcdhKeyring.Dummy__
+var _ m_FileIO.Dummy__
 var _ m_LocalCMC.Dummy__
 var _ m_SynchronizedLocalCMC.Dummy__
 var _ m_StormTracker.Dummy__
 var _ m_StormTrackingCMC.Dummy__
 var _ m_CacheConstants.Dummy__
 var _ m_AwsKmsHierarchicalKeyring.Dummy__
+var _ m_AwsKmsMrkDiscoveryKeyring.Dummy__
+var _ m_AwsKmsMrkKeyring.Dummy__
 var _ m_AwsKmsRsaKeyring.Dummy__
-var _ m_EcdhEdkWrapping.Dummy__
-var _ m_RawECDHKeyring.Dummy__
-var _ m_AwsKmsEcdhKeyring.Dummy__
-var _ m_RawAESKeyring.Dummy__
-var _ m_RawRSAKeyring.Dummy__
+var _ m_MultiKeyring.Dummy__
+var _ m_AwsKmsMrkAreUnique.Dummy__
+var _ m_StrictMultiKeyring.Dummy__
+var _ m_Com_Amazonaws_Kms.Dummy__
+var _ m_Com_Amazonaws_Dynamodb.Dummy__
+var _ m_DiscoveryMultiKeyring.Dummy__
+var _ m_MrkAwareDiscoveryMultiKeyring.Dummy__
+var _ m_MrkAwareStrictMultiKeyring.Dummy__
 var _ m_CMM.Dummy__
 var _ m_Defaults.Dummy__
 var _ m_Commitment.Dummy__
@@ -215,7 +218,6 @@ var _ m_Functions.Dummy__
 var _ m_Utf8EncodingForm.Dummy__
 var _ m_Utf16EncodingForm.Dummy__
 var _ m_UnicodeStrings.Dummy__
-var _ m_FileIO.Dummy__
 var _ m_GeneralInternals.Dummy__
 var _ m_MulInternalsNonlinear.Dummy__
 var _ m_MulInternals.Dummy__
@@ -301,22 +303,30 @@ func (_static *CompanionStruct_Default___) BodyAADContentTypeString(bc BodyAADCo
 	}
 }
 func (_static *CompanionStruct_Default___) IVSeq(suite m_AwsCryptographyMaterialProvidersTypes.AlgorithmSuiteInfo, sequenceNumber uint32) _dafny.Sequence {
-	return _dafny.Companion_Sequence_.Concatenate(_dafny.SeqCreate(((_dafny.IntOfUint8(m_SerializableTypes.Companion_Default___.GetIvLength(suite))).Minus(_dafny.IntOfInt64(4))).Uint32(), func(coer7 func(_dafny.Int) uint8) func(_dafny.Int) interface{} {
-		return func(arg8 _dafny.Int) interface{} {
-			return coer7(arg8)
-		}
-	}(func(_0___v0 _dafny.Int) uint8 {
-		return uint8(0)
-	})), m_StandardLibrary_UInt.Companion_Default___.UInt32ToSeq(sequenceNumber))
+	var _0_len uint8 = m_SerializableTypes.Companion_Default___.GetIvLength(suite)
+	_ = _0_len
+	var _1_num _dafny.Sequence = m_StandardLibrary_UInt.Companion_Default___.UInt32ToSeq(sequenceNumber)
+	_ = _1_num
+	if (_0_len) == (uint8(12)) {
+		return _dafny.Companion_Sequence_.Concatenate(_dafny.SeqOf(uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0)), _1_num)
+	} else {
+		return _dafny.Companion_Sequence_.Concatenate(_dafny.SeqCreate(((_dafny.IntOfUint8(_0_len)).Minus(_dafny.IntOfInt64(4))).Uint32(), func(coer7 func(_dafny.Int) uint8) func(_dafny.Int) interface{} {
+			return func(arg8 _dafny.Int) interface{} {
+				return coer7(arg8)
+			}
+		}(func(_2___v0 _dafny.Int) uint8 {
+			return uint8(0)
+		})), _1_num)
+	}
 }
 func (_static *CompanionStruct_Default___) EncryptMessageBody(plaintext _dafny.Sequence, header m_Header.HeaderInfo, key _dafny.Sequence, crypto *m_AtomicPrimitives.AtomicPrimitivesClient) m_Wrappers.Result {
 	var result m_Wrappers.Result = m_Wrappers.Result{}
 	_ = result
-	var _0_n _dafny.Int
+	var _0_n uint64
 	_ = _0_n
 	var _1_sequenceNumber uint32
 	_ = _1_sequenceNumber
-	var _rhs0 _dafny.Int = _dafny.Zero
+	var _rhs0 uint64 = uint64(0)
 	_ = _rhs0
 	var _rhs1 uint32 = Companion_Default___.START__SEQUENCE__NUMBER()
 	_ = _rhs1
@@ -325,7 +335,7 @@ func (_static *CompanionStruct_Default___) EncryptMessageBody(plaintext _dafny.S
 	var _2_regularFrames _dafny.Sequence
 	_ = _2_regularFrames
 	_2_regularFrames = _dafny.SeqOf()
-	for ((_0_n).Plus(_dafny.IntOfUint32(((header).Dtor_body()).Dtor_frameLength()))).Cmp(_dafny.IntOfUint32((plaintext).Cardinality())) < 0 {
+	for (m_StandardLibrary_MemoryMath.Companion_Default___.Add(_0_n, uint64(((header).Dtor_body()).Dtor_frameLength()))) < (uint64((plaintext).Cardinality())) {
 		var _3_valueOrError0 m_Wrappers.Outcome = m_Wrappers.Companion_Outcome_.Default()
 		_ = _3_valueOrError0
 		_3_valueOrError0 = m_Wrappers.Companion_Default___.Need((_1_sequenceNumber) < (Companion_Default___.ENDFRAME__SEQUENCE__NUMBER()), m_AwsCryptographyEncryptionSdkTypes.Companion_Error_.Create_AwsEncryptionSdkException_(_dafny.SeqOfString("too many frames")))
@@ -335,7 +345,7 @@ func (_static *CompanionStruct_Default___) EncryptMessageBody(plaintext _dafny.S
 		}
 		var _4_plaintextFrame _dafny.Sequence
 		_ = _4_plaintextFrame
-		_4_plaintextFrame = (plaintext).Subsequence((_0_n).Uint32(), ((_0_n).Plus(_dafny.IntOfUint32(((header).Dtor_body()).Dtor_frameLength()))).Uint32())
+		_4_plaintextFrame = (plaintext).Subsequence(uint32(_0_n), uint32(m_StandardLibrary_MemoryMath.Companion_Default___.Add(_0_n, uint64(((header).Dtor_body()).Dtor_frameLength()))))
 		var _5_valueOrError1 m_Wrappers.Result = m_Wrappers.Result{}
 		_ = _5_valueOrError1
 		var _out0 m_Wrappers.Result
@@ -350,14 +360,14 @@ func (_static *CompanionStruct_Default___) EncryptMessageBody(plaintext _dafny.S
 		_ = _6_regularFrame
 		_6_regularFrame = (_5_valueOrError1).Extract().(m_Frames.Frame)
 		_2_regularFrames = _dafny.Companion_Sequence_.Concatenate(_2_regularFrames, _dafny.SeqOf(_6_regularFrame))
-		_0_n = (_0_n).Plus(_dafny.IntOfUint32(((header).Dtor_body()).Dtor_frameLength()))
+		_0_n = m_StandardLibrary_MemoryMath.Companion_Default___.Add(_0_n, uint64(((header).Dtor_body()).Dtor_frameLength()))
 		_1_sequenceNumber = (_1_sequenceNumber) + (uint32(1))
 	}
 	var _7_valueOrError2 m_Wrappers.Result = m_Wrappers.Result{}
 	_ = _7_valueOrError2
 	var _out1 m_Wrappers.Result
 	_ = _out1
-	_out1 = Companion_Default___.EncryptFinalFrame(key, header, (plaintext).Drop((_0_n).Uint32()), _1_sequenceNumber, crypto)
+	_out1 = Companion_Default___.EncryptFinalFrame(key, header, (plaintext).Drop(uint32(_0_n)), _1_sequenceNumber, crypto)
 	_7_valueOrError2 = _out1
 	if (_7_valueOrError2).IsFailure() {
 		result = (_7_valueOrError2).PropagateFailure()
@@ -457,14 +467,14 @@ func (_static *CompanionStruct_Default___) DecryptFramedMessageBody(body FramedM
 	var _0_plaintext _dafny.Sequence
 	_ = _0_plaintext
 	_0_plaintext = _dafny.SeqOf()
-	var _hi0 _dafny.Int = _dafny.IntOfUint32(((body).Dtor_regularFrames()).Cardinality())
+	var _hi0 uint64 = uint64(((body).Dtor_regularFrames()).Cardinality())
 	_ = _hi0
-	for _1_i := _dafny.Zero; _1_i.Cmp(_hi0) < 0; _1_i = _1_i.Plus(_dafny.One) {
+	for _1_i := uint64(0); _1_i < _hi0; _1_i++ {
 		var _2_valueOrError0 m_Wrappers.Result = m_Wrappers.Companion_Result_.Default(_dafny.EmptySeq)
 		_ = _2_valueOrError0
 		var _out0 m_Wrappers.Result
 		_ = _out0
-		_out0 = Companion_Default___.DecryptFrame(((body).Dtor_regularFrames()).Select((_1_i).Uint32()).(m_Frames.Frame), key, crypto)
+		_out0 = Companion_Default___.DecryptFrame(((body).Dtor_regularFrames()).Select(uint32(_1_i)).(m_Frames.Frame), key, crypto)
 		_2_valueOrError0 = _out0
 		if (_2_valueOrError0).IsFailure() {
 			res = (_2_valueOrError0).PropagateFailure()
@@ -570,19 +580,19 @@ func (_static *CompanionStruct_Default___) WriteFramedMessageBody(body FramedMes
 	return _dafny.Companion_Sequence_.Concatenate(Companion_Default___.WriteMessageRegularFrames((body).Dtor_regularFrames()), m_Frames.Companion_Default___.WriteFinalFrame((body).Dtor_finalFrame()))
 }
 func (_static *CompanionStruct_Default___) WriteMessageRegularFrames(frames _dafny.Sequence) _dafny.Sequence {
-	var _0___accumulator _dafny.Sequence = _dafny.SeqOf()
-	_ = _0___accumulator
-	goto TAIL_CALL_START
-TAIL_CALL_START:
-	if (_dafny.IntOfUint32((frames).Cardinality())).Sign() == 0 {
-		return _dafny.Companion_Sequence_.Concatenate(_dafny.SeqOf(), _0___accumulator)
-	} else {
-		_0___accumulator = _dafny.Companion_Sequence_.Concatenate(m_Frames.Companion_Default___.WriteRegularFrame(m_Seq.Companion_Default___.Last(frames).(m_Frames.Frame)), _0___accumulator)
-		var _in0 _dafny.Sequence = m_Seq.Companion_Default___.DropLast(frames)
-		_ = _in0
-		frames = _in0
-		goto TAIL_CALL_START
+	var ret _dafny.Sequence = _dafny.EmptySeq
+	_ = ret
+	var _0_result _dafny.Sequence
+	_ = _0_result
+	_0_result = _dafny.SeqOf()
+	var _hi0 uint64 = uint64((frames).Cardinality())
+	_ = _hi0
+	for _1_i := uint64(0); _1_i < _hi0; _1_i++ {
+		_0_result = _dafny.Companion_Sequence_.Concatenate(_0_result, m_Frames.Companion_Default___.WriteRegularFrame((frames).Select(uint32(_1_i)).(m_Frames.Frame)))
 	}
+	ret = _0_result
+	return ret
+	return ret
 }
 func (_static *CompanionStruct_Default___) ReadFramedMessageBody(buffer m_SerializeFunctions.ReadableBuffer, header m_Header.HeaderInfo, regularFrames _dafny.Sequence, continuation m_SerializeFunctions.ReadableBuffer) m_Wrappers.Result {
 	goto TAIL_CALL_START
@@ -602,7 +612,7 @@ TAIL_CALL_START:
 			} else {
 				var _3_regularFrame m_SerializeFunctions.SuccessfulRead = (_2_valueOrError1).Extract().(m_SerializeFunctions.SuccessfulRead)
 				_ = _3_regularFrame
-				var _4_valueOrError2 m_Wrappers.Outcome = m_Wrappers.Companion_Default___.Need((_dafny.IntOfUint32(((_3_regularFrame).Dtor_data().(m_Frames.Frame)).Dtor_seqNum())).Cmp((_dafny.IntOfUint32((regularFrames).Cardinality())).Plus(_dafny.One)) == 0, m_SerializeFunctions.Companion_ReadProblems_.Create_Error_(_dafny.SeqOfString("Sequence number out of order.")))
+				var _4_valueOrError2 m_Wrappers.Outcome = m_Wrappers.Companion_Default___.Need((uint64(((_3_regularFrame).Dtor_data().(m_Frames.Frame)).Dtor_seqNum())) == ((uint64((regularFrames).Cardinality()))+(uint64(1))), m_SerializeFunctions.Companion_ReadProblems_.Create_Error_(_dafny.SeqOfString("Sequence number out of order.")))
 				_ = _4_valueOrError2
 				if (_4_valueOrError2).IsFailure() {
 					return (_4_valueOrError2).PropagateFailure()
@@ -632,7 +642,7 @@ TAIL_CALL_START:
 			} else {
 				var _7_finalFrame m_SerializeFunctions.SuccessfulRead = (_6_valueOrError3).Extract().(m_SerializeFunctions.SuccessfulRead)
 				_ = _7_finalFrame
-				var _8_valueOrError4 m_Wrappers.Outcome = m_Wrappers.Companion_Default___.Need((_dafny.IntOfUint32(((_7_finalFrame).Dtor_data().(m_Frames.Frame)).Dtor_seqNum())).Cmp((_dafny.IntOfUint32((regularFrames).Cardinality())).Plus(_dafny.One)) == 0, m_SerializeFunctions.Companion_ReadProblems_.Create_Error_(_dafny.SeqOfString("Sequence number out of order.")))
+				var _8_valueOrError4 m_Wrappers.Outcome = m_Wrappers.Companion_Default___.Need((uint64(((_7_finalFrame).Dtor_data().(m_Frames.Frame)).Dtor_seqNum())) == ((uint64((regularFrames).Cardinality()))+(uint64(1))), m_SerializeFunctions.Companion_ReadProblems_.Create_Error_(_dafny.SeqOfString("Sequence number out of order.")))
 				_ = _8_valueOrError4
 				if (_8_valueOrError4).IsFailure() {
 					return (_8_valueOrError4).PropagateFailure()

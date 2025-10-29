@@ -101,6 +101,7 @@ import (
 	m_Sorting "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/Sorting"
 	m_StandardLibrary "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary"
 	m_StandardLibraryInterop "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibraryInterop"
+	m_StandardLibrary_MemoryMath "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_MemoryMath"
 	m_StandardLibrary_Sequence "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_Sequence"
 	m_StandardLibrary_String "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_String"
 	m_StandardLibrary_UInt "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_UInt"
@@ -125,6 +126,7 @@ var _ m__System.Dummy__
 var _ m_Wrappers.Dummy__
 var _ m_BoundedInts.Dummy__
 var _ m_StandardLibrary_UInt.Dummy__
+var _ m_StandardLibrary_MemoryMath.Dummy__
 var _ m_StandardLibrary_Sequence.Dummy__
 var _ m_StandardLibrary_String.Dummy__
 var _ m_StandardLibrary.Dummy__
@@ -149,40 +151,41 @@ var _ m_Relations.Dummy__
 var _ m_Seq_MergeSort.Dummy__
 var _ m__Math.Dummy__
 var _ m_Seq.Dummy__
-var _ m_MultiKeyring.Dummy__
-var _ m_AwsArnParsing.Dummy__
-var _ m_AwsKmsMrkAreUnique.Dummy__
 var _ m_Actions.Dummy__
-var _ m_AwsKmsMrkMatchForDecrypt.Dummy__
-var _ m_AwsKmsUtils.Dummy__
-var _ m_Constants.Dummy__
-var _ m_MaterialWrapping.Dummy__
 var _ m_CanonicalEncryptionContext.Dummy__
+var _ m_MaterialWrapping.Dummy__
 var _ m_IntermediateKeyWrapping.Dummy__
 var _ m_EdkWrapping.Dummy__
 var _ m_ErrorMessages.Dummy__
+var _ m_RawAESKeyring.Dummy__
+var _ m_AwsArnParsing.Dummy__
+var _ m_Constants.Dummy__
+var _ m_EcdhEdkWrapping.Dummy__
+var _ m_RawECDHKeyring.Dummy__
+var _ m_RawRSAKeyring.Dummy__
+var _ m_AwsKmsMrkMatchForDecrypt.Dummy__
+var _ m_AwsKmsUtils.Dummy__
 var _ m_AwsKmsKeyring.Dummy__
-var _ m_StrictMultiKeyring.Dummy__
 var _ m_AwsKmsDiscoveryKeyring.Dummy__
-var _ m_Com_Amazonaws_Kms.Dummy__
-var _ m_Com_Amazonaws_Dynamodb.Dummy__
-var _ m_DiscoveryMultiKeyring.Dummy__
-var _ m_AwsKmsMrkDiscoveryKeyring.Dummy__
-var _ m_MrkAwareDiscoveryMultiKeyring.Dummy__
-var _ m_AwsKmsMrkKeyring.Dummy__
-var _ m_MrkAwareStrictMultiKeyring.Dummy__
+var _ m_AwsKmsEcdhKeyring.Dummy__
+var _ m_FileIO.Dummy__
 var _ m_LocalCMC.Dummy__
 var _ m_SynchronizedLocalCMC.Dummy__
 var _ m_StormTracker.Dummy__
 var _ m_StormTrackingCMC.Dummy__
 var _ m_CacheConstants.Dummy__
 var _ m_AwsKmsHierarchicalKeyring.Dummy__
+var _ m_AwsKmsMrkDiscoveryKeyring.Dummy__
+var _ m_AwsKmsMrkKeyring.Dummy__
 var _ m_AwsKmsRsaKeyring.Dummy__
-var _ m_EcdhEdkWrapping.Dummy__
-var _ m_RawECDHKeyring.Dummy__
-var _ m_AwsKmsEcdhKeyring.Dummy__
-var _ m_RawAESKeyring.Dummy__
-var _ m_RawRSAKeyring.Dummy__
+var _ m_MultiKeyring.Dummy__
+var _ m_AwsKmsMrkAreUnique.Dummy__
+var _ m_StrictMultiKeyring.Dummy__
+var _ m_Com_Amazonaws_Kms.Dummy__
+var _ m_Com_Amazonaws_Dynamodb.Dummy__
+var _ m_DiscoveryMultiKeyring.Dummy__
+var _ m_MrkAwareDiscoveryMultiKeyring.Dummy__
+var _ m_MrkAwareStrictMultiKeyring.Dummy__
 var _ m_CMM.Dummy__
 var _ m_Defaults.Dummy__
 var _ m_Commitment.Dummy__
@@ -207,7 +210,6 @@ var _ m_Functions.Dummy__
 var _ m_Utf8EncodingForm.Dummy__
 var _ m_Utf16EncodingForm.Dummy__
 var _ m_UnicodeStrings.Dummy__
-var _ m_FileIO.Dummy__
 var _ m_GeneralInternals.Dummy__
 var _ m_MulInternalsNonlinear.Dummy__
 var _ m_MulInternals.Dummy__
@@ -272,16 +274,16 @@ func (_static *CompanionStruct_Default___) WriteMessageFormatVersion(version m_H
 	return m_SerializeFunctions.Companion_Default___.Write((version).Serialize())
 }
 func (_static *CompanionStruct_Default___) ReadMessageFormatVersion(buffer m_SerializeFunctions.ReadableBuffer) m_Wrappers.Result {
-	var _0_valueOrError0 m_Wrappers.Result = m_SerializeFunctions.Companion_Default___.Read(buffer, _dafny.One)
+	var _0_valueOrError0 m_Wrappers.Result = m_SerializeFunctions.Companion_Default___.Read(buffer, uint64(1))
 	_ = _0_valueOrError0
 	if (_0_valueOrError0).IsFailure() {
 		return (_0_valueOrError0).PropagateFailure()
 	} else {
 		var _1_rawVersion m_SerializeFunctions.SuccessfulRead = (_0_valueOrError0).Extract().(m_SerializeFunctions.SuccessfulRead)
 		_ = _1_rawVersion
-		var _2_valueOrError1 m_Wrappers.Result = (m_HeaderTypes.Companion_MessageFormatVersion_.Get((_1_rawVersion).Dtor_data().(_dafny.Sequence))).MapFailure(func(coer2 func(_dafny.Sequence) m_SerializeFunctions.ReadProblems) func(interface{}) interface{} {
-			return func(arg3 interface{}) interface{} {
-				return coer2(arg3.(_dafny.Sequence))
+		var _2_valueOrError1 m_Wrappers.Result = (m_HeaderTypes.Companion_MessageFormatVersion_.Get((_1_rawVersion).Dtor_data().(_dafny.Sequence))).MapFailure(func(coer3 func(_dafny.Sequence) m_SerializeFunctions.ReadProblems) func(interface{}) interface{} {
+			return func(arg4 interface{}) interface{} {
+				return coer3(arg4.(_dafny.Sequence))
 			}
 		}(func(_3_e _dafny.Sequence) m_SerializeFunctions.ReadProblems {
 			return m_SerializeFunctions.Companion_ReadProblems_.Create_Error_(_3_e)
@@ -300,16 +302,16 @@ func (_static *CompanionStruct_Default___) WriteESDKSuiteId(suite m_AwsCryptogra
 	return m_SerializeFunctions.Companion_Default___.Write((suite).Dtor_binaryId())
 }
 func (_static *CompanionStruct_Default___) ReadESDKSuiteId(buffer m_SerializeFunctions.ReadableBuffer, mpl *m_MaterialProviders.MaterialProvidersClient) m_Wrappers.Result {
-	var _0_valueOrError0 m_Wrappers.Result = m_SerializeFunctions.Companion_Default___.Read(buffer, _dafny.IntOfInt64(2))
+	var _0_valueOrError0 m_Wrappers.Result = m_SerializeFunctions.Companion_Default___.Read(buffer, uint64(2))
 	_ = _0_valueOrError0
 	if (_0_valueOrError0).IsFailure() {
 		return (_0_valueOrError0).PropagateFailure()
 	} else {
 		var _1_esdkSuiteIdBytes m_SerializeFunctions.SuccessfulRead = (_0_valueOrError0).Extract().(m_SerializeFunctions.SuccessfulRead)
 		_ = _1_esdkSuiteIdBytes
-		var _2_valueOrError1 m_Wrappers.Result = ((mpl).GetAlgorithmSuiteInfo((_1_esdkSuiteIdBytes).Dtor_data().(_dafny.Sequence))).MapFailure(func(coer3 func(m_AwsCryptographyMaterialProvidersTypes.Error) m_SerializeFunctions.ReadProblems) func(interface{}) interface{} {
-			return func(arg4 interface{}) interface{} {
-				return coer3(arg4.(m_AwsCryptographyMaterialProvidersTypes.Error))
+		var _2_valueOrError1 m_Wrappers.Result = ((mpl).GetAlgorithmSuiteInfo((_1_esdkSuiteIdBytes).Dtor_data().(_dafny.Sequence))).MapFailure(func(coer4 func(m_AwsCryptographyMaterialProvidersTypes.Error) m_SerializeFunctions.ReadProblems) func(interface{}) interface{} {
+			return func(arg5 interface{}) interface{} {
+				return coer4(arg5.(m_AwsCryptographyMaterialProvidersTypes.Error))
 			}
 		}(func(_3___v0 m_AwsCryptographyMaterialProvidersTypes.Error) m_SerializeFunctions.ReadProblems {
 			return m_SerializeFunctions.Companion_ReadProblems_.Create_Error_(_dafny.SeqOfString("Algorithm suite ID not supported."))
@@ -371,7 +373,7 @@ func (_static *CompanionStruct_Default___) WriteContentType(contentType m_Header
 	return m_SerializeFunctions.Companion_Default___.Write(_dafny.SeqOf((contentType).Serialize()))
 }
 func (_static *CompanionStruct_Default___) ReadContentType(buffer m_SerializeFunctions.ReadableBuffer) m_Wrappers.Result {
-	var _0_valueOrError0 m_Wrappers.Result = m_SerializeFunctions.Companion_Default___.Read(buffer, _dafny.One)
+	var _0_valueOrError0 m_Wrappers.Result = m_SerializeFunctions.Companion_Default___.Read(buffer, uint64(1))
 	_ = _0_valueOrError0
 	if (_0_valueOrError0).IsFailure() {
 		return (_0_valueOrError0).PropagateFailure()
@@ -382,9 +384,9 @@ func (_static *CompanionStruct_Default___) ReadContentType(buffer m_SerializeFun
 		_ = _1_raw
 		var _2_tail m_SerializeFunctions.ReadableBuffer = _let_tmp_rhs0.Get_().(m_SerializeFunctions.SuccessfulRead_SuccessfulRead).Tail
 		_ = _2_tail
-		var _3_valueOrError1 m_Wrappers.Result = (m_HeaderTypes.Companion_ContentType_.Get((_1_raw).Select(0).(uint8))).MapFailure(func(coer4 func(_dafny.Sequence) m_SerializeFunctions.ReadProblems) func(interface{}) interface{} {
-			return func(arg5 interface{}) interface{} {
-				return coer4(arg5.(_dafny.Sequence))
+		var _3_valueOrError1 m_Wrappers.Result = (m_HeaderTypes.Companion_ContentType_.Get((_1_raw).Select(uint32(uint32(0))).(uint8))).MapFailure(func(coer5 func(_dafny.Sequence) m_SerializeFunctions.ReadProblems) func(interface{}) interface{} {
+			return func(arg6 interface{}) interface{} {
+				return coer5(arg6.(_dafny.Sequence))
 			}
 		}(func(_4_e _dafny.Sequence) m_SerializeFunctions.ReadProblems {
 			return m_SerializeFunctions.Companion_ReadProblems_.Create_Error_(_4_e)
