@@ -2,6 +2,8 @@ module github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk
 
 go 1.23.0
 
+retract [v0.0.0-0, v0.1.1]
+
 require (
 	github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb v0.3.0
 	github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms v0.3.0
