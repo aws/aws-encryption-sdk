@@ -14,15 +14,15 @@ replace (
 )
 
 require (
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb v0.2.0
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms v0.2.0
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl v0.2.0
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives v0.2.0
-	github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library v0.2.0
-	github.com/aws/aws-cryptographic-material-providers-library/testvectors v0.0.0
-	github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk v0.0.0
-	github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk/test v0.0.0
-	github.com/dafny-lang/DafnyRuntimeGo/v4 v4.9.2
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb v0.3.0
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms v0.3.0
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl v0.3.0
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives v0.3.0
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library v0.3.0
+	github.com/aws/aws-cryptographic-material-providers-library/testvectors v0.3.0
+	github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk v0.3.0
+	github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk/test v0.3.0
+	github.com/dafny-lang/DafnyRuntimeGo/v4 v4.11.2
 )
 
 require (
