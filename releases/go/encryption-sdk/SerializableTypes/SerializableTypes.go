@@ -102,6 +102,7 @@ import (
 	m_Sorting "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/Sorting"
 	m_StandardLibrary "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary"
 	m_StandardLibraryInterop "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibraryInterop"
+	m_StandardLibrary_MemoryMath "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_MemoryMath"
 	m_StandardLibrary_Sequence "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_Sequence"
 	m_StandardLibrary_String "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_String"
 	m_StandardLibrary_UInt "github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library/StandardLibrary_UInt"
@@ -123,6 +124,7 @@ var _ m__System.Dummy__
 var _ m_Wrappers.Dummy__
 var _ m_BoundedInts.Dummy__
 var _ m_StandardLibrary_UInt.Dummy__
+var _ m_StandardLibrary_MemoryMath.Dummy__
 var _ m_StandardLibrary_Sequence.Dummy__
 var _ m_StandardLibrary_String.Dummy__
 var _ m_StandardLibrary.Dummy__
@@ -147,40 +149,41 @@ var _ m_Relations.Dummy__
 var _ m_Seq_MergeSort.Dummy__
 var _ m__Math.Dummy__
 var _ m_Seq.Dummy__
-var _ m_MultiKeyring.Dummy__
-var _ m_AwsArnParsing.Dummy__
-var _ m_AwsKmsMrkAreUnique.Dummy__
 var _ m_Actions.Dummy__
-var _ m_AwsKmsMrkMatchForDecrypt.Dummy__
-var _ m_AwsKmsUtils.Dummy__
-var _ m_Constants.Dummy__
-var _ m_MaterialWrapping.Dummy__
 var _ m_CanonicalEncryptionContext.Dummy__
+var _ m_MaterialWrapping.Dummy__
 var _ m_IntermediateKeyWrapping.Dummy__
 var _ m_EdkWrapping.Dummy__
 var _ m_ErrorMessages.Dummy__
+var _ m_RawAESKeyring.Dummy__
+var _ m_AwsArnParsing.Dummy__
+var _ m_Constants.Dummy__
+var _ m_EcdhEdkWrapping.Dummy__
+var _ m_RawECDHKeyring.Dummy__
+var _ m_RawRSAKeyring.Dummy__
+var _ m_AwsKmsMrkMatchForDecrypt.Dummy__
+var _ m_AwsKmsUtils.Dummy__
 var _ m_AwsKmsKeyring.Dummy__
-var _ m_StrictMultiKeyring.Dummy__
 var _ m_AwsKmsDiscoveryKeyring.Dummy__
-var _ m_Com_Amazonaws_Kms.Dummy__
-var _ m_Com_Amazonaws_Dynamodb.Dummy__
-var _ m_DiscoveryMultiKeyring.Dummy__
-var _ m_AwsKmsMrkDiscoveryKeyring.Dummy__
-var _ m_MrkAwareDiscoveryMultiKeyring.Dummy__
-var _ m_AwsKmsMrkKeyring.Dummy__
-var _ m_MrkAwareStrictMultiKeyring.Dummy__
+var _ m_AwsKmsEcdhKeyring.Dummy__
+var _ m_FileIO.Dummy__
 var _ m_LocalCMC.Dummy__
 var _ m_SynchronizedLocalCMC.Dummy__
 var _ m_StormTracker.Dummy__
 var _ m_StormTrackingCMC.Dummy__
 var _ m_CacheConstants.Dummy__
 var _ m_AwsKmsHierarchicalKeyring.Dummy__
+var _ m_AwsKmsMrkDiscoveryKeyring.Dummy__
+var _ m_AwsKmsMrkKeyring.Dummy__
 var _ m_AwsKmsRsaKeyring.Dummy__
-var _ m_EcdhEdkWrapping.Dummy__
-var _ m_RawECDHKeyring.Dummy__
-var _ m_AwsKmsEcdhKeyring.Dummy__
-var _ m_RawAESKeyring.Dummy__
-var _ m_RawRSAKeyring.Dummy__
+var _ m_MultiKeyring.Dummy__
+var _ m_AwsKmsMrkAreUnique.Dummy__
+var _ m_StrictMultiKeyring.Dummy__
+var _ m_Com_Amazonaws_Kms.Dummy__
+var _ m_Com_Amazonaws_Dynamodb.Dummy__
+var _ m_DiscoveryMultiKeyring.Dummy__
+var _ m_MrkAwareDiscoveryMultiKeyring.Dummy__
+var _ m_MrkAwareStrictMultiKeyring.Dummy__
 var _ m_CMM.Dummy__
 var _ m_Defaults.Dummy__
 var _ m_Commitment.Dummy__
@@ -205,7 +208,6 @@ var _ m_Functions.Dummy__
 var _ m_Utf8EncodingForm.Dummy__
 var _ m_Utf16EncodingForm.Dummy__
 var _ m_UnicodeStrings.Dummy__
-var _ m_FileIO.Dummy__
 var _ m_GeneralInternals.Dummy__
 var _ m_MulInternalsNonlinear.Dummy__
 var _ m_MulInternals.Dummy__
@@ -266,7 +268,7 @@ func (_static *CompanionStruct_Default___) IsESDKEncryptedDataKey(edk m_AwsCrypt
 	return (((m_StandardLibrary_UInt.Companion_Default___.HasUint16Len((edk).Dtor_keyProviderId())) && (m_UTF8.Companion_Default___.ValidUTF8Seq((edk).Dtor_keyProviderId()))) && (m_StandardLibrary_UInt.Companion_Default___.HasUint16Len((edk).Dtor_keyProviderInfo()))) && (m_StandardLibrary_UInt.Companion_Default___.HasUint16Len((edk).Dtor_ciphertext()))
 }
 func (_static *CompanionStruct_Default___) IsESDKEncryptionContext(ec _dafny.Map) bool {
-	return ((((ec).Cardinality()).Cmp(m_StandardLibrary_UInt.Companion_Default___.UINT16__LIMIT()) < 0) && ((Companion_Default___.Length(ec)).Cmp(Companion_Default___.ESDK__CANONICAL__ENCRYPTION__CONTEXT__MAX__LENGTH()) < 0)) && (_dafny.Quantifier(((_dafny.MultiSetFromSet((ec).Keys())).Union(_dafny.MultiSetFromSet((ec).Values()))).UniqueElements(), true, func(_forall_var_0 _dafny.Sequence) bool {
+	return (((uint64((ec).CardinalityInt())) < ((m_StandardLibrary_UInt.Companion_Default___.UINT16__LIMIT()).Uint64())) && ((Companion_Default___.Length(ec)) < (Companion_Default___.ESDK__CANONICAL__ENCRYPTION__CONTEXT__MAX__LENGTH()))) && (_dafny.Quantifier(((_dafny.MultiSetFromSet((ec).Keys())).Union(_dafny.MultiSetFromSet((ec).Values()))).UniqueElements(), true, func(_forall_var_0 _dafny.Sequence) bool {
 		var _0_element _dafny.Sequence
 		_0_element = interface{}(_forall_var_0).(_dafny.Sequence)
 		if m_UTF8.Companion_ValidUTF8Bytes_.Is_(_0_element) {
@@ -283,6 +285,21 @@ func (_static *CompanionStruct_Default___) GetIvLength(a m_AwsCryptographyMateri
 		var _0_e m_AwsCryptographyPrimitivesTypes.AES__GCM = _source0.Get_().(m_AwsCryptographyMaterialProvidersTypes.Encrypt_AES__GCM).AES__GCM
 		_ = _0_e
 		return uint8((_0_e).Dtor_ivLength())
+	}
+}
+func (_static *CompanionStruct_Default___) GetIvLengthZeros(a m_AwsCryptographyMaterialProvidersTypes.AlgorithmSuiteInfo) _dafny.Sequence {
+	var _0_len uint8 = Companion_Default___.GetIvLength(a)
+	_ = _0_len
+	if (_0_len) == (uint8(12)) {
+		return _dafny.SeqOf(uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0))
+	} else {
+		return _dafny.SeqCreate(uint32(_0_len), func(coer0 func(_dafny.Int) uint8) func(_dafny.Int) interface{} {
+			return func(arg0 _dafny.Int) interface{} {
+				return coer0(arg0)
+			}
+		}(func(_1___v0 _dafny.Int) uint8 {
+			return uint8(0)
+		}))
 	}
 }
 func (_static *CompanionStruct_Default___) GetTagLength(a m_AwsCryptographyMaterialProvidersTypes.AlgorithmSuiteInfo) uint8 {
@@ -303,9 +320,9 @@ func (_static *CompanionStruct_Default___) GetEncryptKeyLength(a m_AwsCryptograp
 		return (_0_e).Dtor_keyLength()
 	}
 }
-func (_static *CompanionStruct_Default___) Length(encryptionContext _dafny.Map) _dafny.Int {
-	if ((encryptionContext).Cardinality()).Sign() == 0 {
-		return _dafny.Zero
+func (_static *CompanionStruct_Default___) Length(encryptionContext _dafny.Map) uint64 {
+	if (uint64((encryptionContext).CardinalityInt())) == (uint64(0)) {
+		return uint64(0)
 	} else {
 		var _0_pairs _dafny.Sequence = Companion_Default___.GetCanonicalLinearPairs(encryptionContext)
 		_ = _0_pairs
@@ -313,15 +330,15 @@ func (_static *CompanionStruct_Default___) Length(encryptionContext _dafny.Map) 
 	}
 }
 func (_static *CompanionStruct_Default___) GetCanonicalLinearPairs(encryptionContext _dafny.Map) _dafny.Sequence {
-	var _0_keys _dafny.Sequence = m_SortedSets.SetToOrderedSequence2((encryptionContext).Keys(), func(coer0 func(uint8, uint8) bool) func(interface{}, interface{}) bool {
-		return func(arg0 interface{}, arg1 interface{}) bool {
-			return coer0(arg0.(uint8), arg1.(uint8))
+	var _0_keys _dafny.Sequence = m_SortedSets.SetToOrderedSequence2((encryptionContext).Keys(), func(coer1 func(uint8, uint8) bool) func(interface{}, interface{}) bool {
+		return func(arg1 interface{}, arg2 interface{}) bool {
+			return coer1(arg1.(uint8), arg2.(uint8))
 		}
 	}(m_StandardLibrary_UInt.Companion_Default___.UInt8Less))
 	_ = _0_keys
-	return _dafny.SeqCreate((_dafny.IntOfUint32((_0_keys).Cardinality())).Uint32(), func(coer1 func(_dafny.Int) Pair) func(_dafny.Int) interface{} {
-		return func(arg2 _dafny.Int) interface{} {
-			return coer1(arg2)
+	return _dafny.SeqCreate((_dafny.IntOfUint32((_0_keys).Cardinality())).Uint32(), func(coer2 func(_dafny.Int) Pair) func(_dafny.Int) interface{} {
+		return func(arg3 _dafny.Int) interface{} {
+			return coer2(arg3)
 		}
 	}((func(_1_keys _dafny.Sequence, _2_encryptionContext _dafny.Map) func(_dafny.Int) Pair {
 		return func(_3_i _dafny.Int) Pair {
@@ -329,26 +346,26 @@ func (_static *CompanionStruct_Default___) GetCanonicalLinearPairs(encryptionCon
 		}
 	})(_0_keys, encryptionContext)))
 }
-func (_static *CompanionStruct_Default___) LinearLength(pairs _dafny.Sequence) _dafny.Int {
-	var _0___accumulator _dafny.Int = _dafny.Zero
-	_ = _0___accumulator
-	goto TAIL_CALL_START
-TAIL_CALL_START:
-	if (_dafny.IntOfUint32((pairs).Cardinality())).Sign() == 0 {
-		return (_dafny.Zero).Plus(_0___accumulator)
-	} else {
-		_0___accumulator = (Companion_Default___.PairLength(m_Seq.Companion_Default___.Last(pairs).(Pair))).Plus(_0___accumulator)
-		var _in0 _dafny.Sequence = m_Seq.Companion_Default___.DropLast(pairs)
-		_ = _in0
-		pairs = _in0
-		goto TAIL_CALL_START
+func (_static *CompanionStruct_Default___) LinearLength(pairs _dafny.Sequence) uint64 {
+	var ret uint64 = uint64(0)
+	_ = ret
+	var _0_result uint64
+	_ = _0_result
+	_0_result = uint64(0)
+	var _hi0 uint64 = uint64((pairs).Cardinality())
+	_ = _hi0
+	for _1_i := uint64(0); _1_i < _hi0; _1_i++ {
+		_0_result = m_StandardLibrary_MemoryMath.Companion_Default___.Add(_0_result, Companion_Default___.PairLength((pairs).Select(uint32(_1_i)).(Pair)))
 	}
+	ret = _0_result
+	return ret
+	return ret
 }
-func (_static *CompanionStruct_Default___) PairLength(pair Pair) _dafny.Int {
-	return (((_dafny.IntOfInt64(2)).Plus(_dafny.IntOfUint32(((pair).Dtor_key().(_dafny.Sequence)).Cardinality()))).Plus(_dafny.IntOfInt64(2))).Plus(_dafny.IntOfUint32(((pair).Dtor_value().(_dafny.Sequence)).Cardinality()))
+func (_static *CompanionStruct_Default___) PairLength(pair Pair) uint64 {
+	return m_StandardLibrary_MemoryMath.Companion_Default___.Add4(uint64(2), uint64(((pair).Dtor_key().(_dafny.Sequence)).Cardinality()), uint64(2), uint64(((pair).Dtor_value().(_dafny.Sequence)).Cardinality()))
 }
-func (_static *CompanionStruct_Default___) ESDK__CANONICAL__ENCRYPTION__CONTEXT__MAX__LENGTH() _dafny.Int {
-	return (m_StandardLibrary_UInt.Companion_Default___.UINT16__LIMIT()).Minus(_dafny.IntOfInt64(2))
+func (_static *CompanionStruct_Default___) ESDK__CANONICAL__ENCRYPTION__CONTEXT__MAX__LENGTH() uint64 {
+	return ((m_StandardLibrary_UInt.Companion_Default___.UINT16__LIMIT()).Uint64()) - (func() uint64 { return (uint64(2)) })()
 }
 
 // End of class Default__

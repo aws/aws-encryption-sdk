@@ -165,4 +165,7 @@ func main() {
 		utils.GenerateUUIDTestData(numOfString),
 		utils.DefaultKMSKeyId(),
 		utils.DefaultKmsKeyRegion())
+
+	// cleanup
+	utils.CleanUpFiles()
 }
