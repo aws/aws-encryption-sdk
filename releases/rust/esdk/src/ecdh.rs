@@ -442,7 +442,7 @@ pub mod ECDH {
                 &public_key,
             );
             let shared: Vec<u8> =
-                aws_lc_rs::agreement::agree(&private_key, &public_key, "foo", |x| Ok(x.to_vec()))
+                aws_lc_rs::agreement::agree(&private_key, public_key, "foo", |x| Ok(x.to_vec()))
                     .map_err(|_e| "Failure in aws_lc_rs::agreement::agree.".to_string())?;
             Ok(shared)
         }

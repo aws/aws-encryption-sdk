@@ -10,23 +10,23 @@
 pub mod ConcurrentCall {
 
     fn de_const(
-        p: *const dafny_runtime::Object<(dyn Callee + 'static)>,
-    ) -> *mut dafny_runtime::Object<(dyn Callee + 'static)> {
+        p: *const dafny_runtime::Object<dyn Callee + 'static>,
+    ) -> *mut dafny_runtime::Object<dyn Callee + 'static> {
         p as _
     }
 
     pub struct FakeCallee {
-        callee: *const dafny_runtime::Object<(dyn Callee + 'static)>,
+        callee: *const dafny_runtime::Object<dyn Callee + 'static>,
     }
     impl FakeCallee {
-        fn new(callee: &dafny_runtime::Object<(dyn Callee + 'static)>) -> Self {
+        fn new(callee: &dafny_runtime::Object<dyn Callee + 'static>) -> Self {
             Self {
                 callee: std::ptr::from_ref(callee),
             }
         }
         fn call(&self, x: u32, y: u32) {
             let mptr = de_const(self.callee);
-            let value: &mut dafny_runtime::Object<(dyn Callee + 'static)> = unsafe { &mut *mptr };
+            let value: &mut dafny_runtime::Object<dyn Callee + 'static> = unsafe { &mut *mptr };
             value.as_mut().call(x, y);
         }
     }
@@ -37,7 +37,7 @@ pub mod ConcurrentCall {
     use crate::ConcurrentCall::Callee;
     impl _default {
         pub fn ConcurrentCall(
-            callee: &dafny_runtime::Object<(dyn Callee + 'static)>,
+            callee: &dafny_runtime::Object<dyn Callee + 'static>,
             serial_iters: u32,
             concurrent_iters: u32,
         ) {
