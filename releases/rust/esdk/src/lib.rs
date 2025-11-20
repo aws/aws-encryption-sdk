@@ -96,6 +96,7 @@ mod standard_library_conversions;
 mod standard_library_externs;
 
 pub(crate) mod implementation_from_dafny;
+pub(crate) use crate::deps::com_amazonaws_kms::client::Client as KmsClient;
 pub(crate) use crate::implementation_from_dafny::r#_Wrappers_Compile;
 pub(crate) use crate::implementation_from_dafny::software;
 pub(crate) use crate::implementation_from_dafny::AesKdfCtr;
