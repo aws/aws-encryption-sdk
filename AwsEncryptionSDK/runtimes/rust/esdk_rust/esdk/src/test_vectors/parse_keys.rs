@@ -110,11 +110,11 @@ pub(crate) fn parse_keys(data: &JsonValue, version: i64) -> Result<KeyMap> {
     let mut keymap = KeyMap::default();
     if version == 1 {
         for (key_str, value) in data.as_object().unwrap() {
-            keymap.insert(key_str.to_string(), parse_key_v1(value, key_str)?);
+            keymap.insert(key_str.clone(), parse_key_v1(value, key_str)?);
         }
     } else if version == 2 {
         for (key_str, value) in data.as_object().unwrap() {
-            keymap.insert(key_str.to_string(), parse_key_v2(value, key_str)?);
+            keymap.insert(key_str.clone(), parse_key_v2(value, key_str)?);
         }
     } else {
         anyhow::bail!("Unknown key version : {version}");
@@ -149,7 +149,7 @@ pub(crate) fn parse_edks(data: &JsonValue) -> EDKs {
 pub(crate) fn parse_encryption_context(data: &JsonValue) -> EncryptionContext {
     let mut ec = EncryptionContext::default();
     for (key_str, value) in data.as_object().unwrap() {
-        ec.insert(key_str.to_string(), value.as_str().unwrap().to_string());
+        ec.insert(key_str.clone(), value.as_str().unwrap().to_string());
     }
     ec
 }

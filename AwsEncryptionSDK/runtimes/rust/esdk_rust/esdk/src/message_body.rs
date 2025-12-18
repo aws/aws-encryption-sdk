@@ -7,7 +7,7 @@ use crate::serialize::serialize_functions::{read_bytes, read_seq_u32_bounded, re
 use crate::serialize::*;
 use crate::types::{SafeRead, SafeWrite};
 use aws_mpl_primitives::{AesGcm, aes_decrypt};
-use aws_mpl_rs::types::AlgorithmSuiteInfo;
+use aws_mpl_legacy::types::AlgorithmSuiteInfo;
 
 pub(crate) fn get_aes_alg(suite: &AlgorithmSuiteInfo) -> AesGcm {
     let alg = get_encrypt(suite);
@@ -65,9 +65,9 @@ pub(crate) fn iv_seq(sequence_number: u32, result: &mut [u8])
 
 pub(crate) fn get_encrypt(
     info: &AlgorithmSuiteInfo,
-) -> aws_mpl_rs::deps::aws_cryptography_primitives::types::AesGcm {
+) -> aws_mpl_legacy::deps::aws_cryptography_primitives::types::AesGcm {
     match &info.encrypt.as_ref().unwrap() {
-        aws_mpl_rs::types::Encrypt::AesGcm(aes_gcm) => aes_gcm.clone(),
+        aws_mpl_legacy::types::Encrypt::AesGcm(aes_gcm) => aes_gcm.clone(),
         _ => panic!("not an aes gcm"),
     }
 }

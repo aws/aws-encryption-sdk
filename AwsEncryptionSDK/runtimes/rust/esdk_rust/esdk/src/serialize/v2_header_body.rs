@@ -8,7 +8,7 @@ use super::*;
 use crate::serialize::header_types::*;
 use crate::serialize::serialize_functions::*;
 use crate::types::{SafeRead, SafeWrite};
-use aws_mpl_rs::types::DerivationAlgorithm;
+use aws_mpl_legacy::types::DerivationAlgorithm;
 
 pub(crate) fn write_v2_header_body(
     w: &mut dyn SafeWrite,
@@ -73,7 +73,7 @@ pub(crate) fn write_v2_header_body(
     write_bytes(w, &body.suite_data)
 }
 
-pub(crate) const fn get_hkdf(x: &DerivationAlgorithm) -> &aws_mpl_rs::types::Hkdf {
+pub(crate) const fn get_hkdf(x: &DerivationAlgorithm) -> &aws_mpl_legacy::types::Hkdf {
     if let DerivationAlgorithm::Hkdf(x) = x {
         x
     } else {
@@ -86,7 +86,7 @@ pub(crate) const fn has_hkdf(x: &DerivationAlgorithm) -> bool {
 pub(crate) fn read_v2_header_body(
     r: &mut dyn SafeRead,
     max_edks: Option<usize>,
-    mpl: &aws_mpl_rs::Client,
+    mpl: &aws_mpl_legacy::Client,
     raw: &mut dyn SafeWrite,
 ) -> Result<V2HeaderBody, Error> {
     let algorithm_suite = read_esdk_suite_id(r, mpl, raw)?;

@@ -42,11 +42,9 @@ use crate::example_utils::utils::EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT;
 use crate::example_utils::utils::exists;
 use crate::example_utils::utils::write_raw_ecdh_ecc_keys;
 use aws_esdk::*;
-use aws_mpl_rs::aws_cryptography_primitives::types::EcdhCurveSpec;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::EphemeralPrivateKeyToStaticPublicKeyInput;
-use aws_mpl_rs::types::RawEcdhStaticConfigurations;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
+use aws_mpl_legacy::aws_cryptography_primitives::types::EcdhCurveSpec;
+use aws_mpl_legacy::types::EphemeralPrivateKeyToStaticPublicKeyInput;
+use aws_mpl_legacy::types::RawEcdhStaticConfigurations;
 use pem::parse;
 use std::path::Path;
 
@@ -106,14 +104,11 @@ pub async fn encrypt_with_keyring(
         );
 
     // 6. Create the Ephemeral Raw ECDH keyring.
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
-
     // Create the keyring.
     // This keyring uses an ephemeral configuration. This configuration will always create a new
     // key pair as the sender key pair for the key agreement operation. The ephemeral configuration can only
     // encrypt data and CANNOT decrypt messages.
-    let ephemeral_raw_ecdh_keyring = mpl
+    let ephemeral_raw_ecdh_keyring = mpl()
         .create_raw_ecdh_keyring()
         .curve_spec(ecdh_curve_spec)
         .key_agreement_scheme(ephemeral_raw_ecdh_static_configuration)
@@ -126,14 +121,9 @@ pub async fn encrypt_with_keyring(
     // used as the sender is ephemeral. This means that at decrypt time it does not have
     // the private key that corresponds to the public key that is stored on the message.
     let plaintext = example_data.as_bytes();
-
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(ephemeral_raw_ecdh_keyring)
-        .encryption_context(&encryption_context)
-        .build()?;
+    let encrypt_input =
+        EncryptInput::with_keyring(plaintext, encryption_context, ephemeral_raw_ecdh_keyring);
     let encryption_response = encrypt(&encrypt_input).await?;
-
     let ciphertext = encryption_response.ciphertext;
 
     // 8. Demonstrate that the ciphertext and plaintext are different.

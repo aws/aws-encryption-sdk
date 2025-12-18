@@ -22,7 +22,7 @@ pub(crate) struct HeaderInfo {
     pub(crate) body: HeaderBody,
     pub(crate) raw_header: Vec<u8>,
     pub(crate) encryption_context: ESDKEncryptionContext,
-    pub(crate) suite: aws_mpl_rs::types::AlgorithmSuiteInfo,
+    pub(crate) suite: aws_mpl_legacy::types::AlgorithmSuiteInfo,
     pub(crate) header_auth: HeaderAuth,
 }
 
@@ -48,7 +48,7 @@ pub(crate) fn write_header_body(w: &mut dyn SafeWrite, body: &HeaderBody) -> Res
 pub(crate) fn read_header_body(
     r: &mut dyn SafeRead,
     max_edks: Option<usize>,
-    mpl: &aws_mpl_rs::Client,
+    mpl: &aws_mpl_legacy::Client,
     raw: &mut dyn SafeWrite,
 ) -> Result<HeaderBody, Error> {
     let version = read_msg_format_version(r, raw)?;
@@ -80,11 +80,11 @@ pub(crate) fn read_header_body(
 }
 
 pub(crate) const fn header_version_supports_commitment(
-    suite: &aws_mpl_rs::types::AlgorithmSuiteInfo,
+    suite: &aws_mpl_legacy::types::AlgorithmSuiteInfo,
     body: &HeaderBody,
 ) -> bool {
     match (suite.commitment.as_ref().unwrap(), body) {
-        (aws_mpl_rs::types::DerivationAlgorithm::Hkdf(header), HeaderBody::V2Body(body)) => {
+        (aws_mpl_legacy::types::DerivationAlgorithm::Hkdf(header), HeaderBody::V2Body(body)) => {
             body.suite_data.len() == header.output_key_length.unwrap() as usize
         }
         (_, HeaderBody::V1Body(_)) => true,

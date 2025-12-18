@@ -1,14 +1,13 @@
 use super::do_decrypt::trim_filename;
 use super::do_decrypt::{get_cmm, make_kms_map};
 use crate::test_vectors::types::*;
-use crate::{EncryptInputBuilder, encrypt};
+use crate::{EncryptInput, encrypt, mpl};
 use anyhow::Result;
 use aws_mpl_primitives::generate_random_bytes;
-use aws_mpl_rs::client::Client as mpl_client;
-use aws_mpl_rs::types::EsdkAlgorithmSuiteId;
-use aws_mpl_rs::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef as CmmRef;
+use aws_mpl_legacy::types::EsdkAlgorithmSuiteId;
+use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef as CmmRef;
 use serde_json::Value as JsonValue;
-use aws_mpl_rs::types::EsdkCommitmentPolicy;
+use aws_mpl_legacy::types::EsdkCommitmentPolicy;
 
 pub(crate) fn write_file(filename: &str, data: &[u8], dir: &str) -> Result<()> {
     let filename = trim_filename(filename);
@@ -63,14 +62,14 @@ pub(crate) async fn run_encrypt_test(
     dir: &str,
 ) -> Result<JsonValue> {
     let plaintext = &plaintexts[&test.plaintext];
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .materials_manager(cmm)
-        .algorithm_suite_id(test.alg_id)
-        .encryption_context(&test.encryption_context)
-        .commitment_policy(policy(test.alg_id))
-        .build()
-        .unwrap();
+    let encrypt_input = EncryptInput {
+        plaintext,
+        materials_manager: Some(cmm),
+        algorithm_suite_id:Some(test.alg_id),
+        encryption_context : test.encryption_context.clone(),
+        commitment_policy:policy(test.alg_id),
+        ..Default::default()
+    };
 
     let encrypt_output = encrypt(&encrypt_input).await?;
 
@@ -105,8 +104,7 @@ pub(crate) async fn run_encrypt_tests(
     res: &mut TestResults,
     dir: &str,
 ) -> Result<JsonValue> {
-    let mpl_config = aws_mpl_rs::types::MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::from_conf(mpl_config)?;
+    let mpl = mpl();
     let kms = make_kms_map().await;
 
     std::fs::create_dir_all(format!("{dir}/ciphertexts"))?;

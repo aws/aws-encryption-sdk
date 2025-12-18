@@ -151,7 +151,7 @@ pub async fn main() -> Result<(), BoxError2> {
     keyring::raw_rsa_keyring_example::encrypt_and_decrypt_with_keyring(utils::TEST_EXAMPLE_DATA)
         .await?;
 
-    use aws_mpl_rs::aws_cryptography_primitives::types::EcdhCurveSpec;
+    use aws_mpl_legacy::aws_cryptography_primitives::types::EcdhCurveSpec;
 
     // If you provide the key for Raw ECDH Keyring, it MUST
     // be a key on curve P256 to run the example as is. If you want to provide a key on a

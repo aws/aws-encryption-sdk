@@ -24,9 +24,7 @@ https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-raw-aes-ke
 */
 
 use aws_esdk::*;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::AesWrappingAlg;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
+use aws_mpl_legacy::types::AesWrappingAlg;
 use rand::TryRngCore;
 
 pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), crate::BoxError> {
@@ -61,10 +59,7 @@ pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), 
     let aes_key_bytes = generate_aes_key_bytes();
 
     // 5. Create a Raw AES Keyring
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
-
-    let raw_aes_keyring = mpl
+    let raw_aes_keyring = mpl()
         .create_raw_aes_keyring()
         .key_name(key_name)
         .key_namespace(key_namespace)
@@ -76,11 +71,7 @@ pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), 
     // 6. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
 
-    let encrypt_input: EncryptInput<'_> = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(raw_aes_keyring.clone())
-        .encryption_context(&encryption_context)
-        .build()?;
+    let encrypt_input: EncryptInput<'_> = EncryptInput::with_keyring(plaintext, encryption_context, raw_aes_keyring);
     let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
@@ -93,13 +84,8 @@ pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), 
     );
 
     // 8. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .keyring(raw_aes_keyring)
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .build()?;
-
+    // Provide the encryption context that was supplied to the encrypt method
+    let decrypt_input = DecryptInput::from_encrypt(&ciphertext, &encrypt_input);
     let decryption_response = decrypt(&decrypt_input).await?;
     let decrypted_plaintext = decryption_response.plaintext;
 

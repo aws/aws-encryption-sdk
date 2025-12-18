@@ -37,7 +37,7 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
 use aws_esdk::*;
-use aws_mpl_rs::types::DiscoveryFilter;
+use aws_mpl_legacy::types::DiscoveryFilter;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
@@ -70,7 +70,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 4. Create the keyring that determines how your data keys are protected.
     //    Although this example highlights Discovery keyrings, Discovery keyrings cannot
     //    be used to encrypt, so for encryption we create a KMS keyring without discovery mode.
-    let mpl = mpl()?;
+    let mpl = mpl();
 
     let encrypt_kms_keyring = mpl
         .create_aws_kms_keyring()
@@ -81,14 +81,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 5. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
-
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(encrypt_kms_keyring)
-        .encryption_context(&encryption_context)
-        .build()?;
+    let encrypt_input =
+        EncryptInput::with_keyring(plaintext, encryption_context.clone(), encrypt_kms_keyring);
     let encryption_response = encrypt(&encrypt_input).await?;
-
     let ciphertext = encryption_response.ciphertext;
 
     // 6. Demonstrate that the ciphertext and plaintext are different.
@@ -126,13 +121,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
     //    successfully decrypted. The resulting data key is used to decrypt the
     //    ciphertext's message.
     //    If all calls to KMS fail, the decryption fails.
-    let mut decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .keyring(discovery_keyring)
-        .encryption_context(&encryption_context)
-        .build()?;
+    let mut decrypt_input =
+        DecryptInput::with_keyring(&ciphertext, encryption_context, discovery_keyring);
     let decryption_response = decrypt(&decrypt_input).await?;
-
     let decrypted_plaintext = decryption_response.plaintext;
 
     // 9. Demonstrate that the decrypted plaintext is identical to the original plaintext.

@@ -3,10 +3,10 @@
 
 use super::regional_role_client_supplier_config;
 use aws_config::Region;
-use aws_mpl_rs::com_amazonaws_kms::client::Client as kms_client;
-use aws_mpl_rs::operation::get_client::GetClientInput;
-use aws_mpl_rs::types::ClientSupplier;
-use aws_mpl_rs::types::error::Error;
+use aws_mpl_legacy::com_amazonaws_kms::client::Client as kms_client;
+use aws_mpl_legacy::operation::get_client::GetClientInput;
+use aws_mpl_legacy::types::ClientSupplier;
+use aws_mpl_legacy::types::error::Error;
 
 /*
  Example class demonstrating an implementation of a custom client supplier.

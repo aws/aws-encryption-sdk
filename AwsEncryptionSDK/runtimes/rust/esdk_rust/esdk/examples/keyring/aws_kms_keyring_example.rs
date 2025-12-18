@@ -22,22 +22,20 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
 use aws_esdk::*;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
     kms_key_id: &str,
 ) -> Result<(), crate::BoxError> {
-    // 2. Create a KMS client.
+    // 1. Create a KMS client.
     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
     let kms_client = aws_sdk_kms::Client::new(&sdk_config);
 
-    // 3. Create encryption context.
+    // 2. Create encryption context.
     // Remember that your encryption context is NOT SECRET.
     // For more information, see
     // https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#encryption-context
-    let encryption_context = EncryptionContext::from([
+    let context = EncryptionContext::from([
         ("encryption".to_string(), "context".to_string()),
         ("is not".to_string(), "secret".to_string()),
         ("but adds".to_string(), "useful metadata".to_string()),
@@ -51,51 +49,36 @@ pub async fn encrypt_and_decrypt_with_keyring(
         ),
     ]);
 
-    // 4. Create a KMS keyring
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
-
-    let kms_keyring = mpl
+    // 3. Create a KMS keyring
+    let kms_keyring = mpl()
         .create_aws_kms_keyring()
         .kms_key_id(kms_key_id)
         .kms_client(kms_client)
         .send()
         .await?;
 
-    // 5. Encrypt the data with the encryption_context
+    // 4. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
-
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(kms_keyring.clone())
-        .encryption_context(&encryption_context)
-        .build()?;
+    let encrypt_input = EncryptInput::with_keyring(plaintext, context, kms_keyring);
     let encryption_response = encrypt(&encrypt_input).await?;
-
     let ciphertext = encryption_response.ciphertext;
 
-    // 6. Demonstrate that the ciphertext and plaintext are different.
+    // 5. Demonstrate that the ciphertext and plaintext are different.
     // (This is an example for demonstration; you do not need to do this in your own code.)
     assert_ne!(
         ciphertext, plaintext,
         "Ciphertext and plaintext data are the same. Invalid encryption"
     );
 
-    // 7. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .keyring(kms_keyring)
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .build()?;
+    // 6. Decrypt your encrypted data using the same keyring you used on encrypt.
+    // Provide the encryption context that was supplied to the encrypt method
+    let decrypt_input = DecryptInput::from_encrypt(&ciphertext, &encrypt_input);
     let decryption_response = decrypt(&decrypt_input).await?;
 
-    let decrypted_plaintext = decryption_response.plaintext;
-
-    // 8. Demonstrate that the decrypted plaintext is identical to the original plaintext.
+    // 7. Demonstrate that the decrypted plaintext is identical to the original plaintext.
     // (This is an example for demonstration; you do not need to do this in your own code.)
     assert_eq!(
-        decrypted_plaintext, plaintext,
+        decryption_response.plaintext, plaintext,
         "Decrypted plaintext should be identical to the original plaintext. Invalid decryption"
     );
 

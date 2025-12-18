@@ -106,7 +106,7 @@ pub(crate) fn read_v1_reserved_bytes(
 
 pub(crate) fn read_v1_header_iv_length(
     r: &mut dyn SafeRead,
-    suite: &aws_mpl_rs::types::AlgorithmSuiteInfo,
+    suite: &aws_mpl_legacy::types::AlgorithmSuiteInfo,
     raw: &mut dyn SafeWrite,
 ) -> Result<u8, Error> {
     let raw = read_u8(r, raw)?;
@@ -120,7 +120,7 @@ pub(crate) fn read_v1_header_iv_length(
 pub(crate) fn read_v1_header_body(
     r: &mut dyn SafeRead,
     max_edks: Option<usize>,
-    mpl: &aws_mpl_rs::Client,
+    mpl: &aws_mpl_legacy::Client,
     raw: &mut dyn SafeWrite,
 ) -> Result<V1HeaderBody, Error> {
     let message_type = read_msg_type(r, raw)?;

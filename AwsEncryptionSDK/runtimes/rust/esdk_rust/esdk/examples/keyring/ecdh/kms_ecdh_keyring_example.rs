@@ -46,11 +46,9 @@ use crate::example_utils::utils::EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_SENDER;
 use crate::example_utils::utils::exists;
 use crate::example_utils::utils::write_kms_ecdh_ecc_public_key;
 use aws_esdk::*;
-use aws_mpl_rs::aws_cryptography_primitives::types::EcdhCurveSpec;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::KmsEcdhStaticConfigurations;
-use aws_mpl_rs::types::KmsPrivateKeyToStaticPublicKeyInput;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
+use aws_mpl_legacy::aws_cryptography_primitives::types::EcdhCurveSpec;
+use aws_mpl_legacy::types::KmsEcdhStaticConfigurations;
+use aws_mpl_legacy::types::KmsPrivateKeyToStaticPublicKeyInput;
 use pem::parse;
 use std::path::Path;
 
@@ -131,9 +129,6 @@ pub async fn encrypt_and_decrypt_with_keyring(
     );
 
     // 8. Create the KMS ECDH keyring.
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
-
     // Create a KMS ECDH keyring.
     // This keyring uses the KmsPrivateKeyToStaticPublicKey configuration. This configuration calls for both of
     // the keys to be on the same curve (P256, P384, P521).
@@ -151,7 +146,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     //               key for the key passed into kmsKeyId in DER format
     //  - recipientPublicKey: A ByteBuffer of a UTF-8 encoded public
     //               key for the key passed into kmsKeyId in DER format
-    let kms_ecdh_keyring = mpl
+    let kms_ecdh_keyring = mpl()
         .create_aws_kms_ecdh_keyring()
         .kms_client(kms_client)
         .curve_spec(ecdh_curve_spec)
@@ -161,14 +156,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 9. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
-
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(kms_ecdh_keyring.clone())
-        .encryption_context(&encryption_context)
-        .build()?;
+    let encrypt_input =
+        EncryptInput::with_keyring(plaintext, encryption_context, kms_ecdh_keyring);
     let encryption_response = encrypt(&encrypt_input).await?;
-
     let ciphertext = encryption_response.ciphertext;
 
     // 10. Demonstrate that the ciphertext and plaintext are different.
@@ -179,12 +169,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     );
 
     // 11. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .keyring(kms_ecdh_keyring)
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .build()?;
+    // Provide the encryption context that was supplied to the encrypt method
+    let decrypt_input = DecryptInput::from_encrypt(&ciphertext, &encrypt_input);
     let decryption_response = decrypt(&decrypt_input).await?;
     let decrypted_plaintext = decryption_response.plaintext;
 

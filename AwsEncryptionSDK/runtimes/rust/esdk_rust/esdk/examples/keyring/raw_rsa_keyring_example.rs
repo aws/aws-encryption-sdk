@@ -48,9 +48,7 @@ https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-raw-rsa-ke
 */
 
 use aws_esdk::*;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::PaddingScheme;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
+use aws_mpl_legacy::types::PaddingScheme;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
@@ -64,7 +62,7 @@ pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), 
     // Remember that your encryption context is NOT SECRET.
     // For more information, see
     // https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/concepts.html#encryption-context
-    let encryption_context = EncryptionContext::from([
+    let context = EncryptionContext::from([
         ("encryption".to_string(), "context".to_string()),
         ("is not".to_string(), "secret".to_string()),
         ("but adds".to_string(), "useful metadata".to_string()),
@@ -106,10 +104,7 @@ pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), 
     let key_name: &str = "my-rsa-key-name";
 
     // 6. Create the Raw RSA keyring.
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
-
-    let raw_rsa_keyring = mpl
+    let raw_rsa_keyring = mpl()
         .create_raw_rsa_keyring()
         .key_name(key_name)
         .key_namespace(key_namespace)
@@ -119,14 +114,10 @@ pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), 
         .send()
         .await?;
 
-    // 7. Encrypt the data with the encryption_context
+    // 7. Encrypt the data with the context
     let plaintext = example_data.as_bytes();
 
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(raw_rsa_keyring.clone())
-        .encryption_context(&encryption_context)
-        .build()?;
+    let encrypt_input = EncryptInput::with_keyring(plaintext, context.clone(), raw_rsa_keyring.clone());
     let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
@@ -139,12 +130,8 @@ pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), 
     );
 
     // 9. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .keyring(raw_rsa_keyring)
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .build()?;
+    // Provide the encryption context that was supplied to the encrypt method
+    let decrypt_input = DecryptInput::with_keyring(&ciphertext, context, raw_rsa_keyring);
     let decryption_response = decrypt(&decrypt_input).await?;
     let decrypted_plaintext = decryption_response.plaintext;
 

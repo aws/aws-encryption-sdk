@@ -42,9 +42,7 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
 use aws_esdk::*;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::AesWrappingAlg;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
+use aws_mpl_legacy::types::AesWrappingAlg;
 use rand::TryRngCore;
 
 pub async fn encrypt_and_decrypt_with_keyring(
@@ -74,8 +72,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     ]);
 
     // 4. Create a KMS keyring
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
+    let mpl = mpl();
 
     let kms_keyring = mpl
         .create_aws_kms_keyring()
@@ -119,14 +116,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 7. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
-
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(multi_keyring.clone())
-        .encryption_context(&encryption_context)
-        .build()?;
+    let encrypt_input = EncryptInput::with_keyring(plaintext, encryption_context, multi_keyring);
     let encryption_response = encrypt(&encrypt_input).await?;
-
     let ciphertext = encryption_response.ciphertext;
 
     // 8. Demonstrate that the ciphertext and plaintext are different.
@@ -137,14 +128,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
     );
 
     // 9a. Decrypt your encrypted data using the same multi_keyring you used on encrypt.
-    let mut decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .keyring(multi_keyring)
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .build()?;
+    // Provide the encryption context that was supplied to the encrypt method
+    let mut decrypt_input = DecryptInput::from_encrypt(&ciphertext, &encrypt_input);
     let decryption_response_multi_keyring = decrypt(&decrypt_input).await?;
-
     let decrypted_plaintext_multi_keyring = decryption_response_multi_keyring.plaintext;
 
     // 9b. Demonstrate that the decrypted plaintext is identical to the original plaintext.

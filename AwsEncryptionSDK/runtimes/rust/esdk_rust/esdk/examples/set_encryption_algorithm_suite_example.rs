@@ -40,10 +40,8 @@ https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-raw-aes-ke
 */
 
 use aws_esdk::*;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::AesWrappingAlg;
-use aws_mpl_rs::types::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
+use aws_mpl_legacy::types::AesWrappingAlg;
+use aws_mpl_legacy::types::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey;
 use rand::TryRngCore;
 
 pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), crate::BoxError> {
@@ -78,11 +76,8 @@ pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), 
     let aes_key_bytes = generate_aes_key_bytes();
 
     // 5. Create a Raw AES Keyring
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
-
     // The wrapping algorithm here is NOT the algorithm suite we set in this example.
-    let raw_aes_keyring = mpl
+    let raw_aes_keyring = mpl()
         .create_raw_aes_keyring()
         .key_name(key_name)
         .key_namespace(key_namespace)
@@ -96,12 +91,9 @@ pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), 
 
     // This is the important step in this example where we specify the algorithm suite
     // you want to use for encrypting your data
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(raw_aes_keyring.clone())
-        .encryption_context(&encryption_context)
-        .algorithm_suite_id(AlgAes256GcmHkdfSha512CommitKey)
-        .build()?;
+    let mut encrypt_input =
+        EncryptInput::with_keyring(plaintext, encryption_context, raw_aes_keyring);
+    encrypt_input.algorithm_suite_id = Some(AlgAes256GcmHkdfSha512CommitKey);
     let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
@@ -114,12 +106,8 @@ pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), 
     );
 
     // 8. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .keyring(raw_aes_keyring)
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .build()?;
+    // Provide the encryption context that was supplied to the encrypt method
+    let decrypt_input = DecryptInput::from_encrypt(&ciphertext, &encrypt_input);
     let decryption_response = decrypt(&decrypt_input).await?;
     let decrypted_plaintext = decryption_response.plaintext;
 

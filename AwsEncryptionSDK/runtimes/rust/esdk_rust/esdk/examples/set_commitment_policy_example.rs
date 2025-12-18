@@ -25,9 +25,7 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
 use aws_esdk::*;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
+use aws_mpl_legacy::types::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
@@ -56,10 +54,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     ]);
 
     // 4. Create a KMS keyring
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
-
-    let kms_keyring = mpl
+    let kms_keyring = mpl()
         .create_aws_kms_keyring()
         .kms_key_id(kms_key_id)
         .kms_client(kms_client)
@@ -79,12 +74,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384 which is a non-committing algorithm.
     let plaintext = example_data.as_bytes();
 
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(kms_keyring.clone())
-        .encryption_context(&encryption_context)
-        .commitment_policy(ForbidEncryptAllowDecrypt)
-        .build()?;
+    let mut encrypt_input = EncryptInput::with_keyring(plaintext, encryption_context, kms_keyring);
+    encrypt_input.commitment_policy = ForbidEncryptAllowDecrypt;
     let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
@@ -97,13 +88,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     );
 
     // 7. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .keyring(kms_keyring)
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .commitment_policy(ForbidEncryptAllowDecrypt)
-        .build()?;
+    let decrypt_input = DecryptInput::from_encrypt(&ciphertext, &encrypt_input);
     let decryption_response = decrypt(&decrypt_input).await?;
     let decrypted_plaintext = decryption_response.plaintext;
 

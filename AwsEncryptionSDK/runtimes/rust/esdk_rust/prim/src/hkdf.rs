@@ -8,7 +8,7 @@ pub struct Prk {
     prk : aws_lc_rs::hkdf::Prk
 }
 
-fn get_alg(alg : DigestAlg) -> aws_lc_rs::hkdf::Algorithm
+const fn get_alg(alg : DigestAlg) -> aws_lc_rs::hkdf::Algorithm
 {
     match alg {
         DigestAlg::Sha256 => aws_lc_rs::hkdf::HKDF_SHA256,
@@ -26,6 +26,7 @@ fn get_len(len : usize) -> Result<&'static aws_lc_rs::aead::Algorithm, Error>
         _ => Err(serr(format!("Invalid key length {len} passed to HKDF")))
     }
 }
+
 pub fn hkdf(alg: DigestAlg, salt: &[u8], ikm: &[u8], info: &[u8], okm: &mut [u8]) -> Result<(), Error> {
     let salt = aws_lc_rs::hkdf::Salt::new(get_alg(alg), salt);
     let prk = salt.extract(ikm);

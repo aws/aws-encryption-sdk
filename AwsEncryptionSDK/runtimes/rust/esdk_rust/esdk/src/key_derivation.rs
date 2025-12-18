@@ -4,8 +4,8 @@
 use super::*;
 use crate::serialize::header_types::*;
 use crate::serialize::serializable_types::*;
-use aws_mpl_rs::types::AlgorithmSuiteInfo;
-use aws_mpl_rs::types::DerivationAlgorithm;
+use aws_mpl_legacy::types::AlgorithmSuiteInfo;
+use aws_mpl_legacy::types::DerivationAlgorithm;
 
 // Convenience container to hold both a data key and an optional commitment key
 // to support algorithm suites that provide commitment and those that do not
@@ -41,11 +41,11 @@ const fn valid_derivation_alg(
     }
 }
 
-const fn get_hkdf_alg(alg : aws_mpl_rs::aws_cryptography_primitives::types::DigestAlgorithm) -> aws_mpl_primitives::DigestAlg {
+const fn get_hkdf_alg(alg : aws_mpl_legacy::aws_cryptography_primitives::types::DigestAlgorithm) -> aws_mpl_primitives::DigestAlg {
     match alg {
-        aws_mpl_rs::aws_cryptography_primitives::types::DigestAlgorithm::Sha256 => aws_mpl_primitives::DigestAlg::Sha256,
-        aws_mpl_rs::aws_cryptography_primitives::types::DigestAlgorithm::Sha384 => aws_mpl_primitives::DigestAlg::Sha384,
-        aws_mpl_rs::aws_cryptography_primitives::types::DigestAlgorithm::Sha512 => aws_mpl_primitives::DigestAlg::Sha512,
+        aws_mpl_legacy::aws_cryptography_primitives::types::DigestAlgorithm::Sha256 => aws_mpl_primitives::DigestAlg::Sha256,
+        aws_mpl_legacy::aws_cryptography_primitives::types::DigestAlgorithm::Sha384 => aws_mpl_primitives::DigestAlg::Sha384,
+        aws_mpl_legacy::aws_cryptography_primitives::types::DigestAlgorithm::Sha512 => aws_mpl_primitives::DigestAlg::Sha512,
     }
 }
 

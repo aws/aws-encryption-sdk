@@ -64,14 +64,12 @@
 
 use super::create_branch_key_id::create_branch_key_id;
 use aws_esdk::*;
-use aws_mpl_rs::aws_cryptography_keyStore::client as keystore_client;
-use aws_mpl_rs::aws_cryptography_keyStore::types::KmsConfiguration;
-use aws_mpl_rs::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::CacheType;
-use aws_mpl_rs::types::DefaultCache;
-use aws_mpl_rs::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
+use aws_mpl_legacy::aws_cryptography_keyStore::client as keystore_client;
+use aws_mpl_legacy::aws_cryptography_keyStore::types::KmsConfiguration;
+use aws_mpl_legacy::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig;
+use aws_mpl_legacy::types::CacheType;
+use aws_mpl_legacy::types::DefaultCache;
+use aws_mpl_legacy::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
@@ -83,8 +81,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // using the Material Providers Library
     //    This CMC takes in:
     //     - CacheType
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
+    let mpl = mpl();
 
     let cache: CacheType = CacheType::Default(DefaultCache::builder().entry_capacity(100).build()?);
 
@@ -175,14 +172,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 7. Encrypt the data for encryption_context using keyring1
     let plaintext = example_data.as_bytes();
-
-    let mut encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(keyring1.clone())
-        .encryption_context(&encryption_context)
-        .build()?;
+    let mut encrypt_input =
+        EncryptInput::with_keyring(plaintext, encryption_context.clone(), keyring1.clone());
     let encryption_response1 = encrypt(&encrypt_input).await?;
-
     let ciphertext1 = encryption_response1.ciphertext;
 
     // 8. Demonstrate that the ciphertexts and plaintext are different.
@@ -193,12 +185,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     );
 
     // 9. Decrypt your encrypted data using the same keyring HK1 you used on encrypt.
-    let mut decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext1)
-        .keyring(keyring1)
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .build()?;
+    // Provide the encryption context that was supplied to the encrypt method
+    let mut decrypt_input = DecryptInput::with_keyring(&ciphertext1, encryption_context, keyring1);
     let decryption_response1 = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext1 = decryption_response1.plaintext;

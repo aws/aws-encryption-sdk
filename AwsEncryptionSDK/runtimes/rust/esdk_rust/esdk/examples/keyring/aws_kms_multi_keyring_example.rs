@@ -43,8 +43,6 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 
 use aws_config::Region;
 use aws_esdk::*;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
@@ -73,8 +71,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 3. Create an AwsKmsMultiKeyring that protects your data under two different KMS Keys.
     // Either KMS Key individually is capable of decrypting data encrypted under this Multi Keyring.
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
+    let mpl = mpl();
 
     let kms_multi_keyring = mpl
         .create_aws_kms_multi_keyring()
@@ -85,14 +82,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 4. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
-
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(kms_multi_keyring.clone())
-        .encryption_context(&encryption_context)
-        .build()?;
+    let encrypt_input =
+        EncryptInput::with_keyring(plaintext, encryption_context, kms_multi_keyring);
     let encryption_response = encrypt(&encrypt_input).await?;
-
     let ciphertext = encryption_response.ciphertext;
 
     // 5. Demonstrate that the ciphertext and plaintext are different.
@@ -103,13 +95,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     );
 
     // 6a. Decrypt your encrypted data using the same multi_keyring you used on encrypt.
-    let mut decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .keyring(kms_multi_keyring)
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .build()?;
-
+    let mut decrypt_input = DecryptInput::from_encrypt(&ciphertext, &encrypt_input);
     let decryption_response_multi_keyring = decrypt(&decrypt_input).await?;
     let decrypted_plaintext_multi_keyring = decryption_response_multi_keyring.plaintext;
 
@@ -144,8 +130,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 7c. Decrypt your encrypted data using the default_region_kms_keyring.
     decrypt_input.keyring = Some(default_region_kms_keyring);
-    let decryption_response_default_region_kms_keyring =
-        decrypt(&decrypt_input).await?;
+    let decryption_response_default_region_kms_keyring = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext_default_region_kms_keyring =
         decryption_response_default_region_kms_keyring.plaintext;

@@ -1,5 +1,5 @@
 use crate::types::*;
-use aws_mpl_rs::types::EsdkAlgorithmSuiteId;
+use aws_mpl_legacy::types::EsdkAlgorithmSuiteId;
 use derivative::Derivative;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
@@ -74,11 +74,11 @@ pub(crate) struct KeyDescription {
     pub(crate) padding_algorithm: String,
     pub(crate) padding_hash: String,
     pub(crate) default_mrk_region: String,
-    pub(crate) child_keyrings: Vec<KeyDescription>,
+    pub(crate) child_keyrings: Vec<Self>,
     pub(crate) discovery_filter: DiscoveryFilter,
     pub(crate) required_encryption_context_keys: RequiredKeys,
-    pub(crate) generator: Vec<KeyDescription>,
-    pub(crate) underlying: Vec<KeyDescription>,
+    pub(crate) generator: Vec<Self>,
+    pub(crate) underlying: Vec<Self>,
 }
 
 #[derive(Debug, Derivative, Clone)]

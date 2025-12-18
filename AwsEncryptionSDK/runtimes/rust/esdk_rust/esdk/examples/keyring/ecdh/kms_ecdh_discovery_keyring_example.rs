@@ -30,12 +30,10 @@ https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-kms-ecdh-k
 use crate::example_utils::utils::TEST_KMS_ECDH_KEY_ID_P256_SENDER;
 use crate::example_utils::utils::generate_kms_ecc_public_key;
 use aws_esdk::*;
-use aws_mpl_rs::aws_cryptography_primitives::types::EcdhCurveSpec;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::KmsEcdhStaticConfigurations;
-use aws_mpl_rs::types::KmsPrivateKeyToStaticPublicKeyInput;
-use aws_mpl_rs::types::KmsPublicKeyDiscoveryInput;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
+use aws_mpl_legacy::aws_cryptography_primitives::types::EcdhCurveSpec;
+use aws_mpl_legacy::types::KmsEcdhStaticConfigurations;
+use aws_mpl_legacy::types::KmsPrivateKeyToStaticPublicKeyInput;
+use aws_mpl_legacy::types::KmsPublicKeyDiscoveryInput;
 
 pub async fn decrypt_with_keyring(
     example_data: &str,
@@ -75,9 +73,6 @@ pub async fn decrypt_with_keyring(
         );
 
     // 5. Create the KMS ECDH keyring.
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
-
     // Create a KMS ECDH Discovery keyring.
     // This keyring uses the KmsPublicKeyDiscovery configuration.
     // On encrypt, the keyring will fail as it is not allowed to encrypt data under this configuration.
@@ -89,7 +84,7 @@ pub async fn decrypt_with_keyring(
     //  - kmsClient
     //  - recipientKmsIdentifier: Must be an ARN representing a KMS ECC key meant for KeyAgreement
     //  - curveSpec: The curve name where the public keys lie
-    let kms_ecdh_discovery_keyring = mpl
+    let kms_ecdh_discovery_keyring = mpl()
         .create_aws_kms_ecdh_keyring()
         .kms_client(kms_client.clone())
         .curve_spec(ecdh_curve_spec)
@@ -108,7 +103,7 @@ pub async fn decrypt_with_keyring(
     // We then decrypt this ciphertext using a KMS ECDH keyring WITH discovery
     let ciphertext = get_ciphertext(
         example_data,
-        &encryption_context,
+        encryption_context.clone(),
         ecc_recipient_key_arn,
         ecdh_curve_spec,
         kms_client,
@@ -116,12 +111,9 @@ pub async fn decrypt_with_keyring(
     .await?;
 
     // 7. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .keyring(kms_ecdh_discovery_keyring)
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .build()?;
+    // Provide the encryption context that was supplied to the encrypt method
+    let decrypt_input =
+        DecryptInput::with_keyring(&ciphertext, encryption_context, kms_ecdh_discovery_keyring);
     let decryption_response = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext = decryption_response.plaintext;
@@ -140,7 +132,7 @@ pub async fn decrypt_with_keyring(
 
 async fn get_ciphertext(
     example_data: &str,
-    encryption_context: &EncryptionContext,
+    encryption_context: EncryptionContext,
     ecc_recipient_key_arn: &str,
     ecdh_curve_spec: EcdhCurveSpec,
     kms_client: aws_sdk_kms::Client,
@@ -167,10 +159,7 @@ async fn get_ciphertext(
     );
 
     // 3. Create the KMS ECDH keyring.
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
-
-    let kms_ecdh_keyring = mpl
+    let kms_ecdh_keyring = mpl()
         .create_aws_kms_ecdh_keyring()
         .kms_client(kms_client)
         .curve_spec(ecdh_curve_spec)
@@ -180,14 +169,8 @@ async fn get_ciphertext(
 
     // 4. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
-
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(kms_ecdh_keyring)
-        .encryption_context(encryption_context)
-        .build()?;
+    let encrypt_input = EncryptInput::with_keyring(plaintext, encryption_context, kms_ecdh_keyring);
     let encryption_response = encrypt(&encrypt_input).await?;
-
     let ciphertext = encryption_response.ciphertext;
 
     // 5. Demonstrate that the ciphertext and plaintext are different.

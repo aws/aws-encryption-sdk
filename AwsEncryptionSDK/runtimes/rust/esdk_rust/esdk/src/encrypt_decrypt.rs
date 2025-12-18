@@ -14,8 +14,8 @@ use crate::serialize::*;
 
 use aws_mpl_primitives::ecdsa_verify_context;
 use aws_mpl_primitives::{EcdsaSignatureAlgorithm, aes_encrypt, generate_random_bytes};
-use aws_mpl_rs::types::AlgorithmSuiteInfo;
-use aws_mpl_rs::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
+use aws_mpl_legacy::types::AlgorithmSuiteInfo;
+use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
 
 //= compliance/client-apis/encrypt.txt#2.4.6
 //= type=implication
@@ -110,22 +110,22 @@ pub(crate) fn encrypt_and_serialize(
 }
 
 pub(crate) fn get_ecdsa_alg(
-    alg: &aws_mpl_rs::types::SignatureAlgorithm,
-) -> Result<aws_mpl_rs::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm, Error> {
+    alg: &aws_mpl_legacy::types::SignatureAlgorithm,
+) -> Result<aws_mpl_legacy::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm, Error> {
     match alg {
-        aws_mpl_rs::types::SignatureAlgorithm::Ecdsa(x) => Ok(x.curve.unwrap()),
+        aws_mpl_legacy::types::SignatureAlgorithm::Ecdsa(x) => Ok(x.curve.unwrap()),
         _ => Err("UnsupportedAlgorithm".into()),
     }
 }
 
 pub(crate) const fn ecdsa_alg(
-    alg: aws_mpl_rs::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm,
+    alg: aws_mpl_legacy::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm,
 ) -> EcdsaSignatureAlgorithm {
     match alg {
-        aws_mpl_rs::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm::EcdsaP384 => {
+        aws_mpl_legacy::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm::EcdsaP384 => {
             EcdsaSignatureAlgorithm::EcdsaP384
         }
-        aws_mpl_rs::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm::EcdsaP256 => {
+        aws_mpl_legacy::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm::EcdsaP256 => {
             EcdsaSignatureAlgorithm::EcdsaP256
         }
     }
@@ -134,7 +134,7 @@ pub(crate) const fn ecdsa_alg(
 pub(crate) fn verify_signature(
     r: &mut dyn SafeRead,
     context: aws_mpl_primitives::DigestContext,
-    dec_mat: aws_mpl_rs::types::DecryptionMaterials,
+    dec_mat: aws_mpl_legacy::types::DecryptionMaterials,
     raw: &mut dyn SafeWrite,
 ) -> Result<(), Error> {
     //= compliance/client-apis/decrypt.txt#2.7
@@ -197,9 +197,9 @@ pub(crate) fn validate_encryption_context(ec: &EncryptionContext) -> Result<(), 
  * provided keyring.
  */
 pub(crate) async fn create_cmm_from_input(
-    mpl: &aws_mpl_rs::Client,
+    mpl: &aws_mpl_legacy::Client,
     input_cmm: Option<CryptographicMaterialsManagerRef>,
-    input_keyring: Option<aws_mpl_rs::types::keyring::KeyringRef>,
+    input_keyring: Option<aws_mpl_legacy::types::keyring::KeyringRef>,
 ) -> Result<CryptographicMaterialsManagerRef, Error> {
     match (input_cmm, input_keyring) {
         (Some(_cmm), Some(_keyring)) => Err("Cannot provide both a keyring and a CMM.".into()),
@@ -218,7 +218,7 @@ pub(crate) async fn create_cmm_from_input(
 
 pub(crate) fn validate_max_encrypted_data_keys(
     max_encrypted_data_keys: Option<usize>,
-    edks: &[aws_mpl_rs::types::EncryptedDataKey],
+    edks: &[aws_mpl_legacy::types::EncryptedDataKey],
 ) -> Result<(), Error> {
     if let Some(max) = max_encrypted_data_keys
         && edks.len() > max
@@ -322,7 +322,7 @@ pub(crate) fn build_header_body(
     //# If the algorithm suite has a commitment algorithm, this operation MUST
     //# include the suite data field in the header body.
     match suite.commitment.as_ref().unwrap() {
-        aws_mpl_rs::types::DerivationAlgorithm::Hkdf(h) => {
+        aws_mpl_legacy::types::DerivationAlgorithm::Hkdf(h) => {
             //= compliance/data-format/message-header.txt#2.5.2
             //= type=implication
             //# The length of the suite data field MUST be equal to
@@ -346,7 +346,7 @@ pub(crate) fn build_header_body(
                 suite_data: suite_data.unwrap(),
             }))
         }
-        aws_mpl_rs::types::DerivationAlgorithm::Identity(_i) => Err("Validation Error 2".into()),
+        aws_mpl_legacy::types::DerivationAlgorithm::Identity(_i) => Err("Validation Error 2".into()),
         _ => Ok(HeaderBody::V1Body(V1HeaderBody {
             message_type: MessageType::TypeCustomerAed,
             algorithm_suite: suite.clone(),
@@ -398,12 +398,12 @@ pub(crate) fn build_header_auth_tag(
 
 pub(crate) async fn get_encryption_materials(
     cmm: CryptographicMaterialsManagerRef,
-    algorithm_suite_id: Option<aws_mpl_rs::types::AlgorithmSuiteId>,
+    algorithm_suite_id: Option<aws_mpl_legacy::types::AlgorithmSuiteId>,
     encryption_context: EncryptionContext,
     max_plaintext_length: i64,
-    commitment_policy: aws_mpl_rs::types::EsdkCommitmentPolicy,
-    mpl: &aws_mpl_rs::Client,
-) -> Result<aws_mpl_rs::types::EncryptionMaterials, Error> {
+    commitment_policy: aws_mpl_legacy::types::EsdkCommitmentPolicy,
+    mpl: &aws_mpl_legacy::Client,
+) -> Result<aws_mpl_legacy::types::EncryptionMaterials, Error> {
     //= compliance/client-apis/encrypt.txt#2.6.1
     //# This operation MUST obtain this set of encryption
     //# materials (../framework/structures.md#encryption-materials) by
@@ -412,7 +412,7 @@ pub(crate) async fn get_encryption_materials(
     let output = cmm
         .get_encryption_materials()
         .encryption_context(encryption_context)
-        .commitment_policy(aws_mpl_rs::types::CommitmentPolicy::Esdk(commitment_policy))
+        .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(commitment_policy))
         .set_algorithm_suite_id(algorithm_suite_id)
         .max_plaintext_length(max_plaintext_length)
         .send()
@@ -436,7 +436,7 @@ pub(crate) async fn get_encryption_materials(
                 .unwrap()
                 .clone(),
         )
-        .commitment_policy(aws_mpl_rs::types::CommitmentPolicy::Esdk(commitment_policy))
+        .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(commitment_policy))
         .send()
         .await?;
 
@@ -463,12 +463,12 @@ pub(crate) async fn get_encryption_materials(
 
 pub(crate) async fn get_decryption_materials(
     cmm: CryptographicMaterialsManagerRef,
-    algorithm_suite_id: aws_mpl_rs::types::AlgorithmSuiteId,
+    algorithm_suite_id: aws_mpl_legacy::types::AlgorithmSuiteId,
     header_body: &HeaderBody,
     reproduced_encryption_context: &EncryptionContext,
-    commitment_policy: aws_mpl_rs::types::EsdkCommitmentPolicy,
-    mpl: &aws_mpl_rs::Client,
-) -> Result<aws_mpl_rs::types::DecryptionMaterials, Error> {
+    commitment_policy: aws_mpl_legacy::types::EsdkCommitmentPolicy,
+    mpl: &aws_mpl_legacy::Client,
+) -> Result<aws_mpl_legacy::types::DecryptionMaterials, Error> {
     let encryption_context = from_canonical_pairs(header_body.encryption_context().clone());
     //= compliance/client-apis/decrypt.txt#2.7.2
     //# ./framework/cmm-
@@ -481,7 +481,7 @@ pub(crate) async fn get_decryption_materials(
         //#   (../data-format/message-header.md#algorithm-suite-id) from the
         //#   message header.
         .algorithm_suite_id(algorithm_suite_id)
-        .commitment_policy(aws_mpl_rs::types::CommitmentPolicy::Esdk(commitment_policy))
+        .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(commitment_policy))
         //#*  Encrypted Data Keys: This is the parsed encrypted data keys
         //#   (../data-format/message-header#encrypted-data-keys) from the
         //#   message header.
@@ -513,7 +513,7 @@ pub(crate) async fn get_decryption_materials(
                 .unwrap()
                 .clone(),
         )
-        .commitment_policy(aws_mpl_rs::types::CommitmentPolicy::Esdk(commitment_policy))
+        .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(commitment_policy))
         .send()
         .await?;
 

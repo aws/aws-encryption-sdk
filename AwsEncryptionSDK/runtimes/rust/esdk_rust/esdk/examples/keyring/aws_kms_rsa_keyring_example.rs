@@ -19,9 +19,7 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
 use aws_esdk::*;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::EsdkAlgorithmSuiteId;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
+use aws_mpl_legacy::types::EsdkAlgorithmSuiteId;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
@@ -51,12 +49,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
     ]);
 
     // 4. Create a KMS RSA keyring
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
-
     // For more information on the allowed encryption algorithms, please see
     // https://docs.aws.amazon.com/kms/latest/developerguide/asymmetric-key-specs.html#key-spec-rsa
-    let kms_rsa_keyring = mpl
+    let kms_rsa_keyring = mpl()
         .create_aws_kms_rsa_keyring()
         .kms_key_id(kms_rsa_key_id)
         .public_key(aws_smithy_types::Blob::new(kms_rsa_public_key))
@@ -68,12 +63,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 5. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
 
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(kms_rsa_keyring.clone())
-        .encryption_context(&encryption_context)
-        .algorithm_suite_id(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey)
-        .build()?;
+    let mut encrypt_input =
+        EncryptInput::with_keyring(plaintext, encryption_context, kms_rsa_keyring);
+    encrypt_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
     let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
@@ -86,14 +78,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     );
 
     // 7. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .keyring(kms_rsa_keyring)
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .build()?;
+    let decrypt_input = DecryptInput::from_encrypt(&ciphertext, &encrypt_input);
     let decryption_response = decrypt(&decrypt_input).await?;
-
     let decrypted_plaintext = decryption_response.plaintext;
 
     // 8. Demonstrate that the decrypted plaintext is identical to the original plaintext.

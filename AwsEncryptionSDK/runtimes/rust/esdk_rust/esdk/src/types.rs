@@ -1,100 +1,106 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-#![allow(single_use_lifetimes)] // because derive_builder
+#![allow(dead_code)]
+#![allow(single_use_lifetimes)]
 
 use crate::Error;
-use aws_mpl_rs::types::EsdkCommitmentPolicy;
-use aws_mpl_rs::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
-use aws_mpl_rs::types::keyring::KeyringRef;
+use aws_mpl_legacy::types::EsdkAlgorithmSuiteId;
+use aws_mpl_legacy::types::EsdkCommitmentPolicy;
+use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
+use aws_mpl_legacy::types::keyring::KeyringRef;
 use derivative::Derivative;
-use derive_builder::Builder;
 
-use std::sync::LazyLock;
-
-static EMPTY_EC: LazyLock<EncryptionContext> = LazyLock::new(EncryptionContext::new);
-
+/// Convenience function to return a `MaterialProviders` Client.
 #[must_use]
-/// Convenience function to return a reference to an empty `EncryptionContext`.
-pub fn empty_ec() -> &'static EncryptionContext {
-    &EMPTY_EC
-}
-
-/// Convenience function to return an `MaterialProviders` Client.
-pub fn mpl() -> Result<aws_mpl_rs::Client, Error> {
-    let m = aws_mpl_rs::Client::from_conf(
-        aws_mpl_rs::types::MaterialProvidersConfig::builder().build()?,
-    )?;
-    Ok(m)
+pub fn mpl() -> aws_mpl_legacy::Client {
+    aws_mpl_legacy::Client::from_conf(
+        aws_mpl_legacy::types::MaterialProvidersConfig::builder()
+            .build()
+            .unwrap(),
+    )
+    .unwrap()
 }
 
 /// Output Stream
-pub trait SafeWrite: std::io::Write + Send + Sync {}
-impl<T: std::io::Write + Send + Sync> SafeWrite for T {}
+pub trait SafeWrite: std::io::Write + Send + Sync + std::fmt::Debug {}
+impl<T: std::io::Write + Send + Sync + std::fmt::Debug> SafeWrite for T {}
 
 /// Input Stream
-pub trait SafeRead: std::io::Read + Send + Sync {}
-impl<T: std::io::Read + Send + Sync> SafeRead for T {}
+pub trait SafeRead: std::io::Read + Send + Sync + std::fmt::Debug {}
+impl<T: std::io::Read + Send + Sync + std::fmt::Debug> SafeRead for T {}
 
 /// Key-Value pairs to associate with the encrypted data
 pub type EncryptionContext = ::std::collections::HashMap<String, String>;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Derivative)]
+#[derivative(Default)]
 #[non_exhaustive]
-/// Output for `Client::encrypt`
+/// Output for [`encrypt`](crate::encrypt).
 pub struct EncryptOutput {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
-    pub algorithm_suite_id: aws_mpl_rs::types::EsdkAlgorithmSuiteId,
+    #[derivative(Default(
+        value = "EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384"
+    ))]
+    pub algorithm_suite_id: EsdkAlgorithmSuiteId,
     /// data to be decrypted
     pub ciphertext: Vec<u8>,
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
 }
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Derivative)]
+#[derivative(Default)]
 #[non_exhaustive]
-/// Output for `Client::encrypt_stream`
+/// Output for [`encrypt_stream`](crate::encrypt_stream).
 pub struct EncryptStreamOutput {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
-    pub algorithm_suite_id: aws_mpl_rs::types::EsdkAlgorithmSuiteId,
+    #[derivative(Default(
+        value = "EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384"
+    ))]
+    pub algorithm_suite_id: EsdkAlgorithmSuiteId,
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Derivative)]
+#[derivative(Default)]
 #[non_exhaustive]
-/// Output for `Client::decrypt`
+/// Output for [decrypt](crate::decrypt).
 pub struct DecryptOutput {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
-    pub algorithm_suite_id: aws_mpl_rs::types::EsdkAlgorithmSuiteId,
+    #[derivative(Default(
+        value = "EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384"
+    ))]
+    pub algorithm_suite_id: EsdkAlgorithmSuiteId,
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
     /// decrypted data
     pub plaintext: Vec<u8>,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Derivative)]
+#[derivative(Default)]
 #[non_exhaustive]
-/// Output for `Client::decrypt_stream`
+/// Output for [`decrypt_stream`](crate::decrypt_stream).
 pub struct DecryptStreamOutput {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
-    pub algorithm_suite_id: aws_mpl_rs::types::EsdkAlgorithmSuiteId,
+    #[derivative(Default(
+        value = "EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384"
+    ))]
+    pub algorithm_suite_id: EsdkAlgorithmSuiteId,
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Default)]
 /// During Decryption, Allow or Forbid ESDK-NET v4.0.0 Behavior if the ESDK Message Header fails the Header Authentication check.
 #[non_exhaustive]
 pub enum NetV400RetryPolicy {
     /// Do not retry on failure
     ForbidRetry,
     /// Retry on failure
+    #[default]
     AllowRetry,
-}
-impl Default for NetV400RetryPolicy {
-    fn default() -> Self {
-        Self::AllowRetry
-    }
 }
 
 impl ::std::fmt::Display for NetV400RetryPolicy {
@@ -106,19 +112,15 @@ impl ::std::fmt::Display for NetV400RetryPolicy {
     }
 }
 
-// aws_esdk::material_providers::types::EsdkCommitmentPolicy
-#[derive(Debug, PartialEq, Clone, Builder, Derivative)]
+#[derive(Debug, PartialEq, Clone, Derivative)]
 #[derivative(Default)]
-#[builder(setter(into, strip_option), default)]
-#[builder(build_fn(error = "Error"))]
 #[non_exhaustive]
-/// Input for `Client` creation
+/// Input for [`encrypt`](crate::encrypt).
 pub struct EncryptInput<'a> {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
-    pub algorithm_suite_id: Option<aws_mpl_rs::types::EsdkAlgorithmSuiteId>,
+    pub algorithm_suite_id: Option<EsdkAlgorithmSuiteId>,
     /// Key-Value pairs to associate with the encrypted data
-    #[derivative(Default(value = "empty_ec()"))]
-    pub encryption_context: &'a EncryptionContext,
+    pub encryption_context: EncryptionContext,
     /// Bytes of plaintext data per frame. Default 4096.
     #[derivative(Default(value = "crate::encrypt_decrypt::DEFAULT_FRAME_LENGTH"))]
     pub frame_length: u32,
@@ -126,19 +128,51 @@ pub struct EncryptInput<'a> {
     pub keyring: Option<KeyringRef>,
     /// Exactly one of `keyring` or `materials_manager` must be set
     pub materials_manager: Option<CryptographicMaterialsManagerRef>,
-    #[builder(setter(into = false))]
     /// data to be encrypted
     pub plaintext: &'a [u8],
     /// default is no limit
     pub max_encrypted_data_keys: Option<usize>,
     /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
     #[derivative(Default(
-        value = "aws_mpl_rs::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt"
+        value = "aws_mpl_legacy::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt"
     ))]
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 
-impl EncryptInput<'_> {
+impl<'a> EncryptInput<'a> {
+    /// Create default `EncryptInput`
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+    /// Construct an `EncryptInput` with a `CryptographicMaterialsManagerRef`
+    #[must_use]
+    pub fn with_cmm(
+        plaintext: &'a [u8],
+        ec: EncryptionContext,
+        cmm: CryptographicMaterialsManagerRef,
+    ) -> Self {
+        Self {
+            plaintext,
+            encryption_context: ec,
+            materials_manager: Some(cmm),
+            ..Default::default()
+        }
+    }
+    /// Construct an `EncryptInput` with a `KeyringRef`
+    #[must_use]
+    pub fn with_keyring(
+        plaintext: &'a [u8],
+        ec: EncryptionContext,
+        keyring: KeyringRef,
+    ) -> Self {
+        Self {
+            plaintext,
+            encryption_context: ec,
+            keyring: Some(keyring),
+            ..Default::default()
+        }
+    }
     pub(crate) fn validate(&self) -> Result<(), Error> {
         if self.max_encrypted_data_keys == Some(0) {
             Err(crate::error::val_err(
@@ -160,18 +194,15 @@ impl EncryptInput<'_> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Builder, Derivative)]
+#[derive(Debug, PartialEq, Clone, Derivative)]
 #[derivative(Default)]
-#[builder(setter(into, strip_option), default)]
-#[builder(build_fn(error = "Error"))]
 #[non_exhaustive]
-/// Input for `Client::encrypt_stream`
-pub struct EncryptStreamInput<'a> {
+/// Input for [`encrypt_stream`](crate::encrypt_stream).
+pub struct EncryptStreamInput {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
-    pub algorithm_suite_id: Option<aws_mpl_rs::types::EsdkAlgorithmSuiteId>,
+    pub algorithm_suite_id: Option<EsdkAlgorithmSuiteId>,
     /// Key-Value pairs to associate with the encrypted data
-    #[derivative(Default(value = "empty_ec()"))]
-    pub encryption_context: &'a EncryptionContext,
+    pub encryption_context: EncryptionContext,
     /// Bytes of plaintext data per frame. Default 4096.
     #[derivative(Default(value = "crate::encrypt_decrypt::DEFAULT_FRAME_LENGTH"))]
     pub frame_length: u32,
@@ -186,12 +217,35 @@ pub struct EncryptStreamInput<'a> {
     pub max_encrypted_data_keys: Option<usize>,
     /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
     #[derivative(Default(
-        value = "aws_mpl_rs::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt"
+        value = "aws_mpl_legacy::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt"
     ))]
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 
-impl EncryptStreamInput<'_> {
+impl EncryptStreamInput {
+    /// Create default `EncryptStreamInput`
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+    /// Construct an `EncryptStreamInput` with a `CryptographicMaterialsManagerRef`
+    #[must_use]
+    pub fn with_cmm(ec: EncryptionContext, cmm: CryptographicMaterialsManagerRef) -> Self {
+        Self {
+            encryption_context: ec,
+            materials_manager: Some(cmm),
+            ..Default::default()
+        }
+    }
+    /// Construct an `EncryptStreamInput` with a `KeyringRef`
+    #[must_use]
+    pub fn with_keyring(ec: EncryptionContext, keyring: KeyringRef) -> Self {
+        Self {
+            encryption_context: ec,
+            keyring: Some(keyring),
+            ..Default::default()
+        }
+    }
     pub(crate) fn validate(&self) -> Result<(), Error> {
         if self.max_encrypted_data_keys == Some(0) {
             Err(crate::error::val_err(
@@ -213,19 +267,15 @@ impl EncryptStreamInput<'_> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Builder, Derivative)]
+#[derive(Debug, PartialEq, Clone, Derivative)]
 #[derivative(Default)]
-#[builder(setter(into, strip_option), default)]
-#[builder(build_fn(error = "Error"))]
 #[non_exhaustive]
-/// Input for `Client::decrypt`
+/// Input for [`decrypt`](crate::decrypt).
 pub struct DecryptInput<'a> {
-    #[builder(setter(into = false))]
     /// data to be decrypted
     pub ciphertext: &'a [u8],
     /// Key-Value pairs to associate with the encrypted data
-    #[derivative(Default(value = "empty_ec()"))]
-    pub encryption_context: &'a EncryptionContext,
+    pub encryption_context: EncryptionContext,
     /// Exactly one of `keyring` or `materials_manager` must be set
     pub keyring: Option<KeyringRef>,
     /// Exactly one of `keyring` or `materials_manager` must be set
@@ -236,21 +286,18 @@ pub struct DecryptInput<'a> {
     pub max_encrypted_data_keys: Option<usize>,
     /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
     #[derivative(Default(
-        value = "aws_mpl_rs::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt"
+        value = "aws_mpl_legacy::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt"
     ))]
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 
-#[derive(Debug, PartialEq, Clone, Builder, Derivative)]
+#[derive(Debug, PartialEq, Clone, Derivative)]
 #[derivative(Default)]
-#[builder(setter(into, strip_option), default)]
-#[builder(build_fn(error = "Error"))]
 #[non_exhaustive]
-/// Input for `Client::decrypt_stream`
-pub struct DecryptStreamInput<'a> {
+/// Input for [`decrypt_stream`](crate::decrypt_stream).
+pub struct DecryptStreamInput {
     /// Key-Value pairs to associate with the encrypted data
-    #[derivative(Default(value = "empty_ec()"))]
-    pub encryption_context: &'a EncryptionContext,
+    pub encryption_context: EncryptionContext,
     /// Exactly one of `keyring` or `materials_manager` must be set
     pub keyring: Option<KeyringRef>,
     /// Exactly one of `keyring` or `materials_manager` must be set
@@ -268,12 +315,60 @@ pub struct DecryptStreamInput<'a> {
     pub max_encrypted_data_keys: Option<usize>,
     /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
     #[derivative(Default(
-        value = "aws_mpl_rs::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt"
+        value = "aws_mpl_legacy::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt"
     ))]
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 
-impl DecryptInput<'_> {
+impl<'a> DecryptInput<'a> {
+    /// Create default `DecryptInput`
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+    /// Construct a `DecryptInput` with a `CryptographicMaterialsManagerRef`
+    #[must_use]
+    pub fn with_cmm(
+        ciphertext: &'a [u8],
+        ec: EncryptionContext,
+        cmm: CryptographicMaterialsManagerRef,
+    ) -> Self {
+        Self {
+            ciphertext,
+            encryption_context: ec,
+            materials_manager: Some(cmm),
+            ..Default::default()
+        }
+    }
+    /// Construct a `DecryptInput` with a `KeyringRef`
+    #[must_use]
+    pub fn with_keyring(
+        ciphertext: &'a [u8],
+        ec: EncryptionContext,
+        keyring: KeyringRef,
+    ) -> Self {
+        Self {
+            ciphertext,
+            encryption_context: ec,
+            keyring: Some(keyring),
+            ..Default::default()
+        }
+    }
+
+    /// Construct a `DecryptInput` from an `EncryptInput`
+    #[must_use]
+    pub fn from_encrypt(ciphertext: &'a [u8], e: &'a EncryptInput<'_>) -> Self {
+        Self {
+            ciphertext,
+            encryption_context: e.encryption_context.clone(),
+            keyring: e.keyring.clone(),
+            materials_manager: e.materials_manager.clone(),
+            commitment_policy: e.commitment_policy,
+            max_encrypted_data_keys: e.max_encrypted_data_keys,
+            ..Default::default()
+        }
+    }
+
     pub(crate) fn validate(&self) -> Result<(), Error> {
         if self.max_encrypted_data_keys == Some(0) {
             Err(crate::error::val_err(
@@ -293,7 +388,44 @@ impl DecryptInput<'_> {
     }
 }
 
-impl DecryptStreamInput<'_> {
+impl DecryptStreamInput {
+    /// Create default `DecryptStreamInput`
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+    /// Construct a `DecryptStreamInput` with a `CryptographicMaterialsManagerRef`
+    #[must_use]
+    pub fn with_cmm(ec: EncryptionContext, cmm: CryptographicMaterialsManagerRef) -> Self {
+        Self {
+            encryption_context: ec,
+            materials_manager: Some(cmm),
+            ..Default::default()
+        }
+    }
+    /// Construct a `DecryptStreamInput` with a `KeyringRef`
+    #[must_use]
+    pub fn with_keyring(ec: EncryptionContext, keyring: KeyringRef) -> Self {
+        Self {
+            encryption_context: ec,
+            keyring: Some(keyring),
+            ..Default::default()
+        }
+    }
+
+    /// Construct a `DecryptStreamInput` from an `EncryptStreamInput`
+    #[must_use]
+    pub fn from_encrypt(e: &EncryptInput<'_>) -> Self {
+        Self {
+            encryption_context: e.encryption_context.clone(),
+            keyring: e.keyring.clone(),
+            materials_manager: e.materials_manager.clone(),
+            commitment_policy: e.commitment_policy,
+            max_encrypted_data_keys: e.max_encrypted_data_keys,
+            ..Default::default()
+        }
+    }
+
     pub(crate) fn validate(&self) -> Result<(), Error> {
         if self.max_encrypted_data_keys == Some(0) {
             Err(crate::error::val_err(

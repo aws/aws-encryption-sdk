@@ -4,12 +4,12 @@ use crate::test_vectors::types::*;
 use anyhow::Result;
 use aws_config::Region;
 use crate::test_vectors::parse_keys::decode_base64;
-use crate::{DecryptInputBuilder, decrypt};
-use aws_mpl_rs::aws_cryptography_primitives::types::EcdhCurveSpec;
-use aws_mpl_rs::client::Client as mpl_client;
-use aws_mpl_rs::types::DiscoveryFilter;
-use aws_mpl_rs::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef as CmmRef;
-use aws_mpl_rs::types::keyring::KeyringRef;
+use crate::{DecryptInput, decrypt, mpl};
+use aws_mpl_legacy::aws_cryptography_primitives::types::EcdhCurveSpec;
+use aws_mpl_legacy::client::Client as mpl_client;
+use aws_mpl_legacy::types::DiscoveryFilter;
+use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef as CmmRef;
+use aws_mpl_legacy::types::keyring::KeyringRef;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 
@@ -77,12 +77,13 @@ pub(crate) async fn run_decrypt_test(
     let ciphertext = read_file(&test.ciphertext, dir)?;
     let plaintext = read_file(&test.result, dir)?;
 
-    let decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .materials_manager(cmm)
-        .encryption_context(&test.reproduced_encryption_context)
-        .commitment_policy(aws_mpl_rs::types::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt)
-        .build()?;
+    let decrypt_input = DecryptInput {
+        ciphertext :&ciphertext,
+        materials_manager: Some(cmm),
+        encryption_context: test.reproduced_encryption_context.clone(),
+        commitment_policy : aws_mpl_legacy::types::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
+        ..Default::default()
+    };
     let decrypt_output = decrypt(&decrypt_input).await?;
 
     if decrypt_output.plaintext.as_ref() != plaintext {
@@ -109,13 +110,13 @@ pub(crate) async fn get_raw_ecdh_keyring_static(
     let key = &keys[&keydesc.sender];
     let pub_key = decode_base64(&key.recipient_material_public_key)?;
     let raw_ecdh_static_configuration_input =
-        aws_mpl_rs::types::RawPrivateKeyToStaticPublicKeyInput::builder()
+        aws_mpl_legacy::types::RawPrivateKeyToStaticPublicKeyInput::builder()
             .sender_static_private_key(key.sender_material.as_bytes())
             .recipient_public_key(pub_key)
             .build()?;
 
     let raw_ecdh_static_configuration =
-        aws_mpl_rs::types::RawEcdhStaticConfigurations::RawPrivateKeyToStaticPublicKey(
+        aws_mpl_legacy::types::RawEcdhStaticConfigurations::RawPrivateKeyToStaticPublicKey(
             raw_ecdh_static_configuration_input,
         );
 
@@ -135,12 +136,12 @@ pub(crate) async fn get_raw_ecdh_keyring_ephemeral(
     let key = &keys[&keydesc.recipient];
     let pub_key = decode_base64(&key.recipient_material_public_key)?;
     let raw_ecdh_static_configuration_input =
-        aws_mpl_rs::types::EphemeralPrivateKeyToStaticPublicKeyInput::builder()
+        aws_mpl_legacy::types::EphemeralPrivateKeyToStaticPublicKeyInput::builder()
             .recipient_public_key(pub_key)
             .build()?;
 
     let raw_ecdh_static_configuration =
-        aws_mpl_rs::types::RawEcdhStaticConfigurations::EphemeralPrivateKeyToStaticPublicKey(
+        aws_mpl_legacy::types::RawEcdhStaticConfigurations::EphemeralPrivateKeyToStaticPublicKey(
             raw_ecdh_static_configuration_input,
         );
 
@@ -159,12 +160,12 @@ pub(crate) async fn get_raw_ecdh_keyring_discovery(
     mpl: &mpl_client,
 ) -> Result<KeyringRef> {
     let key = &keys[&keydesc.recipient];
-    let raw_ecdh_static_configuration_input = aws_mpl_rs::types::PublicKeyDiscoveryInput::builder()
+    let raw_ecdh_static_configuration_input = aws_mpl_legacy::types::PublicKeyDiscoveryInput::builder()
         .recipient_static_private_key(key.recipient_material.as_bytes())
         .build()?;
 
     let raw_ecdh_static_configuration =
-        aws_mpl_rs::types::RawEcdhStaticConfigurations::PublicKeyDiscovery(
+        aws_mpl_legacy::types::RawEcdhStaticConfigurations::PublicKeyDiscovery(
             raw_ecdh_static_configuration_input,
         );
 
@@ -274,11 +275,11 @@ pub(crate) async fn get_aws_kms_mrk_discovery_keyring(
     }
 }
 
-fn get_aes_alg(len: usize) -> Result<aws_mpl_rs::types::AesWrappingAlg> {
+fn get_aes_alg(len: usize) -> Result<aws_mpl_legacy::types::AesWrappingAlg> {
     match len {
-        16 => Ok(aws_mpl_rs::types::AesWrappingAlg::AlgAes128GcmIv12Tag16),
-        24 => Ok(aws_mpl_rs::types::AesWrappingAlg::AlgAes192GcmIv12Tag16),
-        32 => Ok(aws_mpl_rs::types::AesWrappingAlg::AlgAes256GcmIv12Tag16),
+        16 => Ok(aws_mpl_legacy::types::AesWrappingAlg::AlgAes128GcmIv12Tag16),
+        24 => Ok(aws_mpl_legacy::types::AesWrappingAlg::AlgAes192GcmIv12Tag16),
+        32 => Ok(aws_mpl_legacy::types::AesWrappingAlg::AlgAes256GcmIv12Tag16),
         _ => anyhow::bail!("Unknown aes key length: {len}"),
     }
 }
@@ -306,17 +307,17 @@ async fn get_raw_keyring(
             .await?;
         Ok(keyring)
     } else if is_rsa {
-        let mode: aws_mpl_rs::types::PaddingScheme;
+        let mode: aws_mpl_legacy::types::PaddingScheme;
         if hash == "sha1" && p_alg == "pkcs1" {
-            mode = aws_mpl_rs::types::PaddingScheme::Pkcs1;
+            mode = aws_mpl_legacy::types::PaddingScheme::Pkcs1;
         } else if hash == "sha1" && p_alg == "oaep-mgf1" {
-            mode = aws_mpl_rs::types::PaddingScheme::OaepSha1Mgf1;
+            mode = aws_mpl_legacy::types::PaddingScheme::OaepSha1Mgf1;
         } else if hash == "sha256" && p_alg == "oaep-mgf1" {
-            mode = aws_mpl_rs::types::PaddingScheme::OaepSha256Mgf1;
+            mode = aws_mpl_legacy::types::PaddingScheme::OaepSha256Mgf1;
         } else if hash == "sha384" && p_alg == "oaep-mgf1" {
-            mode = aws_mpl_rs::types::PaddingScheme::OaepSha384Mgf1;
+            mode = aws_mpl_legacy::types::PaddingScheme::OaepSha384Mgf1;
         } else if hash == "sha512" && p_alg == "oaep-mgf1" {
-            mode = aws_mpl_rs::types::PaddingScheme::OaepSha512Mgf1;
+            mode = aws_mpl_legacy::types::PaddingScheme::OaepSha512Mgf1;
         } else {
             anyhow::bail!("Unknown rsa padding combo : {hash} {p_alg}");
         }
@@ -426,8 +427,7 @@ pub(crate) async fn run_decrypt_tests(
     keys: &KeyMap,
     dir: &str,
 ) -> Result<TestResults> {
-    let mpl_config = aws_mpl_rs::types::MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::from_conf(mpl_config)?;
+    let mpl = mpl();
     let kms = make_kms_map().await;
     let mut res = TestResults::default();
     let mut num_non = 0;

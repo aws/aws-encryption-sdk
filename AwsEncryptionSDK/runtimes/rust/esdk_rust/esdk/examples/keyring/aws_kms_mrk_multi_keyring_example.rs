@@ -33,8 +33,6 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 
 use aws_config::Region;
 use aws_esdk::*;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
@@ -64,8 +62,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 3. Create an AwsKmsMrkMultiKeyring that protects your data under two different KMS Keys.
     // The Keys can either be regular KMS keys or MRKs.
     // Either KMS Key individually is capable of decrypting data encrypted under this keyring.
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
+    let mpl = mpl();
 
     let kms_mrk_multi_keyring = mpl
         .create_aws_kms_mrk_multi_keyring()
@@ -76,14 +73,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 4. Encrypt the data with the encryption_context using the kms_mrk_multi_keyring.
     let plaintext = example_data.as_bytes();
-
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(kms_mrk_multi_keyring.clone())
-        .encryption_context(&encryption_context)
-        .build()?;
+    let encrypt_input =
+        EncryptInput::with_keyring(plaintext, encryption_context, kms_mrk_multi_keyring);
     let encryption_response = encrypt(&encrypt_input).await?;
-
     let ciphertext = encryption_response.ciphertext;
 
     // 5. Demonstrate that the ciphertext and plaintext are different.
@@ -96,12 +88,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 6. Decrypt your encrypted data using the same AwsKmsMrkMultiKeyring you used on encrypt.
     // It will decrypt the data using the generator key (in this case, the MRK), since that is
     // the first available KMS key on the keyring that is capable of decrypting the data.
-    let mut decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .keyring(kms_mrk_multi_keyring)
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .build()?;
+    let mut decrypt_input = DecryptInput::from_encrypt(&ciphertext, &encrypt_input);
     let decryption_response = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext = decryption_response.plaintext;

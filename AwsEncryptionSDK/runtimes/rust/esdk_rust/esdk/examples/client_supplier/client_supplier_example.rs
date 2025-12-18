@@ -17,10 +17,8 @@
 
 use super::regional_role_client_supplier::RegionalRoleClientSupplier;
 use aws_esdk::*;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::DiscoveryFilter;
-use aws_mpl_rs::types::error::Error::AwsCryptographicMaterialProvidersException;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
+use aws_mpl_legacy::types::DiscoveryFilter;
+use aws_mpl_legacy::types::error::Error::AwsCryptographicMaterialProvidersException;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
@@ -53,8 +51,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     //    2) the key must be an MRK with a replica defined
     //    in a region in the regions list, and the client
     //    must have the correct permissions to access the replica.
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
+    let mpl = mpl();
 
     // Create the multi-keyring using our custom client supplier
     // defined in the RegionalRoleClientSupplier class in this directory.
@@ -69,14 +66,12 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 4. Encrypt the data with the encryption_context using the encrypt_keyring.
     let plaintext = example_data.as_bytes();
-
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(mrk_keyring_with_client_supplier)
-        .encryption_context(&encryption_context)
-        .build()?;
+    let encrypt_input = EncryptInput::with_keyring(
+        plaintext,
+        encryption_context.clone(),
+        mrk_keyring_with_client_supplier,
+    );
     let encryption_response = encrypt(&encrypt_input).await?;
-
     let ciphertext = encryption_response.ciphertext;
 
     // 5. Demonstrate that the ciphertext and plaintext are different.
@@ -119,14 +114,13 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // All of this is done serially, until a success occurs or all keyrings have failed
     // all (filtered) EDKs. KMS MRK Discovery Keyrings will attempt to decrypt
     // Multi Region Keys (MRKs) and regular KMS Keys.
-    let decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .keyring(mrk_discovery_client_supplier_keyring)
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .build()?;
+    // Provide the encryption context that was supplied to the encrypt method
+    let decrypt_input = DecryptInput::with_keyring(
+        &ciphertext,
+        encryption_context,
+        mrk_discovery_client_supplier_keyring,
+    );
     let decryption_response = decrypt(&decrypt_input).await?;
-
     let decrypted_plaintext = decryption_response.plaintext;
 
     // 8. Demonstrate that the decrypted plaintext is identical to the original plaintext.

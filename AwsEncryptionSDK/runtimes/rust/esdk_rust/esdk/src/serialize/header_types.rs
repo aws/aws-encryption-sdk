@@ -7,7 +7,7 @@ use super::*;
 use crate::types::{SafeRead, SafeWrite};
 
 pub(crate) type MessageId = Vec<u8>;
-pub(crate) type ESDKAlgorithmSuite = aws_mpl_rs::types::AlgorithmSuiteInfo;
+pub(crate) type ESDKAlgorithmSuite = aws_mpl_legacy::types::AlgorithmSuiteInfo;
 
 #[derive(Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Debug, Hash)]
 pub(crate) enum MessageFormatVersion {

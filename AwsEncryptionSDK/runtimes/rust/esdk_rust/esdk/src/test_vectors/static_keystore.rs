@@ -1,21 +1,21 @@
 #![allow(unused_variables)]
 
 use crate::test_vectors::types::*;
-use aws_mpl_rs::implementation_from_dafny::_AwsCryptographyKeyStoreOperations_Compile::*;
+use aws_mpl_legacy::implementation_from_dafny::_AwsCryptographyKeyStoreOperations_Compile::*;
 use std::sync::Arc;
-use aws_mpl_rs::aes_gcm::AESEncryption::DynAny;
-use aws_mpl_rs::aes_gcm::AESEncryption::UpcastObject;
-use aws_mpl_rs::implementation_from_dafny::_AwsCryptographyKeyStoreOperations_Compile::Error;
-use aws_mpl_rs::implementation_from_dafny::AESEncryption::Result;
+use aws_mpl_legacy::aes_gcm::AESEncryption::DynAny;
+use aws_mpl_legacy::aes_gcm::AESEncryption::UpcastObject;
+use aws_mpl_legacy::implementation_from_dafny::_AwsCryptographyKeyStoreOperations_Compile::Error;
+use aws_mpl_legacy::implementation_from_dafny::AESEncryption::Result;
 
 struct StaticKeyStore {
     key: Key,
 }
 impl UpcastObject<DynAny> for StaticKeyStore {
-    aws_mpl_rs::implementation_from_dafny::_AwsKmsDiscoveryKeyring_Compile::UpcastObjectFn!(DynAny);
+    aws_mpl_legacy::implementation_from_dafny::_AwsKmsDiscoveryKeyring_Compile::UpcastObjectFn!(DynAny);
 }
 
-impl aws_mpl_rs::implementation_from_dafny::software::amazon::cryptography::keystore::internaldafny::types::IKeyStoreClient for StaticKeyStore {
+impl aws_mpl_legacy::implementation_from_dafny::software::amazon::cryptography::keystore::internaldafny::types::IKeyStoreClient for StaticKeyStore {
  fn GetKeyStoreInfo(
         &self,
     ) -> Arc<Result<Arc<GetKeyStoreInfoOutput>, Arc<Error>>>

@@ -9,7 +9,6 @@ use aws_lc_rs::signature::EcdsaVerificationAlgorithm;
 use aws_lc_rs::signature::UnparsedPublicKey;
 
 #[derive(Clone)]
-#[allow(missing_debug_implementations)] // because aws_lc_rs::digest::Context has no Debug
 pub struct DigestContext {
     context: aws_lc_rs::digest::Context,
 }
@@ -45,35 +44,36 @@ impl DigestContext {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, Hash)]
 #[non_exhaustive]
 pub enum EcdsaSignatureAlgorithm {
     EcdsaP384,
+    #[default]
     EcdsaP256,
 }
 
-fn get_digest_alg(x: DigestAlg) -> &'static aws_lc_rs::digest::Algorithm {
+const fn get_digest_alg(x: DigestAlg) -> &'static aws_lc_rs::digest::Algorithm {
     match x {
         DigestAlg::Sha256 => &aws_lc_rs::digest::SHA256,
         DigestAlg::Sha384 => &aws_lc_rs::digest::SHA384,
         DigestAlg::Sha512 => &aws_lc_rs::digest::SHA512,
     }
 }
-fn get_digest_alg_from_ecdsa(x: EcdsaSignatureAlgorithm) -> &'static aws_lc_rs::digest::Algorithm {
+const fn get_digest_alg_from_ecdsa(x: EcdsaSignatureAlgorithm) -> &'static aws_lc_rs::digest::Algorithm {
     match x {
         EcdsaSignatureAlgorithm::EcdsaP256 => &aws_lc_rs::digest::SHA256,
         EcdsaSignatureAlgorithm::EcdsaP384 => &aws_lc_rs::digest::SHA384,
     }
 }
 
-fn get_sign_alg(x: EcdsaSignatureAlgorithm) -> &'static EcdsaSigningAlgorithm {
+const fn get_sign_alg(x: EcdsaSignatureAlgorithm) -> &'static EcdsaSigningAlgorithm {
     match x {
         EcdsaSignatureAlgorithm::EcdsaP256 => &aws_lc_rs::signature::ECDSA_P256_SHA256_ASN1_SIGNING,
         EcdsaSignatureAlgorithm::EcdsaP384 => &aws_lc_rs::signature::ECDSA_P384_SHA384_ASN1_SIGNING,
     }
 }
 
-fn get_ver_alg(x: EcdsaSignatureAlgorithm) -> &'static EcdsaVerificationAlgorithm {
+const fn get_ver_alg(x: EcdsaSignatureAlgorithm) -> &'static EcdsaVerificationAlgorithm {
     match x {
         EcdsaSignatureAlgorithm::EcdsaP256 => &aws_lc_rs::signature::ECDSA_P256_SHA256_ASN1,
         EcdsaSignatureAlgorithm::EcdsaP384 => &aws_lc_rs::signature::ECDSA_P384_SHA384_ASN1,

@@ -40,11 +40,9 @@
 use super::create_branch_key_id::create_branch_key_id;
 use super::example_branch_key_id_supplier::ExampleBranchKeyIdSupplier;
 use aws_esdk::*;
-use aws_mpl_rs::aws_cryptography_keyStore::client as keystore_client;
-use aws_mpl_rs::aws_cryptography_keyStore::types::KmsConfiguration;
-use aws_mpl_rs::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
+use aws_mpl_legacy::aws_cryptography_keyStore::client as keystore_client;
+use aws_mpl_legacy::aws_cryptography_keyStore::types::KmsConfiguration;
+use aws_mpl_legacy::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
@@ -91,9 +89,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         ExampleBranchKeyIdSupplier::new(&branch_key_id_a, &branch_key_id_b);
 
     // 6. Create the Hierarchical Keyring.
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
-
+    let mpl = mpl();
     let hierarchical_keyring = mpl
         .create_aws_kms_hierarchical_keyring()
         .key_store(key_store.clone())
@@ -144,16 +140,16 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 8. Encrypt the data with encryption_contextA & encryption_contextB
     let plaintext = example_data.as_bytes();
 
-    let mut encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(hierarchical_keyring.clone())
-        .encryption_context(&encryption_context_a)
-        .build()?;
+    let mut encrypt_input = EncryptInput::with_keyring(
+        plaintext,
+        encryption_context_a.clone(),
+        hierarchical_keyring.clone(),
+    );
     let encryption_response_a = encrypt(&encrypt_input).await?;
 
     let ciphertext_a = encryption_response_a.ciphertext;
 
-    encrypt_input.encryption_context = &encryption_context_b;
+    encrypt_input.encryption_context = encryption_context_b.clone();
     let encryption_response_b = encrypt(&encrypt_input).await?;
 
     let ciphertext_b = encryption_response_b.ciphertext;
@@ -194,12 +190,12 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // Keyring with tenant B's branch key cannot decrypt data encrypted with tenant A's branch key
     // This will fail and raise a AwsCryptographicMaterialProvidersError,
     // which we swallow ONLY for demonstration purposes.
-    let mut decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext_a)
-        .keyring(hierarchical_keyring_b.clone())
+    let mut decrypt_input = DecryptInput::with_keyring(
+        &ciphertext_a,
         // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context_a)
-        .build()?;
+        encryption_context_a.clone(),
+        hierarchical_keyring_b.clone(),
+    );
     let decryption_response_mismatch_1 = decrypt(&decrypt_input).await;
 
     if decryption_response_mismatch_1.is_ok() {
@@ -213,7 +209,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // which we swallow ONLY for demonstration purposes.
     decrypt_input.ciphertext = &ciphertext_b;
     decrypt_input.keyring = Some(hierarchical_keyring_a.clone());
-    decrypt_input.encryption_context = &encryption_context_b;
+    decrypt_input.encryption_context = encryption_context_b.clone();
     let decryption_response_mismatch_2 = decrypt(&decrypt_input).await;
 
     if decryption_response_mismatch_2.is_ok() {
@@ -225,7 +221,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 12. Demonstrate that data encrypted by one tenant's branch key can be decrypted by that tenant,
     //     and that the decrypted data matches the input data.
     decrypt_input.ciphertext = &ciphertext_a;
-    decrypt_input.encryption_context = &encryption_context_a;
+    decrypt_input.encryption_context = encryption_context_a;
     let decryption_response_a = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext_a = decryption_response_a.plaintext;
@@ -239,7 +235,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // Similarly for TenantB
     decrypt_input.ciphertext = &ciphertext_b;
-    decrypt_input.encryption_context = &encryption_context_b;
+    decrypt_input.encryption_context = encryption_context_b;
     decrypt_input.keyring = Some(hierarchical_keyring_b.clone());
     let decryption_response_b = decrypt(&decrypt_input).await?;
     let decrypted_plaintext_b = decryption_response_b.plaintext;

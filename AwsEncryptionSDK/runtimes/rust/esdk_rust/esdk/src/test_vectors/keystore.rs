@@ -1,6 +1,6 @@
 
-use aws_mpl_rs::deps::aws_cryptography_keyStore::types::*;
-use aws_mpl_rs::types::error::Error;
+use aws_mpl_legacy::deps::aws_cryptography_keyStore::types::*;
+use aws_mpl_legacy::types::error::Error;
 
 trait IKeyStoreClient {
     fn get_key_store_info(&self) -> Result<GetKeyStoreInfoOutput, Error>;

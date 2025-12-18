@@ -3,7 +3,7 @@
 
 use crate::types::*;
 
-pub(crate) type ESDKEncryptedDataKey = aws_mpl_rs::types::EncryptedDataKey;
+pub(crate) type ESDKEncryptedDataKey = aws_mpl_legacy::types::EncryptedDataKey;
 pub(crate) type ESDKEncryptedDataKeys = Vec<ESDKEncryptedDataKey>;
 pub(crate) type ESDKEncryptionContext = EncryptionContext;
 pub(crate) type ESDKEncryptionContextPair = (String, String);
@@ -11,23 +11,23 @@ pub(crate) type ESDKCanonicalEncryptionContext = Vec<ESDKEncryptionContextPair>;
 
 const ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH: u64 = u16::MAX as u64 - 2;
 
-pub(crate) const fn get_iv_length(a: &aws_mpl_rs::types::AlgorithmSuiteInfo) -> u8 {
+pub(crate) const fn get_iv_length(a: &aws_mpl_legacy::types::AlgorithmSuiteInfo) -> u8 {
     match a.encrypt.as_ref().unwrap() {
-        aws_mpl_rs::types::Encrypt::AesGcm(e) => e.iv_length.unwrap() as u8,
+        aws_mpl_legacy::types::Encrypt::AesGcm(e) => e.iv_length.unwrap() as u8,
         _ => 0,
     }
 }
 
-pub(crate) const fn get_tag_length(a: &aws_mpl_rs::types::AlgorithmSuiteInfo) -> u8 {
+pub(crate) const fn get_tag_length(a: &aws_mpl_legacy::types::AlgorithmSuiteInfo) -> u8 {
     match a.encrypt.as_ref().unwrap() {
-        aws_mpl_rs::types::Encrypt::AesGcm(e) => e.tag_length.unwrap() as u8,
+        aws_mpl_legacy::types::Encrypt::AesGcm(e) => e.tag_length.unwrap() as u8,
         _ => 0,
     }
 }
 
-pub(crate) const fn get_encrypt_key_length(a: &aws_mpl_rs::types::AlgorithmSuiteInfo) -> u8 {
+pub(crate) const fn get_encrypt_key_length(a: &aws_mpl_legacy::types::AlgorithmSuiteInfo) -> u8 {
     match a.encrypt.as_ref().unwrap() {
-        aws_mpl_rs::types::Encrypt::AesGcm(e) => e.key_length.unwrap() as u8,
+        aws_mpl_legacy::types::Encrypt::AesGcm(e) => e.key_length.unwrap() as u8,
         _ => 0,
     }
 }

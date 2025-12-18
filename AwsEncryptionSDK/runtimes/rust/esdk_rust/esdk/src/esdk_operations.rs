@@ -13,8 +13,8 @@ use crate::serialize::serialize_functions::write_seq_u16;
 use crate::serialize::*;
 use crate::types::*;
 use aws_mpl_primitives::*;
-use aws_mpl_rs::types::EsdkCommitmentPolicy;
-use aws_mpl_rs::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
+use aws_mpl_legacy::types::EsdkCommitmentPolicy;
+use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 enum ProtectionNeeded {
@@ -66,7 +66,7 @@ pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
         input.plaintext.len(),
         input.materials_manager.clone(),
         input.keyring.clone(),
-        input.encryption_context,
+        &input.encryption_context,
         input.algorithm_suite_id,
         input.frame_length,
         input.max_encrypted_data_keys,
@@ -85,7 +85,7 @@ pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
 pub async fn encrypt_stream(
     plaintext: &mut dyn SafeRead,
     ciphertext: &mut dyn SafeWrite,
-    input: &EncryptStreamInput<'_>,
+    input: &EncryptStreamInput,
 ) -> Result<EncryptStreamOutput, Error> {
     input.validate()?;
 
@@ -95,7 +95,7 @@ pub async fn encrypt_stream(
         input.data_size.unwrap_or(usize::MAX),
         input.materials_manager.clone(),
         input.keyring.clone(),
-        input.encryption_context,
+        &input.encryption_context,
         input.algorithm_suite_id,
         input.frame_length,
         input.max_encrypted_data_keys,
@@ -110,22 +110,23 @@ async fn internal_encrypt(
     ciphertext: &mut dyn SafeWrite,
     plaintext_len: usize,
     input_cmm: Option<CryptographicMaterialsManagerRef>,
-    input_keyring: Option<aws_mpl_rs::types::keyring::KeyringRef>,
+    input_keyring: Option<aws_mpl_legacy::types::keyring::KeyringRef>,
     encryption_context: &EncryptionContext,
-    algorithm_suite_id: Option<aws_mpl_rs::types::EsdkAlgorithmSuiteId>,
+    algorithm_suite_id: Option<aws_mpl_legacy::types::EsdkAlgorithmSuiteId>,
     frame_length: u32,
     max_encrypted_data_keys: Option<usize>,
     commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<EncryptStreamOutput, Error> {
+    #[allow(clippy::or_fun_call, reason = "Can't actually replace.")]
     encrypt_decrypt::validate_encryption_context(encryption_context)?;
 
-    let mpl = mpl()?;
+    let mpl = mpl();
     let cmm = encrypt_decrypt::create_cmm_from_input(&mpl, input_cmm, input_keyring).await?;
 
     //= compliance/client-apis/encrypt.txt#2.4.5
     //# The algorithm suite (../framework/algorithm-suite.md) that SHOULD be
     //# used for encryption.
-    let algorithm_suite_id = algorithm_suite_id.map(aws_mpl_rs::types::AlgorithmSuiteId::Esdk);
+    let algorithm_suite_id = algorithm_suite_id.map(aws_mpl_legacy::types::AlgorithmSuiteId::Esdk);
 
     //= compliance/client-apis/encrypt.txt#2.6.1
     //# If an input algorithm suite (Section 2.4.5) is provided that is not
@@ -149,7 +150,7 @@ async fn internal_encrypt(
     if let Some(ref id) = algorithm_suite_id {
         mpl.validate_commitment_policy_on_encrypt()
             .algorithm(id.clone())
-            .commitment_policy(aws_mpl_rs::types::CommitmentPolicy::Esdk(commitment_policy))
+            .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(commitment_policy))
             .send()
             .await?;
     }
@@ -225,8 +226,8 @@ async fn internal_encrypt(
         &mut dw,
     )?;
     let suite_id = get_esdk_id(header.suite.id.as_ref())?;
-    if let Some(aws_mpl_rs::types::SignatureAlgorithm::Ecdsa(_)) = &header.suite.signature {
-        let ecdsa_params: aws_mpl_rs::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm =
+    if let Some(aws_mpl_legacy::types::SignatureAlgorithm::Ecdsa(_)) = &header.suite.signature {
+        let ecdsa_params: aws_mpl_legacy::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm =
             encrypt_decrypt::get_ecdsa_alg(header.suite.signature.as_ref().unwrap())?;
         let bytes = ecdsa_sign_digest(
             encrypt_decrypt::ecdsa_alg(ecdsa_params),
@@ -246,10 +247,10 @@ async fn internal_encrypt(
 }
 
 fn get_esdk_id(
-    id: Option<&aws_mpl_rs::types::AlgorithmSuiteId>,
-) -> Result<aws_mpl_rs::types::EsdkAlgorithmSuiteId, Error> {
+    id: Option<&aws_mpl_legacy::types::AlgorithmSuiteId>,
+) -> Result<aws_mpl_legacy::types::EsdkAlgorithmSuiteId, Error> {
     match id {
-        Some(aws_mpl_rs::types::AlgorithmSuiteId::Esdk(x)) => Ok(*x),
+        Some(aws_mpl_legacy::types::AlgorithmSuiteId::Esdk(x)) => Ok(*x),
         _ => Err("Unsupported algorithm suite".into()),
     }
 }
@@ -258,7 +259,7 @@ fn get_esdk_id(
 pub async fn decrypt_stream(
     ciphertext: &mut dyn SafeRead,
     plaintext: &mut dyn SafeWrite,
-    input: &DecryptStreamInput<'_>,
+    input: &DecryptStreamInput,
 ) -> Result<DecryptStreamOutput, Error> {
     input.validate()?;
 
@@ -267,7 +268,7 @@ pub async fn decrypt_stream(
         plaintext,
         input.materials_manager.clone(),
         input.keyring.clone(),
-        input.encryption_context,
+        &input.encryption_context,
         input.net_v4_retry_policy,
         ProtectionNeeded::needs_protection(input.i_accept_the_danger),
         input.max_encrypted_data_keys,
@@ -275,13 +276,6 @@ pub async fn decrypt_stream(
     )
     .await
 }
-
-// impl Client {
-//     /// Decrypt slice into Vec
-//     pub async fn decrypt(&self, input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
-//         decrypt(input).await
-//     }
-// }
 
 /// Decrypt slice into Vec
 pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
@@ -299,7 +293,7 @@ pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
         &mut plaintext,
         input.materials_manager.clone(),
         input.keyring.clone(),
-        input.encryption_context,
+        &input.encryption_context,
         input.net_v4_retry_policy,
         ProtectionNeeded::No, // Customer cannot see any partial results
         input.max_encrypted_data_keys,
@@ -323,14 +317,15 @@ async fn internal_decrypt(
     ciphertext: &mut dyn SafeRead,
     plaintext: &mut dyn SafeWrite,
     input_cmm: Option<CryptographicMaterialsManagerRef>,
-    input_keyring: Option<aws_mpl_rs::types::keyring::KeyringRef>,
+    input_keyring: Option<aws_mpl_legacy::types::keyring::KeyringRef>,
     encryption_context: &EncryptionContext,
     net_v4_retry_policy: NetV400RetryPolicy,
     safety_needed: ProtectionNeeded,
     max_encrypted_data_keys: Option<usize>,
     commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<DecryptStreamOutput, Error> {
-    let mpl = mpl()?;
+    #[allow(clippy::or_fun_call, reason = "Can't actually replace.")]
+    let mpl = mpl();
     let cmm = encrypt_decrypt::create_cmm_from_input(&mpl, input_cmm, input_keyring).await?;
 
     //= compliance/client-apis/decrypt.txt#2.5.1.1
@@ -351,7 +346,7 @@ async fn internal_decrypt(
     //# decrypt MUST yield an error.
     mpl.validate_commitment_policy_on_decrypt()
         .algorithm(header_body.algorithm_suite().id.as_ref().unwrap().clone())
-        .commitment_policy(aws_mpl_rs::types::CommitmentPolicy::Esdk(commitment_policy))
+        .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(commitment_policy))
         .send()
         .await?;
 
@@ -574,7 +569,7 @@ async fn internal_decrypt(
 // in the decryption material's required encryption context keys.
 // TODO Post-#619: Duvet this section
 fn build_encryption_context_to_only_authenticate(
-    dec_mat: &aws_mpl_rs::types::DecryptionMaterials,
+    dec_mat: &aws_mpl_legacy::types::DecryptionMaterials,
 ) -> EncryptionContext {
     dec_mat
         .encryption_context

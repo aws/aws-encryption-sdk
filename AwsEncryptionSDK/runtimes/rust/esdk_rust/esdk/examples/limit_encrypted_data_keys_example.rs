@@ -17,10 +17,8 @@ https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/configure.html
 */
 
 use aws_esdk::*;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::AesWrappingAlg;
-use aws_mpl_rs::types::keyring::KeyringRef;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
+use aws_mpl_legacy::types::AesWrappingAlg;
+use aws_mpl_legacy::types::keyring::KeyringRef;
 use rand::TryRngCore;
 
 pub async fn encrypt_and_decrypt_with_keyring(
@@ -55,8 +53,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 4. Generate `max_encrypted_data_keys` AES keyrings to use with your keyring.
     // In practice, you should get this key from a secure key management system such as an HSM.
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
+    let mpl = mpl();
 
     let mut raw_aes_keyrings: Vec<KeyringRef> = vec![];
 
@@ -95,12 +92,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 6. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
 
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(multi_keyring.clone())
-        .encryption_context(&encryption_context)
-        .max_encrypted_data_keys(max_encrypted_data_keys)
-        .build()?;
+    let mut encrypt_input =
+        EncryptInput::with_keyring(plaintext, encryption_context, multi_keyring);
+    encrypt_input.max_encrypted_data_keys = Some(max_encrypted_data_keys);
     let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
@@ -113,13 +107,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     );
 
     // 8. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let mut decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .keyring(multi_keyring.clone())
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .max_encrypted_data_keys(max_encrypted_data_keys)
-        .build()?;
+    let mut decrypt_input = DecryptInput::from_encrypt(&ciphertext, &encrypt_input);
     let decryption_response = decrypt(&decrypt_input).await?;
     let decrypted_plaintext = decryption_response.plaintext;
 
@@ -132,7 +120,6 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 10. Demonstrate that an EncryptionSDK with a lower MaxEncryptedDataKeys
     // will fail to decrypt the encrypted message.
-    decrypt_input.keyring = Some(multi_keyring);
     decrypt_input.max_encrypted_data_keys = Some(max_encrypted_data_keys - 1);
 
     let decryption_response_incorrect_max_encrypted_keys = decrypt(&decrypt_input).await;

@@ -34,10 +34,7 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
 use aws_esdk::*;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::DiscoveryFilter;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
-use std::vec::Vec;
+use aws_mpl_legacy::types::DiscoveryFilter;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
@@ -70,8 +67,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 4. Create the keyring that determines how your data keys are protected.
     //    Although this example highlights Discovery keyrings, Discovery keyrings cannot
     //    be used to encrypt, so for encryption we create a KMS keyring without discovery mode.
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
+    let mpl = mpl();
 
     let encrypt_kms_keyring = mpl
         .create_aws_kms_keyring()
@@ -82,14 +78,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 5. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
-
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(encrypt_kms_keyring)
-        .encryption_context(&encryption_context)
-        .build()?;
+    let encrypt_input = EncryptInput::with_keyring(plaintext, encryption_context.clone(), encrypt_kms_keyring);
     let encryption_response = encrypt(&encrypt_input).await?;
-
     let ciphertext = encryption_response.ciphertext;
 
     // 6. Demonstrate that the ciphertext and plaintext are different.
@@ -129,14 +119,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // All of this is done serially, until a success occurs or all keyrings have
     // failed all (filtered) EDKs.
     // KMS Discovery Keyrings will attempt to decrypt Multi Region Keys (MRKs) and regular KMS Keys.
-    let decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .keyring(discovery_multi_keyring)
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .build()?;
+    let decrypt_input = DecryptInput::with_keyring(&ciphertext, encryption_context, discovery_multi_keyring);
     let decryption_response = decrypt(&decrypt_input).await?;
-
     let decrypted_plaintext = decryption_response.plaintext;
 
     // 9. Demonstrate that the decrypted plaintext is identical to the original plaintext.

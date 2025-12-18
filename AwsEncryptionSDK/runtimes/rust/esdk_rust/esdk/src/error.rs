@@ -2,7 +2,7 @@ use std::backtrace::Backtrace;
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 #[non_exhaustive]
-/// Individual error types for ESDK
+/// Individual error types for [`aws_esdk`](crate)
 pub enum ErrorKind {
     /// Higher level ESDK errors
     Esdk(String),
@@ -10,21 +10,19 @@ pub enum ErrorKind {
     SerializationError(String),
     /// Low level cryptographic error from `aws_mpl_primitives`
     CryptographicError(String),
-    /// Low level cryptographic error from `aws_mpl_rs::aws_cryptography_primitives`
-    PrimitivesError(aws_mpl_rs::deps::aws_cryptography_primitives::types::error::Error),
-    /// Mid level cryptographic error from `aws_mpl_rs`
-    MplError(Box<aws_mpl_rs::types::error::Error>),
+    /// Mid level cryptographic error from `aws_mpl_legacy`
+    MplError(Box<aws_mpl_legacy::types::error::Error>),
     /// Malformed input. No cryptography has been attempted.
     ValidationError(String),
 }
 #[derive(Debug)]
 #[non_exhaustive]
-/// Base error type for ESDK
+/// Base error type for [`aws_esdk`](crate)
 pub struct Error {
     /// Error type
     pub kind: ErrorKind,
     /// Backtrace captured when error was encountered.
-    /// For `MplError` and `PrimitivesError`, the backtrace is not captured until the ESDK level
+    /// For `MplError` the backtrace is not captured until the ESDK level
     pub backtrace: Backtrace,
     /// The Error causing the Error, if any.
     pub cause: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
@@ -36,7 +34,6 @@ impl std::fmt::Display for Error {
             ErrorKind::Esdk(message) => write!(f, "Esdk Error {message}"),
             ErrorKind::SerializationError(message) => write!(f, "Serialization Error {message}"),
             ErrorKind::CryptographicError(message) => write!(f, "Cryptographic Error {message}"),
-            ErrorKind::PrimitivesError(message) => write!(f, "Primitives Error {message}"),
             ErrorKind::MplError(message) => write!(f, "MPL Error {message}"),
             ErrorKind::ValidationError(message) => write!(f, "Validation Error {message}"),
         }
@@ -60,19 +57,9 @@ impl std::error::Error for Error {
     }
 }
 
-impl From<aws_mpl_rs::deps::aws_cryptography_primitives::types::error::Error> for Error {
-    fn from(item: aws_mpl_rs::deps::aws_cryptography_primitives::types::error::Error) -> Self {
-        Self {
-            kind: ErrorKind::PrimitivesError(item),
-            backtrace: Backtrace::capture(),
-            cause: None,
-        }
-    }
-}
-
-impl From<aws_mpl_rs::types::error::Error> for Error {
+impl From<aws_mpl_legacy::types::error::Error> for Error {
     #[track_caller]
-    fn from(item: aws_mpl_rs::types::error::Error) -> Self {
+    fn from(item: aws_mpl_legacy::types::error::Error) -> Self {
         Self {
             kind: ErrorKind::MplError(Box::new(item)),
             backtrace: Backtrace::capture(),

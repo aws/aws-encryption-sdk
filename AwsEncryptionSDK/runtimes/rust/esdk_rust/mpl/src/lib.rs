@@ -12,7 +12,7 @@
     macro_use_extern_crate,
     missing_debug_implementations,
     missing_copy_implementations,
-    missing_docs,
+    // missing_docs,
     non_ascii_idents,
     // non_exhaustive_omitted_patterns, unstable
     noop_method_call,
@@ -46,7 +46,7 @@
     clippy::little_endian_bytes,
     clippy::missing_asserts_for_indexing,
     clippy::mixed_read_write_in_expression,
-    // clippy::panic, because mpl enums are stupid
+    clippy::panic,
     clippy::partial_pub_fields,
     clippy::redundant_type_annotations,
     clippy::renamed_function_params,
@@ -57,7 +57,8 @@
     clippy::tests_outside_test_module,
 
     // clippy::indexing_slicing,
-    // clippy::wildcard_enum_match_arm, try again after native MPL
+    clippy::wildcard_enum_match_arm,
+    // clippy::allow_attributes_without_reason,
     clippy::unneeded_field_pattern,
 
 )]
@@ -73,22 +74,18 @@
 #![allow(clippy::too_many_lines)] // disagree
 #![allow(unused_crate_dependencies)] // broken
 
-// #[allow(lint_name, reason = "Your explanation here")]
-// #[warn(clippy::allow_attributes_without_reason)] // REMOVE
-
-mod error;
-pub use error::*;
-mod esdk_operations;
-pub use esdk_operations::*;
-#[cfg(feature = "test_vectors")]
-mod test_vectors;
-#[cfg(feature = "test_vectors")]
-pub use test_vectors::*;
-mod types;
-pub use types::*;
-
-pub(crate) mod alloc;
-pub(crate) mod encrypt_decrypt;
-pub(crate) mod key_derivation;
-pub(crate) mod message_body;
-pub(crate) mod serialize;
+#[cfg(feature = "kms")]
+pub mod client_supplier;
+pub mod cmm;
+pub mod commitment;
+pub mod cmc;
+pub mod error;
+pub mod key_agreement;
+pub mod keyring;
+#[cfg(feature = "kms")]
+pub mod kms_keyring;
+#[cfg(feature = "ddb")]
+pub mod keystore;
+pub mod materials;
+pub mod suites;
+pub mod types;

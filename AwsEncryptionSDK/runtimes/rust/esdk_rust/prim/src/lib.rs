@@ -74,11 +74,12 @@ use aws_lc_rs::aead::{Aad, LessSafeKey, Nonce, UnboundKey};
 use aws_lc_rs::rand;
 use std::backtrace::Backtrace;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, Hash)]
 #[non_exhaustive]
 pub enum DigestAlg {
     Sha256,
     Sha384,
+    #[default]
     Sha512,
 }
 
@@ -116,18 +117,19 @@ pub fn generate_random_bytes(bytes: &mut [u8]) -> Result<(), Error> {
     Ok(())
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Hash)]
 #[non_exhaustive]
 pub struct DoAESEncryptOutput {
     pub cipher_text: Vec<u8>,
     pub auth_tag: Vec<u8>,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, Hash)]
 #[non_exhaustive]
 pub enum AesGcm {
     Aes128Gcm,
     Aes192Gcm,
+    #[default]
     Aes256Gcm,
 }
 
@@ -187,9 +189,3 @@ pub fn aes_decrypt(
         .map_err(|e| serr(format!("gather {e:?}")))?;
     Ok(())
 }
-
-/*
-hkdf
-hkdf_extract
-hkdf_expand
- */

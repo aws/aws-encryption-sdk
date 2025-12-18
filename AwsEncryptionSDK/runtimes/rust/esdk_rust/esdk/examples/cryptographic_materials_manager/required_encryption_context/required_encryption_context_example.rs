@@ -9,9 +9,6 @@ On decrypt, the client MUST supply the key/value pair(s) that were not stored to
 */
 
 use aws_esdk::*;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
-use std::vec::Vec;
 
 pub async fn encrypt_and_decrypt_with_cmm(
     example_data: &str,
@@ -49,8 +46,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
         vec!["requiredKey1".to_string(), "requiredKey2".to_string()];
 
     // 5. Create a KMS keyring
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
+    let mpl = mpl();
 
     let kms_keyring = mpl
         .create_aws_kms_keyring()
@@ -79,11 +75,8 @@ pub async fn encrypt_and_decrypt_with_cmm(
     // "but adds", "that can help you", and "the data you are handling" WILL be stored.
     let plaintext = example_data.as_bytes();
 
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .materials_manager(required_ec_cmm.clone())
-        .encryption_context(&encryption_context)
-        .build()?;
+    let encrypt_input =
+        EncryptInput::with_cmm(plaintext, encryption_context.clone(), required_ec_cmm.clone());
     let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
@@ -96,14 +89,9 @@ pub async fn encrypt_and_decrypt_with_cmm(
     );
 
     // 9. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let mut decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .materials_manager(required_ec_cmm.clone())
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .build()?;
+    // Provide the encryption context that was supplied to the encrypt method
+    let mut decrypt_input = DecryptInput::from_encrypt(&ciphertext, &encrypt_input);
     let decryption_response = decrypt(&decrypt_input).await?;
-
     let decrypted_plaintext = decryption_response.plaintext;
 
     // 10. Demonstrate that the decrypted plaintext is identical to the original plaintext.
@@ -117,7 +105,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
     // you used on encrypt, but we won't pass the encryption context we DID NOT store on the message.
     // This will fail
     decrypt_input.materials_manager = Some(required_ec_cmm.clone());
-    decrypt_input.encryption_context = empty_ec();
+    decrypt_input.encryption_context = EncryptionContext::new();
     let decryption_response_without_ec = decrypt(&decrypt_input).await;
 
     if decryption_response_without_ec.is_ok() {
@@ -135,7 +123,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
     ]);
 
     decrypt_input.materials_manager = Some(required_ec_cmm);
-    decrypt_input.encryption_context = &reproduced_encryption_context;
+    decrypt_input.encryption_context = reproduced_encryption_context;
 
     let decryption_response_with_reproduced_ec = decrypt(&decrypt_input).await?;
 
@@ -153,7 +141,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
 
     // This will pass
     decrypt_input.materials_manager = Some(underlying_cmm);
-    decrypt_input.encryption_context = &encryption_context;
+    decrypt_input.encryption_context = encryption_context;
     let decryption_response_with_ec_underlying_cmm = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext_with_ec_underlying_cmm =
@@ -167,7 +155,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
     );
 
     // This will fail
-    decrypt_input.encryption_context = empty_ec();
+    decrypt_input.encryption_context = EncryptionContext::default();
     let decryption_response_without_ec_underlying_cmm = decrypt(&decrypt_input).await;
 
     if decryption_response_without_ec_underlying_cmm.is_ok() {

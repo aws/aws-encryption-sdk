@@ -52,11 +52,9 @@ use crate::example_utils::utils::EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT;
 use crate::example_utils::utils::exists;
 use crate::example_utils::utils::write_raw_ecdh_ecc_keys;
 use aws_esdk::*;
-use aws_mpl_rs::aws_cryptography_primitives::types::EcdhCurveSpec;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::RawEcdhStaticConfigurations;
-use aws_mpl_rs::types::RawPrivateKeyToStaticPublicKeyInput;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
+use aws_mpl_legacy::aws_cryptography_primitives::types::EcdhCurveSpec;
+use aws_mpl_legacy::types::RawEcdhStaticConfigurations;
+use aws_mpl_legacy::types::RawPrivateKeyToStaticPublicKeyInput;
 use pem::parse;
 use std::fs::File;
 use std::io::Read;
@@ -122,8 +120,6 @@ pub async fn encrypt_and_decrypt_with_keyring(
     );
 
     // 6. Create the Raw ECDH keyring.
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
 
     // Create the keyring.
     // This keyring uses static sender and recipient keys. This configuration calls for both of
@@ -132,7 +128,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // For this example, on decrypt, the shared secret is derived from the sender's private key and the recipient's public key;
     // However, on decrypt, the recipient can construct a keyring such that the shared secret is calculated with
     // the recipient's private key and the sender's public key. In both scenarios the shared secret will be the same.
-    let raw_ecdh_keyring = mpl
+    let raw_ecdh_keyring = mpl()
         .create_raw_ecdh_keyring()
         .curve_spec(ecdh_curve_spec)
         .key_agreement_scheme(raw_ecdh_static_configuration)
@@ -141,14 +137,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 7. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
-
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .keyring(raw_ecdh_keyring.clone())
-        .encryption_context(&encryption_context)
-        .build()?;
+    let encrypt_input = EncryptInput::with_keyring(plaintext, encryption_context, raw_ecdh_keyring);
     let encryption_response = encrypt(&encrypt_input).await?;
-
     let ciphertext = encryption_response.ciphertext;
 
     // 8. Demonstrate that the ciphertext and plaintext are different.
@@ -159,14 +149,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     );
 
     // 9. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .keyring(raw_ecdh_keyring)
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .build()?;
+    let decrypt_input = DecryptInput::from_encrypt(&ciphertext, &encrypt_input);
     let decryption_response = decrypt(&decrypt_input).await?;
-
     let decrypted_plaintext = decryption_response.plaintext;
 
     // 10. Demonstrate that the decrypted plaintext is identical to the original plaintext.

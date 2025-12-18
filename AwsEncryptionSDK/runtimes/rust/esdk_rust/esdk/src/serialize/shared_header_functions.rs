@@ -15,8 +15,8 @@ static DAFNY_TOKIO_RUNTIME: LazyLock<tokio::runtime::Runtime> = LazyLock::new(||
 });
 
 fn convert_asi(
-    x: aws_mpl_rs::operation::get_algorithm_suite_info::AlgorithmSuiteInfo,
-) -> aws_mpl_rs::types::AlgorithmSuiteInfo {
+    x: aws_mpl_legacy::operation::get_algorithm_suite_info::AlgorithmSuiteInfo,
+) -> aws_mpl_legacy::types::AlgorithmSuiteInfo {
     ESDKAlgorithmSuite::builder()
         .set_binary_id(x.binary_id)
         .set_commitment(x.commitment)
@@ -33,9 +33,9 @@ fn convert_asi(
 
 pub(crate) fn read_esdk_suite_id(
     r: &mut dyn SafeRead,
-    mpl: &aws_mpl_rs::Client,
+    mpl: &aws_mpl_legacy::Client,
     raw: &mut dyn SafeWrite,
-) -> Result<aws_mpl_rs::types::AlgorithmSuiteInfo, Error> {
+) -> Result<aws_mpl_legacy::types::AlgorithmSuiteInfo, Error> {
     let mut esdk_suite_id_bytes = [0; 2];
     read_bytes(r, &mut esdk_suite_id_bytes, raw)?;
 
@@ -78,7 +78,7 @@ pub(crate) fn read_message_id_v2(
 
 pub(crate) fn write_esdk_suite_id(
     w: &mut dyn SafeWrite,
-    suite: &aws_mpl_rs::types::AlgorithmSuiteInfo,
+    suite: &aws_mpl_legacy::types::AlgorithmSuiteInfo,
 ) -> Result<(), Error> {
     write_bytes(w, suite.binary_id.as_ref().unwrap().as_ref())
 }

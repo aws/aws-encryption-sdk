@@ -53,10 +53,10 @@ impl DigestWriter {
         Ok(Self { context })
     }
     pub(crate) fn from_old_ecdsa(
-        alg: &aws_mpl_rs::types::SignatureAlgorithm,
+        alg: &aws_mpl_legacy::types::SignatureAlgorithm,
     ) -> Result<Self, Error> {
         match alg {
-            aws_mpl_rs::types::SignatureAlgorithm::Ecdsa(x) => {
+            aws_mpl_legacy::types::SignatureAlgorithm::Ecdsa(x) => {
                 let context = Some(DigestContext::new_from_ecdsa(
                     crate::encrypt_decrypt::ecdsa_alg(x.curve.unwrap()),
                 )?);

@@ -8,10 +8,8 @@
 
 use super::signing_suite_only_cmm::SigningSuiteOnlyCMM;
 use aws_esdk::*;
-use aws_mpl_rs::client as mpl_client;
-use aws_mpl_rs::types::EsdkAlgorithmSuiteId;
-use aws_mpl_rs::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
-use aws_mpl_rs::types::material_providers_config::MaterialProvidersConfig;
+use aws_mpl_legacy::types::EsdkAlgorithmSuiteId;
+use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
 
 pub async fn encrypt_and_decrypt_with_cmm(
     example_data: &str,
@@ -40,10 +38,8 @@ pub async fn encrypt_and_decrypt_with_cmm(
     ]);
 
     // 4. Create a custom SigningSuiteOnlyCMM
-    let mpl_config = MaterialProvidersConfig::builder().build()?;
-    let mpl = mpl_client::Client::from_conf(mpl_config)?;
 
-    let kms_keyring = mpl
+    let kms_keyring = mpl()
         .create_aws_kms_keyring()
         .kms_key_id(kms_key_id)
         .kms_client(kms_client)
@@ -59,13 +55,10 @@ pub async fn encrypt_and_decrypt_with_cmm(
 
     // 5. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
-
-    let mut encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext)
-        .materials_manager(signing_suite_only_cmm_ref.clone())
-        .encryption_context(&encryption_context)
-        .algorithm_suite_id(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384)
-        .build()?;
+    let mut encrypt_input =
+        EncryptInput::with_cmm(plaintext, encryption_context, signing_suite_only_cmm_ref);
+    encrypt_input.algorithm_suite_id =
+        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
     let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
@@ -78,14 +71,9 @@ pub async fn encrypt_and_decrypt_with_cmm(
     );
 
     // 7. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&ciphertext)
-        .materials_manager(signing_suite_only_cmm_ref)
-        // Provide the encryption context that was supplied to the encrypt method
-        .encryption_context(&encryption_context)
-        .build()?;
+    // Provide the encryption context that was supplied to the encrypt method
+    let decrypt_input = DecryptInput::from_encrypt(&ciphertext, &encrypt_input);
     let decryption_response = decrypt(&decrypt_input).await?;
-
     let decrypted_plaintext = decryption_response.plaintext;
 
     // 8. Demonstrate that the decrypted plaintext is identical to the original plaintext.
