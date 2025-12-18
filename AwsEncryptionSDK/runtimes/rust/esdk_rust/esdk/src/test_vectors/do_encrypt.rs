@@ -4,10 +4,10 @@ use crate::test_vectors::types::*;
 use crate::{EncryptInput, encrypt, mpl};
 use anyhow::Result;
 use aws_mpl_primitives::generate_random_bytes;
-use aws_mpl_legacy::types::EsdkAlgorithmSuiteId;
+use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
 use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef as CmmRef;
 use serde_json::Value as JsonValue;
-use aws_mpl_legacy::types::EsdkCommitmentPolicy;
+use aws_mpl_rs::commitment::EsdkCommitmentPolicy;
 
 pub(crate) fn write_file(filename: &str, data: &[u8], dir: &str) -> Result<()> {
     let filename = trim_filename(filename);

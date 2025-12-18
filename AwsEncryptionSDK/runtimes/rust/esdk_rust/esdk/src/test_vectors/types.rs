@@ -1,10 +1,7 @@
 use crate::types::*;
-use aws_mpl_legacy::types::EsdkAlgorithmSuiteId;
-use derivative::Derivative;
+use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
-
-use EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384;
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct Edk {
@@ -17,8 +14,7 @@ pub(crate) type RequiredKeys = Vec<String>;
 pub(crate) type Bytes = Vec<u8>;
 
 //https://github.com/awslabs/aws-encryption-sdk-specification/blob/master/framework/test-vectors/keys-manifest.md
-#[derive(Debug, Derivative, Clone)]
-#[derivative(Default)]
+#[derive(Debug, Clone, Default)]
 #[allow(
     clippy::struct_field_names,
     reason = "because field names contain 'key'"
@@ -28,7 +24,6 @@ pub(crate) struct Key {
     pub(crate) key_id: String,
     pub(crate) alg_suite_id: String,
     pub(crate) alg: String,
-    #[derivative(Default(value = "AlgAes256GcmHkdfSha512CommitKeyEcdsaP384"))]
     pub(crate) alg_id: EsdkAlgorithmSuiteId,
     pub(crate) encoding: String,
     pub(crate) public_key_encoding: String,
@@ -81,14 +76,12 @@ pub(crate) struct KeyDescription {
     pub(crate) underlying: Vec<Self>,
 }
 
-#[derive(Debug, Derivative, Clone)]
-#[derivative(Default)]
+#[derive(Debug, Clone, Default)]
 pub(crate) struct EncryptTest {
     pub(crate) name: String,
     pub(crate) kind: String,
     pub(crate) description: String,
     pub(crate) alg_suite_id: String,
-    #[derivative(Default(value = "AlgAes256GcmHkdfSha512CommitKeyEcdsaP384"))]
     pub(crate) alg_id: EsdkAlgorithmSuiteId,
     pub(crate) decrypt_error_description: String,
     pub(crate) error_description: String,

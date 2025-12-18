@@ -25,9 +25,7 @@ pub(crate) fn read_edk(
 ) -> Result<ESDKEncryptedDataKey, Error> {
     let provider_id = read_str_u16(r, raw)?;
     let provider_info = read_seq_u16(r, raw)?;
-    let provider_info = aws_smithy_types::Blob::new(provider_info);
     let ciphertext = read_seq_u16(r, raw)?;
-    let ciphertext = aws_smithy_types::Blob::new(ciphertext);
     let edk = ESDKEncryptedDataKey::builder()
         .key_provider_id(provider_id)
         .key_provider_info(provider_info)

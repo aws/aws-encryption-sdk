@@ -81,7 +81,7 @@ pub(crate) async fn run_decrypt_test(
         ciphertext :&ciphertext,
         materials_manager: Some(cmm),
         encryption_context: test.reproduced_encryption_context.clone(),
-        commitment_policy : aws_mpl_legacy::types::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
+        commitment_policy : aws_mpl_rs::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
         ..Default::default()
     };
     let decrypt_output = decrypt(&decrypt_input).await?;
@@ -208,7 +208,7 @@ pub(crate) async fn get_aws_kms_rsa_keyring(
     let keyring = mpl
         .create_aws_kms_rsa_keyring()
         .kms_key_id(key.key_id.clone())
-        .public_key(aws_smithy_types::Blob::new(key.material.clone()))
+        .public_key(key.material.clone())
         .encryption_algorithm(get_kms_enc_alg(&keydesc.encryption_algorithm))
         .kms_client(kms.clone())
         .send()

@@ -1,16 +1,14 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-#![allow(dead_code)]
 #![allow(single_use_lifetimes)]
 
 use crate::Error;
 use crate::val_err;
-use aws_mpl_legacy::types::EsdkAlgorithmSuiteId;
-use aws_mpl_legacy::types::EsdkCommitmentPolicy;
+use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
+use aws_mpl_rs::commitment::EsdkCommitmentPolicy;
 use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
 use aws_mpl_legacy::types::keyring::KeyringRef;
-use derivative::Derivative;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// The length of one frame, must be non-zero.
@@ -71,44 +69,32 @@ impl<T: std::io::Read + Send + Sync + std::fmt::Debug> SafeRead for T {}
 /// Key-Value pairs to associate with the encrypted data
 pub type EncryptionContext = ::std::collections::HashMap<String, String>;
 
-#[derive(Debug, PartialEq, Clone, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, PartialEq, Clone, Default)]
 #[non_exhaustive]
 /// Output for [`encrypt`](crate::encrypt).
 pub struct EncryptOutput {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
-    #[derivative(Default(
-        value = "EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384"
-    ))]
     pub algorithm_suite_id: EsdkAlgorithmSuiteId,
     /// data to be decrypted
     pub ciphertext: Vec<u8>,
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
 }
-#[derive(Debug, PartialEq, Clone, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, PartialEq, Clone, Default)]
 #[non_exhaustive]
 /// Output for [`encrypt_stream`](crate::encrypt_stream).
 pub struct EncryptStreamOutput {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
-    #[derivative(Default(
-        value = "EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384"
-    ))]
     pub algorithm_suite_id: EsdkAlgorithmSuiteId,
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
 }
 
-#[derive(Debug, PartialEq, Clone, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, PartialEq, Clone, Default)]
 #[non_exhaustive]
 /// Output for [decrypt](crate::decrypt).
 pub struct DecryptOutput {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
-    #[derivative(Default(
-        value = "EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384"
-    ))]
     pub algorithm_suite_id: EsdkAlgorithmSuiteId,
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
@@ -116,15 +102,11 @@ pub struct DecryptOutput {
     pub plaintext: Vec<u8>,
 }
 
-#[derive(Debug, PartialEq, Clone, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, PartialEq, Clone, Default)]
 #[non_exhaustive]
 /// Output for [`decrypt_stream`](crate::decrypt_stream).
 pub struct DecryptStreamOutput {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
-    #[derivative(Default(
-        value = "EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384"
-    ))]
     pub algorithm_suite_id: EsdkAlgorithmSuiteId,
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
@@ -150,8 +132,7 @@ impl ::std::fmt::Display for NetV400RetryPolicy {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, PartialEq, Clone, Default)]
 #[non_exhaustive]
 /// Input for [`encrypt`](crate::encrypt).
 pub struct EncryptInput<'a> {
@@ -170,9 +151,6 @@ pub struct EncryptInput<'a> {
     /// default is no limit
     pub max_encrypted_data_keys: Option<usize>,
     /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
-    #[derivative(Default(
-        value = "aws_mpl_legacy::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt"
-    ))]
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 
@@ -225,8 +203,7 @@ impl<'a> EncryptInput<'a> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, PartialEq, Clone, Default)]
 #[non_exhaustive]
 /// Input for [`encrypt_stream`](crate::encrypt_stream).
 pub struct EncryptStreamInput {
@@ -246,9 +223,6 @@ pub struct EncryptStreamInput {
     /// default is no limit
     pub max_encrypted_data_keys: Option<usize>,
     /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
-    #[derivative(Default(
-        value = "aws_mpl_legacy::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt"
-    ))]
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 
@@ -295,8 +269,7 @@ impl EncryptStreamInput {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, PartialEq, Clone, Default)]
 #[non_exhaustive]
 /// Input for [`decrypt`](crate::decrypt).
 pub struct DecryptInput<'a> {
@@ -313,14 +286,10 @@ pub struct DecryptInput<'a> {
     /// default is no limit
     pub max_encrypted_data_keys: Option<usize>,
     /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
-    #[derivative(Default(
-        value = "aws_mpl_legacy::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt"
-    ))]
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 
-#[derive(Debug, PartialEq, Clone, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, PartialEq, Clone, Default)]
 #[non_exhaustive]
 /// Input for [`decrypt_stream`](crate::decrypt_stream).
 pub struct DecryptStreamInput {
@@ -342,9 +311,6 @@ pub struct DecryptStreamInput {
     /// default is no limit
     pub max_encrypted_data_keys: Option<usize>,
     /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
-    #[derivative(Default(
-        value = "aws_mpl_legacy::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt"
-    ))]
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 

@@ -108,13 +108,3 @@ impl From<String> for Error {
         }
     }
 }
-
-impl From<derive_builder::UninitializedFieldError> for Error {
-    fn from(item: derive_builder::UninitializedFieldError) -> Self {
-        Self {
-            kind: ErrorKind::ValidationError(format!("{item}")),
-            backtrace: Backtrace::capture(),
-            cause: None,
-        }
-    }
-}

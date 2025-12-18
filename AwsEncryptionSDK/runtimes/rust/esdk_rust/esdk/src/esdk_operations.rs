@@ -13,8 +13,9 @@ use crate::serialize::serialize_functions::write_seq_u16;
 use crate::serialize::*;
 use crate::types::*;
 use aws_mpl_primitives::*;
-use aws_mpl_legacy::types::EsdkCommitmentPolicy;
+use aws_mpl_rs::commitment::EsdkCommitmentPolicy;
 use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
+use crate::legacy;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 enum ProtectionNeeded {
@@ -112,7 +113,7 @@ async fn internal_encrypt(
     input_cmm: Option<CryptographicMaterialsManagerRef>,
     input_keyring: Option<aws_mpl_legacy::types::keyring::KeyringRef>,
     encryption_context: &EncryptionContext,
-    algorithm_suite_id: Option<aws_mpl_legacy::types::EsdkAlgorithmSuiteId>,
+    algorithm_suite_id: Option<aws_mpl_rs::suites::EsdkAlgorithmSuiteId>,
     frame_length: FrameLength,
     max_encrypted_data_keys: Option<usize>,
     commitment_policy: EsdkCommitmentPolicy,
@@ -120,14 +121,18 @@ async fn internal_encrypt(
     #[allow(clippy::or_fun_call, reason = "Can't actually replace.")]
     encrypt_decrypt::validate_encryption_context(encryption_context)?;
 
+    let commitment_policy = legacy::to_legacy_commitment(commitment_policy)?;
     let mpl = mpl();
     let cmm = encrypt_decrypt::create_cmm_from_input(&mpl, input_cmm, input_keyring).await?;
 
     //= compliance/client-apis/encrypt.txt#2.4.5
     //# The algorithm suite (../framework/algorithm-suite.md) that SHOULD be
     //# used for encryption.
+    let algorithm_suite_id = match algorithm_suite_id {
+        Some(id) => Some(legacy::to_legacy_esdk_suite_id(id)?),
+        None => None
+    };
     let algorithm_suite_id = algorithm_suite_id.map(aws_mpl_legacy::types::AlgorithmSuiteId::Esdk);
-
     //= compliance/client-apis/encrypt.txt#2.6.1
     //# If an input algorithm suite (Section 2.4.5) is provided that is not
     //# supported by the commitment policy (client.md#commitment-policy)
@@ -242,7 +247,7 @@ async fn internal_encrypt(
 
     Ok(EncryptStreamOutput {
         encryption_context: header.encryption_context,
-        algorithm_suite_id: suite_id,
+        algorithm_suite_id: legacy::from_legacy_esdk_suite_id(suite_id),
     })
 }
 
@@ -327,6 +332,7 @@ async fn internal_decrypt(
     #[allow(clippy::or_fun_call, reason = "Can't actually replace.")]
     let mpl = mpl();
     let cmm = encrypt_decrypt::create_cmm_from_input(&mpl, input_cmm, input_keyring).await?;
+    let commitment_policy = legacy::to_legacy_commitment(commitment_policy)?;
 
     //= compliance/client-apis/decrypt.txt#2.5.1.1
     //= type=TODO
@@ -559,7 +565,7 @@ async fn internal_decrypt(
     encryption_context_to_only_authenticate.extend(header.encryption_context);
     Ok(DecryptStreamOutput {
         encryption_context: encryption_context_to_only_authenticate,
-        algorithm_suite_id: get_esdk_id(header.suite.id.as_ref())?,
+        algorithm_suite_id: legacy::from_legacy_esdk_suite_id(get_esdk_id(header.suite.id.as_ref())?),
     })
 }
 

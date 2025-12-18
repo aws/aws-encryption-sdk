@@ -19,7 +19,7 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
 use aws_esdk::*;
-use aws_mpl_legacy::types::EsdkAlgorithmSuiteId;
+use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
 
 pub async fn encrypt_and_decrypt_with_keyring(
     example_data: &str,
