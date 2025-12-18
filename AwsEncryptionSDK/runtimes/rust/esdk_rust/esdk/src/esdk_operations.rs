@@ -51,7 +51,7 @@ pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
     let mut cursor: std::io::Cursor<&[u8]> = std::io::Cursor::new(input.plaintext);
 
     // calculate reasonable upper bound for ciphertext size, to minimize allocations.
-    let frame_length_usize = input.frame_length as usize;
+    let frame_length_usize = input.frame_length.get() as usize;
     let frames = input.plaintext.len().div_ceil(frame_length_usize);
     let iv_len = 12_usize;
     let auth_len = 16_usize;
@@ -113,7 +113,7 @@ async fn internal_encrypt(
     input_keyring: Option<aws_mpl_legacy::types::keyring::KeyringRef>,
     encryption_context: &EncryptionContext,
     algorithm_suite_id: Option<aws_mpl_legacy::types::EsdkAlgorithmSuiteId>,
-    frame_length: u32,
+    frame_length: FrameLength,
     max_encrypted_data_keys: Option<usize>,
     commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<EncryptStreamOutput, Error> {
@@ -213,7 +213,7 @@ async fn internal_encrypt(
         materials.encryption_context.as_ref().unwrap(),
         materials.required_encryption_context_keys.as_ref().unwrap(),
         encrypted_data_keys,
-        frame_length,
+        frame_length.get(),
         &derived_data_keys,
     )?;
     let mut dw = DigestWriter::from_old_ecdsa(suite.signature.as_ref().unwrap())?;

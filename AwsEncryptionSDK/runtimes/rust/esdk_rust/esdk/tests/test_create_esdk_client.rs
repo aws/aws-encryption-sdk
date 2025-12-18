@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod fixtures;
-use aws_esdk::client::Client as EsdkClient;
-use aws_esdk::types::*;
+use aws_esdk::*;
 
 // THIS IS AN INCORRECTLY SERIALIZED CIPHERTEXT PRODUCED BY
 // THE ESDK .NET V4.0.0
@@ -41,51 +40,36 @@ const ESDK_NET_V400_MESSAGE: &[u8] = &[
 #[tokio::test(flavor = "multi_thread")]
 
 async fn test_net_retry_flag() {
-    let mpl = EsdkClient::mpl().unwrap();
-
     let key_namespace = "Some managed raw keys";
     let key_name = "My 256-bit AES wrapping key";
     let expected_message: &[u8] = &[
         84, 104, 105, 115, 32, 105, 115, 32, 97, 32, 116, 101, 115, 116, 46,
     ];
 
-    let raw_aes_keyring = mpl
+    let raw_aes_keyring = mpl()
         .create_raw_aes_keyring()
         .key_namespace(key_namespace)
         .key_name(key_name)
         .wrapping_key(aws_smithy_types::Blob::new([0; 32]))
-        .wrapping_alg(aws_mpl_rs::types::AesWrappingAlg::AlgAes256GcmIv12Tag16)
+        .wrapping_alg(aws_mpl_legacy::types::AesWrappingAlg::AlgAes256GcmIv12Tag16)
         .send()
         .await
         .unwrap();
 
     // Attempt to decrypt the v4.0.0 message without the retry flag and expect
     // decryption to fail
-    let config_no_retry = AwsEncryptionSdkConfigBuilder::default()
-        .net_v4_0_0_retry_policy(NetV400RetryPolicy::ForbidRetry)
-        .build()
-        .unwrap();
+    let ec = EncryptionContext::new();
+    let mut input = DecryptInput::with_keyring(ESDK_NET_V400_MESSAGE, ec, raw_aes_keyring);
+    input.net_v4_retry_policy = NetV400RetryPolicy::ForbidRetry;
 
-    let esdk_retry = EsdkClient::default();
-    let esdk_no_retry = EsdkClient::from_conf(config_no_retry).unwrap();
-    let input = DecryptInputBuilder::default()
-        .ciphertext(ESDK_NET_V400_MESSAGE)
-        .keyring(raw_aes_keyring)
-        .build()
-        .unwrap();
-
-    let expect_failure = esdk_no_retry.decrypt(&input).await;
+    let expect_failure = decrypt(&input).await;
     if expect_failure.is_ok() {
         panic!("Expected decryption to fail without retry flag");
     }
 
     // Decrypt v4.0.0 message with the default configuration which is to retry
     // and expect decryption to pass
-    let expect_success = esdk_retry.decrypt(&input).await.unwrap();
-    println!(
-        "{} {}",
-        expect_success.plaintext.len(),
-        expected_message.len()
-    );
+    input.net_v4_retry_policy = NetV400RetryPolicy::AllowRetry;
+    let expect_success = decrypt(&input).await.unwrap();
     assert!(expect_success.plaintext == expected_message);
 }

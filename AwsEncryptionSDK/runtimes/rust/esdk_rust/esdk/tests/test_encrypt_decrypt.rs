@@ -2,14 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod fixtures;
-use aws_esdk::client::Client as EsdkClient;
-use aws_esdk::types::*;
+use aws_esdk::*;
 use fixtures::*;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt() {
-    let esdk = EsdkClient::default();
-    let mpl = EsdkClient::mpl().unwrap();
+    let mpl = mpl();
 
     let client_supplier = mpl.create_default_client_supplier().send().await.unwrap();
     let kms_client = client_supplier
@@ -26,27 +24,20 @@ async fn test_encrypt_decrypt() {
         .await
         .unwrap();
     let asdf = "asdf";
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(asdf.as_bytes())
-        .keyring(kms_keyring.clone())
-        .build()
-        .unwrap();
-    let encrypt_output = esdk.encrypt(&encrypt_input).await.unwrap();
+    let ec = EncryptionContext::new();
+    let encrypt_input = EncryptInput::with_keyring(asdf.as_bytes(), ec, kms_keyring);
+    let encrypt_output = encrypt(&encrypt_input).await.unwrap();
     let esdk_ciphertext = encrypt_output.ciphertext;
-    let decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&esdk_ciphertext)
-        .keyring(kms_keyring)
-        .build()
-        .unwrap();
-    let decrypt_output = esdk.decrypt(&decrypt_input).await.unwrap();
+
+    let decrypt_input = DecryptInput::from_encrypt(&esdk_ciphertext, &encrypt_input);
+    let decrypt_output = decrypt(&decrypt_input).await.unwrap();
 
     assert_eq!(decrypt_output.plaintext, asdf.as_bytes());
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_bad_decrypt_input() {
-    let esdk = EsdkClient::default();
-    let mpl = EsdkClient::mpl().unwrap();
+    let mpl = mpl();
 
     let client_supplier = mpl.create_default_client_supplier().send().await.unwrap();
     let kms_client = client_supplier
@@ -63,23 +54,16 @@ async fn test_bad_decrypt_input() {
         .await
         .unwrap();
     let asdf = "asdf";
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(asdf.as_bytes())
-        .keyring(kms_keyring.clone())
-        .build()
-        .unwrap();
-    let encrypt_output = esdk.encrypt(&encrypt_input).await.unwrap();
+    let ec = EncryptionContext::new();
+    let encrypt_input = EncryptInput::with_keyring(asdf.as_bytes(), ec.clone(), kms_keyring.clone());
+    let encrypt_output = encrypt(&encrypt_input).await.unwrap();
     let esdk_ciphertext = encrypt_output.ciphertext;
-    let mut decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&esdk_ciphertext)
-        .keyring(kms_keyring.clone())
-        .build()
-        .unwrap();
-    let decrypt_output = esdk.decrypt(&decrypt_input).await.unwrap();
+    let mut decrypt_input = DecryptInput::with_keyring(&esdk_ciphertext, ec, kms_keyring.clone());
+    let decrypt_output = decrypt(&decrypt_input).await.unwrap();
     assert_eq!(decrypt_output.plaintext, asdf.as_bytes());
 
     decrypt_input.keyring = None;
-    let bad_decrypt_output = esdk.decrypt(&decrypt_input).await;
+    let bad_decrypt_output = decrypt(&decrypt_input).await;
     assert!(bad_decrypt_output.is_err());
 
     let cmm = mpl
@@ -90,14 +74,13 @@ async fn test_bad_decrypt_input() {
         .unwrap();
     decrypt_input.keyring = Some(kms_keyring.clone());
     decrypt_input.materials_manager = Some(cmm);
-    let bad_decrypt_output = esdk.decrypt(&decrypt_input).await;
+    let bad_decrypt_output = decrypt(&decrypt_input).await;
     assert!(bad_decrypt_output.is_err());
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt_short() {
-    let esdk = EsdkClient::default();
-    let mpl = EsdkClient::mpl().unwrap();
+    let mpl = mpl();
 
     let client_supplier = mpl.create_default_client_supplier().send().await.unwrap();
     let kms_client = client_supplier
@@ -114,31 +97,23 @@ async fn test_encrypt_decrypt_short() {
         .await
         .unwrap();
     let asdf = "asdf";
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(asdf.as_bytes())
-        .keyring(kms_keyring.clone())
-        .build()
-        .unwrap();
-    let encrypt_output = esdk.encrypt(&encrypt_input).await.unwrap();
+    let ec = EncryptionContext::new();
+    let encrypt_input = EncryptInput::with_keyring(asdf.as_bytes(), ec, kms_keyring);
+    let encrypt_output = encrypt(&encrypt_input).await.unwrap();
     let esdk_ciphertext = encrypt_output.ciphertext;
     let cipher_len: usize = esdk_ciphertext.len();
-    let mut decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&esdk_ciphertext[..cipher_len])
-        .keyring(kms_keyring)
-        .build()
-        .unwrap();
-    let decrypt_output = esdk.decrypt(&decrypt_input).await.unwrap();
+    let mut decrypt_input = DecryptInput::from_encrypt(&esdk_ciphertext[..cipher_len], &encrypt_input);
+    let decrypt_output = decrypt(&decrypt_input).await.unwrap();
     assert_eq!(decrypt_output.plaintext, asdf.as_bytes());
 
     decrypt_input.ciphertext = &esdk_ciphertext[..cipher_len - 1];
-    let bad_decrypt_output = esdk.decrypt(&decrypt_input).await;
+    let bad_decrypt_output = decrypt(&decrypt_input).await;
     assert!(bad_decrypt_output.is_err());
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt_ec() {
-    let esdk = EsdkClient::default();
-    let mpl = EsdkClient::mpl().unwrap();
+    let mpl = mpl();
 
     let client_supplier = mpl.create_default_client_supplier().send().await.unwrap();
     let kms_client = client_supplier
@@ -154,31 +129,22 @@ async fn test_encrypt_decrypt_ec() {
         .send()
         .await
         .unwrap();
-    let asdf = "asdf";
+    let asdf = "asdf".as_bytes();
     let encryption_context =
         std::collections::HashMap::from([("stuff".to_string(), "junk".to_string())]);
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(asdf.as_bytes())
-        .encryption_context(&encryption_context)
-        .keyring(kms_keyring.clone())
-        .build()
-        .unwrap();
-    let encrypt_output = esdk.encrypt(&encrypt_input).await.unwrap();
+    let encrypt_input = EncryptInput::with_keyring(asdf, encryption_context, kms_keyring.clone());
+    let encrypt_output = encrypt(&encrypt_input).await.unwrap();
     let esdk_ciphertext = encrypt_output.ciphertext;
-    let decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&esdk_ciphertext)
-        .keyring(kms_keyring)
-        .build()
-        .unwrap();
-    let decrypt_output = esdk.decrypt(&decrypt_input).await.unwrap();
+    let ec = EncryptionContext::new();
+    let decrypt_input = DecryptInput::with_keyring(&esdk_ciphertext, ec, kms_keyring);
+    let decrypt_output = decrypt(&decrypt_input).await.unwrap();
 
-    assert_eq!(decrypt_output.plaintext, asdf.as_bytes());
+    assert_eq!(decrypt_output.plaintext, asdf);
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt_bad_ec() {
-    let esdk = EsdkClient::default();
-    let mpl = EsdkClient::mpl().unwrap();
+    let mpl = mpl();
 
     let client_supplier = mpl.create_default_client_supplier().send().await.unwrap();
     let kms_client = client_supplier
@@ -194,24 +160,18 @@ async fn test_encrypt_decrypt_bad_ec() {
         .send()
         .await
         .unwrap();
-    let asdf = "asdf";
+    let asdf = "asdf".as_bytes();
     let encryption_context =
         std::collections::HashMap::from([("aws-crypto-stuff".to_string(), "junk".to_string())]);
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(asdf.as_bytes())
-        .encryption_context(&encryption_context)
-        .keyring(kms_keyring.clone())
-        .build()
-        .unwrap();
-    let encrypt_output = esdk.encrypt(&encrypt_input).await;
+    let encrypt_input = EncryptInput::with_keyring(asdf, encryption_context, kms_keyring);
+    let encrypt_output = encrypt(&encrypt_input).await;
 
     assert!(encrypt_output.is_err());
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_bad_encrypt_input() {
-    let esdk = EsdkClient::default();
-    let mpl = EsdkClient::mpl().unwrap();
+    let mpl = mpl();
 
     let client_supplier = mpl.create_default_client_supplier().send().await.unwrap();
     let kms_client = client_supplier
@@ -227,18 +187,12 @@ async fn test_bad_encrypt_input() {
         .send()
         .await
         .unwrap();
-    let asdf = "asdf";
-    let mut encrypt_input = EncryptInputBuilder::default()
-        .plaintext(asdf.as_bytes())
-        .keyring(kms_keyring.clone())
-        .frame_length(0u32)
-        .build()
-        .unwrap();
-    let encrypt_output = esdk.encrypt(&encrypt_input).await;
-    assert!(encrypt_output.is_err());
+    let asdf = "asdf".as_bytes();
+    let ec = EncryptionContext::new();
+    let mut encrypt_input = EncryptInput::with_keyring(asdf, ec, kms_keyring.clone());
     encrypt_input.keyring = None;
-    encrypt_input.frame_length = None;
-    let encrypt_output = esdk.encrypt(&encrypt_input).await;
+    encrypt_input.frame_length.set(4096).unwrap();
+    let encrypt_output = encrypt(&encrypt_input).await;
     assert!(encrypt_output.is_err());
 
     let cmm = mpl
@@ -249,14 +203,13 @@ async fn test_bad_encrypt_input() {
         .unwrap();
     encrypt_input.keyring = Some(kms_keyring.clone());
     encrypt_input.materials_manager = Some(cmm);
-    let encrypt_output = esdk.encrypt(&encrypt_input).await;
+    let encrypt_output = encrypt(&encrypt_input).await;
     assert!(encrypt_output.is_err());
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt_single_full_frame() {
-    let esdk = EsdkClient::default();
-    let mpl = EsdkClient::mpl().unwrap();
+    let mpl = mpl();
 
     let client_supplier = mpl.create_default_client_supplier().send().await.unwrap();
     let kms_client = client_supplier
@@ -272,21 +225,16 @@ async fn test_encrypt_decrypt_single_full_frame() {
         .send()
         .await
         .unwrap();
-    let plaintext = "0123456789abcdef";
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(plaintext.as_bytes())
-        .keyring(kms_keyring.clone())
-        .frame_length(plaintext.len() as u32)
-        .build()
-        .unwrap();
-    let encrypt_output = esdk.encrypt(&encrypt_input).await.unwrap();
-    let esdk_ciphertext = encrypt_output.ciphertext;
-    let decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&esdk_ciphertext)
-        .keyring(kms_keyring)
-        .build()
-        .unwrap();
-    let decrypt_output = esdk.decrypt(&decrypt_input).await.unwrap();
+    let plaintext = "0123456789abcdef".as_bytes();
 
-    assert_eq!(decrypt_output.plaintext, plaintext.as_bytes());
+    let ec = EncryptionContext::new();
+    let mut encrypt_input = EncryptInput::with_keyring(plaintext, ec.clone(), kms_keyring.clone());
+    for i in 4..=plaintext.len() {
+        encrypt_input.frame_length.set(i as u32).unwrap();
+        let encrypt_output = encrypt(&encrypt_input).await.unwrap();
+        let esdk_ciphertext = encrypt_output.ciphertext;
+        let decrypt_input = DecryptInput::with_keyring(&esdk_ciphertext, ec.clone(), kms_keyring.clone());
+        let decrypt_output = decrypt(&decrypt_input).await.unwrap();
+        assert_eq!(decrypt_output.plaintext, plaintext);
+    }
 }

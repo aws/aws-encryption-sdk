@@ -1,7 +1,6 @@
 #![allow(unused)]
 
 use crate::error::*;
-use derivative::Derivative;
 
 // Algorithm Suites
 
@@ -11,8 +10,7 @@ use derivative::Derivative;
 // as a separate structure (with an associated resource/operation for translating
 // from name to properties) or use more advanced custom traits which allow us to
 // model all properties of the algorithm suite in one structure.
-#[derive(Debug, PartialEq, Copy, Clone, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, PartialEq, Copy, Clone, Default)]
 #[non_exhaustive]
 pub enum EsdkAlgorithmSuiteId {
     AlgAes128GcmIv12Tag16NoKdf = 0x0014,
@@ -25,16 +23,15 @@ pub enum EsdkAlgorithmSuiteId {
     AlgAes192GcmIv12Tag16HkdfSha384EcdsaP384 = 0x0346,
     AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384 = 0x0378,
     AlgAes256GcmHkdfSha512CommitKey = 0x0478,
-    #[derivative(Default)]
+    #[default]
     AlgAes256GcmHkdfSha512CommitKeyEcdsaP384 = 0x0578,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, PartialEq, Copy, Clone, Default)]
 #[non_exhaustive]
 pub enum DbeAlgorithmSuiteId {
     AlgAes256GcmHkdfSha512CommitKeySymsigHmacSha384 = 0x6700,
-    #[derivative(Default)]
+    #[default]
     AlgAes256GcmHkdfSha512CommitKeyEcdsaP384SymsigHmacSha384 = 0x6701,
 }
 
@@ -51,13 +48,16 @@ pub enum DbeAlgorithmSuiteId {
 //= aws-encryption-sdk-specification/framework/algorithm-suites.md#overview
 //= type=implication
 //# The algorithm suite defines the behaviors [supported formats](#supported-formats) MUST follow for cryptographic operations.
-#[derive(Debug, PartialEq, Copy, Clone, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 #[non_exhaustive]
 pub enum AlgorithmSuiteId {
-    #[derivative(Default)]
     Esdk(EsdkAlgorithmSuiteId),
     Dbe(DbeAlgorithmSuiteId),
+}
+impl Default for AlgorithmSuiteId {
+    fn default() -> Self {
+        Self::Esdk(EsdkAlgorithmSuiteId::default())
+    }
 }
 
 //= aws-encryption-sdk-specification/framework/algorithm-suites.md#structure
@@ -77,20 +77,22 @@ pub struct AlgorithmSuiteInfo {
     edk_wrapping: EdkWrappingAlgorithm,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 #[non_exhaustive]
 pub enum Encrypt {
     //= aws-encryption-sdk-specification/framework/algorithm-suites.md#gcm
     //= type=implication
     //# If specified to use GCM, the AWS Encryption SDK MUST use GCM with the following specifics:
     //# - The internal block cipher is the encryption algorithm specified by the algorithm suite.
-    #[derivative(Default)]
     AesGcm(aws_mpl_primitives::AesGcm),
 }
+impl Default for Encrypt {
+    fn default() -> Self {
+        Self::AesGcm(aws_mpl_primitives::AesGcm::default())
+    }
+}
 
-#[derive(Debug, PartialEq, Copy, Clone, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, PartialEq, Copy, Clone, Default)]
 #[non_exhaustive]
 pub enum DerivationAlgorithm {
     Hkdf(aws_mpl_primitives::DigestAlg),
@@ -101,38 +103,35 @@ pub enum DerivationAlgorithm {
     // The specification treats NO_KDF as an identity operation.
     // So this naming convention mirrors the specification.
     Identity,
-    #[derivative(Default)]
+    #[default]
     None,
 }
 
 //= aws-encryption-sdk-specification/framework/algorithm-suites.md#asymmetric-signature-algorithm
 //= type=implication
 //# This field is OPTIONAL.
-#[derive(Debug, PartialEq, Copy, Clone, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, PartialEq, Copy, Clone, Default)]
 #[non_exhaustive]
 pub enum SignatureAlgorithm {
     Ecdsa(aws_mpl_primitives::EcdsaSignatureAlgorithm),
-    #[derivative(Default)]
+    #[default]
     None,
 }
 
 //= aws-encryption-sdk-specification/framework/algorithm-suites.md#symmetric-signature-algorithm
 //# This field is OPTIONAL.
-#[derive(Debug, PartialEq, Copy, Clone, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, PartialEq, Copy, Clone, Default)]
 #[non_exhaustive]
 pub enum SymmetricSignatureAlgorithm {
     Hmac(aws_mpl_primitives::DigestAlg),
-    #[derivative(Default)]
+    #[default]
     None,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Derivative)]
-#[derivative(Default)]
+#[derive(Debug, PartialEq, Copy, Clone, Default)]
 #[non_exhaustive]
 pub enum EdkWrappingAlgorithm {
-    #[derivative(Default)]
+    #[default]
     DirectKeyWrapping,
     IntermediateKeyWrapping(IntermediateKeyWrapping),
 }

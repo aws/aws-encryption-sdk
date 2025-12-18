@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod fixtures;
-use aws_esdk::client::Client as EsdkClient;
-use aws_esdk::key_store::client::Client as KeystoreClient;
-use aws_esdk::key_store::types::KmsConfiguration;
-use aws_esdk::key_store::types::key_store_config::KeyStoreConfig;
-use aws_esdk::types::*;
-use aws_mpl_rs::client::Client as MplClient;
-use aws_mpl_rs::types::keyring::KeyringRef;
+use aws_esdk::*;
+use aws_mpl_legacy::aws_cryptography_keyStore::client::Client as KeystoreClient;
+use aws_mpl_legacy::aws_cryptography_keyStore::types::KmsConfiguration;
+use aws_mpl_legacy::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig;
+use aws_mpl_legacy::client::Client as MplClient;
+use aws_mpl_legacy::types::keyring::KeyringRef;
 use fixtures::*;
 
 // THIS IS A TESTING RESOURCE DO NOT USE IN A PRODUCTION ENVIRONMENT
@@ -19,7 +18,7 @@ async fn get_rsa_keyring(mpl: &MplClient) -> KeyringRef {
     mpl.create_raw_rsa_keyring()
         .key_namespace(namespace.clone())
         .key_name(name.clone())
-        .padding_scheme(aws_mpl_rs::types::PaddingScheme::OaepSha1Mgf1)
+        .padding_scheme(aws_mpl_legacy::types::PaddingScheme::OaepSha1Mgf1)
         .public_key(keys.public_key.unwrap().pem.unwrap().as_ref())
         .private_key(keys.private_key.unwrap().pem.unwrap().as_ref())
         .send()
@@ -33,7 +32,7 @@ async fn get_aes_keyring(mpl: &MplClient) -> KeyringRef {
         .key_namespace(namespace.clone())
         .key_name(name.clone())
         .wrapping_key(aws_smithy_types::Blob::new([0; 32]))
-        .wrapping_alg(aws_mpl_rs::types::AesWrappingAlg::AlgAes256GcmIv12Tag16)
+        .wrapping_alg(aws_mpl_legacy::types::AesWrappingAlg::AlgAes256GcmIv12Tag16)
         .send()
         .await
         .unwrap()
@@ -85,8 +84,7 @@ async fn get_hierarchical_keyring(mpl: &MplClient) -> KeyringRef {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_repr_encryption_context_with_same_ec_happy_case() {
     let asdf = "asdf".as_bytes();
-    let esdk = EsdkClient::default();
-    let mpl = EsdkClient::mpl().unwrap();
+    let mpl = mpl();
 
     // get keyrings
     let rsa_keyring = get_rsa_keyring(&mpl).await;
@@ -106,47 +104,37 @@ async fn test_repr_encryption_context_with_same_ec_happy_case() {
     // Test supply same encryption context on encrypt and decrypt NO filtering
     let encryption_context = small_encryption_context(SmallEncryptionContextVariation::AB);
 
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(asdf)
-        .encryption_context(&encryption_context)
-        .keyring(multi_keyring.clone())
-        .build()
-        .unwrap();
-    let encrypt_output = esdk.encrypt(&encrypt_input).await.unwrap();
+    let encrypt_input =
+        EncryptInput::with_keyring(asdf, encryption_context.clone(), multi_keyring.clone());
+    let encrypt_output = encrypt(&encrypt_input).await.unwrap();
     let esdk_ciphertext = encrypt_output.ciphertext;
 
     // Test RSA
-    let mut decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&esdk_ciphertext)
-        .encryption_context(&encryption_context)
-        .keyring(rsa_keyring.clone())
-        .build()
-        .unwrap();
-
-    let decrypt_output: DecryptOutput = esdk.decrypt(&decrypt_input).await.unwrap();
+    let mut decrypt_input =
+        DecryptInput::with_keyring(&esdk_ciphertext, encryption_context, rsa_keyring.clone());
+    let decrypt_output: DecryptOutput = decrypt(&decrypt_input).await.unwrap();
     assert!(decrypt_output.plaintext == asdf);
 
     // Test KMS
     decrypt_input.keyring = Some(kms_keyring.clone());
-    let decrypt_output: DecryptOutput = esdk.decrypt(&decrypt_input).await.unwrap();
+    let decrypt_output: DecryptOutput = decrypt(&decrypt_input).await.unwrap();
     assert!(decrypt_output.plaintext == asdf);
 
     // Test AES
     decrypt_input.keyring = Some(aes_keyring.clone());
-    let decrypt_output: DecryptOutput = esdk.decrypt(&decrypt_input).await.unwrap();
+    let decrypt_output: DecryptOutput = decrypt(&decrypt_input).await.unwrap();
     assert!(decrypt_output.plaintext == asdf);
 
     // Test Hierarchy Keyring
     decrypt_input.keyring = Some(h_keyring.clone());
-    let decrypt_output: DecryptOutput = esdk.decrypt(&decrypt_input).await.unwrap();
+    let decrypt_output: DecryptOutput = decrypt(&decrypt_input).await.unwrap();
     assert!(decrypt_output.plaintext == asdf);
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     let asdf = "asdf".as_bytes();
-    let esdk = EsdkClient::default();
-    let mpl = EsdkClient::mpl().unwrap();
+    let mpl = mpl();
 
     // get keyrings
     let rsa_keyring = get_rsa_keyring(&mpl).await;
@@ -192,39 +180,32 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
         .await
         .unwrap();
 
-    let encrypt_input = EncryptInputBuilder::default()
-        .plaintext(asdf)
-        .encryption_context(&encryption_context)
-        .materials_manager(req_cmm)
-        .build()
-        .unwrap();
-    let encrypt_output = esdk.encrypt(&encrypt_input).await.unwrap();
+    let encrypt_input = EncryptInput::with_cmm(asdf, encryption_context, req_cmm);
+    let encrypt_output = encrypt(&encrypt_input).await.unwrap();
     let esdk_ciphertext = encrypt_output.ciphertext;
 
     // Test RSA
-    let mut decrypt_input = DecryptInputBuilder::default()
-        .ciphertext(&esdk_ciphertext)
-        .encryption_context(&reproduced_encryption_context)
-        .keyring(rsa_keyring.clone())
-        .build()
-        .unwrap();
-
-    let decrypt_output: DecryptOutput = esdk.decrypt(&decrypt_input).await.unwrap();
+    let mut decrypt_input = DecryptInput::with_keyring(
+        &esdk_ciphertext,
+        reproduced_encryption_context,
+        rsa_keyring.clone(),
+    );
+    let decrypt_output: DecryptOutput = decrypt(&decrypt_input).await.unwrap();
     assert!(decrypt_output.plaintext == asdf);
 
     // Test KMS
     decrypt_input.keyring = Some(kms_keyring.clone());
-    let decrypt_output: DecryptOutput = esdk.decrypt(&decrypt_input).await.unwrap();
+    let decrypt_output: DecryptOutput = decrypt(&decrypt_input).await.unwrap();
     assert!(decrypt_output.plaintext == asdf);
 
     // Test AES
     decrypt_input.keyring = Some(aes_keyring.clone());
-    let decrypt_output: DecryptOutput = esdk.decrypt(&decrypt_input).await.unwrap();
+    let decrypt_output: DecryptOutput = decrypt(&decrypt_input).await.unwrap();
     assert!(decrypt_output.plaintext == asdf);
 
     // Test Hierarchy Keyring
     decrypt_input.keyring = Some(h_keyring.clone());
-    let decrypt_output: DecryptOutput = esdk.decrypt(&decrypt_input).await.unwrap();
+    let decrypt_output: DecryptOutput = decrypt(&decrypt_input).await.unwrap();
     assert!(decrypt_output.plaintext == asdf);
 }
 
@@ -276,7 +257,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
       )
     );
 
-    let encryptOutput = esdk.Encrypt(Types.EncryptInput(
+    let encryptOutput = Encrypt(Types.EncryptInput(
                                         plaintext = asdf,
                                         encryptionContext = Some(encryptionContext),
                                         materialsManager = Some(reqCMM),
@@ -289,7 +270,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     let esdkCiphertext = encryptOutput.value.ciphertext;
 
     // Switch to only RSA keyring
-    let decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    let decryptOutput = Decrypt(Types.DecryptInput(
                                         ciphertext = esdkCiphertext,
                                         materialsManager = None,
                                         keyring = Some(rsaKeyring),
@@ -301,7 +282,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     expect cycledPlaintext == asdf;
 
     // Switch to only KMS keyring
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(kmsKeyring),
@@ -313,7 +294,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     expect cycledPlaintext == asdf;
 
     // Switch to only AES keyring
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(aesKeyring),
@@ -325,7 +306,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     expect cycledPlaintext == asdf;
 
     // Switch to only Hierarchical keyring
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(hKeyring),
@@ -385,7 +366,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
       )
     );
 
-    let encryptOutput = esdk.Encrypt(Types.EncryptInput(
+    let encryptOutput = Encrypt(Types.EncryptInput(
                                         plaintext = asdf,
                                         encryptionContext = Some(encryptionContext),
                                         materialsManager = Some(reqCMM),
@@ -416,7 +397,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     );
     // Since we are passing in the correct reproduced encryption context this
     // decrypt SHOULD succeed
-    let decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    let decryptOutput = Decrypt(Types.DecryptInput(
                                         ciphertext = esdkCiphertext,
                                         materialsManager = Some(reqCMM),
                                         keyring = None,
@@ -447,7 +428,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     );
     // Since we are passing in the correct reproduced encryption context this
     // decrypt SHOULD succeed
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = Some(reqCMM),
                                     keyring = None,
@@ -478,7 +459,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     );
     // Since we are passing in the correct reproduced encryption context this
     // decrypt SHOULD succeed
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = Some(reqCMM),
                                     keyring = None,
@@ -508,7 +489,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     );
     // Since we are passing in the correct reproduced encryption context this
     // decrypt SHOULD succeed
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = Some(reqCMM),
                                     keyring = None,
@@ -557,7 +538,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     );
 
     // All encryption context is stored in the message
-    let encryptOutput = esdk.Encrypt(Types.EncryptInput(
+    let encryptOutput = Encrypt(Types.EncryptInput(
                                         plaintext = asdf,
                                         encryptionContext = Some(encryptionContext),
                                         materialsManager = Some(defaultCMM),
@@ -588,7 +569,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     );
     // Since we are passing in the correct reproduced encryption context this
     // decrypt SHOULD succeed
-    let decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    let decryptOutput = Decrypt(Types.DecryptInput(
                                         ciphertext = esdkCiphertext,
                                         materialsManager = Some(reqCMM),
                                         keyring = None,
@@ -619,7 +600,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     );
     // Since we are passing in the correct reproduced encryption context this
     // decrypt SHOULD succeed
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = Some(reqCMM),
                                     keyring = None,
@@ -650,7 +631,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     );
     // Since we are passing in the correct reproduced encryption context this
     // decrypt SHOULD succeed
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = Some(reqCMM),
                                     keyring = None,
@@ -680,7 +661,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     );
     // Since we are passing in the correct reproduced encryption context this
     // decrypt SHOULD succeed
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = Some(reqCMM),
                                     keyring = None,
@@ -723,9 +704,9 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     // Additional EC
     let reproducedAdditionalEncryptionContext = Fixtures.SmallEncryptionContext(Fixtures.SmallEncryptionContextVariation.C);
     // Mismatched EncryptionContext
-    let reproducedMismatchedEncryptionContext = Fixtures.SmallMismatchedEncryptionContex(Fixtures.SmallEncryptionContextVariation.AB);
+    let reproducedMismatchedEncryptionContext = Fixtures.SmallMismatchedEncryptionContext(Fixtures.SmallEncryptionContextVariation.AB);
 
-    let encryptOutput = esdk.Encrypt(Types.EncryptInput(
+    let encryptOutput = Encrypt(Types.EncryptInput(
                                         plaintext = asdf,
                                         encryptionContext = Some(encryptionContext),
                                         materialsManager = None,
@@ -738,7 +719,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     let esdkCiphertext = encryptOutput.value.ciphertext;
 
     // Test RSA Failures
-    let decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    let decryptOutput = Decrypt(Types.DecryptInput(
                                         ciphertext = esdkCiphertext,
                                         materialsManager = None,
                                         keyring = Some(rsaKeyring),
@@ -747,7 +728,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
 
     expect decryptOutput.Failure?;
 
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(rsaKeyring),
@@ -757,7 +738,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     expect decryptOutput.Failure?;
 
     // Test KMS Failures
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(kmsKeyring),
@@ -766,7 +747,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
 
     expect decryptOutput.Failure?;
 
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(kmsKeyring),
@@ -776,7 +757,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     expect decryptOutput.Failure?;
 
     // Test AES Failures
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(aesKeyring),
@@ -785,7 +766,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
 
     expect decryptOutput.Failure?;
 
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(aesKeyring),
@@ -795,7 +776,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     expect decryptOutput.Failure?;
 
     // Test Hierarchical Failures
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(hKeyring),
@@ -804,7 +785,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
 
     expect decryptOutput.Failure?;
 
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(hKeyring),
@@ -842,7 +823,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
 
     // FAILURE CASE 2
     // Encrypt will not store all Encryption Context, we will drop one entry but it will still get included in the
-    // header signture.
+    // header signature.
     // Decrypt will not supply any reproduced Encryption Context; this MUST fail.
     let encryptionContext = Fixtures.SmallEncryptionContext(Fixtures.SmallEncryptionContextVariation.AB);
     let requiredECKeys = Fixtures.SmallEncryptionContextKeys(Fixtures.SmallEncryptionContextVariation.A);
@@ -864,7 +845,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
       )
     );
 
-    let encryptOutput = esdk.Encrypt(Types.EncryptInput(
+    let encryptOutput = Encrypt(Types.EncryptInput(
                                         plaintext = asdf,
                                         encryptionContext = Some(encryptionContext),
                                         materialsManager = Some(reqCMM),
@@ -877,7 +858,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     let esdkCiphertext = encryptOutput.value.ciphertext;
 
     // Test RSA Failure
-    let decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    let decryptOutput = Decrypt(Types.DecryptInput(
                                         ciphertext = esdkCiphertext,
                                         materialsManager = None,
                                         keyring = Some(rsaKeyring),
@@ -887,7 +868,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     expect decryptOutput.Failure?;
 
     // Test KMS Failures
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(kmsKeyring),
@@ -897,7 +878,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     expect decryptOutput.Failure?;
 
     // Test AES Failures
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(aesKeyring),
@@ -907,7 +888,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     expect decryptOutput.Failure?;
 
     // Test Hierarchical Failures
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(hKeyring),
@@ -945,12 +926,12 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
 
     // FAILURE CASE 3
     // Encrypt will not store all Encryption Context, we will drop one entry but it will still get included in the
-    // header signture.
+    // header signature.
     // Decrypt will supply the correct key but incorrect value; this MUST fail.
     let encryptionContext = Fixtures.SmallEncryptionContext(Fixtures.SmallEncryptionContextVariation.AB);
     let requiredECKeys = Fixtures.SmallEncryptionContextKeys(Fixtures.SmallEncryptionContextVariation.A);
     // this reproduced encryption context contains the key we didn't store, but it has the wrong value
-    let mismatchedReproducedEncryptionContext = Fixtures.SmallMismatchedEncryptionContex(Fixtures.SmallEncryptionContextVariation.A);
+    let mismatchedReproducedEncryptionContext = Fixtures.SmallMismatchedEncryptionContext(Fixtures.SmallEncryptionContextVariation.A);
 
     let defaultCMM :- expect mpl.CreateDefaultCryptographicMaterialsManager(
       mplTypes.CreateDefaultCryptographicMaterialsManagerInput(
@@ -969,7 +950,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
       )
     );
 
-    let encryptOutput = esdk.Encrypt(Types.EncryptInput(
+    let encryptOutput = Encrypt(Types.EncryptInput(
                                         plaintext = asdf,
                                         encryptionContext = Some(encryptionContext),
                                         materialsManager = Some(reqCMM),
@@ -982,7 +963,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     let esdkCiphertext = encryptOutput.value.ciphertext;
 
     // Test RSA Failure
-    let decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    let decryptOutput = Decrypt(Types.DecryptInput(
                                         ciphertext = esdkCiphertext,
                                         materialsManager = None,
                                         keyring = Some(rsaKeyring),
@@ -992,7 +973,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     expect decryptOutput.Failure?;
 
     // Test KMS Failures
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(kmsKeyring),
@@ -1002,7 +983,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     expect decryptOutput.Failure?;
 
     // Test AES Failures
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(aesKeyring),
@@ -1012,7 +993,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     expect decryptOutput.Failure?;
 
     // Test Hierarchical Failures
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(hKeyring),
@@ -1049,7 +1030,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
 
     // FAILURE CASE 4
     // Encrypt will not store all Encryption Context, we will drop one entry but it will still get included in the
-    // header signture.
+    // header signature.
     // Decrypt will supply the correct key but incorrect value; this MUST fail.
     let encryptionContext = Fixtures.SmallEncryptionContext(Fixtures.SmallEncryptionContextVariation.AB);
     let requiredECKeys = Fixtures.SmallEncryptionContextKeys(Fixtures.SmallEncryptionContextVariation.A);
@@ -1073,7 +1054,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
       )
     );
 
-    let encryptOutput = esdk.Encrypt(Types.EncryptInput(
+    let encryptOutput = Encrypt(Types.EncryptInput(
                                         plaintext = asdf,
                                         encryptionContext = Some(encryptionContext),
                                         materialsManager = Some(reqCMM),
@@ -1086,7 +1067,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     let esdkCiphertext = encryptOutput.value.ciphertext;
 
     // Test RSA Failure
-    let decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    let decryptOutput = Decrypt(Types.DecryptInput(
                                         ciphertext = esdkCiphertext,
                                         materialsManager = None,
                                         keyring = Some(rsaKeyring),
@@ -1096,7 +1077,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     expect decryptOutput.Failure?;
 
     // Test KMS Failure
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(kmsKeyring),
@@ -1106,7 +1087,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     expect decryptOutput.Failure?;
 
     // Test AES Failure
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(aesKeyring),
@@ -1116,7 +1097,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     expect decryptOutput.Failure?;
 
     // Test Hierarchical Failure
-    decryptOutput = esdk.Decrypt(Types.DecryptInput(
+    decryptOutput = Decrypt(Types.DecryptInput(
                                     ciphertext = esdkCiphertext,
                                     materialsManager = None,
                                     keyring = Some(hKeyring),
@@ -1139,7 +1120,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     // get keyrings
     let rsaKeyring = GetRsaKeyring();
 
-    let encryptionContext = Fixtures.GetResrvedECMap();
+    let encryptionContext = Fixtures.GetReservedECMap();
     let requiredECKeys = [Fixtures.RESERVED_ENCRYPTION_CONTEXT];
 
     let defaultCMM :- expect mpl.CreateDefaultCryptographicMaterialsManager(
@@ -1162,7 +1143,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
       )
     );
 
-    let encryptOutput = esdk.Encrypt(Types.EncryptInput(
+    let encryptOutput = Encrypt(Types.EncryptInput(
                                         plaintext = asdf,
                                         encryptionContext = Some(encryptionContext),
                                         materialsManager = Some(reqCMM),

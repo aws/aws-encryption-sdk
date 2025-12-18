@@ -5,11 +5,49 @@
 #![allow(single_use_lifetimes)]
 
 use crate::Error;
+use crate::val_err;
 use aws_mpl_legacy::types::EsdkAlgorithmSuiteId;
 use aws_mpl_legacy::types::EsdkCommitmentPolicy;
 use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
 use aws_mpl_legacy::types::keyring::KeyringRef;
 use derivative::Derivative;
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+/// The length of one frame, must be non-zero.
+pub struct FrameLength(u32);
+
+impl FrameLength {
+    /// Creates a new non-zero `FrameLength`
+    pub fn new(value: u32) -> Result<Self, Error> {
+        if value > 0 { Ok(Self(value)) } else { Err(val_err("Frame length must not be zero.")) }
+    }
+
+    /// Gets the inner primitive value.
+    #[must_use]
+    pub const fn get(&self) -> u32 {
+        self.0
+    }
+
+    /// Sets the inner primitive value.
+    pub fn set(&mut self, value : u32) -> Result<(), Error> {
+        if value > 0 {
+            self.0 = value;
+            Ok(())
+        } else {
+            Err(val_err("Frame length must not be zero."))
+        }
+    }
+}
+
+impl Default for FrameLength {
+    //= compliance/client-apis/encrypt.txt#2.4.6
+    //= type=implication
+    //# This
+    //# value MUST default to 4096 bytes.
+    fn default() -> Self {
+        Self(4096)
+    }
+}
 
 /// Convenience function to return a `MaterialProviders` Client.
 #[must_use]
@@ -122,8 +160,7 @@ pub struct EncryptInput<'a> {
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
     /// Bytes of plaintext data per frame. Default 4096.
-    #[derivative(Default(value = "crate::encrypt_decrypt::DEFAULT_FRAME_LENGTH"))]
-    pub frame_length: u32,
+    pub frame_length: FrameLength,
     /// Exactly one of `keyring` or `materials_manager` must be set
     pub keyring: Option<KeyringRef>,
     /// Exactly one of `keyring` or `materials_manager` must be set
@@ -161,11 +198,7 @@ impl<'a> EncryptInput<'a> {
     }
     /// Construct an `EncryptInput` with a `KeyringRef`
     #[must_use]
-    pub fn with_keyring(
-        plaintext: &'a [u8],
-        ec: EncryptionContext,
-        keyring: KeyringRef,
-    ) -> Self {
+    pub fn with_keyring(plaintext: &'a [u8], ec: EncryptionContext, keyring: KeyringRef) -> Self {
         Self {
             plaintext,
             encryption_context: ec,
@@ -175,17 +208,15 @@ impl<'a> EncryptInput<'a> {
     }
     pub(crate) fn validate(&self) -> Result<(), Error> {
         if self.max_encrypted_data_keys == Some(0) {
-            Err(crate::error::val_err(
+            Err(val_err(
                 "max_encrypted_data_keys must not be zero",
             ))
-        } else if self.frame_length == 0 {
-            Err(crate::error::val_err("frame_length must not be zero"))
         } else if self.keyring.is_none() && self.materials_manager.is_none() {
-            Err(crate::error::val_err(
+            Err(val_err(
                 "Either keyring or materials_manager must be set.",
             ))
         } else if self.keyring.is_some() && self.materials_manager.is_some() {
-            Err(crate::error::val_err(
+            Err(val_err(
                 "You must not provide both keyring and materials_manager.",
             ))
         } else {
@@ -204,8 +235,7 @@ pub struct EncryptStreamInput {
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
     /// Bytes of plaintext data per frame. Default 4096.
-    #[derivative(Default(value = "crate::encrypt_decrypt::DEFAULT_FRAME_LENGTH"))]
-    pub frame_length: u32,
+    pub frame_length: FrameLength,
     /// Exactly one of `keyring` or `materials_manager` must be set
     pub keyring: Option<KeyringRef>,
     /// Exactly one of `keyring` or `materials_manager` must be set
@@ -248,17 +278,15 @@ impl EncryptStreamInput {
     }
     pub(crate) fn validate(&self) -> Result<(), Error> {
         if self.max_encrypted_data_keys == Some(0) {
-            Err(crate::error::val_err(
+            Err(val_err(
                 "max_encrypted_data_keys must not be zero",
             ))
-        } else if self.frame_length == 0 {
-            Err(crate::error::val_err("frame_length must not be zero"))
         } else if self.keyring.is_none() && self.materials_manager.is_none() {
-            Err(crate::error::val_err(
+            Err(val_err(
                 "Either keyring or materials_manager must be provided.",
             ))
         } else if self.keyring.is_some() && self.materials_manager.is_some() {
-            Err(crate::error::val_err(
+            Err(val_err(
                 "You must not provide both keyring and materials_manager.",
             ))
         } else {
@@ -342,11 +370,7 @@ impl<'a> DecryptInput<'a> {
     }
     /// Construct a `DecryptInput` with a `KeyringRef`
     #[must_use]
-    pub fn with_keyring(
-        ciphertext: &'a [u8],
-        ec: EncryptionContext,
-        keyring: KeyringRef,
-    ) -> Self {
+    pub fn with_keyring(ciphertext: &'a [u8], ec: EncryptionContext, keyring: KeyringRef) -> Self {
         Self {
             ciphertext,
             encryption_context: ec,
@@ -371,15 +395,15 @@ impl<'a> DecryptInput<'a> {
 
     pub(crate) fn validate(&self) -> Result<(), Error> {
         if self.max_encrypted_data_keys == Some(0) {
-            Err(crate::error::val_err(
+            Err(val_err(
                 "max_encrypted_data_keys must not be zero",
             ))
         } else if self.keyring.is_none() && self.materials_manager.is_none() {
-            Err(crate::error::val_err(
+            Err(val_err(
                 "Either keyring or materials_manager must be set.",
             ))
         } else if self.keyring.is_some() && self.materials_manager.is_some() {
-            Err(crate::error::val_err(
+            Err(val_err(
                 "You must not provide both keyring and materials_manager.",
             ))
         } else {
@@ -428,15 +452,15 @@ impl DecryptStreamInput {
 
     pub(crate) fn validate(&self) -> Result<(), Error> {
         if self.max_encrypted_data_keys == Some(0) {
-            Err(crate::error::val_err(
+            Err(val_err(
                 "max_encrypted_data_keys must not be zero",
             ))
         } else if self.keyring.is_none() && self.materials_manager.is_none() {
-            Err(crate::error::val_err(
+            Err(val_err(
                 "Either keyring or materials_manager must be set.",
             ))
         } else if self.keyring.is_some() && self.materials_manager.is_some() {
-            Err(crate::error::val_err(
+            Err(val_err(
                 "You must not provide both keyring and materials_manager.",
             ))
         } else {

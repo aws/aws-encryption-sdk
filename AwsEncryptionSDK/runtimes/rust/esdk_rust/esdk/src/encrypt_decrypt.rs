@@ -17,12 +17,6 @@ use aws_mpl_primitives::{EcdsaSignatureAlgorithm, aes_encrypt, generate_random_b
 use aws_mpl_legacy::types::AlgorithmSuiteInfo;
 use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
 
-//= compliance/client-apis/encrypt.txt#2.4.6
-//= type=implication
-//# This
-//# value MUST default to 4096 bytes.
-pub(crate) const DEFAULT_FRAME_LENGTH: u32 = 4096;
-
 const RESERVED_ENCRYPTION_CONTEXT: &str = "aws-crypto-";
 
 pub(crate) fn encrypt_and_serialize(
