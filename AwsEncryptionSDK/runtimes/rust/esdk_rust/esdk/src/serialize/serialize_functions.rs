@@ -155,7 +155,7 @@ pub(crate) fn read_seq_u16(
     r: &mut dyn SafeRead,
     raw: &mut dyn SafeWrite,
 ) -> Result<Vec<u8>, Error> {
-    let len: u16 = read_u16(r, raw)?;
+    let len = read_u16(r, raw)?;
     read_vec(r, len as usize, raw)
 }
 
@@ -188,7 +188,7 @@ pub(crate) fn read_seq_u64_bounded(
 }
 
 pub(crate) fn read_str_u16(r: &mut dyn SafeRead, raw: &mut dyn SafeWrite) -> Result<String, Error> {
-    let len: u16 = read_u16(r, raw)?;
+    let len = read_u16(r, raw)?;
     let result = read_vec(r, len as usize, raw)?;
     let result = String::from_utf8(result).map_err(|e| ser_utf8(e))?;
     Ok(result)

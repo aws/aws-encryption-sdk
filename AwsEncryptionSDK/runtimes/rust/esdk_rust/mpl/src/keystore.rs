@@ -7,11 +7,11 @@ use crate::kms_keyring::GrantTokenList;
 
 type TableName = String;
 
-pub fn make_key_store(_config: &KeyStoreConfig) -> Result<KeyStoreReference, Error> {
+pub fn make_key_store(_config: &KeyStoreConfig) -> Result<KeyStoreRef, Error> {
     todo!()
 }
 
-pub fn make_key_store_admin(_config: &KeyStoreConfig) -> Result<KeyStoreAdminReference, Error> {
+pub fn make_key_store_admin(_config: &KeyStoreConfig) -> Result<KeyStoreAdminRef, Error> {
     todo!()
 }
 
@@ -55,8 +55,8 @@ pub trait KeyStoreAdmin: Send + Sync + std::fmt::Debug {
     async fn version_key(&self, input: &VersionKeyInput) -> Result<VersionKeyOutput, Error>;
 }
 
-pub type KeyStoreReference = std::sync::Arc<dyn KeyStore>;
-pub type KeyStoreAdminReference = std::sync::Arc<dyn KeyStoreAdmin>;
+pub type KeyStoreRef = std::sync::Arc<dyn KeyStore>;
+pub type KeyStoreAdminRef = std::sync::Arc<dyn KeyStoreAdmin>;
 
 //   errors: [KeyStoreException]
 

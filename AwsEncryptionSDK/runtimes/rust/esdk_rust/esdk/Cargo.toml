@@ -37,15 +37,17 @@ path = "src/bin/test_vector/main.rs"
 required-features = ["test_vectors"]  # Only build binary when test_vectors feature is enabled
 
 [package.metadata.docs.rs]
-features = ["test_vectors"]
+all-features = true
+# features = ["test_vectors"]
 rustdoc-args = [
     "--generate-link-to-definition",
     "--generate-macro-expansion",
+     "--cfg", "docsrs",
 ]
 
 [features]
 # default = ["kms", "ddb"]
-default = ["kms", "ddb", "test_vectors"]
+default = ["kms", "ddb", "test_vectors", "legacy"]
 test_vectors = ["clap", "serde_json", "anyhow", "base64", "aws-sdk-kms",  "aws-config"]  # without "kms" or "ddb", only processes raw keyrings
 fips = ["aws-mpl-primitives/fips"]
 kms = ["aws-mpl-rs/kms"]

@@ -13,8 +13,8 @@ pub trait Keyring: Send + Sync + std::fmt::Debug {
     async fn on_decrypt(&self, input: &OnDecryptInput) -> Result<OnDecryptOutput, Error>;
 }
 
-pub type KeyringReference = std::sync::Arc<dyn Keyring>;
-pub type KeyringList = Vec<KeyringReference>;
+pub type KeyringRef = std::sync::Arc<dyn Keyring>;
+pub type KeyringList = Vec<KeyringRef>;
 
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
@@ -43,7 +43,7 @@ pub struct OnDecryptOutput {
 }
 
 ///Creates a Multi-Keyring comprised of one or more other Keyrings.")
-pub fn create_multi_keyring(_input: CreateMultiKeyringInput) -> Result<KeyringReference, Error> {
+pub fn create_multi_keyring(_input: CreateMultiKeyringInput) -> Result<KeyringRef, Error> {
     todo!()
 }
 
@@ -52,7 +52,7 @@ pub fn create_multi_keyring(_input: CreateMultiKeyringInput) -> Result<KeyringRe
 ///Inputs for creating a Multi-Keyring.")
 pub struct CreateMultiKeyringInput {
     ///A keyring responsible for wrapping and unwrapping the data key. This is the first keyring that will be used to wrap the data key, and may be responsible for additionally generating the data key.")
-    pub generator: Option<KeyringReference>,
+    pub generator: Option<KeyringRef>,
 
     // We'll represent "no children" as an empty list
     ///A list of keyrings (other than the generator) responsible for wrapping and unwrapping the data key.")
@@ -62,7 +62,7 @@ pub struct CreateMultiKeyringInput {
 // Raw
 
 ///Creates a Raw AES Keyring, which wraps and unwraps data keys locally using `AES_GCM`.")
-pub fn create_raw_aes_keyring(_input: CreateRawAesKeyringInput) -> Result<KeyringReference, Error> {
+pub fn create_raw_aes_keyring(_input: CreateRawAesKeyringInput) -> Result<KeyringRef, Error> {
     todo!()
 }
 
@@ -84,7 +84,7 @@ pub struct CreateRawAesKeyringInput {
 }
 
 ///Creates a Raw RSA Keyring, which wraps and unwraps data keys locally using RSA.")
-pub fn create_raw_rsa_keyring(_input: CreateRawRsaKeyringInput) -> Result<KeyringReference, Error> {
+pub fn create_raw_rsa_keyring(_input: CreateRawRsaKeyringInput) -> Result<KeyringRef, Error> {
     todo!()
 }
 
@@ -111,7 +111,7 @@ pub struct CreateRawRsaKeyringInput {
 ///Creates a Raw ECDH Keyring, which wraps and unwraps data keys by deriving a shared data key from the established shared secret between parties through the ECDH protocol.")
 pub fn create_raw_ecdh_keyring(
     _input: CreateRawEcdhKeyringInput,
-) -> Result<KeyringReference, Error> {
+) -> Result<KeyringRef, Error> {
     todo!()
 }
 

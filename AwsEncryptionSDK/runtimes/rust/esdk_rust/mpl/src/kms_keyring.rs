@@ -3,7 +3,7 @@ use crate::client_supplier::*;
 use crate::cmc::CacheType;
 pub use crate::key_agreement::{KmsEcdhStaticConfigurations, RawEcdhStaticConfigurations};
 #[cfg(feature = "ddb")]
-use crate::keystore::KeyStoreReference;
+use crate::keystore::KeyStoreRef;
 use crate::error::*;
 use async_trait::async_trait;
 use crate::types::*;
@@ -17,7 +17,7 @@ pub trait BranchKeyIdSupplier: Send + Sync + std::fmt::Debug {
     ) -> Result<GetBranchKeyIdOutput, Error>;
 }
 
-pub type BranchKeyIdSupplierReference = std::sync::Arc<dyn BranchKeyIdSupplier>;
+pub type BranchKeyIdSupplierRef = std::sync::Arc<dyn BranchKeyIdSupplier>;
 
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
@@ -54,7 +54,7 @@ pub struct DiscoveryFilter {
 
 // KMS - Strict
 ///Creates an AWS KMS Keyring, which wraps and unwraps data keys using single symmetric AWS KMS Key.")
-pub fn create_aws_kms_keyring(_input: CreateAwsKmsKeyringInput) -> Result<KeyringReference, Error> {
+pub fn create_aws_kms_keyring(_input: CreateAwsKmsKeyringInput) -> Result<KeyringRef, Error> {
     todo!();
 }
 
@@ -75,7 +75,7 @@ pub struct CreateAwsKmsKeyringInput {
 ///Creates an AWS KMS Multi-Keyring, which wraps and unwraps data keys using one or more symmetric AWS KMS Keys.")
 pub fn create_aws_kms_multi_keyring(
     _input: CreateAwsKmsMultiKeyringInput,
-) -> Result<KeyringReference, Error> {
+) -> Result<KeyringRef, Error> {
     todo!()
 }
 
@@ -90,7 +90,7 @@ pub struct CreateAwsKmsMultiKeyringInput {
     pub kms_key_ids: Vec<KmsKeyId>,
 
     ///The Client Supplier which will be used to get KMS Clients for use with this Keyring. The Client Supplier will create a client for each region specified in the generator and kmsKeyIds ARNs. If not specified on input, the Default Client Supplier is used.")
-    pub client_supplier: Option<ClientSupplierReference>,
+    pub client_supplier: Option<ClientSupplierRef>,
 
     ///A list of grant tokens to be used when calling KMS.")
     pub grant_tokens: GrantTokenList,
@@ -100,7 +100,7 @@ pub struct CreateAwsKmsMultiKeyringInput {
 ///Creates an AWS KMS Discovery Keyring, which supports unwrapping data keys wrapped by a symmetric AWS KMS Key for a single region.")
 pub fn create_aws_kms_discovery_keyring(
     _input: &CreateAwsKmsDiscoveryKeyringInput,
-) -> Result<KeyringReference, Error> {
+) -> Result<KeyringRef, Error> {
     todo!()
 }
 
@@ -121,7 +121,7 @@ pub struct CreateAwsKmsDiscoveryKeyringInput {
 ///Creates an AWS KMS Discovery Multi-Keyring, which supports unwrapping data keys wrapped by a symmetric AWS KMS Key, for multiple regions.")
 pub fn create_aws_kms_discovery_multi_keyring(
     _input: CreateAwsKmsDiscoveryMultiKeyringInput,
-) -> Result<KeyringReference, Error> {
+) -> Result<KeyringRef, Error> {
     todo!()
 }
 
@@ -136,7 +136,7 @@ pub struct CreateAwsKmsDiscoveryMultiKeyringInput {
     pub discovery_filter: DiscoveryFilter,
 
     ///The Client Supplier which will be used to get KMS Clients for use with this Keyring. If not specified on input, a Default Client Supplier is created which creates a KMS Client for each region in the 'regions' input.")
-    pub client_supplier: Option<ClientSupplierReference>,
+    pub client_supplier: Option<ClientSupplierRef>,
 
     ///A list of grant tokens to be used when calling KMS.")
     pub grant_tokens: GrantTokenList,
@@ -146,7 +146,7 @@ pub struct CreateAwsKmsDiscoveryMultiKeyringInput {
 ///Creates an AWS KMS MRK Keyring, which wraps and unwraps data keys using single symmetric AWS KMS Key or AWS KMS Multi-Region Key.")
 pub fn create_aws_kms_mrk_keyring(
     _input: CreateAwsKmsMrkKeyringInput,
-) -> Result<KeyringReference, Error> {
+) -> Result<KeyringRef, Error> {
     todo!()
 }
 
@@ -166,7 +166,7 @@ pub struct CreateAwsKmsMrkKeyringInput {
 ///Creates an AWS KMS MRK Multi-Keyring, which wraps and unwraps data keys using one or more symmetric AWS KMS Keys or AWS KMS Multi-Region Keys.")
 pub fn create_aws_kms_mrk_multi_keyring(
     _input: CreateAwsKmsMrkMultiKeyringInput,
-) -> Result<KeyringReference, Error> {
+) -> Result<KeyringRef, Error> {
     todo!()
 }
 
@@ -181,7 +181,7 @@ pub struct CreateAwsKmsMrkMultiKeyringInput {
     pub kms_key_ids: Vec<KmsKeyId>,
 
     ///The Client Supplier which will be used to get KMS Clients for use with this Keyring. The Client Supplier will create a client for each region specified in the generator and kmsKeyIds ARNs. If not specified on input, the Default Client Supplier is used.")
-    pub client_supplier: Option<ClientSupplierReference>,
+    pub client_supplier: Option<ClientSupplierRef>,
 
     ///A list of grant tokens to be used when calling KMS.")
     pub grant_tokens: GrantTokenList,
@@ -192,7 +192,7 @@ pub struct CreateAwsKmsMrkMultiKeyringInput {
 ///Creates an AWS KMS MRK Discovery Keyring, which supports unwrapping data keys wrapped by a symmetric AWS KMS Key or AWS KMS Multi-Region Key in a particular region.")
 pub fn create_aws_kms_mrk_discovery_keyring(
     _input: CreateAwsKmsMrkDiscoveryKeyringInput,
-) -> Result<KeyringReference, Error> {
+) -> Result<KeyringRef, Error> {
     todo!()
 }
 
@@ -216,7 +216,7 @@ pub struct CreateAwsKmsMrkDiscoveryKeyringInput {
 ///Creates an AWS KMS MRK Discovery Multi-Keyring that supports unwrapping data keys wrapped by a symmetric AWS KMS Key or AWS KMS Multi-Region Key, for a single region.")
 pub fn create_aws_kms_mrk_discovery_multi_keyring(
     _input: CreateAwsKmsMrkDiscoveryMultiKeyringInput,
-) -> Result<KeyringReference, Error> {
+) -> Result<KeyringRef, Error> {
     todo!()
 }
 
@@ -231,7 +231,7 @@ pub struct CreateAwsKmsMrkDiscoveryMultiKeyringInput {
     pub discovery_filter: DiscoveryFilter,
 
     ///The Client Supplier which will be used to get KMS Clients for use with this Keyring. If not specified on input, a Default Client Supplier is created which creates a KMS Client for each region in the 'regions' input.")
-    pub client_supplier: Option<ClientSupplierReference>,
+    pub client_supplier: Option<ClientSupplierRef>,
 
     ///A list of grant tokens to be used when calling KMS.")
     pub grant_tokens: GrantTokenList,
@@ -240,9 +240,10 @@ pub struct CreateAwsKmsMrkDiscoveryMultiKeyringInput {
 // KMS - Hierarchical Keyring
 ///Creates a Hierarchical Keyring, which supports wrapping and unwrapping data keys using Branch Keys persisted in `DynamoDB` and protected by a symmetric AWS KMS Key or AWS KMS Multi-Region Key.")
 #[cfg(feature = "ddb")]
+#[cfg_attr(docsrs, doc(cfg(feature = "ddb")))]
 pub fn create_aws_kms_hierarchical_keyring(
     _input: CreateAwsKmsHierarchicalKeyringInput,
-) -> Result<KeyringReference, Error> {
+) -> Result<KeyringRef, Error> {
     todo!()
 }
 
@@ -250,15 +251,16 @@ pub fn create_aws_kms_hierarchical_keyring(
 #[non_exhaustive]
 ///Inputs for creating a Hierarchical Keyring.")
 #[cfg(feature = "ddb")]
+#[cfg_attr(docsrs, doc(cfg(feature = "ddb")))]
 pub struct CreateAwsKmsHierarchicalKeyringInput {
     // branchKeyId XOR BranchKeyIdSupplier required
     ///The identifier for the single Branch Key responsible for wrapping and unwrapping the data key. Either a Branch Key ID or Branch Key Supplier must be specified.")
     pub branch_key_id: String,
     ///A Branch Key Supplier which determines what Branch Key to use to wrap and unwrap the data key. Either a Branch Key ID or Branch Key Supplier must be specified.")
-    pub branch_key_id_supplier: Option<BranchKeyIdSupplierReference>,
+    pub branch_key_id_supplier: Option<BranchKeyIdSupplierRef>,
 
     ///The Key Store which contains the Branch Key(s) responsible for wrapping and unwrapping data keys.")
-    pub key_store: Option<KeyStoreReference>,
+    pub key_store: Option<KeyStoreRef>,
 
     ///How many seconds the Branch Key material is allowed to be reused within the local cache before it is re-retrieved from Amazon `DynamoDB` and re-authenticated with AWS KMS.")
     pub ttl: std::time::Duration,
@@ -273,7 +275,7 @@ pub struct CreateAwsKmsHierarchicalKeyringInput {
 ///Creates an AWS KMS RSA Keyring, which wraps and unwraps data keys using a single asymmetric AWS KMS Key for RSA.")
 pub fn create_aws_kms_rsa_keyring(
     _input: CreateAwsKmsRsaKeyringInput,
-) -> Result<KeyringReference, Error> {
+) -> Result<KeyringRef, Error> {
     todo!()
 }
 
@@ -311,7 +313,7 @@ pub struct CreateAwsKmsRsaKeyringInput {
 ///Creates an AWS KMS ECDH Keyring, which wraps and unwraps data keys by deriving a shared data key from the established shared secret between parties through the ECDH protocol.")
 pub fn create_aws_kms_ecdh_keyring(
     _input: CreateAwsKmsEcdhKeyringInput,
-) -> Result<KeyringReference, Error> {
+) -> Result<KeyringRef, Error> {
     todo!()
 }
 

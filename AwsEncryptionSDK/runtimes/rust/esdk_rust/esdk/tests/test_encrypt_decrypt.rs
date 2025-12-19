@@ -191,7 +191,6 @@ async fn test_bad_encrypt_input() {
     let ec = EncryptionContext::new();
     let mut encrypt_input = EncryptInput::with_keyring(asdf, ec, kms_keyring.clone());
     encrypt_input.keyring = None;
-    encrypt_input.frame_length.set(4096).unwrap();
     let encrypt_output = encrypt(&encrypt_input).await;
     assert!(encrypt_output.is_err());
 
@@ -230,7 +229,7 @@ async fn test_encrypt_decrypt_single_full_frame() {
     let ec = EncryptionContext::new();
     let mut encrypt_input = EncryptInput::with_keyring(plaintext, ec.clone(), kms_keyring.clone());
     for i in 4..=plaintext.len() {
-        encrypt_input.frame_length.set(i as u32).unwrap();
+        encrypt_input.frame_length.0 = std::num::NonZeroU32::new(i as u32).unwrap();
         let encrypt_output = encrypt(&encrypt_input).await.unwrap();
         let esdk_ciphertext = encrypt_output.ciphertext;
         let decrypt_input = DecryptInput::with_keyring(&esdk_ciphertext, ec.clone(), kms_keyring.clone());

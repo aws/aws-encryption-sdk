@@ -1,4 +1,4 @@
-use crate::keyring::KeyringReference;
+use crate::keyring::KeyringRef;
 use crate::suites::AlgorithmSuiteId;
 use crate::error::*;
 use async_trait::async_trait;
@@ -25,7 +25,7 @@ pub trait CryptographicMaterialsManager: Send + Sync + std::fmt::Debug {
     ) -> Result<DecryptionMaterials, Error>;
 }
 
-pub type CryptographicMaterialsManagerReference = std::sync::Arc<dyn CryptographicMaterialsManager>;
+pub type CryptographicMaterialsManagerRef = std::sync::Arc<dyn CryptographicMaterialsManager>;
 
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
@@ -91,7 +91,7 @@ pub struct DecryptMaterialsInput {
 ///Creates a Default Cryptographic Materials Manager.")
 pub fn create_default_cryptographic_materials_manager(
     _input: CreateDefaultCryptographicMaterialsManagerInput,
-) -> Result<CryptographicMaterialsManagerReference, Error> {
+) -> Result<CryptographicMaterialsManagerRef, Error> {
     todo!()
 }
 
@@ -100,13 +100,13 @@ pub fn create_default_cryptographic_materials_manager(
 #[non_exhaustive]
 pub struct CreateDefaultCryptographicMaterialsManagerInput {
     ///The Keyring that the created Default Cryptographic Materials Manager will use to wrap data keys.")
-    pub keyring: Option<KeyringReference>,
+    pub keyring: Option<KeyringRef>,
 }
 
 ///Creates an Required Encryption Context Cryptographic Materials Manager.")
 pub fn create_required_encryption_context_cmm(
     _input: CreateRequiredEncryptionContextCMMInput,
-) -> Result<CryptographicMaterialsManagerReference, Error> {
+) -> Result<CryptographicMaterialsManagerRef, Error> {
     todo!()
 }
 
@@ -115,9 +115,9 @@ pub fn create_required_encryption_context_cmm(
 #[non_exhaustive]
 pub struct CreateRequiredEncryptionContextCMMInput {
     ///The Cryptographic Materials Manager that the created Required Encryption Context Cryptographic Materials Manager will delegate to. Either a Keyring or underlying Cryptographic Materials Manager must be specified.")
-    pub underlying_cmm: Option<CryptographicMaterialsManagerReference>,
+    pub underlying_cmm: Option<CryptographicMaterialsManagerRef>,
     ///The Keyring that the created Cryptographic Materials Manager will use to wrap data keys. The created Required Encryption Context CMM will delegate to a Default Cryptographic Materials Manager created with this Keyring. Either a Keyring or an underlying Cryptographic Materials Manager must be specified as input.")
-    pub keyring: Option<KeyringReference>,
+    pub keyring: Option<KeyringRef>,
 
     ///A list of Encryption Context keys which are required to be supplied during encryption and decryption, and correspond to Encryption Context key-value pairs which are not stored on the resulting message.")
     pub required_encryption_context_keys: Vec<EncryptionContextKey>,

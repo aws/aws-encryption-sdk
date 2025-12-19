@@ -1,5 +1,6 @@
 //! This is an awesome crate
 //!
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 #![warn(
     absolute_paths_not_starting_with_crate,
@@ -81,9 +82,9 @@ pub use error::*;
 mod esdk_operations;
 pub use esdk_operations::*;
 #[cfg(feature = "test_vectors")]
-mod test_vectors;
-#[cfg(feature = "test_vectors")]
-pub use test_vectors::*;
+#[cfg_attr(docsrs, doc(cfg(feature = "test_vectors")))]
+/// test vectors
+pub mod test_vectors;
 mod types;
 pub use types::*;
 

@@ -9,7 +9,7 @@ pub trait ClientSupplier: Send + Sync + std::fmt::Debug {
     async fn get_client(&self, input: &GetClientInput) -> Result<aws_sdk_kms::Client, Error>;
 }
 
-pub type ClientSupplierReference = std::sync::Arc<dyn ClientSupplier>;
+pub type ClientSupplierRef = std::sync::Arc<dyn ClientSupplier>;
 
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
@@ -27,7 +27,7 @@ impl ClientSupplier for DefaultClientSupplier {
         Err(mpl_err("foo"))
     }
 }
-pub fn create_default_client_supplier(_input: &CreateDefaultClientSupplierInput) -> Result<ClientSupplierReference, Error>
+pub fn create_default_client_supplier(_input: &CreateDefaultClientSupplierInput) -> Result<ClientSupplierRef, Error>
 {
     Ok(std::sync::Arc::new(DefaultClientSupplier{}))
 

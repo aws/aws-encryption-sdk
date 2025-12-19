@@ -52,7 +52,7 @@ pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
     let mut cursor: std::io::Cursor<&[u8]> = std::io::Cursor::new(input.plaintext);
 
     // calculate reasonable upper bound for ciphertext size, to minimize allocations.
-    let frame_length_usize = input.frame_length.get() as usize;
+    let frame_length_usize = input.frame_length.0.get() as usize;
     let frames = input.plaintext.len().div_ceil(frame_length_usize);
     let iv_len = 12_usize;
     let auth_len = 16_usize;
@@ -115,7 +115,7 @@ async fn internal_encrypt(
     encryption_context: &EncryptionContext,
     algorithm_suite_id: Option<aws_mpl_rs::suites::EsdkAlgorithmSuiteId>,
     frame_length: FrameLength,
-    max_encrypted_data_keys: Option<usize>,
+    max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
     commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<EncryptStreamOutput, Error> {
     #[allow(clippy::or_fun_call, reason = "Can't actually replace.")]
@@ -218,7 +218,7 @@ async fn internal_encrypt(
         materials.encryption_context.as_ref().unwrap(),
         materials.required_encryption_context_keys.as_ref().unwrap(),
         encrypted_data_keys,
-        frame_length.get(),
+        frame_length.0.get(),
         &derived_data_keys,
     )?;
     let mut dw = DigestWriter::from_old_ecdsa(suite.signature.as_ref().unwrap())?;
@@ -326,7 +326,7 @@ async fn internal_decrypt(
     encryption_context: &EncryptionContext,
     net_v4_retry_policy: NetV400RetryPolicy,
     safety_needed: ProtectionNeeded,
-    max_encrypted_data_keys: Option<usize>,
+    max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
     commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<DecryptStreamOutput, Error> {
     #[allow(clippy::or_fun_call, reason = "Can't actually replace.")]

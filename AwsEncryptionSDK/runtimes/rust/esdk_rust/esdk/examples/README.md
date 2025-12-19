@@ -78,7 +78,7 @@ based on which region is being called. In our
 example, we show how you can build a custom Client Supplier which
 creates clients by assuming different IAM roles for different regions.
 
-# Writing Examples
+## Writing Examples
 
 If you want to contribute a new example, that's awesome!
 To make sure that your example is tested in our CI,

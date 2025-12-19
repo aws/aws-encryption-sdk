@@ -94,7 +94,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     let mut encrypt_input =
         EncryptInput::with_keyring(plaintext, encryption_context, multi_keyring);
-    encrypt_input.max_encrypted_data_keys = Some(max_encrypted_data_keys);
+    encrypt_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(max_encrypted_data_keys).unwrap());
     let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
@@ -120,7 +120,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 10. Demonstrate that an EncryptionSDK with a lower MaxEncryptedDataKeys
     // will fail to decrypt the encrypted message.
-    decrypt_input.max_encrypted_data_keys = Some(max_encrypted_data_keys - 1);
+    decrypt_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(max_encrypted_data_keys - 1).unwrap());
 
     let decryption_response_incorrect_max_encrypted_keys = decrypt(&decrypt_input).await;
 

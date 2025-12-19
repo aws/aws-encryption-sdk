@@ -85,7 +85,7 @@ pub(crate) const fn has_hkdf(x: &DerivationAlgorithm) -> bool {
 }
 pub(crate) fn read_v2_header_body(
     r: &mut dyn SafeRead,
-    max_edks: Option<usize>,
+    max_edks: Option<std::num::NonZeroUsize>,
     mpl: &aws_mpl_legacy::Client,
     raw: &mut dyn SafeWrite,
 ) -> Result<V2HeaderBody, Error> {

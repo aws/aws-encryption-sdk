@@ -211,11 +211,11 @@ pub(crate) async fn create_cmm_from_input(
 }
 
 pub(crate) fn validate_max_encrypted_data_keys(
-    max_encrypted_data_keys: Option<usize>,
+    max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
     edks: &[aws_mpl_legacy::types::EncryptedDataKey],
 ) -> Result<(), Error> {
     if let Some(max) = max_encrypted_data_keys
-        && edks.len() > max
+        && edks.len() > max.get()
     {
         return Err("Encrypted data keys exceed maxEncryptedDataKeys".into());
     }

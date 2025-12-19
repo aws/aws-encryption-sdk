@@ -47,7 +47,7 @@ pub(crate) fn write_header_body(w: &mut dyn SafeWrite, body: &HeaderBody) -> Res
 //# header (../data-format/message-header.md).
 pub(crate) fn read_header_body(
     r: &mut dyn SafeRead,
-    max_edks: Option<usize>,
+    max_edks: Option<std::num::NonZeroUsize>,
     mpl: &aws_mpl_legacy::Client,
     raw: &mut dyn SafeWrite,
 ) -> Result<HeaderBody, Error> {

@@ -5,49 +5,72 @@
 
 use crate::Error;
 use crate::val_err;
-use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
+#[cfg(feature = "legacy")]
+use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef as LegacyCMM;
+#[cfg(feature = "legacy")]
+use aws_mpl_legacy::types::keyring::KeyringRef as LegacyKeyring;
+use aws_mpl_rs::CryptographicMaterialsManagerRef;
+use aws_mpl_rs::KeyringRef;
 use aws_mpl_rs::commitment::EsdkCommitmentPolicy;
-use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
-use aws_mpl_legacy::types::keyring::KeyringRef;
+use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
+use std::num::NonZeroUsize;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-/// The length of one frame, must be non-zero.
-pub struct FrameLength(u32);
 
-impl FrameLength {
-    /// Creates a new non-zero `FrameLength`
-    pub fn new(value: u32) -> Result<Self, Error> {
-        if value > 0 { Ok(Self(value)) } else { Err(val_err("Frame length must not be zero.")) }
-    }
+#[allow(dead_code)]
+fn comp(x : &KeyringRef, y : &KeyringRef) -> bool {
+    std::ptr::addr_eq(std::sync::Arc::as_ptr(x), std::sync::Arc::as_ptr(y))
+}
 
-    /// Gets the inner primitive value.
-    #[must_use]
-    pub const fn get(&self) -> u32 {
-        self.0
-    }
+/// Source for Cryptographic Materials
+#[derive(Debug, Clone)]
+#[non_exhaustive]
+pub enum MaterialSource {
+    #[cfg(feature = "legacy")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
+    /// Legacy CMM, i.e. `aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef` 
+    LegacyCmm(LegacyCMM),
+    #[cfg(feature = "legacy")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
+    /// Legacy Keyring, i.e. `aws_mpl_legacy::types::keyring::KeyringRef`
+    LegacyKeyring(LegacyKeyring),
+    /// CMM
+    Cmm(CryptographicMaterialsManagerRef),
+    /// Keyring
+    Keyring(KeyringRef),
+}
 
-    /// Sets the inner primitive value.
-    pub fn set(&mut self, value : u32) -> Result<(), Error> {
-        if value > 0 {
-            self.0 = value;
-            Ok(())
-        } else {
-            Err(val_err("Frame length must not be zero."))
+impl PartialEq for MaterialSource {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Cmm(x), Self::Cmm(y)) => std::ptr::addr_eq(std::sync::Arc::as_ptr(x), std::sync::Arc::as_ptr(y)),
+            (Self::Keyring(x), Self::Keyring(y)) => std::ptr::addr_eq(std::sync::Arc::as_ptr(x), std::sync::Arc::as_ptr(y)),
+            #[cfg(feature = "legacy")]
+            (Self::LegacyCmm(x), Self::LegacyCmm(y)) => x == y,
+            #[cfg(feature = "legacy")]
+            (Self::LegacyKeyring(x), Self::LegacyKeyring(y)) => x == y,
+            _ => false,
         }
     }
 }
+impl Eq for MaterialSource {}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+/// The length of one frame, must be non-zero, defaults to 4096.
+#[allow(clippy::exhaustive_structs)]
+pub struct FrameLength(pub std::num::NonZeroU32);
 
 impl Default for FrameLength {
     //= compliance/client-apis/encrypt.txt#2.4.6
     //= type=implication
-    //# This
-    //# value MUST default to 4096 bytes.
+    //# This value MUST default to 4096 bytes.
     fn default() -> Self {
-        Self(4096)
+        Self(std::num::NonZeroU32::new(4096).unwrap())
     }
 }
 
 /// Convenience function to return a `MaterialProviders` Client.
+#[cfg(feature = "legacy")]
+#[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
 #[must_use]
 pub fn mpl() -> aws_mpl_legacy::Client {
     aws_mpl_legacy::Client::from_conf(
@@ -132,7 +155,7 @@ impl ::std::fmt::Display for NetV400RetryPolicy {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Default)]
+#[derive(Debug, Clone, Default)]
 #[non_exhaustive]
 /// Input for [`encrypt`](crate::encrypt).
 pub struct EncryptInput<'a> {
@@ -143,13 +166,21 @@ pub struct EncryptInput<'a> {
     /// Bytes of plaintext data per frame. Default 4096.
     pub frame_length: FrameLength,
     /// Exactly one of `keyring` or `materials_manager` must be set
-    pub keyring: Option<KeyringRef>,
+    pub new_keyring: Option<KeyringRef>,
+    #[cfg(feature = "legacy")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     /// Exactly one of `keyring` or `materials_manager` must be set
-    pub materials_manager: Option<CryptographicMaterialsManagerRef>,
+    pub keyring: Option<LegacyKeyring>,
+    /// Exactly one of `keyring` or `materials_manager` must be set
+    pub new_materials_manager: Option<CryptographicMaterialsManagerRef>,
+    #[cfg(feature = "legacy")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
+    /// Exactly one of `keyring` or `materials_manager` must be set
+    pub materials_manager: Option<LegacyCMM>,
     /// data to be encrypted
     pub plaintext: &'a [u8],
     /// default is no limit
-    pub max_encrypted_data_keys: Option<usize>,
+    pub max_encrypted_data_keys: Option<NonZeroUsize>,
     /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
     pub commitment_policy: EsdkCommitmentPolicy,
 }
@@ -162,11 +193,7 @@ impl<'a> EncryptInput<'a> {
     }
     /// Construct an `EncryptInput` with a `CryptographicMaterialsManagerRef`
     #[must_use]
-    pub fn with_cmm(
-        plaintext: &'a [u8],
-        ec: EncryptionContext,
-        cmm: CryptographicMaterialsManagerRef,
-    ) -> Self {
+    pub fn with_cmm(plaintext: &'a [u8], ec: EncryptionContext, cmm: LegacyCMM) -> Self {
         Self {
             plaintext,
             encryption_context: ec,
@@ -176,7 +203,11 @@ impl<'a> EncryptInput<'a> {
     }
     /// Construct an `EncryptInput` with a `KeyringRef`
     #[must_use]
-    pub fn with_keyring(plaintext: &'a [u8], ec: EncryptionContext, keyring: KeyringRef) -> Self {
+    pub fn with_keyring(
+        plaintext: &'a [u8],
+        ec: EncryptionContext,
+        keyring: LegacyKeyring,
+    ) -> Self {
         Self {
             plaintext,
             encryption_context: ec,
@@ -185,14 +216,8 @@ impl<'a> EncryptInput<'a> {
         }
     }
     pub(crate) fn validate(&self) -> Result<(), Error> {
-        if self.max_encrypted_data_keys == Some(0) {
-            Err(val_err(
-                "max_encrypted_data_keys must not be zero",
-            ))
-        } else if self.keyring.is_none() && self.materials_manager.is_none() {
-            Err(val_err(
-                "Either keyring or materials_manager must be set.",
-            ))
+        if self.keyring.is_none() && self.materials_manager.is_none() {
+            Err(val_err("Either keyring or materials_manager must be set."))
         } else if self.keyring.is_some() && self.materials_manager.is_some() {
             Err(val_err(
                 "You must not provide both keyring and materials_manager.",
@@ -214,14 +239,14 @@ pub struct EncryptStreamInput {
     /// Bytes of plaintext data per frame. Default 4096.
     pub frame_length: FrameLength,
     /// Exactly one of `keyring` or `materials_manager` must be set
-    pub keyring: Option<KeyringRef>,
+    pub keyring: Option<LegacyKeyring>,
     /// Exactly one of `keyring` or `materials_manager` must be set
-    pub materials_manager: Option<CryptographicMaterialsManagerRef>,
+    pub materials_manager: Option<LegacyCMM>,
     /// The expected size of the input data stream.
     /// This is only important if you cmm or keyring care about such things, which most don't.
     pub data_size: Option<usize>,
     /// default is no limit
-    pub max_encrypted_data_keys: Option<usize>,
+    pub max_encrypted_data_keys: Option<NonZeroUsize>,
     /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
     pub commitment_policy: EsdkCommitmentPolicy,
 }
@@ -234,7 +259,7 @@ impl EncryptStreamInput {
     }
     /// Construct an `EncryptStreamInput` with a `CryptographicMaterialsManagerRef`
     #[must_use]
-    pub fn with_cmm(ec: EncryptionContext, cmm: CryptographicMaterialsManagerRef) -> Self {
+    pub fn with_cmm(ec: EncryptionContext, cmm: LegacyCMM) -> Self {
         Self {
             encryption_context: ec,
             materials_manager: Some(cmm),
@@ -243,7 +268,7 @@ impl EncryptStreamInput {
     }
     /// Construct an `EncryptStreamInput` with a `KeyringRef`
     #[must_use]
-    pub fn with_keyring(ec: EncryptionContext, keyring: KeyringRef) -> Self {
+    pub fn with_keyring(ec: EncryptionContext, keyring: LegacyKeyring) -> Self {
         Self {
             encryption_context: ec,
             keyring: Some(keyring),
@@ -251,11 +276,7 @@ impl EncryptStreamInput {
         }
     }
     pub(crate) fn validate(&self) -> Result<(), Error> {
-        if self.max_encrypted_data_keys == Some(0) {
-            Err(val_err(
-                "max_encrypted_data_keys must not be zero",
-            ))
-        } else if self.keyring.is_none() && self.materials_manager.is_none() {
+        if self.keyring.is_none() && self.materials_manager.is_none() {
             Err(val_err(
                 "Either keyring or materials_manager must be provided.",
             ))
@@ -278,13 +299,13 @@ pub struct DecryptInput<'a> {
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
     /// Exactly one of `keyring` or `materials_manager` must be set
-    pub keyring: Option<KeyringRef>,
+    pub keyring: Option<LegacyKeyring>,
     /// Exactly one of `keyring` or `materials_manager` must be set
-    pub materials_manager: Option<CryptographicMaterialsManagerRef>,
+    pub materials_manager: Option<LegacyCMM>,
     /// default is `NetV400RetryPolicy::AllowRetry`
     pub net_v4_retry_policy: NetV400RetryPolicy,
     /// default is no limit
-    pub max_encrypted_data_keys: Option<usize>,
+    pub max_encrypted_data_keys: Option<NonZeroUsize>,
     /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
     pub commitment_policy: EsdkCommitmentPolicy,
 }
@@ -296,9 +317,9 @@ pub struct DecryptStreamInput {
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
     /// Exactly one of `keyring` or `materials_manager` must be set
-    pub keyring: Option<KeyringRef>,
+    pub keyring: Option<LegacyKeyring>,
     /// Exactly one of `keyring` or `materials_manager` must be set
-    pub materials_manager: Option<CryptographicMaterialsManagerRef>,
+    pub materials_manager: Option<LegacyCMM>,
     /// If you decrypt a signed payload, most of the data will be written
     /// to the output stream before the signature is verified.
     /// Thus, if verification fails, you are responsible for discarding any data
@@ -309,7 +330,7 @@ pub struct DecryptStreamInput {
     /// default is `NetV400RetryPolicy::AllowRetry`
     pub net_v4_retry_policy: NetV400RetryPolicy,
     /// default is no limit
-    pub max_encrypted_data_keys: Option<usize>,
+    pub max_encrypted_data_keys: Option<NonZeroUsize>,
     /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
     pub commitment_policy: EsdkCommitmentPolicy,
 }
@@ -320,13 +341,9 @@ impl<'a> DecryptInput<'a> {
     pub fn new() -> Self {
         Self::default()
     }
-    /// Construct a `DecryptInput` with a `CryptographicMaterialsManagerRef`
+    /// Construct a `DecryptInput` with a Legacy `CryptographicMaterialsManagerRef`
     #[must_use]
-    pub fn with_cmm(
-        ciphertext: &'a [u8],
-        ec: EncryptionContext,
-        cmm: CryptographicMaterialsManagerRef,
-    ) -> Self {
+    pub fn with_cmm(ciphertext: &'a [u8], ec: EncryptionContext, cmm: LegacyCMM) -> Self {
         Self {
             ciphertext,
             encryption_context: ec,
@@ -336,7 +353,11 @@ impl<'a> DecryptInput<'a> {
     }
     /// Construct a `DecryptInput` with a `KeyringRef`
     #[must_use]
-    pub fn with_keyring(ciphertext: &'a [u8], ec: EncryptionContext, keyring: KeyringRef) -> Self {
+    pub fn with_keyring(
+        ciphertext: &'a [u8],
+        ec: EncryptionContext,
+        keyring: LegacyKeyring,
+    ) -> Self {
         Self {
             ciphertext,
             encryption_context: ec,
@@ -360,14 +381,8 @@ impl<'a> DecryptInput<'a> {
     }
 
     pub(crate) fn validate(&self) -> Result<(), Error> {
-        if self.max_encrypted_data_keys == Some(0) {
-            Err(val_err(
-                "max_encrypted_data_keys must not be zero",
-            ))
-        } else if self.keyring.is_none() && self.materials_manager.is_none() {
-            Err(val_err(
-                "Either keyring or materials_manager must be set.",
-            ))
+        if self.keyring.is_none() && self.materials_manager.is_none() {
+            Err(val_err("Either keyring or materials_manager must be set."))
         } else if self.keyring.is_some() && self.materials_manager.is_some() {
             Err(val_err(
                 "You must not provide both keyring and materials_manager.",
@@ -384,9 +399,9 @@ impl DecryptStreamInput {
     pub fn new() -> Self {
         Self::default()
     }
-    /// Construct a `DecryptStreamInput` with a `CryptographicMaterialsManagerRef`
+    /// Construct a `DecryptStreamInput` with a Legacy `CryptographicMaterialsManagerRef`
     #[must_use]
-    pub fn with_cmm(ec: EncryptionContext, cmm: CryptographicMaterialsManagerRef) -> Self {
+    pub fn with_cmm(ec: EncryptionContext, cmm: LegacyCMM) -> Self {
         Self {
             encryption_context: ec,
             materials_manager: Some(cmm),
@@ -395,7 +410,7 @@ impl DecryptStreamInput {
     }
     /// Construct a `DecryptStreamInput` with a `KeyringRef`
     #[must_use]
-    pub fn with_keyring(ec: EncryptionContext, keyring: KeyringRef) -> Self {
+    pub fn with_keyring(ec: EncryptionContext, keyring: LegacyKeyring) -> Self {
         Self {
             encryption_context: ec,
             keyring: Some(keyring),
@@ -417,14 +432,8 @@ impl DecryptStreamInput {
     }
 
     pub(crate) fn validate(&self) -> Result<(), Error> {
-        if self.max_encrypted_data_keys == Some(0) {
-            Err(val_err(
-                "max_encrypted_data_keys must not be zero",
-            ))
-        } else if self.keyring.is_none() && self.materials_manager.is_none() {
-            Err(val_err(
-                "Either keyring or materials_manager must be set.",
-            ))
+        if self.keyring.is_none() && self.materials_manager.is_none() {
+            Err(val_err("Either keyring or materials_manager must be set."))
         } else if self.keyring.is_some() && self.materials_manager.is_some() {
             Err(val_err(
                 "You must not provide both keyring and materials_manager.",

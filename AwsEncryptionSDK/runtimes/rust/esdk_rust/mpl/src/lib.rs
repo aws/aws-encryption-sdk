@@ -1,5 +1,6 @@
 //! This is an awesome crate
 //!
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 #![warn(
     absolute_paths_not_starting_with_crate,
@@ -65,9 +66,6 @@
 #![allow(clippy::cargo_common_metadata)] // REMOVE
 #![allow(clippy::multiple_crate_versions)] // nothing to be done
 #![allow(clippy::option_if_let_else)] // disagree
-#![allow(clippy::cast_possible_truncation)] // REMOVE
-#![allow(clippy::missing_panics_doc)] // REMOVE
-#![allow(clippy::cast_sign_loss)] // REMOVE
 #![allow(clippy::redundant_pub_crate)] // broken, conflicts with unreachable_pub
 #![allow(clippy::wildcard_imports)] // REMOVE
 #![allow(clippy::missing_errors_doc)] // REMOVE
@@ -75,16 +73,21 @@
 #![allow(unused_crate_dependencies)] // broken
 
 #[cfg(feature = "kms")]
+#[cfg_attr(docsrs, doc(cfg(feature = "kms")))]
 pub mod client_supplier;
 pub mod cmm;
+pub use cmm::CryptographicMaterialsManagerRef;
 pub mod commitment;
 pub mod cmc;
 pub mod error;
 pub mod key_agreement;
 pub mod keyring;
+pub use keyring::KeyringRef;
 #[cfg(feature = "kms")]
+#[cfg_attr(docsrs, doc(cfg(feature = "kms")))]
 pub mod kms_keyring;
 #[cfg(feature = "ddb")]
+#[cfg_attr(docsrs, doc(cfg(feature = "ddb")))]
 pub mod keystore;
 pub mod materials;
 pub mod suites;

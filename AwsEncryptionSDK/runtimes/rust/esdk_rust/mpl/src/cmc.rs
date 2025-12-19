@@ -19,7 +19,7 @@ pub trait CryptographicMaterialsCache: Send + Sync + std::fmt::Debug {
     async fn delete_cache_entry(&self, input: &DeleteCacheEntryInput) -> Result<(), Error>;
 }
 
-pub type CryptographicMaterialsCacheReference = std::sync::Arc<dyn CryptographicMaterialsCache>;
+pub type CryptographicMaterialsCacheRef = std::sync::Arc<dyn CryptographicMaterialsCache>;
 
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
@@ -152,7 +152,7 @@ impl CryptographicMaterialsCache for DefaultCryptographicMaterialsCache {
 
 pub fn create_cryptographic_materials_cache(
     _input: CreateCryptographicMaterialsCacheInput,
-) -> Result<CryptographicMaterialsCacheReference, Error> {
+) -> Result<CryptographicMaterialsCacheRef, Error> {
     Ok(std::sync::Arc::new(DefaultCryptographicMaterialsCache {}))
 }
 

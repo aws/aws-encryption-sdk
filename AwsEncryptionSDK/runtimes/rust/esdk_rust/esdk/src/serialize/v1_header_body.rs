@@ -119,7 +119,7 @@ pub(crate) fn read_v1_header_iv_length(
 
 pub(crate) fn read_v1_header_body(
     r: &mut dyn SafeRead,
-    max_edks: Option<usize>,
+    max_edks: Option<std::num::NonZeroUsize>,
     mpl: &aws_mpl_legacy::Client,
     raw: &mut dyn SafeWrite,
 ) -> Result<V1HeaderBody, Error> {

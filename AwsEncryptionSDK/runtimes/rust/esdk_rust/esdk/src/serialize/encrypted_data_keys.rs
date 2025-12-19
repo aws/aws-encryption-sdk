@@ -35,12 +35,12 @@ pub(crate) fn read_edk(
 }
 pub(crate) fn read_edks(
     r: &mut dyn SafeRead,
-    max_edks: Option<usize>,
+    max_edks: Option<std::num::NonZeroUsize>,
     raw: &mut dyn SafeWrite,
 ) -> Result<ESDKEncryptedDataKeys, Error> {
     let count = read_u16(r, raw)?;
     if let Some(max_edks) = max_edks
-        && count as usize > max_edks
+        && count as usize > max_edks.get()
     {
         return ser_err("Ciphertext encrypted data keys exceed maxEncryptedDataKeys");
     }
