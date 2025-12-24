@@ -1,0 +1,320 @@
+#!/usr/bin/env node
+// Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+/* This file is to help line up the formal conditions listed in source with tests.
+ * I look for `sourceGrep` and `testGrep` make make sure that the conditions found,
+ * are in both sets.
+ */
+
+const { exec } = require("child_process");
+const { promisify } = require("util");
+const execAsync = promisify(exec);
+
+const standardComplianceParams = {
+  metaToken: "//=",
+  contentToken: "//#",
+  types: {
+    test: "//= type=test",
+    exception: "//= type=exception",
+  },
+};
+const fileSettings = {
+  ".ts:": {
+    conditionRemove:
+      /(\*\/)|(\/\*)|(it\([`'])|([`'], \(\) => \{)|([`'], async \(\) => \{)/g,
+    complianceConfig: standardComplianceParams,
+  },
+  ".js:": {
+    conditionRemove:
+      /(\*\/)|(\/\*)|(it\([`'])|([`'], \(\) => \{)|([`'], async \(\) => \{)/g,
+    complianceConfig: standardComplianceParams,
+  },
+  ".java:": {
+    conditionRemove: /(\*\/)|(\/\*)|(@DisplayName\(\")|(\"\))|(\")/g,
+    complianceConfig: standardComplianceParams,
+  },
+  ".py:": {
+    conditionRemove: /(# |""")/g,
+    complianceConfig: {
+      metaToken: "# //=",
+      contentToken: "# //#",
+      types: {
+        test: "# //= type=test",
+        exception: "# //= type=exception",
+      },
+    },
+  },
+  //  C files
+  ".c:": {
+    conditionRemove:
+      /(\*\/)|(\/\*)/g,
+    complianceConfig: standardComplianceParams,
+  },
+  ".h:": {
+    conditionRemove:
+      /(\*\/)|(\/\*)/g,
+    complianceConfig: standardComplianceParams,
+  },
+  ".cpp:": {
+    conditionRemove:
+      /(\*\/)|(\/\*)/g,
+    complianceConfig: standardComplianceParams,
+  },
+  ".txt:": {
+    conditionRemove:
+      /(\*\/)|(\/\*)/g,
+    complianceConfig: standardComplianceParams,
+  },
+};
+
+const filePathMatch = new RegExp(`(${Object.keys(fileSettings).join(")|(")})`);
+
+/* May need to change this to a better parser...
+ * When run with a shebang
+ * the argv list will start,
+ * with the path to node
+ * then the path to this script.
+ * So the 3rd element ([2])
+ * is the first user parameter.
+ */
+let state = "";
+const [sourceGlobs, testGlobs] = process.argv.slice(2).reduce(
+  ([sourceGlobs, testGlobs], arg) => {
+    switch (arg) {
+      case "-s":
+      case "-t":
+        state = arg;
+        return [sourceGlobs, testGlobs];
+      default:
+        switch (state) {
+          case "-s":
+            sourceGlobs.push(arg);
+            return [sourceGlobs, testGlobs];
+          case "-t":
+            testGlobs.push(arg);
+            return [sourceGlobs, testGlobs];
+        }
+        throw new Error(`Unknown argument for ${arg}`);
+    }
+  },
+  [[], []]
+);
+
+const conditionGrep = `grep -E 'Precondition:|Postcondition(:|\\):)'`;
+const complianceGrep = `grep -E '//[=#]'`;
+
+Promise.all([
+  executeAndClean(
+    sourceGlobs.map((g) => `${conditionGrep} ${g}`),
+    clean
+  ),
+  executeAndClean(
+    testGlobs.map((g) => `${conditionGrep} ${g}`),
+    clean
+  ),
+  executeAndClean(
+    sourceGlobs.map((g) => `${complianceGrep} ${g}`),
+    cleanCompliance
+  ),
+  executeAndClean(
+    testGlobs.map((g) => `${complianceGrep} ${g}`),
+    cleanCompliance
+  ),
+]).then(([conditionSource, conditionTests, complianceCitations, complianceTests]) => {
+  let issues = 0;
+  const conditionSourceSet = new Set(conditionSource);
+  const conditionTestArray = flatMapForTests(conditionTests);
+  const conditionTestSet = new Set(conditionTestArray);
+  const complianceCitationsMap = new Map(complianceCitations);
+  const complianceTestsMap = new Map(complianceTests);
+
+  issues += noDuplicates(
+    conditionSource,
+    conditionSourceSet,
+    "Duplicate source conditions"
+  );
+  issues += noDuplicates(
+    conditionTestArray,
+    conditionTestSet,
+    "Duplicate test conditions"
+  );
+
+  issues += [...complianceCitationsMap.values()]
+    .filter((line) => line.includes(standardComplianceParams.types.test))
+    .map((line) => console.log(`Compliance test in source\n${line}`)).length;
+
+  issues += [...complianceTestsMap.values()]
+    .filter((line) => !line.includes(standardComplianceParams.types.test))
+    .map((line) => console.log(`Compliance citation in test\n${line}`)).length;
+
+  issues += noDuplicates(
+    complianceCitations,
+    complianceCitationsMap,
+    "Duplicate compliance citation"
+  );
+  issues += noDuplicates(
+    complianceTests,
+    complianceTestsMap,
+    "Duplicate compliance test"
+  );
+
+  issues += missingRight(conditionSourceSet, conditionTestSet).map((line) =>
+    console.log(`Missing test condition for \n${line}`)
+  ).length;
+  issues += missingRight(conditionTestSet, conditionSourceSet).map((line) =>
+    console.log(`Update or change test condition \n${line}`)
+  ).length;
+
+  issues += missingRight(complianceCitationsMap, complianceTestsMap).map((line) =>
+    console.log(`Missing compliance test for \n${complianceCitationsMap.get(line)}`)
+  ).length;
+  issues += missingRight(complianceTestsMap, complianceCitationsMap).map((line) => {
+    console.log(`Update or change compliance test \n${complianceTestsMap.get(line)}`);
+  }).length;
+
+  if (issues) {
+    console.error(`Issue count found: ${issues}`);
+  }
+
+  process.exit(Math.max(0, issues));
+});
+
+function noDuplicates(arr, set, errMsg) {
+  if (arr.length > set.size) {
+    return getDuplicates(arr).map((line) => console.log(`${errMsg}\n${line}`)).length;
+  }
+
+  return 0;
+}
+
+function missingRight(left, right) {
+  return [...left.keys()].filter((line) => !right.has(line));
+}
+
+function clean({ stdout }) {
+  return stdout
+    .split("\n")
+    .map((rawLine) => {
+      if (!rawLine) return "";
+      const [match] = rawLine.match(filePathMatch);
+      try{
+        const { conditionRemove } = fileSettings[match];
+      return rawLine.split(match).pop().replace(conditionRemove, "").trim(); 
+      } catch(ex) {
+        console.log(filePathMatch, match)
+        throw ex
+      }
+    })
+    .filter((line) => line !== "");
+}
+
+function cleanCompliance({ stdout }) {
+  const compliance = [];
+  let state = {
+    lines: [],
+    file: "",
+  };
+  let match;
+  let complianceConfig;
+
+  stdout.split("\n").forEach((rawLine) => {
+    if (rawLine === "") return;
+    match = rawLine.match(filePathMatch)[0];
+    complianceConfig = fileSettings[match].complianceConfig;
+    const [file, line] = rawLine.split(match);
+    const trimmedLine = line.trim();
+    /* The type is a kind of `meta` tag. e.g. type=test */
+    if (
+      Object.values(complianceConfig.types).some((type) => trimmedLine.startsWith(type))
+    ) {
+      state.lines.push(line);
+      return;
+    }
+    /* A new meta tag that is NOT a type is a new comment. */
+    if (trimmedLine.startsWith(complianceConfig.metaToken)) {
+      // Push the old state, and reset the state for this citation
+      pushState({ line, file, complianceConfig, match });
+      return;
+    }
+    // These should be content lines, e.g. //#
+    if (trimmedLine.startsWith(complianceConfig.contentToken)) state.lines.push(line);
+    // There may be errant matches, skip them e.g. size //= 2
+    return;
+  });
+
+  /* Push the tail state. */
+  pushState({ match, complianceConfig, line: "", file: "" });
+  compliance.shift();
+  return compliance;
+
+  function pushState({ line, file, complianceConfig, match }) {
+    // Exceptions do not have any mirror.
+    // As such, there is no correspondence to validate,
+    // so we skip these citations.
+    if (!state.lines.some((line) => line.includes(complianceConfig.types.exception))) {
+      // This is after the test because the tests come first
+      const raw = [state.file].concat(state.lines).join("\n");
+      // By removing the test type it is easy to build a bi-directional map
+      // between citations and tests
+      const citationForm = state.lines
+        .map((line) => line.trim())
+        .filter((line) => line !== complianceConfig.types.test)
+        .join("\n");
+      // Push an item that can be used in a Map
+      compliance.push([citationForm, raw]);
+    }
+
+    state = {
+      lines: [line],
+      file: `${file}${match}`,
+    };
+    isTest = false;
+  }
+}
+
+function getDuplicates(arr) {
+  const found = new Set();
+  return arr
+    .map((element) => (Array.isArray(element) ? element[0] : element))
+    .filter((item) => {
+      if (!found.has(item)) {
+        found.add(item);
+        return false;
+      }
+      return true;
+    });
+}
+
+/* For a test that covers many conditions, ; can delimit the conditions
+ * e.g.
+ * Check for early return (Postcondition): Condition 1 ; Check for early return (Postcondition): Condition 2
+ * This is primarily useful for Check for early return (Postcondition)
+ * as listed above because they can be easily check
+ * in a streaming context by increasing the buffer count by 1 byte
+ * at every iteration.
+ */
+function flatMapForTests(tests) {
+  const flatMapped = [];
+  tests.forEach((t) => {
+    flatMapped.push(...t.split(";").map((t) => t.trim()));
+  });
+  return flatMapped;
+}
+
+async function executeAndClean(commands, cleanFn) {
+  const results = await Promise.all(
+    commands.map((command) =>
+      execAsync(command)
+        .catch((ex) => {
+          if (ex.code === 1 && ex.stdout === "" && ex.stderr === "") {
+            return ex;
+          }
+          throw ex;
+        })
+        .then(cleanFn)
+    )
+  );
+
+  return [].concat(...results);
+}

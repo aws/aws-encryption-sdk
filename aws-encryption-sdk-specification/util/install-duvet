@@ -1,0 +1,23 @@
+#/usr/bin/env bash
+# Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+set -e
+
+# Make sure that rustup in installed
+if ! command -v rustup &> /dev/null; then
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+fi
+
+# 
+if ! command -v cargo &> /dev/null; then
+  rustup install stable
+fi
+
+DIR=$(mktemp -d)
+git clone git@github.com:awslabs/duvet.git $DIR
+cargo +stable install --force --path $DIR/
+
+if !command -v duvet &> /dev/null; then
+  echo 'Add `~/.cargo/bin` to your $PATH'
+fi

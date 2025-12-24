@@ -1,0 +1,21 @@
+# This workflow performs static analysis checks.
+name: static analysis
+
+on: ["pull_request", "push"]
+
+jobs:
+  not-grep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: not-grep
+        uses: mattsb42-meta/not-grep@1.0.0
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+      - name: install
+        run: npm install --global prettier
+      - name: prettify
+        run: ./ci/prettify.sh check

@@ -1,0 +1,62 @@
+# This workflow does static verification of the DafnyCore library
+name: Dafny Core verification (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      dafny-version:
+        required: true
+        type: string
+
+jobs:
+  reusable_verification:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest ]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Dafny
+        uses: dafny-lang/setup-dafny-action@v1.6.1
+        with:
+          dafny-version: ${{ inputs.dafny-version }}
+
+      - name: Version information
+        run: |
+          dafny --version
+
+      - name: Upgrade outdated pip
+        run: python -m pip install --upgrade pip
+
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Install lit
+        run: pip install lit OutputCheck
+
+      - name: Set up JS dependencies
+        run: npm install bignumber.js
+
+      - name: Verify Code and Examples
+        run: |
+          lit --time-tests -v --param 'dafny_params=--log-format trx --log-format csv' .
+
+      - name: Generate Report
+        run: find . -name '*.csv' -print0 | xargs -0 --verbose dafny-reportgenerator summarize-csv-results --max-resource-count 40000000
+
+      - uses: actions/upload-artifact@v4  # upload test results
+        with:
+          name: verification-results-${{ inputs.dafny-version }}
+          path: '**/TestResults/*.trx'
+          if-no-files-found: error

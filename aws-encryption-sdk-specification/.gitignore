@@ -1,0 +1,20 @@
+# Vim swap files
+*~
+*.swp
+*.swo
+
+# OS Artifacts
+.DS_Store
+
+# JetBrains IDE artifacts
+.idea/
+venv/
+/.history
+/framework/aws-kms/.refcache
+.refcache
+
+# pyenv files
+.python-version
+
+# compliance files are generated on-the-fly
+compliance

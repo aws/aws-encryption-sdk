@@ -1,0 +1,9 @@
+**/.DS_Store
+**/Output/
+**/TestResults/
+examples/FileIO/ReadBytesFromFile.cs
+examples/FileIO/ReadBytesFromFile.jar
+examples/FileIO/ReadBytesFromFile.js
+examples/FileIO/WriteBytesToFile.cs
+examples/FileIO/WriteBytesToFile.jar
+examples/FileIO/WriteBytesToFile.js

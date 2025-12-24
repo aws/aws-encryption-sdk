@@ -1,0 +1,21 @@
+name: Nightly Dafny Core verification
+
+on:
+  # Scheduled to be run sometime after the nightly build of dafny
+  schedule:
+    - cron: "7 10 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verification:
+    strategy:
+      matrix:
+        version: [ nightly-latest ]
+
+    uses: ./.github/workflows/reusable-tests.yml
+    with:
+      dafny-version: ${{ matrix.version }}

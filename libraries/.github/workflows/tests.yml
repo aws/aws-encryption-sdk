@@ -1,0 +1,20 @@
+name: Dafny Core verification
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ master ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verification:
+    strategy:
+      matrix:
+        version: [ 4.0.0, 4.1.0 ]
+
+    uses: ./.github/workflows/reusable-tests.yml
+    with:
+      dafny-version: ${{ matrix.version }}
