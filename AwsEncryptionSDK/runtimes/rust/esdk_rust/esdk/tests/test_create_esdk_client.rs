@@ -59,7 +59,7 @@ async fn test_net_retry_flag() {
     // Attempt to decrypt the v4.0.0 message without the retry flag and expect
     // decryption to fail
     let ec = EncryptionContext::new();
-    let mut input = DecryptInput::with_keyring(ESDK_NET_V400_MESSAGE, ec, raw_aes_keyring);
+    let mut input = DecryptInput::with_legacy_keyring(ESDK_NET_V400_MESSAGE, ec, raw_aes_keyring);
     input.net_v4_retry_policy = NetV400RetryPolicy::ForbidRetry;
 
     let expect_failure = decrypt(&input).await;

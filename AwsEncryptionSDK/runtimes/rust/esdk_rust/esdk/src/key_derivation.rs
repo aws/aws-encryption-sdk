@@ -41,15 +41,23 @@ const fn valid_derivation_alg(
     }
 }
 
-const fn get_hkdf_alg(alg : aws_mpl_legacy::aws_cryptography_primitives::types::DigestAlgorithm) -> aws_mpl_primitives::DigestAlg {
+const fn get_hkdf_alg(
+    alg: aws_mpl_legacy::aws_cryptography_primitives::types::DigestAlgorithm,
+) -> aws_mpl_primitives::DigestAlg {
     match alg {
-        aws_mpl_legacy::aws_cryptography_primitives::types::DigestAlgorithm::Sha256 => aws_mpl_primitives::DigestAlg::Sha256,
-        aws_mpl_legacy::aws_cryptography_primitives::types::DigestAlgorithm::Sha384 => aws_mpl_primitives::DigestAlg::Sha384,
-        aws_mpl_legacy::aws_cryptography_primitives::types::DigestAlgorithm::Sha512 => aws_mpl_primitives::DigestAlg::Sha512,
+        aws_mpl_legacy::aws_cryptography_primitives::types::DigestAlgorithm::Sha256 => {
+            aws_mpl_primitives::DigestAlg::Sha256
+        }
+        aws_mpl_legacy::aws_cryptography_primitives::types::DigestAlgorithm::Sha384 => {
+            aws_mpl_primitives::DigestAlg::Sha384
+        }
+        aws_mpl_legacy::aws_cryptography_primitives::types::DigestAlgorithm::Sha512 => {
+            aws_mpl_primitives::DigestAlg::Sha512
+        }
     }
 }
 
-fn digest_length(alg : aws_mpl_primitives::DigestAlg) -> Result<usize, Error> {
+fn digest_length(alg: aws_mpl_primitives::DigestAlg) -> Result<usize, Error> {
     match alg {
         aws_mpl_primitives::DigestAlg::Sha256 => Ok(32),
         aws_mpl_primitives::DigestAlg::Sha384 => Ok(48),
@@ -98,9 +106,21 @@ pub(crate) fn derive_key(
             let salt = vec![0u8; digest_length(alg)?];
             let mut derived_key = vec![0u8; hkdf.output_key_length.unwrap() as usize];
             if on_net_v4_retry {
-                aws_mpl_primitives::hkdf(alg, &salt, plaintext_data_key, message_id, &mut derived_key)?;
+                aws_mpl_primitives::hkdf(
+                    alg,
+                    &salt,
+                    plaintext_data_key,
+                    message_id,
+                    &mut derived_key,
+                )?;
             } else {
-                aws_mpl_primitives::hkdf(alg, &salt, plaintext_data_key, &[suite.binary_id.as_ref().unwrap().as_ref(), message_id].concat(), &mut derived_key)?;
+                aws_mpl_primitives::hkdf(
+                    alg,
+                    &salt,
+                    plaintext_data_key,
+                    &[suite.binary_id.as_ref().unwrap().as_ref(), message_id].concat(),
+                    &mut derived_key,
+                )?;
             }
 
             Ok(ExpandedKeyMaterial {

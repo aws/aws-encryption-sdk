@@ -21,7 +21,7 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 use aws_esdk::*;
 use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
 
-pub async fn encrypt_and_decrypt_with_keyring(
+pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,
     kms_rsa_key_id: &str,
     kms_rsa_public_key: &str,
@@ -64,7 +64,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     let plaintext = example_data.as_bytes();
 
     let mut encrypt_input =
-        EncryptInput::with_keyring(plaintext, encryption_context, kms_rsa_keyring);
+        EncryptInput::with_legacy_keyring(plaintext, encryption_context, kms_rsa_keyring);
     encrypt_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
     let encryption_response = encrypt(&encrypt_input).await?;
 
@@ -95,11 +95,11 @@ pub async fn encrypt_and_decrypt_with_keyring(
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
+pub async fn test_encrypt_and_decrypt_with_legacy_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt and decrypt using the AWS KMS RSA Keyring example
     use crate::example_utils::utils;
 
-    encrypt_and_decrypt_with_keyring(
+    encrypt_and_decrypt_with_legacy_keyring(
         utils::TEST_EXAMPLE_DATA,
         utils::TEST_KMS_RSA_KEY_ID,
         utils::TEST_KMS_RSA_PUBLIC_KEY,

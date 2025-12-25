@@ -75,8 +75,11 @@ pub async fn encrypt_and_decrypt_with_cmm(
     // "but adds", "that can help you", and "the data you are handling" WILL be stored.
     let plaintext = example_data.as_bytes();
 
-    let encrypt_input =
-        EncryptInput::with_cmm(plaintext, encryption_context.clone(), required_ec_cmm.clone());
+    let encrypt_input = EncryptInput::with_legacy_cmm(
+        plaintext,
+        encryption_context.clone(),
+        required_ec_cmm.clone(),
+    );
     let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
@@ -104,7 +107,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
     // 11. Attempt to decrypt your encrypted data using the same cryptographic material manager
     // you used on encrypt, but we won't pass the encryption context we DID NOT store on the message.
     // This will fail
-    decrypt_input.materials_manager = Some(required_ec_cmm.clone());
+    decrypt_input.source = Some(MaterialSource::LegacyCmm(required_ec_cmm.clone()));
     decrypt_input.encryption_context = EncryptionContext::new();
     let decryption_response_without_ec = decrypt(&decrypt_input).await;
 
@@ -122,7 +125,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
         ("requiredKey2".to_string(), "requiredValue2".to_string()),
     ]);
 
-    decrypt_input.materials_manager = Some(required_ec_cmm);
+    decrypt_input.source = Some(MaterialSource::LegacyCmm(required_ec_cmm));
     decrypt_input.encryption_context = reproduced_encryption_context;
 
     let decryption_response_with_reproduced_ec = decrypt(&decrypt_input).await?;
@@ -140,7 +143,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
     // encryption context with the request will result in an AwsCryptographicMaterialProvidersError
 
     // This will pass
-    decrypt_input.materials_manager = Some(underlying_cmm);
+    decrypt_input.source = Some(MaterialSource::LegacyCmm(underlying_cmm));
     decrypt_input.encryption_context = encryption_context;
     let decryption_response_with_ec_underlying_cmm = decrypt(&decrypt_input).await?;
 

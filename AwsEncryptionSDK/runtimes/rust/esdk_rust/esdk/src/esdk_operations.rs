@@ -5,6 +5,7 @@
 use crate::encrypt_decrypt;
 use crate::error::Error;
 use crate::key_derivation;
+use crate::legacy;
 use crate::message_body;
 use crate::message_body::get_aes_alg;
 use crate::serialize::header_types::ContentType;
@@ -14,8 +15,6 @@ use crate::serialize::*;
 use crate::types::*;
 use aws_mpl_primitives::*;
 use aws_mpl_rs::commitment::EsdkCommitmentPolicy;
-use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
-use crate::legacy;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 enum ProtectionNeeded {
@@ -65,8 +64,7 @@ pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
         &mut cursor,
         &mut ciphertext,
         input.plaintext.len(),
-        input.materials_manager.clone(),
-        input.keyring.clone(),
+        input.source.clone(),
         &input.encryption_context,
         input.algorithm_suite_id,
         input.frame_length,
@@ -94,8 +92,7 @@ pub async fn encrypt_stream(
         plaintext,
         ciphertext,
         input.data_size.unwrap_or(usize::MAX),
-        input.materials_manager.clone(),
-        input.keyring.clone(),
+        input.source.clone(),
         &input.encryption_context,
         input.algorithm_suite_id,
         input.frame_length,
@@ -110,8 +107,7 @@ async fn internal_encrypt(
     plaintext: &mut dyn SafeRead,
     ciphertext: &mut dyn SafeWrite,
     plaintext_len: usize,
-    input_cmm: Option<CryptographicMaterialsManagerRef>,
-    input_keyring: Option<aws_mpl_legacy::types::keyring::KeyringRef>,
+    input_source: Option<MaterialSource>,
     encryption_context: &EncryptionContext,
     algorithm_suite_id: Option<aws_mpl_rs::suites::EsdkAlgorithmSuiteId>,
     frame_length: FrameLength,
@@ -123,14 +119,14 @@ async fn internal_encrypt(
 
     let commitment_policy = legacy::to_legacy_commitment(commitment_policy)?;
     let mpl = mpl();
-    let cmm = encrypt_decrypt::create_cmm_from_input(&mpl, input_cmm, input_keyring).await?;
+    let cmm = encrypt_decrypt::create_cmm_from_input(&mpl, input_source).await?;
 
     //= compliance/client-apis/encrypt.txt#2.4.5
     //# The algorithm suite (../framework/algorithm-suite.md) that SHOULD be
     //# used for encryption.
     let algorithm_suite_id = match algorithm_suite_id {
         Some(id) => Some(legacy::to_legacy_esdk_suite_id(id)?),
-        None => None
+        None => None,
     };
     let algorithm_suite_id = algorithm_suite_id.map(aws_mpl_legacy::types::AlgorithmSuiteId::Esdk);
     //= compliance/client-apis/encrypt.txt#2.6.1
@@ -155,7 +151,9 @@ async fn internal_encrypt(
     if let Some(ref id) = algorithm_suite_id {
         mpl.validate_commitment_policy_on_encrypt()
             .algorithm(id.clone())
-            .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(commitment_policy))
+            .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(
+                commitment_policy,
+            ))
             .send()
             .await?;
     }
@@ -271,8 +269,7 @@ pub async fn decrypt_stream(
     internal_decrypt(
         ciphertext,
         plaintext,
-        input.materials_manager.clone(),
-        input.keyring.clone(),
+        input.source.clone(),
         &input.encryption_context,
         input.net_v4_retry_policy,
         ProtectionNeeded::needs_protection(input.i_accept_the_danger),
@@ -296,8 +293,7 @@ pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
     let out = internal_decrypt(
         &mut cursor,
         &mut plaintext,
-        input.materials_manager.clone(),
-        input.keyring.clone(),
+        input.source.clone(),
         &input.encryption_context,
         input.net_v4_retry_policy,
         ProtectionNeeded::No, // Customer cannot see any partial results
@@ -321,8 +317,7 @@ pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
 async fn internal_decrypt(
     ciphertext: &mut dyn SafeRead,
     plaintext: &mut dyn SafeWrite,
-    input_cmm: Option<CryptographicMaterialsManagerRef>,
-    input_keyring: Option<aws_mpl_legacy::types::keyring::KeyringRef>,
+    input_source: Option<MaterialSource>,
     encryption_context: &EncryptionContext,
     net_v4_retry_policy: NetV400RetryPolicy,
     safety_needed: ProtectionNeeded,
@@ -331,7 +326,7 @@ async fn internal_decrypt(
 ) -> Result<DecryptStreamOutput, Error> {
     #[allow(clippy::or_fun_call, reason = "Can't actually replace.")]
     let mpl = mpl();
-    let cmm = encrypt_decrypt::create_cmm_from_input(&mpl, input_cmm, input_keyring).await?;
+    let cmm = encrypt_decrypt::create_cmm_from_input(&mpl, input_source).await?;
     let commitment_policy = legacy::to_legacy_commitment(commitment_policy)?;
 
     //= compliance/client-apis/decrypt.txt#2.5.1.1
@@ -352,7 +347,9 @@ async fn internal_decrypt(
     //# decrypt MUST yield an error.
     mpl.validate_commitment_policy_on_decrypt()
         .algorithm(header_body.algorithm_suite().id.as_ref().unwrap().clone())
-        .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(commitment_policy))
+        .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(
+            commitment_policy,
+        ))
         .send()
         .await?;
 
@@ -565,7 +562,9 @@ async fn internal_decrypt(
     encryption_context_to_only_authenticate.extend(header.encryption_context);
     Ok(DecryptStreamOutput {
         encryption_context: encryption_context_to_only_authenticate,
-        algorithm_suite_id: legacy::from_legacy_esdk_suite_id(get_esdk_id(header.suite.id.as_ref())?),
+        algorithm_suite_id: legacy::from_legacy_esdk_suite_id(get_esdk_id(
+            header.suite.id.as_ref(),
+        )?),
     })
 }
 

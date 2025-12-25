@@ -27,7 +27,7 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 use aws_esdk::*;
 use aws_mpl_rs::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
 
-pub async fn encrypt_and_decrypt_with_keyring(
+pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,
     kms_key_id: &str,
 ) -> Result<(), crate::BoxError> {
@@ -74,7 +74,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384 which is a non-committing algorithm.
     let plaintext = example_data.as_bytes();
 
-    let mut encrypt_input = EncryptInput::with_keyring(plaintext, encryption_context, kms_keyring);
+    let mut encrypt_input =
+        EncryptInput::with_legacy_keyring(plaintext, encryption_context, kms_keyring);
     encrypt_input.commitment_policy = ForbidEncryptAllowDecrypt;
     let encryption_response = encrypt(&encrypt_input).await?;
 
@@ -105,12 +106,15 @@ pub async fn encrypt_and_decrypt_with_keyring(
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
+pub async fn test_encrypt_and_decrypt_with_legacy_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt and decrypt using the Set Commitment Policy example
     use crate::example_utils::utils;
 
-    encrypt_and_decrypt_with_keyring(utils::TEST_EXAMPLE_DATA, utils::TEST_DEFAULT_KMS_KEY_ID)
-        .await?;
+    encrypt_and_decrypt_with_legacy_keyring(
+        utils::TEST_EXAMPLE_DATA,
+        utils::TEST_DEFAULT_KMS_KEY_ID,
+    )
+    .await?;
 
     Ok(())
 }

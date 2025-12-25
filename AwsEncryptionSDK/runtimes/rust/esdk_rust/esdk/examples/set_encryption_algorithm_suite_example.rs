@@ -44,7 +44,9 @@ use aws_mpl_legacy::types::AesWrappingAlg;
 use aws_mpl_rs::suites::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey;
 use rand::TryRngCore;
 
-pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), crate::BoxError> {
+pub async fn encrypt_and_decrypt_with_legacy_keyring(
+    example_data: &str,
+) -> Result<(), crate::BoxError> {
     // 2. The key namespace and key name are defined by you.
     // and are used by the Raw AES keyring to determine
     // whether it should attempt to decrypt an encrypted data key.
@@ -92,7 +94,7 @@ pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), 
     // This is the important step in this example where we specify the algorithm suite
     // you want to use for encrypting your data
     let mut encrypt_input =
-        EncryptInput::with_keyring(plaintext, encryption_context, raw_aes_keyring);
+        EncryptInput::with_legacy_keyring(plaintext, encryption_context, raw_aes_keyring);
     encrypt_input.algorithm_suite_id = Some(AlgAes256GcmHkdfSha512CommitKey);
     let encryption_response = encrypt(&encrypt_input).await?;
 
@@ -135,11 +137,11 @@ fn generate_aes_key_bytes() -> Vec<u8> {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
+pub async fn test_encrypt_and_decrypt_with_legacy_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt and decrypt using the Set Encryption Algorithm Suite example
     use crate::example_utils::utils;
 
-    encrypt_and_decrypt_with_keyring(utils::TEST_EXAMPLE_DATA).await?;
+    encrypt_and_decrypt_with_legacy_keyring(utils::TEST_EXAMPLE_DATA).await?;
 
     Ok(())
 }

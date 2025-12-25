@@ -36,7 +36,7 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 use aws_esdk::*;
 use aws_mpl_legacy::types::DiscoveryFilter;
 
-pub async fn encrypt_and_decrypt_with_keyring(
+pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,
     kms_key_id: &str,
     aws_account_id: &str,
@@ -78,7 +78,11 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 5. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
-    let encrypt_input = EncryptInput::with_keyring(plaintext, encryption_context.clone(), encrypt_kms_keyring);
+    let encrypt_input = EncryptInput::with_legacy_keyring(
+        plaintext,
+        encryption_context.clone(),
+        encrypt_kms_keyring,
+    );
     let encryption_response = encrypt(&encrypt_input).await?;
     let ciphertext = encryption_response.ciphertext;
 
@@ -119,7 +123,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // All of this is done serially, until a success occurs or all keyrings have
     // failed all (filtered) EDKs.
     // KMS Discovery Keyrings will attempt to decrypt Multi Region Keys (MRKs) and regular KMS Keys.
-    let decrypt_input = DecryptInput::with_keyring(&ciphertext, encryption_context, discovery_multi_keyring);
+    let decrypt_input =
+        DecryptInput::with_legacy_keyring(&ciphertext, encryption_context, discovery_multi_keyring);
     let decryption_response = decrypt(&decrypt_input).await?;
     let decrypted_plaintext = decryption_response.plaintext;
 
@@ -136,13 +141,13 @@ pub async fn encrypt_and_decrypt_with_keyring(
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
+pub async fn test_encrypt_and_decrypt_with_legacy_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt and decrypt using the AWS KMS Discovery Multi Keyring example
     use crate::example_utils::utils;
 
     let aws_regions: Vec<String> = vec!["us-east-1".to_string(), "us-west-2".to_string()];
 
-    encrypt_and_decrypt_with_keyring(
+    encrypt_and_decrypt_with_legacy_keyring(
         utils::TEST_EXAMPLE_DATA,
         utils::TEST_DEFAULT_KMS_KEY_ID,
         utils::TEST_DEFAULT_KMS_KEY_ACCOUNT_ID,

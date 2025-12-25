@@ -105,28 +105,31 @@ async fn test_repr_encryption_context_with_same_ec_happy_case() {
     let encryption_context = small_encryption_context(SmallEncryptionContextVariation::AB);
 
     let encrypt_input =
-        EncryptInput::with_keyring(asdf, encryption_context.clone(), multi_keyring.clone());
+        EncryptInput::with_legacy_keyring(asdf, encryption_context.clone(), multi_keyring.clone());
     let encrypt_output = encrypt(&encrypt_input).await.unwrap();
     let esdk_ciphertext = encrypt_output.ciphertext;
 
     // Test RSA
-    let mut decrypt_input =
-        DecryptInput::with_keyring(&esdk_ciphertext, encryption_context, rsa_keyring.clone());
+    let mut decrypt_input = DecryptInput::with_legacy_keyring(
+        &esdk_ciphertext,
+        encryption_context,
+        rsa_keyring.clone(),
+    );
     let decrypt_output: DecryptOutput = decrypt(&decrypt_input).await.unwrap();
     assert!(decrypt_output.plaintext == asdf);
 
     // Test KMS
-    decrypt_input.keyring = Some(kms_keyring.clone());
+    decrypt_input.source = Some(MaterialSource::LegacyKeyring(kms_keyring.clone()));
     let decrypt_output: DecryptOutput = decrypt(&decrypt_input).await.unwrap();
     assert!(decrypt_output.plaintext == asdf);
 
     // Test AES
-    decrypt_input.keyring = Some(aes_keyring.clone());
+    decrypt_input.source = Some(MaterialSource::LegacyKeyring(aes_keyring.clone()));
     let decrypt_output: DecryptOutput = decrypt(&decrypt_input).await.unwrap();
     assert!(decrypt_output.plaintext == asdf);
 
     // Test Hierarchy Keyring
-    decrypt_input.keyring = Some(h_keyring.clone());
+    decrypt_input.source = Some(MaterialSource::LegacyKeyring(h_keyring.clone()));
     let decrypt_output: DecryptOutput = decrypt(&decrypt_input).await.unwrap();
     assert!(decrypt_output.plaintext == asdf);
 }
@@ -180,12 +183,12 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
         .await
         .unwrap();
 
-    let encrypt_input = EncryptInput::with_cmm(asdf, encryption_context, req_cmm);
+    let encrypt_input = EncryptInput::with_legacy_cmm(asdf, encryption_context, req_cmm);
     let encrypt_output = encrypt(&encrypt_input).await.unwrap();
     let esdk_ciphertext = encrypt_output.ciphertext;
 
     // Test RSA
-    let mut decrypt_input = DecryptInput::with_keyring(
+    let mut decrypt_input = DecryptInput::with_legacy_keyring(
         &esdk_ciphertext,
         reproduced_encryption_context,
         rsa_keyring.clone(),
@@ -194,17 +197,17 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     assert!(decrypt_output.plaintext == asdf);
 
     // Test KMS
-    decrypt_input.keyring = Some(kms_keyring.clone());
+    decrypt_input.source = Some(MaterialSource::LegacyKeyring(kms_keyring.clone()));
     let decrypt_output: DecryptOutput = decrypt(&decrypt_input).await.unwrap();
     assert!(decrypt_output.plaintext == asdf);
 
     // Test AES
-    decrypt_input.keyring = Some(aes_keyring.clone());
+    decrypt_input.source = Some(MaterialSource::LegacyKeyring(aes_keyring.clone()));
     let decrypt_output: DecryptOutput = decrypt(&decrypt_input).await.unwrap();
     assert!(decrypt_output.plaintext == asdf);
 
     // Test Hierarchy Keyring
-    decrypt_input.keyring = Some(h_keyring.clone());
+    decrypt_input.source = Some(MaterialSource::LegacyKeyring(h_keyring.clone()));
     let decrypt_output: DecryptOutput = decrypt(&decrypt_input).await.unwrap();
     assert!(decrypt_output.plaintext == asdf);
 }

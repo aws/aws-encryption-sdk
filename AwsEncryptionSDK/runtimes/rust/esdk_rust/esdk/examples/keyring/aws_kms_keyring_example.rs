@@ -23,7 +23,7 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 
 use aws_esdk::*;
 
-pub async fn encrypt_and_decrypt_with_keyring(
+pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,
     kms_key_id: &str,
 ) -> Result<(), crate::BoxError> {
@@ -59,7 +59,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 4. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
-    let encrypt_input = EncryptInput::with_keyring(plaintext, context, kms_keyring);
+    let encrypt_input = EncryptInput::with_legacy_keyring(plaintext, context, kms_keyring);
     let encryption_response = encrypt(&encrypt_input).await?;
     let ciphertext = encryption_response.ciphertext;
 
@@ -88,24 +88,30 @@ pub async fn encrypt_and_decrypt_with_keyring(
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
+pub async fn test_encrypt_and_decrypt_with_legacy_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt and decrypt using the AWS KMS Keyring example
     use crate::example_utils::utils;
 
-    encrypt_and_decrypt_with_keyring(utils::TEST_EXAMPLE_DATA, utils::TEST_DEFAULT_KMS_KEY_ID)
-        .await?;
+    encrypt_and_decrypt_with_legacy_keyring(
+        utils::TEST_EXAMPLE_DATA,
+        utils::TEST_DEFAULT_KMS_KEY_ID,
+    )
+    .await?;
 
     Ok(())
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_encrypt_and_decrypt_with_keyring_async() -> Result<(), crate::BoxError2> {
+pub async fn test_encrypt_and_decrypt_with_legacy_keyring_async() -> Result<(), crate::BoxError2> {
     // Test function for encrypt and decrypt using the AWS KMS Keyring example (async)
     use crate::example_utils::utils;
 
     let handle = tokio::spawn(async move {
-        encrypt_and_decrypt_with_keyring(utils::TEST_EXAMPLE_DATA, utils::TEST_DEFAULT_KMS_KEY_ID)
-            .await
+        encrypt_and_decrypt_with_legacy_keyring(
+            utils::TEST_EXAMPLE_DATA,
+            utils::TEST_DEFAULT_KMS_KEY_ID,
+        )
+        .await
     });
 
     assert!(handle.await.unwrap().is_ok());

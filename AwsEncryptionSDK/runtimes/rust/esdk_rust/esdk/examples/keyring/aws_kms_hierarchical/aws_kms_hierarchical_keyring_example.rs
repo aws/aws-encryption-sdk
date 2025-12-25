@@ -44,7 +44,7 @@ use aws_mpl_legacy::aws_cryptography_keyStore::client as keystore_client;
 use aws_mpl_legacy::aws_cryptography_keyStore::types::KmsConfiguration;
 use aws_mpl_legacy::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig;
 
-pub async fn encrypt_and_decrypt_with_keyring(
+pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,
     key_store_table_name: &str,
     logical_key_store_name: &str,
@@ -140,7 +140,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 8. Encrypt the data with encryption_contextA & encryption_contextB
     let plaintext = example_data.as_bytes();
 
-    let mut encrypt_input = EncryptInput::with_keyring(
+    let mut encrypt_input = EncryptInput::with_legacy_keyring(
         plaintext,
         encryption_context_a.clone(),
         hierarchical_keyring.clone(),
@@ -190,7 +190,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // Keyring with tenant B's branch key cannot decrypt data encrypted with tenant A's branch key
     // This will fail and raise a AwsCryptographicMaterialProvidersError,
     // which we swallow ONLY for demonstration purposes.
-    let mut decrypt_input = DecryptInput::with_keyring(
+    let mut decrypt_input = DecryptInput::with_legacy_keyring(
         &ciphertext_a,
         // Provide the encryption context that was supplied to the encrypt method
         encryption_context_a.clone(),
@@ -208,7 +208,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // This will fail and raise a AwsCryptographicMaterialProvidersError,
     // which we swallow ONLY for demonstration purposes.
     decrypt_input.ciphertext = &ciphertext_b;
-    decrypt_input.keyring = Some(hierarchical_keyring_a.clone());
+    decrypt_input.source = Some(MaterialSource::LegacyKeyring(
+        hierarchical_keyring_a.clone(),
+    ));
     decrypt_input.encryption_context = encryption_context_b.clone();
     let decryption_response_mismatch_2 = decrypt(&decrypt_input).await;
 
@@ -236,7 +238,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // Similarly for TenantB
     decrypt_input.ciphertext = &ciphertext_b;
     decrypt_input.encryption_context = encryption_context_b;
-    decrypt_input.keyring = Some(hierarchical_keyring_b.clone());
+    decrypt_input.source = Some(MaterialSource::LegacyKeyring(
+        hierarchical_keyring_b.clone(),
+    ));
     let decryption_response_b = decrypt(&decrypt_input).await?;
     let decrypted_plaintext_b = decryption_response_b.plaintext;
 
@@ -253,11 +257,11 @@ pub async fn encrypt_and_decrypt_with_keyring(
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
+pub async fn test_encrypt_and_decrypt_with_legacy_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt and decrypt using the Hierarchical Keyring example
     use crate::example_utils::utils;
 
-    encrypt_and_decrypt_with_keyring(
+    encrypt_and_decrypt_with_legacy_keyring(
         utils::TEST_EXAMPLE_DATA,
         utils::TEST_KEY_STORE_NAME,
         utils::TEST_LOGICAL_KEY_STORE_NAME,

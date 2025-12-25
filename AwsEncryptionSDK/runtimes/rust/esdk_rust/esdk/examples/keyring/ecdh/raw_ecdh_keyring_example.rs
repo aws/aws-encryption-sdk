@@ -60,7 +60,7 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-pub async fn encrypt_and_decrypt_with_keyring(
+pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,
     ecdh_curve_spec: EcdhCurveSpec,
 ) -> Result<(), crate::BoxError> {
@@ -137,7 +137,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 7. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
-    let encrypt_input = EncryptInput::with_keyring(plaintext, encryption_context, raw_ecdh_keyring);
+    let encrypt_input =
+        EncryptInput::with_legacy_keyring(plaintext, encryption_context, raw_ecdh_keyring);
     let encryption_response = encrypt(&encrypt_input).await?;
     let ciphertext = encryption_response.ciphertext;
 
@@ -189,11 +190,12 @@ fn should_generate_new_ecc_key_pair_raw_ecdh() -> Result<bool, String> {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
+pub async fn test_encrypt_and_decrypt_with_legacy_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt and decrypt using the Raw ECDH Keyring example
     use crate::example_utils::utils;
 
-    encrypt_and_decrypt_with_keyring(utils::TEST_EXAMPLE_DATA, EcdhCurveSpec::EccNistP256).await?;
+    encrypt_and_decrypt_with_legacy_keyring(utils::TEST_EXAMPLE_DATA, EcdhCurveSpec::EccNistP256)
+        .await?;
 
     Ok(())
 }

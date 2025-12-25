@@ -21,7 +21,7 @@ use aws_mpl_legacy::types::AesWrappingAlg;
 use aws_mpl_legacy::types::keyring::KeyringRef;
 use rand::TryRngCore;
 
-pub async fn encrypt_and_decrypt_with_keyring(
+pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,
     max_encrypted_data_keys: usize,
 ) -> Result<(), crate::BoxError> {
@@ -93,8 +93,9 @@ pub async fn encrypt_and_decrypt_with_keyring(
     let plaintext = example_data.as_bytes();
 
     let mut encrypt_input =
-        EncryptInput::with_keyring(plaintext, encryption_context, multi_keyring);
-    encrypt_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(max_encrypted_data_keys).unwrap());
+        EncryptInput::with_legacy_keyring(plaintext, encryption_context, multi_keyring);
+    encrypt_input.max_encrypted_data_keys =
+        Some(std::num::NonZeroUsize::new(max_encrypted_data_keys).unwrap());
     let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
@@ -120,7 +121,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 10. Demonstrate that an EncryptionSDK with a lower MaxEncryptedDataKeys
     // will fail to decrypt the encrypted message.
-    decrypt_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(max_encrypted_data_keys - 1).unwrap());
+    decrypt_input.max_encrypted_data_keys =
+        Some(std::num::NonZeroUsize::new(max_encrypted_data_keys - 1).unwrap());
 
     let decryption_response_incorrect_max_encrypted_keys = decrypt(&decrypt_input).await;
 
@@ -147,14 +149,15 @@ fn generate_aes_key_bytes() -> Vec<u8> {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
+pub async fn test_encrypt_and_decrypt_with_legacy_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt and decrypt using the Limit Encrypted Data Keys example
     use crate::example_utils::utils;
 
     // max_encrypted_data_keys MUST be greater than 0
     let max_encrypted_data_keys: usize = 3;
 
-    encrypt_and_decrypt_with_keyring(utils::TEST_EXAMPLE_DATA, max_encrypted_data_keys).await?;
+    encrypt_and_decrypt_with_legacy_keyring(utils::TEST_EXAMPLE_DATA, max_encrypted_data_keys)
+        .await?;
 
     Ok(())
 }

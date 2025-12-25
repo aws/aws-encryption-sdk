@@ -42,7 +42,8 @@ impl SigningSuiteOnlyCMM {
             // after this CMM approves the Algorithm Suite.
             cmm: tokio::task::block_in_place(|| {
                 tokio::runtime::Handle::current().block_on(async {
-                    mpl().create_default_cryptographic_materials_manager()
+                    mpl()
+                        .create_default_cryptographic_materials_manager()
                         .keyring(keyring)
                         .send()
                         .await

@@ -44,7 +44,7 @@ use aws_config::Region;
 use aws_esdk::*;
 use aws_mpl_legacy::types::DiscoveryFilter;
 
-pub async fn encrypt_and_decrypt_with_keyring(
+pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,
     mrk_key_id_encrypt: &str,
     mrk_encrypt_region: String,
@@ -91,7 +91,11 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 4. Encrypt the data with the encryption_context using the encrypt_keyring.
     let plaintext = example_data.as_bytes();
-    let encrypt_input = EncryptInput::with_keyring(plaintext, encryption_context.clone(), encrypt_kms_keyring);
+    let encrypt_input = EncryptInput::with_legacy_keyring(
+        plaintext,
+        encryption_context.clone(),
+        encrypt_kms_keyring,
+    );
     let encryption_response = encrypt(&encrypt_input).await?;
     let ciphertext = encryption_response.ciphertext;
 
@@ -137,7 +141,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // all (filtered) EDKs. KMS MRK Discovery Keyrings will attempt to decrypt
     // Multi Region Keys (MRKs) and regular KMS Keys.
     // Provide the encryption context that was supplied to the encrypt method
-    let decrypt_input = DecryptInput::with_keyring(&ciphertext, encryption_context, discovery_multi_keyring);
+    let decrypt_input =
+        DecryptInput::with_legacy_keyring(&ciphertext, encryption_context, discovery_multi_keyring);
     let decryption_response = decrypt(&decrypt_input).await?;
     let decrypted_plaintext = decryption_response.plaintext;
 
@@ -154,14 +159,14 @@ pub async fn encrypt_and_decrypt_with_keyring(
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
+pub async fn test_encrypt_and_decrypt_with_legacy_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt and decrypt using the AWS KMS MRK Discovery Multi Keyring example
     use crate::example_utils::utils;
 
     let mrk_encrypt_region: String = "us-east-1".to_string();
     let aws_regions: Vec<String> = vec!["us-east-1".to_string(), "us-west-2".to_string()];
 
-    encrypt_and_decrypt_with_keyring(
+    encrypt_and_decrypt_with_legacy_keyring(
         utils::TEST_EXAMPLE_DATA,
         utils::TEST_MRK_KEY_ID_US_EAST_1,
         mrk_encrypt_region,

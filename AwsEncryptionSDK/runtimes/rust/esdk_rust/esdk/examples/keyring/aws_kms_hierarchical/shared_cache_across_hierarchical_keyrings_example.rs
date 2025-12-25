@@ -71,7 +71,7 @@ use aws_mpl_legacy::types::CacheType;
 use aws_mpl_legacy::types::DefaultCache;
 use aws_mpl_legacy::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef;
 
-pub async fn encrypt_and_decrypt_with_keyring(
+pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,
     key_store_table_name: &str,
     logical_key_store_name: &str,
@@ -173,7 +173,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 7. Encrypt the data for encryption_context using keyring1
     let plaintext = example_data.as_bytes();
     let mut encrypt_input =
-        EncryptInput::with_keyring(plaintext, encryption_context.clone(), keyring1.clone());
+        EncryptInput::with_legacy_keyring(plaintext, encryption_context.clone(), keyring1.clone());
     let encryption_response1 = encrypt(&encrypt_input).await?;
     let ciphertext1 = encryption_response1.ciphertext;
 
@@ -186,7 +186,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 9. Decrypt your encrypted data using the same keyring HK1 you used on encrypt.
     // Provide the encryption context that was supplied to the encrypt method
-    let mut decrypt_input = DecryptInput::with_keyring(&ciphertext1, encryption_context, keyring1);
+    let mut decrypt_input =
+        DecryptInput::with_legacy_keyring(&ciphertext1, encryption_context, keyring1);
     let decryption_response1 = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext1 = decryption_response1.plaintext;
@@ -240,7 +241,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 13. This encrypt-decrypt roundtrip with HK2 will experience Cache HITS from previous HK1 roundtrip
     // Encrypt the data for encryption_context using keyring2
-    encrypt_input.keyring = Some(keyring2.clone());
+    encrypt_input.source = Some(MaterialSource::LegacyKeyring(keyring2.clone()));
     let encryption_response2 = encrypt(&encrypt_input).await?;
     let ciphertext2 = encryption_response2.ciphertext;
 
@@ -253,7 +254,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 15. Decrypt your encrypted data using the same keyring HK2 you used on encrypt.
     decrypt_input.ciphertext = &ciphertext2;
-    decrypt_input.keyring = Some(keyring2);
+    decrypt_input.source = Some(MaterialSource::LegacyKeyring(keyring2));
     let decryption_response2 = decrypt(&decrypt_input).await?;
 
     let decrypted_plaintext2 = decryption_response2.plaintext;
@@ -271,11 +272,11 @@ pub async fn encrypt_and_decrypt_with_keyring(
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
+pub async fn test_encrypt_and_decrypt_with_legacy_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt and decrypt using the Shared Cache Across Hierarchical Keyrings example
     use crate::example_utils::utils;
 
-    encrypt_and_decrypt_with_keyring(
+    encrypt_and_decrypt_with_legacy_keyring(
         utils::TEST_EXAMPLE_DATA,
         utils::TEST_KEY_STORE_NAME,
         utils::TEST_LOGICAL_KEY_STORE_NAME,

@@ -6,8 +6,8 @@ use crate::serialize::serializable_types::*;
 use crate::serialize::serialize_functions::{read_bytes, read_seq_u32_bounded, read_u32};
 use crate::serialize::*;
 use crate::types::{SafeRead, SafeWrite};
-use aws_mpl_primitives::{AesGcm, aes_decrypt};
 use aws_mpl_legacy::types::AlgorithmSuiteInfo;
+use aws_mpl_primitives::{AesGcm, aes_decrypt};
 
 pub(crate) fn get_aes_alg(suite: &AlgorithmSuiteInfo) -> AesGcm {
     let alg = get_encrypt(suite);

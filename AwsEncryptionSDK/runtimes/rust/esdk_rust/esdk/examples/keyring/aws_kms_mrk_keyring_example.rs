@@ -28,7 +28,7 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 use aws_config::Region;
 use aws_esdk::*;
 
-pub async fn encrypt_and_decrypt_with_keyring(
+pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,
     mrk_key_id_encrypt: &str,
     mrk_replica_key_id_decrypt: &str,
@@ -73,8 +73,11 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 4. Encrypt the data with the encryption_context using the encrypt_keyring.
     let plaintext = example_data.as_bytes();
-    let encrypt_input =
-        EncryptInput::with_keyring(plaintext, encryption_context.clone(), encrypt_kms_keyring);
+    let encrypt_input = EncryptInput::with_legacy_keyring(
+        plaintext,
+        encryption_context.clone(),
+        encrypt_kms_keyring,
+    );
     let encryption_response = encrypt(&encrypt_input).await?;
     let ciphertext = encryption_response.ciphertext;
 
@@ -102,7 +105,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     // 7. Decrypt your encrypted data using the decrypt keyring.
-    let decrypt_input = DecryptInput::with_keyring(&ciphertext, encryption_context, decrypt_kms_keyring);
+    let decrypt_input =
+        DecryptInput::with_legacy_keyring(&ciphertext, encryption_context, decrypt_kms_keyring);
     let decryption_response = decrypt(&decrypt_input).await?;
     let decrypted_plaintext = decryption_response.plaintext;
 
@@ -119,14 +123,14 @@ pub async fn encrypt_and_decrypt_with_keyring(
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
+pub async fn test_encrypt_and_decrypt_with_legacy_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt and decrypt using the AWS KMS MRK Keyring example
     use crate::example_utils::utils;
 
     let mrk_encrypt_region: String = "us-east-1".to_string();
     let mrk_replica_decrypt_region: String = "eu-west-1".to_string();
 
-    encrypt_and_decrypt_with_keyring(
+    encrypt_and_decrypt_with_legacy_keyring(
         utils::TEST_EXAMPLE_DATA,
         utils::TEST_MRK_KEY_ID_US_EAST_1,
         utils::TEST_MRK_KEY_ID_EU_WEST_1,

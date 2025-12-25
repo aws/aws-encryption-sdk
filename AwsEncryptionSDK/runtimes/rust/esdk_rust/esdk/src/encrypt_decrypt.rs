@@ -12,10 +12,10 @@ use crate::serialize::serialize_functions::*;
 use crate::serialize::v2_header_body::get_hkdf;
 use crate::serialize::*;
 
-use aws_mpl_primitives::ecdsa_verify_context;
-use aws_mpl_primitives::{EcdsaSignatureAlgorithm, aes_encrypt, generate_random_bytes};
 use aws_mpl_legacy::types::AlgorithmSuiteInfo;
 use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
+use aws_mpl_primitives::ecdsa_verify_context;
+use aws_mpl_primitives::{EcdsaSignatureAlgorithm, aes_encrypt, generate_random_bytes};
 
 const RESERVED_ENCRYPTION_CONTEXT: &str = "aws-crypto-";
 
@@ -192,14 +192,11 @@ pub(crate) fn validate_encryption_context(ec: &EncryptionContext) -> Result<(), 
  */
 pub(crate) async fn create_cmm_from_input(
     mpl: &aws_mpl_legacy::Client,
-    input_cmm: Option<CryptographicMaterialsManagerRef>,
-    input_keyring: Option<aws_mpl_legacy::types::keyring::KeyringRef>,
+    input_source: Option<MaterialSource>,
 ) -> Result<CryptographicMaterialsManagerRef, Error> {
-    match (input_cmm, input_keyring) {
-        (Some(_cmm), Some(_keyring)) => Err("Cannot provide both a keyring and a CMM.".into()),
-        (Some(cmm), _) => Ok(cmm),
-        (None, None) => Err("Must provide either a keyring or a CMM".into()),
-        (None, Some(keyring)) => {
+    match input_source.unwrap() {
+        MaterialSource::LegacyCmm(cmm) => Ok(cmm),
+        MaterialSource::LegacyKeyring(keyring) => {
             let cmm = mpl
                 .create_default_cryptographic_materials_manager()
                 .keyring(keyring)
@@ -207,6 +204,7 @@ pub(crate) async fn create_cmm_from_input(
                 .await?;
             Ok(cmm)
         }
+        _ => Err("Not ready for new cmm or keyring".into()),
     }
 }
 
@@ -340,7 +338,9 @@ pub(crate) fn build_header_body(
                 suite_data: suite_data.unwrap(),
             }))
         }
-        aws_mpl_legacy::types::DerivationAlgorithm::Identity(_i) => Err("Validation Error 2".into()),
+        aws_mpl_legacy::types::DerivationAlgorithm::Identity(_i) => {
+            Err("Validation Error 2".into())
+        }
         _ => Ok(HeaderBody::V1Body(V1HeaderBody {
             message_type: MessageType::TypeCustomerAed,
             algorithm_suite: suite.clone(),
@@ -406,7 +406,9 @@ pub(crate) async fn get_encryption_materials(
     let output = cmm
         .get_encryption_materials()
         .encryption_context(encryption_context)
-        .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(commitment_policy))
+        .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(
+            commitment_policy,
+        ))
         .set_algorithm_suite_id(algorithm_suite_id)
         .max_plaintext_length(max_plaintext_length)
         .send()
@@ -430,7 +432,9 @@ pub(crate) async fn get_encryption_materials(
                 .unwrap()
                 .clone(),
         )
-        .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(commitment_policy))
+        .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(
+            commitment_policy,
+        ))
         .send()
         .await?;
 
@@ -475,7 +479,9 @@ pub(crate) async fn get_decryption_materials(
         //#   (../data-format/message-header.md#algorithm-suite-id) from the
         //#   message header.
         .algorithm_suite_id(algorithm_suite_id)
-        .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(commitment_policy))
+        .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(
+            commitment_policy,
+        ))
         //#*  Encrypted Data Keys: This is the parsed encrypted data keys
         //#   (../data-format/message-header#encrypted-data-keys) from the
         //#   message header.
@@ -507,7 +513,9 @@ pub(crate) async fn get_decryption_materials(
                 .unwrap()
                 .clone(),
         )
-        .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(commitment_policy))
+        .commitment_policy(aws_mpl_legacy::types::CommitmentPolicy::Esdk(
+            commitment_policy,
+        ))
         .send()
         .await?;
 

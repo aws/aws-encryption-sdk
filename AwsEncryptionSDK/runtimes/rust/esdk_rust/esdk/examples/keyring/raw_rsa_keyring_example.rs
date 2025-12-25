@@ -57,7 +57,9 @@ use std::path::Path;
 const EXAMPLE_RSA_PRIVATE_KEY_FILENAME: &str = "RawRsaKeyringExamplePrivateKey.pem";
 const EXAMPLE_RSA_PUBLIC_KEY_FILENAME: &str = "RawRsaKeyringExamplePublicKey.pem";
 
-pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), crate::BoxError> {
+pub async fn encrypt_and_decrypt_with_legacy_keyring(
+    example_data: &str,
+) -> Result<(), crate::BoxError> {
     // 2. Create encryption context.
     // Remember that your encryption context is NOT SECRET.
     // For more information, see
@@ -117,7 +119,8 @@ pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), 
     // 7. Encrypt the data with the context
     let plaintext = example_data.as_bytes();
 
-    let encrypt_input = EncryptInput::with_keyring(plaintext, context.clone(), raw_rsa_keyring.clone());
+    let encrypt_input =
+        EncryptInput::with_legacy_keyring(plaintext, context.clone(), raw_rsa_keyring.clone());
     let encryption_response = encrypt(&encrypt_input).await?;
 
     let ciphertext = encryption_response.ciphertext;
@@ -131,7 +134,7 @@ pub async fn encrypt_and_decrypt_with_keyring(example_data: &str) -> Result<(), 
 
     // 9. Decrypt your encrypted data using the same keyring you used on encrypt.
     // Provide the encryption context that was supplied to the encrypt method
-    let decrypt_input = DecryptInput::with_keyring(&ciphertext, context, raw_rsa_keyring);
+    let decrypt_input = DecryptInput::with_legacy_keyring(&ciphertext, context, raw_rsa_keyring);
     let decryption_response = decrypt(&decrypt_input).await?;
     let decrypted_plaintext = decryption_response.plaintext;
 
@@ -220,11 +223,11 @@ fn generate_rsa_key_pair() -> Result<(), crate::BoxError> {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
+pub async fn test_encrypt_and_decrypt_with_legacy_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt and decrypt using the Raw RSA Keyring example
     use crate::example_utils::utils;
 
-    encrypt_and_decrypt_with_keyring(utils::TEST_EXAMPLE_DATA).await?;
+    encrypt_and_decrypt_with_legacy_keyring(utils::TEST_EXAMPLE_DATA).await?;
 
     Ok(())
 }

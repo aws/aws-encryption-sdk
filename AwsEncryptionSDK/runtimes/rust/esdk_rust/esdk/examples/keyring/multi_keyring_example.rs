@@ -45,7 +45,7 @@ use aws_esdk::*;
 use aws_mpl_legacy::types::AesWrappingAlg;
 use rand::TryRngCore;
 
-pub async fn encrypt_and_decrypt_with_keyring(
+pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,
     kms_key_id: &str,
 ) -> Result<(), crate::BoxError> {
@@ -116,7 +116,8 @@ pub async fn encrypt_and_decrypt_with_keyring(
 
     // 7. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
-    let encrypt_input = EncryptInput::with_keyring(plaintext, encryption_context, multi_keyring);
+    let encrypt_input =
+        EncryptInput::with_legacy_keyring(plaintext, encryption_context, multi_keyring);
     let encryption_response = encrypt(&encrypt_input).await?;
     let ciphertext = encryption_response.ciphertext;
 
@@ -148,7 +149,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // (This is an example for demonstration; you do not need to do this in your own code.)
 
     // 10a. Decrypt your encrypted data using the kms_keyring.
-    decrypt_input.keyring = Some(kms_keyring);
+    decrypt_input.source = Some(MaterialSource::LegacyKeyring(kms_keyring));
     let decryption_response_kms_keyring = decrypt(&decrypt_input).await?;
     let decrypted_plaintext_kms_keyring = decryption_response_kms_keyring.plaintext;
 
@@ -164,7 +165,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // (This is an example for demonstration; you do not need to do this in your own code.)
 
     // 11a. Decrypt your encrypted data using the raw_aes_keyring.
-    decrypt_input.keyring = Some(raw_aes_keyring);
+    decrypt_input.source = Some(MaterialSource::LegacyKeyring(raw_aes_keyring));
     let decryption_response_raw_aes_keyring = decrypt(&decrypt_input).await?;
     let decrypted_plaintext_raw_aes_keyring = decryption_response_raw_aes_keyring.plaintext;
 
@@ -192,12 +193,15 @@ fn generate_aes_key_bytes() -> Vec<u8> {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
+pub async fn test_encrypt_and_decrypt_with_legacy_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt and decrypt using the Multi Keyring example
     use crate::example_utils::utils;
 
-    encrypt_and_decrypt_with_keyring(utils::TEST_EXAMPLE_DATA, utils::TEST_DEFAULT_KMS_KEY_ID)
-        .await?;
+    encrypt_and_decrypt_with_legacy_keyring(
+        utils::TEST_EXAMPLE_DATA,
+        utils::TEST_DEFAULT_KMS_KEY_ID,
+    )
+    .await?;
 
     Ok(())
 }

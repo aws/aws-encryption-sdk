@@ -48,7 +48,7 @@ use aws_mpl_legacy::types::RawEcdhStaticConfigurations;
 use pem::parse;
 use std::path::Path;
 
-pub async fn encrypt_with_keyring(
+pub async fn encrypt_with_legacy_keyring(
     example_data: &str,
     ecdh_curve_spec: EcdhCurveSpec,
 ) -> Result<(), crate::BoxError> {
@@ -121,8 +121,11 @@ pub async fn encrypt_with_keyring(
     // used as the sender is ephemeral. This means that at decrypt time it does not have
     // the private key that corresponds to the public key that is stored on the message.
     let plaintext = example_data.as_bytes();
-    let encrypt_input =
-        EncryptInput::with_keyring(plaintext, encryption_context, ephemeral_raw_ecdh_keyring);
+    let encrypt_input = EncryptInput::with_legacy_keyring(
+        plaintext,
+        encryption_context,
+        ephemeral_raw_ecdh_keyring,
+    );
     let encryption_response = encrypt(&encrypt_input).await?;
     let ciphertext = encryption_response.ciphertext;
 
@@ -150,11 +153,11 @@ fn should_generate_new_ecc_key_pair_ephemeral_raw_ecdh() -> Result<bool, String>
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_encrypt_with_keyring() -> Result<(), crate::BoxError2> {
+pub async fn test_encrypt_with_legacy_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt using the Ephemeral Raw ECDH Keyring example
     use crate::example_utils::utils;
 
-    encrypt_with_keyring(utils::TEST_EXAMPLE_DATA, EcdhCurveSpec::EccNistP256).await?;
+    encrypt_with_legacy_keyring(utils::TEST_EXAMPLE_DATA, EcdhCurveSpec::EccNistP256).await?;
 
     Ok(())
 }

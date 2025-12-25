@@ -59,7 +59,7 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-pub async fn decrypt_with_keyring(
+pub async fn decrypt_with_legacy_keyring(
     example_data: &str,
     ecdh_curve_spec: EcdhCurveSpec,
 ) -> Result<(), crate::BoxError> {
@@ -134,7 +134,11 @@ pub async fn decrypt_with_keyring(
         .await?;
 
     // 7. Decrypt your encrypted data using the same keyring you used on encrypt.
-    let decrypt_input = DecryptInput::with_keyring(&ciphertext, encryption_context, discovery_raw_ecdh_keyring);
+    let decrypt_input = DecryptInput::with_legacy_keyring(
+        &ciphertext,
+        encryption_context,
+        discovery_raw_ecdh_keyring,
+    );
     let decryption_response = decrypt(&decrypt_input).await?;
     let decrypted_plaintext = decryption_response.plaintext;
 
@@ -220,7 +224,11 @@ async fn get_ciphertext(
     // used as the sender is ephemeral. This means that at decrypt time it does not have
     // the private key that corresponds to the public key that is stored on the message.
     let plaintext = example_data.as_bytes();
-    let encrypt_input = EncryptInput::with_keyring(plaintext, encryption_context, ephemeral_raw_ecdh_keyring);
+    let encrypt_input = EncryptInput::with_legacy_keyring(
+        plaintext,
+        encryption_context,
+        ephemeral_raw_ecdh_keyring,
+    );
     let encryption_response = encrypt(&encrypt_input).await?;
     let ciphertext = encryption_response.ciphertext;
 
@@ -235,11 +243,11 @@ async fn get_ciphertext(
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
+pub async fn test_decrypt_with_legacy_keyring() -> Result<(), crate::BoxError2> {
     // Test function for decrypt using the Public Key Discovery Raw ECDH Keyring example
     use crate::example_utils::utils;
 
-    decrypt_with_keyring(utils::TEST_EXAMPLE_DATA, EcdhCurveSpec::EccNistP256).await?;
+    decrypt_with_legacy_keyring(utils::TEST_EXAMPLE_DATA, EcdhCurveSpec::EccNistP256).await?;
 
     Ok(())
 }

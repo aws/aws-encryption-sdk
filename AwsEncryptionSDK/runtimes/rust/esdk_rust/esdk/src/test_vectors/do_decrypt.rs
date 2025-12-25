@@ -1,10 +1,10 @@
 #![allow(clippy::if_same_then_else)]
 
+use crate::test_vectors::parse_keys::decode_base64;
 use crate::test_vectors::types::*;
+use crate::{DecryptInput, decrypt, mpl};
 use anyhow::Result;
 use aws_config::Region;
-use crate::test_vectors::parse_keys::decode_base64;
-use crate::{DecryptInput, decrypt, mpl};
 use aws_mpl_legacy::aws_cryptography_primitives::types::EcdhCurveSpec;
 use aws_mpl_legacy::client::Client as mpl_client;
 use aws_mpl_legacy::types::DiscoveryFilter;
@@ -69,19 +69,15 @@ pub(crate) fn write_json(data: &JsonValue, name: &str) -> Result<()> {
     Ok(())
 }
 
-pub(crate) async fn run_decrypt_test(
-    test: &EncryptTest,
-    cmm: CmmRef,
-    dir: &str,
-) -> Result<()> {
+pub(crate) async fn run_decrypt_test(test: &EncryptTest, cmm: CmmRef, dir: &str) -> Result<()> {
     let ciphertext = read_file(&test.ciphertext, dir)?;
     let plaintext = read_file(&test.result, dir)?;
 
     let decrypt_input = DecryptInput {
-        ciphertext :&ciphertext,
-        materials_manager: Some(cmm),
+        ciphertext: &ciphertext,
+        source: Some(crate::MaterialSource::LegacyCmm(cmm)),
         encryption_context: test.reproduced_encryption_context.clone(),
-        commitment_policy : aws_mpl_rs::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
+        commitment_policy: aws_mpl_rs::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
         ..Default::default()
     };
     let decrypt_output = decrypt(&decrypt_input).await?;
@@ -160,9 +156,10 @@ pub(crate) async fn get_raw_ecdh_keyring_discovery(
     mpl: &mpl_client,
 ) -> Result<KeyringRef> {
     let key = &keys[&keydesc.recipient];
-    let raw_ecdh_static_configuration_input = aws_mpl_legacy::types::PublicKeyDiscoveryInput::builder()
-        .recipient_static_private_key(key.recipient_material.as_bytes())
-        .build()?;
+    let raw_ecdh_static_configuration_input =
+        aws_mpl_legacy::types::PublicKeyDiscoveryInput::builder()
+            .recipient_static_private_key(key.recipient_material.as_bytes())
+            .build()?;
 
     let raw_ecdh_static_configuration =
         aws_mpl_legacy::types::RawEcdhStaticConfigurations::PublicKeyDiscovery(

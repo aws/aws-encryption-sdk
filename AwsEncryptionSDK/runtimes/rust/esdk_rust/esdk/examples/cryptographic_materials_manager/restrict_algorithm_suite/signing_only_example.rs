@@ -8,8 +8,8 @@
 
 use super::signing_suite_only_cmm::SigningSuiteOnlyCMM;
 use aws_esdk::*;
-use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
 use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
+use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
 
 pub async fn encrypt_and_decrypt_with_cmm(
     example_data: &str,
@@ -56,7 +56,7 @@ pub async fn encrypt_and_decrypt_with_cmm(
     // 5. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
     let mut encrypt_input =
-        EncryptInput::with_cmm(plaintext, encryption_context, signing_suite_only_cmm_ref);
+        EncryptInput::with_legacy_cmm(plaintext, encryption_context, signing_suite_only_cmm_ref);
     encrypt_input.algorithm_suite_id =
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
     let encryption_response = encrypt(&encrypt_input).await?;

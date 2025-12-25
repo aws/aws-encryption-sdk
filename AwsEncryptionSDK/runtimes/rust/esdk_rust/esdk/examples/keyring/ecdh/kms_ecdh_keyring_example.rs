@@ -52,7 +52,7 @@ use aws_mpl_legacy::types::KmsPrivateKeyToStaticPublicKeyInput;
 use pem::parse;
 use std::path::Path;
 
-pub async fn encrypt_and_decrypt_with_keyring(
+pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,
     ecc_key_arn: &str,
     ecdh_curve_spec: EcdhCurveSpec,
@@ -157,7 +157,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 9. Encrypt the data with the encryption_context
     let plaintext = example_data.as_bytes();
     let encrypt_input =
-        EncryptInput::with_keyring(plaintext, encryption_context, kms_ecdh_keyring);
+        EncryptInput::with_legacy_keyring(plaintext, encryption_context, kms_ecdh_keyring);
     let encryption_response = encrypt(&encrypt_input).await?;
     let ciphertext = encryption_response.ciphertext;
 
@@ -198,11 +198,11 @@ fn should_generate_new_kms_ecc_public_key(ecc_public_key_filename: &str) -> Resu
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
+pub async fn test_encrypt_and_decrypt_with_legacy_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt and decrypt using the KMS ECDH Keyring example
     use crate::example_utils::utils;
 
-    encrypt_and_decrypt_with_keyring(
+    encrypt_and_decrypt_with_legacy_keyring(
         utils::TEST_EXAMPLE_DATA,
         utils::TEST_KMS_ECDH_KEY_ID_P256_SENDER,
         EcdhCurveSpec::EccNistP256,

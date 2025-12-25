@@ -15,9 +15,8 @@ use aws_mpl_rs::commitment::EsdkCommitmentPolicy;
 use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
 use std::num::NonZeroUsize;
 
-
 #[allow(dead_code)]
-fn comp(x : &KeyringRef, y : &KeyringRef) -> bool {
+fn comp(x: &KeyringRef, y: &KeyringRef) -> bool {
     std::ptr::addr_eq(std::sync::Arc::as_ptr(x), std::sync::Arc::as_ptr(y))
 }
 
@@ -27,7 +26,7 @@ fn comp(x : &KeyringRef, y : &KeyringRef) -> bool {
 pub enum MaterialSource {
     #[cfg(feature = "legacy")]
     #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
-    /// Legacy CMM, i.e. `aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef` 
+    /// Legacy CMM, i.e. `aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef`
     LegacyCmm(LegacyCMM),
     #[cfg(feature = "legacy")]
     #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
@@ -42,8 +41,12 @@ pub enum MaterialSource {
 impl PartialEq for MaterialSource {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
-            (Self::Cmm(x), Self::Cmm(y)) => std::ptr::addr_eq(std::sync::Arc::as_ptr(x), std::sync::Arc::as_ptr(y)),
-            (Self::Keyring(x), Self::Keyring(y)) => std::ptr::addr_eq(std::sync::Arc::as_ptr(x), std::sync::Arc::as_ptr(y)),
+            (Self::Cmm(x), Self::Cmm(y)) => {
+                std::ptr::addr_eq(std::sync::Arc::as_ptr(x), std::sync::Arc::as_ptr(y))
+            }
+            (Self::Keyring(x), Self::Keyring(y)) => {
+                std::ptr::addr_eq(std::sync::Arc::as_ptr(x), std::sync::Arc::as_ptr(y))
+            }
             #[cfg(feature = "legacy")]
             (Self::LegacyCmm(x), Self::LegacyCmm(y)) => x == y,
             #[cfg(feature = "legacy")]
@@ -165,18 +168,8 @@ pub struct EncryptInput<'a> {
     pub encryption_context: EncryptionContext,
     /// Bytes of plaintext data per frame. Default 4096.
     pub frame_length: FrameLength,
-    /// Exactly one of `keyring` or `materials_manager` must be set
-    pub new_keyring: Option<KeyringRef>,
-    #[cfg(feature = "legacy")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
-    /// Exactly one of `keyring` or `materials_manager` must be set
-    pub keyring: Option<LegacyKeyring>,
-    /// Exactly one of `keyring` or `materials_manager` must be set
-    pub new_materials_manager: Option<CryptographicMaterialsManagerRef>,
-    #[cfg(feature = "legacy")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
-    /// Exactly one of `keyring` or `materials_manager` must be set
-    pub materials_manager: Option<LegacyCMM>,
+    /// The source of cryptographic materials
+    pub source: Option<MaterialSource>,
     /// data to be encrypted
     pub plaintext: &'a [u8],
     /// default is no limit
@@ -193,17 +186,17 @@ impl<'a> EncryptInput<'a> {
     }
     /// Construct an `EncryptInput` with a `CryptographicMaterialsManagerRef`
     #[must_use]
-    pub fn with_cmm(plaintext: &'a [u8], ec: EncryptionContext, cmm: LegacyCMM) -> Self {
+    pub fn with_legacy_cmm(plaintext: &'a [u8], ec: EncryptionContext, cmm: LegacyCMM) -> Self {
         Self {
             plaintext,
             encryption_context: ec,
-            materials_manager: Some(cmm),
+            source: Some(MaterialSource::LegacyCmm(cmm)),
             ..Default::default()
         }
     }
     /// Construct an `EncryptInput` with a `KeyringRef`
     #[must_use]
-    pub fn with_keyring(
+    pub fn with_legacy_keyring(
         plaintext: &'a [u8],
         ec: EncryptionContext,
         keyring: LegacyKeyring,
@@ -211,17 +204,13 @@ impl<'a> EncryptInput<'a> {
         Self {
             plaintext,
             encryption_context: ec,
-            keyring: Some(keyring),
+            source: Some(MaterialSource::LegacyKeyring(keyring)),
             ..Default::default()
         }
     }
     pub(crate) fn validate(&self) -> Result<(), Error> {
-        if self.keyring.is_none() && self.materials_manager.is_none() {
-            Err(val_err("Either keyring or materials_manager must be set."))
-        } else if self.keyring.is_some() && self.materials_manager.is_some() {
-            Err(val_err(
-                "You must not provide both keyring and materials_manager.",
-            ))
+        if self.source.is_none() {
+            Err(val_err("A Materials Source must be provided."))
         } else {
             Ok(())
         }
@@ -238,10 +227,8 @@ pub struct EncryptStreamInput {
     pub encryption_context: EncryptionContext,
     /// Bytes of plaintext data per frame. Default 4096.
     pub frame_length: FrameLength,
-    /// Exactly one of `keyring` or `materials_manager` must be set
-    pub keyring: Option<LegacyKeyring>,
-    /// Exactly one of `keyring` or `materials_manager` must be set
-    pub materials_manager: Option<LegacyCMM>,
+    /// The source of cryptographic materials
+    pub source: Option<MaterialSource>,
     /// The expected size of the input data stream.
     /// This is only important if you cmm or keyring care about such things, which most don't.
     pub data_size: Option<usize>,
@@ -259,31 +246,25 @@ impl EncryptStreamInput {
     }
     /// Construct an `EncryptStreamInput` with a `CryptographicMaterialsManagerRef`
     #[must_use]
-    pub fn with_cmm(ec: EncryptionContext, cmm: LegacyCMM) -> Self {
+    pub fn with_legacy_cmm(ec: EncryptionContext, cmm: LegacyCMM) -> Self {
         Self {
             encryption_context: ec,
-            materials_manager: Some(cmm),
+            source: Some(MaterialSource::LegacyCmm(cmm)),
             ..Default::default()
         }
     }
     /// Construct an `EncryptStreamInput` with a `KeyringRef`
     #[must_use]
-    pub fn with_keyring(ec: EncryptionContext, keyring: LegacyKeyring) -> Self {
+    pub fn with_legacy_keyring(ec: EncryptionContext, keyring: LegacyKeyring) -> Self {
         Self {
             encryption_context: ec,
-            keyring: Some(keyring),
+            source: Some(MaterialSource::LegacyKeyring(keyring)),
             ..Default::default()
         }
     }
     pub(crate) fn validate(&self) -> Result<(), Error> {
-        if self.keyring.is_none() && self.materials_manager.is_none() {
-            Err(val_err(
-                "Either keyring or materials_manager must be provided.",
-            ))
-        } else if self.keyring.is_some() && self.materials_manager.is_some() {
-            Err(val_err(
-                "You must not provide both keyring and materials_manager.",
-            ))
+        if self.source.is_none() {
+            Err(val_err("A Materials Source must be provided."))
         } else {
             Ok(())
         }
@@ -298,10 +279,8 @@ pub struct DecryptInput<'a> {
     pub ciphertext: &'a [u8],
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
-    /// Exactly one of `keyring` or `materials_manager` must be set
-    pub keyring: Option<LegacyKeyring>,
-    /// Exactly one of `keyring` or `materials_manager` must be set
-    pub materials_manager: Option<LegacyCMM>,
+    /// The source of cryptographic materials
+    pub source: Option<MaterialSource>,
     /// default is `NetV400RetryPolicy::AllowRetry`
     pub net_v4_retry_policy: NetV400RetryPolicy,
     /// default is no limit
@@ -316,10 +295,8 @@ pub struct DecryptInput<'a> {
 pub struct DecryptStreamInput {
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
-    /// Exactly one of `keyring` or `materials_manager` must be set
-    pub keyring: Option<LegacyKeyring>,
-    /// Exactly one of `keyring` or `materials_manager` must be set
-    pub materials_manager: Option<LegacyCMM>,
+    /// The source of cryptographic materials
+    pub source: Option<MaterialSource>,
     /// If you decrypt a signed payload, most of the data will be written
     /// to the output stream before the signature is verified.
     /// Thus, if verification fails, you are responsible for discarding any data
@@ -343,17 +320,17 @@ impl<'a> DecryptInput<'a> {
     }
     /// Construct a `DecryptInput` with a Legacy `CryptographicMaterialsManagerRef`
     #[must_use]
-    pub fn with_cmm(ciphertext: &'a [u8], ec: EncryptionContext, cmm: LegacyCMM) -> Self {
+    pub fn with_legacy_cmm(ciphertext: &'a [u8], ec: EncryptionContext, cmm: LegacyCMM) -> Self {
         Self {
             ciphertext,
             encryption_context: ec,
-            materials_manager: Some(cmm),
+            source: Some(MaterialSource::LegacyCmm(cmm)),
             ..Default::default()
         }
     }
     /// Construct a `DecryptInput` with a `KeyringRef`
     #[must_use]
-    pub fn with_keyring(
+    pub fn with_legacy_keyring(
         ciphertext: &'a [u8],
         ec: EncryptionContext,
         keyring: LegacyKeyring,
@@ -361,7 +338,7 @@ impl<'a> DecryptInput<'a> {
         Self {
             ciphertext,
             encryption_context: ec,
-            keyring: Some(keyring),
+            source: Some(MaterialSource::LegacyKeyring(keyring)),
             ..Default::default()
         }
     }
@@ -372,8 +349,7 @@ impl<'a> DecryptInput<'a> {
         Self {
             ciphertext,
             encryption_context: e.encryption_context.clone(),
-            keyring: e.keyring.clone(),
-            materials_manager: e.materials_manager.clone(),
+            source: e.source.clone(),
             commitment_policy: e.commitment_policy,
             max_encrypted_data_keys: e.max_encrypted_data_keys,
             ..Default::default()
@@ -381,12 +357,8 @@ impl<'a> DecryptInput<'a> {
     }
 
     pub(crate) fn validate(&self) -> Result<(), Error> {
-        if self.keyring.is_none() && self.materials_manager.is_none() {
-            Err(val_err("Either keyring or materials_manager must be set."))
-        } else if self.keyring.is_some() && self.materials_manager.is_some() {
-            Err(val_err(
-                "You must not provide both keyring and materials_manager.",
-            ))
+        if self.source.is_none() {
+            Err(val_err("A Materials Source must be provided."))
         } else {
             Ok(())
         }
@@ -401,19 +373,19 @@ impl DecryptStreamInput {
     }
     /// Construct a `DecryptStreamInput` with a Legacy `CryptographicMaterialsManagerRef`
     #[must_use]
-    pub fn with_cmm(ec: EncryptionContext, cmm: LegacyCMM) -> Self {
+    pub fn with_legacy_cmm(ec: EncryptionContext, cmm: LegacyCMM) -> Self {
         Self {
             encryption_context: ec,
-            materials_manager: Some(cmm),
+            source: Some(MaterialSource::LegacyCmm(cmm)),
             ..Default::default()
         }
     }
     /// Construct a `DecryptStreamInput` with a `KeyringRef`
     #[must_use]
-    pub fn with_keyring(ec: EncryptionContext, keyring: LegacyKeyring) -> Self {
+    pub fn with_legacy_keyring(ec: EncryptionContext, keyring: LegacyKeyring) -> Self {
         Self {
             encryption_context: ec,
-            keyring: Some(keyring),
+            source: Some(MaterialSource::LegacyKeyring(keyring)),
             ..Default::default()
         }
     }
@@ -423,8 +395,7 @@ impl DecryptStreamInput {
     pub fn from_encrypt(e: &EncryptInput<'_>) -> Self {
         Self {
             encryption_context: e.encryption_context.clone(),
-            keyring: e.keyring.clone(),
-            materials_manager: e.materials_manager.clone(),
+            source: e.source.clone(),
             commitment_policy: e.commitment_policy,
             max_encrypted_data_keys: e.max_encrypted_data_keys,
             ..Default::default()
@@ -432,12 +403,8 @@ impl DecryptStreamInput {
     }
 
     pub(crate) fn validate(&self) -> Result<(), Error> {
-        if self.keyring.is_none() && self.materials_manager.is_none() {
-            Err(val_err("Either keyring or materials_manager must be set."))
-        } else if self.keyring.is_some() && self.materials_manager.is_some() {
-            Err(val_err(
-                "You must not provide both keyring and materials_manager.",
-            ))
+        if self.source.is_none() {
+            Err(val_err("A Materials Source must be provided."))
         } else {
             Ok(())
         }

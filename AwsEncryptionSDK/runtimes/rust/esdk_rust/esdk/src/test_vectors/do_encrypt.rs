@@ -3,11 +3,11 @@ use super::do_decrypt::{get_cmm, make_kms_map};
 use crate::test_vectors::types::*;
 use crate::{EncryptInput, encrypt, mpl};
 use anyhow::Result;
-use aws_mpl_primitives::generate_random_bytes;
-use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
 use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef as CmmRef;
-use serde_json::Value as JsonValue;
+use aws_mpl_primitives::generate_random_bytes;
 use aws_mpl_rs::commitment::EsdkCommitmentPolicy;
+use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
+use serde_json::Value as JsonValue;
 
 pub(crate) fn write_file(filename: &str, data: &[u8], dir: &str) -> Result<()> {
     let filename = trim_filename(filename);
@@ -64,10 +64,10 @@ pub(crate) async fn run_encrypt_test(
     let plaintext = &plaintexts[&test.plaintext];
     let encrypt_input = EncryptInput {
         plaintext,
-        materials_manager: Some(cmm),
-        algorithm_suite_id:Some(test.alg_id),
-        encryption_context : test.encryption_context.clone(),
-        commitment_policy:policy(test.alg_id),
+        source: Some(crate::MaterialSource::LegacyCmm(cmm)),
+        algorithm_suite_id: Some(test.alg_id),
+        encryption_context: test.encryption_context.clone(),
+        commitment_policy: policy(test.alg_id),
         ..Default::default()
     };
 
@@ -84,11 +84,7 @@ pub(crate) const fn is_committing(id: EsdkAlgorithmSuiteId) -> bool {
     )
 }
 
-
-pub(crate) const fn policy(
-    id: EsdkAlgorithmSuiteId
-) -> EsdkCommitmentPolicy
-{
+pub(crate) const fn policy(id: EsdkAlgorithmSuiteId) -> EsdkCommitmentPolicy {
     if is_committing(id) {
         EsdkCommitmentPolicy::RequireEncryptAllowDecrypt
     } else {
@@ -128,14 +124,7 @@ pub(crate) async fn run_encrypt_tests(
             res.skipped += 1;
         } else {
             let cmm = get_cmm(&test.encrypt_key_description, keys, &mpl, &kms).await?;
-            match run_encrypt_test(
-                test,
-                cmm,
-                plaintexts,
-                dir,
-            )
-            .await
-            {
+            match run_encrypt_test(test, cmm, plaintexts, dir).await {
                 Ok(j) => {
                     // println!(
                     //     "Test Passed {} {} {}",

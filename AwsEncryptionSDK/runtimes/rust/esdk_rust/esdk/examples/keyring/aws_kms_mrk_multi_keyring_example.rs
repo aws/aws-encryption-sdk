@@ -34,7 +34,7 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 use aws_config::Region;
 use aws_esdk::*;
 
-pub async fn encrypt_and_decrypt_with_keyring(
+pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,
     mrk_key_id: &str,
     kms_key_id: &str,
@@ -74,7 +74,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     // 4. Encrypt the data with the encryption_context using the kms_mrk_multi_keyring.
     let plaintext = example_data.as_bytes();
     let encrypt_input =
-        EncryptInput::with_keyring(plaintext, encryption_context, kms_mrk_multi_keyring);
+        EncryptInput::with_legacy_keyring(plaintext, encryption_context, kms_mrk_multi_keyring);
     let encryption_response = encrypt(&encrypt_input).await?;
     let ciphertext = encryption_response.ciphertext;
 
@@ -120,7 +120,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
         .await?;
 
     // 9. Decrypt your encrypted data using the second region AwsKmsMrkKeyring
-    decrypt_input.keyring = Some(second_region_mrk_keyring);
+    decrypt_input.source = Some(MaterialSource::LegacyKeyring(second_region_mrk_keyring));
     let second_region_decryption_response = decrypt(&decrypt_input).await?;
     let second_region_decrypted_plaintext = second_region_decryption_response.plaintext;
 
@@ -140,13 +140,13 @@ pub async fn encrypt_and_decrypt_with_keyring(
 }
 
 #[tokio::test(flavor = "multi_thread")]
-pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
+pub async fn test_encrypt_and_decrypt_with_legacy_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt and decrypt using the AWS KMS MRK Multi Keyring example
     use crate::example_utils::utils;
 
     let mrk_replica_decrypt_region: String = "eu-west-1".to_string();
 
-    encrypt_and_decrypt_with_keyring(
+    encrypt_and_decrypt_with_legacy_keyring(
         utils::TEST_EXAMPLE_DATA,
         utils::TEST_MRK_KEY_ID_US_EAST_1,
         utils::TEST_DEFAULT_KMS_KEY_ID,

@@ -29,7 +29,7 @@ async fn test_encryption_context_on_decrypt() {
 
     let encryption_context = small_encryption_context(SmallEncryptionContextVariation::AB);
 
-    let encrypt_output = encrypt(&EncryptInput::with_keyring(
+    let encrypt_output = encrypt(&EncryptInput::with_legacy_keyring(
         asdf,
         encryption_context.clone(),
         kms_keyring.clone(),
@@ -39,7 +39,7 @@ async fn test_encryption_context_on_decrypt() {
 
     let esdk_ciphertext = encrypt_output.ciphertext;
 
-    let decrypt_output = decrypt(&DecryptInput::with_keyring(
+    let decrypt_output = decrypt(&DecryptInput::with_legacy_keyring(
         &esdk_ciphertext,
         encryption_context,
         kms_keyring,
@@ -75,7 +75,7 @@ async fn test_encryption_context_on_decrypt_failure() {
     let encryption_context = small_encryption_context(SmallEncryptionContextVariation::A);
     let bad_encryption_context = small_encryption_context(SmallEncryptionContextVariation::AB);
 
-    let encrypt_output = encrypt(&EncryptInput::with_keyring(
+    let encrypt_output = encrypt(&EncryptInput::with_legacy_keyring(
         asdf,
         encryption_context,
         kms_keyring.clone(),
@@ -85,7 +85,7 @@ async fn test_encryption_context_on_decrypt_failure() {
 
     let esdk_ciphertext = encrypt_output.ciphertext;
 
-    let decrypt_output = decrypt(&DecryptInput::with_keyring(
+    let decrypt_output = decrypt(&DecryptInput::with_legacy_keyring(
         &esdk_ciphertext,
         bad_encryption_context,
         kms_keyring,
@@ -116,7 +116,7 @@ async fn test_mismatched_encryption_context_on_decrypt() {
     let bad_encryption_context =
         small_mismatched_encryption_context(SmallEncryptionContextVariation::A);
 
-    let encrypt_output = encrypt(&EncryptInput::with_keyring(
+    let encrypt_output = encrypt(&EncryptInput::with_legacy_keyring(
         asdf,
         encryption_context.clone(),
         raw_aes_keyring.clone(),
@@ -126,7 +126,11 @@ async fn test_mismatched_encryption_context_on_decrypt() {
 
     let esdk_ciphertext = encrypt_output.ciphertext;
 
-    let mut decrypt_input = DecryptInput::with_keyring(&esdk_ciphertext, bad_encryption_context, raw_aes_keyring);
+    let mut decrypt_input = DecryptInput::with_legacy_keyring(
+        &esdk_ciphertext,
+        bad_encryption_context,
+        raw_aes_keyring,
+    );
     let decrypt_output = decrypt(&decrypt_input).await;
 
     // We expect to fail because although the same key is present on the ec

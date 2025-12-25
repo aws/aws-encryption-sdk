@@ -1,7 +1,6 @@
 //! This is an awesome crate
 //!
 #![cfg_attr(docsrs, feature(doc_cfg))]
-
 #![warn(
     absolute_paths_not_starting_with_crate,
     deprecated_in_future,
