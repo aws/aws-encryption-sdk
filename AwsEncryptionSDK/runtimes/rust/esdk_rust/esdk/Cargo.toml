@@ -6,11 +6,12 @@ edition = "2024"
 autoexamples = false
 
 [dependencies]
-aws-mpl-legacy = { path = "/Users/ajewell/head/aws-cryptographic-material-providers-library/AwsCryptographicMaterialProviders/runtimes/rust" }
+#aws-mpl-legacy = { path = "/Users/ajewell/head/aws-cryptographic-material-providers-library/AwsCryptographicMaterialProviders/runtimes/rust" }
+aws-mpl-legacy = { path = "../../../../../mpl/AwsCryptographicMaterialProviders/runtimes/rust/" }
 aws-smithy-types = "1.3.4" # needed for error for legacy EDK Builder
 tokio = "1.48.0" # for non-legacy we could probably make do with fewer features
-aws-mpl-primitives = { path = "/Users/ajewell/esdk_rust/prim" }
-aws-mpl-rs = { path = "/Users/ajewell/esdk_rust/mpl" }
+aws-mpl-primitives = { path = "../prim" }
+aws-mpl-rs = { path = "../mpl" }
 
 clap = { version = "4.5.53", features = ["derive"], optional = true }
 serde_json = { version = "1.0.145", optional = true }

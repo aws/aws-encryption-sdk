@@ -43,7 +43,7 @@ pub async fn version_branch_key_id(
 // Function to test version_branch_key_id in main.rs in examples directory
 pub async fn create_and_version_branch_key_id() -> Result<(), crate::BoxError2> {
     use super::create_branch_key_id::create_branch_key_id;
-    use crate::example_utils::utils;
+    use crate::legacy::example_utils::utils;
 
     let branch_key_id: String = create_branch_key_id(
         utils::TEST_KEY_STORE_NAME,

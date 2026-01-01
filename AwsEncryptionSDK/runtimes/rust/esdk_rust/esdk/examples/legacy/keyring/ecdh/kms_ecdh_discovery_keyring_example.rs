@@ -27,8 +27,8 @@ For more information on this configuration see:
 https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-kms-ecdh-keyring.html#kms-ecdh-discovery
 */
 
-use crate::example_utils::utils::TEST_KMS_ECDH_KEY_ID_P256_SENDER;
-use crate::example_utils::utils::generate_kms_ecc_public_key;
+use crate::legacy::example_utils::utils::TEST_KMS_ECDH_KEY_ID_P256_SENDER;
+use crate::legacy::example_utils::utils::generate_kms_ecc_public_key;
 use aws_esdk::*;
 use aws_mpl_legacy::aws_cryptography_primitives::types::EcdhCurveSpec;
 use aws_mpl_legacy::types::KmsEcdhStaticConfigurations;

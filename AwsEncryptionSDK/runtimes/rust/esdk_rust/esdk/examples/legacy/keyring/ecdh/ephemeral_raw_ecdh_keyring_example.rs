@@ -38,9 +38,9 @@ For more information on this configuration see:
 https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-raw-ecdh-keyring.html#raw-ecdh-EphemeralPrivateKeyToStaticPublicKey
 */
 
-use crate::example_utils::utils::EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT;
-use crate::example_utils::utils::exists;
-use crate::example_utils::utils::write_raw_ecdh_ecc_keys;
+use crate::legacy::example_utils::utils::EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIENT;
+use crate::legacy::example_utils::utils::exists;
+use crate::legacy::example_utils::utils::write_raw_ecdh_ecc_keys;
 use aws_esdk::*;
 use aws_mpl_legacy::aws_cryptography_primitives::types::EcdhCurveSpec;
 use aws_mpl_legacy::types::EphemeralPrivateKeyToStaticPublicKeyInput;

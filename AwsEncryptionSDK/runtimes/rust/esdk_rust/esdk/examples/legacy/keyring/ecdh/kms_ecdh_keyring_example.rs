@@ -41,10 +41,10 @@ For more information on this configuration see:
 https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-kms-ecdh-keyring.html#kms-ecdh-create
 */
 
-use crate::example_utils::utils::EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_RECIPIENT;
-use crate::example_utils::utils::EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_SENDER;
-use crate::example_utils::utils::exists;
-use crate::example_utils::utils::write_kms_ecdh_ecc_public_key;
+use crate::legacy::example_utils::utils::EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_RECIPIENT;
+use crate::legacy::example_utils::utils::EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_SENDER;
+use crate::legacy::example_utils::utils::exists;
+use crate::legacy::example_utils::utils::write_kms_ecdh_ecc_public_key;
 use aws_esdk::*;
 use aws_mpl_legacy::aws_cryptography_primitives::types::EcdhCurveSpec;
 use aws_mpl_legacy::types::KmsEcdhStaticConfigurations;
@@ -60,7 +60,7 @@ pub async fn encrypt_and_decrypt_with_legacy_keyring(
 ) -> Result<(), crate::BoxError> {
     // 1. If ecc_recipient_key_arn is not provided, set the private key for the recipient to TEST_KMS_ECDH_KEY_ID_P256_RECIPIENT
     let ecc_recipient_key_arn = ecc_recipient_key_arn
-        .unwrap_or(crate::example_utils::utils::TEST_KMS_ECDH_KEY_ID_P256_RECIPIENT);
+        .unwrap_or(crate::legacy::example_utils::utils::TEST_KMS_ECDH_KEY_ID_P256_RECIPIENT);
 
     // 3. Create a KMS client.
     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
