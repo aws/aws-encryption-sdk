@@ -90,6 +90,8 @@ pub use types::*;
 pub(crate) mod alloc;
 pub(crate) mod encrypt_decrypt;
 pub(crate) mod key_derivation;
+#[cfg(feature = "legacy")]
 pub(crate) mod legacy;
+pub(crate) mod materials;
 pub(crate) mod message_body;
 pub(crate) mod serialize;

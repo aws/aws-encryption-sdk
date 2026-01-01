@@ -427,7 +427,7 @@ pub(crate) async fn run_decrypt_tests(
     let mpl = mpl();
     let kms = make_kms_map().await;
     let mut res = TestResults::default();
-    let mut num_non = 0;
+    // let mut num_non = 0;
     for test in tests {
         res.total += 1;
         if test.decrypt_key_description.kind == "aws-kms-hierarchy" {
@@ -436,12 +436,12 @@ pub(crate) async fn run_decrypt_tests(
             res.skipped += 1;
         } else if test.decrypt_key_description.kind == "unknown" {
             res.skipped += 1;
-        } else if test.decrypt_key_description.kind != "raw" && num_non > 5 {
-            res.skipped += 1;
+        // } else if test.decrypt_key_description.kind != "raw" && num_non > 5 {
+        //     res.skipped += 1;
         } else {
-            if test.decrypt_key_description.kind != "raw" {
-                num_non += 1;
-            }
+            // if test.decrypt_key_description.kind != "raw" {
+            //     num_non += 1;
+            // }
             let cmm = get_cmm(&test.decrypt_key_description, keys, &mpl, &kms).await?;
             match run_decrypt_test(test, cmm, dir).await {
                 Ok(()) => {

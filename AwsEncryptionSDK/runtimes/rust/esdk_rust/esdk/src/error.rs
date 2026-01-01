@@ -1,6 +1,6 @@
 use std::backtrace::Backtrace;
 
-#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(Debug)]
 #[non_exhaustive]
 /// Individual error types for [`aws_esdk`](crate)
 pub enum ErrorKind {
@@ -10,8 +10,11 @@ pub enum ErrorKind {
     SerializationError(String),
     /// Low level cryptographic error from `aws_mpl_primitives`
     CryptographicError(String),
+    /// Mid level cryptographic error from `aws_mpl_rs`
+    MplError(Box<aws_mpl_rs::error::Error>),
     /// Mid level cryptographic error from `aws_mpl_legacy`
-    MplError(Box<aws_mpl_legacy::types::error::Error>),
+    #[cfg(feature = "legacy")]
+    LegacyError(Box<aws_mpl_legacy::types::error::Error>),
     /// Malformed input. No cryptography has been attempted.
     ValidationError(String),
 }
@@ -35,6 +38,8 @@ impl std::fmt::Display for Error {
             ErrorKind::SerializationError(message) => write!(f, "Serialization Error {message}"),
             ErrorKind::CryptographicError(message) => write!(f, "Cryptographic Error {message}"),
             ErrorKind::MplError(message) => write!(f, "MPL Error {message}"),
+            #[cfg(feature = "legacy")]
+            ErrorKind::LegacyError(message) => write!(f, "Legacy MPL Error {message}"),
             ErrorKind::ValidationError(message) => write!(f, "Validation Error {message}"),
         }
     }
@@ -57,9 +62,21 @@ impl std::error::Error for Error {
     }
 }
 
+#[cfg(feature = "legacy")]
 impl From<aws_mpl_legacy::types::error::Error> for Error {
     #[track_caller]
     fn from(item: aws_mpl_legacy::types::error::Error) -> Self {
+        Self {
+            kind: ErrorKind::LegacyError(Box::new(item)),
+            backtrace: Backtrace::capture(),
+            cause: None,
+        }
+    }
+}
+
+impl From<aws_mpl_rs::error::Error> for Error {
+    #[track_caller]
+    fn from(item: aws_mpl_rs::error::Error) -> Self {
         Self {
             kind: ErrorKind::MplError(Box::new(item)),
             backtrace: Backtrace::capture(),

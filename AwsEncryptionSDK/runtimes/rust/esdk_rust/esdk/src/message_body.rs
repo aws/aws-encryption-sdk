@@ -6,18 +6,8 @@ use crate::serialize::serializable_types::*;
 use crate::serialize::serialize_functions::{read_bytes, read_seq_u32_bounded, read_u32};
 use crate::serialize::*;
 use crate::types::{SafeRead, SafeWrite};
-use aws_mpl_legacy::types::AlgorithmSuiteInfo;
 use aws_mpl_primitives::{AesGcm, aes_decrypt};
-
-pub(crate) fn get_aes_alg(suite: &AlgorithmSuiteInfo) -> AesGcm {
-    let alg = get_encrypt(suite);
-    match alg.key_length() {
-        Some(16) => AesGcm::Aes128Gcm,
-        Some(24) => AesGcm::Aes192Gcm,
-        Some(32) => AesGcm::Aes256Gcm,
-        _ => panic!("Only AES-128, AES-192 and AES-256 are supported"),
-    }
-}
+use aws_mpl_rs::suites::AlgorithmSuite;
 
 #[derive(Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Debug, Hash)]
 pub(crate) enum BodyAADContent {
@@ -63,11 +53,9 @@ pub(crate) fn iv_seq(sequence_number: u32, result: &mut [u8])
     result[pivot..].copy_from_slice(&sequence_number.to_be_bytes());
 }
 
-pub(crate) fn get_encrypt(
-    info: &AlgorithmSuiteInfo,
-) -> aws_mpl_legacy::deps::aws_cryptography_primitives::types::AesGcm {
-    match &info.encrypt.as_ref().unwrap() {
-        aws_mpl_legacy::types::Encrypt::AesGcm(aes_gcm) => aes_gcm.clone(),
+pub(crate) fn get_encrypt(info: &AlgorithmSuite) -> AesGcm {
+    match &info.encrypt {
+        aws_mpl_rs::suites::Encrypt::AesGcm(aes_gcm) => *aes_gcm,
         _ => panic!("not an aes gcm"),
     }
 }
@@ -121,7 +109,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
     let mut expected_frame: u32 = START_SEQUENCE_NUMBER;
     let mut iv = vec![0u8; get_iv_length(&header.suite) as usize];
     let mut auth_tag = vec![0u8; get_tag_length(&header.suite) as usize];
-    let alg = get_aes_alg(&header.suite);
+    let alg = get_encrypt(&header.suite);
     let frame_length_u64 = u64::from(header.body.frame_length());
     let frame_length_usize = header.body.frame_length() as usize;
     let mut enc_content = vec![0u8; frame_length_usize];
@@ -151,7 +139,6 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 enc_content.len() as u64,
                 &mut aad,
             );
-            #[allow(clippy::redundant_else)]
             if enc_content.is_empty() {
                 // final frame is empty, so return last full frame
                 let mut empty_result = Vec::new();

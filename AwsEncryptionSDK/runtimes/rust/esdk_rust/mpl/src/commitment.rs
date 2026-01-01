@@ -1,14 +1,16 @@
 use crate::error::*;
 use crate::suites::AlgorithmSuiteId;
 
-pub const fn validate_commitment_policy_on_encrypt(_input : ValidateCommitmentPolicyOnEncryptInput) -> Result<(), Error>
-{
+pub const fn validate_commitment_policy_on_encrypt(
+    _input: &ValidateCommitmentPolicyOnEncryptInput,
+) -> Result<(), Error> {
     Ok(())
     // InvalidAlgorithmSuiteInfoOnEncrypt
 }
 
-pub const fn validate_commitment_policy_on_decrypt(_input : ValidateCommitmentPolicyOnDecryptInput) -> Result<(), Error>
-{
+pub const fn validate_commitment_policy_on_decrypt(
+    _input: ValidateCommitmentPolicyOnDecryptInput,
+) -> Result<(), Error> {
     Ok(())
     // InvalidAlgorithmSuiteInfoOnDecrypt
 }
@@ -16,18 +18,34 @@ pub const fn validate_commitment_policy_on_decrypt(_input : ValidateCommitmentPo
 #[derive(Debug, Clone, Default, PartialEq, Copy)]
 #[non_exhaustive]
 pub struct ValidateCommitmentPolicyOnEncryptInput {
-  pub algorithm: AlgorithmSuiteId,
-  pub commitment_policy: CommitmentPolicy,
+    pub algorithm: AlgorithmSuiteId,
+    pub commitment_policy: CommitmentPolicy,
+}
+impl ValidateCommitmentPolicyOnEncryptInput {
+    #[must_use]
+    pub const fn new(algorithm: AlgorithmSuiteId, commitment_policy: CommitmentPolicy) -> Self {
+        Self {
+            algorithm,
+            commitment_policy,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Copy)]
 #[non_exhaustive]
 pub struct ValidateCommitmentPolicyOnDecryptInput {
-  pub algorithm: AlgorithmSuiteId,
-  pub commitment_policy: CommitmentPolicy,
+    pub algorithm: AlgorithmSuiteId,
+    pub commitment_policy: CommitmentPolicy,
 }
-
-
+impl ValidateCommitmentPolicyOnDecryptInput {
+    #[must_use]
+    pub const fn new(algorithm: AlgorithmSuiteId, commitment_policy: CommitmentPolicy) -> Self {
+        Self {
+            algorithm,
+            commitment_policy,
+        }
+    }
+}
 // Commitment
 
 //= aws-encryption-sdk-specification/framework/commitment-policy.md#supported-format-commitment-policy-enum

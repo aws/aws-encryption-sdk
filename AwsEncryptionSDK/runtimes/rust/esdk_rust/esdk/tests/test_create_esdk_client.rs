@@ -1,5 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+#![cfg(feature = "legacy")]
 
 mod fixtures;
 use aws_esdk::*;
@@ -38,7 +39,6 @@ const ESDK_NET_V400_MESSAGE: &[u8] = &[
 ];
 
 #[tokio::test(flavor = "multi_thread")]
-
 async fn test_net_retry_flag() {
     let key_namespace = "Some managed raw keys";
     let key_name = "My 256-bit AES wrapping key";

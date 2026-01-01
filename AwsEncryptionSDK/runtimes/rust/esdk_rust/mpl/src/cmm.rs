@@ -51,9 +51,9 @@ pub struct GetEncryptionMaterialsInput {
     //#   - This value represents the maximum length of the plaintext to be encrypted
     //#     using the returned materials.
     //#     The length of the plaintext to be encrypted MUST not be larger than this value.
-    pub algorithm_suite_id: AlgorithmSuiteId,
+    pub algorithm_suite_id: Option<AlgorithmSuiteId>,
 
-    pub max_plaintext_length: u64,
+    pub max_plaintext_length: Option<usize>,
 
     pub required_encryption_context_keys: Vec<EncryptionContextKey>,
 }
@@ -90,17 +90,9 @@ pub struct DecryptMaterialsInput {
 
 ///Creates a Default Cryptographic Materials Manager.")
 pub fn create_default_cryptographic_materials_manager(
-    _input: CreateDefaultCryptographicMaterialsManagerInput,
+    _keyring: KeyringRef,
 ) -> Result<CryptographicMaterialsManagerRef, Error> {
     todo!()
-}
-
-///Inputs for creating a Default Cryptographic Materials Manager.")
-#[derive(Debug, Clone, Default)]
-#[non_exhaustive]
-pub struct CreateDefaultCryptographicMaterialsManagerInput {
-    ///The Keyring that the created Default Cryptographic Materials Manager will use to wrap data keys.")
-    pub keyring: Option<KeyringRef>,
 }
 
 ///Creates an Required Encryption Context Cryptographic Materials Manager.")

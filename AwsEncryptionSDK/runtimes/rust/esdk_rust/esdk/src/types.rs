@@ -1,8 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-#![allow(single_use_lifetimes)]
-
 use crate::Error;
 use crate::val_err;
 #[cfg(feature = "legacy")]
@@ -15,7 +13,7 @@ use aws_mpl_rs::commitment::EsdkCommitmentPolicy;
 use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
 use std::num::NonZeroUsize;
 
-#[allow(dead_code)]
+#[expect(dead_code)]
 fn comp(x: &KeyringRef, y: &KeyringRef) -> bool {
     std::ptr::addr_eq(std::sync::Arc::as_ptr(x), std::sync::Arc::as_ptr(y))
 }
@@ -59,7 +57,7 @@ impl Eq for MaterialSource {}
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// The length of one frame, must be non-zero, defaults to 4096.
-#[allow(clippy::exhaustive_structs)]
+#[expect(clippy::exhaustive_structs)]
 pub struct FrameLength(pub std::num::NonZeroU32);
 
 impl Default for FrameLength {
@@ -178,14 +176,20 @@ pub struct EncryptInput<'a> {
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 
+#[allow(
+    single_use_lifetimes,
+    reason = "Remove when we add with_cmm and with_keyring"
+)]
 impl<'a> EncryptInput<'a> {
     /// Create default `EncryptInput`
     #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
-    /// Construct an `EncryptInput` with a `CryptographicMaterialsManagerRef`
+    /// Construct an `EncryptInput` with a legacy `CryptographicMaterialsManagerRef`
     #[must_use]
+    #[cfg(feature = "legacy")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     pub fn with_legacy_cmm(plaintext: &'a [u8], ec: EncryptionContext, cmm: LegacyCMM) -> Self {
         Self {
             plaintext,
@@ -194,8 +198,10 @@ impl<'a> EncryptInput<'a> {
             ..Default::default()
         }
     }
-    /// Construct an `EncryptInput` with a `KeyringRef`
+    /// Construct an `EncryptInput` with a legacy `KeyringRef`
     #[must_use]
+    #[cfg(feature = "legacy")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     pub fn with_legacy_keyring(
         plaintext: &'a [u8],
         ec: EncryptionContext,
@@ -205,6 +211,30 @@ impl<'a> EncryptInput<'a> {
             plaintext,
             encryption_context: ec,
             source: Some(MaterialSource::LegacyKeyring(keyring)),
+            ..Default::default()
+        }
+    }
+    #[must_use]
+    /// Construct an `EncryptInput` with a `CryptographicMaterialsManagerRef`
+    pub fn with_cmm(
+        plaintext: &'a [u8],
+        ec: EncryptionContext,
+        cmm: CryptographicMaterialsManagerRef,
+    ) -> Self {
+        Self {
+            plaintext,
+            encryption_context: ec,
+            source: Some(MaterialSource::Cmm(cmm)),
+            ..Default::default()
+        }
+    }
+    /// Construct an `EncryptInput` with a `KeyringRef`
+    #[must_use]
+    pub fn with_keyring(plaintext: &'a [u8], ec: EncryptionContext, keyring: KeyringRef) -> Self {
+        Self {
+            plaintext,
+            encryption_context: ec,
+            source: Some(MaterialSource::Keyring(keyring)),
             ..Default::default()
         }
     }
@@ -244,8 +274,10 @@ impl EncryptStreamInput {
     pub fn new() -> Self {
         Self::default()
     }
-    /// Construct an `EncryptStreamInput` with a `CryptographicMaterialsManagerRef`
+    /// Construct an `EncryptStreamInput` with a legacy `CryptographicMaterialsManagerRef`
     #[must_use]
+    #[cfg(feature = "legacy")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     pub fn with_legacy_cmm(ec: EncryptionContext, cmm: LegacyCMM) -> Self {
         Self {
             encryption_context: ec,
@@ -253,12 +285,32 @@ impl EncryptStreamInput {
             ..Default::default()
         }
     }
-    /// Construct an `EncryptStreamInput` with a `KeyringRef`
+    /// Construct an `EncryptStreamInput` with a legacy `KeyringRef`
     #[must_use]
+    #[cfg(feature = "legacy")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     pub fn with_legacy_keyring(ec: EncryptionContext, keyring: LegacyKeyring) -> Self {
         Self {
             encryption_context: ec,
             source: Some(MaterialSource::LegacyKeyring(keyring)),
+            ..Default::default()
+        }
+    }
+    /// Construct an `EncryptStreamInput` with a `CryptographicMaterialsManagerRef`
+    #[must_use]
+    pub fn with_cmm(ec: EncryptionContext, cmm: CryptographicMaterialsManagerRef) -> Self {
+        Self {
+            encryption_context: ec,
+            source: Some(MaterialSource::Cmm(cmm)),
+            ..Default::default()
+        }
+    }
+    /// Construct an `EncryptStreamInput` with a `KeyringRef`
+    #[must_use]
+    pub fn with_keyring(ec: EncryptionContext, keyring: KeyringRef) -> Self {
+        Self {
+            encryption_context: ec,
+            source: Some(MaterialSource::Keyring(keyring)),
             ..Default::default()
         }
     }
@@ -273,6 +325,10 @@ impl EncryptStreamInput {
 
 #[derive(Debug, PartialEq, Clone, Default)]
 #[non_exhaustive]
+#[allow(
+    single_use_lifetimes,
+    reason = "Remove when we add with_cmm and with_keyring"
+)]
 /// Input for [`decrypt`](crate::decrypt).
 pub struct DecryptInput<'a> {
     /// data to be decrypted
@@ -318,8 +374,10 @@ impl<'a> DecryptInput<'a> {
     pub fn new() -> Self {
         Self::default()
     }
-    /// Construct a `DecryptInput` with a Legacy `CryptographicMaterialsManagerRef`
+    /// Construct a `DecryptInput` with a legacy `CryptographicMaterialsManagerRef`
     #[must_use]
+    #[cfg(feature = "legacy")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     pub fn with_legacy_cmm(ciphertext: &'a [u8], ec: EncryptionContext, cmm: LegacyCMM) -> Self {
         Self {
             ciphertext,
@@ -328,8 +386,10 @@ impl<'a> DecryptInput<'a> {
             ..Default::default()
         }
     }
-    /// Construct a `DecryptInput` with a `KeyringRef`
+    /// Construct a `DecryptInput` with a legacy `KeyringRef`
     #[must_use]
+    #[cfg(feature = "legacy")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     pub fn with_legacy_keyring(
         ciphertext: &'a [u8],
         ec: EncryptionContext,
@@ -339,6 +399,30 @@ impl<'a> DecryptInput<'a> {
             ciphertext,
             encryption_context: ec,
             source: Some(MaterialSource::LegacyKeyring(keyring)),
+            ..Default::default()
+        }
+    }
+    /// Construct a `DecryptInput` with a `CryptographicMaterialsManagerRef`
+    #[must_use]
+    pub fn with_cmm(
+        ciphertext: &'a [u8],
+        ec: EncryptionContext,
+        cmm: CryptographicMaterialsManagerRef,
+    ) -> Self {
+        Self {
+            ciphertext,
+            encryption_context: ec,
+            source: Some(MaterialSource::Cmm(cmm)),
+            ..Default::default()
+        }
+    }
+    /// Construct a `DecryptInput` with a `KeyringRef`
+    #[must_use]
+    pub fn with_keyring(ciphertext: &'a [u8], ec: EncryptionContext, keyring: KeyringRef) -> Self {
+        Self {
+            ciphertext,
+            encryption_context: ec,
+            source: Some(MaterialSource::Keyring(keyring)),
             ..Default::default()
         }
     }
@@ -371,8 +455,10 @@ impl DecryptStreamInput {
     pub fn new() -> Self {
         Self::default()
     }
-    /// Construct a `DecryptStreamInput` with a Legacy `CryptographicMaterialsManagerRef`
+    /// Construct a `DecryptStreamInput` with a legacy `CryptographicMaterialsManagerRef`
     #[must_use]
+    #[cfg(feature = "legacy")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     pub fn with_legacy_cmm(ec: EncryptionContext, cmm: LegacyCMM) -> Self {
         Self {
             encryption_context: ec,
@@ -382,10 +468,32 @@ impl DecryptStreamInput {
     }
     /// Construct a `DecryptStreamInput` with a `KeyringRef`
     #[must_use]
+    #[cfg(feature = "legacy")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     pub fn with_legacy_keyring(ec: EncryptionContext, keyring: LegacyKeyring) -> Self {
         Self {
             encryption_context: ec,
             source: Some(MaterialSource::LegacyKeyring(keyring)),
+            ..Default::default()
+        }
+    }
+    /// Construct a `DecryptStreamInput` with a `CryptographicMaterialsManagerRef`
+    #[must_use]
+    pub fn with_cmm(ec: EncryptionContext, cmm: CryptographicMaterialsManagerRef) -> Self {
+        Self {
+            encryption_context: ec,
+            source: Some(MaterialSource::Cmm(cmm)),
+            ..Default::default()
+        }
+    }
+    /// Construct a `DecryptStreamInput` with a `KeyringRef`
+    #[must_use]
+    #[cfg(feature = "legacy")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
+    pub fn with_keyring(ec: EncryptionContext, keyring: KeyringRef) -> Self {
+        Self {
+            encryption_context: ec,
+            source: Some(MaterialSource::Keyring(keyring)),
             ..Default::default()
         }
     }

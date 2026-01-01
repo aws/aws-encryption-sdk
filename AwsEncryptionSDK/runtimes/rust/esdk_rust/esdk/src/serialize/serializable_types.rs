@@ -2,32 +2,32 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::types::*;
+use aws_mpl_rs::suites::AlgorithmSuite;
+use aws_mpl_rs::types::EncryptedDataKey;
 
-pub(crate) type ESDKEncryptedDataKey = aws_mpl_legacy::types::EncryptedDataKey;
-pub(crate) type ESDKEncryptedDataKeys = Vec<ESDKEncryptedDataKey>;
 pub(crate) type ESDKEncryptionContext = EncryptionContext;
 pub(crate) type ESDKEncryptionContextPair = (String, String);
 pub(crate) type ESDKCanonicalEncryptionContext = Vec<ESDKEncryptionContextPair>;
 
 const ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH: u64 = u16::MAX as u64 - 2;
 
-pub(crate) const fn get_iv_length(a: &aws_mpl_legacy::types::AlgorithmSuiteInfo) -> u8 {
-    match a.encrypt.as_ref().unwrap() {
-        aws_mpl_legacy::types::Encrypt::AesGcm(e) => e.iv_length.unwrap() as u8,
+pub(crate) const fn get_iv_length(a: &AlgorithmSuite) -> u8 {
+    match a.encrypt {
+        aws_mpl_rs::suites::Encrypt::AesGcm(_e) => 12,
         _ => 0,
     }
 }
 
-pub(crate) const fn get_tag_length(a: &aws_mpl_legacy::types::AlgorithmSuiteInfo) -> u8 {
-    match a.encrypt.as_ref().unwrap() {
-        aws_mpl_legacy::types::Encrypt::AesGcm(e) => e.tag_length.unwrap() as u8,
+pub(crate) const fn get_tag_length(a: &AlgorithmSuite) -> u8 {
+    match a.encrypt {
+        aws_mpl_rs::suites::Encrypt::AesGcm(_e) => 16,
         _ => 0,
     }
 }
 
-pub(crate) const fn get_encrypt_key_length(a: &aws_mpl_legacy::types::AlgorithmSuiteInfo) -> u8 {
-    match a.encrypt.as_ref().unwrap() {
-        aws_mpl_legacy::types::Encrypt::AesGcm(e) => e.key_length.unwrap() as u8,
+pub(crate) const fn get_encrypt_key_length(a: &AlgorithmSuite) -> u8 {
+    match a.encrypt {
+        aws_mpl_rs::suites::Encrypt::AesGcm(e) => e.key_len(),
         _ => 0,
     }
 }
@@ -88,12 +88,12 @@ pub(crate) fn is_esdk_encryption_context(ec: &EncryptionContext) -> bool {
     true
 }
 
-pub(crate) fn is_esdk_encrypted_data_key(edk: &ESDKEncryptedDataKey) -> bool {
-    u16::try_from(edk.key_provider_id.as_ref().unwrap().len()).is_ok()
-        && u16::try_from(edk.key_provider_info.as_ref().unwrap().as_ref().len()).is_ok()
+pub(crate) fn is_esdk_encrypted_data_key(edk: &EncryptedDataKey) -> bool {
+    u16::try_from(edk.key_provider_id.len()).is_ok()
+        && u16::try_from(edk.key_provider_info.len()).is_ok()
 }
 
-pub(crate) fn is_esdk_encrypted_data_keys(edks: &[ESDKEncryptedDataKey]) -> bool {
+pub(crate) fn is_esdk_encrypted_data_keys(edks: &[EncryptedDataKey]) -> bool {
     if edks.len() >= u16::MAX as usize {
         return false;
     }

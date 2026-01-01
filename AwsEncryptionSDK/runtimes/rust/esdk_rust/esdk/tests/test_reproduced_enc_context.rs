@@ -1,5 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+#![cfg(feature = "legacy")]
 
 mod fixtures;
 use aws_esdk::*;
@@ -96,7 +97,6 @@ async fn test_encryption_context_on_decrypt_failure() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-
 async fn test_mismatched_encryption_context_on_decrypt() {
     let asdf = "asdf".as_bytes();
 

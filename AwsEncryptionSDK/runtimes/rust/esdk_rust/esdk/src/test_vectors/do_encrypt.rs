@@ -120,8 +120,8 @@ pub(crate) async fn run_encrypt_tests(
             res.skipped += 1;
         } else if "aws-kms-ecdh" == test.encrypt_key_description.kind {
             res.skipped += 1;
-        } else if "raw" != test.encrypt_key_description.kind {
-            res.skipped += 1;
+        // } else if "raw" != test.encrypt_key_description.kind {
+        //     res.skipped += 1;
         } else {
             let cmm = get_cmm(&test.encrypt_key_description, keys, &mpl, &kms).await?;
             match run_encrypt_test(test, cmm, plaintexts, dir).await {

@@ -79,15 +79,15 @@ impl Default for AlgorithmSuiteId {
 #[derive(Debug, PartialEq, Clone, Default)]
 #[non_exhaustive]
 pub struct AlgorithmSuite {
-    id: AlgorithmSuiteId,
-    binary_id: [u8; 2],
-    message_version: u32,
-    encrypt: Encrypt,
-    kdf: DerivationAlgorithm,
-    commitment: DerivationAlgorithm,
-    signature: SignatureAlgorithm,
-    symmetric_signature: SymmetricSignatureAlgorithm,
-    edk_wrapping: EdkWrappingAlgorithm,
+    pub id: AlgorithmSuiteId,
+    pub binary_id: [u8; 2],
+    pub message_version: u32,
+    pub encrypt: Encrypt,
+    pub kdf: DerivationAlgorithm,
+    pub commitment: DerivationAlgorithm,
+    pub signature: SignatureAlgorithm,
+    pub symmetric_signature: SymmetricSignatureAlgorithm,
+    pub edk_wrapping: EdkWrappingAlgorithm,
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
@@ -108,10 +108,10 @@ impl Default for Encrypt {
 #[derive(Debug, PartialEq, Copy, Clone, Default)]
 #[non_exhaustive]
 pub struct Hkdf {
-    hmac: aws_mpl_primitives::DigestAlg,
-    salt_length: u32,
-    input_key_length: u32,
-    output_key_length: u32,
+    pub hmac: aws_mpl_primitives::DigestAlg,
+    pub salt_length: u32,
+    pub input_key_length: u32,
+    pub output_key_length: u32,
 }
 
 #[derive(Debug, PartialEq, Copy, Clone, Default)]
@@ -192,12 +192,12 @@ const EDK_INTERMEDIATE_WRAPPING_AES_GCM_256_HKDF_SHA_512: EdkWrappingAlgorithm =
         pdk_encrypt_algorithm: Encrypt::AesGcm(AesGcm::Aes256Gcm),
     });
 
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Copy, Clone, Default)]
 #[non_exhaustive]
 pub struct IntermediateKeyWrapping {
-    key_encryption_key_kdf: DerivationAlgorithm,
-    mac_key_kdf: DerivationAlgorithm,
-    pdk_encrypt_algorithm: Encrypt,
+    pub key_encryption_key_kdf: DerivationAlgorithm,
+    pub mac_key_kdf: DerivationAlgorithm,
+    pub pdk_encrypt_algorithm: Encrypt,
 }
 
 pub fn get_algorithm_suite_info(binary_id: [u8; 2]) -> Result<&'static AlgorithmSuite, Error> {
@@ -224,7 +224,7 @@ const fn implies(a: bool, b: bool) -> bool {
     !a || b
 }
   // Invariants for all supported Algorithm Suites
-  fn valid_suite(a: &AlgorithmSuite) -> bool {
+  const fn valid_suite(a: &AlgorithmSuite) -> bool {
     true
     /* 
     && KeyDerivationAlgorithm?(a.kdf)
@@ -259,7 +259,7 @@ const fn implies(a: bool, b: bool) -> bool {
           */
   }
 
-fn valid_esdk_suite(suite: &AlgorithmSuite, a: EsdkAlgorithmSuiteId) -> bool {
+const fn valid_esdk_suite(suite: &AlgorithmSuite, a: EsdkAlgorithmSuiteId) -> bool {
     // Adheres to general Algorithm Suite constraints
     valid_suite(suite)
     /*
@@ -406,7 +406,7 @@ fn valid_esdk_suite(suite: &AlgorithmSuite, a: EsdkAlgorithmSuiteId) -> bool {
     */
 }
 
-fn valid_dbe_suite(suite: &AlgorithmSuite, a: DbeAlgorithmSuiteId) -> bool {
+const fn valid_dbe_suite(suite: &AlgorithmSuite, a: DbeAlgorithmSuiteId) -> bool {
     // Adheres to general Algorithm Suite constraints
     valid_suite(suite)
     /*
@@ -591,7 +591,7 @@ const ESDK_ALG_AES_256_GCM_HKDF_SHA512_COMMIT_KEY_ECDSA_P384: AlgorithmSuite = A
     encrypt: Encrypt::AesGcm(AesGcm::Aes256Gcm),
     kdf: hkdf_sha_512(BITS256),
     commitment: hkdf_sha_512(BITS256),
-    signature: SignatureAlgorithm::None,
+    signature: SignatureAlgorithm::Ecdsa(EcdsaSignatureAlgorithm::EcdsaP384),
     symmetric_signature: SymmetricSignatureAlgorithm::None,
     edk_wrapping: EdkWrappingAlgorithm::DirectKeyWrapping,
 };

@@ -16,13 +16,15 @@ pub(crate) const START_SEQUENCE_NUMBER: u32 = 1;
 pub(crate) const ENDFRAME_SEQUENCE_NUMBER: u32 = 0xFFFF_FFFF;
 pub(crate) const NONFRAMED_SEQUENCE_NUMBER: u32 = 1;
 pub(crate) const SAFE_MAX_ENCRYPT: u64 = 0x000F_FFFF_FFE0;
+use aws_mpl_rs::suites::AlgorithmSuite;
+use aws_mpl_rs::suites::DerivationAlgorithm;
 
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct HeaderInfo {
     pub(crate) body: HeaderBody,
     pub(crate) raw_header: Vec<u8>,
     pub(crate) encryption_context: ESDKEncryptionContext,
-    pub(crate) suite: aws_mpl_legacy::types::AlgorithmSuiteInfo,
+    pub(crate) suite: AlgorithmSuite,
     pub(crate) header_auth: HeaderAuth,
 }
 
@@ -48,18 +50,17 @@ pub(crate) fn write_header_body(w: &mut dyn SafeWrite, body: &HeaderBody) -> Res
 pub(crate) fn read_header_body(
     r: &mut dyn SafeRead,
     max_edks: Option<std::num::NonZeroUsize>,
-    mpl: &aws_mpl_legacy::Client,
     raw: &mut dyn SafeWrite,
 ) -> Result<HeaderBody, Error> {
     let version = read_msg_format_version(r, raw)?;
 
     let result = match version {
         MessageFormatVersion::V1 => {
-            let body = read_v1_header_body(r, max_edks, mpl, raw)?;
+            let body = read_v1_header_body(r, max_edks, raw)?;
             HeaderBody::V1Body(body)
         }
         MessageFormatVersion::V2 => {
-            let body = read_v2_header_body(r, max_edks, mpl, raw)?;
+            let body = read_v2_header_body(r, max_edks, raw)?;
             HeaderBody::V2Body(body)
         }
     };
@@ -80,12 +81,12 @@ pub(crate) fn read_header_body(
 }
 
 pub(crate) const fn header_version_supports_commitment(
-    suite: &aws_mpl_legacy::types::AlgorithmSuiteInfo,
+    suite: &AlgorithmSuite,
     body: &HeaderBody,
 ) -> bool {
-    match (suite.commitment.as_ref().unwrap(), body) {
-        (aws_mpl_legacy::types::DerivationAlgorithm::Hkdf(header), HeaderBody::V2Body(body)) => {
-            body.suite_data.len() == header.output_key_length.unwrap() as usize
+    match (suite.commitment, body) {
+        (DerivationAlgorithm::Hkdf(header), HeaderBody::V2Body(body)) => {
+            body.suite_data.len() == header.output_key_length as usize
         }
         (_, HeaderBody::V1Body(_)) => true,
         _ => false,

@@ -134,6 +134,17 @@ pub enum AesGcm {
     Aes256Gcm,
 }
 
+impl AesGcm {
+    #[must_use]
+    pub const fn key_len(&self) -> u8 {
+        match self {
+            Self::Aes128Gcm => 16,
+            Self::Aes192Gcm => 24,
+            Self::Aes256Gcm => 32,
+        }
+    }
+}
+
 const fn get_aes_alg(alg: AesGcm) -> &'static aws_lc_rs::aead::Algorithm {
     match alg {
         AesGcm::Aes128Gcm => &aws_lc_rs::aead::AES_128_GCM,

@@ -59,6 +59,7 @@ const fn get_digest_alg(x: DigestAlg) -> &'static aws_lc_rs::digest::Algorithm {
         DigestAlg::Sha512 => &aws_lc_rs::digest::SHA512,
     }
 }
+
 const fn get_digest_alg_from_ecdsa(x: EcdsaSignatureAlgorithm) -> &'static aws_lc_rs::digest::Algorithm {
     match x {
         EcdsaSignatureAlgorithm::EcdsaP256 => &aws_lc_rs::digest::SHA256,

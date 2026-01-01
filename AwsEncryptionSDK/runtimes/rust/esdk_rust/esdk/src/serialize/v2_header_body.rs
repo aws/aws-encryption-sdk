@@ -8,7 +8,7 @@ use super::*;
 use crate::serialize::header_types::*;
 use crate::serialize::serialize_functions::*;
 use crate::types::{SafeRead, SafeWrite};
-use aws_mpl_legacy::types::DerivationAlgorithm;
+use aws_mpl_rs::suites::DerivationAlgorithm;
 
 pub(crate) fn write_v2_header_body(
     w: &mut dyn SafeWrite,
@@ -73,7 +73,7 @@ pub(crate) fn write_v2_header_body(
     write_bytes(w, &body.suite_data)
 }
 
-pub(crate) const fn get_hkdf(x: &DerivationAlgorithm) -> &aws_mpl_legacy::types::Hkdf {
+pub(crate) const fn get_hkdf(x: &DerivationAlgorithm) -> &aws_mpl_rs::suites::Hkdf {
     if let DerivationAlgorithm::Hkdf(x) = x {
         x
     } else {
@@ -86,27 +86,23 @@ pub(crate) const fn has_hkdf(x: &DerivationAlgorithm) -> bool {
 pub(crate) fn read_v2_header_body(
     r: &mut dyn SafeRead,
     max_edks: Option<std::num::NonZeroUsize>,
-    mpl: &aws_mpl_legacy::Client,
     raw: &mut dyn SafeWrite,
 ) -> Result<V2HeaderBody, Error> {
-    let algorithm_suite = read_esdk_suite_id(r, mpl, raw)?;
-    if !has_hkdf(algorithm_suite.commitment.as_ref().unwrap()) {
+    let algorithm_suite = read_esdk_suite_id(r, raw)?;
+    if !has_hkdf(&algorithm_suite.commitment) {
         return ser_err("Algorithm suite must support commitment.");
     }
 
     let message_id = read_message_id_v2(r, raw)?;
-
     let encryption_context: Vec<(String, String)> = read_canonical_ec(r, raw)?;
     let encrypted_data_keys = read_edks(r, max_edks, raw)?;
     let content_type = read_content_type(r, raw)?;
     let frame_length = read_u32(r, raw)?;
-    let len = get_hkdf(algorithm_suite.commitment.as_ref().unwrap())
-        .output_key_length
-        .unwrap();
+    let len = get_hkdf(&algorithm_suite.commitment).output_key_length;
     let suite_data = read_vec(r, len as usize, raw)?;
 
     Ok(V2HeaderBody {
-        algorithm_suite,
+        algorithm_suite: algorithm_suite.clone(),
         message_id,
         encryption_context,
         encrypted_data_keys,

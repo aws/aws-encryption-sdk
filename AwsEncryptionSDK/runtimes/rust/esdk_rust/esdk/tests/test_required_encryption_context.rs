@@ -1,6 +1,8 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+#![cfg(feature = "legacy")]
+
 mod fixtures;
 use aws_esdk::*;
 use aws_mpl_legacy::aws_cryptography_keyStore::client::Client as KeystoreClient;

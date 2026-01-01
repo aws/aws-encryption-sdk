@@ -5,9 +5,10 @@ use super::serializable_types::*;
 use super::serialize_functions::*;
 use super::*;
 use crate::types::{SafeRead, SafeWrite};
+use aws_mpl_rs::suites::AlgorithmSuite;
+use aws_mpl_rs::types::EncryptedDataKey;
 
 pub(crate) type MessageId = Vec<u8>;
-pub(crate) type ESDKAlgorithmSuite = aws_mpl_legacy::types::AlgorithmSuiteInfo;
 
 #[derive(Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Debug, Hash)]
 pub(crate) enum MessageFormatVersion {
@@ -64,10 +65,10 @@ pub(crate) fn read_content_type(
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct V1HeaderBody {
     pub(crate) message_type: MessageType,
-    pub(crate) algorithm_suite: ESDKAlgorithmSuite,
+    pub(crate) algorithm_suite: AlgorithmSuite,
     pub(crate) message_id: MessageId,
     pub(crate) encryption_context: ESDKCanonicalEncryptionContext,
-    pub(crate) encrypted_data_keys: ESDKEncryptedDataKeys,
+    pub(crate) encrypted_data_keys: Vec<EncryptedDataKey>,
     pub(crate) content_type: ContentType,
     pub(crate) header_iv_length: u64,
     pub(crate) frame_length: u32,
@@ -75,10 +76,10 @@ pub(crate) struct V1HeaderBody {
 
 #[derive(Clone, PartialEq, Debug)]
 pub(crate) struct V2HeaderBody {
-    pub(crate) algorithm_suite: ESDKAlgorithmSuite,
+    pub(crate) algorithm_suite: AlgorithmSuite,
     pub(crate) message_id: MessageId,
     pub(crate) encryption_context: ESDKCanonicalEncryptionContext,
-    pub(crate) encrypted_data_keys: ESDKEncryptedDataKeys,
+    pub(crate) encrypted_data_keys: Vec<EncryptedDataKey>,
     pub(crate) content_type: ContentType,
     pub(crate) frame_length: u32,
     pub(crate) suite_data: Vec<u8>,
@@ -114,13 +115,13 @@ impl HeaderBody {
             Self::V2Body(body) => &body.encryption_context,
         }
     }
-    pub(crate) const fn encrypted_data_keys(&self) -> &ESDKEncryptedDataKeys {
+    pub(crate) fn encrypted_data_keys(&self) -> &[EncryptedDataKey] {
         match self {
             Self::V1Body(body) => &body.encrypted_data_keys,
             Self::V2Body(body) => &body.encrypted_data_keys,
         }
     }
-    pub(crate) const fn algorithm_suite(&self) -> &ESDKAlgorithmSuite {
+    pub(crate) const fn algorithm_suite(&self) -> &AlgorithmSuite {
         match self {
             Self::V1Body(body) => &body.algorithm_suite,
             Self::V2Body(body) => &body.algorithm_suite,

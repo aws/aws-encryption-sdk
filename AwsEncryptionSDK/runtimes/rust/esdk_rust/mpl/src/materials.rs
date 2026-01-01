@@ -26,13 +26,6 @@ pub struct ValidDecryptionMaterialsTransitionInput {
   pub stop: DecryptionMaterials,
 }
 
-// Errors
-// InvalidEncryptionMaterialsTransition
-// InvalidDecryptionMaterialsTransition
-// InvalidEncryptionMaterials
-// InvalidDecryptionMaterials
-
-
 pub const fn encryption_materials_has_plaintext_data_key(_input : &EncryptionMaterials) -> Result<(), Error> {
     Ok(())
     //   errors: [InvalidEncryptionMaterials],

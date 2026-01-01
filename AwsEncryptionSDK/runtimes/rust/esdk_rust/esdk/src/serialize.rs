@@ -35,17 +35,16 @@ impl std::io::Write for NoopWriter {
 }
 
 #[derive(Clone, Debug)]
-#[allow(dead_code)]
 pub(crate) struct DigestWriter {
     pub(crate) context: Option<DigestContext>,
 }
 impl DigestWriter {
-    #[allow(dead_code)]
+    #[expect(dead_code)]
     pub(crate) fn new(alg: aws_mpl_primitives::DigestAlg) -> Result<Self, Error> {
         let context = Some(DigestContext::new(alg)?);
         Ok(Self { context })
     }
-    #[allow(dead_code)]
+    #[expect(dead_code)]
     pub(crate) fn from_ecdsa(
         alg: aws_mpl_primitives::EcdsaSignatureAlgorithm,
     ) -> Result<Self, Error> {
@@ -53,13 +52,11 @@ impl DigestWriter {
         Ok(Self { context })
     }
     pub(crate) fn from_old_ecdsa(
-        alg: &aws_mpl_legacy::types::SignatureAlgorithm,
+        alg: aws_mpl_rs::suites::SignatureAlgorithm,
     ) -> Result<Self, Error> {
         match alg {
-            aws_mpl_legacy::types::SignatureAlgorithm::Ecdsa(x) => {
-                let context = Some(DigestContext::new_from_ecdsa(
-                    crate::encrypt_decrypt::ecdsa_alg(x.curve.unwrap()),
-                )?);
+            aws_mpl_rs::suites::SignatureAlgorithm::Ecdsa(x) => {
+                let context = Some(DigestContext::new_from_ecdsa(x)?);
                 Ok(Self { context })
             }
             _ => Ok(Self { context: None }),

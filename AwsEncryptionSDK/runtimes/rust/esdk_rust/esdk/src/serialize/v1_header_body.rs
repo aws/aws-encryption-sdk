@@ -9,6 +9,7 @@ use crate::serialize::header_types::*;
 use crate::serialize::serializable_types::*;
 use crate::serialize::serialize_functions::*;
 use crate::types::{SafeRead, SafeWrite};
+use aws_mpl_rs::suites::AlgorithmSuite;
 
 //= compliance/data-format/message-header.txt#2.5.2.1
 //= type=implication
@@ -106,7 +107,7 @@ pub(crate) fn read_v1_reserved_bytes(
 
 pub(crate) fn read_v1_header_iv_length(
     r: &mut dyn SafeRead,
-    suite: &aws_mpl_legacy::types::AlgorithmSuiteInfo,
+    suite: &AlgorithmSuite,
     raw: &mut dyn SafeWrite,
 ) -> Result<u8, Error> {
     let raw = read_u8(r, raw)?;
@@ -120,22 +121,21 @@ pub(crate) fn read_v1_header_iv_length(
 pub(crate) fn read_v1_header_body(
     r: &mut dyn SafeRead,
     max_edks: Option<std::num::NonZeroUsize>,
-    mpl: &aws_mpl_legacy::Client,
     raw: &mut dyn SafeWrite,
 ) -> Result<V1HeaderBody, Error> {
     let message_type = read_msg_type(r, raw)?;
-    let algorithm_suite = read_esdk_suite_id(r, mpl, raw)?;
+    let algorithm_suite = read_esdk_suite_id(r, raw)?;
     let message_id = read_message_id_v1(r, raw)?;
     let encryption_context: Vec<(String, String)> = read_canonical_ec(r, raw)?;
     let encrypted_data_keys = read_edks(r, max_edks, raw)?;
     let content_type = read_content_type(r, raw)?;
     read_v1_reserved_bytes(r, raw)?;
-    let header_iv_length = read_v1_header_iv_length(r, &algorithm_suite, raw)?;
+    let header_iv_length = read_v1_header_iv_length(r, algorithm_suite, raw)?;
     let frame_length = read_u32(r, raw)?;
 
     Ok(V1HeaderBody {
         message_type,
-        algorithm_suite,
+        algorithm_suite: algorithm_suite.clone(),
         message_id,
         encryption_context,
         encrypted_data_keys,

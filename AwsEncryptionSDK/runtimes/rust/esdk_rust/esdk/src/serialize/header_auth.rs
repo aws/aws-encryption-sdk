@@ -6,13 +6,14 @@ use super::*;
 use crate::serialize::serializable_types::*;
 use crate::serialize::serialize_functions::*;
 use crate::types::{SafeRead, SafeWrite};
+use aws_mpl_rs::suites::AlgorithmSuite;
 
 pub(crate) fn write_header_auth_tag(
     w: &mut dyn SafeWrite,
     header_auth: &HeaderAuth,
-    suite: &aws_mpl_legacy::types::AlgorithmSuiteInfo,
+    suite: &AlgorithmSuite,
 ) -> Result<(), Error> {
-    match suite.message_version.unwrap() {
+    match suite.message_version {
         1 => write_header_auth_tag_v1(w, header_auth),
         2 => write_header_auth_tag_v2(w, header_auth),
         _ => ser_err("Unexpected message version"),
@@ -45,10 +46,10 @@ pub(crate) fn write_header_auth_tag_v2(
 
 pub(crate) fn read_header_auth_tag(
     r: &mut dyn SafeRead,
-    suite: &aws_mpl_legacy::types::AlgorithmSuiteInfo,
+    suite: &AlgorithmSuite,
     raw: &mut dyn SafeWrite,
 ) -> Result<HeaderAuth, Error> {
-    match suite.message_version.unwrap() {
+    match suite.message_version {
         1 => read_header_auth_tag_v1(r, suite, raw),
         2 => read_header_auth_tag_v2(r, suite, raw),
         _ => ser_err("Unexpected message version"),
@@ -56,7 +57,7 @@ pub(crate) fn read_header_auth_tag(
 }
 pub(crate) fn read_header_auth_tag_v1(
     r: &mut dyn SafeRead,
-    suite: &aws_mpl_legacy::types::AlgorithmSuiteInfo,
+    suite: &AlgorithmSuite,
     raw: &mut dyn SafeWrite,
 ) -> Result<HeaderAuth, Error> {
     let header_iv = read_vec(r, get_iv_length(suite) as usize, raw)?;
@@ -68,7 +69,7 @@ pub(crate) fn read_header_auth_tag_v1(
 }
 pub(crate) fn read_header_auth_tag_v2(
     r: &mut dyn SafeRead,
-    suite: &aws_mpl_legacy::types::AlgorithmSuiteInfo,
+    suite: &AlgorithmSuite,
     raw: &mut dyn SafeWrite,
 ) -> Result<HeaderAuth, Error> {
     let header_auth_tag = read_vec(r, get_tag_length(suite) as usize, raw)?;
