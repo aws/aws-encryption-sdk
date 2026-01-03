@@ -1,13 +1,20 @@
+#![allow(dead_code)]
+
+#[cfg(feature = "legacy")]
+use super::do_decrypt::make_kms_map;
 use super::do_decrypt::trim_filename;
-use super::do_decrypt::{get_cmm, make_kms_map};
 use crate::test_vectors::types::*;
-use crate::{EncryptInput, encrypt, mpl};
+use crate::{EncryptInput, MaterialSource, encrypt};
 use anyhow::Result;
-use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef as CmmRef;
 use aws_mpl_primitives::generate_random_bytes;
 use aws_mpl_rs::commitment::EsdkCommitmentPolicy;
 use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
 use serde_json::Value as JsonValue;
+
+#[cfg(feature = "legacy")]
+use super::do_decrypt::get_legacy_cmm;
+#[cfg(feature = "legacy")]
+use crate::mpl;
 
 pub(crate) fn write_file(filename: &str, data: &[u8], dir: &str) -> Result<()> {
     let filename = trim_filename(filename);
@@ -57,14 +64,14 @@ fn make_decrypt_json(test: &EncryptTest, ciphertext_result: &[u8], dir: &str) ->
 
 pub(crate) async fn run_encrypt_test(
     test: &EncryptTest,
-    cmm: CmmRef,
+    source: MaterialSource,
     plaintexts: &PlainTexts,
     dir: &str,
 ) -> Result<JsonValue> {
     let plaintext = &plaintexts[&test.plaintext];
     let encrypt_input = EncryptInput {
         plaintext,
-        source: Some(crate::MaterialSource::LegacyCmm(cmm)),
+        source: Some(source),
         algorithm_suite_id: Some(test.alg_id),
         encryption_context: test.encryption_context.clone(),
         commitment_policy: policy(test.alg_id),
@@ -92,8 +99,22 @@ pub(crate) const fn policy(id: EsdkAlgorithmSuiteId) -> EsdkCommitmentPolicy {
     }
 }
 
-#[allow(clippy::if_same_then_else)]
+#[allow(unused)]
+#[allow(clippy::unused_async)]
+#[allow(clippy::needless_pass_by_ref_mut)]
 pub(crate) async fn run_encrypt_tests(
+    tests: &EncryptTests,
+    keys: &KeyMap,
+    plaintexts: &PlainTexts,
+    res: &mut TestResults,
+    dir: &str,
+) -> Result<JsonValue> {
+    Ok(JsonValue::default())
+}
+
+#[allow(clippy::if_same_then_else)]
+#[cfg(feature = "legacy")]
+pub(crate) async fn run_encrypt_tests_legacy(
     tests: &EncryptTests,
     keys: &KeyMap,
     plaintexts: &PlainTexts,
@@ -123,7 +144,7 @@ pub(crate) async fn run_encrypt_tests(
         // } else if "raw" != test.encrypt_key_description.kind {
         //     res.skipped += 1;
         } else {
-            let cmm = get_cmm(&test.encrypt_key_description, keys, &mpl, &kms).await?;
+            let cmm = get_legacy_cmm(&test.encrypt_key_description, keys, &mpl, &kms).await?;
             match run_encrypt_test(test, cmm, plaintexts, dir).await {
                 Ok(j) => {
                     // println!(
