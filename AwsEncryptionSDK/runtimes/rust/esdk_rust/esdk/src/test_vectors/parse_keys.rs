@@ -89,7 +89,7 @@ pub(crate) fn parse_key_v2(data: &JsonValue, _name: &str) -> Result<Key> {
             "branchKeyVersion" => key.branch_key_version = value.as_str().unwrap().to_string(),
             "encryptionContext" => key.encryption_context = parse_encryption_context(value),
             "requiredEncryptionContextKeys" => {
-                key.required_encryption_context_keys = parse_string_list(value);
+                key.required_keys = parse_string_list(value);
             }
             _ => anyhow::bail!("Unknown field in JSON for version 2 key: {key_str}"),
         }

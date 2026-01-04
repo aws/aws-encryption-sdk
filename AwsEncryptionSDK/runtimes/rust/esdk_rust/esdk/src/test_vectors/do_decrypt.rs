@@ -7,6 +7,7 @@ use crate::test_vectors::types::*;
 use crate::{DecryptInput, MaterialSource, decrypt};
 use anyhow::Result;
 use aws_config::Region;
+use aws_mpl_rs::keyring::KeyringRef;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 
@@ -17,11 +18,10 @@ use aws_mpl_legacy::client::Client as mpl_client;
 #[cfg(feature = "legacy")]
 use aws_mpl_legacy::types::DiscoveryFilter;
 #[cfg(feature = "legacy")]
-use aws_mpl_legacy::types::keyring::KeyringRef;
+use aws_mpl_legacy::types::keyring::KeyringRef as LegacyKeyring;
 
 #[cfg(feature = "legacy")]
 use crate::mpl;
-
 
 type KmsMap = HashMap<String, aws_sdk_kms::Client>;
 const DFLT_REGION: &str = "us-west-2";
@@ -81,6 +81,20 @@ pub(crate) fn write_json(data: &JsonValue, name: &str) -> Result<()> {
 
 pub(crate) async fn run_decrypt_test(
     test: &EncryptTest,
+    ms: MaybeSource,
+    dir: &str,
+) -> Result<TestStatus> {
+    match ms {
+        MaybeSource::Skipped => Ok(TestStatus::Skipped),
+        MaybeSource::Ok(ms) => {
+            do_run_decrypt_test(test, ms, dir).await?;
+            Ok(TestStatus::Ok)
+        }
+    }
+}
+
+pub(crate) async fn do_run_decrypt_test(
+    test: &EncryptTest,
     ms: MaterialSource,
     dir: &str,
 ) -> Result<()> {
@@ -119,7 +133,7 @@ pub(crate) async fn get_raw_ecdh_keyring_static_legacy(
     keydesc: &KeyDescription,
     keys: &KeyMap,
     mpl: &mpl_client,
-) -> Result<KeyringRef> {
+) -> Result<LegacyKeyring> {
     let key = &keys[&keydesc.sender];
     let pub_key = decode_base64(&key.recipient_material_public_key)?;
     let raw_ecdh_static_configuration_input =
@@ -147,7 +161,7 @@ pub(crate) async fn get_raw_ecdh_keyring_ephemeral_legacy(
     keydesc: &KeyDescription,
     keys: &KeyMap,
     mpl: &mpl_client,
-) -> Result<KeyringRef> {
+) -> Result<LegacyKeyring> {
     let key = &keys[&keydesc.recipient];
     let pub_key = decode_base64(&key.recipient_material_public_key)?;
     let raw_ecdh_static_configuration_input =
@@ -175,7 +189,7 @@ pub(crate) async fn get_raw_ecdh_keyring_discovery_legacy(
     keydesc: &KeyDescription,
     keys: &KeyMap,
     mpl: &mpl_client,
-) -> Result<KeyringRef> {
+) -> Result<LegacyKeyring> {
     let key = &keys[&keydesc.recipient];
     let raw_ecdh_static_configuration_input =
         aws_mpl_legacy::types::PublicKeyDiscoveryInput::builder()
@@ -202,7 +216,7 @@ pub(crate) async fn get_raw_ecdh_keyring_legacy(
     keydesc: &KeyDescription,
     keys: &KeyMap,
     mpl: &mpl_client,
-) -> Result<KeyringRef> {
+) -> Result<LegacyKeyring> {
     match &keydesc.schema[..] {
         "static" => get_raw_ecdh_keyring_static_legacy(keydesc, keys, mpl).await,
         "ephemeral" => get_raw_ecdh_keyring_ephemeral_legacy(keydesc, keys, mpl).await,
@@ -225,7 +239,7 @@ pub(crate) async fn get_aws_kms_rsa_keyring_legacy(
     key: &Key,
     mpl: &mpl_client,
     kms: &aws_sdk_kms::Client,
-) -> Result<KeyringRef> {
+) -> Result<LegacyKeyring> {
     let keyring = mpl
         .create_aws_kms_rsa_keyring()
         .kms_key_id(key.key_id.clone())
@@ -242,7 +256,7 @@ pub(crate) async fn get_aws_kms_keyring_legacy(
     key: &Key,
     mpl: &mpl_client,
     kms: &aws_sdk_kms::Client,
-) -> Result<KeyringRef> {
+) -> Result<LegacyKeyring> {
     let keyring = mpl
         .create_aws_kms_keyring()
         .kms_key_id(key.key_id.clone())
@@ -257,7 +271,7 @@ pub(crate) async fn get_aws_kms_mrk_keyring_legacy(
     key: &Key,
     mpl: &mpl_client,
     kms: &KmsMap,
-) -> Result<KeyringRef> {
+) -> Result<LegacyKeyring> {
     let kms = kms_from_arn(kms, &key.key_id);
     let keyring = mpl
         .create_aws_kms_mrk_keyring()
@@ -273,9 +287,9 @@ pub(crate) async fn get_aws_kms_mrk_discovery_keyring_legacy(
     keydesc: &KeyDescription,
     mpl: &mpl_client,
     kms: &KmsMap,
-) -> Result<KeyringRef> {
+) -> Result<LegacyKeyring> {
     if keydesc.discovery_filter.partition.is_empty() {
-        let keyring: KeyringRef = mpl
+        let keyring = mpl
             .create_aws_kms_mrk_discovery_keyring()
             .kms_client(kms[&keydesc.default_mrk_region].clone())
             .region(keydesc.default_mrk_region.clone())
@@ -288,7 +302,7 @@ pub(crate) async fn get_aws_kms_mrk_discovery_keyring_legacy(
             .account_ids(keydesc.discovery_filter.account_ids.clone())
             .build()?;
 
-        let keyring: KeyringRef = mpl
+        let keyring = mpl
             .create_aws_kms_mrk_discovery_keyring()
             .kms_client(kms[&keydesc.default_mrk_region].clone())
             .region(keydesc.default_mrk_region.clone())
@@ -313,7 +327,7 @@ async fn get_raw_keyring_legacy(
     keydesc: &KeyDescription,
     key: &Key,
     mpl: &mpl_client,
-) -> Result<KeyringRef> {
+) -> Result<LegacyKeyring> {
     let hash = &keydesc.padding_hash;
     let e_alg = &keydesc.encryption_algorithm;
     let p_alg = &keydesc.padding_algorithm;
@@ -322,7 +336,7 @@ async fn get_raw_keyring_legacy(
     let key_namespace = &keydesc.provider_id;
     let key_name = &key.key_id;
     if is_aes {
-        let keyring: KeyringRef = mpl
+        let keyring = mpl
             .create_raw_aes_keyring()
             .key_namespace(key_namespace.clone())
             .key_name(key_name.clone())
@@ -364,14 +378,29 @@ async fn get_raw_keyring_legacy(
     }
 }
 
+pub(crate) enum TestStatus {
+    Ok,
+    Skipped,
+}
+
+pub(crate) enum MaybeSource {
+    Ok(MaterialSource),
+    Skipped,
+}
+
 #[cfg(feature = "legacy")]
 pub(crate) async fn get_legacy_cmm(
     keydesc: &KeyDescription,
     keys: &KeyMap,
     mpl: &mpl_client,
     kms: &KmsMap,
-) -> Result<MaterialSource> {
-    if keydesc.kind == "required-encryption-context-cmm" {
+) -> Result<MaybeSource> {
+    if keydesc.kind == "aws-kms-hierarchy"
+        || keydesc.kind == "aws-kms-ecdh"
+        || keydesc.kind == "unknown"
+    {
+        Ok(MaybeSource::Skipped)
+    } else if keydesc.kind == "required-encryption-context-cmm" {
         let keyring = get_keyring_legacy(&keydesc.underlying[0], keys, mpl, kms).await?;
         let under_cmm = mpl
             .create_default_cryptographic_materials_manager()
@@ -382,14 +411,40 @@ pub(crate) async fn get_legacy_cmm(
         let cmm = mpl
             .create_required_encryption_context_cmm()
             .underlying_cmm(under_cmm)
-            .required_encryption_context_keys(keydesc.required_encryption_context_keys.clone())
+            .required_encryption_context_keys(keydesc.required_keys.clone())
             .send()
             .await?;
 
-        Ok(MaterialSource::LegacyCmm(cmm))
+        Ok(MaybeSource::Ok(MaterialSource::LegacyCmm(cmm)))
     } else {
         let keyring = get_keyring_legacy(keydesc, keys, mpl, kms).await?;
-        Ok(MaterialSource::LegacyKeyring(keyring))
+        Ok(MaybeSource::Ok(MaterialSource::LegacyKeyring(keyring)))
+    }
+}
+
+pub(crate) fn get_cmm(
+    keydesc: &KeyDescription,
+    keys: &KeyMap,
+    kms: &KmsMap,
+) -> Result<MaybeSource> {
+    // TODO -- move this into get_keyring_legacy
+    if keydesc.kind == "aws-kms-hierarchy"
+        || keydesc.kind == "aws-kms-ecdh"
+        || keydesc.kind == "unknown"
+    {
+        Ok(MaybeSource::Skipped)
+    } else if keydesc.kind == "required-encryption-context-cmm" {
+        let keyring = get_keyring(&keydesc.underlying[0], keys, kms)?;
+        let under_cmm = aws_mpl_rs::cmm::create_default_cryptographic_materials_manager(keyring)?;
+        let input = aws_mpl_rs::cmm::CreateRequiredEncryptionContextCMMInput::with_cmm(
+            under_cmm,
+            &keydesc.required_keys,
+        );
+        let cmm = input.go()?;
+        Ok(MaybeSource::Ok(MaterialSource::Cmm(cmm)))
+    } else {
+        let keyring = get_keyring(keydesc, keys, kms)?;
+        Ok(MaybeSource::Ok(MaterialSource::Keyring(keyring)))
     }
 }
 
@@ -399,17 +454,40 @@ pub(crate) async fn get_keyring_legacy(
     keys: &KeyMap,
     mpl: &mpl_client,
     kms: &KmsMap,
-) -> Result<KeyringRef> {
+) -> Result<LegacyKeyring> {
     let key = get_key(keydesc, keys);
 
     match keydesc.kind.as_str() {
         "aws-kms" => get_aws_kms_keyring_legacy(key, mpl, &kms[DFLT_REGION]).await,
         "aws-kms-rsa" => get_aws_kms_rsa_keyring_legacy(keydesc, key, mpl, &kms[DFLT_REGION]).await,
         "aws-kms-mrk-aware" => get_aws_kms_mrk_keyring_legacy(key, mpl, kms).await,
-        "aws-kms-mrk-aware-discovery" => get_aws_kms_mrk_discovery_keyring_legacy(keydesc, mpl, kms).await,
+        "aws-kms-mrk-aware-discovery" => {
+            get_aws_kms_mrk_discovery_keyring_legacy(keydesc, mpl, kms).await
+        }
         "raw" => get_raw_keyring_legacy(keydesc, key, mpl).await,
         "raw-ecdh" => get_raw_ecdh_keyring_legacy(keydesc, keys, mpl).await,
         "multi-keyring" => Box::pin(get_multi_keyring_legacy(keydesc, keys, mpl, kms)).await,
+        _ => anyhow::bail!("Unknown keyring type: {} in {keydesc:?}", keydesc.kind),
+    }
+}
+
+pub(crate) fn get_keyring(
+    keydesc: &KeyDescription,
+    keys: &KeyMap,
+    _kms: &KmsMap,
+) -> Result<KeyringRef> {
+    let _key = get_key(keydesc, keys);
+
+    match keydesc.kind.as_str() {
+        // "aws-kms" => get_aws_kms_keyring_legacy(key, mpl, &kms[DFLT_REGION]).await,
+        // "aws-kms-rsa" => get_aws_kms_rsa_keyring_legacy(keydesc, key, mpl, &kms[DFLT_REGION]).await,
+        // "aws-kms-mrk-aware" => get_aws_kms_mrk_keyring_legacy(key, mpl, kms).await,
+        // "aws-kms-mrk-aware-discovery" => {
+        //     get_aws_kms_mrk_discovery_keyring_legacy(keydesc, mpl, kms).await
+        // }
+        // "raw" => get_raw_keyring_legacy(keydesc, key, mpl).await,
+        // "raw-ecdh" => get_raw_ecdh_keyring_legacy(keydesc, keys, mpl).await,
+        // "multi-keyring" => Box::pin(get_multi_keyring_legacy(keydesc, keys, mpl, kms)).await,
         _ => anyhow::bail!("Unknown keyring type: {} in {keydesc:?}", keydesc.kind),
     }
 }
@@ -425,11 +503,11 @@ async fn get_multi_keyring_legacy(
     keys: &KeyMap,
     mpl: &mpl_client,
     kms: &KmsMap,
-) -> Result<KeyringRef> {
+) -> Result<LegacyKeyring> {
     if keydesc.generator.is_empty() {
         anyhow::bail!("Multi keyring has no generator");
     }
-    let mut children: Vec<KeyringRef> = Vec::new();
+    let mut children: Vec<LegacyKeyring> = Vec::new();
     for child in &keydesc.child_keyrings {
         let keyring = get_keyring_legacy(child, keys, mpl, kms).await?;
         children.push(keyring);
@@ -445,53 +523,45 @@ async fn get_multi_keyring_legacy(
     Ok(multi_keyring)
 }
 
-#[allow(clippy::unused_async)]
 pub(crate) async fn run_decrypt_tests(
-    _tests: &EncryptTests,
-    _keys: &KeyMap,
-    _dir: &str,
-) -> Result<TestResults> {
-    Ok(TestResults::default())
-}
-
-#[cfg(feature = "legacy")]
-pub(crate) async fn run_decrypt_tests_legacy(
     tests: &EncryptTests,
     keys: &KeyMap,
     dir: &str,
 ) -> Result<TestResults> {
+    #[cfg(feature = "legacy")]
     let mpl = mpl();
     let kms = make_kms_map().await;
     let mut res = TestResults::default();
-    // let mut num_non = 0;
     for test in tests {
         res.total += 1;
-        if test.decrypt_key_description.kind == "aws-kms-hierarchy" {
-            res.skipped += 1;
-        } else if test.decrypt_key_description.kind == "aws-kms-ecdh" {
-            res.skipped += 1;
-        } else if test.decrypt_key_description.kind == "unknown" {
-            res.skipped += 1;
-        // } else if test.decrypt_key_description.kind != "raw" && num_non > 5 {
-        //     res.skipped += 1;
-        } else {
-            // if test.decrypt_key_description.kind != "raw" {
-            //     num_non += 1;
-            // }
-            let cmm = get_legacy_cmm(&test.decrypt_key_description, keys, &mpl, &kms).await?;
-            match run_decrypt_test(test, cmm, dir).await {
-                Ok(()) => {
+        let cmm = get_cmm(&test.decrypt_key_description, keys, &kms)?;
+        match run_decrypt_test(test, cmm, dir).await {
+            Ok(x) => match x {
+                TestStatus::Ok => {
                     res.passed += 1;
                 }
-                Err(e) => {
-                    res.failed += 1;
-                    println!(
-                        "Failed Test {} {} {} {e:?}",
-                        test.name,
-                        test.decrypt_key_description.kind,
-                        test.decrypt_key_description.encryption_algorithm
-                    );
+                TestStatus::Skipped => {
+                    res.skipped += 1;
                 }
+            },
+            Err(e) => {
+                res.fail(test, &e);
+            }
+        }
+        #[cfg(feature = "legacy")]
+        let cmm = get_legacy_cmm(&test.decrypt_key_description, keys, &mpl, &kms).await?;
+        #[cfg(feature = "legacy")]
+        match run_decrypt_test(test, cmm, dir).await {
+            Ok(x) => match x {
+                TestStatus::Ok => {
+                    res.passed += 1;
+                }
+                TestStatus::Skipped => {
+                    res.skipped += 1;
+                }
+            },
+            Err(e) => {
+                res.fail(test, &e);
             }
         }
     }

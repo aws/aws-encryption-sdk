@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 
-#[cfg(feature = "legacy")]
+use super::do_decrypt::get_cmm;
 use super::do_decrypt::make_kms_map;
-use super::do_decrypt::trim_filename;
+use super::do_decrypt::{MaybeSource, trim_filename};
 use crate::test_vectors::types::*;
 use crate::{EncryptInput, MaterialSource, encrypt};
 use anyhow::Result;
@@ -62,7 +62,27 @@ fn make_decrypt_json(test: &EncryptTest, ciphertext_result: &[u8], dir: &str) ->
     Ok(outer)
 }
 
+pub(crate) enum TestStatus {
+    Ok(JsonValue),
+    Skipped,
+}
+
 pub(crate) async fn run_encrypt_test(
+    test: &EncryptTest,
+    ms: MaybeSource,
+    plaintexts: &PlainTexts,
+    dir: &str,
+) -> Result<TestStatus> {
+    match ms {
+        MaybeSource::Skipped => Ok(TestStatus::Skipped),
+        MaybeSource::Ok(ms) => {
+            let result = do_run_encrypt_test(test, ms, plaintexts, dir).await?;
+            Ok(TestStatus::Ok(result))
+        }
+    }
+}
+
+pub(crate) async fn do_run_encrypt_test(
     test: &EncryptTest,
     source: MaterialSource,
     plaintexts: &PlainTexts,
@@ -99,9 +119,7 @@ pub(crate) const fn policy(id: EsdkAlgorithmSuiteId) -> EsdkCommitmentPolicy {
     }
 }
 
-#[allow(unused)]
-#[allow(clippy::unused_async)]
-#[allow(clippy::needless_pass_by_ref_mut)]
+#[allow(clippy::if_same_then_else)]
 pub(crate) async fn run_encrypt_tests(
     tests: &EncryptTests,
     keys: &KeyMap,
@@ -109,18 +127,7 @@ pub(crate) async fn run_encrypt_tests(
     res: &mut TestResults,
     dir: &str,
 ) -> Result<JsonValue> {
-    Ok(JsonValue::default())
-}
-
-#[allow(clippy::if_same_then_else)]
-#[cfg(feature = "legacy")]
-pub(crate) async fn run_encrypt_tests_legacy(
-    tests: &EncryptTests,
-    keys: &KeyMap,
-    plaintexts: &PlainTexts,
-    res: &mut TestResults,
-    dir: &str,
-) -> Result<JsonValue> {
+    #[cfg(feature = "legacy")]
     let mpl = mpl();
     let kms = make_kms_map().await;
 
@@ -137,34 +144,36 @@ pub(crate) async fn run_encrypt_tests_legacy(
 
     for test in tests {
         res.total += 1;
-        if "aws-kms-hierarchy" == test.encrypt_key_description.kind {
-            res.skipped += 1;
-        } else if "aws-kms-ecdh" == test.encrypt_key_description.kind {
-            res.skipped += 1;
-        // } else if "raw" != test.encrypt_key_description.kind {
-        //     res.skipped += 1;
-        } else {
-            let cmm = get_legacy_cmm(&test.encrypt_key_description, keys, &mpl, &kms).await?;
-            match run_encrypt_test(test, cmm, plaintexts, dir).await {
-                Ok(j) => {
-                    // println!(
-                    //     "Test Passed {} {} {}",
-                    //     test.name,
-                    //     test.decrypt_key_description.kind,
-                    //     test.decrypt_key_description.encryption_algorithm
-                    // );
+        let cmm = get_cmm(&test.encrypt_key_description, keys, &kms)?;
+        match run_encrypt_test(test, cmm, plaintexts, dir).await {
+            Ok(x) => match x {
+                TestStatus::Ok(j) => {
                     res.passed += 1;
                     out_tests[test.name.clone()] = j;
                 }
-                Err(e) => {
-                    res.failed += 1;
-                    println!(
-                        "Failed Test {} {} {} {e:?}",
-                        test.name,
-                        test.decrypt_key_description.kind,
-                        test.decrypt_key_description.encryption_algorithm
-                    );
+                TestStatus::Skipped => {
+                    res.skipped += 1;
                 }
+            },
+            Err(e) => {
+                res.fail(test, &e);
+            }
+        }
+        #[cfg(feature = "legacy")]
+        let cmm = get_legacy_cmm(&test.encrypt_key_description, keys, &mpl, &kms).await?;
+        #[cfg(feature = "legacy")]
+        match run_encrypt_test(test, cmm, plaintexts, dir).await {
+            Ok(x) => match x {
+                TestStatus::Ok(j) => {
+                    res.passed += 1;
+                    out_tests[test.name.clone()] = j;
+                }
+                TestStatus::Skipped => {
+                    res.skipped += 1;
+                }
+            },
+            Err(e) => {
+                res.fail(test, &e);
             }
         }
     }

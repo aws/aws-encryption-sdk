@@ -42,7 +42,7 @@ pub(crate) struct Key {
     pub(crate) bits: u32,
     pub(crate) encryption_context: EncryptionContext,
     pub(crate) encrypted_data_keys: EDKs,
-    pub(crate) required_encryption_context_keys: RequiredKeys,
+    pub(crate) required_keys: RequiredKeys,
 }
 
 pub(crate) type KeyMap = HashMap<String, Key>;
@@ -71,7 +71,7 @@ pub(crate) struct KeyDescription {
     pub(crate) default_mrk_region: String,
     pub(crate) child_keyrings: Vec<Self>,
     pub(crate) discovery_filter: DiscoveryFilter,
-    pub(crate) required_encryption_context_keys: RequiredKeys,
+    pub(crate) required_keys: RequiredKeys,
     pub(crate) generator: Vec<Self>,
     pub(crate) underlying: Vec<Self>,
 }
@@ -107,6 +107,18 @@ pub(crate) struct TestResults {
     pub(crate) passed: u32,
     pub(crate) failed: u32,
     pub(crate) skipped: u32,
+}
+
+impl TestResults {
+    pub(crate) fn fail(&mut self, test: &EncryptTest, e: &anyhow::Error) {
+        self.failed += 1;
+        println!(
+            "Failed Test {} {} {} {e:?}",
+            test.name,
+            test.decrypt_key_description.kind,
+            test.decrypt_key_description.encryption_algorithm
+        );
+    }
 }
 
 pub(crate) type PlainTexts = HashMap<String, Bytes>;

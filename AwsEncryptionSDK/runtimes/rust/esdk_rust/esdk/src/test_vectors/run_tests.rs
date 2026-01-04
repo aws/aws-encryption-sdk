@@ -40,21 +40,13 @@ pub async fn decrypt_test_vectors(
         anyhow::bail!("Some Tests Failed!");
     }
 
-    #[cfg(feature = "legacy")]
-    let results: super::types::TestResults = super::do_decrypt::run_decrypt_tests_legacy(&tests, &keys, manifest_path).await?;
-    #[cfg(not(feature = "legacy"))]
-    let results = crate::test_vectors::types::TestResults::default();
-
-    super::do_decrypt::print_test_results(&results);
-    if results.failed != 0 {
-        anyhow::bail!("Some Legacy Decrypt Tests Failed!");
-    }
-
     let results: super::types::TestResults = super::do_decrypt::run_decrypt_tests(&tests, &keys, manifest_path).await?;
+
     super::do_decrypt::print_test_results(&results);
     if results.failed != 0 {
-        anyhow::bail!("Some Legacy Decrypt Tests Failed!");
+        anyhow::bail!("Some Decrypt Tests Failed!");
     }
+
     Ok(())
 }
 
@@ -100,27 +92,6 @@ pub async fn encrypt_test_vectors(
     let json_tests = &json_data["tests"];
     let tests = super::parse_encrypt::parse_encrypt_tests(json_tests, manifest_version)?;
 
-    #[allow(unused_mut)]
-    let mut results = super::types::TestResults::default();
-    #[cfg(feature = "legacy")]
-    let decrypt_vectors = super::do_encrypt::run_encrypt_tests_legacy(
-        &tests,
-        &keys,
-        &plaintext_data,
-        &mut results,
-        encrypt_path,
-    )
-    .await?;
-    #[cfg(not(feature = "legacy"))]
-    let decrypt_vectors = serde_json::Value::default();
-
-    super::do_decrypt::write_json(&decrypt_vectors, &decrypt_manifest)?;
-    super::do_decrypt::print_test_results(&results);
-    if results.failed != 0 {
-        anyhow::bail!("Some Tests Failed!");
-    }
-
-    // TODO -- capture both sets of decrypt tests into one output
     let mut results = super::types::TestResults::default();
     let decrypt_vectors = super::do_encrypt::run_encrypt_tests(
         &tests,

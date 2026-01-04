@@ -178,7 +178,7 @@ pub(crate) fn parse_key_description(data: &JsonValue) -> Result<KeyDescription> 
             "generator" => key.generator.push(parse_key_description(value)?),
             "underlying" => key.underlying.push(parse_key_description(value)?),
             "requiredEncryptionContextKeys" => {
-                key.required_encryption_context_keys = parse_string_list(value);
+                key.required_keys = parse_string_list(value);
             }
             _ => anyhow::bail!("Unexpected element of KeyDescription : {key_}"),
         }

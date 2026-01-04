@@ -1,9 +1,9 @@
+use crate::commitment::CommitmentPolicy;
+use crate::error::*;
 use crate::keyring::KeyringRef;
 use crate::suites::AlgorithmSuiteId;
-use crate::error::*;
-use async_trait::async_trait;
 use crate::types::*;
-use crate::commitment::CommitmentPolicy;
+use async_trait::async_trait;
 
 //= aws-encryption-sdk-specification/framework/cmm-interface.md#supported-cmms
 //= type=implication
@@ -97,8 +97,9 @@ pub fn create_default_cryptographic_materials_manager(
 
 ///Creates an Required Encryption Context Cryptographic Materials Manager.")
 pub fn create_required_encryption_context_cmm(
-    _input: CreateRequiredEncryptionContextCMMInput,
+    input: &CreateRequiredEncryptionContextCMMInput,
 ) -> Result<CryptographicMaterialsManagerRef, Error> {
+    input.validate()?;
     todo!()
 }
 
@@ -113,4 +114,39 @@ pub struct CreateRequiredEncryptionContextCMMInput {
 
     ///A list of Encryption Context keys which are required to be supplied during encryption and decryption, and correspond to Encryption Context key-value pairs which are not stored on the resulting message.")
     pub required_encryption_context_keys: Vec<EncryptionContextKey>,
+}
+
+impl CreateRequiredEncryptionContextCMMInput {
+    pub(crate) fn validate(&self) -> Result<(), Error> {
+        if self.underlying_cmm.is_none() && self.keyring.is_none() {
+            return Err(mpl_err(
+                "Either a Keyring or underlying Cryptographic Materials Manager must be specified."
+                    .to_string(),
+            ));
+        }
+        if self.underlying_cmm.is_some() && self.keyring.is_some() {
+            return Err(mpl_err(
+                "Only one of Keyring or underlying Cryptographic Materials Manager must be specified."
+                    .to_string(),
+            ));
+        }
+        Ok(())
+    }
+    pub fn with_keyring(keyring: KeyringRef, keys: &[EncryptionContextKey]) -> Self {
+        Self {
+            underlying_cmm: None,
+            keyring: Some(keyring),
+            required_encryption_context_keys: keys.to_vec(),
+        }
+    }
+    pub fn with_cmm(cmm: CryptographicMaterialsManagerRef, keys: &[EncryptionContextKey]) -> Self {
+        Self {
+            underlying_cmm: Some(cmm),
+            keyring: None,
+            required_encryption_context_keys: keys.to_vec(),
+        }
+    }
+    pub fn go(&self) -> Result<CryptographicMaterialsManagerRef, Error> {
+        create_required_encryption_context_cmm(self)
+    }
 }
