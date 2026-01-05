@@ -6,19 +6,19 @@ edition = "2024"
 autoexamples = false
 
 [dependencies]
-#aws-mpl-legacy = { path = "/Users/ajewell/head/aws-cryptographic-material-providers-library/AwsCryptographicMaterialProviders/runtimes/rust" }
-aws-mpl-legacy = { path = "../../../../../mpl/AwsCryptographicMaterialProviders/runtimes/rust/" }
 aws-smithy-types = "1.3.4" # needed for error for legacy EDK Builder
-tokio = "1.48.0" # for non-legacy we could probably make do with fewer features
+# tokio only needed for tests and test_vectors
+tokio = { version = "1.49.0", features = ["rt", "macros", "rt-multi-thread"]  }
 aws-mpl-primitives = { path = "../prim" }
 aws-mpl-rs = { path = "../mpl" }
 
-clap = { version = "4.5.53", features = ["derive"], optional = true }
-serde_json = { version = "1.0.145", optional = true }
+clap = { version = "4.5.54", features = ["derive"], optional = true }
+serde_json = { version = "1.0.148", optional = true }
 anyhow = { version = "1.0.100", optional = true }
 base64 = { version = "0.22.1", optional = true }
 aws-sdk-kms = { version = "1.94.0", optional = true }
 aws-config = { version = "1.8.12", optional = true }
+aws-mpl-legacy = { version = "0.1.0", optional = true }
 
 # Necessary for examples
 [dev-dependencies]
@@ -53,4 +53,4 @@ test_vectors = ["clap", "serde_json", "anyhow", "base64", "aws-sdk-kms",  "aws-c
 fips = ["aws-mpl-primitives/fips"]
 kms = ["aws-mpl-rs/kms"]
 ddb = ["aws-mpl-rs/ddb"]
-legacy = []
+legacy = ["aws-mpl-legacy", "tokio/full"]

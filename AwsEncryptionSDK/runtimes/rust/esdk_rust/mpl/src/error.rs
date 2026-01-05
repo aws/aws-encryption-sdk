@@ -19,6 +19,7 @@ pub enum ErrorKind {
     InvalidDecryptionMaterialsTransition(String),
     InvalidEncryptionMaterials(String),
     InvalidDecryptionMaterials(String),
+    NotImplemented(String),
 }
 #[derive(Debug)]
 #[non_exhaustive]
@@ -45,6 +46,7 @@ impl std::fmt::Display for Error {
             ErrorKind::InvalidDecryptionMaterialsTransition(message) => write!(f, "Invalid Decryption Materials Transition Error {message}"),
             ErrorKind::InvalidEncryptionMaterials(message) => write!(f, "Invalid Encryption Materials Error {message}"),
             ErrorKind::InvalidDecryptionMaterials(message) => write!(f, "Invalid Decryption Materials Error {message}"),
+            ErrorKind::NotImplemented(message) => write!(f, "{message} not yet implemented."),
         }
     }
 }

@@ -142,7 +142,7 @@ pub(crate) async fn get_modern_decryption_materials(
     input.encryption_context = encryption_context;
     //#* Reproduced Encryption Context: This is the
     //# [input](#input) encryption context.
-    input.reproduced_encryption_context = reproduced_encryption_context.clone();
+    input.reproduced_encryption_context.clone_from(reproduced_encryption_context);
     let materials = cmm.decrypt_materials(&input).await?;
 
     //= compliance/client-apis/decrypt.txt#2.7.2

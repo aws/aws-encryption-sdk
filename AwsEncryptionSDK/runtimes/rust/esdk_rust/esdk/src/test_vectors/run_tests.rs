@@ -1,5 +1,14 @@
 use crate::test_vectors::do_decrypt::read_json;
-use anyhow::Result;
+use anyhow::{Error, Result};
+
+pub(crate) fn not_implemented(e: &Error) -> Option<String> {
+    if let Some(mpl) = e.downcast_ref::<aws_mpl_rs::error::Error>()
+        && let aws_mpl_rs::error::ErrorKind::NotImplemented(s) = &mpl.kind
+    {
+        return Some(s.clone());
+    }
+    None
+}
 
 /// Decrypt and verify the decrypt manifest. Enabled with `features = "test_vectors"`.
 pub async fn decrypt_test_vectors(
@@ -34,13 +43,15 @@ pub async fn decrypt_test_vectors(
     let json_tests = &json_data["tests"];
     let tests = super::parse_encrypt::parse_encrypt_tests(json_tests, manifest_version)?;
 
-    let results: super::types::TestResults = super::do_decrypt::run_decrypt_tests(&tests, &keys, manifest_path).await?;
+    let results: super::types::TestResults =
+        super::do_decrypt::run_decrypt_tests(&tests, &keys, manifest_path).await?;
     super::do_decrypt::print_test_results(&results);
     if results.failed != 0 {
         anyhow::bail!("Some Tests Failed!");
     }
 
-    let results: super::types::TestResults = super::do_decrypt::run_decrypt_tests(&tests, &keys, manifest_path).await?;
+    let results: super::types::TestResults =
+        super::do_decrypt::run_decrypt_tests(&tests, &keys, manifest_path).await?;
 
     super::do_decrypt::print_test_results(&results);
     if results.failed != 0 {
@@ -119,6 +130,7 @@ mod tests {
         let manifest_path = "test_vectors_java";
         let manifest_name = "decrypt-manifest.json";
         let result = decrypt_test_vectors(manifest_path, manifest_name, "").await;
+        println!("{result:?}");
         assert!(result.is_ok());
     }
 
@@ -127,6 +139,7 @@ mod tests {
         let manifest_path = "test_vectors_python";
         let manifest_name = "decrypt_message.json";
         let result = decrypt_test_vectors(manifest_path, manifest_name, "").await;
+        println!("{result:?}");
         assert!(result.is_ok());
     }
     #[tokio::test(flavor = "multi_thread")]
