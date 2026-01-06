@@ -1,18 +1,18 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 use crate::error::*;
+use crate::kms_keyring::GrantTokenList;
 use crate::types::*;
 use async_trait::async_trait;
-use crate::kms_keyring::GrantTokenList;
 
 type TableName = String;
 
 pub fn make_key_store(_config: &KeyStoreConfig) -> Result<KeyStoreRef, Error> {
-    todo!()
+    not_implemented("make_key_store")
 }
 
 pub fn make_key_store_admin(_config: &KeyStoreConfig) -> Result<KeyStoreAdminRef, Error> {
-    todo!()
+    not_implemented("make_key_store_admin")
 }
 
 //= aws-encryption-sdk-specification/framework/branch-key-store.md#pub fns
@@ -30,28 +30,37 @@ pub fn make_key_store_admin(_config: &KeyStoreConfig) -> Result<KeyStoreAdminRef
 #[async_trait]
 pub trait KeyStore: Send + Sync + std::fmt::Debug {
     async fn get_key_store_info(&self) -> Result<GetKeyStoreInfoOutput, Error>;
-///Get the ACTIVE version for a particular Branch Key from the Key Store.")
-    async fn get_active_branch_key(&self, input: &GetActiveBranchKeyInput) -> Result<GetActiveBranchKeyOutput, Error>;
-///Get a particular version of a Branch Key from the Key Store.")
-    async fn get_branch_key_version(&self, input: &GetBranchKeyVersionInput) -> Result<GetBranchKeyVersionOutput, Error>;
-///Get a Beacon Key from the Key Store.")
+    ///Get the ACTIVE version for a particular Branch Key from the Key Store.")
+    async fn get_active_branch_key(
+        &self,
+        input: &GetActiveBranchKeyInput,
+    ) -> Result<GetActiveBranchKeyOutput, Error>;
+    ///Get a particular version of a Branch Key from the Key Store.")
+    async fn get_branch_key_version(
+        &self,
+        input: &GetBranchKeyVersionInput,
+    ) -> Result<GetBranchKeyVersionOutput, Error>;
+    ///Get a Beacon Key from the Key Store.")
     async fn get_beacon_key(&self, input: &GetBeaconKeyInput) -> Result<GetBeaconKeyOutput, Error>;
 }
 #[async_trait]
 pub trait KeyStoreAdmin: Send + Sync + std::fmt::Debug {
-///Create the `DynamoDB` table that backs this Key Store based on the Key Store configuration. If a table already exists, validate it is configured as expected.")
-    async fn create_key_store(&self, input: &CreateKeyStoreInput) -> Result<CreateKeyStoreOutput, Error>;
-// CreateKey will create two keys to add to the key store
-// One is the branch key, which is used in the hierarchical keyring
-// The second is a beacon key that is used as a root key to
-// derive different beacon keys per beacon.
-///Create a new Branch Key in the Key Store. Additionally create a Beacon Key that is tied to this Branch Key.")
+    ///Create the `DynamoDB` table that backs this Key Store based on the Key Store configuration. If a table already exists, validate it is configured as expected.")
+    async fn create_key_store(
+        &self,
+        input: &CreateKeyStoreInput,
+    ) -> Result<CreateKeyStoreOutput, Error>;
+    // CreateKey will create two keys to add to the key store
+    // One is the branch key, which is used in the hierarchical keyring
+    // The second is a beacon key that is used as a root key to
+    // derive different beacon keys per beacon.
+    ///Create a new Branch Key in the Key Store. Additionally create a Beacon Key that is tied to this Branch Key.")
     async fn create_key(&self, input: &CreateKeyInput) -> Result<CreateKeyOutput, Error>;
-// `VersionKey` will create a new branch key under the 
-// provided branchKeyIdentifier and rotate the "older" material 
-// on the key store under the branchKeyIdentifier. This pub fn MUST NOT
-// rotate the beacon key under the branchKeyIdentifier.
-///Create a new ACTIVE version of an existing Branch Key in the Key Store, and set the previously ACTIVE version to `DECRYPT_ONLY`.")
+    // `VersionKey` will create a new branch key under the
+    // provided branchKeyIdentifier and rotate the "older" material
+    // on the key store under the branchKeyIdentifier. This pub fn MUST NOT
+    // rotate the beacon key under the branchKeyIdentifier.
+    ///Create a new ACTIVE version of an existing Branch Key in the Key Store, and set the previously ACTIVE version to `DECRYPT_ONLY`.")
     async fn version_key(&self, input: &VersionKeyInput) -> Result<VersionKeyOutput, Error>;
 }
 
@@ -117,7 +126,7 @@ pub enum KmsConfiguration {
 }
 impl Default for KmsConfiguration {
     fn default() -> Self {
-        Self::Discovery(Discovery{})
+        Self::Discovery(Discovery {})
     }
 }
 
@@ -139,23 +148,21 @@ pub struct MrDiscovery {
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
 pub struct GetKeyStoreInfoOutput {
+    ///An identifier for this Key Store.")
+    pub key_store_id: String,
 
-  ///An identifier for this Key Store.")
-  pub key_store_id: String,
-  
-  ///The `DynamoDB` table name that backs this Key Store.")
- pub  key_store_name: TableName,
+    ///The `DynamoDB` table name that backs this Key Store.")
+    pub key_store_name: TableName,
 
-  ///The logical name for this Key Store, which is cryptographically bound to the keys it holds.")
- pub  logical_key_store_name: String,
-  
-  ///The AWS KMS grant tokens that are used when this Key Store calls to AWS KMS.")
- pub  grant_tokens: GrantTokenList,
+    ///The logical name for this Key Store, which is cryptographically bound to the keys it holds.")
+    pub logical_key_store_name: String,
 
-  ///Configures Key Store's KMS Key ARN restrictions.")
- pub  kms_configuration: KmsConfiguration
+    ///The AWS KMS grant tokens that are used when this Key Store calls to AWS KMS.")
+    pub grant_tokens: GrantTokenList,
+
+    ///Configures Key Store's KMS Key ARN restrictions.")
+    pub kms_configuration: KmsConfiguration,
 }
-
 
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
@@ -165,9 +172,8 @@ pub struct CreateKeyStoreInput {}
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
 pub struct CreateKeyStoreOutput {
-  
-  ///The ARN of the `DynamoDB` table that backs this Key Store.")
-  pub table_arn: String // com.amazonaws.`DynamoDB`#TableArn
+    ///The ARN of the `DynamoDB` table that backs this Key Store.")
+    pub table_arn: String, // com.amazonaws.`DynamoDB`#TableArn
 }
 
 //= aws-encryption-sdk-specification/framework/branch-key-store.md#createkey
@@ -178,117 +184,104 @@ pub struct CreateKeyStoreOutput {
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
 pub struct CreateKeyInput {
-  ///The identifier for the created Branch Key.")
- pub  branch_key_identifier: String,
+    ///The identifier for the created Branch Key.")
+    pub branch_key_identifier: String,
 
-  ///Custom encryption context for the Branch Key. Required if branchKeyIdentifier is set.")
- pub  encryption_context: EncryptionContext
+    ///Custom encryption context for the Branch Key. Required if branchKeyIdentifier is set.")
+    pub encryption_context: EncryptionContext,
 }
 
 ///Outputs for Branch Key creation.")
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
 pub struct CreateKeyOutput {
-
-  ///A identifier for the created Branch Key.")
- pub  branch_key_identifier: String
+    ///A identifier for the created Branch Key.")
+    pub branch_key_identifier: String,
 }
 
 ///Inputs for versioning a Branch Key.")
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
 pub struct VersionKeyInput {
-
-  //= aws-encryption-sdk-specification/framework/branch-key-store.md#versionkey
-  //= type=implication
-  //# - MUST supply a `branch-key-id`
-  
-  ///The identifier for the Branch Key to be versioned.")
-  pub branch_key_identifier: String
+    //= aws-encryption-sdk-specification/framework/branch-key-store.md#versionkey
+    //= type=implication
+    //# - MUST supply a `branch-key-id`
+    ///The identifier for the Branch Key to be versioned.")
+    pub branch_key_identifier: String,
 }
 
 ///Outputs for versioning a Branch Key.")
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
-pub struct VersionKeyOutput {
-}
+pub struct VersionKeyOutput {}
 
 ///Inputs for getting a Branch Key's ACTIVE version.")
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
 pub struct GetActiveBranchKeyInput {
-  
-  ///The identifier for the Branch Key to get the ACTIVE version for.")
- pub  branch_key_identifier: String
+    ///The identifier for the Branch Key to get the ACTIVE version for.")
+    pub branch_key_identifier: String,
 }
 
 ///Outputs for getting a Branch Key's ACTIVE version.")
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
 pub struct GetActiveBranchKeyOutput {
-
-  //= aws-encryption-sdk-specification/framework/branch-key-store.md#getactivebranchkey
-  //= type=implication
-  //# - MUST supply a `branch-key-id`
-  
-  ///The materials for the Branch Key.")
- pub  branch_key_materials: BranchKeyMaterials,
+    //= aws-encryption-sdk-specification/framework/branch-key-store.md#getactivebranchkey
+    //= type=implication
+    //# - MUST supply a `branch-key-id`
+    ///The materials for the Branch Key.")
+    pub branch_key_materials: BranchKeyMaterials,
 }
-
 
 ///Inputs for getting a version of a Branch Key.")
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
 pub struct GetBranchKeyVersionInput {
-  //= aws-encryption-sdk-specification/framework/branch-key-store.md#getbranchkeyversion
-  //= type=implication
-  //# - MUST supply a `branch-key-id`
+    //= aws-encryption-sdk-specification/framework/branch-key-store.md#getbranchkeyversion
+    //= type=implication
+    //# - MUST supply a `branch-key-id`
+    ///The identifier for the Branch Key to get a particular version for.")
+    pub branch_key_identifier: String,
 
-  ///The identifier for the Branch Key to get a particular version for.")
- pub  branch_key_identifier: String,
-
-  //= aws-encryption-sdk-specification/framework/branch-key-store.md#getbranchkeyversion
-  //= type=implication
-  //# - MUST supply a `branchKeyVersion`
-  
-  ///The version to get.")
- pub  branch_key_version: String
+    //= aws-encryption-sdk-specification/framework/branch-key-store.md#getbranchkeyversion
+    //= type=implication
+    //# - MUST supply a `branchKeyVersion`
+    ///The version to get.")
+    pub branch_key_version: String,
 }
 
 ///Outputs for getting a version of a Branch Key.")
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
 pub struct GetBranchKeyVersionOutput {
-  
-  ///The materials for the Branch Key.")
- pub  branch_key_materials: BranchKeyMaterials,
+    ///The materials for the Branch Key.")
+    pub branch_key_materials: BranchKeyMaterials,
 }
 
 ///Inputs for getting a Beacon Key")
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
 pub struct GetBeaconKeyInput {
-  //= aws-encryption-sdk-specification/framework/branch-key-store.md#getbeaconkey
-  //= type=implication
-  //# - MUST supply a `branch-key-id`
-
-  ///The identifier of the Branch Key the Beacon Key is associated with.")
-pub   branch_key_identifier: String
+    //= aws-encryption-sdk-specification/framework/branch-key-store.md#getbeaconkey
+    //= type=implication
+    //# - MUST supply a `branch-key-id`
+    ///The identifier of the Branch Key the Beacon Key is associated with.")
+    pub branch_key_identifier: String,
 }
 
 ///Outputs for getting a Beacon Key")
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
 pub struct GetBeaconKeyOutput {
-
-  ///The materials for the Beacon Key.")
- pub  beacon_key_materials: BeaconKeyMaterials,
+    ///The materials for the Beacon Key.")
+    pub beacon_key_materials: BeaconKeyMaterials,
 }
 
 //= aws-encryption-sdk-specification/framework/pub structs.md#pub struct-3
 //= type=implication
 //# This pub struct MUST include all of the following fields:
-//# 
+//#
 //# - [Branch Key](#branch-key)
 //# - [Branch Key Id](#branch-key-id)
 //# - [Branch Key Version](#branch-key-version)
@@ -296,42 +289,37 @@ pub struct GetBeaconKeyOutput {
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
 pub struct BranchKeyMaterials {
-    
-  pub   branch_key_identifier: String,
-  pub   branch_key_version: String,
- pub    encryption_context: EncryptionContext,
-  pub   branch_key: Secret,
+    pub branch_key_identifier: String,
+    pub branch_key_version: String,
+    pub encryption_context: EncryptionContext,
+    pub branch_key: Secret,
 }
 
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
 pub struct BeaconKeyMaterials {
-  //= aws-encryption-sdk-specification/framework/pub structs.md#pub struct-4
-  //= type=implication
-  //# This pub struct MUST include the following fields:
-  //# - [Beacon Key Id](#beacon-key-id)
-  //# - [Encryption Context](#encryption-context-4)
-  
- pub  beacon_key_identifier: String,
+    //= aws-encryption-sdk-specification/framework/pub structs.md#pub struct-4
+    //= type=implication
+    //# This pub struct MUST include the following fields:
+    //# - [Beacon Key Id](#beacon-key-id)
+    //# - [Encryption Context](#encryption-context-4)
+    pub beacon_key_identifier: String,
 
-  
- pub  encryption_context: EncryptionContext,
+    pub encryption_context: EncryptionContext,
 
-  //= aws-encryption-sdk-specification/framework/pub structs.md#pub struct-4
-  //= type=implication
-  //# This pub struct MAY include the following fields:
-  //# - [Beacon Key](#beacon-key)
-  //# - [HMAC Keys](#hmac-keys)
+    //= aws-encryption-sdk-specification/framework/pub structs.md#pub struct-4
+    //= type=implication
+    //# This pub struct MAY include the following fields:
+    //# - [Beacon Key](#beacon-key)
+    //# - [HMAC Keys](#hmac-keys)
+    pub beacon_key: Secret,
 
- pub  beacon_key: Secret,
-
- pub  hmac_keys: HmacKeyMap
+    pub hmac_keys: HmacKeyMap,
 }
 
-  /// The key refers to the beacon name for which this value was derived.
-  /// The value is the HKDF derived from the beacon key and the UTF Encoding of the beacon name.
+/// The key refers to the beacon name for which this value was derived.
+/// The value is the HKDF derived from the beacon key and the UTF Encoding of the beacon name.
 type HmacKeyMap = std::collections::HashMap<String, Secret>;
 
 // Errors
 // KeyStoreException
-

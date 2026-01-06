@@ -1,13 +1,13 @@
 use crate::client_supplier::*;
 #[cfg(feature = "ddb")]
 use crate::cmc::CacheType;
+use crate::error::*;
 pub use crate::key_agreement::{KmsEcdhStaticConfigurations, RawEcdhStaticConfigurations};
+use crate::keyring::*;
 #[cfg(feature = "ddb")]
 use crate::keystore::KeyStoreRef;
-use crate::error::*;
-use async_trait::async_trait;
 use crate::types::*;
-use crate::keyring::*;
+use async_trait::async_trait;
 #[async_trait]
 pub trait BranchKeyIdSupplier: Send + Sync + std::fmt::Debug {
     ///Given the Encryption Context associated with this encryption or decryption, returns the branch key that should be responsible for unwrapping or wrapping the data key.")
@@ -55,7 +55,7 @@ pub struct DiscoveryFilter {
 // KMS - Strict
 ///Creates an AWS KMS Keyring, which wraps and unwraps data keys using single symmetric AWS KMS Key.")
 pub fn create_aws_kms_keyring(_input: CreateAwsKmsKeyringInput) -> Result<KeyringRef, Error> {
-    todo!();
+    not_implemented("create_aws_kms_keyring")
 }
 
 #[derive(Debug, Clone, Default)]
@@ -76,7 +76,7 @@ pub struct CreateAwsKmsKeyringInput {
 pub fn create_aws_kms_multi_keyring(
     _input: CreateAwsKmsMultiKeyringInput,
 ) -> Result<KeyringRef, Error> {
-    todo!()
+    not_implemented("create_aws_kms_multi_keyring")
 }
 
 #[derive(Debug, Clone, Default)]
@@ -101,7 +101,7 @@ pub struct CreateAwsKmsMultiKeyringInput {
 pub fn create_aws_kms_discovery_keyring(
     _input: &CreateAwsKmsDiscoveryKeyringInput,
 ) -> Result<KeyringRef, Error> {
-    todo!()
+    not_implemented("create_aws_kms_discovery_keyring")
 }
 
 #[derive(Debug, Clone, Default)]
@@ -122,7 +122,7 @@ pub struct CreateAwsKmsDiscoveryKeyringInput {
 pub fn create_aws_kms_discovery_multi_keyring(
     _input: CreateAwsKmsDiscoveryMultiKeyringInput,
 ) -> Result<KeyringRef, Error> {
-    todo!()
+    not_implemented("create_aws_kms_discovery_multi_keyring")
 }
 
 #[derive(Debug, Clone, Default)]
@@ -147,7 +147,7 @@ pub struct CreateAwsKmsDiscoveryMultiKeyringInput {
 pub fn create_aws_kms_mrk_keyring(
     _input: CreateAwsKmsMrkKeyringInput,
 ) -> Result<KeyringRef, Error> {
-    todo!()
+    not_implemented("create_aws_kms_mrk_keyring")
 }
 
 #[derive(Debug, Clone, Default)]
@@ -167,7 +167,7 @@ pub struct CreateAwsKmsMrkKeyringInput {
 pub fn create_aws_kms_mrk_multi_keyring(
     _input: CreateAwsKmsMrkMultiKeyringInput,
 ) -> Result<KeyringRef, Error> {
-    todo!()
+    not_implemented("create_aws_kms_mrk_keyring")
 }
 
 #[derive(Debug, Clone, Default)]
@@ -193,7 +193,7 @@ pub struct CreateAwsKmsMrkMultiKeyringInput {
 pub fn create_aws_kms_mrk_discovery_keyring(
     _input: CreateAwsKmsMrkDiscoveryKeyringInput,
 ) -> Result<KeyringRef, Error> {
-    todo!()
+    not_implemented("create_aws_kms_mrk_discovery_keyring")
 }
 
 #[derive(Debug, Clone, Default)]
@@ -217,7 +217,7 @@ pub struct CreateAwsKmsMrkDiscoveryKeyringInput {
 pub fn create_aws_kms_mrk_discovery_multi_keyring(
     _input: CreateAwsKmsMrkDiscoveryMultiKeyringInput,
 ) -> Result<KeyringRef, Error> {
-    todo!()
+    not_implemented("create_aws_kms_mrk_discovery_multi_keyring")
 }
 
 #[derive(Debug, Clone, Default)]
@@ -244,7 +244,7 @@ pub struct CreateAwsKmsMrkDiscoveryMultiKeyringInput {
 pub fn create_aws_kms_hierarchical_keyring(
     _input: CreateAwsKmsHierarchicalKeyringInput,
 ) -> Result<KeyringRef, Error> {
-    todo!()
+    not_implemented("create_aws_kms_hierarchical_keyring")
 }
 
 #[derive(Debug, Clone, Default)]
@@ -276,7 +276,7 @@ pub struct CreateAwsKmsHierarchicalKeyringInput {
 pub fn create_aws_kms_rsa_keyring(
     _input: CreateAwsKmsRsaKeyringInput,
 ) -> Result<KeyringRef, Error> {
-    todo!()
+    not_implemented("create_aws_kms_rsa_keyring")
 }
 
 #[derive(Debug, Clone)] // TODO Default
@@ -314,7 +314,7 @@ pub struct CreateAwsKmsRsaKeyringInput {
 pub fn create_aws_kms_ecdh_keyring(
     _input: CreateAwsKmsEcdhKeyringInput,
 ) -> Result<KeyringRef, Error> {
-    todo!()
+    not_implemented("create_aws_kms_ecdh_keyring")
 }
 
 #[derive(Debug, Clone, Default)]

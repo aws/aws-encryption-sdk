@@ -37,15 +37,31 @@ impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.kind {
             ErrorKind::Mpl(message) => write!(f, "MPL Error {message}"),
-            ErrorKind::InvalidAlgorithmSuiteInfoOnEncrypt(message) => write!(f, "InvalidAlgorithmSuiteInfoOnEncrypt Error {message}"),
-            ErrorKind::InvalidAlgorithmSuiteInfoOnDecrypt(message) => write!(f, "InvalidAlgorithmSuiteInfoOnDecrypt Error {message}"),
-            ErrorKind::InvalidAlgorithmSuiteInfo(message) => write!(f, "InvalidAlgorithmSuiteInfo Error {message}"),
+            ErrorKind::InvalidAlgorithmSuiteInfoOnEncrypt(message) => {
+                write!(f, "InvalidAlgorithmSuiteInfoOnEncrypt Error {message}")
+            }
+            ErrorKind::InvalidAlgorithmSuiteInfoOnDecrypt(message) => {
+                write!(f, "InvalidAlgorithmSuiteInfoOnDecrypt Error {message}")
+            }
+            ErrorKind::InvalidAlgorithmSuiteInfo(message) => {
+                write!(f, "InvalidAlgorithmSuiteInfo Error {message}")
+            }
             ErrorKind::ValidationError(message) => write!(f, "Validation Error {message}"),
-            ErrorKind::EntryAlreadyExists(message) => write!(f, "Entry Already Exists Error {message}"),
-            ErrorKind::InvalidEncryptionMaterialsTransition(message) => write!(f, "Invalid Encryption Materials Transition Error {message}"),
-            ErrorKind::InvalidDecryptionMaterialsTransition(message) => write!(f, "Invalid Decryption Materials Transition Error {message}"),
-            ErrorKind::InvalidEncryptionMaterials(message) => write!(f, "Invalid Encryption Materials Error {message}"),
-            ErrorKind::InvalidDecryptionMaterials(message) => write!(f, "Invalid Decryption Materials Error {message}"),
+            ErrorKind::EntryAlreadyExists(message) => {
+                write!(f, "Entry Already Exists Error {message}")
+            }
+            ErrorKind::InvalidEncryptionMaterialsTransition(message) => {
+                write!(f, "Invalid Encryption Materials Transition Error {message}")
+            }
+            ErrorKind::InvalidDecryptionMaterialsTransition(message) => {
+                write!(f, "Invalid Decryption Materials Transition Error {message}")
+            }
+            ErrorKind::InvalidEncryptionMaterials(message) => {
+                write!(f, "Invalid Encryption Materials Error {message}")
+            }
+            ErrorKind::InvalidDecryptionMaterials(message) => {
+                write!(f, "Invalid Decryption Materials Error {message}")
+            }
             ErrorKind::NotImplemented(message) => write!(f, "{message} not yet implemented."),
         }
     }
@@ -68,7 +84,15 @@ pub(crate) fn mpl_err(msg: impl Into<String>) -> Error {
     }
 }
 
-pub(crate) fn err(e : ErrorKind) -> Error {
+pub(crate) fn not_implemented<T>(msg: impl Into<String>) -> Result<T, Error> {
+    Err(Error {
+        kind: ErrorKind::NotImplemented(msg.into()),
+        backtrace: Backtrace::capture(),
+        cause: None,
+    })
+}
+
+pub(crate) fn err(e: ErrorKind) -> Error {
     Error {
         kind: e,
         backtrace: Backtrace::capture(),

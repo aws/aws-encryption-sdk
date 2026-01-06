@@ -1,6 +1,6 @@
 use crate::error::*;
+pub use crate::types::{DecryptionMaterials, EncryptedDataKey, EncryptionMaterials};
 use async_trait::async_trait;
-pub use crate::types::{EncryptionMaterials, DecryptionMaterials, EncryptedDataKey};
 
 //= aws-encryption-sdk-specification/framework/cryptographic-materials-cache.md#overview
 //= type=implication
@@ -13,8 +13,10 @@ pub trait CryptographicMaterialsCache: Send + Sync + std::fmt::Debug {
     //= type=implication
     //# This operation MUST NOT return the inserted cache entry.
     async fn put_cache_entry(&self, input: &PutCacheEntryInput) -> Result<(), Error>;
-    async fn get_cache_entry(&self, input: &GetCacheEntryInput)
-    -> Result<GetCacheEntryOutput, Error>;
+    async fn get_cache_entry(
+        &self,
+        input: &GetCacheEntryInput,
+    ) -> Result<GetCacheEntryOutput, Error>;
     async fn update_usage_metadata(&self, input: &UpdateUsageMetadataInput) -> Result<(), Error>;
     async fn delete_cache_entry(&self, input: &DeleteCacheEntryInput) -> Result<(), Error>;
 }
@@ -159,24 +161,24 @@ pub fn create_cryptographic_materials_cache(
 #[derive(Debug, Clone, Default, Copy)]
 #[non_exhaustive]
 pub enum CacheType {
-// Default(crate::types::DefaultCache),
-#[default]
-No,
-// SingleThreaded(crate::types::SingleThreadedCache),
-// MultiThreaded(crate::types::MultiThreadedCache),
-// StormTracking(crate::types::StormTrackingCache),
-// /// Shared cache across multiple Hierarchical Keyrings. For this cache type, the user should provide an already constructed CryptographicMaterialsCache to the Hierarchical Keyring at initialization.
-// Shared(crate::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef),
+    // Default(crate::types::DefaultCache),
+    #[default]
+    No,
+    // SingleThreaded(crate::types::SingleThreadedCache),
+    // MultiThreaded(crate::types::MultiThreadedCache),
+    // StormTracking(crate::types::StormTrackingCache),
+    // /// Shared cache across multiple Hierarchical Keyrings. For this cache type, the user should provide an already constructed CryptographicMaterialsCache to the Hierarchical Keyring at initialization.
+    // Shared(crate::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef),
 }
 
 #[derive(Debug, Clone, Default, Copy)]
 #[non_exhaustive]
 pub struct CreateCryptographicMaterialsCacheInput {
-  /// Which type of local cache to use.
-  pub cache: CacheType
+    /// Which type of local cache to use.
+    pub cache: CacheType,
 }
 
-/* 
+/*
 @javadoc("The best choice for most situations. Probably a StormTrackingCache.")
 structure DefaultCache {
   @required

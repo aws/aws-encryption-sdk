@@ -15,8 +15,8 @@ pub type ClientSupplierRef = std::sync::Arc<dyn ClientSupplier>;
 #[non_exhaustive]
 /// Inputs for getting a AWS KMS Client.
 pub struct GetClientInput {
-  /// The region the client should be created in.
-  pub region: Region,
+    /// The region the client should be created in.
+    pub region: Region,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -27,10 +27,10 @@ impl ClientSupplier for DefaultClientSupplier {
         Err(mpl_err("foo"))
     }
 }
-pub fn create_default_client_supplier(_input: &CreateDefaultClientSupplierInput) -> Result<ClientSupplierRef, Error>
-{
-    Ok(std::sync::Arc::new(DefaultClientSupplier{}))
-
+pub fn create_default_client_supplier(
+    _input: &CreateDefaultClientSupplierInput,
+) -> Result<ClientSupplierRef, Error> {
+    Ok(std::sync::Arc::new(DefaultClientSupplier {}))
 }
 
 #[derive(Debug, Clone, Default, Copy)]

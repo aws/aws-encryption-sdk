@@ -92,7 +92,7 @@ pub struct DecryptMaterialsInput {
 pub fn create_default_cryptographic_materials_manager(
     _keyring: KeyringRef,
 ) -> Result<CryptographicMaterialsManagerRef, Error> {
-    todo!()
+    not_implemented("create_default_cryptographic_materials_manager")
 }
 
 ///Creates an Required Encryption Context Cryptographic Materials Manager.")
@@ -100,7 +100,7 @@ pub fn create_required_encryption_context_cmm(
     input: &CreateRequiredEncryptionContextCMMInput,
 ) -> Result<CryptographicMaterialsManagerRef, Error> {
     input.validate()?;
-    todo!()
+    not_implemented("create_required_encryption_context_cmm")
 }
 
 ///Inputs for creating an Required Encryption Context Cryptographic Materials Manager.")

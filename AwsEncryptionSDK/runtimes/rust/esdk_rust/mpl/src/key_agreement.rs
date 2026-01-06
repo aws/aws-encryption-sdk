@@ -60,7 +60,6 @@ pub struct KmsPublicKeyDiscovery {
     pub recipient_kms_identifier: String,
 }
 
-
 #[derive(Debug, Clone, Default, PartialEq)]
 #[non_exhaustive]
 /// Inputs for creating a `KmsPrivateKeyToStaticPublicKey` Configuration.

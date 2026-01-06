@@ -1,7 +1,6 @@
 //! This is an awesome crate
 //!
 #![cfg_attr(docsrs, feature(doc_cfg))]
-
 #![warn(
     absolute_paths_not_starting_with_crate,
     deprecated_in_future,
@@ -77,18 +76,18 @@
 pub mod client_supplier;
 pub mod cmm;
 pub use cmm::CryptographicMaterialsManagerRef;
-pub mod commitment;
 pub mod cmc;
+pub mod commitment;
 pub mod error;
 pub mod key_agreement;
 pub mod keyring;
 pub use keyring::KeyringRef;
-#[cfg(feature = "kms")]
-#[cfg_attr(docsrs, doc(cfg(feature = "kms")))]
-pub mod kms_keyring;
 #[cfg(feature = "ddb")]
 #[cfg_attr(docsrs, doc(cfg(feature = "ddb")))]
 pub mod keystore;
+#[cfg(feature = "kms")]
+#[cfg_attr(docsrs, doc(cfg(feature = "kms")))]
+pub mod kms_keyring;
 pub mod materials;
 pub mod suites;
 pub mod types;

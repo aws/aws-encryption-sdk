@@ -1,6 +1,6 @@
+use crate::DigestAlg;
 use crate::Error;
 use crate::serr;
-use crate::DigestAlg;
 
 use aws_lc_rs::rand::SystemRandom;
 use aws_lc_rs::signature::EcdsaKeyPair;
@@ -60,7 +60,9 @@ const fn get_digest_alg(x: DigestAlg) -> &'static aws_lc_rs::digest::Algorithm {
     }
 }
 
-const fn get_digest_alg_from_ecdsa(x: EcdsaSignatureAlgorithm) -> &'static aws_lc_rs::digest::Algorithm {
+const fn get_digest_alg_from_ecdsa(
+    x: EcdsaSignatureAlgorithm,
+) -> &'static aws_lc_rs::digest::Algorithm {
     match x {
         EcdsaSignatureAlgorithm::EcdsaP256 => &aws_lc_rs::digest::SHA256,
         EcdsaSignatureAlgorithm::EcdsaP384 => &aws_lc_rs::digest::SHA384,

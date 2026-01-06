@@ -1,8 +1,7 @@
-pub use crate::key_agreement::{KmsEcdhStaticConfigurations, RawEcdhStaticConfigurations};
 use crate::error::*;
-use async_trait::async_trait;
+pub use crate::key_agreement::{KmsEcdhStaticConfigurations, RawEcdhStaticConfigurations};
 use crate::types::*;
-
+use async_trait::async_trait;
 
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
@@ -44,7 +43,7 @@ pub struct OnDecryptOutput {
 
 ///Creates a Multi-Keyring comprised of one or more other Keyrings.")
 pub fn create_multi_keyring(_input: CreateMultiKeyringInput) -> Result<KeyringRef, Error> {
-    todo!()
+    not_implemented("create_multi_keyring")
 }
 
 #[derive(Debug, Clone, Default)]
@@ -63,7 +62,7 @@ pub struct CreateMultiKeyringInput {
 
 ///Creates a Raw AES Keyring, which wraps and unwraps data keys locally using `AES_GCM`.")
 pub fn create_raw_aes_keyring(_input: CreateRawAesKeyringInput) -> Result<KeyringRef, Error> {
-    todo!()
+    not_implemented("create_raw_aes_keyring")
 }
 
 #[derive(Debug, Clone, Default)]
@@ -85,7 +84,7 @@ pub struct CreateRawAesKeyringInput {
 
 ///Creates a Raw RSA Keyring, which wraps and unwraps data keys locally using RSA.")
 pub fn create_raw_rsa_keyring(_input: CreateRawRsaKeyringInput) -> Result<KeyringRef, Error> {
-    todo!()
+    not_implemented("create_raw_rsa_keyring")
 }
 
 #[derive(Debug, Clone, Default)]
@@ -109,10 +108,8 @@ pub struct CreateRawRsaKeyringInput {
 }
 
 ///Creates a Raw ECDH Keyring, which wraps and unwraps data keys by deriving a shared data key from the established shared secret between parties through the ECDH protocol.")
-pub fn create_raw_ecdh_keyring(
-    _input: CreateRawEcdhKeyringInput,
-) -> Result<KeyringRef, Error> {
-    todo!()
+pub fn create_raw_ecdh_keyring(_input: CreateRawEcdhKeyringInput) -> Result<KeyringRef, Error> {
+    not_implemented("create_raw_ecdh_keyring")
 }
 
 #[derive(Debug, Clone, Default)]

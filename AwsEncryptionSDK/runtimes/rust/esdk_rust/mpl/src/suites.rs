@@ -223,10 +223,10 @@ pub fn get_algorithm_suite_info(binary_id: [u8; 2]) -> Result<&'static Algorithm
 const fn implies(a: bool, b: bool) -> bool {
     !a || b
 }
-  // Invariants for all supported Algorithm Suites
-  const fn valid_suite(a: &AlgorithmSuite) -> bool {
+// Invariants for all supported Algorithm Suites
+const fn valid_suite(a: &AlgorithmSuite) -> bool {
     true
-    /* 
+    /*
     && KeyDerivationAlgorithm?(a.kdf)
     && CommitmentDerivationAlgorithm?(a.commitment)
     && EdkWrappingAlgorithm?(a.edkWrapping)
@@ -257,7 +257,7 @@ const fn implies(a: bool, b: bool) -> bool {
     && (!a.symmetricSignature.None? ==>
           && a.edkWrapping.IntermediateKeyWrapping?)
           */
-  }
+}
 
 const fn valid_esdk_suite(suite: &AlgorithmSuite, a: EsdkAlgorithmSuiteId) -> bool {
     // Adheres to general Algorithm Suite constraints
@@ -458,7 +458,9 @@ pub fn valid_algorithm_suite_info(suite: &AlgorithmSuite) -> Result<(), Error> {
     if valid {
         Ok(())
     } else {
-        Err(err(ErrorKind::InvalidAlgorithmSuiteInfo("Invalid AlgorithmSuiteInfo".into())))
+        Err(err(ErrorKind::InvalidAlgorithmSuiteInfo(
+            "Invalid AlgorithmSuiteInfo".into(),
+        )))
     }
 }
 

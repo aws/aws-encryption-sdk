@@ -165,15 +165,15 @@ pub(crate) async fn run_encrypt_tests(
         match run_encrypt_test(test, cmm, plaintexts, dir).await {
             Ok(x) => match x {
                 TestStatus::Ok(j) => {
-                    res.passed += 1;
+                    res.legacy_passed += 1;
                     out_tests[test.name.clone()] = j;
                 }
                 TestStatus::Skipped => {
-                    res.skipped += 1;
+                    res.legacy_skipped += 1;
                 }
             },
             Err(e) => {
-                res.fail(test, &e);
+                res.fail_legacy(test, &e);
             }
         }
     }

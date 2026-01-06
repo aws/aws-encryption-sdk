@@ -142,7 +142,9 @@ pub(crate) async fn get_modern_decryption_materials(
     input.encryption_context = encryption_context;
     //#* Reproduced Encryption Context: This is the
     //# [input](#input) encryption context.
-    input.reproduced_encryption_context.clone_from(reproduced_encryption_context);
+    input
+        .reproduced_encryption_context
+        .clone_from(reproduced_encryption_context);
     let materials = cmm.decrypt_materials(&input).await?;
 
     //= compliance/client-apis/decrypt.txt#2.7.2
@@ -539,8 +541,8 @@ pub(crate) async fn get_modern_encryption_materials(
     aws_mpl_rs::commitment::validate_commitment_policy_on_encrypt(
         &aws_mpl_rs::commitment::ValidateCommitmentPolicyOnEncryptInput::new(
             materials.algorithm_suite.id,
-            aws_mpl_rs::commitment::CommitmentPolicy::Esdk(commitment_policy)
-        )
+            aws_mpl_rs::commitment::CommitmentPolicy::Esdk(commitment_policy),
+        ),
     )?;
 
     aws_mpl_rs::materials::encryption_materials_has_plaintext_data_key(&materials)?;
@@ -561,7 +563,10 @@ pub(crate) async fn get_legacy_encryption_materials(
     //# materials (../framework/structures.md#encryption-materials) by
     //# calling Get Encryption Materials (../framework/cmm-interface.md#get-
     //# encryption-materials) on a CMM (../framework/cmm-interface.md).
-    #[expect(clippy::cast_possible_wrap, reason="max_plaintext_length is i64 in legacy mpl")]
+    #[expect(
+        clippy::cast_possible_wrap,
+        reason = "max_plaintext_length is i64 in legacy mpl"
+    )]
     let output = cmm
         .get_encryption_materials()
         .encryption_context(encryption_context)

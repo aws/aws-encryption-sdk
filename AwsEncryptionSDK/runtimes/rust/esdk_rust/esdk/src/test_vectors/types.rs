@@ -107,9 +107,25 @@ pub(crate) struct TestResults {
     pub(crate) passed: u32,
     pub(crate) failed: u32,
     pub(crate) skipped: u32,
+    #[cfg(feature = "legacy")]
+    pub(crate) legacy_passed: u32,
+    #[cfg(feature = "legacy")]
+    pub(crate) legacy_failed: u32,
+    #[cfg(feature = "legacy")]
+    pub(crate) legacy_skipped: u32,
 }
 
 impl TestResults {
+    #[cfg(feature = "legacy")]
+    pub(crate) fn fail_legacy(&mut self, test: &EncryptTest, e: &anyhow::Error) {
+        self.legacy_failed += 1;
+        println!(
+            "Failed Test Legacy {} {} {} {e:?}",
+            test.name,
+            test.decrypt_key_description.kind,
+            test.decrypt_key_description.encryption_algorithm
+        );
+    }
     pub(crate) fn fail(&mut self, test: &EncryptTest, e: &anyhow::Error) {
         self.failed += 1;
         println!(
