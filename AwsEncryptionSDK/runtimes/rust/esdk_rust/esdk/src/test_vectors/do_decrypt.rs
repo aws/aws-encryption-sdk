@@ -3,10 +3,10 @@
 
 #[cfg(feature = "legacy")]
 use crate::test_vectors::parse_keys::decode_base64;
-use crate::test_vectors::run_tests::not_implemented;
+use crate::test_vectors::run_tests::is_not_implemented;
 use crate::test_vectors::types::*;
 use crate::{DecryptInput, MaterialSource, decrypt};
-use anyhow::Result;
+use anyhow::{Result, bail};
 use aws_config::Region;
 use aws_mpl_rs::keyring::KeyringRef;
 use serde_json::Value as JsonValue;
@@ -315,11 +315,20 @@ pub(crate) async fn get_aws_kms_mrk_discovery_keyring_legacy(
 }
 
 #[cfg(feature = "legacy")]
-fn get_aes_alg(len: usize) -> Result<aws_mpl_legacy::types::AesWrappingAlg> {
+fn get_aes_alg_legacy(len: usize) -> Result<aws_mpl_legacy::types::AesWrappingAlg> {
     match len {
         16 => Ok(aws_mpl_legacy::types::AesWrappingAlg::AlgAes128GcmIv12Tag16),
         24 => Ok(aws_mpl_legacy::types::AesWrappingAlg::AlgAes192GcmIv12Tag16),
         32 => Ok(aws_mpl_legacy::types::AesWrappingAlg::AlgAes256GcmIv12Tag16),
+        _ => anyhow::bail!("Unknown aes key length: {len}"),
+    }
+}
+
+fn get_aes_alg(len: usize) -> Result<aws_mpl_rs::types::AesWrappingAlg> {
+    match len {
+        16 => Ok(aws_mpl_rs::types::AesWrappingAlg::AlgAes128GcmIv12Tag16),
+        24 => Ok(aws_mpl_rs::types::AesWrappingAlg::AlgAes192GcmIv12Tag16),
+        32 => Ok(aws_mpl_rs::types::AesWrappingAlg::AlgAes256GcmIv12Tag16),
         _ => anyhow::bail!("Unknown aes key length: {len}"),
     }
 }
@@ -343,7 +352,7 @@ async fn get_raw_keyring_legacy(
             .key_namespace(key_namespace.clone())
             .key_name(key_name.clone())
             .wrapping_key(key.material.clone())
-            .wrapping_alg(get_aes_alg(key.material.len())?)
+            .wrapping_alg(get_aes_alg_legacy(key.material.len())?)
             .send()
             .await?;
         Ok(keyring)
@@ -374,6 +383,54 @@ async fn get_raw_keyring_legacy(
             keyring_builder = keyring_builder.private_key(key.material.clone());
         }
         let keyring = keyring_builder.send().await?;
+        Ok(keyring)
+    } else {
+        anyhow::bail!("Invalid raw type : {e_alg}");
+    }
+}
+
+fn get_raw_keyring(keydesc: &KeyDescription, key: &Key) -> Result<KeyringRef> {
+    let hash = &keydesc.padding_hash;
+    let e_alg = &keydesc.encryption_algorithm;
+    let p_alg = &keydesc.padding_algorithm;
+    let is_aes = e_alg == "aes";
+    let is_rsa = e_alg == "rsa";
+    let key_namespace = &keydesc.provider_id;
+    let key_name = &key.key_id;
+    if is_aes {
+        let mut input = aws_mpl_rs::keyring::CreateRawAesKeyringInput::default();
+        input.key_namespace.clone_from(key_namespace);
+        input.key_name.clone_from(key_name);
+        input.wrapping_key.clone_from(&key.material);
+        input.wrapping_alg = get_aes_alg(key.material.len())?;
+        let keyring = input.go()?;
+        Ok(keyring)
+    } else if is_rsa {
+        let mode: aws_mpl_rs::types::PaddingScheme;
+        if hash == "sha1" && p_alg == "pkcs1" {
+            mode = aws_mpl_rs::types::PaddingScheme::Pkcs1;
+        } else if hash == "sha1" && p_alg == "oaep-mgf1" {
+            mode = aws_mpl_rs::types::PaddingScheme::OaepSha1Mgf1;
+        } else if hash == "sha256" && p_alg == "oaep-mgf1" {
+            mode = aws_mpl_rs::types::PaddingScheme::OaepSha256Mgf1;
+        } else if hash == "sha384" && p_alg == "oaep-mgf1" {
+            mode = aws_mpl_rs::types::PaddingScheme::OaepSha384Mgf1;
+        } else if hash == "sha512" && p_alg == "oaep-mgf1" {
+            mode = aws_mpl_rs::types::PaddingScheme::OaepSha512Mgf1;
+        } else {
+            anyhow::bail!("Unknown rsa padding combo : {hash} {p_alg}");
+        }
+        let mut input = aws_mpl_rs::keyring::CreateRawRsaKeyringInput::new(
+            key_namespace.clone(),
+            key_name.clone(),
+            mode,
+        );
+        if key.material[..21] == b"-----BEGIN PUBLIC KEY"[..] {
+            input.public_key.clone_from(&key.material);
+        } else {
+            input.private_key.clone_from(&key.material);
+        }
+        let keyring = input.go()?;
         Ok(keyring)
     } else {
         anyhow::bail!("Invalid raw type : {e_alg}");
@@ -431,7 +488,7 @@ pub(crate) fn get_cmm(
 ) -> Result<MaybeSource> {
     match do_get_cmm(keydesc, keys, kms) {
         Ok(x) => Ok(x),
-        Err(e) => match not_implemented(&e) {
+        Err(e) => match is_not_implemented(&e) {
             Some(_s) => Ok(MaybeSource::Skipped),
             None => Err(e),
         },
@@ -441,7 +498,7 @@ pub(crate) fn get_cmm(
 #[allow(unreachable_code)]
 #[allow(unused)]
 fn do_get_cmm(keydesc: &KeyDescription, keys: &KeyMap, kms: &KmsMap) -> Result<MaybeSource> {
-    // TODO -- move this into get_keyring_legacy
+    // TODO -- move this into get_keyring
     if keydesc.kind == "aws-kms-hierarchy"
         || keydesc.kind == "aws-kms-ecdh"
         || keydesc.kind == "unknown"
@@ -492,28 +549,25 @@ pub(crate) async fn get_keyring_legacy(
     }
 }
 
-#[expect(clippy::unnecessary_wraps)]
 pub(crate) fn get_keyring(
     keydesc: &KeyDescription,
     keys: &KeyMap,
-    _kms: &KmsMap,
+    kms: &KmsMap,
 ) -> Result<Option<KeyringRef>> {
-    let _key = get_key(keydesc, keys);
-    Ok(None)
+    let key = get_key(keydesc, keys);
 
-    // #[expect(clippy::match_single_binding)]
-    // match keydesc.kind.as_str() {
-    //     // "aws-kms" => get_aws_kms_keyring_legacy(key, mpl, &kms[DFLT_REGION]).await,
-    //     // "aws-kms-rsa" => get_aws_kms_rsa_keyring_legacy(keydesc, key, mpl, &kms[DFLT_REGION]).await,
-    //     // "aws-kms-mrk-aware" => get_aws_kms_mrk_keyring_legacy(key, mpl, kms).await,
-    //     // "aws-kms-mrk-aware-discovery" => {
-    //     //     get_aws_kms_mrk_discovery_keyring_legacy(keydesc, mpl, kms).await
-    //     // }
-    //     // "raw" => get_raw_keyring_legacy(keydesc, key, mpl).await,
-    //     // "raw-ecdh" => get_raw_ecdh_keyring_legacy(keydesc, keys, mpl).await,
-    //     // "multi-keyring" => Box::pin(get_multi_keyring_legacy(keydesc, keys, mpl, kms)).await,
-    //     _ => anyhow::bail!("Unknown keyring type: {} in {keydesc:?}", keydesc.kind),
-    // }
+    match keydesc.kind.as_str() {
+        // "aws-kms" => get_aws_kms_keyring_legacy(key, mpl, &kms[DFLT_REGION]).await,
+        // "aws-kms-rsa" => get_aws_kms_rsa_keyring_legacy(keydesc, key, mpl, &kms[DFLT_REGION]).await,
+        // "aws-kms-mrk-aware" => get_aws_kms_mrk_keyring_legacy(key, mpl, kms).await,
+        // "aws-kms-mrk-aware-discovery" => {
+        //     get_aws_kms_mrk_discovery_keyring_legacy(keydesc, mpl, kms).await
+        // }
+        "raw" => Ok(Some(get_raw_keyring(keydesc, key)?)),
+        // "raw-ecdh" => get_raw_ecdh_keyring_legacy(keydesc, keys, mpl).await,
+        "multi-keyring" => Ok(Some(get_multi_keyring(keydesc, keys, kms)?)),
+        _ => Ok(None),
+    }
 }
 
 fn get_key<'a>(keydesc: &KeyDescription, keys: &'a KeyMap) -> &'a Key {
@@ -544,6 +598,33 @@ async fn get_multi_keyring_legacy(
         .send()
         .await?;
 
+    Ok(multi_keyring)
+}
+
+fn get_multi_keyring(keydesc: &KeyDescription, keys: &KeyMap, kms: &KmsMap) -> Result<KeyringRef> {
+    if keydesc.generator.is_empty() {
+        anyhow::bail!("Multi keyring has no generator");
+    }
+    let mut children: Vec<KeyringRef> = Vec::new();
+    for child in &keydesc.child_keyrings {
+        let keyring = get_keyring(child, keys, kms)?;
+        match keyring {
+            Some(keyring) => {
+                children.push(keyring);
+            }
+            None => {
+                println!("Bailing from child loop");
+                bail!("Child Keyring Not Implemented");
+            }
+        }
+    }
+    let Some(generator) = get_keyring(&keydesc.generator[0], keys, kms)? else {
+        println!("Bailing from generator");
+        bail!("Generator Keyring Not Implemented")
+    };
+
+    let multi_keyring =
+        aws_mpl_rs::keyring::CreateMultiKeyringInput::new(generator, children).go()?;
     Ok(multi_keyring)
 }
 

@@ -1,11 +1,16 @@
 use crate::test_vectors::do_decrypt::read_json;
 use anyhow::{Error, Result};
 
-pub(crate) fn not_implemented(e: &Error) -> Option<String> {
+pub(crate) fn is_not_implemented(e: &Error) -> Option<String> {
     if let Some(mpl) = e.downcast_ref::<aws_mpl_rs::error::Error>()
         && let aws_mpl_rs::error::ErrorKind::NotImplemented(s) = &mpl.kind
     {
         return Some(s.clone());
+    }
+    let msg = format!("{e}");
+    if msg.contains("Not Implemented") {
+        println!("***\n{msg}\n***\n");
+        return Some(msg);
     }
     None
 }
