@@ -54,15 +54,6 @@ pub async fn decrypt_test_vectors(
     if results.failed != 0 {
         anyhow::bail!("Some Tests Failed!");
     }
-
-    let results: super::types::TestResults =
-        super::do_decrypt::run_decrypt_tests(&tests, &keys, manifest_path).await?;
-
-    super::do_decrypt::print_test_results(&results);
-    if results.failed != 0 {
-        anyhow::bail!("Some Decrypt Tests Failed!");
-    }
-
     Ok(())
 }
 
@@ -131,11 +122,13 @@ pub async fn encrypt_test_vectors(
 mod tests {
     use super::*;
     #[tokio::test(flavor = "multi_thread")]
-    async fn test_do_decrypt() {
+    async fn test_java_decrypt() {
         let manifest_path = "test_vectors_java";
         let manifest_name = "decrypt-manifest.json";
         let result = decrypt_test_vectors(manifest_path, manifest_name, "").await;
-        println!("{result:?}");
+        if result.is_err() {
+            println!("{result:?}");
+        }
         assert!(result.is_ok());
     }
 
@@ -144,18 +137,26 @@ mod tests {
         let manifest_path = "test_vectors_python";
         let manifest_name = "decrypt_message.json";
         let result = decrypt_test_vectors(manifest_path, manifest_name, "").await;
-        println!("{result:?}");
+        if result.is_err() {
+            println!("{result:?}");
+        }
         assert!(result.is_ok());
     }
     #[tokio::test(flavor = "multi_thread")]
-    async fn test_do_encrypt() {
+    async fn test_rust_encrypt_decrypt() {
         let manifest_path = "test_vectors_rust";
         let manifest_name = "decrypt-manifest.json";
 
         let result = encrypt_test_vectors(manifest_path, manifest_path, "").await;
+        if result.is_err() {
+            println!("{result:?}");
+        }
         assert!(result.is_ok());
 
         let result = decrypt_test_vectors(manifest_path, manifest_name, "").await;
+        if result.is_err() {
+            println!("{result:?}");
+        }
         assert!(result.is_ok());
     }
 }

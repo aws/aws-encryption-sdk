@@ -279,6 +279,92 @@ pub(crate) fn get_raw_ecdh_keyring(keydesc: &KeyDescription, keys: &KeyMap) -> R
     }
 }
 
+#[cfg(feature = "legacy")]
+pub(crate) async fn get_kms_ecdh_keyring_legacy(
+    keydesc: &KeyDescription,
+    keys: &KeyMap,
+    mpl: &mpl_client,
+    kms: &KmsMap,
+) -> Result<LegacyKeyring> {
+    //      = Need(curveSpec in KeyDescription.KmsKey2EccAlgorithmSpec, KeyVectorException(message = "Unknown curve spec"));
+    match &keydesc.schema[..] {
+        "static" => get_kms_ecdh_keyring_static_legacy(keydesc, keys, mpl, kms).await,
+        "discovery" => get_kms_ecdh_keyring_discovery_legacy(keydesc, keys, mpl, kms).await,
+        _ => anyhow::bail!("Unknown ecdh schema: {}", keydesc.schema),
+    }
+}
+// case KmsECDH(KmsEcdhKeyring(senderKeyId: string, recipientKeyId: string, senderPublicKey: string, recipientPublicKey: string, curveSpec: string, keyAgreementScheme: string)) => {
+//   let curveType =  KeyDescription.KmsKey2EccAlgorithmSpec[curveSpec];
+
+pub(crate) async fn get_kms_ecdh_keyring_static_legacy(
+    keydesc: &KeyDescription,
+    keys: &KeyMap,
+    mpl: &mpl_client,
+    kms: &KmsMap,
+) -> Result<LegacyKeyring> {
+    // = Need(
+    //   && material.Some?
+    //   && (material.value.KMSEcdh?),
+    //   KeyVectorException( message = "Not type: KmsEcdh" ));
+    let key = &keys[&keydesc.recipient];
+    let sender_kms_key = key.sender_material.clone();
+    // = Need(
+    //   ComAmazonawsKmsTypes.IsValid_KeyIdType(sender_kms_key) &&
+    //   ComAmazonawsKmsTypes.IsValid_KeyIdType(recipientKmsKey),
+    //   KeyVectorException(message = "Not a valid Kms Key Id"));
+    let kms_client = kms_from_arn(kms, &sender_kms_key);
+
+    let sender_key = decode_base64(&key.sender_material_public_key)?;
+    let recipient_key = decode_base64(&key.recipient_material_public_key)?;
+    let input = aws_mpl_legacy::types::KmsPrivateKeyToStaticPublicKeyInput::builder()
+        .sender_public_key(sender_key)
+        .recipient_public_key(recipient_key)
+        .sender_kms_identifier(sender_kms_key)
+        .build()?;
+    let keyring = mpl
+        .create_aws_kms_ecdh_keyring()
+        .curve_spec(get_curve_legacy(&key.key_id)?)
+        .key_agreement_scheme(
+            aws_mpl_legacy::types::KmsEcdhStaticConfigurations::KmsPrivateKeyToStaticPublicKey(
+                input,
+            ),
+        )
+        .kms_client(kms_client.clone())
+        .send()
+        .await?;
+
+    Ok(keyring)
+}
+
+pub(crate) async fn get_kms_ecdh_keyring_discovery_legacy(
+    keydesc: &KeyDescription,
+    keys: &KeyMap,
+    mpl: &mpl_client,
+    kms: &KmsMap,
+) -> Result<LegacyKeyring> {
+    let key = keys[&keydesc.recipient].clone();
+    let kms_client = kms_from_arn(kms, &key.recipient_material);
+    //     = Need(
+    //       && recipientMaterial?.Some?
+    //       && (recipientMaterial?.value.KMSEcdh?),
+    //       KeyVectorException( message = "Not type: KmsEcdh" ));
+
+    let schema = aws_mpl_legacy::types::KmsPublicKeyDiscoveryInput::builder()
+        .recipient_kms_identifier(&key.recipient_material)
+        .build()?;
+
+    let keyring = mpl
+        .create_aws_kms_ecdh_keyring()
+        .curve_spec(get_curve_legacy(&key.key_id)?)
+        .key_agreement_scheme(
+            aws_mpl_legacy::types::KmsEcdhStaticConfigurations::KmsPublicKeyDiscovery(schema),
+        )
+        .kms_client(kms_client.clone())
+        .send()
+        .await?;
+    Ok(keyring)
+}
+
 fn get_kms_enc_alg(s: &str) -> aws_sdk_kms::types::EncryptionAlgorithmSpec {
     match s {
         "RSAES_OAEP_SHA_256" => aws_sdk_kms::types::EncryptionAlgorithmSpec::RsaesOaepSha256,
@@ -547,10 +633,7 @@ pub(crate) async fn get_legacy_cmm(
     mpl: &mpl_client,
     kms: &KmsMap,
 ) -> Result<MaybeSource> {
-    if keydesc.kind == "aws-kms-hierarchy"
-        || keydesc.kind == "aws-kms-ecdh"
-        || keydesc.kind == "unknown"
-    {
+    if keydesc.kind == "aws-kms-hierarchy" || keydesc.kind == "unknown" {
         Ok(MaybeSource::Skipped)
     } else if keydesc.kind == "required-encryption-context-cmm" {
         let keyring = get_keyring_legacy(&keydesc.underlying[0], keys, mpl, kms).await?;
@@ -635,6 +718,7 @@ pub(crate) async fn get_keyring_legacy(
         }
         "raw" => get_raw_keyring_legacy(keydesc, key, mpl).await,
         "raw-ecdh" => get_raw_ecdh_keyring_legacy(keydesc, keys, mpl).await,
+        "aws-kms-ecdh" => get_kms_ecdh_keyring_legacy(keydesc, keys, mpl, kms).await,
         "multi-keyring" => Box::pin(get_multi_keyring_legacy(keydesc, keys, mpl, kms)).await,
         _ => anyhow::bail!("Unknown keyring type: {} in {keydesc:?}", keydesc.kind),
     }
