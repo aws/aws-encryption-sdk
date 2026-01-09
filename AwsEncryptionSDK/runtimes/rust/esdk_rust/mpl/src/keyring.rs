@@ -2,10 +2,8 @@ use crate::error::*;
 pub use crate::key_agreement::{KmsEcdhStaticConfigurations, RawEcdhStaticConfigurations};
 use crate::types::*;
 use async_trait::async_trait;
+use aws_mpl_primitives::EcdhCurveSpec;
 
-#[derive(Debug, Clone, Default)]
-#[non_exhaustive]
-pub struct ECDHCurveSpec {} // should be enum in primitives
 #[async_trait]
 pub trait Keyring: Send + Sync + std::fmt::Debug {
     async fn on_encrypt(&self, input: &OnEncryptInput) -> Result<OnEncryptOutput, Error>;
@@ -160,7 +158,7 @@ impl CreateRawRsaKeyringInput {
 }
 
 ///Creates a Raw ECDH Keyring, which wraps and unwraps data keys by deriving a shared data key from the established shared secret between parties through the ECDH protocol.")
-pub fn create_raw_ecdh_keyring(_input: CreateRawEcdhKeyringInput) -> Result<KeyringRef, Error> {
+pub fn create_raw_ecdh_keyring(_input: &CreateRawEcdhKeyringInput) -> Result<KeyringRef, Error> {
     not_implemented("create_raw_ecdh_keyring")
 }
 
@@ -172,5 +170,22 @@ pub struct CreateRawEcdhKeyringInput {
     pub key_agreement_scheme: RawEcdhStaticConfigurations,
 
     ///The the curve on which the points for the sender's private and recipient's public key lie.")
-    pub curve_spec: ECDHCurveSpec,
+    pub curve_spec: EcdhCurveSpec,
+}
+
+impl CreateRawEcdhKeyringInput {
+    #[must_use]
+    pub const fn new(
+        key_agreement_scheme: RawEcdhStaticConfigurations,
+        curve_spec: EcdhCurveSpec,
+    ) -> Self {
+        Self {
+            key_agreement_scheme,
+            curve_spec,
+        }
+    }
+
+    pub fn go(&self) -> Result<KeyringRef, Error> {
+        create_raw_ecdh_keyring(self)
+    }
 }

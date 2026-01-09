@@ -68,6 +68,8 @@
 
 mod ecdsa;
 pub use ecdsa::*;
+mod ecdh;
+pub use ecdh::*;
 mod hkdf;
 pub use hkdf::*;
 

@@ -132,13 +132,13 @@ pub(crate) fn parse_scenario(data: &JsonValue, name: &str) -> Result<EncryptTest
     Ok(scenario)
 }
 
-pub(crate) fn parse_discovery_filter(data: &JsonValue) -> Result<DiscoveryFilter> {
-    let mut filter = DiscoveryFilter::default();
+pub(crate) fn parse_discovery_filter(data: &JsonValue) -> Result<DiscoveryFilterConfig> {
+    let mut filter = DiscoveryFilterConfig::default();
     for (key, value) in data.as_object().unwrap() {
         match key.as_str() {
             "partition" => filter.partition = value.as_str().unwrap().to_string(),
             "account-ids" => filter.account_ids = parse_string_list(value),
-            _ => anyhow::bail!("Unexpected element of DiscoveryFilter : {key}"),
+            _ => anyhow::bail!("Unexpected element of DiscoveryFilterConfig : {key}"),
         }
     }
     Ok(filter)

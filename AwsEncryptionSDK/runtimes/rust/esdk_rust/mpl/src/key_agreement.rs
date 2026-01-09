@@ -80,6 +80,15 @@ pub struct EphemeralPrivateKeyToStaticPublicKey {
     pub recipient_public_key: Vec<u8>,
 }
 
+impl EphemeralPrivateKeyToStaticPublicKey {
+    /// Create a new `EphemeralPrivateKeyToStaticPublicKey` Configuration.
+    pub fn new(recipient_public_key: impl Into<Vec<u8>>) -> Self {
+        Self {
+            recipient_public_key: recipient_public_key.into(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default, PartialEq)]
 #[non_exhaustive]
 /// Inputs for creating a `PublicKeyDiscovery` Configuration.
@@ -87,7 +96,14 @@ pub struct PublicKeyDiscovery {
     /// The sender's private key. MUST be PEM encoded.
     pub recipient_static_private_key: Vec<u8>,
 }
-
+impl PublicKeyDiscovery {
+    /// Create a new `PublicKeyDiscovery` Configuration.
+    pub fn new(recipient_static_private_key: impl Into<Vec<u8>>) -> Self {
+        Self {
+            recipient_static_private_key: recipient_static_private_key.into(),
+        }
+    }
+}
 #[derive(Debug, Clone, Default, PartialEq)]
 #[non_exhaustive]
 /// Inputs for creating a `RawPrivateKeyToStaticPublicKey` Configuration.
@@ -96,4 +112,16 @@ pub struct RawPrivateKeyToStaticPublicKey {
     pub recipient_public_key: Vec<u8>,
     /// The sender's private key. MUST be PEM encoded.
     pub sender_static_private_key: Vec<u8>,
+}
+impl RawPrivateKeyToStaticPublicKey {
+    /// Create a new `RawPrivateKeyToStaticPublicKey` Configuration.
+    pub fn new(
+        recipient_public_key: impl Into<Vec<u8>>,
+        sender_static_private_key: impl Into<Vec<u8>>,
+    ) -> Self {
+        Self {
+            recipient_public_key: recipient_public_key.into(),
+            sender_static_private_key: sender_static_private_key.into(),
+        }
+    }
 }

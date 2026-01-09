@@ -8,6 +8,8 @@ use crate::keyring::*;
 use crate::keystore::KeyStoreRef;
 use crate::types::*;
 use async_trait::async_trait;
+use aws_mpl_primitives::EcdhCurveSpec;
+
 #[async_trait]
 pub trait BranchKeyIdSupplier: Send + Sync + std::fmt::Debug {
     ///Given the Encryption Context associated with this encryption or decryption, returns the branch key that should be responsible for unwrapping or wrapping the data key.")
@@ -54,7 +56,7 @@ pub struct DiscoveryFilter {
 
 // KMS - Strict
 ///Creates an AWS KMS Keyring, which wraps and unwraps data keys using single symmetric AWS KMS Key.")
-pub fn create_aws_kms_keyring(_input: CreateAwsKmsKeyringInput) -> Result<KeyringRef, Error> {
+pub fn create_aws_kms_keyring(_input: &CreateAwsKmsKeyringInput) -> Result<KeyringRef, Error> {
     not_implemented("create_aws_kms_keyring")
 }
 
@@ -70,6 +72,18 @@ pub struct CreateAwsKmsKeyringInput {
 
     ///A list of grant tokens to be used when calling KMS.")
     pub grant_tokens: GrantTokenList,
+}
+impl CreateAwsKmsKeyringInput {
+    pub fn new(kms_key_id: impl Into<KmsKeyId>, kms_client: aws_sdk_kms::Client) -> Self {
+        Self {
+            kms_key_id: kms_key_id.into(),
+            kms_client: Some(kms_client),
+            ..Default::default()
+        }
+    }
+    pub fn go(self) -> Result<KeyringRef, Error> {
+        create_aws_kms_keyring(&self)
+    }
 }
 
 ///Creates an AWS KMS Multi-Keyring, which wraps and unwraps data keys using one or more symmetric AWS KMS Keys.")
@@ -145,7 +159,7 @@ pub struct CreateAwsKmsDiscoveryMultiKeyringInput {
 // KMS - MRK Aware, Strict
 ///Creates an AWS KMS MRK Keyring, which wraps and unwraps data keys using single symmetric AWS KMS Key or AWS KMS Multi-Region Key.")
 pub fn create_aws_kms_mrk_keyring(
-    _input: CreateAwsKmsMrkKeyringInput,
+    _input: &CreateAwsKmsMrkKeyringInput,
 ) -> Result<KeyringRef, Error> {
     not_implemented("create_aws_kms_mrk_keyring")
 }
@@ -163,6 +177,20 @@ pub struct CreateAwsKmsMrkKeyringInput {
     ///A list of grant tokens to be used when calling KMS.")
     pub grant_tokens: GrantTokenList,
 }
+
+impl CreateAwsKmsMrkKeyringInput {
+    pub fn new(kms_key_id: impl Into<KmsKeyId>, kms_client: aws_sdk_kms::Client) -> Self {
+        Self {
+            kms_key_id: kms_key_id.into(),
+            kms_client: Some(kms_client),
+            ..Default::default()
+        }
+    }
+    pub fn go(self) -> Result<KeyringRef, Error> {
+        create_aws_kms_mrk_keyring(&self)
+    }
+}
+
 ///Creates an AWS KMS MRK Multi-Keyring, which wraps and unwraps data keys using one or more symmetric AWS KMS Keys or AWS KMS Multi-Region Keys.")
 pub fn create_aws_kms_mrk_multi_keyring(
     _input: CreateAwsKmsMrkMultiKeyringInput,
@@ -191,7 +219,7 @@ pub struct CreateAwsKmsMrkMultiKeyringInput {
 
 ///Creates an AWS KMS MRK Discovery Keyring, which supports unwrapping data keys wrapped by a symmetric AWS KMS Key or AWS KMS Multi-Region Key in a particular region.")
 pub fn create_aws_kms_mrk_discovery_keyring(
-    _input: CreateAwsKmsMrkDiscoveryKeyringInput,
+    _input: &CreateAwsKmsMrkDiscoveryKeyringInput,
 ) -> Result<KeyringRef, Error> {
     not_implemented("create_aws_kms_mrk_discovery_keyring")
 }
@@ -211,6 +239,20 @@ pub struct CreateAwsKmsMrkDiscoveryKeyringInput {
 
     ///The region the input 'kmsClient' is in.")
     pub region: Region,
+}
+
+impl CreateAwsKmsMrkDiscoveryKeyringInput {
+    #[must_use]
+    pub fn new(kms_client: aws_sdk_kms::Client, region: Region) -> Self {
+        Self {
+            kms_client: Some(kms_client),
+            region,
+            ..Default::default()
+        }
+    }
+    pub fn go(self) -> Result<KeyringRef, Error> {
+        create_aws_kms_mrk_discovery_keyring(&self)
+    }
 }
 
 ///Creates an AWS KMS MRK Discovery Multi-Keyring that supports unwrapping data keys wrapped by a symmetric AWS KMS Key or AWS KMS Multi-Region Key, for a single region.")
@@ -235,6 +277,15 @@ pub struct CreateAwsKmsMrkDiscoveryMultiKeyringInput {
 
     ///A list of grant tokens to be used when calling KMS.")
     pub grant_tokens: GrantTokenList,
+}
+
+impl DiscoveryFilter {
+    pub fn new(partition: impl Into<String>, account_ids: Vec<AccountId>) -> Self {
+        Self {
+            account_ids,
+            partition: partition.into(),
+        }
+    }
 }
 
 // KMS - Hierarchical Keyring
@@ -274,7 +325,7 @@ pub struct CreateAwsKmsHierarchicalKeyringInput {
 
 ///Creates an AWS KMS RSA Keyring, which wraps and unwraps data keys using a single asymmetric AWS KMS Key for RSA.")
 pub fn create_aws_kms_rsa_keyring(
-    _input: CreateAwsKmsRsaKeyringInput,
+    _input: &CreateAwsKmsRsaKeyringInput,
 ) -> Result<KeyringRef, Error> {
     not_implemented("create_aws_kms_rsa_keyring")
 }
@@ -310,6 +361,38 @@ pub struct CreateAwsKmsRsaKeyringInput {
     pub grant_tokens: GrantTokenList,
 }
 
+impl Default for CreateAwsKmsRsaKeyringInput {
+    fn default() -> Self {
+        Self {
+            public_key: Secret::default(),
+            kms_key_id: KmsKeyId::default(),
+            encryption_algorithm: aws_sdk_kms::types::EncryptionAlgorithmSpec::RsaesOaepSha256,
+            kms_client: None,
+            grant_tokens: vec![],
+        }
+    }
+}
+impl CreateAwsKmsRsaKeyringInput {
+    pub fn new(
+        public_key: impl Into<Vec<u8>>,
+        kms_key_id: impl Into<KmsKeyId>,
+        encryption_algorithm: aws_sdk_kms::types::EncryptionAlgorithmSpec,
+        kms_client: aws_sdk_kms::Client,
+    ) -> Self {
+        Self {
+            public_key: Secret::new(public_key.into()),
+            kms_key_id: kms_key_id.into(),
+            encryption_algorithm,
+            kms_client: Some(kms_client),
+            grant_tokens: vec![],
+        }
+    }
+
+    pub fn go(&self) -> Result<KeyringRef, Error> {
+        create_aws_kms_rsa_keyring(self)
+    }
+}
+
 ///Creates an AWS KMS ECDH Keyring, which wraps and unwraps data keys by deriving a shared data key from the established shared secret between parties through the ECDH protocol.")
 pub fn create_aws_kms_ecdh_keyring(
     _input: CreateAwsKmsEcdhKeyringInput,
@@ -325,7 +408,7 @@ pub struct CreateAwsKmsEcdhKeyringInput {
     pub key_agreement_scheme: KmsEcdhStaticConfigurations,
 
     ///The named curve that corresponds to the curve on which the sender's private and recipient's public key lie.")
-    pub curve_spec: ECDHCurveSpec,
+    pub curve_spec: EcdhCurveSpec,
 
     ///The KMS Client this Keyring will use to call KMS.")
     pub kms_client: Option<aws_sdk_kms::Client>,

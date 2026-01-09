@@ -49,7 +49,7 @@ pub(crate) type KeyMap = HashMap<String, Key>;
 pub(crate) type AccountIDs = Vec<String>;
 
 #[derive(Debug, Clone, Default)]
-pub(crate) struct DiscoveryFilter {
+pub(crate) struct DiscoveryFilterConfig {
     pub(crate) partition: String,
     pub(crate) account_ids: AccountIDs,
 }
@@ -70,7 +70,7 @@ pub(crate) struct KeyDescription {
     pub(crate) padding_hash: String,
     pub(crate) default_mrk_region: String,
     pub(crate) child_keyrings: Vec<Self>,
-    pub(crate) discovery_filter: DiscoveryFilter,
+    pub(crate) discovery_filter: DiscoveryFilterConfig,
     pub(crate) required_keys: RequiredKeys,
     pub(crate) generator: Vec<Self>,
     pub(crate) underlying: Vec<Self>,
