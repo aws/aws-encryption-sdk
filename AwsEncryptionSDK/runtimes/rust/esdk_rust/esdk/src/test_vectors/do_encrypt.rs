@@ -2,7 +2,7 @@
 
 use super::do_decrypt::get_cmm;
 use super::do_decrypt::make_kms_map;
-use super::do_decrypt::{MaybeSource, trim_filename};
+use super::do_decrypt::{SourceStatus, trim_filename};
 use crate::test_vectors::types::*;
 use crate::{EncryptInput, MaterialSource, encrypt};
 use anyhow::Result;
@@ -69,16 +69,17 @@ pub(crate) enum TestStatus {
 
 pub(crate) async fn run_encrypt_test(
     test: &EncryptTest,
-    ms: MaybeSource,
+    ms: SourceStatus,
     plaintexts: &PlainTexts,
     dir: &str,
 ) -> Result<TestStatus> {
     match ms {
-        MaybeSource::Skipped => Ok(TestStatus::Skipped),
-        MaybeSource::Ok(ms) => {
+        // TODO - pass not implemented vs nofeature through to status
+        SourceStatus::Ok(ms) => {
             let result = do_run_encrypt_test(test, ms, plaintexts, dir).await?;
             Ok(TestStatus::Ok(result))
         }
+        _ => Ok(TestStatus::Skipped),
     }
 }
 
