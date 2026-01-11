@@ -111,8 +111,9 @@ pub(crate) async fn run_decrypt_test(
             do_run_decrypt_test(test, ms, dir).await?;
             Ok(TestStatus::Ok)
         }
-        // TODO split status
-        _ => Ok(TestStatus::Skipped),
+        SourceStatus::NotImplemented => Ok(TestStatus::NotImplemented),
+        SourceStatus::NoKmsFeature => Ok(TestStatus::NoKmsFeature),
+        SourceStatus::NoDdbFeature => Ok(TestStatus::NoDdbFeature),
     }
 }
 
@@ -327,7 +328,7 @@ pub(crate) const fn get_kms_ecdh_keyring(
     _keys: &KeyMap,
     _kms: &KmsMap,
 ) -> Result<KeyringStatus> {
-    Ok(KeyringStatus::NoFeature)
+    Ok(KeyringStatus::NoKmsFeature)
 }
 
 #[cfg(feature = "kms")]
@@ -486,7 +487,7 @@ pub(crate) const fn get_aws_kms_rsa_keyring(
     _key: &Key,
     _kms: &KmsClient,
 ) -> Result<KeyringStatus> {
-    Ok(KeyringStatus::NoFeature)
+    Ok(KeyringStatus::NoKmsFeature)
 }
 
 #[cfg(feature = "kms")]
@@ -550,7 +551,7 @@ pub(crate) async fn get_aws_kms_mrk_keyring_legacy(
 #[cfg(not(feature = "kms"))]
 #[allow(clippy::unnecessary_wraps)]
 pub(crate) const fn get_aws_kms_mrk_keyring(_key: &Key, _kms: &KmsMap) -> Result<KeyringStatus> {
-    Ok(KeyringStatus::NoFeature)
+    Ok(KeyringStatus::NoKmsFeature)
 }
 
 #[cfg(feature = "kms")]
@@ -597,7 +598,7 @@ pub(crate) const fn get_aws_kms_mrk_discovery_keyring(
     _keydesc: &KeyDescription,
     _kms: &KmsMap,
 ) -> Result<KeyringStatus> {
-    Ok(KeyringStatus::NoFeature)
+    Ok(KeyringStatus::NoKmsFeature)
 }
 
 #[cfg(feature = "kms")]
@@ -742,19 +743,23 @@ fn get_raw_keyring(keydesc: &KeyDescription, key: &Key) -> Result<KeyringStatus>
 pub(crate) enum KeyringStatus {
     Ok(KeyringRef),
     NotImplemented,
-    NoFeature,
+    NoKmsFeature,
+    NoDdbFeature,
 }
 
 pub(crate) enum TestStatus {
     Ok,
-    Skipped,
+    NotImplemented,
+    NoKmsFeature,
+    NoDdbFeature,
 }
 
 #[allow(dead_code)]
 pub(crate) enum SourceStatus {
     Ok(MaterialSource),
     NotImplemented,
-    NoFeature,
+    NoKmsFeature,
+    NoDdbFeature,
 }
 
 #[cfg(feature = "legacy")]
@@ -819,13 +824,15 @@ fn do_get_cmm(keydesc: &KeyDescription, keys: &KeyMap, kms: &KmsMap) -> Result<S
                 Ok(SourceStatus::Ok(MaterialSource::Cmm(cmm)))
             }
             KeyringStatus::NotImplemented => Ok(SourceStatus::NotImplemented),
-            KeyringStatus::NoFeature => Ok(SourceStatus::NoFeature),
+            KeyringStatus::NoKmsFeature => Ok(SourceStatus::NoKmsFeature),
+            KeyringStatus::NoDdbFeature => Ok(SourceStatus::NoDdbFeature),
         }
     } else {
         match get_keyring(keydesc, keys, kms)? {
             KeyringStatus::Ok(keyring) => Ok(SourceStatus::Ok(MaterialSource::Keyring(keyring))),
             KeyringStatus::NotImplemented => Ok(SourceStatus::NotImplemented),
-            KeyringStatus::NoFeature => Ok(SourceStatus::NoFeature),
+            KeyringStatus::NoKmsFeature => Ok(SourceStatus::NoKmsFeature),
+            KeyringStatus::NoDdbFeature => Ok(SourceStatus::NoDdbFeature),
         }
     }
 }
@@ -856,7 +863,7 @@ pub(crate) async fn get_keyring_legacy(
 
 #[cfg(feature = "ddb")]
 fn get_hierarchy_keyring(keydesc: &KeyDescription, keys: &KeyMap) -> Result<KeyringStatus> {
-    let key = &keys[&keydesc.recipient];
+    let key = &keys[&keydesc.key];
     let store = crate::test_vectors::static_keystore::StaticKeyStoreInformation {
         branch_key_version: key.branch_key_version.clone(),
         // key_identifier: key.key_id.clone(),
@@ -875,7 +882,7 @@ fn get_hierarchy_keyring(keydesc: &KeyDescription, keys: &KeyMap) -> Result<Keyr
 #[cfg(not(feature = "ddb"))]
 #[allow(clippy::unnecessary_wraps)]
 const fn get_hierarchy_keyring(_keydesc: &KeyDescription, _keys: &KeyMap) -> Result<KeyringStatus> {
-    Ok(KeyringStatus::NoFeature)
+    Ok(KeyringStatus::NoDdbFeature)
 }
 
 pub(crate) fn get_keyring(
@@ -884,7 +891,6 @@ pub(crate) fn get_keyring(
     kms: &KmsMap,
 ) -> Result<KeyringStatus> {
     let key = get_key(keydesc, keys);
-
     match keydesc.kind.as_str() {
         "aws-kms" => get_aws_kms_keyring(key, &kms[DFLT_REGION]),
         "aws-kms-rsa" => get_aws_kms_rsa_keyring(keydesc, key, &kms[DFLT_REGION]),
@@ -970,12 +976,10 @@ pub(crate) async fn run_decrypt_tests(
         let cmm = get_cmm(&test.decrypt_key_description, keys, &kms)?;
         match run_decrypt_test(test, cmm, dir).await {
             Ok(x) => match x {
-                TestStatus::Ok => {
-                    res.passed += 1;
-                }
-                TestStatus::Skipped => {
-                    res.skipped += 1;
-                }
+                TestStatus::Ok => res.passed += 1,
+                TestStatus::NotImplemented => res.not_implemented += 1,
+                TestStatus::NoKmsFeature => res.no_kms_feature += 1,
+                TestStatus::NoDdbFeature => res.no_ddb_feature += 1,
             },
             Err(e) => {
                 res.fail(test, &e);
@@ -986,12 +990,8 @@ pub(crate) async fn run_decrypt_tests(
         #[cfg(feature = "legacy")]
         match run_decrypt_test(test, cmm, dir).await {
             Ok(x) => match x {
-                TestStatus::Ok => {
-                    res.legacy_passed += 1;
-                }
-                TestStatus::Skipped => {
-                    res.legacy_skipped += 1;
-                }
+                TestStatus::Ok => res.legacy_passed += 1,
+                _ => res.legacy_skipped += 1,
             },
             Err(e) => {
                 res.fail_legacy(test, &e);
@@ -1006,7 +1006,9 @@ pub(crate) fn print_test_results(results: &TestResults) {
     println!("{} tests total", results.total);
     println!("{} tests passed", results.passed);
     println!("{} tests failed", results.failed);
-    println!("{} tests skipped", results.skipped);
+    println!("{} tests not implemented", results.not_implemented);
+    println!("{} tests no ddb feature", results.no_ddb_feature);
+    println!("{} tests no kms feature", results.no_kms_feature);
     #[cfg(feature = "legacy")]
     println!("{} tests passed legacy", results.legacy_passed);
     #[cfg(feature = "legacy")]

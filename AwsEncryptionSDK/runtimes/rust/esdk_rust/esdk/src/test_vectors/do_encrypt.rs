@@ -64,7 +64,9 @@ fn make_decrypt_json(test: &EncryptTest, ciphertext_result: &[u8], dir: &str) ->
 
 pub(crate) enum TestStatus {
     Ok(JsonValue),
-    Skipped,
+    NotImplemented,
+    NoKmsFeature,
+    NoDdbFeature,
 }
 
 pub(crate) async fn run_encrypt_test(
@@ -74,12 +76,13 @@ pub(crate) async fn run_encrypt_test(
     dir: &str,
 ) -> Result<TestStatus> {
     match ms {
-        // TODO - pass not implemented vs nofeature through to status
         SourceStatus::Ok(ms) => {
             let result = do_run_encrypt_test(test, ms, plaintexts, dir).await?;
             Ok(TestStatus::Ok(result))
         }
-        _ => Ok(TestStatus::Skipped),
+        SourceStatus::NotImplemented => Ok(TestStatus::NotImplemented),
+        SourceStatus::NoKmsFeature => Ok(TestStatus::NoKmsFeature),
+        SourceStatus::NoDdbFeature => Ok(TestStatus::NoDdbFeature),
     }
 }
 
@@ -152,9 +155,9 @@ pub(crate) async fn run_encrypt_tests(
                     res.passed += 1;
                     out_tests[test.name.clone()] = j;
                 }
-                TestStatus::Skipped => {
-                    res.skipped += 1;
-                }
+                TestStatus::NotImplemented => res.not_implemented += 1,
+                TestStatus::NoDdbFeature => res.no_ddb_feature += 1,
+                TestStatus::NoKmsFeature => res.no_kms_feature += 1,
             },
             Err(e) => {
                 res.fail(test, &e);
@@ -169,9 +172,7 @@ pub(crate) async fn run_encrypt_tests(
                     res.legacy_passed += 1;
                     out_tests[test.name.clone()] = j;
                 }
-                TestStatus::Skipped => {
-                    res.legacy_skipped += 1;
-                }
+                _ => res.legacy_skipped += 1,
             },
             Err(e) => {
                 res.fail_legacy(test, &e);

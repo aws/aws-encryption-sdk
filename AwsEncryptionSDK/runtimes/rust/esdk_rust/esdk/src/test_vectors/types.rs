@@ -106,7 +106,9 @@ pub(crate) struct TestResults {
     pub(crate) total: u32,
     pub(crate) passed: u32,
     pub(crate) failed: u32,
-    pub(crate) skipped: u32,
+    pub(crate) not_implemented: u32,
+    pub(crate) no_kms_feature: u32,
+    pub(crate) no_ddb_feature: u32,
     #[cfg(feature = "legacy")]
     pub(crate) legacy_passed: u32,
     #[cfg(feature = "legacy")]
