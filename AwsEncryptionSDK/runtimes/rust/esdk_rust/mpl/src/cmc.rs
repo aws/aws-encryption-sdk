@@ -104,8 +104,8 @@ pub enum Materials {
     Missing(Missing),
     Encryption(EncryptionMaterials),
     Decryption(DecryptionMaterials),
-    // BranchKey(crate::deps::aws_cryptography_keyStore::types::BranchKeyMaterials),
-    // BeaconKey(crate::deps::aws_cryptography_keyStore::types::BeaconKeyMaterials),
+    BranchKey(crate::keystore::BranchKeyMaterials),
+    BeaconKey(crate::keystore::BeaconKeyMaterials),
 }
 impl Default for Materials {
     fn default() -> Self {

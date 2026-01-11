@@ -143,6 +143,12 @@ pub struct MrDiscovery {
     ///Any MRK ARN discovered will have its region replaced with this.")
     region: String,
 }
+impl MrDiscovery {
+    #[must_use]
+    pub const fn new(region: String) -> Self {
+        Self { region }
+    }
+}
 
 ///The configuration information for a Key Store.")
 #[derive(Debug, Clone, Default)]
@@ -163,10 +169,33 @@ pub struct GetKeyStoreInfoOutput {
     ///Configures Key Store's KMS Key ARN restrictions.")
     pub kms_configuration: KmsConfiguration,
 }
-
+impl GetKeyStoreInfoOutput {
+    #[must_use]
+    pub const fn new(
+        key_store_id: String,
+        key_store_name: TableName,
+        logical_key_store_name: String,
+        kms_configuration: KmsConfiguration,
+        grant_tokens: GrantTokenList,
+    ) -> Self {
+        Self {
+            key_store_id,
+            key_store_name,
+            logical_key_store_name,
+            grant_tokens,
+            kms_configuration,
+        }
+    }
+}
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
 pub struct CreateKeyStoreInput {}
+impl CreateKeyStoreInput {
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
 
 ///Outputs for Key Store `DynamoDB` table creation.")
 #[derive(Debug, Clone, Default)]
@@ -174,6 +203,12 @@ pub struct CreateKeyStoreInput {}
 pub struct CreateKeyStoreOutput {
     ///The ARN of the `DynamoDB` table that backs this Key Store.")
     pub table_arn: String, // com.amazonaws.`DynamoDB`#TableArn
+}
+impl CreateKeyStoreOutput {
+    #[must_use]
+    pub const fn new(table_arn: String) -> Self {
+        Self { table_arn }
+    }
 }
 
 //= aws-encryption-sdk-specification/framework/branch-key-store.md#createkey
@@ -190,6 +225,15 @@ pub struct CreateKeyInput {
     ///Custom encryption context for the Branch Key. Required if branchKeyIdentifier is set.")
     pub encryption_context: EncryptionContext,
 }
+impl CreateKeyInput {
+    #[must_use]
+    pub const fn new(branch_key_identifier: String, encryption_context: EncryptionContext) -> Self {
+        Self {
+            branch_key_identifier,
+            encryption_context,
+        }
+    }
+}
 
 ///Outputs for Branch Key creation.")
 #[derive(Debug, Clone, Default)]
@@ -197,6 +241,14 @@ pub struct CreateKeyInput {
 pub struct CreateKeyOutput {
     ///A identifier for the created Branch Key.")
     pub branch_key_identifier: String,
+}
+impl CreateKeyOutput {
+    #[must_use]
+    pub const fn new(branch_key_identifier: String) -> Self {
+        Self {
+            branch_key_identifier,
+        }
+    }
 }
 
 ///Inputs for versioning a Branch Key.")
@@ -209,11 +261,25 @@ pub struct VersionKeyInput {
     ///The identifier for the Branch Key to be versioned.")
     pub branch_key_identifier: String,
 }
+impl VersionKeyInput {
+    #[must_use]
+    pub const fn new(branch_key_identifier: String) -> Self {
+        Self {
+            branch_key_identifier,
+        }
+    }
+}
 
 ///Outputs for versioning a Branch Key.")
 #[derive(Debug, Clone, Default)]
 #[non_exhaustive]
 pub struct VersionKeyOutput {}
+impl VersionKeyOutput {
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
 
 ///Inputs for getting a Branch Key's ACTIVE version.")
 #[derive(Debug, Clone, Default)]
@@ -221,6 +287,14 @@ pub struct VersionKeyOutput {}
 pub struct GetActiveBranchKeyInput {
     ///The identifier for the Branch Key to get the ACTIVE version for.")
     pub branch_key_identifier: String,
+}
+impl GetActiveBranchKeyInput {
+    #[must_use]
+    pub const fn new(branch_key_identifier: String) -> Self {
+        Self {
+            branch_key_identifier,
+        }
+    }
 }
 
 ///Outputs for getting a Branch Key's ACTIVE version.")
@@ -232,6 +306,14 @@ pub struct GetActiveBranchKeyOutput {
     //# - MUST supply a `branch-key-id`
     ///The materials for the Branch Key.")
     pub branch_key_materials: BranchKeyMaterials,
+}
+impl GetActiveBranchKeyOutput {
+    #[must_use]
+    pub const fn new(branch_key_materials: BranchKeyMaterials) -> Self {
+        Self {
+            branch_key_materials,
+        }
+    }
 }
 
 ///Inputs for getting a version of a Branch Key.")
@@ -250,6 +332,15 @@ pub struct GetBranchKeyVersionInput {
     ///The version to get.")
     pub branch_key_version: String,
 }
+impl GetBranchKeyVersionInput {
+    #[must_use]
+    pub const fn new(branch_key_identifier: String, branch_key_version: String) -> Self {
+        Self {
+            branch_key_identifier,
+            branch_key_version,
+        }
+    }
+}
 
 ///Outputs for getting a version of a Branch Key.")
 #[derive(Debug, Clone, Default)]
@@ -257,6 +348,14 @@ pub struct GetBranchKeyVersionInput {
 pub struct GetBranchKeyVersionOutput {
     ///The materials for the Branch Key.")
     pub branch_key_materials: BranchKeyMaterials,
+}
+impl GetBranchKeyVersionOutput {
+    #[must_use]
+    pub const fn new(branch_key_materials: BranchKeyMaterials) -> Self {
+        Self {
+            branch_key_materials,
+        }
+    }
 }
 
 ///Inputs for getting a Beacon Key")
@@ -269,6 +368,14 @@ pub struct GetBeaconKeyInput {
     ///The identifier of the Branch Key the Beacon Key is associated with.")
     pub branch_key_identifier: String,
 }
+impl GetBeaconKeyInput {
+    #[must_use]
+    pub const fn new(branch_key_identifier: String) -> Self {
+        Self {
+            branch_key_identifier,
+        }
+    }
+}
 
 ///Outputs for getting a Beacon Key")
 #[derive(Debug, Clone, Default)]
@@ -276,6 +383,14 @@ pub struct GetBeaconKeyInput {
 pub struct GetBeaconKeyOutput {
     ///The materials for the Beacon Key.")
     pub beacon_key_materials: BeaconKeyMaterials,
+}
+impl GetBeaconKeyOutput {
+    #[must_use]
+    pub const fn new(beacon_key_materials: BeaconKeyMaterials) -> Self {
+        Self {
+            beacon_key_materials,
+        }
+    }
 }
 
 //= aws-encryption-sdk-specification/framework/pub structs.md#pub struct-3
@@ -291,8 +406,24 @@ pub struct GetBeaconKeyOutput {
 pub struct BranchKeyMaterials {
     pub branch_key_identifier: String,
     pub branch_key_version: String,
-    pub encryption_context: EncryptionContext,
     pub branch_key: Secret,
+    pub encryption_context: EncryptionContext,
+}
+impl BranchKeyMaterials {
+    #[must_use]
+    pub const fn new(
+        branch_key_identifier: String,
+        branch_key_version: String,
+        branch_key: Secret,
+        encryption_context: EncryptionContext,
+    ) -> Self {
+        Self {
+            branch_key_identifier,
+            branch_key_version,
+            branch_key,
+            encryption_context,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -305,8 +436,6 @@ pub struct BeaconKeyMaterials {
     //# - [Encryption Context](#encryption-context-4)
     pub beacon_key_identifier: String,
 
-    pub encryption_context: EncryptionContext,
-
     //= aws-encryption-sdk-specification/framework/pub structs.md#pub struct-4
     //= type=implication
     //# This pub struct MAY include the following fields:
@@ -315,6 +444,23 @@ pub struct BeaconKeyMaterials {
     pub beacon_key: Secret,
 
     pub hmac_keys: HmacKeyMap,
+    pub encryption_context: EncryptionContext,
+}
+impl BeaconKeyMaterials {
+    #[must_use]
+    pub const fn new(
+        beacon_key_identifier: String,
+        beacon_key: Secret,
+        hmac_keys: HmacKeyMap,
+        encryption_context: EncryptionContext,
+    ) -> Self {
+        Self {
+            beacon_key_identifier,
+            beacon_key,
+            hmac_keys,
+            encryption_context,
+        }
+    }
 }
 
 /// The key refers to the beacon name for which this value was derived.

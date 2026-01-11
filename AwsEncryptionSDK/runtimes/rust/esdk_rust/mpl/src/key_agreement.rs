@@ -1,5 +1,3 @@
-// use crate::*;
-
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 /// Supported ECDH Key Agreement Schemes.
@@ -59,6 +57,14 @@ pub struct KmsPublicKeyDiscovery {
     /// AWS KMS key identifier belonging to the recipient.
     pub recipient_kms_identifier: String,
 }
+impl KmsPublicKeyDiscovery {
+    /// Create a new `KmsPublicKeyDiscovery` Configuration.
+    pub fn new(recipient_kms_identifier: impl Into<String>) -> Self {
+        Self {
+            recipient_kms_identifier: recipient_kms_identifier.into(),
+        }
+    }
+}
 
 #[derive(Debug, Clone, Default, PartialEq)]
 #[non_exhaustive]
@@ -70,6 +76,21 @@ pub struct KmsPrivateKeyToStaticPublicKey {
     pub sender_kms_identifier: String,
     /// Sender Public Key. This is the raw public ECC key in DER format that belongs to the senderKmsIdentifier.
     pub sender_public_key: Vec<u8>,
+}
+
+impl KmsPrivateKeyToStaticPublicKey {
+    /// Create a new `KmsPrivateKeyToStaticPublicKey` Configuration.
+    pub fn new(
+        recipient_public_key: impl Into<Vec<u8>>,
+        sender_public_key: impl Into<Vec<u8>>,
+        sender_kms_identifier: impl Into<String>,
+    ) -> Self {
+        Self {
+            recipient_public_key: recipient_public_key.into(),
+            sender_kms_identifier: sender_kms_identifier.into(),
+            sender_public_key: sender_public_key.into(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]

@@ -19,6 +19,7 @@ pub enum ErrorKind {
     InvalidDecryptionMaterialsTransition(String),
     InvalidEncryptionMaterials(String),
     InvalidDecryptionMaterials(String),
+    Consumer(String),
     NotImplemented(String),
 }
 #[derive(Debug)]
@@ -62,6 +63,9 @@ impl std::fmt::Display for Error {
             ErrorKind::InvalidDecryptionMaterials(message) => {
                 write!(f, "Invalid Decryption Materials Error {message}")
             }
+            ErrorKind::Consumer(message) => {
+                write!(f, "Consumer {message}")
+            }
             ErrorKind::NotImplemented(message) => write!(f, "{message} not yet implemented."),
         }
     }
@@ -92,7 +96,8 @@ pub(crate) fn not_implemented<T>(msg: impl Into<String>) -> Result<T, Error> {
     })
 }
 
-pub(crate) fn err(e: ErrorKind) -> Error {
+#[must_use]
+pub fn err(e: ErrorKind) -> Error {
     Error {
         kind: e,
         backtrace: Backtrace::capture(),

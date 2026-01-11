@@ -7,6 +7,7 @@ use aws_config::Region;
 use aws_mpl_rs::key_agreement;
 use aws_mpl_rs::keyring::*;
 use aws_mpl_rs::kms_keyring::*;
+use aws_mpl_rs::types::Secret;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 
@@ -293,9 +294,21 @@ pub(crate) async fn get_kms_ecdh_keyring_legacy(
         _ => anyhow::bail!("Unknown ecdh schema: {}", keydesc.schema),
     }
 }
-// case KmsECDH(KmsEcdhKeyring(senderKeyId: string, recipientKeyId: string, senderPublicKey: string, recipientPublicKey: string, curveSpec: string, keyAgreementScheme: string)) => {
-//   let curveType =  KeyDescription.KmsKey2EccAlgorithmSpec[curveSpec];
 
+pub(crate) fn get_kms_ecdh_keyring(
+    keydesc: &KeyDescription,
+    keys: &KeyMap,
+    kms: &KmsMap,
+) -> Result<KeyringRef> {
+    //      = Need(curveSpec in KeyDescription.KmsKey2EccAlgorithmSpec, KeyVectorException(message = "Unknown curve spec"));
+    match &keydesc.schema[..] {
+        "static" => get_kms_ecdh_keyring_static(keydesc, keys, kms),
+        "discovery" => get_kms_ecdh_keyring_discovery(keydesc, keys, kms),
+        _ => anyhow::bail!("Unknown ecdh schema: {}", keydesc.schema),
+    }
+}
+
+#[cfg(feature = "legacy")]
 pub(crate) async fn get_kms_ecdh_keyring_static_legacy(
     keydesc: &KeyDescription,
     keys: &KeyMap,
@@ -336,6 +349,29 @@ pub(crate) async fn get_kms_ecdh_keyring_static_legacy(
     Ok(keyring)
 }
 
+pub(crate) fn get_kms_ecdh_keyring_static(
+    keydesc: &KeyDescription,
+    keys: &KeyMap,
+    kms: &KmsMap,
+) -> Result<KeyringRef> {
+    let key = &keys[&keydesc.recipient];
+    let sender_kms_key = key.sender_material.clone();
+    let kms_client = kms_from_arn(kms, &sender_kms_key);
+
+    let sender_key = decode_base64(&key.sender_material_public_key)?;
+    let recipient_key = decode_base64(&key.recipient_material_public_key)?;
+    let schema = key_agreement::KmsPrivateKeyToStaticPublicKey::new(
+        recipient_key,
+        sender_key,
+        sender_kms_key,
+    );
+    let schema = KmsEcdhStaticConfigurations::KmsPrivateKeyToStaticPublicKey(schema);
+    let curve = get_curve(&key.key_id)?;
+    let keyring = CreateAwsKmsEcdhKeyringInput::new(schema, curve, kms_client.clone()).go()?;
+    Ok(keyring)
+}
+
+#[cfg(feature = "legacy")]
 pub(crate) async fn get_kms_ecdh_keyring_discovery_legacy(
     keydesc: &KeyDescription,
     keys: &KeyMap,
@@ -362,6 +398,20 @@ pub(crate) async fn get_kms_ecdh_keyring_discovery_legacy(
         .kms_client(kms_client.clone())
         .send()
         .await?;
+    Ok(keyring)
+}
+
+pub(crate) fn get_kms_ecdh_keyring_discovery(
+    keydesc: &KeyDescription,
+    keys: &KeyMap,
+    kms: &KmsMap,
+) -> Result<KeyringRef> {
+    let key = keys[&keydesc.recipient].clone();
+    let kms_client = kms_from_arn(kms, &key.recipient_material);
+    let schema = key_agreement::KmsPublicKeyDiscovery::new(&key.recipient_material);
+    let schema = KmsEcdhStaticConfigurations::KmsPublicKeyDiscovery(schema);
+    let curve = get_curve(&key.key_id)?;
+    let keyring = CreateAwsKmsEcdhKeyringInput::new(schema, curve, kms_client.clone()).go()?;
     Ok(keyring)
 }
 
@@ -673,10 +723,7 @@ pub(crate) fn get_cmm(
 
 fn do_get_cmm(keydesc: &KeyDescription, keys: &KeyMap, kms: &KmsMap) -> Result<MaybeSource> {
     // TODO -- move this into get_keyring
-    if keydesc.kind == "aws-kms-hierarchy"
-        || keydesc.kind == "aws-kms-ecdh"
-        || keydesc.kind == "unknown"
-    {
+    if keydesc.kind == "unknown" {
         Ok(MaybeSource::Skipped)
     } else if keydesc.kind == "required-encryption-context-cmm" {
         match get_keyring(&keydesc.underlying[0], keys, kms)? {
@@ -724,6 +771,23 @@ pub(crate) async fn get_keyring_legacy(
     }
 }
 
+fn get_hierarchy_keyring(keydesc: &KeyDescription, keys: &KeyMap) -> Result<KeyringRef> {
+    let key = &keys[&keydesc.recipient];
+    let store = crate::test_vectors::static_keystore::StaticKeyStoreInformation {
+        branch_key_version: key.branch_key_version.clone(),
+        // key_identifier: key.key_id.clone(),
+        beacon_key: Secret(key.beacon_key.clone()),
+        branch_key: Secret(key.branch_key.clone()),
+    };
+    let keyring = CreateAwsKmsHierarchicalKeyringInput::new(
+        key.key_id.clone(),
+        std::sync::Arc::new(store),
+        std::time::Duration::new(11, 0),
+    )
+    .go()?;
+    Ok(keyring)
+}
+
 pub(crate) fn get_keyring(
     keydesc: &KeyDescription,
     keys: &KeyMap,
@@ -738,6 +802,8 @@ pub(crate) fn get_keyring(
         "aws-kms-mrk-aware-discovery" => get_aws_kms_mrk_discovery_keyring(keydesc, kms)?,
         "raw" => get_raw_keyring(keydesc, key)?,
         "raw-ecdh" => get_raw_ecdh_keyring(keydesc, keys)?,
+        "aws-kms-ecdh" => get_kms_ecdh_keyring(keydesc, keys, kms)?,
+        "aws-kms-hierarchy" => get_hierarchy_keyring(keydesc, keys)?,
         "multi-keyring" => get_multi_keyring(keydesc, keys, kms)?,
         _ => return Ok(None),
     };

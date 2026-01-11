@@ -293,7 +293,7 @@ impl DiscoveryFilter {
 #[cfg(feature = "ddb")]
 #[cfg_attr(docsrs, doc(cfg(feature = "ddb")))]
 pub fn create_aws_kms_hierarchical_keyring(
-    _input: CreateAwsKmsHierarchicalKeyringInput,
+    _input: &CreateAwsKmsHierarchicalKeyringInput,
 ) -> Result<KeyringRef, Error> {
     not_implemented("create_aws_kms_hierarchical_keyring")
 }
@@ -321,6 +321,24 @@ pub struct CreateAwsKmsHierarchicalKeyringInput {
 
     ///Partition ID to distinguish Cryptographic Material Providers (i.e: Keyrings) writing to a cache. If the Partition ID is the same for two Hierarchical Keyrings (or another Material Provider), they can share the same cache entries in the cache.
     pub partition_id: String,
+}
+impl CreateAwsKmsHierarchicalKeyringInput {
+    #[must_use]
+    pub fn new(
+        branch_key_id: impl Into<String>,
+        key_store: KeyStoreRef,
+        ttl: std::time::Duration,
+    ) -> Self {
+        Self {
+            branch_key_id: branch_key_id.into(),
+            key_store: Some(key_store),
+            ttl,
+            ..Default::default()
+        }
+    }
+    pub fn go(self) -> Result<KeyringRef, Error> {
+        create_aws_kms_hierarchical_keyring(&self)
+    }
 }
 
 ///Creates an AWS KMS RSA Keyring, which wraps and unwraps data keys using a single asymmetric AWS KMS Key for RSA.")
@@ -395,7 +413,7 @@ impl CreateAwsKmsRsaKeyringInput {
 
 ///Creates an AWS KMS ECDH Keyring, which wraps and unwraps data keys by deriving a shared data key from the established shared secret between parties through the ECDH protocol.")
 pub fn create_aws_kms_ecdh_keyring(
-    _input: CreateAwsKmsEcdhKeyringInput,
+    _input: &CreateAwsKmsEcdhKeyringInput,
 ) -> Result<KeyringRef, Error> {
     not_implemented("create_aws_kms_ecdh_keyring")
 }
@@ -415,4 +433,24 @@ pub struct CreateAwsKmsEcdhKeyringInput {
 
     ///A list of grant tokens to be used when calling KMS.")
     pub grant_tokens: GrantTokenList,
+}
+
+impl CreateAwsKmsEcdhKeyringInput {
+    #[must_use]
+    pub fn new(
+        key_agreement_scheme: KmsEcdhStaticConfigurations,
+        curve_spec: EcdhCurveSpec,
+        kms_client: aws_sdk_kms::Client,
+    ) -> Self {
+        Self {
+            key_agreement_scheme,
+            curve_spec,
+            kms_client: Some(kms_client),
+            ..Default::default()
+        }
+    }
+
+    pub fn go(&self) -> Result<KeyringRef, Error> {
+        create_aws_kms_ecdh_keyring(self)
+    }
 }
