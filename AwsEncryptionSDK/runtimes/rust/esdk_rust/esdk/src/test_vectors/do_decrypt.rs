@@ -7,6 +7,7 @@ use aws_config::Region;
 use aws_mpl_rs::key_agreement;
 use aws_mpl_rs::keyring::*;
 use aws_mpl_rs::kms_keyring::*;
+#[cfg(feature = "ddb")]
 use aws_mpl_rs::types::Secret;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
@@ -771,6 +772,7 @@ pub(crate) async fn get_keyring_legacy(
     }
 }
 
+#[cfg(feature = "ddb")]
 fn get_hierarchy_keyring(keydesc: &KeyDescription, keys: &KeyMap) -> Result<KeyringRef> {
     let key = &keys[&keydesc.recipient];
     let store = crate::test_vectors::static_keystore::StaticKeyStoreInformation {
@@ -786,6 +788,11 @@ fn get_hierarchy_keyring(keydesc: &KeyDescription, keys: &KeyMap) -> Result<Keyr
     )
     .go()?;
     Ok(keyring)
+}
+
+#[cfg(not(feature = "ddb"))]
+fn get_hierarchy_keyring(_keydesc: &KeyDescription, _keys: &KeyMap) -> Result<KeyringRef> {
+    anyhow::bail!("Not Implemented");
 }
 
 pub(crate) fn get_keyring(

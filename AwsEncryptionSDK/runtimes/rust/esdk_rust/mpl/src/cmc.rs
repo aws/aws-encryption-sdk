@@ -104,7 +104,9 @@ pub enum Materials {
     Missing(Missing),
     Encryption(EncryptionMaterials),
     Decryption(DecryptionMaterials),
+    #[cfg(feature = "ddb")]
     BranchKey(crate::keystore::BranchKeyMaterials),
+    #[cfg(feature = "ddb")]
     BeaconKey(crate::keystore::BeaconKeyMaterials),
 }
 impl Default for Materials {

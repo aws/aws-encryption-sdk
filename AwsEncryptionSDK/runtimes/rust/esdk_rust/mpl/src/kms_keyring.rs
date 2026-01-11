@@ -322,6 +322,7 @@ pub struct CreateAwsKmsHierarchicalKeyringInput {
     ///Partition ID to distinguish Cryptographic Material Providers (i.e: Keyrings) writing to a cache. If the Partition ID is the same for two Hierarchical Keyrings (or another Material Provider), they can share the same cache entries in the cache.
     pub partition_id: String,
 }
+#[cfg(feature = "ddb")]
 impl CreateAwsKmsHierarchicalKeyringInput {
     #[must_use]
     pub fn new(

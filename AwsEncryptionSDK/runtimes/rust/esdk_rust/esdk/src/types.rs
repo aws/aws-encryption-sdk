@@ -91,7 +91,7 @@ pub trait SafeRead: std::io::Read + Send + Sync + std::fmt::Debug {}
 impl<T: std::io::Read + Send + Sync + std::fmt::Debug> SafeRead for T {}
 
 /// Key-Value pairs to associate with the encrypted data
-pub type EncryptionContext = ::std::collections::HashMap<String, String>;
+pub use aws_mpl_rs::types::EncryptionContext;
 
 #[derive(Debug, PartialEq, Clone, Default)]
 #[non_exhaustive]
