@@ -24,3 +24,5 @@ kms = ["aws-sdk-kms"]
 # include keyrings that depend upon KMS or DynamoDB
 ddb = ["kms", "aws-sdk-dynamodb"]
 default = ["ddb"]
+fips = ["aws-mpl-primitives/fips"]
+

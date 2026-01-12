@@ -1,0 +1,15 @@
+clippy:
+	cd prim && make clippy
+	cd mpl && make clippy
+	cd esdk && make clippy
+
+test:
+	cd prim && make test
+	cd mpl && make test
+	cd esdk && make test
+
+examples:
+	cd prim && make examples
+	cd mpl && make examples
+	cd esdk && make examples
+
