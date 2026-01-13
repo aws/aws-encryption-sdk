@@ -6,12 +6,12 @@ edition = "2024"
 autoexamples = false
 
 [dependencies]
-aws-smithy-types = "1.3.4" # needed for error for legacy EDK Builder
 # tokio only needed for tests and test_vectors
 tokio = { version = "1.49.0", features = ["rt", "macros", "rt-multi-thread"]  }
 aws-mpl-primitives = { path = "../prim" }
 aws-mpl-rs = { path = "../mpl", default-features = false}
 
+aws-smithy-types = { version = "1.3.4", optional = true }
 clap = { version = "4.5.54", features = ["derive"], optional = true }
 anyhow = { version = "1.0.100", optional = true }
 base64 = { version = "0.22.1", optional = true }
@@ -47,9 +47,9 @@ rustdoc-args = [
 ]
 
 [features]
-default = ["ddb"]
+# default = ["ddb"]
 test_vectors = ["clap", "anyhow", "base64", "aws-config", "serde_json"] # without "kms" or "ddb", only processes raw keyrings
 fips = ["aws-mpl-primitives/fips"]
 kms = ["aws-mpl-rs/kms", "aws-sdk-kms"]
 ddb = ["kms", "aws-mpl-rs/ddb", "aws-sdk-dynamodb"]
-legacy = ["ddb", "aws-mpl-legacy", "tokio/full"]
+legacy = ["ddb", "aws-mpl-legacy", "tokio/full", "aws-smithy-types"]

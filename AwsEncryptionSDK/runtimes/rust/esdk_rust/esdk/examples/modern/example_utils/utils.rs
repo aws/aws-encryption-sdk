@@ -149,54 +149,54 @@ pub(crate) fn exists(f: &str) -> bool {
 //     Ok((public_key, private_key))
 // }
 
-#[cfg(feature = "kms")]
-pub(crate) async fn write_kms_ecdh_ecc_public_key(
-    ecc_key_arn: &str,
-    public_key_file_path: &str,
-) -> Result<(), crate::BoxError> {
-    use std::io::Write;
-    if exists(public_key_file_path) {
-        return Err(crate::BoxError(
-            "write_kms_ecdh_ecc_public_key will not overwrite existing PEM files".to_string(),
-        ));
-    }
+// #[cfg(feature = "kms")]
+// pub(crate) async fn write_kms_ecdh_ecc_public_key(
+//     ecc_key_arn: &str,
+//     public_key_file_path: &str,
+// ) -> Result<(), crate::BoxError> {
+//     use std::io::Write;
+//     if exists(public_key_file_path) {
+//         return Err(crate::BoxError(
+//             "write_kms_ecdh_ecc_public_key will not overwrite existing PEM files".to_string(),
+//         ));
+//     }
 
-    let public_key = generate_kms_ecc_public_key(ecc_key_arn).await?;
+//     let public_key = generate_kms_ecc_public_key(ecc_key_arn).await?;
 
-    let public_key = pem::Pem::new("PUBLIC KEY", public_key);
-    let public_key = pem::encode(&public_key);
+//     let public_key = pem::Pem::new("PUBLIC KEY", public_key);
+//     let public_key = pem::encode(&public_key);
 
-    std::fs::OpenOptions::new()
-        .write(true)
-        .create(true)
-        .truncate(true)
-        .open(Path::new(public_key_file_path))?
-        .write_all(public_key.as_bytes())?;
+//     std::fs::OpenOptions::new()
+//         .write(true)
+//         .create(true)
+//         .truncate(true)
+//         .open(Path::new(public_key_file_path))?
+//         .write_all(public_key.as_bytes())?;
 
-    Ok(())
-}
+//     Ok(())
+// }
 
-#[cfg(feature = "kms")]
-pub(crate) async fn generate_kms_ecc_public_key(
-    ecc_key_arn: &str,
-) -> Result<aws_smithy_types::Blob, crate::BoxError> {
-    // Create KMS client to get public key
-    let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
-    let kms_client = aws_sdk_kms::Client::new(&sdk_config);
+// #[cfg(feature = "kms")]
+// pub(crate) async fn generate_kms_ecc_public_key(
+//     ecc_key_arn: &str,
+// ) -> Result<aws_smithy_types::Blob, crate::BoxError> {
+//     // Create KMS client to get public key
+//     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
+//     let kms_client = aws_sdk_kms::Client::new(&sdk_config);
 
-    // This code will call KMS to get the public key for the KMS ECC key.
-    // You must have kms:GetPublicKey permissions on the key for this to succeed.
-    // The public key generated here will be written to the file EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_SENDER
-    // or EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_RECIPIENT.
-    let kms_response = kms_client
-        .get_public_key()
-        .key_id(ecc_key_arn)
-        .send()
-        .await?;
+//     // This code will call KMS to get the public key for the KMS ECC key.
+//     // You must have kms:GetPublicKey permissions on the key for this to succeed.
+//     // The public key generated here will be written to the file EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_SENDER
+//     // or EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_RECIPIENT.
+//     let kms_response = kms_client
+//         .get_public_key()
+//         .key_id(ecc_key_arn)
+//         .send()
+//         .await?;
 
-    let public_key = kms_response
-        .public_key
-        .expect("Error unwrapping public key from KMS response.");
+//     let public_key = kms_response
+//         .public_key
+//         .expect("Error unwrapping public key from KMS response.");
 
-    Ok(public_key)
-}
+//     Ok(public_key)
+// }

@@ -96,6 +96,7 @@ impl From<aws_mpl_primitives::Error> for Error {
     }
 }
 
+#[cfg(feature = "legacy")]
 impl From<aws_smithy_types::error::operation::BuildError> for Error {
     fn from(item: aws_smithy_types::error::operation::BuildError) -> Self {
         Self {
