@@ -63,7 +63,7 @@ jobs:
         run: |
           LOG_FILE="cloudwatch_logs.json"
           LOG_GROUP="aws-esdk-performance-benchmarks"
-          LOG_STREAM="python/${{matrix.python-version}}}/quick_benchmarks/${{ github.workflow }}"
+          LOG_STREAM="python/${{matrix.python-version}}/quick_benchmarks/${{ github.workflow }}"
 
           # Create log stream (ignore if exists)
           aws logs create-log-stream \
