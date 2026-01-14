@@ -11,10 +11,7 @@ jobs:
       matrix:
         benchmark-dir: [esdk-performance-testing]
         python-version: ["3.11", "3.13"]
-        os: [
-            ubuntu-22.04,
-            macos-14,
-          ]
+        os: [ubuntu-22.04, macos-14]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
@@ -47,8 +44,8 @@ jobs:
         shell: bash
         working-directory: ./${{matrix.benchmark-dir}}/benchmarks/python
         run: |
-            pip install -r requirements.txt
-            python esdk_benchmark.py --quick
+          pip install -r requirements.txt
+          python esdk_benchmark.py --quick
 
       - name: Parse and Format Logs
         working-directory: ./${{matrix.benchmark-dir}}/results/raw-data/

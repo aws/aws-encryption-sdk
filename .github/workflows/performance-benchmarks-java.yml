@@ -50,8 +50,8 @@ jobs:
         shell: bash
         working-directory: ./${{matrix.benchmark-dir}}/benchmarks/java
         run: |
-            mvn clean compile
-            mvn exec:java -Dexec.mainClass="com.amazon.esdk.benchmark.Program" -Dexec.args="--quick"
+          mvn clean compile
+          mvn exec:java -Dexec.mainClass="com.amazon.esdk.benchmark.Program" -Dexec.args="--quick"
 
       - name: Parse and Format Logs
         working-directory: ./${{matrix.benchmark-dir}}/results/raw-data/

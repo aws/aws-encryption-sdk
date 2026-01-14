@@ -89,8 +89,8 @@ jobs:
         shell: bash
         working-directory: ./${{matrix.benchmark-dir}}/benchmarks/net
         run: |
-            dotnet build --configuration Release
-            dotnet run --configuration Release -- --quick
+          dotnet build --configuration Release
+          dotnet run --configuration Release -- --quick
 
       - name: Parse and Format Logs
         working-directory: ./${{matrix.benchmark-dir}}/results/raw-data/

@@ -45,7 +45,7 @@ jobs:
         performance-benchmarks-java,
         performance-benchmarks-net,
         performance-benchmarks-rust,
-        performance-benchmarks-python
+        performance-benchmarks-python,
       ]
     if: ${{ failure() }}
     uses: aws/aws-cryptographic-material-providers-library/.github/workflows/slack-notification.yml@main
@@ -53,4 +53,3 @@ jobs:
       message: "Performance Benchmarks failed on `${{ github.repository }}`. View run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_CI }}
-

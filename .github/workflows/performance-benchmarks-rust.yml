@@ -98,7 +98,7 @@ jobs:
         shell: bash
         working-directory: ./${{matrix.benchmark-dir}}/benchmarks/rust
         run: |
-            cargo run --release -- --quick
+          cargo run --release -- --quick
 
       - name: Parse and Format Logs
         working-directory: ./${{matrix.benchmark-dir}}/results/raw-data/
