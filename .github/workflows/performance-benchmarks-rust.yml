@@ -1,5 +1,5 @@
-# This workflow performs benchmark testing in Go.
-name: Performance Benchmarks Go
+# This workflow performs benchmark testing in Rust.
+name: Performance Benchmarks Rust
 
 on:
   workflow_call:
@@ -21,10 +21,8 @@ jobs:
       matrix:
         library: [AwsEncryptionSDK]
         benchmark-dir: [esdk-performance-testing]
-        go-version: ["1.23", "1.24", "1.25"]
         os: [
-            # Sed script doesn't work properly on windows
-            # windows-latest,
+            windows-latest,
             ubuntu-22.04,
             # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
             # macos-15,
@@ -49,24 +47,45 @@ jobs:
         with:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: GoTests
+          role-session-name: RustTests
+
+      - name: Setup Rust Toolchain for GitHub CI
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: rustfmt
 
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
         with:
-          dafny-version: ${{ inputs.dafny }}
+          dafny-version: 4.10.0
 
-      - name: Install Smithy-Dafny codegen dependencies
-        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+      - name: Setup Java 17 for codegen
+        uses: actions/setup-java@v5
+        with:
+          distribution: "corretto"
+          java-version: "17"
 
       - name: Setup NASM for Windows (aws-lc-sys)
         if: matrix.os == 'windows-latest'
         uses: ilammy/setup-nasm@v1
 
-      - name: Install Go
-        uses: actions/setup-go@v6
+      - name: Install Smithy-Dafny codegen dependencies
+        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+
+      - name: Regenerate code using smithy-dafny if necessary
+        if: ${{ inputs.regenerate-code }}
+        uses: ./.github/actions/polymorph_codegen
         with:
-          go-version: ${{ matrix.go-version }}
+          dafny: ${{ env.DAFNY_VERSION }}
+          library: ${{ matrix.library }}
+          diff-generated-code: false
+          update-and-regenerate-mpl: true
+
+      - name: Run make polymorph_rust
+        shell: bash
+        working-directory: ${{ matrix.library }}
+        run: |
+          make polymorph_rust
 
       - name: Compile ${{ matrix.library }} implementation
         shell: bash
@@ -74,18 +93,18 @@ jobs:
         run: |
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
-          make transpile_go CORES=$CORES
+          make transpile_rust CORES=$CORES
 
       - name: Run Performance Benchmarks - Quick Mode
         shell: bash
-        working-directory: ./${{matrix.benchmark-dir}}/benchmarks/go
+        working-directory: ./${{matrix.benchmark-dir}}/benchmarks/rust
         run: |
-            go run . --config ../../config/test-scenarios.yaml --quick
+            cargo run --release -- --quick
 
       - name: Parse and Format Logs
         working-directory: ./${{matrix.benchmark-dir}}/results/raw-data/
         run: |
-          LOG_FILE="go_results.json"
+          LOG_FILE="rust_results.json"
           UPLOAD_FILE="cloudwatch_logs.json"
           TIMESTAMP=$(date +%s%3N)
           jq -c --arg ts "$(date +%s)000" '[.results[] as $result | .metadata as $meta | {timestamp: ($ts | tonumber), message: ({metadata: $meta, result: $result} | tostring)}]' $LOG_FILE > $UPLOAD_FILE
@@ -95,7 +114,7 @@ jobs:
         run: |
           LOG_FILE="cloudwatch_logs.json"
           LOG_GROUP="aws-esdk-performance-benchmarks"
-          LOG_STREAM="go/${{matrix.go-version}}/quick_benchmarks/${{ github.workflow }}"
+          LOG_STREAM="rust/${{matrix.os}}/quick_benchmarks/${{ github.workflow }}"
 
           # Create log stream (ignore if exists)
           aws logs create-log-stream \

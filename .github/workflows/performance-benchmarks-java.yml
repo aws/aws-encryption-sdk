@@ -1,27 +1,16 @@
-# This workflow performs benchmark testing in Go.
+# This workflow performs benchmark testing in Java.
 name: Performance Benchmarks Go
 
 on:
   workflow_call:
-    inputs:
-      dafny:
-        description: "The Dafny version to run"
-        required: true
-        type: string
-      regenerate-code:
-        description: "Regenerate code using smithy-dafny"
-        required: false
-        default: false
-        type: boolean
 
 jobs:
   testGo:
     strategy:
       fail-fast: false
       matrix:
-        library: [AwsEncryptionSDK]
         benchmark-dir: [esdk-performance-testing]
-        go-version: ["1.23", "1.24", "1.25"]
+        java: [8, 11, 17]
         os: [
             # Sed script doesn't work properly on windows
             # windows-latest,
@@ -51,41 +40,23 @@ jobs:
           role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: GoTests
 
-      - name: Setup Dafny
-        uses: ./mpl/.github/actions/setup_dafny
+      - name: Setup Java Corretto ${{matrix.java}}
+        uses: actions/setup-java@v5
         with:
-          dafny-version: ${{ inputs.dafny }}
-
-      - name: Install Smithy-Dafny codegen dependencies
-        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
-
-      - name: Setup NASM for Windows (aws-lc-sys)
-        if: matrix.os == 'windows-latest'
-        uses: ilammy/setup-nasm@v1
-
-      - name: Install Go
-        uses: actions/setup-go@v6
-        with:
-          go-version: ${{ matrix.go-version }}
-
-      - name: Compile ${{ matrix.library }} implementation
-        shell: bash
-        working-directory: ${{ matrix.library }}
-        run: |
-          # This works because `node` is installed by default on GHA runners
-          CORES=$(node -e 'console.log(os.cpus().length)')
-          make transpile_go CORES=$CORES
+          distribution: "corretto"
+          java-version: ${{matrix.java}}
 
       - name: Run Performance Benchmarks - Quick Mode
         shell: bash
-        working-directory: ./${{matrix.benchmark-dir}}/benchmarks/go
+        working-directory: ./${{matrix.benchmark-dir}}/benchmarks/java
         run: |
-            go run . --config ../../config/test-scenarios.yaml --quick
+            mvn clean compile
+            mvn exec:java -Dexec.mainClass="com.amazon.esdk.benchmark.Program" -Dexec.args="--quick"
 
       - name: Parse and Format Logs
         working-directory: ./${{matrix.benchmark-dir}}/results/raw-data/
         run: |
-          LOG_FILE="go_results.json"
+          LOG_FILE="java_results.json"
           UPLOAD_FILE="cloudwatch_logs.json"
           TIMESTAMP=$(date +%s%3N)
           jq -c --arg ts "$(date +%s)000" '[.results[] as $result | .metadata as $meta | {timestamp: ($ts | tonumber), message: ({metadata: $meta, result: $result} | tostring)}]' $LOG_FILE > $UPLOAD_FILE
@@ -95,7 +66,7 @@ jobs:
         run: |
           LOG_FILE="cloudwatch_logs.json"
           LOG_GROUP="aws-esdk-performance-benchmarks"
-          LOG_STREAM="go/${{matrix.go-version}}/quick_benchmarks/${{ github.workflow }}"
+          LOG_STREAM="java/corretto/${{matrix.java}}/quick_benchmarks/${{ github.workflow }}"
 
           # Create log stream (ignore if exists)
           aws logs create-log-stream \

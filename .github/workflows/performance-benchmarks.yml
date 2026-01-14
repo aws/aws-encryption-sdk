@@ -21,11 +21,31 @@ jobs:
     uses: ./.github/workflows/performance-benchmarks-go.yml
     with:
       dafny: ${{needs.getVersion.outputs.version}}
+  performance-benchmarks-java:
+    needs: getVersion
+    uses: ./.github/workflows/performance-benchmarks-java.yml
+  performance-benchmarks-net:
+    needs: getVersion
+    uses: ./.github/workflows/performance-benchmarks-net.yml
+    with:
+      dafny: ${{needs.getVersion.outputs.version}}
+  performance-benchmarks-rust:
+    needs: getVersion
+    uses: ./.github/workflows/performance-benchmarks-rust.yml
+    with:
+      dafny: ${{needs.getVersion.outputs.version}}
+  performance-benchmarks-python:
+    needs: getVersion
+    uses: ./.github/workflows/performance-benchmarks-python.yml
   notify:
     needs:
       [
         getVersion,
-        performance-benchmarks-go
+        performance-benchmarks-go,
+        performance-benchmarks-java,
+        performance-benchmarks-net,
+        performance-benchmarks-rust,
+        performance-benchmarks-python
       ]
     if: ${{ failure() }}
     uses: aws/aws-cryptographic-material-providers-library/.github/workflows/slack-notification.yml@main
