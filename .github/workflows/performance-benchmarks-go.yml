@@ -88,7 +88,7 @@ jobs:
           LOG_FILE="go_results.json"
           UPLOAD_FILE="cloudwatch_logs.json"
           TIMESTAMP=$(date +%s%3N)
-          jq -c --arg ts "$(date +%s)000" '.results[] as $result | .metadata as $meta | {timestamp: ($ts | tonumber), message: ({metadata: $meta, result: $result} | tostring)}' $LOG_FILE > $UPLOAD_FILE
+          jq -c --arg ts "$(date +%s)000" '[.results[] as $result | .metadata as $meta | {timestamp: ($ts | tonumber), message: ({metadata: $meta, result: $result} | tostring)}]' $LOG_FILE > $UPLOAD_FILE
 
       - name: Upload logs to CloudWatch
         working-directory: ./${{matrix.benchmark-dir}}/results/raw-data/
@@ -96,10 +96,12 @@ jobs:
           LOG_FILE="cloudwatch_logs.json"
           LOG_GROUP="aws-esdk-performance-benchmarks"
           LOG_STREAM="go/${{matrix.go-version}}/quick_benchmarks/${{ github.workflow }}/${{ github.run_id }}"
+
           # Create log stream (ignore if exists)
           aws logs create-log-stream \
             --log-group-name "$LOG_GROUP" \
             --log-stream-name "$LOG_STREAM" 2>/dev/null || true
+
           aws logs put-log-events \
             --log-group-name "$LOG_GROUP" \
             --log-stream-name "$LOG_STREAM" \
