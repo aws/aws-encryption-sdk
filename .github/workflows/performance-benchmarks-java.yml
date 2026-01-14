@@ -5,12 +5,12 @@ on:
   workflow_call:
 
 jobs:
-  testGo:
+  testJava:
     strategy:
       fail-fast: false
       matrix:
         benchmark-dir: [esdk-performance-testing]
-        java: [8, 11, 17]
+        java: [17]
         os: [
             # Sed script doesn't work properly on windows
             # windows-latest,

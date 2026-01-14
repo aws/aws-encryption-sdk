@@ -5,7 +5,7 @@ on:
   workflow_call:
 
 jobs:
-  testGo:
+  testPython:
     strategy:
       fail-fast: false
       matrix:

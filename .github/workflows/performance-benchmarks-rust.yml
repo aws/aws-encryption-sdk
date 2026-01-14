@@ -15,7 +15,7 @@ on:
         type: boolean
 
 jobs:
-  testGo:
+  testRust:
     strategy:
       fail-fast: false
       matrix:
