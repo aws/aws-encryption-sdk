@@ -80,7 +80,7 @@ jobs:
         shell: bash
         working-directory: ./${{matrix.benchmark-dir}}/benchmarks/go
         run: |
-            go run . --config ../config/test-scenarios.yaml --quick
+            go run . --config ../../config/test-scenarios.yaml --quick
 
       - name: Parse and Format Logs
         working-directory: ./${{matrix.benchmark-dir}}/results/raw-data/
