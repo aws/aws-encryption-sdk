@@ -47,7 +47,7 @@ Resources:
                 },
                 "StringLike": {
                   "token.actions.githubusercontent.com:sub": [
-                    "repo:aws/aws-encryption-sdk:*"
+                    "repo:aws/aws-encryption-sdk:*",
                     "repo:aws/aws-encryption-sdk-c:*"
                   ] 
                 }
