@@ -1,0 +1,55 @@
+# This workflow runs every day 09:00 UTC (1AM PST)
+name: Performance Benchmarks
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/performance-benchmarks.yml"
+  schedule:
+    - cron: "00 09 * * *"
+
+jobs:
+  getVersion:
+    if: github.event_name != 'schedule' || github.repository_owner == 'aws'
+    uses: ./.github/workflows/dafny_version.yaml
+  performance-benchmarks-go:
+    needs: getVersion
+    uses: ./.github/workflows/performance-benchmarks-go.yml
+    with:
+      dafny: ${{needs.getVersion.outputs.version}}
+  performance-benchmarks-java:
+    needs: getVersion
+    uses: ./.github/workflows/performance-benchmarks-java.yml
+  performance-benchmarks-net:
+    needs: getVersion
+    uses: ./.github/workflows/performance-benchmarks-net.yml
+    with:
+      dafny: ${{needs.getVersion.outputs.version}}
+  performance-benchmarks-rust:
+    needs: getVersion
+    uses: ./.github/workflows/performance-benchmarks-rust.yml
+    with:
+      dafny: ${{needs.getVersion.outputs.version}}
+  performance-benchmarks-python:
+    needs: getVersion
+    uses: ./.github/workflows/performance-benchmarks-python.yml
+  notify:
+    needs:
+      [
+        getVersion,
+        performance-benchmarks-go,
+        performance-benchmarks-java,
+        performance-benchmarks-net,
+        performance-benchmarks-rust,
+        performance-benchmarks-python,
+      ]
+    if: ${{ failure() }}
+    uses: aws/aws-cryptographic-material-providers-library/.github/workflows/slack-notification.yml@main
+    with:
+      message: "Performance Benchmarks failed on `${{ github.repository }}`. View run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_CI }}

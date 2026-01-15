@@ -1,0 +1,79 @@
+# This workflow performs benchmark testing in Java.
+name: Performance Benchmarks Go
+
+on:
+  workflow_call:
+
+jobs:
+  testJava:
+    strategy:
+      fail-fast: false
+      matrix:
+        benchmark-dir: [esdk-performance-testing]
+        java: [17]
+        os: [
+            # Sed script doesn't work properly on windows
+            # windows-latest,
+            ubuntu-22.04,
+            # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
+            # macos-15,
+          ]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Support longpaths on Git checkout
+        run: |
+          git config --global core.longpaths true
+      - uses: actions/checkout@v5
+      - name: Init Submodules
+        shell: bash
+        run: |
+          git submodule update --init libraries
+          git submodule update --init --recursive mpl
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+          role-session-name: GoTests
+
+      - name: Setup Java Corretto ${{matrix.java}}
+        uses: actions/setup-java@v5
+        with:
+          distribution: "corretto"
+          java-version: ${{matrix.java}}
+
+      - name: Run Performance Benchmarks - Quick Mode
+        shell: bash
+        working-directory: ./${{matrix.benchmark-dir}}/benchmarks/java
+        run: |
+          mvn clean compile
+          mvn exec:java -Dexec.mainClass="com.amazon.esdk.benchmark.Program" -Dexec.args="--quick"
+
+      - name: Parse and Format Logs
+        working-directory: ./${{matrix.benchmark-dir}}/results/raw-data/
+        run: |
+          LOG_FILE="java_results.json"
+          UPLOAD_FILE="cloudwatch_logs.json"
+          TIMESTAMP=$(date +%s%3N)
+          jq -c --arg ts "$(date +%s)000" '[.results[] as $result | .metadata as $meta | {timestamp: ($ts | tonumber), message: ({metadata: $meta, result: $result} | tostring)}]' $LOG_FILE > $UPLOAD_FILE
+
+      - name: Upload logs to CloudWatch
+        working-directory: ./${{matrix.benchmark-dir}}/results/raw-data/
+        run: |
+          LOG_FILE="cloudwatch_logs.json"
+          LOG_GROUP="aws-esdk-performance-benchmarks"
+          LOG_STREAM="java/corretto/${{matrix.java}}/quick_benchmarks/${{ github.workflow }}"
+
+          # Create log stream (ignore if exists)
+          aws logs create-log-stream \
+            --log-group-name "$LOG_GROUP" \
+            --log-stream-name "$LOG_STREAM" 2>/dev/null || true
+
+          aws logs put-log-events \
+            --log-group-name "$LOG_GROUP" \
+            --log-stream-name "$LOG_STREAM" \
+            --log-events file://$LOG_FILE

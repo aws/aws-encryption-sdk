@@ -1,0 +1,118 @@
+# This workflow performs benchmark testing in Net.
+name: Performance Benchmarks Net
+
+on:
+  workflow_call:
+    inputs:
+      dafny:
+        description: "The Dafny version to run"
+        required: true
+        type: string
+      regenerate-code:
+        description: "Regenerate code using smithy-dafny"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  testNet:
+    strategy:
+      fail-fast: false
+      matrix:
+        library: [AwsEncryptionSDK]
+        benchmark-dir: [esdk-performance-testing]
+        os: [
+            ubuntu-22.04,
+            # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
+            # macos-15,
+          ]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
+    steps:
+      - name: Support longpaths on Git checkout
+        run: |
+          git config --global core.longpaths true
+      - uses: actions/checkout@v5
+      - name: Init Submodules
+        shell: bash
+        run: |
+          git submodule update --init libraries
+          git submodule update --init --recursive mpl
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+          role-session-name: NetTests
+
+      - name: Setup .NET Core SDK 6
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "6.0.x"
+
+      - name: Setup Dafny
+        uses: ./mpl/.github/actions/setup_dafny
+        with:
+          dafny-version: ${{ inputs.dafny }}
+
+      - name: Install Smithy-Dafny codegen dependencies
+        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+
+      - name: Regenerate code using smithy-dafny if necessary
+        if: ${{ inputs.regenerate-code }}
+        uses: ./.github/actions/polymorph_codegen
+        with:
+          dafny: ${{ env.DAFNY_VERSION }}
+          library: ${{ matrix.library }}
+          diff-generated-code: false
+          update-and-regenerate-mpl: true
+
+      - name: Download Dependencies
+        working-directory: ${{ matrix.library }}
+        run: make setup_net
+
+      - name: Compile ${{ matrix.library }} implementation
+        shell: bash
+        working-directory: ${{ matrix.library }}
+        run: |
+          # This works because `node` is installed by default on GHA runners
+          CORES=$(node -e 'console.log(os.cpus().length)')
+          make transpile_net CORES=$CORES
+
+      - name: Run Performance Benchmarks - Quick Mode
+        shell: bash
+        working-directory: ./${{matrix.benchmark-dir}}/benchmarks/net
+        run: |
+          dotnet build --configuration Release
+          dotnet run --configuration Release -- --quick
+
+      - name: Parse and Format Logs
+        working-directory: ./${{matrix.benchmark-dir}}/results/raw-data/
+        run: |
+          LOG_FILE="net_results.json"
+          UPLOAD_FILE="cloudwatch_logs.json"
+          TIMESTAMP=$(date +%s%3N)
+          jq -c --arg ts "$(date +%s)000" '[.results[] as $result | .metadata as $meta | {timestamp: ($ts | tonumber), message: ({metadata: $meta, result: $result} | tostring)}]' $LOG_FILE > $UPLOAD_FILE
+
+      - name: Upload logs to CloudWatch
+        working-directory: ./${{matrix.benchmark-dir}}/results/raw-data/
+        run: |
+          LOG_FILE="cloudwatch_logs.json"
+          LOG_GROUP="aws-esdk-performance-benchmarks"
+          LOG_STREAM="net/${{matrix.os}}/quick_benchmarks/${{ github.workflow }}"
+
+          # Create log stream (ignore if exists)
+          aws logs create-log-stream \
+            --log-group-name "$LOG_GROUP" \
+            --log-stream-name "$LOG_STREAM" 2>/dev/null || true
+
+          aws logs put-log-events \
+            --log-group-name "$LOG_GROUP" \
+            --log-stream-name "$LOG_STREAM" \
+            --log-events file://$LOG_FILE
