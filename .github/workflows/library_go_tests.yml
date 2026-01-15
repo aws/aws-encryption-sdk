@@ -36,7 +36,7 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Init Submodules
         shell: bash
         run: |
