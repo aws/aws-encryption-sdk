@@ -67,7 +67,7 @@ jobs:
           role-session-name: InterOpTests
           role-duration-seconds: 3600
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: "recursive"
 
@@ -253,7 +253,7 @@ jobs:
           role-session-name: InterOpTests
           role-duration-seconds: 3600
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: "recursive"
 
@@ -536,7 +536,7 @@ jobs:
         run: |
           git config --global core.longpaths true
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: "recursive"
 
@@ -601,7 +601,7 @@ jobs:
         run: |
           git config --global core.longpaths true
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: "recursive"
 
@@ -677,7 +677,7 @@ jobs:
           role-session-name: InterOpTests
           role-duration-seconds: 3600
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: "recursive"
 

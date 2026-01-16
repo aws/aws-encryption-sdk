@@ -16,7 +16,7 @@ jobs:
     outputs:
       version: ${{ steps.read_property.outputs.dafnyVersion }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Read version from Properties-file
         id: read_property
         uses: christian-draeger/read-properties@1.1.1
