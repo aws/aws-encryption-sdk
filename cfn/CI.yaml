@@ -24,7 +24,7 @@ Resources:
     Type: "AWS::IAM::Role"
     Properties:
       RoleName: !Sub "GitHub-CI-${ProjectName}-Role-${AWS::Region}"
-      MaxSessionDuration: 3600
+      MaxSessionDuration: 7200
       Description: "Access DDB, KMS, Resources for CI from GitHub"
       ManagedPolicyArns:
         - "arn:aws:iam::370957321024:policy/ESDK-Dafny-DDB-ReadWriteDelete-us-west-2"
@@ -32,6 +32,7 @@ Resources:
         - "arn:aws:iam::370957321024:policy/KMS-Public-CMK-EncryptDecrypt-Key-Access"
         - "arn:aws:iam::370957321024:policy/RSA-GitHub-KMS-Key-Policy"
         - "arn:aws:iam::370957321024:policy/Github-ECDH-KMS"
+        - !Ref ESDKPerformanceBenchmarksCloudWatchPolicy
       AssumeRolePolicyDocument: !Sub |
         {
           "Version": "2012-10-17",   
@@ -45,7 +46,10 @@ Resources:
                   "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
                 },
                 "StringLike": {
-                  "token.actions.githubusercontent.com:sub": "repo:${GitHubRepo}:*"
+                  "token.actions.githubusercontent.com:sub": [
+                    "repo:aws/aws-encryption-sdk:*",
+                    "repo:aws/aws-encryption-sdk-c:*"
+                  ] 
                 }
               }
             },
@@ -174,3 +178,18 @@ Resources:
             Resource:
               - !Sub "arn:aws:kms:eu-west-1:658956600833:key/*"
               - !Sub "arn:aws:kms:eu-west-1:658956600833:alias/*"
+
+  ESDKPerformanceBenchmarksCloudWatchPolicy:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      ManagedPolicyName: "ESDK-Performance-Benchmarks-CloudWatch"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - logs:DescribeLogStreams
+            Resource: "arn:aws:logs:*:*:log-group:aws-esdk-performance-benchmarks:*"
