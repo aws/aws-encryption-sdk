@@ -550,7 +550,7 @@ jobs:
           role-duration-seconds: 7200
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ${{matrix.os}}_vector_artifact_java_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
@@ -580,7 +580,7 @@ jobs:
           role-duration-seconds: 7200
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ${{matrix.os}}_vector_artifact_net_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
@@ -610,7 +610,7 @@ jobs:
           role-duration-seconds: 7200
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ${{matrix.os}}_vector_artifact_rust_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
@@ -640,7 +640,7 @@ jobs:
           role-duration-seconds: 7200
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ${{matrix.os}}_vector_artifact_python_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
@@ -670,7 +670,7 @@ jobs:
           role-duration-seconds: 7200
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ${{matrix.os}}_vector_artifact_go_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
@@ -700,7 +700,7 @@ jobs:
           role-duration-seconds: 7200
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ${{matrix.os}}_vector_artifact_c_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
