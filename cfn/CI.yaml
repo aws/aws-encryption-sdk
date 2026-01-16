@@ -24,7 +24,7 @@ Resources:
     Type: "AWS::IAM::Role"
     Properties:
       RoleName: !Sub "GitHub-CI-${ProjectName}-Role-${AWS::Region}"
-      MaxSessionDuration: 7200 
+      MaxSessionDuration: 7200
       Description: "Access DDB, KMS, Resources for CI from GitHub"
       ManagedPolicyArns:
         - "arn:aws:iam::370957321024:policy/ESDK-Dafny-DDB-ReadWriteDelete-us-west-2"
