@@ -26,3 +26,6 @@ clean:
 	rm -f main
 
 .PHONY: all clean
+
+clippy:
+	cargo clippy --tests --examples

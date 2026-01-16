@@ -15,15 +15,6 @@ mod ffi {
         key: String,
         value: String,
     }
-    struct EncryptedDataKey {
-        key_provider_id: String,
-        key_provider_info: Vec<u8>,
-        ciphertext: Vec<u8>,
-    }
-    struct SymmetricSigningKey {
-        key: Vec<u8>,
-    }
-
     enum EsdkAlgorithmSuiteId {
         AlgAes128GcmIv12Tag16NoKdf = 0x0014,
         AlgAes192GcmIv12Tag16NoKdf = 0x0046,
@@ -83,24 +74,6 @@ mod ffi {
         pub plaintext: Vec<u8>,
     }
 
-    struct EncryptionMaterials {
-        algorithm_suite_id: EsdkAlgorithmSuiteId,
-        encryption_context: Vec<EncryptionContextItem>,
-        encrypted_data_keys: Vec<EncryptedDataKey>,
-        required_encryption_context_keys: Vec<String>,
-        plaintext_data_key: Vec<u8>,
-        signing_key: Vec<u8>,
-        symmetric_signing_keys: Vec<SymmetricSigningKey>,
-    }
-
-    struct DecryptionMaterials {
-        algorithm_suite_id: EsdkAlgorithmSuiteId,
-        encryption_context: Vec<EncryptionContextItem>,
-        required_encryption_context_keys: Vec<String>,
-        plaintext_data_key: Vec<u8>,
-        verification_key: Vec<u8>,
-        symmetric_signing_key: Vec<u8>,
-    }
     enum EsdkCommitmentPolicy {
         ForbidEncryptAllowDecrypt,
         RequireEncryptAllowDecrypt,
@@ -171,14 +144,6 @@ mod ffi {
         type Keyring;
         fn create_hierarchical_keyring(value: &HierarchicalKeyringInput) -> Result<Box<Keyring>>;
         fn delete_keyring(client: Box<Keyring>) -> Result<()>;
-        fn get_encryption_materials(
-            value: &Keyring,
-            input: &EncryptionMaterials,
-        ) -> Result<EncryptionMaterials>;
-        fn get_decryption_materials(
-            value: &Keyring,
-            input: &DecryptionMaterials,
-        ) -> Result<DecryptionMaterials>;
 
         type MplKmsClient;
         fn create_kms_client(value: &MplAwsClientConfig) -> Result<Box<MplKmsClient>>;
@@ -188,30 +153,11 @@ mod ffi {
         fn decrypt(input: &DecryptInput) -> Result<DecryptOutput>;
 
         // fn default_retry_config() -> RetryConfig;
-        fn default_encryption_materials() -> EncryptionMaterials;
-        fn default_decryption_materials() -> DecryptionMaterials;
         fn default_client_config() -> MplAwsClientConfig;
         fn default_keystore_config() -> KeyStoreConfig;
         fn default_hierarchical_keyring_input() -> HierarchicalKeyringInput;
         fn default_encrypt_input() -> EncryptInput<'static>;
         fn default_decrypt_input() -> DecryptInput<'static>;
-    }
-}
-
-fn alg_id(value: ffi::EsdkAlgorithmSuiteId) -> u16 {
-    match value {
-        ffi::EsdkAlgorithmSuiteId::AlgAes128GcmIv12Tag16NoKdf => 0x0014,
-        ffi::EsdkAlgorithmSuiteId::AlgAes192GcmIv12Tag16NoKdf => 0x0046,
-        ffi::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16NoKdf => 0x0078,
-        ffi::EsdkAlgorithmSuiteId::AlgAes128GcmIv12Tag16HkdfSha256 => 0x0114,
-        ffi::EsdkAlgorithmSuiteId::AlgAes192GcmIv12Tag16HkdfSha256 => 0x0146,
-        ffi::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256 => 0x0178,
-        ffi::EsdkAlgorithmSuiteId::AlgAes128GcmIv12Tag16HkdfSha256EcdsaP256 => 0x0214,
-        ffi::EsdkAlgorithmSuiteId::AlgAes192GcmIv12Tag16HkdfSha384EcdsaP384 => 0x0346,
-        ffi::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384 => 0x0378,
-        ffi::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey => 0x0478,
-        ffi::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384 => 0x0578,
-        _ => panic!("unknown algorithm suite id"),
     }
 }
 
@@ -263,29 +209,6 @@ fn default_decrypt_input() -> ffi::DecryptInput<'static> {
     }
 }
 
-fn default_decryption_materials() -> ffi::DecryptionMaterials {
-    ffi::DecryptionMaterials {
-        algorithm_suite_id: ffi::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384,
-        encryption_context: Vec::default(),
-        required_encryption_context_keys: Vec::default(),
-        plaintext_data_key: Vec::default(),
-        verification_key: Vec::default(),
-        symmetric_signing_key: Vec::default(),
-    }
-}
-
-fn default_encryption_materials() -> ffi::EncryptionMaterials {
-    ffi::EncryptionMaterials {
-        algorithm_suite_id: ffi::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384,
-        encryption_context: Vec::default(),
-        encrypted_data_keys: Vec::default(),
-        required_encryption_context_keys: Vec::default(),
-        plaintext_data_key: Vec::default(),
-        signing_key: Vec::default(),
-        symmetric_signing_keys: Vec::default(),
-    }
-}
-
 fn default_hierarchical_keyring_input() -> ffi::HierarchicalKeyringInput {
     ffi::HierarchicalKeyringInput {
         branch_key_id: String::default(),
@@ -329,37 +252,6 @@ fn default_retry_config() -> ffi::RetryConfig {
         max_backoff_milli: 0,
         reconnect_all: false,
         use_static_exponential_base: false,
-    }
-}
-
-fn id_from_suite(input: &aws_mpl_legacy::types::AlgorithmSuiteInfo) -> ffi::EsdkAlgorithmSuiteId {
-    let id = input.id.as_ref().unwrap();
-    if let aws_mpl_legacy::types::AlgorithmSuiteId::Esdk(e) = id {
-        use aws_mpl_legacy::types::EsdkAlgorithmSuiteId as Old;
-        use ffi::EsdkAlgorithmSuiteId as New;
-        match e {
-            Old::AlgAes128GcmIv12Tag16NoKdf => New::AlgAes128GcmIv12Tag16NoKdf,
-            Old::AlgAes192GcmIv12Tag16NoKdf => New::AlgAes192GcmIv12Tag16NoKdf,
-            Old::AlgAes256GcmIv12Tag16NoKdf => New::AlgAes256GcmIv12Tag16NoKdf,
-            Old::AlgAes128GcmIv12Tag16HkdfSha256 => New::AlgAes128GcmIv12Tag16HkdfSha256,
-            Old::AlgAes192GcmIv12Tag16HkdfSha256 => New::AlgAes192GcmIv12Tag16HkdfSha256,
-            Old::AlgAes256GcmIv12Tag16HkdfSha256 => New::AlgAes256GcmIv12Tag16HkdfSha256,
-            Old::AlgAes128GcmIv12Tag16HkdfSha256EcdsaP256 => {
-                New::AlgAes128GcmIv12Tag16HkdfSha256EcdsaP256
-            }
-            Old::AlgAes192GcmIv12Tag16HkdfSha384EcdsaP384 => {
-                New::AlgAes192GcmIv12Tag16HkdfSha384EcdsaP384
-            }
-            Old::AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384 => {
-                New::AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384
-            }
-            Old::AlgAes256GcmHkdfSha512CommitKey => New::AlgAes256GcmHkdfSha512CommitKey,
-            Old::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384 => {
-                New::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384
-            }
-        }
-    } else {
-        panic!("")
     }
 }
 
@@ -417,36 +309,6 @@ fn unconvert_alg_id(e: aws_mpl_rs::suites::EsdkAlgorithmSuiteId) -> ffi::EsdkAlg
     }
 }
 
-fn binary_from_id(id: u16) -> [u8; 2] {
-    [(id >> 8) as u8, (id & 0xff) as u8]
-}
-
-fn alg_to_alg(
-    x: aws_mpl_legacy::operation::get_algorithm_suite_info::AlgorithmSuiteInfo,
-) -> aws_mpl_legacy::types::AlgorithmSuiteInfo {
-    aws_mpl_legacy::types::AlgorithmSuiteInfo::builder()
-        .set_binary_id(x.binary_id)
-        .set_commitment(x.commitment)
-        .set_edk_wrapping(x.edk_wrapping)
-        .set_encrypt(x.encrypt)
-        .set_id(x.id)
-        .set_kdf(x.kdf)
-        .set_message_version(x.message_version)
-        .set_signature(x.signature)
-        .set_symmetric_signature(x.symmetric_signature)
-        .build()
-        .unwrap()
-}
-fn suite_from_id(input: ffi::EsdkAlgorithmSuiteId) -> aws_mpl_legacy::types::AlgorithmSuiteInfo {
-    let mpl = mpl();
-    let builder = mpl
-        .get_algorithm_suite_info()
-        .binary_id(aws_smithy_types::Blob::new(binary_from_id(alg_id(input))));
-
-    let alg = DAFNY_TOKIO_RUNTIME.block_on(builder.send()).unwrap();
-    alg_to_alg(alg)
-}
-
 // TODO, take ownership so we don't have to clone
 fn list_from_map(x: &std::collections::HashMap<String, String>) -> Vec<ffi::EncryptionContextItem> {
     x.iter()
@@ -459,43 +321,6 @@ fn list_from_map(x: &std::collections::HashMap<String, String>) -> Vec<ffi::Encr
 
 fn map_from_list(x: &[ffi::EncryptionContextItem]) -> std::collections::HashMap<String, String> {
     x.iter().map(|x| (x.key.clone(), x.value.clone())).collect()
-}
-
-fn vec_from_blob(x: &Option<aws_smithy_types::Blob>) -> Vec<u8> {
-    x.as_ref().map_or(vec![], |x| x.as_ref().to_vec())
-}
-
-fn vec_from_edk(x: &[aws_mpl_legacy::types::EncryptedDataKey]) -> Vec<ffi::EncryptedDataKey> {
-    x.iter()
-        .map(|x| ffi::EncryptedDataKey {
-            key_provider_id: x.key_provider_id.as_ref().unwrap().clone(),
-            key_provider_info: x.key_provider_info.as_ref().unwrap().as_ref().to_vec(),
-            ciphertext: x.ciphertext.as_ref().unwrap().as_ref().to_vec(),
-        })
-        .collect()
-}
-fn edk_from_vec(x: &[ffi::EncryptedDataKey]) -> Vec<aws_mpl_legacy::types::EncryptedDataKey> {
-    x.iter()
-        .map(|x| {
-            aws_mpl_legacy::types::EncryptedDataKey::builder()
-                .key_provider_id(x.key_provider_id.clone())
-                .key_provider_info(aws_smithy_types::Blob::new(x.key_provider_info.clone()))
-                .ciphertext(aws_smithy_types::Blob::new(x.ciphertext.clone()))
-                .build()
-                .unwrap()
-        })
-        .collect()
-}
-
-fn vec_from_ssk(x: &[aws_smithy_types::Blob]) -> Vec<ffi::SymmetricSigningKey> {
-    x.iter()
-        .map(|x| ffi::SymmetricSigningKey {
-            key: x.as_ref().to_vec(),
-        })
-        .collect()
-}
-fn vec_from_ossk(x: &Option<Vec<aws_smithy_types::Blob>>) -> Vec<ffi::SymmetricSigningKey> {
-    x.as_ref().map_or(vec![], |x| vec_from_ssk(x))
 }
 
 fn encrypt(input: &ffi::EncryptInput) -> Result<ffi::EncryptOutput, String> {
@@ -545,81 +370,6 @@ fn decrypt(input: &ffi::DecryptInput) -> Result<ffi::DecryptOutput, String> {
         algorithm_suite_id: unconvert_alg_id(output.algorithm_suite_id),
         plaintext: output.plaintext,
         encryption_context: list_from_map(&output.encryption_context),
-    })
-}
-
-fn get_encryption_materials(
-    value: &Keyring,
-    input: &ffi::EncryptionMaterials,
-) -> Result<ffi::EncryptionMaterials, String> {
-    let mut builder = aws_mpl_legacy::types::EncryptionMaterials::builder();
-    builder = builder.algorithm_suite(suite_from_id(input.algorithm_suite_id));
-    builder = builder.encryption_context(map_from_list(&input.encryption_context));
-    builder = builder.encrypted_data_keys(edk_from_vec(&input.encrypted_data_keys));
-    builder =
-        builder.required_encryption_context_keys(input.required_encryption_context_keys.clone());
-    if !input.signing_key.is_empty() {
-        builder = builder.signing_key(input.signing_key.clone());
-    }
-    if !input.plaintext_data_key.is_empty() {
-        builder = builder.plaintext_data_key(input.plaintext_data_key.clone());
-    }
-    let materials = builder.build().unwrap();
-
-    let builder = value.client.on_encrypt().materials(materials);
-    let materials = DAFNY_TOKIO_RUNTIME.block_on(builder.send());
-    let materials = materials.as_ref().unwrap().materials().as_ref().unwrap();
-
-    Ok(ffi::EncryptionMaterials {
-        algorithm_suite_id: id_from_suite(materials.algorithm_suite().as_ref().unwrap()),
-        encryption_context: list_from_map(materials.encryption_context().as_ref().unwrap()),
-        encrypted_data_keys: vec_from_edk(materials.encrypted_data_keys.as_ref().unwrap()),
-        required_encryption_context_keys: materials
-            .required_encryption_context_keys()
-            .as_ref()
-            .unwrap()
-            .clone(),
-        plaintext_data_key: vec_from_blob(materials.plaintext_data_key()),
-        signing_key: vec_from_blob(materials.signing_key()),
-        symmetric_signing_keys: vec_from_ossk(materials.symmetric_signing_keys()),
-    })
-}
-
-fn get_decryption_materials(
-    value: &Keyring,
-    input: &ffi::DecryptionMaterials,
-) -> Result<ffi::DecryptionMaterials, String> {
-    let mut builder = aws_mpl_legacy::types::DecryptionMaterials::builder();
-    builder = builder.algorithm_suite(suite_from_id(input.algorithm_suite_id));
-    builder = builder.encryption_context(map_from_list(&input.encryption_context));
-    builder =
-        builder.required_encryption_context_keys(input.required_encryption_context_keys.clone());
-    if !input.plaintext_data_key.is_empty() {
-        builder = builder.plaintext_data_key(input.plaintext_data_key.clone());
-    }
-    if !input.verification_key.is_empty() {
-        builder = builder.verification_key(input.verification_key.clone());
-    }
-    if !input.symmetric_signing_key.is_empty() {
-        builder = builder.symmetric_signing_key(input.symmetric_signing_key.clone());
-    }
-    let materials = builder.build().unwrap();
-
-    let builder = value.client.on_decrypt().materials(materials);
-    let materials = DAFNY_TOKIO_RUNTIME.block_on(builder.send());
-    let materials = materials.as_ref().unwrap().materials().as_ref().unwrap();
-
-    Ok(ffi::DecryptionMaterials {
-        algorithm_suite_id: id_from_suite(materials.algorithm_suite().as_ref().unwrap()),
-        encryption_context: list_from_map(materials.encryption_context().as_ref().unwrap()),
-        required_encryption_context_keys: materials
-            .required_encryption_context_keys()
-            .as_ref()
-            .unwrap()
-            .clone(),
-        plaintext_data_key: vec_from_blob(materials.plaintext_data_key()),
-        verification_key: vec_from_blob(materials.verification_key()),
-        symmetric_signing_key: vec_from_blob(materials.symmetric_signing_key()),
     })
 }
 
@@ -717,12 +467,6 @@ fn make_kms_config(
     }
 }
 
-fn mpl() -> aws_mpl_legacy::Client {
-    let mpl_config = aws_mpl_legacy::types::MaterialProvidersConfig::builder()
-        .build()
-        .unwrap();
-    aws_mpl_legacy::Client::from_conf(mpl_config).unwrap()
-}
 fn create_hierarchical_keyring(
     input: &ffi::HierarchicalKeyringInput,
 ) -> Result<Box<Keyring>, String> {
