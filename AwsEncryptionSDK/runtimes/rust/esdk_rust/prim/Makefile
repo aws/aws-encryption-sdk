@@ -4,7 +4,7 @@ clippy:
 
 test:
 	cargo test
-	cargo test --features fips
+	cargo test --no-default-features --features fips
 
 examples:
 	echo no primitives examples yet

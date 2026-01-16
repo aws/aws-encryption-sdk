@@ -1,52 +1,51 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-#![allow(dead_code)]
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering;
 
-pub(crate) struct ResourceTracker {
+pub struct ResourceTracker {
     pub count: usize,
     pub total: usize,
 }
 
 #[derive(Debug, Default, Clone)]
-pub(crate) struct ResourceResults {
+pub struct ResourceResults {
     pub count_k: usize,
     pub total_m: usize,
 }
 
 impl ResourceTracker {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             count: get_counter(),
             total: get_total(),
         }
     }
-    pub(crate) fn reset(&mut self) {
+    pub fn reset(&mut self) {
         self.count = get_counter();
         self.total = get_total();
     }
-    pub(crate) fn report_leak() {
+    pub fn report_leak() {
         println!(
             "{} outstanding allocations totalling {} bytes.",
             get_net_counter(),
             get_net_total()
         );
     }
-    pub(crate) fn get_results(&self) -> ResourceResults {
+    pub fn get_results(&self) -> ResourceResults {
         ResourceResults {
             count_k: (get_counter() - self.count) / 1000,
             total_m: (get_total() - self.total) / 1_000_000,
         }
     }
-    pub(crate) fn report(&self, tag: &str) {
+    pub fn report(&self, tag: &str) {
         println!(
             "{tag} : {} allocations totalling {} bytes.",
             get_counter() - self.count,
             get_total() - self.total
         );
     }
-    pub(crate) fn report_reset(&mut self, tag: &str) {
+    pub fn report_reset(&mut self, tag: &str) {
         self.report(tag);
         self.reset();
     }
@@ -102,5 +101,5 @@ unsafe impl GlobalAlloc for MyAllocator {
     }
 }
 
-// #[global_allocator]
+#[global_allocator]
 static GLOBAL: MyAllocator = MyAllocator;

@@ -69,6 +69,18 @@ impl Default for FrameLength {
     }
 }
 
+impl FrameLength {
+    /// return new `FrameLength`.
+    pub fn new(val : u32) -> Result<Self, Error> {
+        Ok(Self(std::num::NonZeroU32::new(val).ok_or_else(|| val_err("Frame length must be non-zero"))?))
+    }
+    /// return new `FrameLength`. Panic if val is zero.
+    #[must_use]
+    pub const fn new_unchecked(val : u32) -> Self {
+        Self(std::num::NonZeroU32::new(val).unwrap())
+    }
+}
+
 /// Convenience function to return a `MaterialProviders` Client.
 #[cfg(feature = "legacy")]
 #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
@@ -104,6 +116,15 @@ pub struct EncryptOutput {
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
 }
+impl EncryptOutput {
+    /// Create default `EncryptOutput`
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+}
+
 #[derive(Debug, PartialEq, Clone, Default)]
 #[non_exhaustive]
 /// Output for [`encrypt_stream`](crate::encrypt_stream).
@@ -112,6 +133,14 @@ pub struct EncryptStreamOutput {
     pub algorithm_suite_id: EsdkAlgorithmSuiteId,
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
+}
+impl EncryptStreamOutput {
+    /// Create default `EncryptStreamOutput`
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
 }
 
 #[derive(Debug, PartialEq, Clone, Default)]

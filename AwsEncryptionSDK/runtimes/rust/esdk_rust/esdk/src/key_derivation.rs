@@ -94,7 +94,7 @@ pub(crate) fn derive_key(
                     alg,
                     &salt,
                     plaintext_data_key,
-                    message_id,
+                    &[message_id],
                     &mut derived_key,
                 )?;
             } else {
@@ -102,7 +102,7 @@ pub(crate) fn derive_key(
                     alg,
                     &salt,
                     plaintext_data_key,
-                    &[&suite.binary_id[..], message_id].concat(),
+                    &[&suite.binary_id[..], message_id],
                     &mut derived_key,
                 )?;
             }
@@ -177,13 +177,13 @@ pub(crate) fn expand_key_material(
         }
     };
     let alg = digest;
-    let info = [&suite.binary_id[..], KEY_LABEL.as_bytes()].concat();
+    let info = [&suite.binary_id[..], KEY_LABEL.as_bytes()];
 
     let pseudo_random_key = aws_mpl_primitives::hkdf_extract(alg, message_id, plaintext_key);
     let mut encrypt_key = vec![0u8; get_kdf_outlen(suite)? as usize];
     let mut commit_key = vec![0u8; commit_len as usize];
     aws_mpl_primitives::hkdf_expand(&pseudo_random_key, &info, &mut encrypt_key)?;
-    aws_mpl_primitives::hkdf_expand(&pseudo_random_key, COMMIT_LABEL.as_bytes(), &mut commit_key)?;
+    aws_mpl_primitives::hkdf_expand(&pseudo_random_key, &[COMMIT_LABEL.as_bytes()], &mut commit_key)?;
 
     Ok(ExpandedKeyMaterial {
         data_key: encrypt_key,

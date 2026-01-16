@@ -28,14 +28,13 @@ pub fn hkdf(
     alg: DigestAlg,
     salt: &[u8],
     ikm: &[u8],
-    info: &[u8],
+    info: &[&[u8]],
     okm: &mut [u8],
 ) -> Result<(), Error> {
     let salt = aws_lc_rs::hkdf::Salt::new(get_alg(alg), salt);
     let prk = salt.extract(ikm);
-    let info_list = [info];
     let inner_okm = prk
-        .expand(&info_list, get_len(okm.len())?)
+        .expand(info, get_len(okm.len())?)
         .map_err(|e| serr(format!("{e:?}")))?;
     inner_okm.fill(okm).unwrap();
     Ok(())
@@ -48,11 +47,10 @@ pub fn hkdf_extract(alg: DigestAlg, salt: &[u8], ikm: &[u8]) -> Prk {
     Prk { prk }
 }
 
-pub fn hkdf_expand(prk: &Prk, info: &[u8], okm: &mut [u8]) -> Result<(), Error> {
-    let info_list = [info];
+pub fn hkdf_expand(prk: &Prk, info: &[&[u8]], okm: &mut [u8]) -> Result<(), Error> {
     let inner_okm = prk
         .prk
-        .expand(&info_list, get_len(okm.len())?)
+        .expand(info, get_len(okm.len())?)
         .map_err(|e| serr(format!("{e:?}")))?;
     inner_okm.fill(okm).unwrap();
     Ok(())

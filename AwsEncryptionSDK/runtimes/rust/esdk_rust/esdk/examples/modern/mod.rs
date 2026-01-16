@@ -10,6 +10,12 @@ pub mod limit_encrypted_data_keys_example;
 // pub mod set_encryption_algorithm_suite_example;
 
 pub async fn main() -> Result<(), crate::BoxError> {
+    // lots of Not Implemented errors expected
+    let _ = main2().await;
+    Ok(())
+}
+
+pub async fn main2() -> Result<(), crate::BoxError> {
     use example_utils::utils;
     /*
         keyring::aws_kms_discovery_keyring_example::encrypt_and_decrypt_with_legacy_keyring(

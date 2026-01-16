@@ -11,6 +11,7 @@ pub mod set_encryption_algorithm_suite_example;
 
 pub async fn main() -> Result<(), crate::BoxError> {
     use example_utils::utils;
+    println!("Begin legacy examples.");
 
     keyring::aws_kms_discovery_keyring_example::encrypt_and_decrypt_with_legacy_keyring(
         utils::TEST_EXAMPLE_DATA,
@@ -222,7 +223,7 @@ pub async fn main() -> Result<(), crate::BoxError> {
     )
     .await?;
 
-    println!("All examples completed successfully.");
+    println!("All legacy examples completed successfully.");
 
     Ok(())
 }
