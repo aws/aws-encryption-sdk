@@ -9,7 +9,7 @@ use aws_mpl_rs::suites::DerivationAlgorithm;
 
 // Convenience container to hold both a data key and an optional commitment key
 // to support algorithm suites that provide commitment and those that do not
-#[derive(Clone, PartialEq, PartialOrd, Eq, Ord, Debug, Hash)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub(crate) struct ExpandedKeyMaterial {
     pub(crate) data_key: Vec<u8>,
     pub(crate) commitment_key: Option<Vec<u8>>,

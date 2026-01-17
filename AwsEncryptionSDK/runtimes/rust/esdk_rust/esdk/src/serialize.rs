@@ -24,7 +24,7 @@ pub(crate) fn ser_err<T>(msg: &str) -> Result<T, Error> {
     })
 }
 
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub(crate) struct NoopWriter;
 impl std::io::Write for NoopWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
@@ -35,7 +35,7 @@ impl std::io::Write for NoopWriter {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub(crate) struct DigestWriter {
     pub(crate) context: Option<DigestContext>,
 }

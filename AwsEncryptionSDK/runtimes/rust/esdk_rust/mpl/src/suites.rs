@@ -23,7 +23,7 @@ const LV_LEN: u32 = 12;
 // as a separate structure (with an associated resource/operation for translating
 // from name to properties) or use more advanced custom traits which allow us to
 // model all properties of the algorithm suite in one structure.
-#[derive(Debug, PartialEq, Eq, Copy, Clone, Default, Hash)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub enum EsdkAlgorithmSuiteId {
     AlgAes128GcmIv12Tag16NoKdf = 0x0014,
@@ -40,7 +40,7 @@ pub enum EsdkAlgorithmSuiteId {
     AlgAes256GcmHkdfSha512CommitKeyEcdsaP384 = 0x0578,
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone, Default, Hash)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub enum DbeAlgorithmSuiteId {
     AlgAes256GcmHkdfSha512CommitKeySymsigHmacSha384 = 0x6700,
@@ -61,7 +61,7 @@ pub enum DbeAlgorithmSuiteId {
 //= aws-encryption-sdk-specification/framework/algorithm-suites.md#overview
 //= type=implication
 //# The algorithm suite defines the behaviors [supported formats](#supported-formats) MUST follow for cryptographic operations.
-#[derive(Debug, PartialEq, Copy, Clone, Eq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub enum AlgorithmSuiteId {
     Esdk(EsdkAlgorithmSuiteId),
@@ -76,7 +76,7 @@ impl Default for AlgorithmSuiteId {
 //= aws-encryption-sdk-specification/framework/algorithm-suites.md#structure
 //= type=implication
 //# The fields described below are REQUIRED to be specified by algorithm suites, unless otherwise specified.
-#[derive(Debug, PartialEq, Clone, Default, Eq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct AlgorithmSuite {
     pub id: AlgorithmSuiteId,
@@ -90,7 +90,7 @@ pub struct AlgorithmSuite {
     pub edk_wrapping: EdkWrappingAlgorithm,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Eq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum Encrypt {
     //= aws-encryption-sdk-specification/framework/algorithm-suites.md#gcm
@@ -105,7 +105,7 @@ impl Default for Encrypt {
     }
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Default, Eq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct Hkdf {
     pub hmac: aws_mpl_primitives::DigestAlg,
@@ -114,7 +114,7 @@ pub struct Hkdf {
     pub output_key_length: u32,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Default, Eq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum DerivationAlgorithm {
     Hkdf(Hkdf),
@@ -159,7 +159,7 @@ const fn hkdf_sha_512(key_length: u32) -> DerivationAlgorithm {
 //= aws-encryption-sdk-specification/framework/algorithm-suites.md#asymmetric-signature-algorithm
 //= type=implication
 //# This field is OPTIONAL.
-#[derive(Debug, PartialEq, Copy, Clone, Default, Eq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum SignatureAlgorithm {
     Ecdsa(EcdsaSignatureAlgorithm),
@@ -169,7 +169,7 @@ pub enum SignatureAlgorithm {
 
 //= aws-encryption-sdk-specification/framework/algorithm-suites.md#symmetric-signature-algorithm
 //# This field is OPTIONAL.
-#[derive(Debug, PartialEq, Copy, Clone, Default, Eq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum SymmetricSignatureAlgorithm {
     Hmac(aws_mpl_primitives::DigestAlg),
@@ -177,7 +177,7 @@ pub enum SymmetricSignatureAlgorithm {
     None,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Default, Eq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum EdkWrappingAlgorithm {
     #[default]
@@ -192,7 +192,7 @@ const EDK_INTERMEDIATE_WRAPPING_AES_GCM_256_HKDF_SHA_512: EdkWrappingAlgorithm =
         pdk_encrypt_algorithm: Encrypt::AesGcm(AesGcm::Aes256Gcm),
     });
 
-#[derive(Debug, PartialEq, Copy, Clone, Default, Eq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct IntermediateKeyWrapping {
     pub key_encryption_key_kdf: DerivationAlgorithm,

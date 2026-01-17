@@ -28,7 +28,7 @@ pub trait CryptographicMaterialsManager: Send + Sync + std::fmt::Debug + crate::
 
 pub type CryptographicMaterialsManagerRef = std::sync::Arc<dyn CryptographicMaterialsManager>;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct GetEncryptionMaterialsInput {
     //= aws-encryption-sdk-specification/framework/cmm-interface.md#encryption-materials-request
@@ -59,7 +59,7 @@ pub struct GetEncryptionMaterialsInput {
     pub required_encryption_context_keys: Vec<EncryptionContextKey>,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct DecryptMaterialsInput {
     //= aws-encryption-sdk-specification/framework/cmm-interface.md#decrypt-materials-request
@@ -105,7 +105,7 @@ pub fn create_required_encryption_context_cmm(
 }
 
 ///Inputs for creating an Required Encryption Context Cryptographic Materials Manager.")
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default)]
 #[non_exhaustive]
 pub struct CreateRequiredEncryptionContextCMMInput {
     ///The Cryptographic Materials Manager that the created Required Encryption Context Cryptographic Materials Manager will delegate to. Either a Keyring or underlying Cryptographic Materials Manager must be specified.")

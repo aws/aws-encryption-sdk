@@ -3,7 +3,7 @@ use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Clone, Default, Hash)]
 pub(crate) struct Edk {
     pub(crate) key_provider_id: String,
     pub(crate) key_provider_info: Bytes,
@@ -14,7 +14,7 @@ pub(crate) type RequiredKeys = Vec<String>;
 pub(crate) type Bytes = Vec<u8>;
 
 //https://github.com/awslabs/aws-encryption-sdk-specification/blob/master/framework/test-vectors/keys-manifest.md
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
 #[allow(
     clippy::struct_field_names,
     reason = "because field names contain 'key'"
@@ -48,13 +48,13 @@ pub(crate) struct Key {
 pub(crate) type KeyMap = HashMap<String, Key>;
 pub(crate) type AccountIDs = Vec<String>;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Clone, Default, Hash)]
 pub(crate) struct DiscoveryFilterConfig {
     pub(crate) partition: String,
     pub(crate) account_ids: AccountIDs,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Clone, Default, Hash)]
 pub(crate) struct KeyDescription {
     pub(crate) kind: String,
     pub(crate) sender: String,
@@ -76,7 +76,7 @@ pub(crate) struct KeyDescription {
     pub(crate) underlying: Vec<Self>,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
 pub(crate) struct EncryptTest {
     pub(crate) name: String,
     pub(crate) kind: String,
@@ -101,7 +101,7 @@ pub(crate) struct EncryptTest {
 }
 pub(crate) type EncryptTests = Vec<EncryptTest>;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Default, Hash)]
 pub(crate) struct TestResults {
     pub(crate) total: u32,
     pub(crate) passed: u32,

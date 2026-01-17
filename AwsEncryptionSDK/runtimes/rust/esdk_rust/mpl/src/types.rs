@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use std::fmt::Formatter;
 use zeroize::Zeroize;
 
-#[derive(Clone, Default, PartialEq, Eq)]
+#[derive(PartialEq, Eq, Clone, Default, Hash)]
 /// Secrets, e.g. Plain text keys
 #[allow(clippy::exhaustive_structs)]
 pub struct Secret(pub Vec<u8>);
@@ -49,7 +49,7 @@ pub type SymmetricSigningKey = Secret;
 pub type EncryptionContext = std::collections::HashMap<EncryptionContextKey, String>;
 
 // Values come from: https://github.com/awslabs/aws-encryption-sdk-specification/blob/master/framework/raw-rsa-keyring.md#supported-padding-schemes
-#[derive(Debug, PartialEq, Copy, Clone, Default, Eq)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Default, Hash)]
 #[non_exhaustive]
 pub enum PaddingScheme {
     Pkcs1,
@@ -60,7 +60,7 @@ pub enum PaddingScheme {
     OaepSha512Mgf1,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Default, Eq)]
+#[derive(Debug, PartialEq, Copy, Clone, Default, Eq, Hash)]
 #[non_exhaustive]
 pub enum AesWrappingAlg {
     AlgAes128GcmIv12Tag16,
@@ -156,7 +156,7 @@ pub struct DecryptionMaterials {
 //# This specification uses the terms "encrypt" and "decrypt" for simplicity,
 //# but the actual process by which a key provider obtains the plaintext data key from the ciphertext
 //# and vice versa MAY be any reversible operation, though we expect that most will use encryption.
-#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(Debug, PartialEq, Eq, Clone, Default, Hash)]
 #[non_exhaustive]
 pub struct EncryptedDataKey {
     // The spec defines keyProviderId in 2 places,

@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq, Copy, Clone, Hash, Default, Eq)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[allow(missing_docs)]
 #[non_exhaustive]
 pub enum EcdhCurveSpec {

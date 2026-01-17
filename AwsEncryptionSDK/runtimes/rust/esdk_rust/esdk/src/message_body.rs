@@ -9,7 +9,7 @@ use crate::types::{SafeRead, SafeWrite};
 use aws_mpl_primitives::{AesGcm, aes_decrypt};
 use aws_mpl_rs::suites::AlgorithmSuite;
 
-#[derive(Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Debug, Hash)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub(crate) enum BodyAADContent {
     RegularFrame,
     FinalFrame,

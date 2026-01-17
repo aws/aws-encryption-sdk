@@ -10,7 +10,7 @@ use aws_mpl_rs::types::EncryptedDataKey;
 
 pub(crate) type MessageId = Vec<u8>;
 
-#[derive(Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Debug, Hash)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub(crate) enum MessageFormatVersion {
     V1 = 1,
     V2 = 2,
@@ -62,7 +62,7 @@ pub(crate) fn read_content_type(
     }
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub(crate) struct V1HeaderBody {
     pub(crate) message_type: MessageType,
     pub(crate) algorithm_suite: AlgorithmSuite,
@@ -74,7 +74,7 @@ pub(crate) struct V1HeaderBody {
     pub(crate) frame_length: u32,
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub(crate) struct V2HeaderBody {
     pub(crate) algorithm_suite: AlgorithmSuite,
     pub(crate) message_id: MessageId,
@@ -85,11 +85,17 @@ pub(crate) struct V2HeaderBody {
     pub(crate) suite_data: Vec<u8>,
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) enum HeaderBody {
     V1Body(V1HeaderBody),
     V2Body(V2HeaderBody),
 }
+impl Default for HeaderBody {
+    fn default() -> Self {
+        Self::V2Body(V2HeaderBody::default())
+    }
+}
+
 impl HeaderBody {
     pub(crate) const fn frame_length(&self) -> u32 {
         match self {
@@ -135,12 +141,22 @@ impl HeaderBody {
     }
 }
 
-#[derive(Clone, PartialEq, PartialOrd, Eq, Ord, Debug, Hash)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub(crate) enum HeaderAuth {
     AESMac {
         header_iv: Vec<u8>,
         header_auth_tag: Vec<u8>,
     },
+}
+
+impl Default for HeaderAuth {
+    fn default() -> Self {
+        // This is a dummy value. It should never be used.
+        Self::AESMac {
+            header_iv: vec![0u8; 12],
+            header_auth_tag: vec![0u8; 16],
+        }
+    }
 }
 impl HeaderAuth {
     pub(crate) fn header_iv(&self) -> &[u8] {
@@ -156,14 +172,16 @@ impl HeaderAuth {
         }
     }
 }
-#[derive(Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Debug, Hash)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub(crate) enum MessageType {
+    #[default]
     TypeCustomerAed = 0x80,
 }
 
-#[derive(Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Debug, Hash)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub(crate) enum ContentType {
     NonFramed = 1,
+    #[default]
     Framed = 2,
 }
 

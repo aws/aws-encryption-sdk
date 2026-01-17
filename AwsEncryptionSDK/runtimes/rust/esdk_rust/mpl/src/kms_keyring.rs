@@ -22,7 +22,7 @@ pub trait BranchKeyIdSupplier: Send + Sync + std::fmt::Debug + crate::MplPrivate
 
 pub type BranchKeyIdSupplierRef = std::sync::Arc<dyn BranchKeyIdSupplier>;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 ///Inputs for determining the Branch Key which should be used to wrap or unwrap the data key for this encryption or decryption")
 pub struct GetBranchKeyIdInput {
@@ -30,7 +30,7 @@ pub struct GetBranchKeyIdInput {
     pub encryption_context: EncryptionContext,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 ///Outputs for the Branch Key responsible for wrapping or unwrapping the data key in this encryption or decryption.")
 pub struct GetBranchKeyIdOutput {
@@ -42,7 +42,7 @@ pub struct GetBranchKeyIdOutput {
 // https://docs.aws.amazon.com/kms/latest/developerguide/grants.html#grant_token
 pub type GrantTokenList = Vec<String>;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 /// A filter which defines what AWS partition and AWS accounts a KMS Key may be in for a Keyring to be allowed to attempt to decrypt it.
 pub struct DiscoveryFilter {
@@ -61,7 +61,7 @@ pub fn create_aws_kms_keyring(_input: &CreateAwsKmsKeyringInput) -> Result<Keyri
     not_implemented("create_aws_kms_keyring")
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default)]
 #[non_exhaustive]
 ///Inputs for for creating a AWS KMS Keyring.")
 pub struct CreateAwsKmsKeyringInput {
@@ -94,7 +94,7 @@ pub fn create_aws_kms_multi_keyring(
     not_implemented("create_aws_kms_multi_keyring")
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default)]
 #[non_exhaustive]
 ///Inputs for for creating a AWS KMS Multi-Keyring.")
 pub struct CreateAwsKmsMultiKeyringInput {
@@ -119,7 +119,7 @@ pub fn create_aws_kms_discovery_keyring(
     not_implemented("create_aws_kms_discovery_keyring")
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default)]
 #[non_exhaustive]
 ///Inputs for for creating a AWS KMS Discovery Keyring.")
 pub struct CreateAwsKmsDiscoveryKeyringInput {
@@ -140,7 +140,7 @@ pub fn create_aws_kms_discovery_multi_keyring(
     not_implemented("create_aws_kms_discovery_multi_keyring")
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default)]
 #[non_exhaustive]
 ///Inputs for for creating an AWS KMS Discovery Multi-Keyring.")
 pub struct CreateAwsKmsDiscoveryMultiKeyringInput {
@@ -165,7 +165,7 @@ pub fn create_aws_kms_mrk_keyring(
     not_implemented("create_aws_kms_mrk_keyring")
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default)]
 #[non_exhaustive]
 ///Inputs for for creating an AWS KMS MRK Keyring.")
 pub struct CreateAwsKmsMrkKeyringInput {
@@ -199,7 +199,7 @@ pub fn create_aws_kms_mrk_multi_keyring(
     not_implemented("create_aws_kms_mrk_keyring")
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default)]
 #[non_exhaustive]
 ///Inputs for for creating a AWS KMS MRK Multi-Keyring.")
 pub struct CreateAwsKmsMrkMultiKeyringInput {
@@ -225,7 +225,7 @@ pub fn create_aws_kms_mrk_discovery_keyring(
     not_implemented("create_aws_kms_mrk_discovery_keyring")
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default)]
 #[non_exhaustive]
 ///Inputs for creating a AWS KMS MRK Discovery Keyring.")
 pub struct CreateAwsKmsMrkDiscoveryKeyringInput {
@@ -263,7 +263,7 @@ pub fn create_aws_kms_mrk_discovery_multi_keyring(
     not_implemented("create_aws_kms_mrk_discovery_multi_keyring")
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default)]
 #[non_exhaustive]
 ///Inputs for for creating a AWS KMS MRK Discovery Multi-Keyring.")
 pub struct CreateAwsKmsMrkDiscoveryMultiKeyringInput {
@@ -299,7 +299,7 @@ pub fn create_aws_kms_hierarchical_keyring(
     not_implemented("create_aws_kms_hierarchical_keyring")
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default)]
 #[non_exhaustive]
 ///Inputs for creating a Hierarchical Keyring.")
 #[cfg(feature = "ddb")]
@@ -350,7 +350,7 @@ pub fn create_aws_kms_rsa_keyring(
     not_implemented("create_aws_kms_rsa_keyring")
 }
 
-#[derive(Debug, Clone)] // TODO Default
+#[derive(Clone, Debug)]
 #[non_exhaustive]
 ///Inputs for creating a AWS KMS RSA Keyring.")
 pub struct CreateAwsKmsRsaKeyringInput {
@@ -420,7 +420,7 @@ pub fn create_aws_kms_ecdh_keyring(
     not_implemented("create_aws_kms_ecdh_keyring")
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default)]
 #[non_exhaustive]
 ///Inputs for creating an AWS KMS ECDH Keyring.")
 pub struct CreateAwsKmsEcdhKeyringInput {

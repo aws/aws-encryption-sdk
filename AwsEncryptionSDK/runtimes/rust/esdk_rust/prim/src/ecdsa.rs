@@ -44,7 +44,7 @@ impl DigestContext {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, Hash)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub enum EcdsaSignatureAlgorithm {
     EcdsaP384,

@@ -1,7 +1,7 @@
 use std::backtrace::Backtrace;
 use std::sync::Arc;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 #[non_exhaustive]
 /// Individual error types for [`aws_esdk`](crate)
 pub enum ErrorKind {
@@ -34,6 +34,13 @@ pub struct Error {
     pub cause: Option<Arc<dyn std::error::Error + Send + Sync + 'static>>,
 }
 
+impl PartialEq for Error {
+    fn eq(&self, other: &Self) -> bool {
+        self.kind == other.kind && self.message == other.message
+    }
+}
+impl Eq for Error {}
+
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.kind {
@@ -48,21 +55,21 @@ impl std::fmt::Display for Error {
     }
 }
 
-pub(crate) fn val_err(msg: impl Into<String>) -> Error {
-    Error {
-        kind: ErrorKind::ValidationError,
-        message: msg.into(),
-        backtrace: Arc::new(Backtrace::capture()),
-        cause: None,
-    }
-}
-
 impl std::error::Error for Error {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match &self.cause {
             Some(cause) => Some(cause.as_ref()),
             None => None,
         }
+    }
+}
+
+pub(crate) fn val_err(msg: impl Into<String>) -> Error {
+    Error {
+        kind: ErrorKind::ValidationError,
+        message: msg.into(),
+        backtrace: Arc::new(Backtrace::capture()),
+        cause: None,
     }
 }
 
@@ -96,7 +103,7 @@ impl From<aws_mpl_primitives::Error> for Error {
     fn from(item: aws_mpl_primitives::Error) -> Self {
         Self {
             kind: ErrorKind::CryptographicError,
-            message: item.msg,
+            message: item.message,
             backtrace: item.backtrace,
             cause: None,
         }

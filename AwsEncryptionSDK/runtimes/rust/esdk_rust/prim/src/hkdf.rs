@@ -2,7 +2,7 @@ use crate::DigestAlg;
 use crate::Error;
 use crate::serr;
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct Prk {
     prk: aws_lc_rs::hkdf::Prk,
 }

@@ -18,7 +18,7 @@ use std::collections::HashMap;
 use aws_sdk_kms::Client as KmsClient;
 
 #[cfg(not(feature = "kms"))]
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 #[allow(dead_code)]
 pub(crate) struct KmsClient {
     x: u32,

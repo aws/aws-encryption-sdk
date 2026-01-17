@@ -15,7 +15,7 @@ pub const fn validate_commitment_policy_on_decrypt(
     // InvalidAlgorithmSuiteInfoOnDecrypt
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Copy)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub struct ValidateCommitmentPolicyOnEncryptInput {
     pub algorithm: AlgorithmSuiteId,
@@ -31,7 +31,7 @@ impl ValidateCommitmentPolicyOnEncryptInput {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Copy)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub struct ValidateCommitmentPolicyOnDecryptInput {
     pub algorithm: AlgorithmSuiteId,
@@ -60,7 +60,7 @@ impl ValidateCommitmentPolicyOnDecryptInput {
 //# | FORBID_ENCRYPT_ALLOW_DECRYPT    |
 //# | REQUIRE_ENCRYPT_ALLOW_DECRYPT   |
 //# | REQUIRE_ENCRYPT_REQUIRE_DECRYPT |
-#[derive(Debug, Clone, Default, PartialEq, Copy)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub enum EsdkCommitmentPolicy {
     ForbidEncryptAllowDecrypt,
@@ -69,7 +69,7 @@ pub enum EsdkCommitmentPolicy {
     RequireEncryptRequireDecrypt,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Default)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub enum DbeCommitmentPolicy {
     #[default]
@@ -85,7 +85,7 @@ pub enum DbeCommitmentPolicy {
 //# The Material Providers Library also MUST provide
 //# a union ENUM for all distinct commitment policy ENUMs
 //# called the Commitment Policy ENUM.
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub enum CommitmentPolicy {
     Esdk(EsdkCommitmentPolicy),

@@ -14,14 +14,14 @@ pub fn valid_decryption_materials_transition(
     Ok(())
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct ValidEncryptionMaterialsTransitionInput {
     pub start: EncryptionMaterials,
     pub stop: EncryptionMaterials,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct ValidDecryptionMaterialsTransitionInput {
     pub start: DecryptionMaterials,

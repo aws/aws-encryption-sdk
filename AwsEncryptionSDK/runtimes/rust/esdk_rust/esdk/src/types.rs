@@ -108,7 +108,7 @@ impl<T: std::io::Read + Send + Sync + std::fmt::Debug> SafeRead for T {}
 /// Key-Value pairs to associate with the encrypted data
 pub use aws_mpl_rs::types::EncryptionContext;
 
-#[derive(Debug, PartialEq, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
 #[non_exhaustive]
 /// Output for [`encrypt`](crate::encrypt).
 pub struct EncryptOutput {
@@ -127,7 +127,7 @@ impl EncryptOutput {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
 #[non_exhaustive]
 /// Output for [`encrypt_stream`](crate::encrypt_stream).
 pub struct EncryptStreamOutput {
@@ -144,7 +144,7 @@ impl EncryptStreamOutput {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
 #[non_exhaustive]
 /// Output for [decrypt](crate::decrypt).
 pub struct DecryptOutput {
@@ -156,7 +156,7 @@ pub struct DecryptOutput {
     pub plaintext: Vec<u8>,
 }
 
-#[derive(Debug, PartialEq, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
 #[non_exhaustive]
 /// Output for [`decrypt_stream`](crate::decrypt_stream).
 pub struct DecryptStreamOutput {
@@ -166,7 +166,7 @@ pub struct DecryptStreamOutput {
     pub encryption_context: EncryptionContext,
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Default, Hash)]
 /// During Decryption, Allow or Forbid ESDK-NET v4.0.0 Behavior if the ESDK Message Header fails the Header Authentication check.
 #[non_exhaustive]
 pub enum NetV400RetryPolicy {
@@ -186,7 +186,7 @@ impl ::std::fmt::Display for NetV400RetryPolicy {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
 #[non_exhaustive]
 /// Input for [`encrypt`](crate::encrypt).
 pub struct EncryptInput<'a> {
@@ -277,7 +277,7 @@ impl<'a> EncryptInput<'a> {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
 #[non_exhaustive]
 /// Input for [`encrypt_stream`](crate::encrypt_stream).
 pub struct EncryptStreamInput {
@@ -353,7 +353,7 @@ impl EncryptStreamInput {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
 #[non_exhaustive]
 #[allow(
     single_use_lifetimes,
@@ -375,7 +375,7 @@ pub struct DecryptInput<'a> {
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 
-#[derive(Debug, PartialEq, Clone, Default)]
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
 #[non_exhaustive]
 /// Input for [`decrypt_stream`](crate::decrypt_stream).
 pub struct DecryptStreamInput {

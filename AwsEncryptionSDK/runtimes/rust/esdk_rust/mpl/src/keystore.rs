@@ -46,11 +46,6 @@ pub trait KeyStore: Send + Sync + std::fmt::Debug {
 #[async_trait]
 #[allow(private_bounds)]
 pub trait KeyStoreAdmin: Send + Sync + std::fmt::Debug + crate::MplPrivate {
-    ///Create the `DynamoDB` table that backs this Key Store based on the Key Store configuration. If a table already exists, validate it is configured as expected.")
-    async fn create_key_store(
-        &self,
-        input: &CreateKeyStoreInput,
-    ) -> Result<CreateKeyStoreOutput, Error>;
     // CreateKey will create two keys to add to the key store
     // One is the branch key, which is used in the hierarchical keyring
     // The second is a beacon key that is used as a root key to
@@ -70,7 +65,7 @@ pub type KeyStoreAdminRef = std::sync::Arc<dyn KeyStoreAdmin>;
 
 //   errors: [KeyStoreException]
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default)]
 #[non_exhaustive]
 pub struct KeyStoreConfig {
     //= aws-encryption-sdk-specification/framework/branch-key-store.md#initialization
@@ -113,7 +108,7 @@ pub struct KeyStoreConfig {
 //# that is a KMS ARN.
 ///Configures Key Store's KMS Key ARN restrictions.")
 #[non_exhaustive]
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 /// Configures Key Store's KMS Key ARN restrictions.
 pub enum KmsConfiguration {
     /// Key Store is restricted to only this KMS Key ARN. If a different KMS Key ARN is encountered when creating, versioning, or getting a Branch Key or Beacon Key, KMS is never called and an exception is thrown. While a Multi-Region Key (MKR) may be provided, the whole ARN, including the Region, is persisted in Branch Keys and MUST strictly equal this value to be considered valid.
@@ -131,14 +126,14 @@ impl Default for KmsConfiguration {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub struct Discovery {}
 
 //= aws-encryption-sdk-specification/framework/branch-key-store.md#aws-kms-configuration
 //= type=implication
 //# `MRDiscovery` MUST take an additional argument, which is a region.
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub struct MrDiscovery {
     ///Any MRK ARN discovered will have its region replaced with this.")
@@ -152,7 +147,7 @@ impl MrDiscovery {
 }
 
 ///The configuration information for a Key Store.")
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub struct GetKeyStoreInfoOutput {
     ///An identifier for this Key Store.")
@@ -188,36 +183,13 @@ impl GetKeyStoreInfoOutput {
         }
     }
 }
-#[derive(Debug, Clone, Default)]
-#[non_exhaustive]
-pub struct CreateKeyStoreInput {}
-impl CreateKeyStoreInput {
-    #[must_use]
-    pub fn new() -> Self {
-        Self::default()
-    }
-}
-
-///Outputs for Key Store `DynamoDB` table creation.")
-#[derive(Debug, Clone, Default)]
-#[non_exhaustive]
-pub struct CreateKeyStoreOutput {
-    ///The ARN of the `DynamoDB` table that backs this Key Store.")
-    pub table_arn: String, // com.amazonaws.`DynamoDB`#TableArn
-}
-impl CreateKeyStoreOutput {
-    #[must_use]
-    pub const fn new(table_arn: String) -> Self {
-        Self { table_arn }
-    }
-}
 
 //= aws-encryption-sdk-specification/framework/branch-key-store.md#createkey
 //= type=implication
 //# The CreateKey caller MUST provide:
 //# - An optional branch key id
 //# - An optional encryption context
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct CreateKeyInput {
     ///The identifier for the created Branch Key.")
@@ -237,7 +209,7 @@ impl CreateKeyInput {
 }
 
 ///Outputs for Branch Key creation.")
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub struct CreateKeyOutput {
     ///A identifier for the created Branch Key.")
@@ -253,7 +225,7 @@ impl CreateKeyOutput {
 }
 
 ///Inputs for versioning a Branch Key.")
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub struct VersionKeyInput {
     //= aws-encryption-sdk-specification/framework/branch-key-store.md#versionkey
@@ -272,7 +244,7 @@ impl VersionKeyInput {
 }
 
 ///Outputs for versioning a Branch Key.")
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub struct VersionKeyOutput {}
 impl VersionKeyOutput {
@@ -283,7 +255,7 @@ impl VersionKeyOutput {
 }
 
 ///Inputs for getting a Branch Key's ACTIVE version.")
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub struct GetActiveBranchKeyInput {
     ///The identifier for the Branch Key to get the ACTIVE version for.")
@@ -299,7 +271,7 @@ impl GetActiveBranchKeyInput {
 }
 
 ///Outputs for getting a Branch Key's ACTIVE version.")
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct GetActiveBranchKeyOutput {
     //= aws-encryption-sdk-specification/framework/branch-key-store.md#getactivebranchkey
@@ -318,7 +290,7 @@ impl GetActiveBranchKeyOutput {
 }
 
 ///Inputs for getting a version of a Branch Key.")
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub struct GetBranchKeyVersionInput {
     //= aws-encryption-sdk-specification/framework/branch-key-store.md#getbranchkeyversion
@@ -344,7 +316,7 @@ impl GetBranchKeyVersionInput {
 }
 
 ///Outputs for getting a version of a Branch Key.")
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct GetBranchKeyVersionOutput {
     ///The materials for the Branch Key.")
@@ -360,7 +332,7 @@ impl GetBranchKeyVersionOutput {
 }
 
 ///Inputs for getting a Beacon Key")
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub struct GetBeaconKeyInput {
     //= aws-encryption-sdk-specification/framework/branch-key-store.md#getbeaconkey
@@ -379,7 +351,7 @@ impl GetBeaconKeyInput {
 }
 
 ///Outputs for getting a Beacon Key")
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct GetBeaconKeyOutput {
     ///The materials for the Beacon Key.")
@@ -402,7 +374,7 @@ impl GetBeaconKeyOutput {
 //# - [Branch Key Id](#branch-key-id)
 //# - [Branch Key Version](#branch-key-version)
 //# - [Encryption Context](#encryption-context-3)
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct BranchKeyMaterials {
     pub branch_key_identifier: String,
@@ -427,7 +399,7 @@ impl BranchKeyMaterials {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct BeaconKeyMaterials {
     //= aws-encryption-sdk-specification/framework/pub structs.md#pub struct-4

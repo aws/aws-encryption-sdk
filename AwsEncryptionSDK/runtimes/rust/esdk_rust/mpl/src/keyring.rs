@@ -14,17 +14,17 @@ pub trait Keyring: Send + Sync + std::fmt::Debug + crate::MplPrivate {
 pub type KeyringRef = std::sync::Arc<dyn Keyring>;
 pub type KeyringList = Vec<KeyringRef>;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct OnEncryptInput {
     pub materials: EncryptionMaterials,
 }
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct OnEncryptOutput {
     pub materials: EncryptionMaterials,
 }
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 //= aws-encryption-sdk-specification/framework/keyring-interface.md#ondecrypt
 //= type=implication
@@ -34,7 +34,7 @@ pub struct OnDecryptInput {
     pub materials: DecryptionMaterials,
     pub encrypted_data_keys: Vec<EncryptedDataKey>,
 }
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct OnDecryptOutput {
     pub materials: DecryptionMaterials,
@@ -45,7 +45,7 @@ pub fn create_multi_keyring(_input: &CreateMultiKeyringInput) -> Result<KeyringR
     not_implemented("create_multi_keyring")
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default)]
 #[non_exhaustive]
 ///Inputs for creating a Multi-Keyring.")
 pub struct CreateMultiKeyringInput {
@@ -77,7 +77,7 @@ pub fn create_raw_aes_keyring(_input: &CreateRawAesKeyringInput) -> Result<Keyri
     not_implemented("create_raw_aes_keyring")
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 ///Inputs for creating a Raw AES Keyring.")
 pub struct CreateRawAesKeyringInput {
@@ -119,7 +119,7 @@ pub fn create_raw_rsa_keyring(_input: &CreateRawRsaKeyringInput) -> Result<Keyri
     not_implemented("create_raw_rsa_keyring")
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default)]
 #[non_exhaustive]
 ///Inputs for creating a Raw RAW Keyring.")
 pub struct CreateRawRsaKeyringInput {
@@ -163,7 +163,7 @@ pub fn create_raw_ecdh_keyring(_input: &CreateRawEcdhKeyringInput) -> Result<Key
     not_implemented("create_raw_ecdh_keyring")
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default)]
 #[non_exhaustive]
 ///Inputs for creating a raw ECDH Keyring.")
 pub struct CreateRawEcdhKeyringInput {

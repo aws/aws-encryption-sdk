@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 /// Supported ECDH Key Agreement Schemes.
 pub enum KeyAgreementScheme {
@@ -10,7 +10,7 @@ impl Default for KeyAgreementScheme {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 /// Supported configurations for the `StaticConfiguration` Key Agreement Scheme.
 pub enum StaticConfigurations {
@@ -23,7 +23,7 @@ impl Default for StaticConfigurations {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 /// Allowed configurations when using `KmsEcdhStaticConfigurations`.
 pub enum KmsEcdhStaticConfigurations {
@@ -36,7 +36,7 @@ impl Default for KmsEcdhStaticConfigurations {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 /// List of configurations when using `RawEcdhStaticConfigurations`.
 pub enum RawEcdhStaticConfigurations {
@@ -50,7 +50,7 @@ impl Default for RawEcdhStaticConfigurations {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 /// Inputs for creating a `KmsPublicKeyDiscovery` Configuration. This is a DECRYPT ONLY configuration.
 pub struct KmsPublicKeyDiscovery {
@@ -66,7 +66,7 @@ impl KmsPublicKeyDiscovery {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 /// Inputs for creating a `KmsPrivateKeyToStaticPublicKey` Configuration.
 pub struct KmsPrivateKeyToStaticPublicKey {
@@ -93,7 +93,7 @@ impl KmsPrivateKeyToStaticPublicKey {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 /// Inputs for creating a `EphemeralPrivateKeyToStaticPublicKey` Configuration.
 pub struct EphemeralPrivateKeyToStaticPublicKey {
@@ -110,7 +110,7 @@ impl EphemeralPrivateKeyToStaticPublicKey {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 /// Inputs for creating a `PublicKeyDiscovery` Configuration.
 pub struct PublicKeyDiscovery {
@@ -125,7 +125,7 @@ impl PublicKeyDiscovery {
         }
     }
 }
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 /// Inputs for creating a `RawPrivateKeyToStaticPublicKey` Configuration.
 pub struct RawPrivateKeyToStaticPublicKey {

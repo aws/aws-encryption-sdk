@@ -4,13 +4,13 @@
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering;
 
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub struct ResourceTracker {
     pub count: usize,
     pub total: usize,
 }
 
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub struct ResourceResults {
     pub count_k: usize,
     pub total_m: usize,

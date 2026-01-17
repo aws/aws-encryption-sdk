@@ -26,7 +26,7 @@ pub trait CryptographicMaterialsCache: Send + Sync + std::fmt::Debug + crate::Mp
 
 pub type CryptographicMaterialsCacheRef = std::sync::Arc<dyn CryptographicMaterialsCache>;
 
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct PutCacheEntryInput {
     pub identifier: Vec<u8>,
@@ -41,7 +41,7 @@ pub struct PutCacheEntryInput {
     pub bytes_used: u64,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct GetCacheEntryInput {
     pub identifier: Vec<u8>,
@@ -49,7 +49,7 @@ pub struct GetCacheEntryInput {
 }
 
 // Should inner SystemTime be private?
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct Time(pub std::time::SystemTime);
 impl Default for Time {
@@ -66,7 +66,7 @@ impl Default for Time {
 //# - [Creation Time](#creation-time)
 //# - [Expiry Time](#expiry-time)
 //# - [Usage Metadata](#usage-metadata)
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct GetCacheEntryOutput {
     pub materials: Materials,
@@ -81,7 +81,7 @@ pub struct GetCacheEntryOutput {
     pub bytes_used: u64,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum Missing {
     /// Thrown if a request is waiting for longer than `inflightTTL`.
@@ -102,7 +102,7 @@ pub enum Missing {
     RequestFailed(Error),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum Materials {
     Missing(Missing),
@@ -119,13 +119,13 @@ impl Default for Materials {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct DeleteCacheEntryInput {
     pub identifier: Vec<u8>,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct UpdateUsageMetadataInput {
     pub identifier: Vec<u8>,
@@ -140,7 +140,7 @@ pub fn create_cryptographic_materials_cache(
     not_implemented("create_cryptographic_materials_cache")
 }
 
-#[derive(Debug, Clone, Default, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum CacheType {
     Default(DefaultCache),
@@ -152,7 +152,7 @@ pub enum CacheType {
     // Shared(crate::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef),
 }
 
-#[derive(Debug, Clone, Default, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct CreateCryptographicMaterialsCacheInput {
     /// Which type of local cache to use.
@@ -160,7 +160,7 @@ pub struct CreateCryptographicMaterialsCacheInput {
 }
 
 /// The best choice for most situations. Probably a `StormTrackingCache`.
-#[derive(Debug, Clone, Default, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct DefaultCache {
     /// Maximum number of entries cached.
@@ -174,7 +174,7 @@ impl DefaultCache {
 }
 
 /// A cache that is safe for use in a multi threaded environment, but no extra functionality.")
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct MultiThreadedCache {
     /// Maximum number of entries cached.")
@@ -205,7 +205,7 @@ impl MultiThreadedCache {
 
 /// A cache that is safe for use in a multi threaded environment,
 /// and tries to prevent redundant or overly parallel backend calls.")
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct StormTrackingCache {
     /// Maximum number of entries cached.")

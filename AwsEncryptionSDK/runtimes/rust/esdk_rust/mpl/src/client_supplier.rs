@@ -13,7 +13,7 @@ pub trait ClientSupplier: Send + Sync + std::fmt::Debug + MplPrivate {
 
 pub type ClientSupplierRef = std::sync::Arc<dyn ClientSupplier>;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 /// Inputs for getting a AWS KMS Client.
 pub struct GetClientInput {
@@ -27,6 +27,6 @@ pub fn create_default_client_supplier(
     not_implemented("create_multi_keyring")
 }
 
-#[derive(Debug, Clone, Default, Copy)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub struct CreateDefaultClientSupplierInput {}

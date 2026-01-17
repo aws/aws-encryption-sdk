@@ -6,7 +6,7 @@ use aws_mpl_rs::keystore;
 use aws_mpl_rs::types::Secret;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub(crate) struct StaticKeyStoreInformation {
     // pub(crate) key_identifier: String,
     pub(crate) branch_key_version: String,

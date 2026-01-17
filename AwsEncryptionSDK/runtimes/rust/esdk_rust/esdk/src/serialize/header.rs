@@ -19,7 +19,7 @@ pub(crate) const SAFE_MAX_ENCRYPT: u64 = 0x000F_FFFF_FFE0;
 use aws_mpl_rs::suites::AlgorithmSuite;
 use aws_mpl_rs::suites::DerivationAlgorithm;
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub(crate) struct HeaderInfo {
     pub(crate) body: HeaderBody,
     pub(crate) raw_header: Vec<u8>,

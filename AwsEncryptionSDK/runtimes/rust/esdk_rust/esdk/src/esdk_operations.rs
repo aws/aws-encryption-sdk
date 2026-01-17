@@ -15,7 +15,7 @@ use crate::types::*;
 use aws_mpl_primitives::*;
 use aws_mpl_rs::commitment::EsdkCommitmentPolicy;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 enum ProtectionNeeded {
     /// Customer can see partial results, so multi-frame signed payloads forbidden
     Yes,

@@ -81,7 +81,7 @@ use aws_lc_rs::aead::{Aad, LessSafeKey, Nonce, UnboundKey};
 use aws_lc_rs::rand;
 use std::backtrace::Backtrace;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, Hash)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub enum DigestAlg {
     Sha256,
@@ -90,16 +90,23 @@ pub enum DigestAlg {
     Sha512,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 #[non_exhaustive]
 pub struct Error {
-    pub msg: String,
+    pub message: String,
     pub backtrace: Arc<Backtrace>,
 }
 
+impl PartialEq for Error {
+    fn eq(&self, other: &Self) -> bool {
+        self.message == other.message
+    }
+}
+impl Eq for Error {}
+
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Crypto Error {}", self.msg)
+        write!(f, "Crypto Error {}", self.message)
     }
 }
 
@@ -108,7 +115,7 @@ impl std::error::Error for Error {}
 #[track_caller]
 fn serr(s: String) -> Error {
     Error {
-        msg: s,
+        message: s,
         backtrace: Arc::new(Backtrace::capture()),
     }
 }
@@ -124,14 +131,14 @@ pub fn generate_random_bytes(bytes: &mut [u8]) -> Result<(), Error> {
     Ok(())
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default, Hash)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub struct DoAESEncryptOutput {
     pub cipher_text: Vec<u8>,
     pub auth_tag: Vec<u8>,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Default, Hash)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub enum AesGcm {
     Aes128Gcm,
@@ -163,13 +170,13 @@ pub fn aes_encrypt(
     alg: AesGcm,
     iv: &[u8],
     key: &[u8],
-    msg: &[u8],
+    message: &[u8],
     aad: &[u8],
     cipher_text: &mut Vec<u8>,
 ) -> Result<(), Error> {
     let alg = get_aes_alg(alg);
     let old_size = cipher_text.len();
-    cipher_text.extend_from_slice(msg);
+    cipher_text.extend_from_slice(message);
     let cipher_slice = &mut cipher_text[old_size..];
     let key = UnboundKey::new(alg, key).map_err(|e| serr(format!("new {e:?}")))?;
     let nonce = Nonce::try_assume_unique_for_key(iv).map_err(|e| serr(format!("new {e:?}")))?;
