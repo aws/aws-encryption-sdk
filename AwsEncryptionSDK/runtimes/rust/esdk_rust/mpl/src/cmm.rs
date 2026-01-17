@@ -14,7 +14,8 @@ use async_trait::async_trait;
 //# The CMM interface describes the interface that all CMMs MUST implement.
 
 #[async_trait]
-pub trait CryptographicMaterialsManager: Send + Sync + std::fmt::Debug {
+#[allow(private_bounds)]
+pub trait CryptographicMaterialsManager: Send + Sync + std::fmt::Debug + crate::MplPrivate {
     async fn get_encryption_materials(
         &self,
         input: &GetEncryptionMaterialsInput,

@@ -3,9 +3,9 @@ use anyhow::{Error, Result};
 
 pub(crate) fn is_not_implemented(e: &Error) -> Option<String> {
     if let Some(mpl) = e.downcast_ref::<aws_mpl_rs::error::Error>()
-        && let aws_mpl_rs::error::ErrorKind::NotImplemented(s) = &mpl.kind
+        && matches!(&mpl.kind, aws_mpl_rs::error::ErrorKind::NotImplemented)
     {
-        return Some(s.clone());
+        return Some(mpl.message.clone());
     }
     let msg = format!("{e}");
     if msg.contains("Not Implemented") {

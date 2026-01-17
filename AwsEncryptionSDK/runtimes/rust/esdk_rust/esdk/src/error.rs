@@ -1,54 +1,58 @@
 use std::backtrace::Backtrace;
+use std::sync::Arc;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 /// Individual error types for [`aws_esdk`](crate)
 pub enum ErrorKind {
     /// Higher level ESDK errors
-    Esdk(String),
+    Esdk,
     /// Error in serializing or deserializing the data
-    SerializationError(String),
+    SerializationError,
     /// Low level cryptographic error from `aws_mpl_primitives`
-    CryptographicError(String),
+    CryptographicError,
     /// Mid level cryptographic error from `aws_mpl_rs`
-    MplError(Box<aws_mpl_rs::error::Error>),
+    MplError,
     /// Mid level cryptographic error from `aws_mpl_legacy`
     #[cfg(feature = "legacy")]
-    LegacyError(Box<aws_mpl_legacy::types::error::Error>),
+    LegacyError(Arc<aws_mpl_legacy::types::error::Error>),
     /// Malformed input. No cryptography has been attempted.
-    ValidationError(String),
+    ValidationError,
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 /// Base error type for [`aws_esdk`](crate)
 pub struct Error {
     /// Error type
     pub kind: ErrorKind,
+    /// message
+    pub message: String,
     /// Backtrace captured when error was encountered.
-    /// For `MplError` the backtrace is not captured until the ESDK level
-    pub backtrace: Backtrace,
+    /// For `LegacyError` the backtrace is not captured until the ESDK level
+    pub backtrace: Arc<Backtrace>,
     /// The Error causing the Error, if any.
-    pub cause: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
+    pub cause: Option<Arc<dyn std::error::Error + Send + Sync + 'static>>,
 }
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.kind {
-            ErrorKind::Esdk(message) => write!(f, "Esdk Error {message}"),
-            ErrorKind::SerializationError(message) => write!(f, "Serialization Error {message}"),
-            ErrorKind::CryptographicError(message) => write!(f, "Cryptographic Error {message}"),
-            ErrorKind::MplError(message) => write!(f, "MPL Error {message}"),
+            ErrorKind::Esdk => write!(f, "Esdk Error {}", self.message),
+            ErrorKind::SerializationError => write!(f, "Serialization Error {}", self.message),
+            ErrorKind::CryptographicError => write!(f, "Cryptographic Error {}", self.message),
+            ErrorKind::MplError => write!(f, "MPL Error {:?} {}", self.cause, self.message),
             #[cfg(feature = "legacy")]
-            ErrorKind::LegacyError(message) => write!(f, "Legacy MPL Error {message}"),
-            ErrorKind::ValidationError(message) => write!(f, "Validation Error {message}"),
+            ErrorKind::LegacyError(e) => write!(f, "Legacy MPL Error {e} {}", self.message),
+            ErrorKind::ValidationError => write!(f, "Validation Error {}", self.message),
         }
     }
 }
 
 pub(crate) fn val_err(msg: impl Into<String>) -> Error {
     Error {
-        kind: ErrorKind::ValidationError(msg.into()),
-        backtrace: Backtrace::capture(),
+        kind: ErrorKind::ValidationError,
+        message: msg.into(),
+        backtrace: Arc::new(Backtrace::capture()),
         cause: None,
     }
 }
@@ -67,8 +71,9 @@ impl From<aws_mpl_legacy::types::error::Error> for Error {
     #[track_caller]
     fn from(item: aws_mpl_legacy::types::error::Error) -> Self {
         Self {
-            kind: ErrorKind::LegacyError(Box::new(item)),
-            backtrace: Backtrace::capture(),
+            kind: ErrorKind::LegacyError(Arc::new(item)),
+            message: String::new(),
+            backtrace: Arc::new(Backtrace::capture()),
             cause: None,
         }
     }
@@ -78,9 +83,10 @@ impl From<aws_mpl_rs::error::Error> for Error {
     #[track_caller]
     fn from(item: aws_mpl_rs::error::Error) -> Self {
         Self {
-            kind: ErrorKind::MplError(Box::new(item)),
-            backtrace: Backtrace::capture(),
-            cause: None,
+            kind: ErrorKind::MplError,
+            message: String::new(),
+            backtrace: item.backtrace.clone(),
+            cause: Some(Arc::new(item)),
         }
     }
 }
@@ -89,7 +95,8 @@ impl From<aws_mpl_primitives::Error> for Error {
     #[track_caller]
     fn from(item: aws_mpl_primitives::Error) -> Self {
         Self {
-            kind: ErrorKind::CryptographicError(item.msg),
+            kind: ErrorKind::CryptographicError,
+            message: item.msg,
             backtrace: item.backtrace,
             cause: None,
         }
@@ -100,9 +107,10 @@ impl From<aws_mpl_primitives::Error> for Error {
 impl From<aws_smithy_types::error::operation::BuildError> for Error {
     fn from(item: aws_smithy_types::error::operation::BuildError) -> Self {
         Self {
-            kind: ErrorKind::ValidationError(format!("{item:?}")),
-            backtrace: Backtrace::capture(),
-            cause: Some(Box::new(item)),
+            kind: ErrorKind::ValidationError,
+            message: format!("{item:?}"),
+            backtrace: Arc::new(Backtrace::capture()),
+            cause: Some(Arc::new(item)),
         }
     }
 }
@@ -110,8 +118,9 @@ impl From<aws_smithy_types::error::operation::BuildError> for Error {
 impl From<&str> for Error {
     fn from(item: &str) -> Self {
         Self {
-            kind: ErrorKind::Esdk(item.to_string()),
-            backtrace: Backtrace::capture(),
+            kind: ErrorKind::Esdk,
+            message: item.to_string(),
+            backtrace: Arc::new(Backtrace::capture()),
             cause: None,
         }
     }
@@ -120,8 +129,9 @@ impl From<&str> for Error {
 impl From<String> for Error {
     fn from(item: String) -> Self {
         Self {
-            kind: ErrorKind::Esdk(item),
-            backtrace: Backtrace::capture(),
+            kind: ErrorKind::Esdk,
+            message: item,
+            backtrace: Arc::new(Backtrace::capture()),
             cause: None,
         }
     }

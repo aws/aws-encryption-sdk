@@ -3,19 +3,22 @@
 
 use super::*;
 use crate::types::{SafeRead, SafeWrite};
+use std::sync::Arc;
 
 #[track_caller]
 fn ser_io(e: std::io::Error) -> Error {
     match e.kind() {
         std::io::ErrorKind::UnexpectedEof => Error {
-            kind: ErrorKind::SerializationError("Unexpected end of data".into()),
-            cause: Some(Box::new(e)),
-            backtrace: Backtrace::capture(),
+            kind: ErrorKind::SerializationError,
+            message: "Unexpected end of data".into(),
+            cause: Some(Arc::new(e)),
+            backtrace: Arc::new(Backtrace::capture()),
         },
         _ => Error {
-            kind: ErrorKind::SerializationError("IO Error".into()),
-            cause: Some(Box::new(e)),
-            backtrace: Backtrace::capture(),
+            kind: ErrorKind::SerializationError,
+            message: "IO Error".into(),
+            cause: Some(Arc::new(e)),
+            backtrace: Arc::new(Backtrace::capture()),
         },
     }
 }
@@ -62,9 +65,10 @@ pub(crate) fn read_up_to_peek(
 #[track_caller]
 fn ser_utf8(item: std::string::FromUtf8Error) -> Error {
     Error {
-        kind: ErrorKind::SerializationError("UTF8 Decode Error".into()),
-        cause: Some(Box::new(item)),
-        backtrace: Backtrace::capture(),
+        kind: ErrorKind::SerializationError,
+        message: "UTF8 Decode Error".into(),
+        cause: Some(Arc::new(item)),
+        backtrace: Arc::new(Backtrace::capture()),
     }
 }
 
@@ -127,9 +131,10 @@ pub(crate) fn read_opt_u8(r: &mut dyn SafeRead) -> Result<Option<u8>, Error> {
         Err(e) => match e.kind() {
             std::io::ErrorKind::UnexpectedEof => Ok(None),
             _ => Err(Error {
-                kind: ErrorKind::SerializationError("IO Error".into()),
-                cause: Some(Box::new(e)),
-                backtrace: Backtrace::capture(),
+                kind: ErrorKind::SerializationError,
+                message: "IO Error".into(),
+                cause: Some(Arc::new(e)),
+                backtrace: Arc::new(Backtrace::capture()),
             }),
         },
     }

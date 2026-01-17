@@ -5,7 +5,8 @@ use async_trait::async_trait;
 use aws_mpl_primitives::EcdhCurveSpec;
 
 #[async_trait]
-pub trait Keyring: Send + Sync + std::fmt::Debug {
+#[allow(private_bounds)]
+pub trait Keyring: Send + Sync + std::fmt::Debug + crate::MplPrivate {
     async fn on_encrypt(&self, input: &OnEncryptInput) -> Result<OnEncryptOutput, Error>;
     async fn on_decrypt(&self, input: &OnDecryptInput) -> Result<OnDecryptOutput, Error>;
 }

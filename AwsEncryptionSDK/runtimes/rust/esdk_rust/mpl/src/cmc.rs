@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::error::*;
 pub use crate::types::{DecryptionMaterials, EncryptedDataKey, EncryptionMaterials};
 use async_trait::async_trait;
@@ -8,7 +10,8 @@ use async_trait::async_trait;
 //# to store cryptographic materials for reuse.
 //# This document describes the interface that all CMCs MUST implement.
 #[async_trait]
-pub trait CryptographicMaterialsCache: Send + Sync + std::fmt::Debug {
+#[allow(private_bounds)]
+pub trait CryptographicMaterialsCache: Send + Sync + std::fmt::Debug + crate::MplPrivate {
     //= aws-encryption-sdk-specification/framework/cryptographic-materials-cache.md#put-cache-entry
     //= type=implication
     //# This operation MUST NOT return the inserted cache entry.
@@ -23,7 +26,7 @@ pub trait CryptographicMaterialsCache: Send + Sync + std::fmt::Debug {
 
 pub type CryptographicMaterialsCacheRef = std::sync::Arc<dyn CryptographicMaterialsCache>;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct PutCacheEntryInput {
     pub identifier: Vec<u8>,
@@ -38,7 +41,7 @@ pub struct PutCacheEntryInput {
     pub bytes_used: u64,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct GetCacheEntryInput {
     pub identifier: Vec<u8>,
@@ -63,7 +66,7 @@ impl Default for Time {
 //# - [Creation Time](#creation-time)
 //# - [Expiry Time](#expiry-time)
 //# - [Usage Metadata](#usage-metadata)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct GetCacheEntryOutput {
     pub materials: Materials,
@@ -78,7 +81,7 @@ pub struct GetCacheEntryOutput {
     pub bytes_used: u64,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum Missing {
     /// Thrown if a request is waiting for longer than `inflightTTL`.
@@ -96,9 +99,10 @@ pub enum Missing {
     InFlightTTLExceeded,
     #[default]
     EntryDoesNotExist,
+    RequestFailed(Error),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum Materials {
     Missing(Missing),
@@ -115,13 +119,13 @@ impl Default for Materials {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct DeleteCacheEntryInput {
     pub identifier: Vec<u8>,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct UpdateUsageMetadataInput {
     pub identifier: Vec<u8>,
@@ -130,129 +134,118 @@ pub struct UpdateUsageMetadataInput {
 
 // error EntryAlreadyExists
 
-#[derive(Debug, Clone, Default)]
-struct DefaultCryptographicMaterialsCache {}
-#[async_trait]
-impl CryptographicMaterialsCache for DefaultCryptographicMaterialsCache {
-    async fn put_cache_entry(&self, _input: &PutCacheEntryInput) -> Result<(), Error> {
-        Ok(())
-    }
-
-    async fn get_cache_entry(
-        &self,
-        _input: &GetCacheEntryInput,
-    ) -> Result<GetCacheEntryOutput, Error> {
-        Ok(GetCacheEntryOutput::default())
-    }
-
-    async fn update_usage_metadata(&self, _input: &UpdateUsageMetadataInput) -> Result<(), Error> {
-        Ok(())
-    }
-
-    async fn delete_cache_entry(&self, _input: &DeleteCacheEntryInput) -> Result<(), Error> {
-        Ok(())
-    }
-}
-
 pub fn create_cryptographic_materials_cache(
     _input: CreateCryptographicMaterialsCacheInput,
 ) -> Result<CryptographicMaterialsCacheRef, Error> {
-    Ok(std::sync::Arc::new(DefaultCryptographicMaterialsCache {}))
+    not_implemented("create_cryptographic_materials_cache")
 }
 
-#[derive(Debug, Clone, Default, Copy)]
+#[derive(Debug, Clone, Default, Copy, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum CacheType {
-    // Default(crate::types::DefaultCache),
+    Default(DefaultCache),
     #[default]
     No,
-    // SingleThreaded(crate::types::SingleThreadedCache),
-    // MultiThreaded(crate::types::MultiThreadedCache),
-    // StormTracking(crate::types::StormTrackingCache),
+    MultiThreaded(MultiThreadedCache),
+    StormTracking(StormTrackingCache),
     // /// Shared cache across multiple Hierarchical Keyrings. For this cache type, the user should provide an already constructed CryptographicMaterialsCache to the Hierarchical Keyring at initialization.
     // Shared(crate::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef),
 }
 
-#[derive(Debug, Clone, Default, Copy)]
+#[derive(Debug, Clone, Default, Copy, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct CreateCryptographicMaterialsCacheInput {
     /// Which type of local cache to use.
     pub cache: CacheType,
 }
 
-/*
-@javadoc("The best choice for most situations. Probably a StormTrackingCache.")
-structure DefaultCache {
-  @required
-  @javadoc("Maximum number of entries cached.")
-  entryCapacity: CountingNumber
+/// The best choice for most situations. Probably a `StormTrackingCache`.
+#[derive(Debug, Clone, Default, Copy, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct DefaultCache {
+    /// Maximum number of entries cached.
+    pub entry_capacity: u32,
+}
+impl DefaultCache {
+    #[must_use]
+    pub const fn new(entry_capacity: u32) -> Self {
+        Self { entry_capacity }
+    }
 }
 
-@javadoc("A cache that is NOT safe for use in a multi threaded environment.")
-structure SingleThreadedCache {
-  //= aws-encryption-sdk-specification/framework/local-cryptographic-materials-cache.md#initialization
-  //= type=implication
-  //# On initialization of the local CMC,
-  //# the caller MUST provide the following:
-  //#
-  //# - [Entry Capacity](#entry-capacity)
-  //#
-  //# The local CMC MUST also define the following:
-  //#
-  //# - [Entry Pruning Tail Size](#entry-pruning-tail-size)
-  @required
-  @javadoc("Maximum number of entries cached.")
-  entryCapacity: CountingNumber,
+/// A cache that is safe for use in a multi threaded environment, but no extra functionality.")
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct MultiThreadedCache {
+    /// Maximum number of entries cached.")
+    pub entry_capacity: u32,
 
-  @javadoc("Number of entries to prune at a time.")
-  entryPruningTailSize: CountingNumber,
+    /// Number of entries to prune at a time.")
+    pub entry_pruning_tail_size: u32,
 }
 
-@javadoc("A cache that is safe for use in a multi threaded environment, but no extra functionality.")
-structure MultiThreadedCache {
-  @required
-  @javadoc("Maximum number of entries cached.")
-  entryCapacity: CountingNumber,
-
-  @javadoc("Number of entries to prune at a time.")
-  entryPruningTailSize: CountingNumber,
+impl Default for MultiThreadedCache {
+    fn default() -> Self {
+        Self {
+            entry_capacity: 1000,
+            entry_pruning_tail_size: 1,
+        }
+    }
 }
 
-@javadoc("A cache that is safe for use in a multi threaded environment,
-and tries to prevent redundant or overly parallel backend calls.")
-structure StormTrackingCache {
-  @required
-  @javadoc("Maximum number of entries cached.")
-  entryCapacity: CountingNumber,
-
-  @javadoc("Number of entries to prune at a time.")
-  entryPruningTailSize: CountingNumber,
-
-  @required
-  @javadoc("How much time before expiration should an attempt be made to refresh the materials.
-  If zero, use a simple cache with no storm tracking.")
-  gracePeriod: CountingNumber,
-
-  @required
-  @javadoc("How much time between attempts to refresh the materials.")
-  graceInterval: CountingNumber,
-
-  @required
-  @javadoc("How many simultaneous attempts to refresh the materials.")
-  fanOut: CountingNumber,
-
-  @required
-  @javadoc("How much time until an attempt to refresh the materials should be forgotten.")
-  inFlightTTL: CountingNumber,
-
-  @required
-  @javadoc("How many milliseconds should a thread sleep if fanOut is exceeded.")
-  sleepMilli: CountingNumber,
-
-  @javadoc("The time unit for gracePeriod, graceInterval, and inFlightTTL.
-  The default is seconds.
-  If this is set to milliseconds, then these values will be treated as milliseconds.")
-  timeUnits: TimeUnits
+impl MultiThreadedCache {
+    #[must_use]
+    pub fn new(entry_capacity: u32) -> Self {
+        Self {
+            entry_capacity,
+            ..Default::default()
+        }
+    }
 }
 
-*/
+/// A cache that is safe for use in a multi threaded environment,
+/// and tries to prevent redundant or overly parallel backend calls.")
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
+pub struct StormTrackingCache {
+    /// Maximum number of entries cached.")
+    pub entry_capacity: u32,
+
+    /// Number of entries to prune at a time.")
+    pub entry_pruning_tail_size: u32,
+
+    /// How much time before expiration should an attempt be made to refresh the materials.
+    ///   If zero, use a simple cache with no storm tracking.")
+    pub grace_period: Duration,
+
+    /// How much time between attempts to refresh the materials.")
+    pub grace_interval: Duration,
+
+    /// How many simultaneous attempts to refresh the materials.")
+    pub fan_out: u32,
+
+    /// How much time until an attempt to refresh the materials should be forgotten.")
+    pub in_flight_ttl: Duration,
+}
+
+impl Default for StormTrackingCache {
+    fn default() -> Self {
+        Self {
+            entry_capacity: 1000,
+            entry_pruning_tail_size: 1,
+            grace_period: Duration::from_secs(10),
+            grace_interval: Duration::from_secs(1),
+            fan_out: 20,
+            in_flight_ttl: Duration::from_secs(10),
+        }
+    }
+}
+impl StormTrackingCache {
+    #[must_use]
+    pub fn new(entry_capacity: u32) -> Self {
+        Self {
+            entry_capacity,
+            ..Default::default()
+        }
+    }
+}

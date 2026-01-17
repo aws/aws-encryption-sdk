@@ -55,3 +55,48 @@ pub fn hkdf_expand(prk: &Prk, info: &[&[u8]], okm: &mut [u8]) -> Result<(), Erro
     inner_okm.fill(okm).unwrap();
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[cfg(feature = "track")]
+    #[test]
+    fn test_hkdf_raw() {
+        let tr = crate::memtracker::ResourceTracker::new();
+        let mut okm = [0u8; 32];
+        let ikm = [0u8; 32];
+        let salt = aws_lc_rs::hkdf::Salt::new(aws_lc_rs::hkdf::HKDF_SHA256, &[1u8, 2, 3, 4, 5]);
+        tr.report("made salt");
+        let prk = salt.extract(&ikm);
+        tr.report("after extract");
+        let inner_okm = prk
+            .expand(&[&[1u8, 2, 3, 4, 5]], &aws_lc_rs::aead::AES_256_GCM)
+            .unwrap();
+        tr.report("after expand");
+        inner_okm.fill(&mut okm).unwrap();
+        tr.report("after fill");
+    }
+
+    #[test]
+    fn test_hkdf() -> Result<(), Error> {
+        let mut okm = [0u8; 32];
+        let ikm = [0u8; 32];
+        hkdf(
+            DigestAlg::Sha512,
+            &[1u8, 2, 3, 4, 5],
+            &ikm,
+            &[&[1u8, 2, 3, 4, 5]],
+            &mut okm,
+        )?;
+        // println!("{:?}", okm);
+        Ok(())
+    }
+    // fn hkdf3(salt: &[u8], ikm: &[u8], info: &[&[u8]], okm: &mut [u8]) {
+    //     let salt = aws_lc_rs::hkdf::Salt::new(aws_lc_rs::hkdf::HKDF_SHA256, salt);
+    //     let prk = salt.extract(&ikm);
+    //     let inner_okm = prk
+    //         .expand(info, &aws_lc_rs::aead::AES_256_GCM)
+    //         .unwrap();
+    //     inner_okm.fill(okm).unwrap();
+    // }
+}

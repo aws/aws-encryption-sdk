@@ -1,20 +1,23 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+#![allow(clippy::exhaustive_structs)]
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering;
 
+#[derive(Debug, Default, Clone, Copy)]
 pub struct ResourceTracker {
     pub count: usize,
     pub total: usize,
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct ResourceResults {
     pub count_k: usize,
     pub total_m: usize,
 }
 
 impl ResourceTracker {
+    #[must_use]
     pub fn new() -> Self {
         Self {
             count: get_counter(),
@@ -32,6 +35,7 @@ impl ResourceTracker {
             get_net_total()
         );
     }
+    #[must_use]
     pub fn get_results(&self) -> ResourceResults {
         ResourceResults {
             count_k: (get_counter() - self.count) / 1000,

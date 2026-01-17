@@ -17,8 +17,9 @@ use super::error::ErrorKind;
 #[track_caller]
 pub(crate) fn ser_err<T>(msg: &str) -> Result<T, Error> {
     Err(Error {
-        kind: ErrorKind::SerializationError(msg.into()),
-        backtrace: Backtrace::capture(),
+        kind: ErrorKind::SerializationError,
+        message: msg.into(),
+        backtrace: std::sync::Arc::new(Backtrace::capture()),
         cause: None,
     })
 }

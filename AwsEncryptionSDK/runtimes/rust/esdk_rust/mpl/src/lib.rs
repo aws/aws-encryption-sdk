@@ -91,3 +91,5 @@ pub mod kms_keyring;
 pub mod materials;
 pub mod suites;
 pub mod types;
+
+pub(crate) trait MplPrivate {}

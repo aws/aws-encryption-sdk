@@ -183,7 +183,11 @@ pub(crate) fn expand_key_material(
     let mut encrypt_key = vec![0u8; get_kdf_outlen(suite)? as usize];
     let mut commit_key = vec![0u8; commit_len as usize];
     aws_mpl_primitives::hkdf_expand(&pseudo_random_key, &info, &mut encrypt_key)?;
-    aws_mpl_primitives::hkdf_expand(&pseudo_random_key, &[COMMIT_LABEL.as_bytes()], &mut commit_key)?;
+    aws_mpl_primitives::hkdf_expand(
+        &pseudo_random_key,
+        &[COMMIT_LABEL.as_bytes()],
+        &mut commit_key,
+    )?;
 
     Ok(ExpandedKeyMaterial {
         data_key: encrypt_key,

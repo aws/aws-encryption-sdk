@@ -61,7 +61,7 @@ pub enum DbeAlgorithmSuiteId {
 //= aws-encryption-sdk-specification/framework/algorithm-suites.md#overview
 //= type=implication
 //# The algorithm suite defines the behaviors [supported formats](#supported-formats) MUST follow for cryptographic operations.
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Copy, Clone, Eq)]
 #[non_exhaustive]
 pub enum AlgorithmSuiteId {
     Esdk(EsdkAlgorithmSuiteId),
@@ -76,7 +76,7 @@ impl Default for AlgorithmSuiteId {
 //= aws-encryption-sdk-specification/framework/algorithm-suites.md#structure
 //= type=implication
 //# The fields described below are REQUIRED to be specified by algorithm suites, unless otherwise specified.
-#[derive(Debug, PartialEq, Clone, Default)]
+#[derive(Debug, PartialEq, Clone, Default, Eq)]
 #[non_exhaustive]
 pub struct AlgorithmSuite {
     pub id: AlgorithmSuiteId,
@@ -90,7 +90,7 @@ pub struct AlgorithmSuite {
     pub edk_wrapping: EdkWrappingAlgorithm,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Copy, Clone, Eq)]
 #[non_exhaustive]
 pub enum Encrypt {
     //= aws-encryption-sdk-specification/framework/algorithm-suites.md#gcm
@@ -105,7 +105,7 @@ impl Default for Encrypt {
     }
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Default)]
+#[derive(Debug, PartialEq, Copy, Clone, Default, Eq)]
 #[non_exhaustive]
 pub struct Hkdf {
     pub hmac: aws_mpl_primitives::DigestAlg,
@@ -114,7 +114,7 @@ pub struct Hkdf {
     pub output_key_length: u32,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Default)]
+#[derive(Debug, PartialEq, Copy, Clone, Default, Eq)]
 #[non_exhaustive]
 pub enum DerivationAlgorithm {
     Hkdf(Hkdf),
@@ -159,7 +159,7 @@ const fn hkdf_sha_512(key_length: u32) -> DerivationAlgorithm {
 //= aws-encryption-sdk-specification/framework/algorithm-suites.md#asymmetric-signature-algorithm
 //= type=implication
 //# This field is OPTIONAL.
-#[derive(Debug, PartialEq, Copy, Clone, Default)]
+#[derive(Debug, PartialEq, Copy, Clone, Default, Eq)]
 #[non_exhaustive]
 pub enum SignatureAlgorithm {
     Ecdsa(EcdsaSignatureAlgorithm),
@@ -169,7 +169,7 @@ pub enum SignatureAlgorithm {
 
 //= aws-encryption-sdk-specification/framework/algorithm-suites.md#symmetric-signature-algorithm
 //# This field is OPTIONAL.
-#[derive(Debug, PartialEq, Copy, Clone, Default)]
+#[derive(Debug, PartialEq, Copy, Clone, Default, Eq)]
 #[non_exhaustive]
 pub enum SymmetricSignatureAlgorithm {
     Hmac(aws_mpl_primitives::DigestAlg),
@@ -177,7 +177,7 @@ pub enum SymmetricSignatureAlgorithm {
     None,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Default)]
+#[derive(Debug, PartialEq, Copy, Clone, Default, Eq)]
 #[non_exhaustive]
 pub enum EdkWrappingAlgorithm {
     #[default]
@@ -192,7 +192,7 @@ const EDK_INTERMEDIATE_WRAPPING_AES_GCM_256_HKDF_SHA_512: EdkWrappingAlgorithm =
         pdk_encrypt_algorithm: Encrypt::AesGcm(AesGcm::Aes256Gcm),
     });
 
-#[derive(Debug, PartialEq, Copy, Clone, Default)]
+#[derive(Debug, PartialEq, Copy, Clone, Default, Eq)]
 #[non_exhaustive]
 pub struct IntermediateKeyWrapping {
     pub key_encryption_key_kdf: DerivationAlgorithm,
@@ -458,9 +458,10 @@ pub fn valid_algorithm_suite_info(suite: &AlgorithmSuite) -> Result<(), Error> {
     if valid {
         Ok(())
     } else {
-        Err(err(ErrorKind::InvalidAlgorithmSuiteInfo(
-            "Invalid AlgorithmSuiteInfo".into(),
-        )))
+        Err(err(
+            ErrorKind::InvalidAlgorithmSuiteInfo,
+            "Invalid AlgorithmSuiteInfo",
+        ))
     }
 }
 

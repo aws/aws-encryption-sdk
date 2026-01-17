@@ -1,3 +1,4 @@
+use crate::MplPrivate;
 use crate::error::*;
 use crate::types::*;
 use async_trait::async_trait;
@@ -5,7 +6,8 @@ use async_trait::async_trait;
 // Basic structures
 
 #[async_trait]
-pub trait ClientSupplier: Send + Sync + std::fmt::Debug {
+#[allow(private_bounds)]
+pub trait ClientSupplier: Send + Sync + std::fmt::Debug + MplPrivate {
     async fn get_client(&self, input: &GetClientInput) -> Result<aws_sdk_kms::Client, Error>;
 }
 
@@ -19,18 +21,10 @@ pub struct GetClientInput {
     pub region: Region,
 }
 
-#[derive(Debug, Clone, Default)]
-struct DefaultClientSupplier {}
-#[async_trait]
-impl ClientSupplier for DefaultClientSupplier {
-    async fn get_client(&self, _input: &GetClientInput) -> Result<aws_sdk_kms::Client, Error> {
-        Err(mpl_err("foo"))
-    }
-}
 pub fn create_default_client_supplier(
     _input: &CreateDefaultClientSupplierInput,
 ) -> Result<ClientSupplierRef, Error> {
-    Ok(std::sync::Arc::new(DefaultClientSupplier {}))
+    not_implemented("create_multi_keyring")
 }
 
 #[derive(Debug, Clone, Default, Copy)]

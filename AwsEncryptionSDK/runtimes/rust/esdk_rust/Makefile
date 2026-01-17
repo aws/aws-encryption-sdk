@@ -8,6 +8,7 @@ test:
 	cd prim && make test
 	cd mpl && make test
 	cd esdk && make test
+	cd aws-esdk-cxx && make test
 
 examples:
 	cd mpl && make examples

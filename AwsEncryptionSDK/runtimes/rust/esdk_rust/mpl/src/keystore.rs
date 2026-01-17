@@ -44,7 +44,8 @@ pub trait KeyStore: Send + Sync + std::fmt::Debug {
     async fn get_beacon_key(&self, input: &GetBeaconKeyInput) -> Result<GetBeaconKeyOutput, Error>;
 }
 #[async_trait]
-pub trait KeyStoreAdmin: Send + Sync + std::fmt::Debug {
+#[allow(private_bounds)]
+pub trait KeyStoreAdmin: Send + Sync + std::fmt::Debug + crate::MplPrivate {
     ///Create the `DynamoDB` table that backs this Key Store based on the Key Store configuration. If a table already exists, validate it is configured as expected.")
     async fn create_key_store(
         &self,
@@ -401,7 +402,7 @@ impl GetBeaconKeyOutput {
 //# - [Branch Key Id](#branch-key-id)
 //# - [Branch Key Version](#branch-key-version)
 //# - [Encryption Context](#encryption-context-3)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct BranchKeyMaterials {
     pub branch_key_identifier: String,
@@ -426,7 +427,7 @@ impl BranchKeyMaterials {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct BeaconKeyMaterials {
     //= aws-encryption-sdk-specification/framework/pub structs.md#pub struct-4

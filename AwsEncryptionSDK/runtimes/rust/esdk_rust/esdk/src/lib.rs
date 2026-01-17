@@ -87,8 +87,6 @@ pub mod test_vectors;
 mod types;
 pub use types::*;
 
-#[cfg(feature = "track")]
-pub mod alloc;
 pub(crate) mod encrypt_decrypt;
 pub(crate) mod key_derivation;
 #[cfg(feature = "legacy")]

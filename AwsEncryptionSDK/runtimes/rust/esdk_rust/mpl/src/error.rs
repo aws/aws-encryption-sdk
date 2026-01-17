@@ -1,72 +1,98 @@
 use std::backtrace::Backtrace;
+use std::sync::Arc;
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 #[non_exhaustive]
 /// Individual error types for [`aws_mpl`](crate)
 pub enum ErrorKind {
     /// Higher level MPL errors
-    Mpl(String),
+    Mpl,
     /// Invalid `AlgorithmSuiteInfo` on Encrypt
-    InvalidAlgorithmSuiteInfoOnEncrypt(String),
+    InvalidAlgorithmSuiteInfoOnEncrypt,
     /// Invalid `AlgorithmSuiteInfo` on Decrypt
-    InvalidAlgorithmSuiteInfoOnDecrypt(String),
+    InvalidAlgorithmSuiteInfoOnDecrypt,
     /// Bad input
-    ValidationError(String),
+    ValidationError,
     /// Invalid `AlgorithmSuiteInfo`
-    InvalidAlgorithmSuiteInfo(String),
-    EntryAlreadyExists(String),
-    InvalidEncryptionMaterialsTransition(String),
-    InvalidDecryptionMaterialsTransition(String),
-    InvalidEncryptionMaterials(String),
-    InvalidDecryptionMaterials(String),
-    Consumer(String),
-    NotImplemented(String),
+    InvalidAlgorithmSuiteInfo,
+    EntryAlreadyExists,
+    InvalidEncryptionMaterialsTransition,
+    InvalidDecryptionMaterialsTransition,
+    InvalidEncryptionMaterials,
+    InvalidDecryptionMaterials,
+    Consumer,
+    NotImplemented,
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 /// Base error type for [`aws_mpl`](crate)
 pub struct Error {
     /// Error type
     pub kind: ErrorKind,
+    /// message
+    pub message: String,
     /// Backtrace captured when error was encountered.
-    pub backtrace: Backtrace,
+    pub backtrace: Arc<Backtrace>,
     /// The Error causing the Error, if any.
-    pub cause: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
+    pub cause: Option<Arc<dyn std::error::Error + Send + Sync + 'static>>,
 }
+
+impl PartialEq for Error {
+    fn eq(&self, other: &Self) -> bool {
+        self.kind == other.kind && self.message == other.message
+    }
+}
+impl Eq for Error {}
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.kind {
-            ErrorKind::Mpl(message) => write!(f, "MPL Error {message}"),
-            ErrorKind::InvalidAlgorithmSuiteInfoOnEncrypt(message) => {
-                write!(f, "InvalidAlgorithmSuiteInfoOnEncrypt Error {message}")
+            ErrorKind::Mpl => write!(f, "MPL Error {}", self.message),
+            ErrorKind::InvalidAlgorithmSuiteInfoOnEncrypt => {
+                write!(
+                    f,
+                    "InvalidAlgorithmSuiteInfoOnEncrypt Error {}",
+                    self.message
+                )
             }
-            ErrorKind::InvalidAlgorithmSuiteInfoOnDecrypt(message) => {
-                write!(f, "InvalidAlgorithmSuiteInfoOnDecrypt Error {message}")
+            ErrorKind::InvalidAlgorithmSuiteInfoOnDecrypt => {
+                write!(
+                    f,
+                    "InvalidAlgorithmSuiteInfoOnDecrypt Error {}",
+                    self.message
+                )
             }
-            ErrorKind::InvalidAlgorithmSuiteInfo(message) => {
-                write!(f, "InvalidAlgorithmSuiteInfo Error {message}")
+            ErrorKind::InvalidAlgorithmSuiteInfo => {
+                write!(f, "InvalidAlgorithmSuiteInfo Error {}", self.message)
             }
-            ErrorKind::ValidationError(message) => write!(f, "Validation Error {message}"),
-            ErrorKind::EntryAlreadyExists(message) => {
-                write!(f, "Entry Already Exists Error {message}")
+            ErrorKind::ValidationError => write!(f, "Validation Error {}", self.message),
+            ErrorKind::EntryAlreadyExists => {
+                write!(f, "Entry Already Exists Error {}", self.message)
             }
-            ErrorKind::InvalidEncryptionMaterialsTransition(message) => {
-                write!(f, "Invalid Encryption Materials Transition Error {message}")
+            ErrorKind::InvalidEncryptionMaterialsTransition => {
+                write!(
+                    f,
+                    "Invalid Encryption Materials Transition Error {}",
+                    self.message
+                )
             }
-            ErrorKind::InvalidDecryptionMaterialsTransition(message) => {
-                write!(f, "Invalid Decryption Materials Transition Error {message}")
+            ErrorKind::InvalidDecryptionMaterialsTransition => {
+                write!(
+                    f,
+                    "Invalid Decryption Materials Transition Error {}",
+                    self.message
+                )
             }
-            ErrorKind::InvalidEncryptionMaterials(message) => {
-                write!(f, "Invalid Encryption Materials Error {message}")
+            ErrorKind::InvalidEncryptionMaterials => {
+                write!(f, "Invalid Encryption Materials Error {}", self.message)
             }
-            ErrorKind::InvalidDecryptionMaterials(message) => {
-                write!(f, "Invalid Decryption Materials Error {message}")
+            ErrorKind::InvalidDecryptionMaterials => {
+                write!(f, "Invalid Decryption Materials Error {}", self.message)
             }
-            ErrorKind::Consumer(message) => {
-                write!(f, "Consumer {message}")
+            ErrorKind::Consumer => {
+                write!(f, "Consumer {}", self.message)
             }
-            ErrorKind::NotImplemented(message) => write!(f, "{message} not yet implemented."),
+            ErrorKind::NotImplemented => write!(f, "{} not yet implemented.", self.message),
         }
     }
 }
@@ -82,25 +108,28 @@ impl std::error::Error for Error {
 
 pub(crate) fn mpl_err(msg: impl Into<String>) -> Error {
     Error {
-        kind: ErrorKind::Mpl(msg.into()),
-        backtrace: Backtrace::capture(),
+        kind: ErrorKind::Mpl,
+        message: msg.into(),
+        backtrace: Arc::new(Backtrace::capture()),
         cause: None,
     }
 }
 
 pub(crate) fn not_implemented<T>(msg: impl Into<String>) -> Result<T, Error> {
     Err(Error {
-        kind: ErrorKind::NotImplemented(msg.into()),
-        backtrace: Backtrace::capture(),
+        kind: ErrorKind::NotImplemented,
+        message: msg.into(),
+        backtrace: Arc::new(Backtrace::capture()),
         cause: None,
     })
 }
 
 #[must_use]
-pub fn err(e: ErrorKind) -> Error {
+pub fn err(e: ErrorKind, msg: impl Into<String>) -> Error {
     Error {
         kind: e,
-        backtrace: Backtrace::capture(),
+        message: msg.into(),
+        backtrace: Arc::new(Backtrace::capture()),
         cause: None,
     }
 }

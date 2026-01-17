@@ -11,7 +11,8 @@ use async_trait::async_trait;
 use aws_mpl_primitives::EcdhCurveSpec;
 
 #[async_trait]
-pub trait BranchKeyIdSupplier: Send + Sync + std::fmt::Debug {
+#[allow(private_bounds)]
+pub trait BranchKeyIdSupplier: Send + Sync + std::fmt::Debug + crate::MplPrivate {
     ///Given the Encryption Context associated with this encryption or decryption, returns the branch key that should be responsible for unwrapping or wrapping the data key.")
     async fn get_branch_key_id(
         &self,

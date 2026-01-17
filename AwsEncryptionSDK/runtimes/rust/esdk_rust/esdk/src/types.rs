@@ -71,12 +71,15 @@ impl Default for FrameLength {
 
 impl FrameLength {
     /// return new `FrameLength`.
-    pub fn new(val : u32) -> Result<Self, Error> {
-        Ok(Self(std::num::NonZeroU32::new(val).ok_or_else(|| val_err("Frame length must be non-zero"))?))
+    pub fn new(val: u32) -> Result<Self, Error> {
+        Ok(Self(
+            std::num::NonZeroU32::new(val)
+                .ok_or_else(|| val_err("Frame length must be non-zero"))?,
+        ))
     }
     /// return new `FrameLength`. Panic if val is zero.
     #[must_use]
-    pub const fn new_unchecked(val : u32) -> Self {
+    pub const fn new_unchecked(val: u32) -> Self {
         Self(std::num::NonZeroU32::new(val).unwrap())
     }
 }
@@ -122,7 +125,6 @@ impl EncryptOutput {
     pub fn new() -> Self {
         Self::default()
     }
-
 }
 
 #[derive(Debug, PartialEq, Clone, Default)]
@@ -140,7 +142,6 @@ impl EncryptStreamOutput {
     pub fn new() -> Self {
         Self::default()
     }
-
 }
 
 #[derive(Debug, PartialEq, Clone, Default)]

@@ -66,12 +66,16 @@
 #![allow(clippy::too_many_lines)] // disagree
 #![allow(unused_crate_dependencies)] // broken
 
+use std::sync::Arc;
+
 mod ecdsa;
 pub use ecdsa::*;
 mod ecdh;
 pub use ecdh::*;
 mod hkdf;
 pub use hkdf::*;
+#[cfg(feature = "track")]
+pub mod memtracker;
 
 use aws_lc_rs::aead::{Aad, LessSafeKey, Nonce, UnboundKey};
 use aws_lc_rs::rand;
@@ -86,11 +90,11 @@ pub enum DigestAlg {
     Sha512,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Error {
     pub msg: String,
-    pub backtrace: Backtrace,
+    pub backtrace: Arc<Backtrace>,
 }
 
 impl std::fmt::Display for Error {
@@ -105,7 +109,7 @@ impl std::error::Error for Error {}
 fn serr(s: String) -> Error {
     Error {
         msg: s,
-        backtrace: Backtrace::capture(),
+        backtrace: Arc::new(Backtrace::capture()),
     }
 }
 

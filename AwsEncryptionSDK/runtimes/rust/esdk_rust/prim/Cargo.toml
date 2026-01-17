@@ -4,8 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-aws-lc-rs = { version = "1.15.2", default-features = false }
+aws-lc-rs = { version = "1.15.3", default-features = false }
 
 [features]
 default = ["aws-lc-rs/aws-lc-sys"]
 fips = ["aws-lc-rs/fips"]
+track = []

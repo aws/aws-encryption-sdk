@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use std::fmt::Formatter;
 use zeroize::Zeroize;
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, PartialEq, Eq)]
 /// Secrets, e.g. Plain text keys
 #[allow(clippy::exhaustive_structs)]
 pub struct Secret(pub Vec<u8>);
@@ -49,7 +49,7 @@ pub type SymmetricSigningKey = Secret;
 pub type EncryptionContext = std::collections::HashMap<EncryptionContextKey, String>;
 
 // Values come from: https://github.com/awslabs/aws-encryption-sdk-specification/blob/master/framework/raw-rsa-keyring.md#supported-padding-schemes
-#[derive(Debug, PartialEq, Copy, Clone, Default)]
+#[derive(Debug, PartialEq, Copy, Clone, Default, Eq)]
 #[non_exhaustive]
 pub enum PaddingScheme {
     Pkcs1,
@@ -60,7 +60,7 @@ pub enum PaddingScheme {
     OaepSha512Mgf1,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Default)]
+#[derive(Debug, PartialEq, Copy, Clone, Default, Eq)]
 #[non_exhaustive]
 pub enum AesWrappingAlg {
     AlgAes128GcmIv12Tag16,
@@ -86,7 +86,7 @@ pub enum AesWrappingAlg {
 //      purpose.
 // Note that both of these will be breaking changes to any customers building
 // custom implementations of keyrings or CMMs.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct EncryptionMaterials {
     //= aws-encryption-sdk-specification/framework/structures.md#structure-2
@@ -113,7 +113,7 @@ pub struct EncryptionMaterials {
     pub symmetric_signing_keys: Vec<SymmetricSigningKey>,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct DecryptionMaterials {
     //= aws-encryption-sdk-specification/framework/structures.md#fields

@@ -53,5 +53,4 @@ fips = ["aws-mpl-primitives/fips"]
 kms = ["aws-mpl-rs/kms", "aws-sdk-kms"]
 ddb = ["kms", "aws-mpl-rs/ddb", "aws-sdk-dynamodb"]
 legacy = ["ddb", "aws-mpl-legacy", "tokio/full", "aws-smithy-types"]
-track = []
-
+track = ["aws-mpl-primitives/track"]
