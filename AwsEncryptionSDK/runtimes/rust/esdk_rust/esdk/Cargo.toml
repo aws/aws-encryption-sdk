@@ -7,7 +7,7 @@ autoexamples = false
 
 [dependencies]
 # tokio only needed for tests and test_vectors
-tokio = { version = "1.49.0", features = ["rt", "macros", "rt-multi-thread"]  }
+tokio = { version = "1.49.0", features = ["rt", "macros", "rt-multi-thread"], optional = true }
 aws-mpl-primitives = { path = "../prim" }
 aws-mpl-rs = { path = "../mpl", default-features = false}
 
@@ -24,6 +24,7 @@ serde_json = { version = "1.0.149", optional = true }
 
 # Necessary for examples
 [dev-dependencies]
+tokio = { version = "1.49.0", features = ["rt", "macros", "rt-multi-thread"] }
 pem = "3.0.6"
 aws-config = "1.8.10"
 aws-lc-rs = {version = "1.15.2"}
@@ -39,7 +40,6 @@ required-features = ["test_vectors"]  # Only build binary when test_vectors feat
 
 [package.metadata.docs.rs]
 all-features = true
-# features = ["test_vectors"]
 rustdoc-args = [
     "--generate-link-to-definition",
     "--generate-macro-expansion",
