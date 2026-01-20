@@ -1,5 +1,5 @@
 use crate::error::*;
-pub use crate::types::{DecryptionMaterials, EncryptionMaterials};
+use crate::types::{DecryptionMaterials, EncryptionMaterials};
 pub fn valid_encryption_materials_transition(
     _input: ValidEncryptionMaterialsTransitionInput,
 ) -> Result<(), Error> {

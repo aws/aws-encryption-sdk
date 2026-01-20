@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::error::*;
-pub use crate::types::{DecryptionMaterials, EncryptedDataKey, EncryptionMaterials};
+use crate::types::{DecryptionMaterials, EncryptionMaterials};
 use async_trait::async_trait;
 
 //= aws-encryption-sdk-specification/framework/cryptographic-materials-cache.md#overview
@@ -173,14 +173,14 @@ impl DefaultCache {
     }
 }
 
-/// A cache that is safe for use in a multi threaded environment, but no extra functionality.")
+/// A cache that is safe for use in a multi threaded environment, but no extra functionality.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct MultiThreadedCache {
-    /// Maximum number of entries cached.")
+    /// Maximum number of entries cached.
     pub entry_capacity: u32,
 
-    /// Number of entries to prune at a time.")
+    /// Number of entries to prune at a time.
     pub entry_pruning_tail_size: u32,
 }
 
@@ -204,27 +204,27 @@ impl MultiThreadedCache {
 }
 
 /// A cache that is safe for use in a multi threaded environment,
-/// and tries to prevent redundant or overly parallel backend calls.")
+/// and tries to prevent redundant or overly parallel backend calls.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub struct StormTrackingCache {
-    /// Maximum number of entries cached.")
+    /// Maximum number of entries cached.
     pub entry_capacity: u32,
 
-    /// Number of entries to prune at a time.")
+    /// Number of entries to prune at a time.
     pub entry_pruning_tail_size: u32,
 
     /// How much time before expiration should an attempt be made to refresh the materials.
-    ///   If zero, use a simple cache with no storm tracking.")
+    ///   If zero, use a simple cache with no storm tracking.
     pub grace_period: Duration,
 
-    /// How much time between attempts to refresh the materials.")
+    /// How much time between attempts to refresh the materials.
     pub grace_interval: Duration,
 
-    /// How many simultaneous attempts to refresh the materials.")
+    /// How many simultaneous attempts to refresh the materials.
     pub fan_out: u32,
 
-    /// How much time until an attempt to refresh the materials should be forgotten.")
+    /// How much time until an attempt to refresh the materials should be forgotten.
     pub in_flight_ttl: Duration,
 }
 

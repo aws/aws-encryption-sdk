@@ -13,6 +13,7 @@ use aws_mpl_rs::kms_keyring::*;
 use aws_mpl_rs::types::Secret;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
+use aws_mpl_rs::key_agreement::RawEcdhStaticConfigurations;
 
 #[cfg(feature = "kms")]
 use aws_sdk_kms::Client as KmsClient;

@@ -44,7 +44,7 @@
     clippy::little_endian_bytes,
     clippy::missing_asserts_for_indexing,
     clippy::mixed_read_write_in_expression,
-    // clippy::panic, because mpl enums are stupid
+    clippy::panic,
     clippy::partial_pub_fields,
     clippy::redundant_type_annotations,
     clippy::renamed_function_params,
