@@ -14,6 +14,8 @@ impl Default for KeyAgreementScheme {
 #[non_exhaustive]
 /// Supported configurations for the `StaticConfiguration` Key Agreement Scheme.
 pub enum StaticConfigurations {
+    #[cfg(feature = "kms")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "kms")))]
     AwsKmsEcdh(KmsEcdhStaticConfigurations),
     RawEcdh(RawEcdhStaticConfigurations),
 }
@@ -23,6 +25,7 @@ impl Default for StaticConfigurations {
     }
 }
 
+#[cfg(feature = "kms")]
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 /// Allowed configurations when using `KmsEcdhStaticConfigurations`.
@@ -30,6 +33,7 @@ pub enum KmsEcdhStaticConfigurations {
     KmsPublicKeyDiscovery(KmsPublicKeyDiscovery),
     KmsPrivateKeyToStaticPublicKey(KmsPrivateKeyToStaticPublicKey),
 }
+#[cfg(feature = "kms")]
 impl Default for KmsEcdhStaticConfigurations {
     fn default() -> Self {
         Self::KmsPublicKeyDiscovery(KmsPublicKeyDiscovery::default())
@@ -50,6 +54,7 @@ impl Default for RawEcdhStaticConfigurations {
     }
 }
 
+#[cfg(feature = "kms")]
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 /// Inputs for creating a `KmsPublicKeyDiscovery` Configuration. This is a DECRYPT ONLY configuration.
@@ -57,6 +62,7 @@ pub struct KmsPublicKeyDiscovery {
     /// AWS KMS key identifier belonging to the recipient.
     pub recipient_kms_identifier: String,
 }
+#[cfg(feature = "kms")]
 impl KmsPublicKeyDiscovery {
     /// Create a new `KmsPublicKeyDiscovery` Configuration.
     pub fn new(recipient_kms_identifier: impl Into<String>) -> Self {
@@ -66,6 +72,7 @@ impl KmsPublicKeyDiscovery {
     }
 }
 
+#[cfg(feature = "kms")]
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 /// Inputs for creating a `KmsPrivateKeyToStaticPublicKey` Configuration.
@@ -78,6 +85,7 @@ pub struct KmsPrivateKeyToStaticPublicKey {
     pub sender_public_key: Vec<u8>,
 }
 
+#[cfg(feature = "kms")]
 impl KmsPrivateKeyToStaticPublicKey {
     /// Create a new `KmsPrivateKeyToStaticPublicKey` Configuration.
     pub fn new(

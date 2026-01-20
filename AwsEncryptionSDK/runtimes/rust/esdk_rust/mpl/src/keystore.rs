@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 use crate::error::*;
 use crate::kms_keyring::GrantTokenList;
-use crate::types::*;
+use crate::*;
 use async_trait::async_trait;
 
 type TableName = String;
@@ -28,7 +28,7 @@ pub fn make_key_store_admin(_config: &KeyStoreConfig) -> Result<KeyStoreAdminRef
 //#- [GetBeaconKey](#getbeaconkey)
 
 #[async_trait]
-pub trait KeyStore: Send + Sync + std::fmt::Debug {
+pub trait KeyStore: Send + Sync + Debug {
     async fn get_key_store_info(&self) -> Result<GetKeyStoreInfoOutput, Error>;
     ///Get the ACTIVE version for a particular Branch Key from the Key Store.
     async fn get_active_branch_key(
@@ -45,7 +45,7 @@ pub trait KeyStore: Send + Sync + std::fmt::Debug {
 }
 #[async_trait]
 #[allow(private_bounds)]
-pub trait KeyStoreAdmin: Send + Sync + std::fmt::Debug + crate::MplPrivate {
+pub trait KeyStoreAdmin: Send + Sync + Debug + MplPrivate {
     // CreateKey will create two keys to add to the key store
     // One is the branch key, which is used in the hierarchical keyring
     // The second is a beacon key that is used as a root key to

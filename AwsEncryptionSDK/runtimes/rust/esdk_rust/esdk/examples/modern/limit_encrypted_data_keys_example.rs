@@ -19,8 +19,9 @@ https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/configure.html
 #![deny(clippy::wildcard_imports)] // REMOVE
 
 use aws_esdk::{DecryptInput, EncryptInput, EncryptionContext, decrypt, encrypt};
-use aws_mpl_rs::keyring::{CreateMultiKeyringInput, CreateRawAesKeyringInput, KeyringRef};
-use aws_mpl_rs::types::AesWrappingAlg;
+use aws_mpl_rs::keyring::{
+    AesWrappingAlg, CreateMultiKeyringInput, CreateRawAesKeyringInput, KeyringRef,
+};
 use rand::TryRngCore;
 
 pub async fn encrypt_and_decrypt(

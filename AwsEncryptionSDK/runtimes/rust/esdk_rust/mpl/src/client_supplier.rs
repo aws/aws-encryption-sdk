@@ -1,6 +1,6 @@
 use crate::MplPrivate;
 use crate::error::*;
-use crate::types::*;
+use crate::kms_keyring::Region;
 use async_trait::async_trait;
 
 // Basic structures

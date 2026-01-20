@@ -1,8 +1,7 @@
 use crate::commitment::CommitmentPolicy;
 use crate::error::*;
-use crate::keyring::KeyringRef;
 use crate::suites::AlgorithmSuiteId;
-use crate::types::*;
+use crate::*;
 use async_trait::async_trait;
 
 //= aws-encryption-sdk-specification/framework/cmm-interface.md#supported-cmms
@@ -15,7 +14,7 @@ use async_trait::async_trait;
 
 #[async_trait]
 #[allow(private_bounds)]
-pub trait CryptographicMaterialsManager: Send + Sync + std::fmt::Debug + crate::MplPrivate {
+pub trait CryptographicMaterialsManager: Send + Sync + Debug + MplPrivate {
     async fn get_encryption_materials(
         &self,
         input: &GetEncryptionMaterialsInput,
@@ -56,7 +55,7 @@ pub struct GetEncryptionMaterialsInput {
 
     pub max_plaintext_length: Option<usize>,
 
-    pub required_encryption_context_keys: Vec<EncryptionContextKey>,
+    pub required_encryption_context_keys: Vec<String>,
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -114,7 +113,7 @@ pub struct CreateRequiredEncryptionContextCMMInput {
     pub keyring: Option<KeyringRef>,
 
     ///A list of Encryption Context keys which are required to be supplied during encryption and decryption, and correspond to Encryption Context key-value pairs which are not stored on the resulting message.
-    pub required_encryption_context_keys: Vec<EncryptionContextKey>,
+    pub required_encryption_context_keys: Vec<String>,
 }
 
 impl CreateRequiredEncryptionContextCMMInput {
@@ -133,18 +132,22 @@ impl CreateRequiredEncryptionContextCMMInput {
         }
         Ok(())
     }
-    pub fn with_keyring(keyring: KeyringRef, keys: &[EncryptionContextKey]) -> Self {
+
+    pub fn with_keyring<T: Into<String> + Clone>(keyring: KeyringRef, keys: &[T]) -> Self {
         Self {
             underlying_cmm: None,
             keyring: Some(keyring),
-            required_encryption_context_keys: keys.to_vec(),
+            required_encryption_context_keys: keys.iter().map(|k| k.clone().into()).collect(),
         }
     }
-    pub fn with_cmm(cmm: CryptographicMaterialsManagerRef, keys: &[EncryptionContextKey]) -> Self {
+    pub fn with_cmm<T: Into<String> + Clone>(
+        cmm: CryptographicMaterialsManagerRef,
+        keys: &[T],
+    ) -> Self {
         Self {
             underlying_cmm: Some(cmm),
             keyring: None,
-            required_encryption_context_keys: keys.to_vec(),
+            required_encryption_context_keys: keys.iter().map(|k| k.clone().into()).collect(),
         }
     }
     pub fn go(&self) -> Result<CryptographicMaterialsManagerRef, Error> {

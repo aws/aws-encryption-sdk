@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::types::*;
+use aws_mpl_rs::EncryptedDataKey;
 use aws_mpl_rs::suites::AlgorithmSuite;
-use aws_mpl_rs::types::EncryptedDataKey;
 
 pub(crate) type ESDKEncryptionContext = EncryptionContext;
 pub(crate) type ESDKEncryptionContextPair = (String, String);

@@ -5,15 +5,15 @@ use crate::{DecryptInput, MaterialSource, decrypt};
 use anyhow::Result;
 #[cfg(feature = "kms")]
 use aws_config::Region;
-use aws_mpl_rs::key_agreement;
+#[cfg(feature = "ddb")]
+use aws_mpl_rs::Secret;
+use aws_mpl_rs::agreement;
+use aws_mpl_rs::agreement::RawEcdhStaticConfigurations;
 use aws_mpl_rs::keyring::*;
 #[cfg(feature = "kms")]
 use aws_mpl_rs::kms_keyring::*;
-#[cfg(feature = "ddb")]
-use aws_mpl_rs::types::Secret;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
-use aws_mpl_rs::key_agreement::RawEcdhStaticConfigurations;
 
 #[cfg(feature = "kms")]
 use aws_sdk_kms::Client as KmsClient;
@@ -197,7 +197,7 @@ pub(crate) fn get_raw_ecdh_keyring_static(
     let key = &keys[&keydesc.sender];
     let pub_key = decode_base64(&key.recipient_material_public_key)?;
     let config =
-        key_agreement::RawPrivateKeyToStaticPublicKey::new(key.sender_material.as_bytes(), pub_key);
+        agreement::RawPrivateKeyToStaticPublicKey::new(key.sender_material.as_bytes(), pub_key);
     let config = RawEcdhStaticConfigurations::RawPrivateKeyToStaticPublicKey(config);
     let keyring = CreateRawEcdhKeyringInput::new(config, get_curve(&keydesc.ecc_curve)?).go()?;
     Ok(KeyringStatus::Ok(keyring))
@@ -237,7 +237,7 @@ pub(crate) fn get_raw_ecdh_keyring_ephemeral(
 ) -> Result<KeyringStatus> {
     let key = &keys[&keydesc.recipient];
     let pub_key = decode_base64(&key.recipient_material_public_key)?;
-    let config = key_agreement::EphemeralPrivateKeyToStaticPublicKey::new(pub_key);
+    let config = agreement::EphemeralPrivateKeyToStaticPublicKey::new(pub_key);
     let config = RawEcdhStaticConfigurations::EphemeralPrivateKeyToStaticPublicKey(config);
     let keyring = CreateRawEcdhKeyringInput::new(config, get_curve(&keydesc.ecc_curve)?).go()?;
     Ok(KeyringStatus::Ok(keyring))
@@ -275,7 +275,7 @@ pub(crate) fn get_raw_ecdh_keyring_discovery(
     keys: &KeyMap,
 ) -> Result<KeyringStatus> {
     let key = &keys[&keydesc.recipient];
-    let config = key_agreement::PublicKeyDiscovery::new(key.recipient_material.as_bytes());
+    let config = agreement::PublicKeyDiscovery::new(key.recipient_material.as_bytes());
     let config = RawEcdhStaticConfigurations::PublicKeyDiscovery(config);
     let keyring = CreateRawEcdhKeyringInput::new(config, get_curve(&keydesc.ecc_curve)?).go()?;
     Ok(KeyringStatus::Ok(keyring))
@@ -398,12 +398,9 @@ pub(crate) fn get_kms_ecdh_keyring_static(
 
     let sender_key = decode_base64(&key.sender_material_public_key)?;
     let recipient_key = decode_base64(&key.recipient_material_public_key)?;
-    let schema = key_agreement::KmsPrivateKeyToStaticPublicKey::new(
-        recipient_key,
-        sender_key,
-        sender_kms_key,
-    );
-    let schema = KmsEcdhStaticConfigurations::KmsPrivateKeyToStaticPublicKey(schema);
+    let schema =
+        agreement::KmsPrivateKeyToStaticPublicKey::new(recipient_key, sender_key, sender_kms_key);
+    let schema = agreement::KmsEcdhStaticConfigurations::KmsPrivateKeyToStaticPublicKey(schema);
     let curve = get_curve(&key.key_id)?;
     let keyring = CreateAwsKmsEcdhKeyringInput::new(schema, curve, kms_client.clone()).go()?;
     Ok(KeyringStatus::Ok(keyring))
@@ -447,8 +444,8 @@ pub(crate) fn get_kms_ecdh_keyring_discovery(
 ) -> Result<KeyringStatus> {
     let key = keys[&keydesc.recipient].clone();
     let kms_client = kms_from_arn(kms, &key.recipient_material);
-    let schema = key_agreement::KmsPublicKeyDiscovery::new(&key.recipient_material);
-    let schema = KmsEcdhStaticConfigurations::KmsPublicKeyDiscovery(schema);
+    let schema = agreement::KmsPublicKeyDiscovery::new(&key.recipient_material);
+    let schema = agreement::KmsEcdhStaticConfigurations::KmsPublicKeyDiscovery(schema);
     let curve = get_curve(&key.key_id)?;
     let keyring = CreateAwsKmsEcdhKeyringInput::new(schema, curve, kms_client.clone()).go()?;
     Ok(KeyringStatus::Ok(keyring))
@@ -630,11 +627,11 @@ fn get_aes_alg_legacy(len: usize) -> Result<aws_mpl_legacy::types::AesWrappingAl
     }
 }
 
-fn get_aes_alg(len: usize) -> Result<aws_mpl_rs::types::AesWrappingAlg> {
+fn get_aes_alg(len: usize) -> Result<AesWrappingAlg> {
     match len {
-        16 => Ok(aws_mpl_rs::types::AesWrappingAlg::AlgAes128GcmIv12Tag16),
-        24 => Ok(aws_mpl_rs::types::AesWrappingAlg::AlgAes192GcmIv12Tag16),
-        32 => Ok(aws_mpl_rs::types::AesWrappingAlg::AlgAes256GcmIv12Tag16),
+        16 => Ok(AesWrappingAlg::AlgAes128GcmIv12Tag16),
+        24 => Ok(AesWrappingAlg::AlgAes192GcmIv12Tag16),
+        32 => Ok(AesWrappingAlg::AlgAes256GcmIv12Tag16),
         _ => anyhow::bail!("Unknown aes key length: {len}"),
     }
 }
@@ -712,17 +709,17 @@ fn get_raw_keyring(keydesc: &KeyDescription, key: &Key) -> Result<KeyringStatus>
         let keyring = input.go()?;
         Ok(KeyringStatus::Ok(keyring))
     } else if is_rsa {
-        let mode: aws_mpl_rs::types::PaddingScheme;
+        let mode: PaddingScheme;
         if hash == "sha1" && p_alg == "pkcs1" {
-            mode = aws_mpl_rs::types::PaddingScheme::Pkcs1;
+            mode = PaddingScheme::Pkcs1;
         } else if hash == "sha1" && p_alg == "oaep-mgf1" {
-            mode = aws_mpl_rs::types::PaddingScheme::OaepSha1Mgf1;
+            mode = PaddingScheme::OaepSha1Mgf1;
         } else if hash == "sha256" && p_alg == "oaep-mgf1" {
-            mode = aws_mpl_rs::types::PaddingScheme::OaepSha256Mgf1;
+            mode = PaddingScheme::OaepSha256Mgf1;
         } else if hash == "sha384" && p_alg == "oaep-mgf1" {
-            mode = aws_mpl_rs::types::PaddingScheme::OaepSha384Mgf1;
+            mode = PaddingScheme::OaepSha384Mgf1;
         } else if hash == "sha512" && p_alg == "oaep-mgf1" {
-            mode = aws_mpl_rs::types::PaddingScheme::OaepSha512Mgf1;
+            mode = PaddingScheme::OaepSha512Mgf1;
         } else {
             anyhow::bail!("Unknown rsa padding combo : {hash} {p_alg}");
         }

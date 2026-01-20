@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::error::*;
-use crate::types::{DecryptionMaterials, EncryptionMaterials};
+use crate::{DecryptionMaterials, EncryptionMaterials};
 use async_trait::async_trait;
 
 //= aws-encryption-sdk-specification/framework/cryptographic-materials-cache.md#overview

@@ -1,12 +1,12 @@
+use crate::agreement::RawEcdhStaticConfigurations;
 use crate::error::*;
-use crate::key_agreement::{RawEcdhStaticConfigurations};
-use crate::types::*;
+use crate::*;
 use async_trait::async_trait;
 use aws_mpl_primitives::EcdhCurveSpec;
 
 #[async_trait]
 #[allow(private_bounds)]
-pub trait Keyring: Send + Sync + std::fmt::Debug + crate::MplPrivate {
+pub trait Keyring: Send + Sync + Debug + MplPrivate {
     async fn on_encrypt(&self, input: &OnEncryptInput) -> Result<OnEncryptOutput, Error>;
     async fn on_decrypt(&self, input: &OnDecryptInput) -> Result<OnDecryptOutput, Error>;
 }
@@ -75,6 +75,27 @@ impl CreateMultiKeyringInput {
 ///Creates a Raw AES Keyring, which wraps and unwraps data keys locally using `AES_GCM`.
 pub fn create_raw_aes_keyring(_input: &CreateRawAesKeyringInput) -> Result<KeyringRef, Error> {
     not_implemented("create_raw_aes_keyring")
+}
+
+// Values come from: https://github.com/awslabs/aws-encryption-sdk-specification/blob/master/framework/raw-rsa-keyring.md#supported-padding-schemes
+#[derive(Debug, PartialEq, Eq, Copy, Clone, Default, Hash)]
+#[non_exhaustive]
+pub enum PaddingScheme {
+    Pkcs1,
+    OaepSha1Mgf1,
+    OaepSha256Mgf1,
+    OaepSha384Mgf1,
+    #[default]
+    OaepSha512Mgf1,
+}
+
+#[derive(Debug, PartialEq, Copy, Clone, Default, Eq, Hash)]
+#[non_exhaustive]
+pub enum AesWrappingAlg {
+    AlgAes128GcmIv12Tag16,
+    AlgAes192GcmIv12Tag16,
+    #[default]
+    AlgAes256GcmIv12Tag16,
 }
 
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]

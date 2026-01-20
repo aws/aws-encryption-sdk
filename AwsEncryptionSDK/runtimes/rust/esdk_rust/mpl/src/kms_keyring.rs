@@ -1,18 +1,22 @@
+use crate::agreement::KmsEcdhStaticConfigurations;
 use crate::client_supplier::*;
 #[cfg(feature = "ddb")]
 use crate::cmc::CacheType;
 use crate::error::*;
-use crate::key_agreement::{KmsEcdhStaticConfigurations};
 use crate::keyring::*;
 #[cfg(feature = "ddb")]
 use crate::keystore::KeyStoreRef;
-use crate::types::*;
+use crate::*;
 use async_trait::async_trait;
 use aws_mpl_primitives::EcdhCurveSpec;
 
+pub type KmsKeyId = String;
+pub type Region = String;
+pub type AccountId = String;
+
 #[async_trait]
 #[allow(private_bounds)]
-pub trait BranchKeyIdSupplier: Send + Sync + std::fmt::Debug + crate::MplPrivate {
+pub trait BranchKeyIdSupplier: Send + Sync + Debug + MplPrivate {
     ///Given the Encryption Context associated with this encryption or decryption, returns the branch key that should be responsible for unwrapping or wrapping the data key.
     async fn get_branch_key_id(
         &self,

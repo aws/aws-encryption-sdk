@@ -5,8 +5,8 @@ use super::serializable_types::*;
 use super::serialize_functions::*;
 use super::*;
 use crate::types::{SafeRead, SafeWrite};
+use aws_mpl_rs::EncryptedDataKey;
 use aws_mpl_rs::suites::AlgorithmSuite;
-use aws_mpl_rs::types::EncryptedDataKey;
 
 pub(crate) type MessageId = Vec<u8>;
 

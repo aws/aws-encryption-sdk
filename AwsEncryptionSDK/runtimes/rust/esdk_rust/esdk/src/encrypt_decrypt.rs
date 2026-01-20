@@ -11,8 +11,8 @@ use crate::serialize::serializable_types::*;
 use crate::serialize::serialize_functions::*;
 use crate::serialize::v2_header_body::get_hkdf;
 use crate::serialize::*;
+use aws_mpl_rs::EncryptedDataKey;
 use aws_mpl_rs::suites::AlgorithmSuite;
-use aws_mpl_rs::types::EncryptedDataKey;
 
 use aws_mpl_primitives::ecdsa_verify_context;
 use aws_mpl_primitives::{EcdsaSignatureAlgorithm, aes_encrypt, generate_random_bytes};
@@ -115,7 +115,7 @@ pub(crate) fn get_ecdsa_alg(
 pub(crate) fn verify_signature(
     r: &mut dyn SafeRead,
     context: aws_mpl_primitives::DigestContext,
-    dec_mat: aws_mpl_rs::types::DecryptionMaterials,
+    dec_mat: aws_mpl_rs::DecryptionMaterials,
     raw: &mut dyn SafeWrite,
 ) -> Result<(), Error> {
     //= compliance/client-apis/decrypt.txt#2.7

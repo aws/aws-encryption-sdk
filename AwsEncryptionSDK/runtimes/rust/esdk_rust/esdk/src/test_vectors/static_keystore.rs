@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use async_trait::async_trait;
+use aws_mpl_rs::Secret;
 use aws_mpl_rs::keystore;
-use aws_mpl_rs::types::Secret;
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]

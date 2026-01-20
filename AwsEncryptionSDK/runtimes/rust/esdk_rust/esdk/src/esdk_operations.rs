@@ -552,7 +552,7 @@ async fn internal_decrypt(
 // in the decryption material's required encryption context keys.
 // TODO Post-#619: Duvet this section
 fn build_encryption_context_to_only_authenticate(
-    dec_mat: &aws_mpl_rs::types::DecryptionMaterials,
+    dec_mat: &aws_mpl_rs::DecryptionMaterials,
 ) -> EncryptionContext {
     dec_mat
         .encryption_context

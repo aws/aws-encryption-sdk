@@ -2,14 +2,14 @@
 use crate::serialize::header_types::*;
 use crate::serialize::serializable_types::*;
 use crate::*;
+use aws_mpl_rs::DecryptionMaterials;
+use aws_mpl_rs::EncryptionMaterials;
+#[cfg(feature = "legacy")]
+use aws_mpl_rs::Secret;
 use aws_mpl_rs::cmm::DecryptMaterialsInput;
 use aws_mpl_rs::cmm::GetEncryptionMaterialsInput;
 #[cfg(feature = "legacy")]
 use aws_mpl_rs::suites::AlgorithmSuite;
-use aws_mpl_rs::types::DecryptionMaterials;
-use aws_mpl_rs::types::EncryptionMaterials;
-#[cfg(feature = "legacy")]
-use aws_mpl_rs::types::Secret;
 
 pub(crate) enum Cmm {
     #[cfg(feature = "legacy")]
@@ -188,7 +188,7 @@ fn convert_commit(
 }
 
 #[cfg(feature = "legacy")]
-fn convert_edk(x: &aws_mpl_rs::types::EncryptedDataKey) -> aws_mpl_legacy::types::EncryptedDataKey {
+fn convert_edk(x: &aws_mpl_rs::EncryptedDataKey) -> aws_mpl_legacy::types::EncryptedDataKey {
     aws_mpl_legacy::types::EncryptedDataKey::builder()
         .key_provider_id(x.key_provider_id.clone())
         .key_provider_info(x.key_provider_info.clone())
@@ -199,7 +199,7 @@ fn convert_edk(x: &aws_mpl_rs::types::EncryptedDataKey) -> aws_mpl_legacy::types
 
 #[cfg(feature = "legacy")]
 fn convert_edks(
-    x: &[aws_mpl_rs::types::EncryptedDataKey],
+    x: &[aws_mpl_rs::EncryptedDataKey],
 ) -> Vec<aws_mpl_legacy::types::EncryptedDataKey> {
     x.iter().map(convert_edk).collect()
 }
@@ -403,7 +403,7 @@ fn from_legacy_em(
         .unwrap()
         .iter()
         .map(|x| {
-            aws_mpl_rs::types::EncryptedDataKey::new(
+            aws_mpl_rs::EncryptedDataKey::new(
                 x.key_provider_id().as_ref().unwrap().clone(),
                 x.key_provider_info().as_ref().unwrap().clone(),
                 x.ciphertext().as_ref().unwrap().clone(),

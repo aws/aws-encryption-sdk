@@ -4,7 +4,7 @@
 use super::serialize_functions::*;
 use super::*;
 use crate::types::{SafeRead, SafeWrite};
-use aws_mpl_rs::types::EncryptedDataKey;
+use aws_mpl_rs::EncryptedDataKey;
 
 pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result<(), Error> {
     write_str_u16(w, &edk.key_provider_id)?;
