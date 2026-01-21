@@ -21,6 +21,7 @@ pub const MEMORY_TEST_ITERATIONS: usize = 5;
 pub struct EsdkBenchmark {
     pub esdk_client: esdk_client::Client,
     pub raw_keyring: aws_esdk::material_providers::types::keyring::KeyringRef,
+    pub raw_keyring_new: aws_mpl_legacy::types::keyring::KeyringRef,
     pub config: TestConfig,
     pub results: Vec<BenchmarkResult>,
     pub cpu_count: usize,
@@ -40,6 +41,7 @@ impl EsdkBenchmark {
 
         // Setup ESDK
         let (esdk_client, raw_keyring) = Self::setup_esdk().await?;
+        let raw_keyring_new = Self::setup_new_keyring().await?;
 
         info!(
             "Initialized ESDK Benchmark - CPU cores: {}, Memory: {:.1}GB",
@@ -49,6 +51,7 @@ impl EsdkBenchmark {
         Ok(Self {
             esdk_client,
             raw_keyring,
+            raw_keyring_new,
             config,
             results: Vec::new(),
             cpu_count,
@@ -86,6 +89,28 @@ impl EsdkBenchmark {
 
         info!("ESDK client initialized successfully");
         Ok((esdk_client, raw_keyring))
+    }
+
+    async fn setup_new_keyring() -> Result<aws_mpl_legacy::types::keyring::KeyringRef> {
+        // Initialize material providers client
+        let mpl_client = aws_esdk_rs::mpl();
+
+        // Create default AES-256 keyring
+        let mut key = [0u8; 32]; // 256-bit key
+        rand::rng().fill(&mut key);
+
+        let raw_keyring = mpl_client
+            .create_raw_aes_keyring()
+            .key_name("test-aes-256-key")
+            .key_namespace("esdk-performance-test")
+            .wrapping_key(key.to_vec())
+            .wrapping_alg(aws_mpl_legacy::types::AesWrappingAlg::AlgAes256GcmIv12Tag16)
+            .send()
+            .await
+            .context("Failed to create keyring")?;
+
+        info!("raw_keyring initialized successfully");
+        Ok(raw_keyring)
     }
 
     pub fn save_results(&self, output_path: &str) -> Result<()> {

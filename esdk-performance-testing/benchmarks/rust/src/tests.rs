@@ -16,10 +16,22 @@ use std::time::Instant;
 use crate::benchmark::{EsdkBenchmark, MEMORY_TEST_ITERATIONS};
 use crate::results::{BenchmarkResult, average, percentile};
 
+fn tag(new: bool) -> &'static str {
+    if new { "new" } else { "old" }
+}
+
 impl EsdkBenchmark {
     // === Helper Functions ===
 
-    async fn run_encrypt_decrypt_cycle(&self, data: &[u8]) -> Result<(f64, f64)> {
+    async fn run_encrypt_decrypt_cycle(&self, data: &[u8], new: bool) -> Result<(f64, f64)> {
+        if new {
+            self.run_encrypt_decrypt_cycle_new(data).await
+        } else {
+            self.run_encrypt_decrypt_cycle_old(data).await
+        }
+    }
+
+    async fn run_encrypt_decrypt_cycle_old(&self, data: &[u8]) -> Result<(f64, f64)> {
         // Prepare encryption context
         let encryption_context = HashMap::from([
             ("purpose".to_string(), "performance-test".to_string()),
@@ -55,6 +67,33 @@ impl EsdkBenchmark {
         Ok((encrypt_duration, decrypt_duration))
     }
 
+    async fn run_encrypt_decrypt_cycle_new(&self, data: &[u8]) -> Result<(f64, f64)> {
+        // Prepare encryption context
+        let encryption_context = HashMap::from([
+            ("purpose".to_string(), "performance-test".to_string()),
+            ("size".to_string(), data.len().to_string()),
+        ]);
+
+        // Encrypt
+        let encrypt_start = Instant::now();
+        let encrypt_input = aws_esdk_rs::EncryptInput::with_legacy_keyring(
+            data,
+            encryption_context,
+            self.raw_keyring_new.clone(),
+        );
+        let encrypt_output = aws_esdk_rs::encrypt(&encrypt_input).await?;
+        let encrypt_duration = encrypt_start.elapsed().as_secs_f64() * 1000.0;
+
+        // Decrypt
+        let decrypt_start = Instant::now();
+        let decrypt_input =
+            aws_esdk_rs::DecryptInput::from_encrypt(&encrypt_output.ciphertext, &encrypt_input);
+        let _decrypt_output = aws_esdk_rs::decrypt(&decrypt_input).await?;
+        let decrypt_duration = decrypt_start.elapsed().as_secs_f64() * 1000.0;
+
+        Ok((encrypt_duration, decrypt_duration))
+    }
+
     fn should_run_test_type(&self, test_type: &str, is_quick_mode: bool) -> bool {
         if is_quick_mode {
             if let Some(quick_config) = &self.config.quick_config {
@@ -73,6 +112,7 @@ impl EsdkBenchmark {
         &mut self,
         data_size: usize,
         iterations: usize,
+        new: bool,
     ) -> Result<BenchmarkResult> {
         info!(
             "Running throughput test - Size: {} bytes, Iterations: {}",
@@ -88,7 +128,7 @@ impl EsdkBenchmark {
 
         // Warmup
         for i in 0..self.config.iterations.warmup {
-            if let Err(e) = self.run_encrypt_decrypt_cycle(&data).await {
+            if let Err(e) = self.run_encrypt_decrypt_cycle(&data, new).await {
                 return Err(anyhow::anyhow!("Warmup iteration {} failed: {}", i, e));
             }
         }
@@ -114,7 +154,7 @@ impl EsdkBenchmark {
         for i in 0..iterations {
             let iteration_start = Instant::now();
             let (encrypt_ms, decrypt_ms) = self
-                .run_encrypt_decrypt_cycle(&data)
+                .run_encrypt_decrypt_cycle(&data, new)
                 .await
                 .map_err(|e| anyhow::anyhow!("Measurement iteration {} failed: {}", i, e))?;
             let iteration_duration = iteration_start.elapsed().as_secs_f64() * 1000.0;
@@ -132,7 +172,7 @@ impl EsdkBenchmark {
         // Calculate metrics
         end_to_end_latencies.sort_by(|a, b| a.partial_cmp(b).unwrap());
         let result = BenchmarkResult {
-            test_name: "throughput".to_string(),
+            test_name: "throughput ".to_string() + tag(new),
             language: "rust".to_string(),
             data_size,
             concurrency: 1,
@@ -154,7 +194,8 @@ impl EsdkBenchmark {
         };
 
         info!(
-            "Throughput test completed - Ops/sec: {:.2}, MB/sec: {:.2}",
+            "{} Throughput test completed - Ops/sec: {:.2}, MB/sec: {:.2}",
+            tag(new),
             result.ops_per_second,
             result.bytes_per_second / (1024.0 * 1024.0)
         );
@@ -165,10 +206,12 @@ impl EsdkBenchmark {
     // === Memory Test Implementation ===
 
     /// Runs memory usage test by measuring memory delta during ESDK operations
-    async fn run_memory_test(&mut self, data_size: usize) -> Result<BenchmarkResult> {
+    async fn run_memory_test(&mut self, data_size: usize, new: bool) -> Result<BenchmarkResult> {
         info!(
-            "Running memory test - Size: {} bytes ({} iterations)",
-            data_size, MEMORY_TEST_ITERATIONS
+            "Running {} memory test - Size: {} bytes ({} iterations)",
+            tag(new),
+            data_size,
+            MEMORY_TEST_ITERATIONS
         );
 
         // Generate test data on heap to avoid stack overflow
@@ -201,12 +244,20 @@ impl EsdkBenchmark {
 
             // Run ESDK operation with memory sampling
             let data_clone = data.clone();
-            let esdk_client = self.esdk_client.clone();
-            let keyring = self.raw_keyring.clone();
 
-            let operation_task = tokio::spawn(async move {
-                Self::run_encrypt_decrypt_cycle_static(&esdk_client, &keyring, &data_clone).await
-            });
+            let operation_task = if new {
+                let keyring = self.raw_keyring_new.clone();
+                tokio::spawn(async move {
+                    Self::run_encrypt_decrypt_cycle_static_new(&keyring, &data_clone).await
+                })
+            } else {
+                let esdk_client = self.esdk_client.clone();
+                let keyring = self.raw_keyring.clone();
+                tokio::spawn(async move {
+                    Self::run_encrypt_decrypt_cycle_static(&esdk_client, &keyring, &data_clone)
+                        .await
+                })
+            };
 
             // Sample memory during operation
             let mut sample_count = 0;
@@ -293,7 +344,7 @@ impl EsdkBenchmark {
         );
 
         let result = BenchmarkResult {
-            test_name: "memory".to_string(),
+            test_name: "memory ".to_string() + tag(new),
             language: "rust".to_string(),
             data_size,
             concurrency: 1,
@@ -356,6 +407,36 @@ impl EsdkBenchmark {
         Ok((encrypt_duration, decrypt_duration))
     }
 
+    async fn run_encrypt_decrypt_cycle_static_new(
+        keyring: &aws_mpl_legacy::types::keyring::KeyringRef,
+        data: &[u8],
+    ) -> Result<(f64, f64)> {
+        // Prepare encryption context
+        let encryption_context = HashMap::from([
+            ("purpose".to_string(), "performance-test".to_string()),
+            ("size".to_string(), data.len().to_string()),
+        ]);
+
+        // Encrypt
+        let encrypt_start = Instant::now();
+        let encrypt_input = aws_esdk_rs::EncryptInput::with_legacy_keyring(
+            data,
+            encryption_context,
+            keyring.clone(),
+        );
+        let encrypt_output = aws_esdk_rs::encrypt(&encrypt_input).await?;
+        let encrypt_duration = encrypt_start.elapsed().as_secs_f64() * 1000.0;
+
+        // Decrypt
+        let decrypt_start = Instant::now();
+        let decrypt_input =
+            aws_esdk_rs::DecryptInput::from_encrypt(&encrypt_output.ciphertext, &encrypt_input);
+        let _decrypt_output = aws_esdk_rs::decrypt(&decrypt_input).await?;
+        let decrypt_duration = decrypt_start.elapsed().as_secs_f64() * 1000.0;
+
+        Ok((encrypt_duration, decrypt_duration))
+    }
+
     // === Concurrent Test Implementation ===
 
     /// Runs concurrent test with multiple workers to measure parallel performance
@@ -364,6 +445,7 @@ impl EsdkBenchmark {
         data_size: usize,
         concurrency: usize,
         iterations_per_worker: usize,
+        new: bool,
     ) -> Result<BenchmarkResult> {
         info!(
             "Running concurrent test - Size: {} bytes, Concurrency: {}",
@@ -375,6 +457,7 @@ impl EsdkBenchmark {
         for worker_id in 0..concurrency {
             let esdk_client = self.esdk_client.clone();
             let keyring = self.raw_keyring.clone();
+            let keyring_new = self.raw_keyring_new.clone();
 
             let task = tokio::spawn(async move {
                 let mut worker_times = Vec::new();
@@ -394,37 +477,67 @@ impl EsdkBenchmark {
                         ("size".to_string(), worker_data.len().to_string()),
                     ]);
 
-                    let encrypt_output = esdk_client
-                        .encrypt()
-                        .keyring(keyring.clone())
-                        .plaintext(worker_data)
-                        .encryption_context(encryption_context)
-                        .send()
-                        .await
-                        .map_err(|e| {
-                            anyhow::anyhow!(
-                                "Worker {} iteration {} encrypt failed: {}",
-                                worker_id,
-                                j,
-                                e
-                            )
-                        })?;
+                    if new {
+                        let encrypt_input = aws_esdk_rs::EncryptInput::with_legacy_keyring(
+                            &worker_data,
+                            encryption_context,
+                            keyring_new.clone(),
+                        );
+                        let encrypt_output =
+                            aws_esdk_rs::encrypt(&encrypt_input).await.map_err(|e| {
+                                anyhow::anyhow!(
+                                    "New Worker {} iteration {} encrypt failed: {}",
+                                    worker_id,
+                                    j,
+                                    e
+                                )
+                            })?;
 
-                    let _decrypt_output = esdk_client
-                        .decrypt()
-                        .keyring(keyring.clone())
-                        .ciphertext(encrypt_output.ciphertext.unwrap())
-                        .send()
-                        .await
-                        .map_err(|e| {
-                            anyhow::anyhow!(
-                                "Worker {} iteration {} decrypt failed: {}",
-                                worker_id,
-                                j,
-                                e
-                            )
-                        })?;
+                        let decrypt_input = aws_esdk_rs::DecryptInput::from_encrypt(
+                            &encrypt_output.ciphertext,
+                            &encrypt_input,
+                        );
+                        let _decrypt_output =
+                            aws_esdk_rs::decrypt(&decrypt_input).await.map_err(|e| {
+                                anyhow::anyhow!(
+                                    "New Worker {} iteration {} decrypt failed: {}",
+                                    worker_id,
+                                    j,
+                                    e
+                                )
+                            })?;
+                    } else {
+                        let encrypt_output = esdk_client
+                            .encrypt()
+                            .keyring(keyring.clone())
+                            .plaintext(worker_data)
+                            .encryption_context(encryption_context)
+                            .send()
+                            .await
+                            .map_err(|e| {
+                                anyhow::anyhow!(
+                                    "Old Worker {} iteration {} encrypt failed: {}",
+                                    worker_id,
+                                    j,
+                                    e
+                                )
+                            })?;
 
+                        let _decrypt_output = esdk_client
+                            .decrypt()
+                            .keyring(keyring.clone())
+                            .ciphertext(encrypt_output.ciphertext.unwrap())
+                            .send()
+                            .await
+                            .map_err(|e| {
+                                anyhow::anyhow!(
+                                    "Old Worker {} iteration {} decrypt failed: {}",
+                                    worker_id,
+                                    j,
+                                    e
+                                )
+                            })?;
+                    }
                     worker_times.push(iter_start.elapsed().as_secs_f64() * 1000.0);
                 }
                 Ok::<Vec<f64>, anyhow::Error>(worker_times)
@@ -450,7 +563,7 @@ impl EsdkBenchmark {
 
         all_times.sort_by(|a, b| a.partial_cmp(b).unwrap());
         let result = BenchmarkResult {
-            test_name: "concurrent".to_string(),
+            test_name: "concurrent ".to_string() + tag(new),
             language: "rust".to_string(),
             data_size,
             concurrency,
@@ -481,10 +594,10 @@ impl EsdkBenchmark {
 
     // === Test Orchestration ===
 
-    async fn run_throughput_tests(&mut self, data_sizes: &[usize], iterations: usize) {
+    async fn run_throughput_tests(&mut self, data_sizes: &[usize], iterations: usize, new: bool) {
         info!("Running throughput tests...");
         for &data_size in data_sizes {
-            match self.run_throughput_test(data_size, iterations).await {
+            match self.run_throughput_test(data_size, iterations, new).await {
                 Ok(result) => {
                     info!(
                         "Throughput test completed: {:.2} ops/sec",
@@ -499,31 +612,40 @@ impl EsdkBenchmark {
         }
     }
 
-    async fn run_memory_tests(&mut self, data_sizes: &[usize]) {
+    async fn run_memory_tests(&mut self, data_sizes: &[usize], new: bool) {
         info!("Running memory tests...");
         for &data_size in data_sizes {
-            match self.run_memory_test(data_size).await {
+            match self.run_memory_test(data_size, new).await {
                 Ok(result) => {
                     info!(
-                        "Memory test completed: {:.2} MB peak",
+                        "{} Memory test completed: {:.2} MB peak",
+                        tag(new),
                         result.peak_memory_mb
                     );
                     self.results.push(result);
                 }
                 Err(e) => {
-                    warn!("Memory test failed: {}", e);
+                    warn!("{} Memory test failed: {}", e, tag(new));
                 }
             }
         }
     }
 
-    async fn run_concurrency_tests(&mut self, data_sizes: &[usize], concurrency_levels: &[usize]) {
+    async fn run_concurrency_tests(
+        &mut self,
+        data_sizes: &[usize],
+        concurrency_levels: &[usize],
+        new: bool,
+    ) {
         info!("Running concurrency tests...");
         for &data_size in data_sizes {
             for &concurrency in concurrency_levels {
                 if concurrency > 1 {
                     // Skip single-threaded
-                    match self.run_concurrent_test(data_size, concurrency, 5).await {
+                    match self
+                        .run_concurrent_test(data_size, concurrency, 5, new)
+                        .await
+                    {
                         Ok(result) => {
                             info!(
                                 "Concurrent test completed: {:.2} ops/sec @ {} threads",
@@ -553,20 +675,25 @@ impl EsdkBenchmark {
 
         // Run test suites
         if self.should_run_test_type("throughput", is_quick_mode) {
-            self.run_throughput_tests(&data_sizes, self.config.iterations.measurement)
+            self.run_throughput_tests(&data_sizes, self.config.iterations.measurement, false)
+                .await;
+            self.run_throughput_tests(&data_sizes, self.config.iterations.measurement, true)
                 .await;
         } else {
             info!("Skipping throughput tests (not in test_types)");
         }
 
         if self.should_run_test_type("memory", is_quick_mode) {
-            self.run_memory_tests(&data_sizes).await;
+            self.run_memory_tests(&data_sizes, false).await;
+            self.run_memory_tests(&data_sizes, true).await;
         } else {
             info!("Skipping memory tests (not in test_types)");
         }
 
         if self.should_run_test_type("concurrency", is_quick_mode) {
-            self.run_concurrency_tests(&data_sizes, &concurrency_levels)
+            self.run_concurrency_tests(&data_sizes, &concurrency_levels, false)
+                .await;
+            self.run_concurrency_tests(&data_sizes, &concurrency_levels, true)
                 .await;
         } else {
             info!("Skipping concurrency tests (not in test_types)");
