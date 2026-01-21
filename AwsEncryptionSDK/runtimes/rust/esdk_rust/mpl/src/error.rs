@@ -125,7 +125,7 @@ pub(crate) fn not_implemented<T>(msg: impl Into<String>) -> Result<T, Error> {
 }
 
 #[must_use]
-pub fn err(e: ErrorKind, msg: impl Into<String>) -> Error {
+pub(crate) fn err(e: ErrorKind, msg: impl Into<String>) -> Error {
     Error {
         kind: e,
         message: msg.into(),
