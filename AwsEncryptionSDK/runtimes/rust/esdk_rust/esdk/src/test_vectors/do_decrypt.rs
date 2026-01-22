@@ -760,6 +760,16 @@ pub(crate) enum SourceStatus {
     NoDdbFeature,
 }
 
+#[cfg(all(feature = "legacy", not(feature = "quick_vectors")))]
+fn legacy_not_implemented(x: &str) -> bool {
+    x == "aws-kms-hierarchy" || x == "unknown"
+}
+
+#[cfg(feature = "quick_vectors")]
+fn legacy_not_implemented(x: &str) -> bool {
+    x != "raw"
+}
+
 #[cfg(feature = "legacy")]
 pub(crate) async fn get_legacy_cmm(
     keydesc: &KeyDescription,
@@ -767,7 +777,7 @@ pub(crate) async fn get_legacy_cmm(
     mpl: &mpl_client,
     kms: &KmsMap,
 ) -> Result<SourceStatus> {
-    if keydesc.kind == "aws-kms-hierarchy" || keydesc.kind == "unknown" {
+    if legacy_not_implemented(&keydesc.kind) {
         Ok(SourceStatus::NotImplemented)
     } else if keydesc.kind == "required-encryption-context-cmm" {
         let keyring = get_keyring_legacy(&keydesc.underlying[0], keys, mpl, kms).await?;
