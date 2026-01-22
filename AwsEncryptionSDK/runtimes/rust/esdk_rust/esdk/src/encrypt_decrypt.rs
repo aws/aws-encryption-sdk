@@ -84,10 +84,6 @@ pub(crate) fn encrypt_and_serialize(
         header.body.message_id(),
         BodyAADContent::FinalFrame,
         sequence_number,
-        //= compliance/client-apis/encrypt.txt#2.7.1
-        //# o  For a final frame this MUST be the length of the remaining
-        //# plaintext bytes which have not yet been encrypted, whose
-        //# length MUST be equal to or less than the frame length.
         in_size as u64,
         &mut aad,
     );
@@ -118,36 +114,12 @@ pub(crate) fn verify_signature(
     dec_mat: aws_mpl_rs::DecryptionMaterials,
     raw: &mut dyn SafeWrite,
 ) -> Result<(), Error> {
-    //= compliance/client-apis/decrypt.txt#2.7
-    //= type=implication
-    //# Otherwise this operation MUST NOT perform this
-    //# step.
     if dec_mat.verification_key.is_none() {
         return Ok(());
     }
 
-    //= compliance/client-apis/decrypt.txt#2.7.5
-    //# If the algorithm suite has a signature algorithm, this operation MUST
-    //# verify the message footer using the specified signature algorithm.
-
-    //= compliance/client-apis/decrypt.txt#2.7
-    //# ./framework/algorithm-
-    //# suites.md#signature-algorithm), this operation MUST perform
-    //# this step.
-
-    //= compliance/client-apis/decrypt.txt#2.7.5
-    //# After deserializing the body, this operation MUST deserialize the
-    //# next encrypted message bytes as the message footer (../data-format/
-    //# message-footer.md).
-
     let signature = read_seq_u16(r, raw)?;
     let ecdsa_params = get_ecdsa_alg(dec_mat.algorithm_suite.signature)?;
-    //= compliance/client-apis/decrypt.txt#2.7.5
-    //# Once the message footer is deserialized, this operation MUST use the
-    //# signature algorithm (../framework/algorithm-suites.md#signature-
-    //# algorithm) from the algorithm suite (../framework/algorithm-
-    //# suites.md) in the decryption materials to verify the encrypted
-    //# message, with the following inputs:
     let valid = ecdsa_verify_context(
         ecdsa_params,
         &dec_mat.verification_key.unwrap().0,
@@ -207,12 +179,6 @@ pub(crate) fn build_header_for_encrypt(
     frame_length: u32,
     derived_data_keys: &key_derivation::ExpandedKeyMaterial,
 ) -> Result<HeaderInfo, Error> {
-    //= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-the-header
-    //# - [AAD](../data-format/message-header.md#aad): MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
-    //#  in the [encryption materials](../framework/structures.md#encryption-materials),
-    //#  and this serialization MUST NOT contain any key value pairs listed in
-    //#  the [encryption material's](../framework/structures.md#encryption-materials)
-    //#  [required encryption context keys](../framework/structures.md#required-encryption-context-keys).
     let mut stored_encryption_context = encryption_context.clone();
     let mut required_encryption_context_map: EncryptionContext = EncryptionContext::new();
     for key in required_encryption_context_keys {
@@ -239,16 +205,9 @@ pub(crate) fn build_header_for_encrypt(
         &canonical_req_encryption_context,
     )?;
 
-    //= compliance/client-apis/encrypt.txt#2.6.2
-    //# Before encrypting input plaintext, this operation MUST serialize the
-    //# message header body (../data-format/message-header.md).
     let mut raw_header = Vec::new();
     write_header_body(&mut raw_header, &body)?;
 
-    //= compliance/client-apis/encrypt.txt#2.6.2
-    //# After serializing the message header body, this operation MUST
-    //# calculate an authentication tag (../data-format/message-
-    //# header.md#authentication-tag) over the message header body.
     let header_auth = build_header_auth_tag(
         suite,
         &derived_data_keys.data_key,
@@ -273,19 +232,8 @@ pub(crate) fn build_header_body(
     frame_length: u32,
     suite_data: Option<Vec<u8>>,
 ) -> Result<HeaderBody, Error> {
-    //= compliance/client-apis/encrypt.txt#2.6.2
-    //= type=implication
-    //# If the algorithm suite has a commitment algorithm, this operation MUST
-    //# include the suite data field in the header body.
     match suite.commitment {
         aws_mpl_rs::suites::DerivationAlgorithm::Hkdf(h) => {
-            //= compliance/data-format/message-header.txt#2.5.2
-            //= type=implication
-            //# The length of the suite data field MUST be equal to
-            //# the Algorithm Suite Data Length (../framework/algorithm-
-            //# suites.md#algorithm-suite-data-length) value of the algorithm suite
-            //# (../framework/algorithm-suites.md) specified by the Algorithm Suite
-            //# ID (Section 2.5.1.5) field.
             if suite_data.is_none()
                 || suite_data.as_ref().unwrap().len() != h.output_key_length as usize
             {
@@ -322,19 +270,11 @@ pub(crate) fn build_header_auth_tag(
     raw_header: &[u8],
     serialized_req_encryption_context: &[u8],
 ) -> Result<HeaderAuth, Error> {
-    //= compliance/client-apis/encrypt.txt#2.6.2
-    //# The
-    //# value of this MUST be the output of the authenticated encryption
-    //# algorithm (../framework/algorithm-suites.md#encryption-algorithm)
-    //# specified by the algorithm suite (../framework/algorithm-
-    //# suites.md), with the following inputs:
     let key_length = get_encrypt_key_length(suite);
     if data_key.len() != key_length as usize {
         return Err("Incorrect data key length".into());
     }
 
-    //= compliance/client-apis/encrypt.txt#2.6.2
-    //#*  The IV has a value of 0.
     let iv = vec![0; get_iv_length(suite) as usize];
     let mut auth_tag = Vec::new();
     aes_encrypt(
@@ -361,19 +301,10 @@ pub(crate) fn validate_suite_data(
     header: &HeaderBody,
     expected_suite_data: &[u8],
 ) -> Result<(), Error> {
-    //= compliance/client-apis/decrypt.txt#2.7.2
-    //# The derived commit key MUST equal the commit key stored in the message
-    //# header.
     if header.suite_data() != expected_suite_data {
         return Err("Commitment key does not match".into());
     }
 
-    //= compliance/client-apis/decrypt.txt#2.7.2
-    //# The length of the suite data field MUST be equal to
-    //# the Algorithm Suite Data Length (../framework/algorithm-
-    //# suites.md#algorithm-suite-data-length) value of the algorithm suite
-    //# (../framework/algorithm-suites.md) specified by the Algorithm Suite
-    //# ID (Section 2.5.1.5) field.
     if get_hkdf(&suite.commitment).output_key_length != expected_suite_data.len() as u32 {
         return Err("Commitment key is invalid".into());
     }
@@ -387,12 +318,6 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     key: &[u8],
     raw: &mut dyn SafeWrite,
 ) -> Result<Vec<u8>, Error> {
-    //= compliance/client-apis/decrypt.txt#2.7.3
-    //# The message header MUST be read and parsed as follows.
-
-    //= compliance/client-apis/decrypt.txt#2.7.3
-    //# The message body MUST be read and decrypted as follows.
-
     let iv = read_vec(r, get_iv_length(&header.suite) as usize, raw)?;
     let enc_content = read_seq_u64_bounded(
         r,

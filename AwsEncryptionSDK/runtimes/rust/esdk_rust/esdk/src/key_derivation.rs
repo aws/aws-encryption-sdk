@@ -67,19 +67,6 @@ pub(crate) fn derive_key(
         plaintext_data_key.len()
     ));
 
-    //= compliance/client-apis/encrypt.txt#2.6.1
-    //# The algorithm used to derive a data key from the
-    //# plaintext data key MUST be the key derivation algorithm
-    //# (../framework/algorithm-suites.md#key-derivation-algorithm) included
-    //# in the algorithm suite (../framework/algorithm-suites.md) defined
-    //# above.
-
-    //= compliance/client-apis/decrypt.txt#2.7.2
-    //# The algorithm suite used to derive a data key from the
-    //# plaintext data key MUST be the key derivation algorithm
-    //# (../framework/algorithm-suites.md#key-derivation-algorithm) included
-    //# in the algorithm suite (../framework/algorithm-suites.md) associated
-    //# with the returned decryption materials.
     match &suite.kdf {
         DerivationAlgorithm::Identity => Ok(ExpandedKeyMaterial {
             data_key: plaintext_data_key.to_vec(),
@@ -134,38 +121,15 @@ pub(crate) fn expand_key_material(
         return Err("Validation Error 8".into());
     }
     // For v2 algorithms, KDF can only be HKDF
-    //= compliance/client-apis/decrypt.txt#2.7.2
-    //= type=implication
-    //# The algorithm suite used to derive a data key from the
-    //# plaintext data key MUST be the key derivation algorithm
-    //# (../framework/algorithm-suites.md#key-derivation-algorithm) included
-    //# in the algorithm suite (../framework/algorithm-suites.md) associated
-    //# with the returned decryption materials.
     if u32::from(get_encrypt_key_length(suite)) != get_kdf_outlen(suite)? {
         return Err("Validation Error 9".into());
     }
     if message_id.is_empty() {
         return Err("Validation Error 10".into());
     }
-    //= compliance/client-apis/encrypt.txt#2.6.1
-    //# The algorithm used to derive a data key from the
-    //# plaintext data key MUST be the key derivation algorithm
-    //# (../framework/algorithm-suites.md#key-derivation-algorithm) included
-    //# in the algorithm suite (../framework/algorithm-suites.md) defined
-    //# above.
     if plaintext_key.len() as u32 != get_kdf_inlen(suite)? {
         return Err("Validation Error 11".into());
     }
-
-    //= compliance/client-apis/decrypt.txt#2.7.2
-    //= type=implication
-    //# If the algorithm suite (../framework/
-    //# algorithm-suites.md#algorithm-suites-encryption-key-derivation-
-    //# settings) supports key commitment (../framework/algorithm-
-    //# suites.md#key-commitment) then the commit key (../framework/
-    //# algorithm-suites.md#commit-key) MUST be derived from the plaintext
-    //# data key using the commit key derivation (../framework/algorithm-
-    //# suites.md#algorithm-suites-commit-key-derivation-settings).
 
     let (digest, commit_len) = match &suite.commitment {
         DerivationAlgorithm::Hkdf(hkdf) => (hkdf.hmac, hkdf.output_key_length),

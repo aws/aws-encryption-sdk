@@ -36,7 +36,7 @@ name = "main"
 [[bin]]
 name = "test_vector"
 path = "src/bin/test_vector/main.rs"
-required-features = ["test_vectors"]  # Only build binary when test_vectors feature is enabled
+required-features = ["test_vectors", "tokio"]  # Only build binary when test_vectors feature is enabled
 
 [package.metadata.docs.rs]
 all-features = true

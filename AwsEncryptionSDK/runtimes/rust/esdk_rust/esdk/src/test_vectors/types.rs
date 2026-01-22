@@ -13,7 +13,7 @@ pub(crate) type EDKs = Vec<Edk>;
 pub(crate) type RequiredKeys = Vec<String>;
 pub(crate) type Bytes = Vec<u8>;
 
-//https://github.com/awslabs/aws-encryption-sdk-specification/blob/master/framework/test-vectors/keys-manifest.md
+//https://github.com/awslabs/specification/blob/master/framework/test-vectors/keys-manifest.md
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
 #[allow(
     clippy::struct_field_names,

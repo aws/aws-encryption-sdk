@@ -19,6 +19,8 @@ int main()
         auto keystore = create_keystore(keystore_config);
 
         auto keyring_input = default_hierarchical_keyring_input();
+        keyring_input.ttl = 4242;
+        keyring_input.multi_threaded_cache.entryCapacity = 42;
         keyring_input.key_store = &*keystore;
         keyring_input.branch_key_id = "3ce7656b-e166-40f3-8c9b-a920ce6596cd";
         auto keyring = create_hierarchical_keyring(keyring_input);

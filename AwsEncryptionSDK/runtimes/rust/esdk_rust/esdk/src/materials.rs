@@ -146,12 +146,6 @@ pub(crate) async fn get_modern_decryption_materials(
         .reproduced_encryption_context
         .clone_from(reproduced_encryption_context);
     let materials = cmm.decrypt_materials(&input).await?;
-
-    //= compliance/client-apis/decrypt.txt#2.7.2
-    //# If the
-    //# algorithm suite is not supported by the commitment policy
-    //# (client.md#commitment-policy) configured in the client (client.md)
-    //# decrypt MUST yield an error.
     aws_mpl_rs::commitment::validate_commitment_policy_on_decrypt(
         aws_mpl_rs::commitment::ValidateCommitmentPolicyOnDecryptInput::new(
             materials.algorithm_suite.id,
@@ -440,11 +434,6 @@ pub(crate) async fn get_legacy_decryption_materials(
     reproduced_encryption_context: &EncryptionContext,
     commitment_policy: aws_mpl_rs::commitment::EsdkCommitmentPolicy,
 ) -> Result<DecryptionMaterials, Error> {
-    //= compliance/client-apis/decrypt.txt#2.7.2
-    //# ./framework/cmm-
-    //# interface.md#decrypt-materials) operation MUST be constructed as
-    //# follows:
-
     let encryption_context = from_canonical_pairs(header_body.encryption_context().clone());
     let output = cmm
         .decrypt_materials()
@@ -469,11 +458,6 @@ pub(crate) async fn get_legacy_decryption_materials(
     let materials = output.decryption_materials.unwrap();
     let return_materials = materials.clone();
     let mpl = mpl();
-    //= compliance/client-apis/decrypt.txt#2.7.2
-    //# If the
-    //# algorithm suite is not supported by the commitment policy
-    //# (client.md#commitment-policy) configured in the client (client.md)
-    //# decrypt MUST yield an error.
     mpl.validate_commitment_policy_on_decrypt()
         .algorithm(
             materials
@@ -515,29 +499,14 @@ pub(crate) async fn get_modern_encryption_materials(
     max_plaintext_length: Option<usize>,
     commitment_policy: aws_mpl_rs::commitment::EsdkCommitmentPolicy,
 ) -> Result<EncryptionMaterials, Error> {
-    //= compliance/client-apis/encrypt.txt#2.6.1
-    //# This operation MUST obtain this set of encryption
-    //# materials (../framework/structures.md#encryption-materials) by
-    //# calling Get Encryption Materials (../framework/cmm-interface.md#get-
-    //# encryption-materials) on a CMM (../framework/cmm-interface.md).
     let mut input = GetEncryptionMaterialsInput::default();
-    //#*  Algorithm Suite ID: This is the parsed algorithm suite ID
-    //#   (../data-format/message-header.md#algorithm-suite-id) from the
-    //#   message header.
     input.algorithm_suite_id = algorithm_suite_id;
     input.commitment_policy = aws_mpl_rs::commitment::CommitmentPolicy::Esdk(commitment_policy);
-    //#*  Encryption Context: This is the parsed encryption context
-    //#   (../data-format/message-header.md#aad) from the message header.
     input.encryption_context = encryption_context;
     input.max_plaintext_length = max_plaintext_length;
     // input.required_encryption_context_keys = required_encryption_context_keys.clone();
     let materials = cmm.get_encryption_materials(&input).await?;
 
-    //= compliance/client-apis/encrypt.txt#2.6.1
-    //# If this
-    //# algorithm suite (../framework/algorithm-suites.md) is not supported
-    //# by the commitment policy (client.md#commitment-policy) configured in
-    //# the client (client.md) encrypt MUST yield an error.
     aws_mpl_rs::commitment::validate_commitment_policy_on_encrypt(
         &aws_mpl_rs::commitment::ValidateCommitmentPolicyOnEncryptInput::new(
             materials.algorithm_suite.id,
@@ -558,11 +527,6 @@ pub(crate) async fn get_legacy_encryption_materials(
     commitment_policy: aws_mpl_rs::commitment::EsdkCommitmentPolicy,
 ) -> Result<EncryptionMaterials, Error> {
     let mpl = mpl();
-    //= compliance/client-apis/encrypt.txt#2.6.1
-    //# This operation MUST obtain this set of encryption
-    //# materials (../framework/structures.md#encryption-materials) by
-    //# calling Get Encryption Materials (../framework/cmm-interface.md#get-
-    //# encryption-materials) on a CMM (../framework/cmm-interface.md).
     #[expect(
         clippy::cast_possible_wrap,
         reason = "max_plaintext_length is i64 in legacy mpl"
@@ -578,11 +542,6 @@ pub(crate) async fn get_legacy_encryption_materials(
 
     let materials = output.encryption_materials.unwrap();
     let return_materials = materials.clone();
-    //= compliance/client-apis/encrypt.txt#2.6.1
-    //# If this
-    //# algorithm suite (../framework/algorithm-suites.md) is not supported
-    //# by the commitment policy (client.md#commitment-policy) configured in
-    //# the client (client.md) encrypt MUST yield an error.
     mpl.validate_commitment_policy_on_encrypt()
         .algorithm(
             materials

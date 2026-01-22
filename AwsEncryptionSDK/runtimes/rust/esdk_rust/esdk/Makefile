@@ -1,3 +1,5 @@
+.PHONY: clippy test examples duvet
+
 clippy:
 	cargo clippy --tests --examples # redundant with one of the below. Probably ddb.
 	cargo clippy --tests --examples --no-default-features
@@ -31,9 +33,7 @@ examples:
 	cargo run --example main --no-default-features --features ddb,test_vectors
 	cargo run --example main --no-default-features --features legacy,test_vectors
 
-	
-duvet_extract:
-	rm -rf compliance
-	$(foreach file, $(shell find aws-encryption-sdk-specification/framework -name '*.md'), duvet extract -o compliance -f MARKDOWN $(file);)
-	# $(foreach file, $(shell find aws-encryption-sdk-specification/client-apis -name '*.md'), duvet extract -o compliance -f MARKDOWN $(file);)
-	# $(foreach file, $(shell find aws-encryption-sdk-specification/data-format -name '*.md'), duvet extract -o compliance -f MARKDOWN $(file);)
+duvet:
+	@test -e specification || ln -s ../../../../../aws-encryption-sdk-specification/ specification
+	rm -rf .duvet/reports .duvet/requirements
+	duvet report

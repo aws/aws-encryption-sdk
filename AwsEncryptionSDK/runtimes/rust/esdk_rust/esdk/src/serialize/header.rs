@@ -8,10 +8,6 @@ use super::v2_header_body::*;
 use super::*;
 use crate::types::{SafeRead, SafeWrite};
 
-//= compliance/client-apis/encrypt.txt#2.7.1
-//= type=implication
-//# If this is the first frame sequentially, this
-//# value MUST be 1.
 pub(crate) const START_SEQUENCE_NUMBER: u32 = 1;
 pub(crate) const ENDFRAME_SEQUENCE_NUMBER: u32 = 0xFFFF_FFFF;
 pub(crate) const NONFRAMED_SEQUENCE_NUMBER: u32 = 1;
@@ -35,18 +31,6 @@ pub(crate) fn write_header_body(w: &mut dyn SafeWrite, body: &HeaderBody) -> Res
     }
 }
 
-// ReadHeaderBody does not support streaming at this time
-//= compliance/client-apis/decrypt.txt#2.7.1
-//= type=exception
-//# This operation MUST wait if it doesn't have enough consumable
-//# encrypted message bytes to deserialize the next field of the message
-//# header until enough input bytes become consumable or the caller
-//# indicates an end to the encrypted message.
-
-//= compliance/client-apis/decrypt.txt#2.7.1
-//# This operation MUST attempt to deserialize all consumable encrypted
-//# message bytes until it has successfully deserialized a valid message
-//# header (../data-format/message-header.md).
 pub(crate) fn read_header_body(
     r: &mut dyn SafeRead,
     max_edks: Option<std::num::NonZeroUsize>,

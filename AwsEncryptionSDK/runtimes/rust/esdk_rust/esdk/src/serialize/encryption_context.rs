@@ -24,22 +24,6 @@ pub(crate) fn read_canonical_ec(
     Ok(result)
 }
 
-//= compliance/data-format/message-header.txt#2.5.1.7
-//# The following table describes the fields that form the AAD.  The
-//# bytes are appended in the order shown.
-//#
-//#  +=================+==============================+================+
-//#  | Field           | Length (bytes)               | Interpreted as |
-//#  +=================+==============================+================+
-//#  | Key Value Pairs | 2                            | UInt16         |
-//#  | Length (Section |                              |                |
-//#  | 2.5.1.7.1)      |                              |                |
-//#  +-----------------+------------------------------+----------------+
-//#  | Key Value Pairs | Variable.  Determined by the | Key Value      |
-//#  | (Section        | value of Key Value Pairs     | Pairs (Section |
-//#  | 2.5.1.7.2)      | Length (Section 2.5.1.7.1).  | 2.5.1.7.2)     |
-//#  +-----------------+------------------------------+----------------+
-
 pub(crate) fn write_empty_ec_or_write_aad(
     w: &mut dyn SafeWrite,
     data: &ESDKCanonicalEncryptionContext,

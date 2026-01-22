@@ -28,27 +28,7 @@ const fn body_aad_content_type_string(bc: BodyAADContent) -> &'static str {
     }
 }
 
-pub(crate) fn iv_seq(sequence_number: u32, result: &mut [u8])
-//= compliance/data-format/message-body.txt#2.5.2.1.2
-//= type=implication
-//# The IV length MUST be equal to the IV
-//# length of the algorithm suite specified by the Algorithm Suite ID
-//# (message-header.md#algorithm-suite-id) field.
-//
-//= compliance/data-format/message-body.txt#2.5.2.2.3
-//= type=implication
-//# The IV length MUST be equal to the IV length of the algorithm suite
-//# (../framework/algorithm-suites.md) that generated the message.
-
-//= compliance/data-format/message-body.txt#2.5.2.1.2
-//= type=implication
-//# Each frame in the Framed Data (Section 2.5.2) MUST include an IV that
-//# is unique within the message.
-//
-//= compliance/data-format/message-body.txt#2.5.2.2.3
-//= type=implication
-//# The IV MUST be a unique IV within the message.
-{
+pub(crate) fn iv_seq(sequence_number: u32, result: &mut [u8]) {
     let pivot = result.len() - 4;
     result[pivot..].copy_from_slice(&sequence_number.to_be_bytes());
 }
@@ -72,29 +52,9 @@ pub(crate) fn body_aad2(
     result: &mut Vec<u8>,
 ) {
     result.clear();
-    //= compliance/client-apis/decrypt.txt#2.7.4
-    //#*  The AAD is the serialized message body AAD (../data-format/
-    //#   message-body-aad.md), constructed as follows:
-
-    //# -  The message ID (../data-format/message-body-aad.md#message-id)
-    //#    is the same as the message ID (../data-frame/message-
-    //#    header.md#message-id) deserialized from the header of this
-    //#    message.
     result.extend_from_slice(message_id);
-    //# -  The Body AAD Content (../data-format/message-body-aad.md#body-
-    //#    aad-content) depends on whether the thing being decrypted is a
-    //#    regular frame, final frame, or un-framed data.  Refer to
-    //#    Message Body AAD (../data-format/message-body-aad.md)
-    //#    specification for more information.
     result.extend_from_slice(body_aad_content_type_string(bc).as_bytes());
-    //# -  The sequence number (../data-format/message-body-
-    //#    aad.md#sequence-number) is the sequence number deserialized
-    //#    from the frame being decrypted.
     result.extend_from_slice(&sequence_number.to_be_bytes());
-    //= compliance/client-apis/decrypt.txt#2.7.4
-    //# -  The content length (../data-format/message-body-aad.md#content-
-    //# length) MUST have a value equal to the length of the plaintext
-    //# that was encrypted.
     result.extend_from_slice(&length.to_be_bytes());
 }
 

@@ -537,20 +537,20 @@ fn create_keystore(input: &ffi::KeyStoreConfig) -> Result<Box<KeyStore>, String>
 }
 
 fn create_kms_client(input: &ffi::MplAwsClientConfig) -> Result<Box<MplKmsClient>, String> {
-    let sdk_config = create_sdk_config(input.region.clone(), &input.retry);
+    let sdk_config = create_sdk_config(input);
     let client = aws_sdk_kms::Client::new(&sdk_config);
     let client = MplKmsClient { client };
     Ok(Box::new(client))
 }
 
 fn create_ddb_client(input: &ffi::MplAwsClientConfig) -> Result<Box<MplDdbClient>, String> {
-    let sdk_config = create_sdk_config(input.region.clone(), &input.retry);
+    let sdk_config = create_sdk_config(input);
     let client = aws_sdk_dynamodb::Client::new(&sdk_config);
     let client = MplDdbClient { client };
     Ok(Box::new(client))
 }
 
-fn create_sdk_config(region: String, retry: &ffi::RetryConfig) -> SdkConfig {
+fn create_sdk_config(input: &ffi::MplAwsClientConfig) -> SdkConfig {
     let shared_config = DAFNY_TOKIO_RUNTIME.block_on(aws_config::load_defaults(
         aws_config::BehaviorVersion::latest(),
     ));
@@ -569,9 +569,9 @@ fn create_sdk_config(region: String, retry: &ffi::RetryConfig) -> SdkConfig {
     let mut builder = shared_config
         .to_builder()
         .app_name(app_name)
-        .retry_config(make_retry_config(retry));
-    if !region.is_empty() {
-        builder = builder.region(Region::new(region));
+        .retry_config(make_retry_config(&input.retry));
+    if !input.region.is_empty() {
+        builder = builder.region(Region::new(input.region.clone()));
     }
     builder.build()
 }

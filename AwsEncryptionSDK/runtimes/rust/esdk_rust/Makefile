@@ -1,3 +1,5 @@
+.PHONY: clippy test examples
+
 clippy:
 	cd prim && make clippy
 	cd mpl && make clippy

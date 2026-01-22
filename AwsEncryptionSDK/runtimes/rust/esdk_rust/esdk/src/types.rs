@@ -61,9 +61,6 @@ impl Eq for MaterialSource {}
 pub struct FrameLength(pub std::num::NonZeroU32);
 
 impl Default for FrameLength {
-    //= compliance/client-apis/encrypt.txt#2.4.6
-    //= type=implication
-    //# This value MUST default to 4096 bytes.
     fn default() -> Self {
         Self(std::num::NonZeroU32::new(4096).unwrap())
     }
