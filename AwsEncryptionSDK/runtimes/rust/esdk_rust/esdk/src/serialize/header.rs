@@ -9,6 +9,9 @@ use super::*;
 use crate::types::{SafeRead, SafeWrite};
 
 pub(crate) const START_SEQUENCE_NUMBER: u32 = 1;
+//= ../specification/data-format/message-body.md#sequence-number-end
+//= type=implication
+//# The value MUST be encoded as the 4 bytes `FF FF FF FF` in hexadecimal notation.
 pub(crate) const ENDFRAME_SEQUENCE_NUMBER: u32 = 0xFFFF_FFFF;
 pub(crate) const NONFRAMED_SEQUENCE_NUMBER: u32 = 1;
 pub(crate) const SAFE_MAX_ENCRYPT: u64 = 0x000F_FFFF_FFE0;
@@ -24,6 +27,9 @@ pub(crate) struct HeaderInfo {
     pub(crate) header_auth: HeaderAuth,
 }
 
+//= ../specification/data-format/message-header.md#structure
+//= type=implication
+//# The message header is a sequence of bytes that MUST be in big-endian format.
 pub(crate) fn write_header_body(w: &mut dyn SafeWrite, body: &HeaderBody) -> Result<(), Error> {
     match body {
         HeaderBody::V1Body(x) => write_v1_header_body(w, x),

@@ -14,6 +14,9 @@ pub(crate) fn write_v2_header_body(
     w: &mut dyn SafeWrite,
     body: &V2HeaderBody,
 ) -> Result<(), Error> {
+    //= ../specification/data-format/message-header.md#header-body-version-2-0
+    //= type=implication
+    //# The value of the `Version` field MUST be `02` in the Version 2.0 header body.
     write_msg_format_version(w, MessageFormatVersion::V2)?;
     write_esdk_suite_id(w, &body.algorithm_suite)?;
     write_message_id(w, &body.message_id)?;

@@ -178,6 +178,9 @@ pub(crate) enum MessageType {
     TypeCustomerAed = 0x80,
 }
 
+//= ../specification/data-format/message-header.md#content-type
+//= type=implication
+//# The value (hex) of this field MUST be a value that exists in the following table:
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub(crate) enum ContentType {
     NonFramed = 1,

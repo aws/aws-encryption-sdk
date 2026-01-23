@@ -169,11 +169,26 @@ async fn internal_encrypt(
         &mut dw,
     )?;
     let suite_id = get_esdk_id(header.suite.id)?;
+    //= ../specification/data-format/message.md#structure
+    //= type=implication
+    //# If the [message header](message-header.md) contains an [algorithm suite](../framework/algorithm-suites.md) in the
+    //# [algorithm suite ID](message-header.md#algorithm-suite-id) field that contains a
+    //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm), the message MUST also contain a
+    //# [message footer](message-footer.md), serialized after the [message body](message-body.md).
+
+    //= ../specification/data-format/message-footer.md#overview
+    //= type=implication
+    //# When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
+    //# the [message](message.md) MUST contain a footer.
     if let aws_mpl_rs::suites::SignatureAlgorithm::Ecdsa(_) = &header.suite.signature {
         let ecdsa_params = encrypt_decrypt::get_ecdsa_alg(header.suite.signature)?;
         let bytes = ecdsa_sign_digest(
             ecdsa_params,
             &materials.signing_key.unwrap().0,
+            //= ../specification/data-format/message-footer.md#signature
+            //= type=implication
+            //# This signature MUST be calculated over both the [message header](message-header.md) and the [message body](message-body.md),
+            //# in the order of serialization.
             dw.context.unwrap(),
         )?;
         if bytes.len() >= u16::MAX.into() {

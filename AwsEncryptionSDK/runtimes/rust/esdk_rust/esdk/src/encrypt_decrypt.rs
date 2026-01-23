@@ -18,6 +18,7 @@ use aws_mpl_primitives::ecdsa_verify_context;
 use aws_mpl_primitives::{EcdsaSignatureAlgorithm, aes_encrypt, generate_random_bytes};
 
 const RESERVED_ENCRYPTION_CONTEXT: &str = "aws-crypto-";
+const MAX_DATA: usize = (1usize << 36) - 32;
 
 pub(crate) fn encrypt_and_serialize(
     plaintext: &mut dyn SafeRead,
@@ -26,16 +27,26 @@ pub(crate) fn encrypt_and_serialize(
     out: &mut dyn SafeWrite,
     dw: &mut DigestWriter,
 ) -> Result<(), Error> {
+    let mut total_data_size: usize = 0;
     let frame_length = header.body.frame_length() as usize;
+    //= ../specification/data-format/message-body.md#iv-1
+    //= type=implication
+    //# The IV length MUST be equal to the IV length of the algorithm suite specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
     let iv_len = get_iv_length(&header.suite) as usize;
     let auth_len = get_tag_length(&header.suite) as usize;
     let frame_len = frame_length + iv_len + auth_len + 4;
+    //= ../specification/data-format/message-body.md#encrypted-content-1
+    //= type=implication
+    //# The length of the encrypted content of a Regular Frame MUST be equal to the Frame Length.
     let mut w = Vec::with_capacity(frame_len);
     write_bytes(&mut w, &header.raw_header)?;
     write_header_auth_tag(&mut w, &header.header_auth, &header.suite)?;
     write_bytes(out, &w)?;
     write_bytes(dw, &w)?;
 
+    //= ../specification/data-format/message-body.md#sequence-number
+    //= type=implication
+    //# Framed Data MUST start at Sequence Number 1.
     let mut sequence_number = START_SEQUENCE_NUMBER;
     let alg = get_encrypt(&header.suite);
 
@@ -55,43 +66,124 @@ pub(crate) fn encrypt_and_serialize(
         if next_char.is_none() {
             break;
         }
+        //= ../specification/data-format/message-body.md#framed-data
+        //= type=implication
+        //# - The number of frames in a single message MUST be less than or equal to `2^32 - 1`.
         if sequence_number == ENDFRAME_SEQUENCE_NUMBER {
             return Err("too many frames".into());
         }
+
+        total_data_size += frame_length;
+        //= ../specification/data-format/message-body.md#encrypted-content-length
+        //= type=implication
+        //# The length MUST NOT be greater than `2^36 - 32`, or 64 gibibytes (64 GiB),
+        //# due to restrictions imposed by the [implemented algorithms](../framework/algorithm-suites.md).
+        if total_data_size > MAX_DATA {
+            return Err("Plain text too large".into());
+        }
         iv_seq(sequence_number, &mut iv);
 
-        body_aad2(
+        body_aad(
             header.body.message_id(),
+            //= ../specification/data-format/message-body-aad.md#body-aad-content
+            //= type=implication
+            //# - The [regular frames](message-body.md#regular-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Frame`.
             BodyAADContent::RegularFrame,
+            //= ../specification/data-format/message-body-aad.md#sequence-number
+            //= type=implication
+            //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#sequence-number).
             sequence_number,
+            //= ../specification/data-format/message-body-aad.md#content-length
+            //= type=implication
+            //# - For [framed data](message-body.md#framed-data), this value MUST equal the length, in bytes,
+            //# of the plaintext being encrypted in this frame.
+
+            //= ../specification/data-format/message-body-aad.md#content-length
+            //= type=implication
+            //# - For [regular frames](message-body.md#regular-frame), this value MUST equal the value of
+            //# the [frame length](message-header.md#frame-length) field in the message header.
             frame_length as u64,
             &mut aad,
         );
         write_u32(&mut w, sequence_number)?;
         write_bytes(&mut w, &iv)?;
+        //= ../specification/data-format/message-body.md#authentication-tag-1
+        //= type=implication
+        //# The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
+        //# specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
         aes_encrypt(alg, &iv, key, &plaintext_frame, &aad, &mut w)?;
         write_bytes(out, &w)?;
         write_bytes(dw, &w)?;
 
+        //= ../specification/data-format/message-body.md#sequence-number
+        //= type=implication
+        //# Subsequent frames MUST be in order and MUST contain an increment of 1 from the previous frame.
         sequence_number += 1;
     }
+
+    // Now process final frame
+
+    total_data_size += in_size;
+    if total_data_size > MAX_DATA {
+        return Err("Plain text too large".into());
+    }
+
+    //= ../specification/data-format/message-body.md#final-frame
+    //= type=implication
+    //# The length of the plaintext to be encrypted in the Final Frame MUST be
+    //# greater than or equal to 0 and less than or equal to the [Frame Length](message-header.md#frame-length).
+
+    //= ../specification/data-format/message-body.md#final-frame
+    //= type=implication
+    //# - When the length of the Plaintext is an exact multiple of the Frame Length
+    //# (including if it is equal to the frame length),
+    //# the Final Frame encrypted content length SHOULD be equal to the frame length but MAY be 0.
+
+    //= ../specification/data-format/message-body.md#final-frame
+    //= type=implication
+    //# - When the length of the Plaintext is less than the Frame Length,
+    //# the body MUST contain exactly one frame and that frame MUST be a Final Frame.
+
     // Final frame should not be empty, unless the whole plaintext was empty
     debug_assert!(in_size > 0 || sequence_number == START_SEQUENCE_NUMBER);
+    debug_assert!(in_size <= frame_length);
     iv_seq(sequence_number, &mut iv);
     w.clear();
 
-    body_aad2(
+    body_aad(
         header.body.message_id(),
+        //= ../specification/data-format/message-body-aad.md#body-aad-content
+        //= type=implication
+        //# - The [final frame](message-body.md#final-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Final Frame`.
         BodyAADContent::FinalFrame,
         sequence_number,
+        //= ../specification/data-format/message-body-aad.md#content-length
+        //= type=implication
+        //# - For the [final frame](message-body.md#final-frame), this value MUST be greater than or equal to
+        //# 0 and less than or equal to the value of the [frame length](message-header.md#frame-length)
+        //# field in the message header.
         in_size as u64,
         &mut aad,
     );
 
+    //= ../specification/data-format/message-body.md#final-frame
+    //= type=implication
+    //# Framed data MUST contain exactly one final frame.
+
+    //= ../specification/data-format/message-body.md#final-frame
+    //= type=implication
+    //# The final frame MUST be the last frame.
     write_u32(&mut w, ENDFRAME_SEQUENCE_NUMBER)?;
+    //= ../specification/data-format/message-body.md#sequence-number-1
+    //= type=implication
+    //# The Final Frame Sequence number MUST be equal to the total number of frames in the Framed Data.
     write_u32(&mut w, sequence_number)?;
     write_bytes(&mut w, &iv)?;
     write_u32(&mut w, in_size as u32)?;
+    //= ../specification/data-format/message-body.md#authentication-tag-2
+    //= type=implication
+    //# The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
+    //# specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
     aes_encrypt(alg, &iv, key, &plaintext_frame[0..in_size], &aad, &mut w)?;
     write_bytes(out, &w)?;
     write_bytes(dw, &w)?;
@@ -144,14 +236,20 @@ pub(crate) fn validate_encryption_context(ec: &EncryptionContext) -> Result<(), 
     Ok(())
 }
 
+//= ../specification/data-format/message-header.md#encrypted-data-key-count
+//= type=implication
+//# This value MUST be greater than 0.
 pub(crate) fn validate_max_encrypted_data_keys(
     max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
     edks: &[EncryptedDataKey],
 ) -> Result<(), Error> {
-    if let Some(max) = max_encrypted_data_keys
-        && edks.len() > max.get()
-    {
-        return Err("Encrypted data keys exceed maxEncryptedDataKeys".into());
+    if let Some(max) = max_encrypted_data_keys {
+        if edks.len() > max.get() {
+            return Err("Encrypted data keys exceed maxEncryptedDataKeys".into());
+        }
+        if edks.is_empty() {
+            return Err("Encrypted data keys is empty.".into());
+        }
     }
 
     Ok(())
@@ -159,6 +257,16 @@ pub(crate) fn validate_max_encrypted_data_keys(
 /*
  * Generate a message id of appropriate length for the given algorithm suite.
  */
+//= ../specification/data-format/message-header.md#message-id
+//= type=implication
+//# A Message ID MUST uniquely identify the [message](message.md).
+
+//= ../specification/data-format/message-header.md#message-id
+//= type=implication
+//# While implementations cannot guarantee complete uniqueness,
+//# implementations MUST use a good source of randomness when generating messages IDs in order to make
+//# the chance of duplicate IDs negligible.
+
 pub(crate) fn generate_message_id(suite: &AlgorithmSuite) -> Result<MessageId, Error> {
     let length = if suite.message_version == 1 {
         MESSAGE_ID_LEN_V1
@@ -305,6 +413,10 @@ pub(crate) fn validate_suite_data(
         return Err("Commitment key does not match".into());
     }
 
+    //= ../specification/data-format/message-header.md#algorithm-suite-data
+    //= type=implication
+    //# The length of the suite data field MUST be equal to the [Algorithm Suite Data Length](../framework/algorithm-suites.md#algorithm-suite-data-length) value
+    //# of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
     if get_hkdf(&suite.commitment).output_key_length != expected_suite_data.len() as u32 {
         return Err("Commitment key is invalid".into());
     }
@@ -318,6 +430,12 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     key: &[u8],
     raw: &mut dyn SafeWrite,
 ) -> Result<Vec<u8>, Error> {
+    //= ../specification/data-format/message-header.md#frame-length
+    //= type=implication
+    //# When the [content type](#content-type) is non-framed, the value of this field MUST be 0.
+    if header.body.frame_length() != 0 {
+        return Err("Non-framed message contains non-zero frame length.".into());
+    }
     let iv = read_vec(r, get_iv_length(&header.suite) as usize, raw)?;
     let enc_content = read_seq_u64_bounded(
         r,
@@ -327,10 +445,20 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     )?;
     let auth_tag = read_vec(r, get_tag_length(&header.suite) as usize, raw)?;
     let mut aad = Vec::new();
-    body_aad2(
+    body_aad(
         header.body.message_id(),
+        //= ../specification/data-format/message-body-aad.md#body-aad-content
+        //= type=implication
+        //# - [Non-framed data](message-body.md#non-framed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
         BodyAADContent::SingleBlock,
+        //= ../specification/data-format/message-body-aad.md#sequence-number
+        //= type=implication
+        //# For [non-framed data](message-body.md#non-framed-data), the value of this field MUST be `1`.
         NONFRAMED_SEQUENCE_NUMBER,
+        //= ../specification/data-format/message-body-aad.md#content-length
+        //= type=implication
+        //# - For [non-framed data](message-body.md#non-framed-data), this value MUST equal the length, in bytes,
+        //# of the plaintext data provided to the algorithm for encryption.
         enc_content.len() as u64,
         &mut aad,
     );

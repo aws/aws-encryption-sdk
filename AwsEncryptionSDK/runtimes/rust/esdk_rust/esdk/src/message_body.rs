@@ -28,6 +28,22 @@ const fn body_aad_content_type_string(bc: BodyAADContent) -> &'static str {
     }
 }
 
+//= ../specification/data-format/message-body.md#iv
+//= type=implication
+//# The IV MUST be a unique IV within the message.
+// This is true because the sequence number is unique within a message.
+
+//= ../specification/data-format/message-body.md#iv-1
+//= type=implication
+//# Each frame in the [Framed Data](#framed-data) MUST include an IV that is unique within the message.
+
+//= ../specification/data-format/message-body.md#iv-2
+//= type=implication
+//# The IV MUST be a unique IV within the message.
+
+//= ../specification/data-format/message-body.md#iv-2
+//= type=implication
+//# The IV length MUST be equal to the IV length of the [algorithm suite](../framework/algorithm-suites.md) that generated the message.
 pub(crate) fn iv_seq(sequence_number: u32, result: &mut [u8]) {
     let pivot = result.len() - 4;
     result[pivot..].copy_from_slice(&sequence_number.to_be_bytes());
@@ -44,7 +60,7 @@ pub(crate) fn get_encrypt(info: &AlgorithmSuite) -> AesGcm {
  * Serializes the Message Body ADD
  */
 
-pub(crate) fn body_aad2(
+pub(crate) fn body_aad(
     message_id: &[u8],
     bc: BodyAADContent,
     sequence_number: u32,
@@ -92,7 +108,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 raw,
             )?;
             read_bytes(r, &mut auth_tag, raw)?;
-            body_aad2(
+            body_aad(
                 header.body.message_id(),
                 BodyAADContent::FinalFrame,
                 seq_num,
@@ -146,7 +162,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         read_bytes(r, &mut iv, raw)?;
         read_bytes(r, &mut enc_content, raw)?;
         read_bytes(r, &mut auth_tag, raw)?;
-        body_aad2(
+        body_aad(
             header.body.message_id(),
             BodyAADContent::RegularFrame,
             seq_num,
