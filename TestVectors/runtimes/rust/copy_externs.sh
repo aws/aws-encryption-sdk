@@ -12,6 +12,7 @@ cp $SRC/ddb.rs src
 cp $SRC/digest.rs src
 cp $SRC/ecdh.rs src
 cp $SRC/ecdsa.rs src
+cp $SRC/escape.rs src
 cp $SRC/hmac.rs src
 cp $SRC/kms.rs src
 cp $SRC/local_cmc.rs src
