@@ -3,7 +3,7 @@ use crate::test_vectors::run_tests::is_not_implemented;
 use crate::test_vectors::types::*;
 use crate::{DecryptInput, MaterialSource, decrypt};
 use anyhow::Result;
-#[cfg(feature = "kms")]
+#[cfg(any(feature = "kms", feature = "legacy"))]
 use aws_config::Region;
 #[cfg(feature = "ddb")]
 use aws_mpl_rs::Secret;
@@ -15,10 +15,10 @@ use aws_mpl_rs::kms_keyring::*;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 
-#[cfg(feature = "kms")]
+#[cfg(any(feature = "kms", feature = "legacy"))]
 use aws_sdk_kms::Client as KmsClient;
 
-#[cfg(not(feature = "kms"))]
+#[cfg(not(any(feature = "kms", feature = "legacy")))]
 #[derive(Clone, Debug)]
 #[allow(dead_code)]
 pub(crate) struct KmsClient {
@@ -49,7 +49,7 @@ pub(crate) async fn make_kms_map() -> KmsMap {
     kms_map
 }
 
-#[cfg(feature = "kms")]
+#[cfg(any(feature = "kms", feature = "legacy"))]
 pub(crate) async fn create_kms_client(region: &str) -> KmsClient {
     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
     let sdk_config = sdk_config
@@ -58,19 +58,20 @@ pub(crate) async fn create_kms_client(region: &str) -> KmsClient {
         .build();
     KmsClient::new(&sdk_config)
 }
-#[cfg(not(feature = "kms"))]
+
+#[cfg(not(any(feature = "kms", feature = "legacy")))]
 #[allow(clippy::unused_async)]
 pub(crate) async fn create_kms_client(_region: &str) -> KmsClient {
     KmsClient { x: 0 }
 }
 
-#[cfg(feature = "kms")]
+#[cfg(any(feature = "kms", feature = "legacy"))]
 pub(crate) fn kms_from_arn<'a>(kms: &'a KmsMap, arn: &str) -> &'a KmsClient {
     let region = region_from_arn(arn);
     &kms[region]
 }
 
-#[cfg(feature = "kms")]
+#[cfg(any(feature = "kms", feature = "legacy"))]
 pub(crate) fn region_from_arn(arn: &str) -> &str {
     arn.split(':').nth(3).unwrap()
 }
@@ -451,7 +452,7 @@ pub(crate) fn get_kms_ecdh_keyring_discovery(
     Ok(KeyringStatus::Ok(keyring))
 }
 
-#[cfg(feature = "kms")]
+#[cfg(any(feature = "kms", feature = "legacy"))]
 fn get_kms_enc_alg(s: &str) -> aws_sdk_kms::types::EncryptionAlgorithmSpec {
     match s {
         "RSAES_OAEP_SHA_256" => aws_sdk_kms::types::EncryptionAlgorithmSpec::RsaesOaepSha256,

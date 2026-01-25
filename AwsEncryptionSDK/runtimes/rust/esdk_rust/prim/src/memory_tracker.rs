@@ -1,22 +1,34 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-#![allow(clippy::exhaustive_structs)]
-use std::sync::atomic::AtomicUsize;
-use std::sync::atomic::Ordering;
 
+//! Track memory allocations. Use `track` feature to turn on the global allocator tracking.
+
+use std::sync::atomic::AtomicU64;
+use std::sync::atomic::Ordering;
+use crate::format::format_power2;
+
+/// Tracks resource usage of various kinds of allocations
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
+#[non_exhaustive]
 pub struct ResourceTracker {
-    pub count: usize,
-    pub total: usize,
+    /// Total number of allocations
+    pub count: u64,
+    /// Total number of bytes allocated
+    pub total: u64,
 }
 
+/// Results of tracking allocations
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
+#[non_exhaustive]
 pub struct ResourceResults {
-    pub count_k: usize,
-    pub total_m: usize,
+    /// Total number of allocations
+    pub count: u64,
+    /// Total number of bytes allocated
+    pub total: u64,
 }
 
 impl ResourceTracker {
+    /// Create a new resource tracker
     #[must_use]
     pub fn new() -> Self {
         Self {
@@ -24,10 +36,14 @@ impl ResourceTracker {
             total: get_total(),
         }
     }
+
+    /// Reset the resource tracker to current values
     pub fn reset(&mut self) {
         self.count = get_counter();
         self.total = get_total();
     }
+
+    /// Report outstanding allocations
     pub fn report_leak() {
         println!(
             "{} outstanding allocations totalling {} bytes.",
@@ -35,75 +51,64 @@ impl ResourceTracker {
             get_net_total()
         );
     }
+
     #[must_use]
+    /// Get the results of tracking so far
     pub fn get_results(&self) -> ResourceResults {
         ResourceResults {
-            count_k: (get_counter() - self.count) / 1000,
-            total_m: (get_total() - self.total) / 1_000_000,
+            count: get_counter() - self.count,
+            total: get_total() - self.total,
         }
     }
+
+    /// Print a one line report about allocations
     pub fn report(&self, tag: &str) {
         println!(
             "{tag} : {} allocations totalling {} bytes.",
-            get_counter() - self.count,
-            get_total() - self.total
+            format_power2(get_counter() - self.count),
+            format_power2(get_total() - self.total)
         );
     }
+
+    /// `report` and then `reset`. Useful for tracking allocations in multiple places.
     pub fn report_reset(&mut self, tag: &str) {
         self.report(tag);
         self.reset();
     }
 }
 
-static COUNTER: AtomicUsize = AtomicUsize::new(0);
-static TOTAL: AtomicUsize = AtomicUsize::new(0);
+static COUNTER: AtomicU64 = AtomicU64::new(0);
+static TOTAL: AtomicU64 = AtomicU64::new(0);
 
-static NET_COUNTER: AtomicUsize = AtomicUsize::new(0);
-static NET_TOTAL: AtomicUsize = AtomicUsize::new(0);
+static NET_COUNTER: AtomicU64 = AtomicU64::new(0);
+static NET_TOTAL: AtomicU64 = AtomicU64::new(0);
 
-fn add_to_counter(inc: usize) {
+#[allow(dead_code, reason="only used with track feature")]
+pub(crate) fn add_to_counter(inc: u64) {
     COUNTER.fetch_add(1, Ordering::SeqCst);
     TOTAL.fetch_add(inc, Ordering::SeqCst);
     NET_COUNTER.fetch_add(1, Ordering::SeqCst);
     NET_TOTAL.fetch_add(inc, Ordering::SeqCst);
 }
 
-fn subtract_from_counter(inc: usize) {
+#[allow(dead_code, reason="only used with track feature")]
+pub(crate) fn subtract_from_counter(inc: u64) {
     NET_COUNTER.fetch_sub(1, Ordering::SeqCst);
     NET_TOTAL.fetch_sub(inc, Ordering::SeqCst);
 }
 
-fn get_counter() -> usize {
+fn get_counter() -> u64 {
     COUNTER.load(Ordering::SeqCst)
 }
 
-fn get_total() -> usize {
+fn get_total() -> u64 {
     TOTAL.load(Ordering::SeqCst)
 }
 
-fn get_net_counter() -> usize {
+fn get_net_counter() -> u64 {
     NET_COUNTER.load(Ordering::SeqCst)
 }
 
-fn get_net_total() -> usize {
+fn get_net_total() -> u64 {
     NET_TOTAL.load(Ordering::SeqCst)
 }
-
-use std::alloc::{GlobalAlloc, Layout, System};
-
-struct MyAllocator;
-
-unsafe impl GlobalAlloc for MyAllocator {
-    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        add_to_counter(layout.size());
-        unsafe { System.alloc(layout) }
-    }
-
-    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
-        subtract_from_counter(layout.size());
-        unsafe { System.dealloc(ptr, layout) }
-    }
-}
-
-#[global_allocator]
-static GLOBAL: MyAllocator = MyAllocator;

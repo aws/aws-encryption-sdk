@@ -8,6 +8,7 @@ use aws_lc_rs::signature::EcdsaSigningAlgorithm;
 use aws_lc_rs::signature::EcdsaVerificationAlgorithm;
 use aws_lc_rs::signature::UnparsedPublicKey;
 
+/// Gathers Digest Data
 #[derive(Clone)]
 pub struct DigestContext {
     context: aws_lc_rs::digest::Context,
@@ -20,35 +21,46 @@ impl std::fmt::Debug for DigestContext {
 }
 
 impl DigestContext {
+    /// Create new `DigestContext` from the given algorithm
     pub fn new(alg: DigestAlg) -> Result<Self, Error> {
         let alg = get_digest_alg(alg);
         Ok(Self {
             context: aws_lc_rs::digest::Context::new(alg),
         })
     }
+
+    /// Create new `DigestContext` from the given algorithm
     pub fn new_from_ecdsa(alg: EcdsaSignatureAlgorithm) -> Result<Self, Error> {
         let alg = get_digest_alg_from_ecdsa(alg);
         Ok(Self {
             context: aws_lc_rs::digest::Context::new(alg),
         })
     }
+
+    /// Update with more bytes
     pub fn update(&mut self, data: &[u8]) {
         self.context.update(data);
     }
+
+    /// finalize and return the signature
     #[must_use]
     pub fn finish(self) -> Vec<u8> {
         self.context.finish().as_ref().to_vec()
     }
+
     fn digest(self) -> aws_lc_rs::digest::Digest {
         self.context.finish()
     }
 }
 
+/// Which ECDSA Algorithm to use
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
 pub enum EcdsaSignatureAlgorithm {
-    EcdsaP384,
+    /// 384 bit ECDSA
     #[default]
+    EcdsaP384,
+    /// 256 bit ECDSA
     EcdsaP256,
 }
 
@@ -83,6 +95,9 @@ const fn get_ver_alg(x: EcdsaSignatureAlgorithm) -> &'static EcdsaVerificationAl
     }
 }
 
+/// Sign the message with the key using the given algorithm
+///
+/// The key must be in DER format
 pub fn ecdsa_sign(alg: EcdsaSignatureAlgorithm, key: &[u8], msg: &[u8]) -> Result<Vec<u8>, Error> {
     // This loop can in theory run forever, but the chances of that are negligible.
     // We may want to consider failing, after some number of loops, if we can do so in a way consistent with other ESDKs.
@@ -105,6 +120,9 @@ pub fn ecdsa_sign(alg: EcdsaSignatureAlgorithm, key: &[u8], msg: &[u8]) -> Resul
     }
 }
 
+/// Sign the message with the key using the given algorithm
+///
+/// The key must be in DER format
 pub fn ecdsa_sign_digest(
     alg: EcdsaSignatureAlgorithm,
     key: &[u8],
@@ -132,6 +150,7 @@ pub fn ecdsa_sign_digest(
     }
 }
 
+/// Verify the signature of the message using the key and algorithm
 pub fn ecdsa_verify(
     alg: EcdsaSignatureAlgorithm,
     key: &[u8],
@@ -145,6 +164,7 @@ pub fn ecdsa_verify(
     }
 }
 
+/// Verify the signature of the message using the key and algorithm
 pub fn ecdsa_verify_context(
     alg: EcdsaSignatureAlgorithm,
     key: &[u8],

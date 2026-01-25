@@ -1,3 +1,4 @@
+#![doc = include_str!("../README.md")]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(
     absolute_paths_not_starting_with_crate,
@@ -10,7 +11,7 @@
     macro_use_extern_crate,
     missing_debug_implementations,
     missing_copy_implementations,
-    // missing_docs,
+    missing_docs,
     non_ascii_idents,
     // non_exhaustive_omitted_patterns, unstable
     noop_method_call,
@@ -54,17 +55,8 @@
     clippy::string_lit_chars_any,
     clippy::tests_outside_test_module,
 )]
-#![allow(clippy::cargo_common_metadata)] // REMOVE
-#![allow(clippy::multiple_crate_versions)] // nothing to be done
-#![allow(clippy::option_if_let_else)] // disagree
-#![allow(clippy::cast_possible_truncation)] // REMOVE
-#![allow(clippy::missing_panics_doc)] // REMOVE
-#![allow(clippy::cast_sign_loss)] // REMOVE
-#![allow(clippy::redundant_pub_crate)] // broken, conflicts with unreachable_pub
-#![allow(clippy::wildcard_imports)] // REMOVE
+
 #![allow(clippy::missing_errors_doc)] // REMOVE
-#![allow(clippy::too_many_lines)] // disagree
-#![allow(unused_crate_dependencies)] // broken
 
 use std::sync::Arc;
 
@@ -74,15 +66,19 @@ mod ecdh;
 pub use ecdh::*;
 mod hkdf;
 pub use hkdf::*;
+pub mod memory_tracker;
+pub mod format;
 #[cfg(feature = "track")]
-pub mod memtracker;
+pub mod use_memory_tracker;
 
 use aws_lc_rs::aead::{Aad, LessSafeKey, Nonce, UnboundKey};
 use aws_lc_rs::rand;
 use std::backtrace::Backtrace;
 
+/// Digest Algorithm. Default is Sha512
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
+#[allow(missing_docs)]
 pub enum DigestAlg {
     Sha256,
     Sha384,
@@ -90,10 +86,13 @@ pub enum DigestAlg {
     Sha512,
 }
 
+/// Error type for this crate
 #[derive(Clone, Debug)]
 #[non_exhaustive]
 pub struct Error {
+    /// Text associated with the error
     pub message: String,
+    /// Backtrace at time of creation
     pub backtrace: Arc<Backtrace>,
 }
 
@@ -125,21 +124,17 @@ fn err<T>(s: String) -> Result<T, Error> {
     Err(serr(s))
 }
 
+/// Fill `bytes` with random data.
 pub fn generate_random_bytes(bytes: &mut [u8]) -> Result<(), Error> {
     rand::fill(bytes)
         .map_err(|_| serr(format!("Failed to generate {} random bytes.", bytes.len())))?;
     Ok(())
 }
 
-#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
-#[non_exhaustive]
-pub struct DoAESEncryptOutput {
-    pub cipher_text: Vec<u8>,
-    pub auth_tag: Vec<u8>,
-}
-
+/// AES GCM Algorithm. Default is `Aes256Gcm`
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 #[non_exhaustive]
+#[allow(missing_docs)]
 pub enum AesGcm {
     Aes128Gcm,
     Aes192Gcm,
@@ -149,6 +144,7 @@ pub enum AesGcm {
 
 impl AesGcm {
     #[must_use]
+    /// Return key length associated with the algorithm
     pub const fn key_len(&self) -> u8 {
         match self {
             Self::Aes128Gcm => 16,
@@ -166,6 +162,7 @@ const fn get_aes_alg(alg: AesGcm) -> &'static aws_lc_rs::aead::Algorithm {
     }
 }
 
+/// Encrypt message with AES GCM
 pub fn aes_encrypt(
     alg: AesGcm,
     iv: &[u8],
@@ -189,6 +186,7 @@ pub fn aes_encrypt(
     Ok(())
 }
 
+/// Decrypt message with AES GCM
 pub fn aes_decrypt(
     alg: AesGcm,
     key: &[u8],

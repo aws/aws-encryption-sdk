@@ -10,6 +10,7 @@ clippy:
 	cargo clippy --tests --examples --no-default-features --features kms,test_vectors
 	cargo clippy --tests --examples --no-default-features --features ddb,test_vectors
 	cargo clippy --tests --examples --no-default-features --features legacy,test_vectors
+	cargo clippy --tests --examples --no-default-features --features quick_vectors
 
 test:
 	cargo test
@@ -21,6 +22,7 @@ test:
 	cargo test --no-default-features --features kms,test_vectors
 	cargo test --no-default-features --features ddb,test_vectors
 	cargo test --no-default-features --features legacy,test_vectors
+	cargo test --no-default-features --features quick_vectors
 
 examples:
 	cargo run --example main

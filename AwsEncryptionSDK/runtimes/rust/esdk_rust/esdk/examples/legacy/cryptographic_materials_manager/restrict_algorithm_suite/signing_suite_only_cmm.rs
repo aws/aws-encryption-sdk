@@ -1,5 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+#![allow(clippy::result_large_err)]
 
 use aws_esdk::mpl;
 use aws_mpl_legacy::operation::decrypt_materials::DecryptMaterialsInput;
