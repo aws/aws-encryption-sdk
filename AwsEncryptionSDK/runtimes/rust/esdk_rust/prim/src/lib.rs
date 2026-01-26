@@ -212,3 +212,55 @@ pub fn aes_decrypt(
         .map_err(|e| serr(format!("gather {e:?}")))?;
     Ok(())
 }
+
+#[must_use]
+/// Calculate HMAC
+// FIXME - pass in &mut[u8] instead of returning Vec
+pub fn hmac(alg : DigestAlg, key : &[u8], msg : &[u8]) -> Vec<u8>
+{
+    use aws_lc_rs::hmac;
+    match alg {
+        DigestAlg::Sha256 => {
+            let s_key = hmac::Key::new(hmac::HMAC_SHA256, key);
+            hmac::sign(&s_key, msg).as_ref().into()
+        }
+        DigestAlg::Sha384 => {
+            let s_key = hmac::Key::new(hmac::HMAC_SHA384, key);
+            hmac::sign(&s_key, msg).as_ref().into()
+        }
+        DigestAlg::Sha512 => {
+            let s_key = hmac::Key::new(hmac::HMAC_SHA512, key);
+            hmac::sign(&s_key, msg).as_ref().into()
+        }
+    }
+}
+#[must_use]
+/// Return a digest of the data using the selected algorithm
+pub fn digest(alg : DigestAlg, data : &[u8]) -> Vec<u8>
+{
+    match alg {
+        DigestAlg::Sha256 => {
+            aws_lc_rs::digest::digest(&aws_lc_rs::digest::SHA256, data)
+                .as_ref()
+                .to_vec()
+        },
+        DigestAlg::Sha384 => {
+            aws_lc_rs::digest::digest(&aws_lc_rs::digest::SHA384, data)
+                .as_ref()
+                .to_vec()
+        },
+        DigestAlg::Sha512 => {
+            aws_lc_rs::digest::digest(&aws_lc_rs::digest::SHA512, data)
+                .as_ref()
+                .to_vec()
+        },
+    }
+}
+
+/// Compare in constant time
+#[must_use]
+pub fn constant_time_equal(a: &[u8], b: &[u8]) -> bool
+{
+    aws_lc_rs::constant_time::verify_slices_are_equal(a, b).is_ok()
+}
+

@@ -98,6 +98,7 @@ const fn get_ver_alg(x: EcdsaSignatureAlgorithm) -> &'static EcdsaVerificationAl
 /// Sign the message with the key using the given algorithm
 ///
 /// The key must be in DER format
+// FIXME - pass in &mut[u8] instead of returning Vec
 pub fn ecdsa_sign(alg: EcdsaSignatureAlgorithm, key: &[u8], msg: &[u8]) -> Result<Vec<u8>, Error> {
     // This loop can in theory run forever, but the chances of that are negligible.
     // We may want to consider failing, after some number of loops, if we can do so in a way consistent with other ESDKs.

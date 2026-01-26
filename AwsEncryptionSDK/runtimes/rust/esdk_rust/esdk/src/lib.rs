@@ -57,10 +57,12 @@
     clippy::tests_outside_test_module,
 
     // clippy::indexing_slicing,
-    // clippy::wildcard_enum_match_arm, try again after native MPL
+    // clippy::wildcard_enum_match_arm,
     clippy::unneeded_field_pattern,
 
 )]
+
+#![cfg_attr(feature = "legacy", allow(clippy::wildcard_enum_match_arm))]
 
 #![allow(clippy::multiple_crate_versions)] // nothing to be done
 #![allow(clippy::option_if_let_else)] // disagree
