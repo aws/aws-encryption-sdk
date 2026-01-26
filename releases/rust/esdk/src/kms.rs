@@ -5,29 +5,15 @@
 #![deny(nonstandard_style)]
 #![deny(clippy::all)]
 
+use crate::escape::escape_to_async;
 use aws_config::{AppName, Region, SdkConfig};
-use std::sync::LazyLock;
-static DAFNY_TOKIO_RUNTIME: LazyLock<tokio::runtime::Runtime> = LazyLock::new(|| {
-    tokio::runtime::Builder::new_multi_thread()
-        .enable_all()
-        .build()
-        .unwrap()
-});
 
 impl crate::r#software::amazon::cryptography::services::kms::internaldafny::_default {
     #[allow(non_snake_case)]
     fn CreateSdkConfig() -> SdkConfig {
-        let shared_config = match tokio::runtime::Handle::try_current() {
-            Ok(curr) => tokio::task::block_in_place(|| {
-                curr.block_on(async {
-                    aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await
-                })
-            }),
-            Err(_) => DAFNY_TOKIO_RUNTIME.block_on(aws_config::load_defaults(
-                aws_config::BehaviorVersion::latest(),
-            )),
-        };
-
+        let shared_config = escape_to_async(aws_config::load_defaults(
+            aws_config::BehaviorVersion::latest(),
+        ));
         Self::AddUserAgentStringToConfig(&shared_config)
     }
 

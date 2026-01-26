@@ -181,7 +181,7 @@ pub async fn encrypt_and_decrypt_with_keyring(
     Ok(())
 }
 
-#[tokio::test(flavor = "multi_thread")]
+#[tokio::test]
 pub async fn test_encrypt_and_decrypt_with_keyring() -> Result<(), crate::BoxError2> {
     // Test function for encrypt and decrypt using the AWS KMS MRK Multi Keyring example
     use crate::example_utils::utils;
