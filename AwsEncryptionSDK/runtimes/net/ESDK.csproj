@@ -31,7 +31,7 @@
   <ItemGroup>
       <!-- TODO: manually upgraded to match the latest from MPL, is that reasonable? -->
       <PackageReference Include="DafnyRuntime" Version="4.9.0" />
-      <PackageReference Include="BouncyCastle.Cryptography" Version="2.3.1" />
+      <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2" />
       <ProjectReference Include="../../../mpl/AwsCryptographicMaterialProviders/runtimes/net/MPL.csproj" />
       <!--
         System.Collections.Immutable can be removed once dafny.msbuild is updated with
@@ -39,7 +39,7 @@
       -->
       <PackageReference Include="System.Collections.Immutable" Version="1.7.0" />
       <!-- Work around for dafny-lang/dafny/issues/1951; remove once resolved -->
-      <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+      <PackageReference Include="System.ValueTuple" Version="4.6.1" />
 
       <Compile Include="Generated/**/*.cs" />
       <Compile Include="ImplementationFromDafny.cs" />

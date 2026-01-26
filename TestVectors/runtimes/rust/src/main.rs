@@ -52,6 +52,7 @@ pub(crate) use crate::implementation_from_dafny::UTF8;
 pub(crate) use crate::implementation_from_dafny::UUID;
 pub(crate) use crate::implementation_from_dafny::_TestWrappedESDKMain_Compile;
 pub(crate) use crate::deps::com_amazonaws_kms::client::Client as KmsClient;
+pub(crate) use crate::deps::com_amazonaws_dynamodb::client::Client as DdbClient;
 
 pub(crate) mod aes_gcm;
 pub(crate) mod aes_kdf_ctr;
@@ -61,6 +62,7 @@ pub(crate) mod ddb;
 pub(crate) mod digest;
 pub(crate) mod ecdh;
 pub(crate) mod ecdsa;
+pub(crate) mod escape;
 pub(crate) mod hmac;
 pub(crate) mod kms;
 pub(crate) mod local_cmc;

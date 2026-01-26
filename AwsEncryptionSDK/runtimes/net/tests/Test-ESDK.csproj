@@ -17,7 +17,7 @@
       -->
       <PackageReference Include="System.Collections.Immutable" Version="1.7.0" />
       <!-- Work around for dafny-lang/dafny/issues/1951; remove once resolved -->
-      <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+      <PackageReference Include="System.ValueTuple" Version="4.6.1" />
     </ItemGroup>
   
     <ItemGroup>
