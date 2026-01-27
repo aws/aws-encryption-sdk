@@ -16,6 +16,15 @@ const fn get_alg(alg: DigestAlg) -> aws_lc_rs::hkdf::Algorithm {
     }
 }
 
+const MAX_SALT_SIZE: usize = 64;
+const fn default_salt_size(alg: DigestAlg) -> usize {
+    match alg {
+        DigestAlg::Sha256 => 32,
+        DigestAlg::Sha384 => 48,
+        DigestAlg::Sha512 => MAX_SALT_SIZE,
+    }
+}
+
 fn get_len(len: usize) -> Result<&'static aws_lc_rs::aead::Algorithm, Error> {
     match len {
         16 => Ok(&aws_lc_rs::aead::AES_128_GCM),
@@ -40,6 +49,18 @@ pub fn hkdf(
         .map_err(|e| serr(format!("{e:?}")))?;
     inner_okm.fill(okm).map_err(|e| serr(format!("{e:?}")))?;
     Ok(())
+}
+
+/// Calculate HKDF, with default salt
+pub fn hkdf_no_salt(
+    alg: DigestAlg,
+    ikm: &[u8],
+    info: &[&[u8]],
+    okm: &mut [u8],
+) -> Result<(), Error> {
+    let sz = default_salt_size(alg);
+    let salt = [0u8; MAX_SALT_SIZE];
+    hkdf(alg, &salt[..sz], ikm, info, okm)
 }
 
 /// HKDF Extract

@@ -57,11 +57,10 @@
     clippy::tests_outside_test_module,
 
     // clippy::indexing_slicing,
-    // clippy::wildcard_enum_match_arm,
+    // clippy::wildcard_enum_match_arm, try again after native MPL
     clippy::unneeded_field_pattern,
 
 )]
-#![cfg_attr(feature = "legacy", allow(clippy::wildcard_enum_match_arm))]
 #![allow(clippy::multiple_crate_versions)] // nothing to be done
 #![allow(clippy::option_if_let_else)] // disagree
 #![allow(clippy::cast_possible_truncation)] // REMOVE
@@ -74,23 +73,21 @@
 #![allow(unused_crate_dependencies)] // broken
 
 // #[allow(lint_name, reason = "Your explanation here")]
-// #[warn(clippy::allow_attributes_without_reason)] // REMOVE
+// #[warn(clippy::allow_attributes_without_reason)] // REPLACE
 
+use aws_mpl_rs::EncryptionContext;
+
+mod canonize;
+mod crypt;
 mod error;
-pub use error::*;
-mod esdk_operations;
-pub use esdk_operations::*;
-#[cfg(feature = "test_vectors")]
-#[cfg_attr(docsrs, doc(cfg(feature = "test_vectors")))]
-/// test vectors
-pub mod test_vectors;
+mod footer;
+mod header;
+mod operations;
+mod paths;
+mod serialize;
 mod types;
-pub use types::*;
+mod utils;
 
-pub(crate) mod encrypt_decrypt;
-pub(crate) mod key_derivation;
-#[cfg(feature = "legacy")]
-pub(crate) mod legacy;
-pub(crate) mod materials;
-pub(crate) mod message_body;
-pub(crate) mod serialize;
+pub use error::*;
+pub use operations::*;
+pub use types::*;

@@ -62,7 +62,6 @@
     clippy::unneeded_field_pattern,
 
 )]
-
 #![allow(clippy::multiple_crate_versions)] // nothing to be done
 #![allow(clippy::option_if_let_else)] // disagree
 #![allow(clippy::redundant_pub_crate)] // broken, conflicts with unreachable_pub

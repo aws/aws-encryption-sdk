@@ -4,5 +4,6 @@ members = [
    "prim",
    "mpl",
    "esdk",
+   "aws_structured_encryption",
    "aws-esdk-cxx"
 ]

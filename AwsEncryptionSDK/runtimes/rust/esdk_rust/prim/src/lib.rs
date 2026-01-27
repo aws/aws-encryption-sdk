@@ -55,19 +55,20 @@
     clippy::string_lit_chars_any,
     clippy::tests_outside_test_module,
 )]
-
 #![allow(clippy::missing_errors_doc)] // REMOVE
 
 use std::sync::Arc;
 
+mod aes_kdf_ctr;
+pub use aes_kdf_ctr::*;
 mod ecdsa;
 pub use ecdsa::*;
 mod ecdh;
 pub use ecdh::*;
 mod hkdf;
 pub use hkdf::*;
-pub mod memory_tracker;
 pub mod format;
+pub mod memory_tracker;
 #[cfg(feature = "track")]
 pub mod use_memory_tracker;
 
@@ -216,8 +217,7 @@ pub fn aes_decrypt(
 #[must_use]
 /// Calculate HMAC
 // FIXME - pass in &mut[u8] instead of returning Vec
-pub fn hmac(alg : DigestAlg, key : &[u8], msg : &[u8]) -> Vec<u8>
-{
+pub fn hmac(alg: DigestAlg, key: &[u8], msg: &[u8]) -> Vec<u8> {
     use aws_lc_rs::hmac;
     match alg {
         DigestAlg::Sha256 => {
@@ -236,31 +236,22 @@ pub fn hmac(alg : DigestAlg, key : &[u8], msg : &[u8]) -> Vec<u8>
 }
 #[must_use]
 /// Return a digest of the data using the selected algorithm
-pub fn digest(alg : DigestAlg, data : &[u8]) -> Vec<u8>
-{
+pub fn digest(alg: DigestAlg, data: &[u8]) -> Vec<u8> {
     match alg {
-        DigestAlg::Sha256 => {
-            aws_lc_rs::digest::digest(&aws_lc_rs::digest::SHA256, data)
-                .as_ref()
-                .to_vec()
-        },
-        DigestAlg::Sha384 => {
-            aws_lc_rs::digest::digest(&aws_lc_rs::digest::SHA384, data)
-                .as_ref()
-                .to_vec()
-        },
-        DigestAlg::Sha512 => {
-            aws_lc_rs::digest::digest(&aws_lc_rs::digest::SHA512, data)
-                .as_ref()
-                .to_vec()
-        },
+        DigestAlg::Sha256 => aws_lc_rs::digest::digest(&aws_lc_rs::digest::SHA256, data)
+            .as_ref()
+            .to_vec(),
+        DigestAlg::Sha384 => aws_lc_rs::digest::digest(&aws_lc_rs::digest::SHA384, data)
+            .as_ref()
+            .to_vec(),
+        DigestAlg::Sha512 => aws_lc_rs::digest::digest(&aws_lc_rs::digest::SHA512, data)
+            .as_ref()
+            .to_vec(),
     }
 }
 
 /// Compare in constant time
 #[must_use]
-pub fn constant_time_equal(a: &[u8], b: &[u8]) -> bool
-{
+pub fn constant_time_equal(a: &[u8], b: &[u8]) -> bool {
     aws_lc_rs::constant_time::verify_slices_are_equal(a, b).is_ok()
 }
-

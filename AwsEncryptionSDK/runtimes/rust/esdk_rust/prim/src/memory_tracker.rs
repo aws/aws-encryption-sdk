@@ -3,9 +3,9 @@
 
 //! Track memory allocations. Use `track` feature to turn on the global allocator tracking.
 
+use crate::format::format_power2;
 use std::sync::atomic::AtomicU64;
 use std::sync::atomic::Ordering;
-use crate::format::format_power2;
 
 /// Tracks resource usage of various kinds of allocations
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
@@ -83,7 +83,7 @@ static TOTAL: AtomicU64 = AtomicU64::new(0);
 static NET_COUNTER: AtomicU64 = AtomicU64::new(0);
 static NET_TOTAL: AtomicU64 = AtomicU64::new(0);
 
-#[allow(dead_code, reason="only used with track feature")]
+#[allow(dead_code, reason = "only used with track feature")]
 pub(crate) fn add_to_counter(inc: u64) {
     COUNTER.fetch_add(1, Ordering::SeqCst);
     TOTAL.fetch_add(inc, Ordering::SeqCst);
@@ -91,7 +91,7 @@ pub(crate) fn add_to_counter(inc: u64) {
     NET_TOTAL.fetch_add(inc, Ordering::SeqCst);
 }
 
-#[allow(dead_code, reason="only used with track feature")]
+#[allow(dead_code, reason = "only used with track feature")]
 pub(crate) fn subtract_from_counter(inc: u64) {
     NET_COUNTER.fetch_sub(1, Ordering::SeqCst);
     NET_TOTAL.fetch_sub(inc, Ordering::SeqCst);

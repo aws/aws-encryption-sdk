@@ -3,9 +3,9 @@
 
 //! The global allocator to allow memory tracking
 
-use std::alloc::{GlobalAlloc, Layout, System};
 use crate::memory_tracker::add_to_counter;
 use crate::memory_tracker::subtract_from_counter;
+use std::alloc::{GlobalAlloc, Layout, System};
 
 struct MyAllocator;
 
