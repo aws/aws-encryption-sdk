@@ -16,7 +16,7 @@ crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
 aws-config = "1.8.12"
-aws-mpl-legacy = "0.1.0"
+aws-mpl-legacy = "0.2.0"
 aws-sdk-dynamodb = "1.103.0"
 aws-sdk-kms = "1.98.0"
 aws-smithy-types = "1.3.6"
