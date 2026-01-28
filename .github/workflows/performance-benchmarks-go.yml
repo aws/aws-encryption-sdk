@@ -9,6 +9,7 @@ on:
     inputs:
       dafny:
         description: "The Dafny version to run"
+        required: true
         default: '4.9.0'
         type: string
       regenerate-code:

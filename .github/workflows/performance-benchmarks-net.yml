@@ -9,6 +9,7 @@ on:
     inputs:
       dafny:
         description: "The Dafny version to run"
+        required: true
         default: '4.9.0'
         type: string
       regenerate-code:
@@ -62,7 +63,7 @@ jobs:
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
         with:
-          dafny-version: ${{ inputs.dafny }}
+          dafny-version: ${{ inputs.dafny.default }}
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
