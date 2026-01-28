@@ -2,6 +2,9 @@
 name: Performance Benchmarks Net
 
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/performance-benchmarks-net.yml"
   workflow_call:
     inputs:
       dafny:

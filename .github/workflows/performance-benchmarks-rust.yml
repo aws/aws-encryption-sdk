@@ -2,6 +2,9 @@
 name: Performance Benchmarks Rust
 
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/performance-benchmarks-rust.yml"
   workflow_call:
     inputs:
       dafny:

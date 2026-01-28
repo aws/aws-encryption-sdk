@@ -2,6 +2,9 @@
 name: Performance Benchmarks Go
 
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/performance-benchmarks-go.yml"
   workflow_call:
     inputs:
       dafny:
