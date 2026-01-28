@@ -22,9 +22,9 @@ jobs:
         library: [AwsEncryptionSDK]
         benchmark-dir: [esdk-performance-testing]
         os: [
-            ubuntu-22.04,
+            #ubuntu-22.04,
             # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
-            # macos-15,
+            macos-15,
           ]
     runs-on: ${{ matrix.os }}
     permissions:
