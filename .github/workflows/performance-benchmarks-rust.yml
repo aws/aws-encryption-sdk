@@ -83,19 +83,19 @@ jobs:
           diff-generated-code: false
           update-and-regenerate-mpl: true
 
-      - name: Run make polymorph_rust
-        shell: bash
-        working-directory: ${{ matrix.library }}
-        run: |
-          make polymorph_rust
+      #- name: Run make polymorph_rust
+      #  shell: bash
+      #  working-directory: ${{ matrix.library }}
+      #  run: |
+      #    make polymorph_rust
 
-      - name: Compile ${{ matrix.library }} implementation
-        shell: bash
-        working-directory: ${{ matrix.library }}
-        run: |
-          # This works because `node` is installed by default on GHA runners
-          CORES=$(node -e 'console.log(os.cpus().length)')
-          make transpile_rust CORES=$CORES
+      #- name: Compile ${{ matrix.library }} implementation
+      #  shell: bash
+      #  working-directory: ${{ matrix.library }}
+      #  run: |
+      #    # This works because `node` is installed by default on GHA runners
+      #    CORES=$(node -e 'console.log(os.cpus().length)')
+      #    make transpile_rust CORES=$CORES
 
       - name: Run Performance Benchmarks - Quick Mode
         shell: bash

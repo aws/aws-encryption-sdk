@@ -9,8 +9,8 @@ path = "src/main.rs"
 
 [dependencies]
 # AWS Encryption SDK
-# aws-esdk = { path = "/Users/ajewell/esdk_rust/esdk" }
-aws-esdk = { path = "../../../AwsEncryptionSDK/runtimes/rust" }
+#aws-esdk = { path = "../../../AwsEncryptionSDK/runtimes/rust" }
+aws-esdk = "1.2.2"
 
 # Async runtime
 tokio = { version = "1.49", features = ["full"] }
