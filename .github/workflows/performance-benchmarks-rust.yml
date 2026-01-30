@@ -24,12 +24,7 @@ jobs:
       matrix:
         library: [AwsEncryptionSDK]
         benchmark-dir: [esdk-performance-testing]
-        os: [
-            #ubuntu-22.04,
-            # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
-            macos-15-large,
-          ]
-    runs-on: ${{ matrix.os }}
+    runs-on: codebuild-AWS-ESDK-Performance-${{ github.run_id }}-${{ github.run_attempt }}
     permissions:
       id-token: write
       contents: read
@@ -66,10 +61,6 @@ jobs:
         with:
           distribution: "corretto"
           java-version: "17"
-
-      - name: Setup NASM for Windows (aws-lc-sys)
-        if: matrix.os == 'windows-latest'
-        uses: ilammy/setup-nasm@v1
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
