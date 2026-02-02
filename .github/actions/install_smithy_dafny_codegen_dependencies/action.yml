@@ -14,6 +14,9 @@ runs:
         distribution: "corretto"
         java-version: "17"
 
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+
     - name: Install smithy-dafny-codegen dependencies locally (with retry)
       uses: nick-fields/retry@v3
       with:
