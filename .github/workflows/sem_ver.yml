@@ -27,7 +27,7 @@ jobs:
           role-session-name: CI_Bot_Release
 
       - name: Upgrade Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: 21
 

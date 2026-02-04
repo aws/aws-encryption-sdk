@@ -264,7 +264,7 @@ jobs:
           name: ${{matrix.os}}_vector_artifact
           path: AwsEncryptionSDK/net41/vectors
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 17
 

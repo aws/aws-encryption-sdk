@@ -549,7 +549,7 @@ jobs:
           role-session-name: InterOpTests
           role-duration-seconds: 3600
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 17
 
@@ -614,7 +614,7 @@ jobs:
           role-session-name: InterOpTests
           role-duration-seconds: 3600
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 17
 
