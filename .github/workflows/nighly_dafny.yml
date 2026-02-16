@@ -11,6 +11,10 @@ on:
     - cron: "30 16 * * *"
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   dafny-nightly-verification:
     # Don't run the cron builds on forks
