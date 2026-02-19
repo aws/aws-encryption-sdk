@@ -4,6 +4,10 @@ name: PR CI
 on:
   pull_request:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   getVersion:
     uses: ./.github/workflows/dafny_version.yaml
