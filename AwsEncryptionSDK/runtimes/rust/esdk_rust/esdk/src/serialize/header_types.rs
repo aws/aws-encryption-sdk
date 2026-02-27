@@ -50,6 +50,8 @@ pub(crate) fn read_msg_type(
         _ => ser_err("Unsupported Message Type."),
     }
 }
+//= specification/data-format/message-header.md#content-type
+//# The value (hex) of this field MUST be a value that exists in the following table:
 pub(crate) fn read_content_type(
     r: &mut dyn SafeRead,
     raw: &mut dyn SafeWrite,
@@ -178,8 +180,7 @@ pub(crate) enum MessageType {
     TypeCustomerAed = 0x80,
 }
 
-//= ../specification/data-format/message-header.md#content-type
-//= type=implication
+//= specification/data-format/message-header.md#content-type
 //# The value (hex) of this field MUST be a value that exists in the following table:
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub(crate) enum ContentType {

@@ -28,6 +28,9 @@ pub(crate) fn write_header_auth_tag_v1(
             header_iv,
             header_auth_tag,
         } => {
+            //= specification/data-format/message-header.md#iv-length
+            //# This value MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the
+            //# [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
             write_bytes(w, header_iv)?;
             write_bytes(w, header_auth_tag)
         }

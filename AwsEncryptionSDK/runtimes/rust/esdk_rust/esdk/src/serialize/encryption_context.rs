@@ -24,8 +24,7 @@ pub(crate) fn read_canonical_ec(
     Ok(result)
 }
 
-//= ../specification/data-format/message-header.md#key-value-pairs
-//= type=implication
+//= specification/data-format/message-header.md#key-value-pairs
 //# When the [encryption context](../framework/structures.md#encryption-context) is empty,
 //# this field MUST NOT be included in the [AAD](#aad).
 pub(crate) fn write_empty_ec_or_write_aad(
@@ -64,11 +63,13 @@ pub(crate) fn write_aad(
     w: &mut dyn SafeWrite,
     data: &ESDKCanonicalEncryptionContext,
 ) -> Result<(), Error> {
-    //= ../specification/data-format/message-header.md#key-value-pairs-length
-    //= type=implication
+    //= specification/data-format/message-header.md#key-value-pairs-length
     //# When the [encryption context](../framework/structures.md#encryption-context) is empty, the value of this field MUST be 0.
     write_u16(w, data.len() as u16)?;
     for pair in data {
+        //= specification/data-format/message-header.md#key-value-pairs
+        //# The encoding of the key-value pairs of the [encryption context](../framework/structures.md#encryption-context),
+        //# serialized according to it's [specification for serialization](../framework/structures.md#serialization).
         write_u16(w, pair.0.len() as u16)?;
         write_bytes(w, pair.0.as_bytes())?;
         write_u16(w, pair.1.len() as u16)?;

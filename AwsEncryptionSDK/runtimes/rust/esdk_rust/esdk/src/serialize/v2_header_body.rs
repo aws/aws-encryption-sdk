@@ -14,11 +14,14 @@ pub(crate) fn write_v2_header_body(
     w: &mut dyn SafeWrite,
     body: &V2HeaderBody,
 ) -> Result<(), Error> {
-    //= ../specification/data-format/message-header.md#header-body-version-2-0
-    //= type=implication
+    //= specification/data-format/message-header.md#header-body-version-2-0
+    //# The value of the `Version` field MUST be `02` in the Version 2.0 header body.
+    //= specification/data-format/message-header.md#header-body-version-2-0
     //# The value of the `Version` field MUST be `02` in the Version 2.0 header body.
     write_msg_format_version(w, MessageFormatVersion::V2)?;
     write_esdk_suite_id(w, &body.algorithm_suite)?;
+    //= specification/data-format/message-header.md#message-id
+    //# A Message ID MUST uniquely identify the [message](message.md).
     write_message_id(w, &body.message_id)?;
     write_aad_section(w, &body.encryption_context)?;
     write_edks(w, &body.encrypted_data_keys)?;

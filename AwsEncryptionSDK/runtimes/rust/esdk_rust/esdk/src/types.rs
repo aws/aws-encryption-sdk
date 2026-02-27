@@ -57,13 +57,14 @@ impl Eq for MaterialSource {}
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// The length of one frame, must be non-zero, defaults to 4096.
-//= ../specification/data-format/message-body.md#framed-data
-//= type=implication
+//= specification/data-format/message-body.md#framed-data
 //# - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
 #[expect(clippy::exhaustive_structs)]
 pub struct FrameLength(pub std::num::NonZeroU32);
 
 impl Default for FrameLength {
+    //= specification/client-apis/encrypt.md#frame-length
+    //# This value MUST default to 4096 bytes.
     fn default() -> Self {
         Self(std::num::NonZeroU32::new(4096).unwrap())
     }
@@ -72,6 +73,8 @@ impl Default for FrameLength {
 impl FrameLength {
     /// return new `FrameLength`.
     pub fn new(val: u32) -> Result<Self, Error> {
+        //= specification/client-apis/encrypt.md#frame-length
+        //# This value MUST be greater than 0 and MUST NOT exceed the value 2^32 - 1.
         Ok(Self(
             std::num::NonZeroU32::new(val)
                 .ok_or_else(|| val_err("Frame length must be non-zero"))?,
@@ -200,10 +203,15 @@ pub struct EncryptInput<'a> {
     pub source: Option<MaterialSource>,
     /// data to be encrypted
     pub plaintext: &'a [u8],
-    /// default is no limit
-    pub max_encrypted_data_keys: Option<NonZeroUsize>,
+    //= specification/client-apis/client.md#initialization
+    //# On client initialization,
+    //# The caller MUST have the option to provide a:
+    //# - [commitment policy](#commitment-policy)
+    //# - [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys)
     /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
     pub commitment_policy: EsdkCommitmentPolicy,
+    /// default is no limit
+    pub max_encrypted_data_keys: Option<NonZeroUsize>,
 }
 
 #[allow(
@@ -269,6 +277,8 @@ impl<'a> EncryptInput<'a> {
         }
     }
     pub(crate) fn validate(&self) -> Result<(), Error> {
+        //= specification/client-apis/encrypt.md#input
+        //# The following inputs to this behavior are REQUIRED:
         if self.source.is_none() {
             Err(val_err("A Materials Source must be provided."))
         } else {
@@ -345,6 +355,8 @@ impl EncryptStreamInput {
         }
     }
     pub(crate) fn validate(&self) -> Result<(), Error> {
+        //= specification/client-apis/decrypt.md#input
+        //# The client MUST require exactly one of the following types of inputs:
         if self.source.is_none() {
             Err(val_err("A Materials Source must be provided."))
         } else {
@@ -383,13 +395,17 @@ pub struct DecryptStreamInput {
     pub encryption_context: EncryptionContext,
     /// The source of cryptographic materials
     pub source: Option<MaterialSource>,
+    //= specification/client-apis/decrypt.md#authenticated-data
+    //= type=exception
+    //= reason=Releasing unauthenticated data is behind an "unsafe" feature flag
+    //# This operation MUST NOT release any unauthenticated plaintext or unauthenticated associated data.
     /// If you decrypt a signed payload, most of the data will be written
     /// to the output stream before the signature is verified.
     /// Thus, if verification fails, you are responsible for discarding any data
-    /// already received. If you are willing to accept this, set `i_accept_the_danger` to true.
+    /// already received. If you are willing to accept this, set `allow_unsafe_unauthenticated_plaintext_read` to true.
     /// If verification fails, at least one byte will not have been written to the output stream.
     /// If the ciphertext involves only one frame, then no danger exists, and this flag is not needed.
-    pub i_accept_the_danger: bool,
+    pub allow_unsafe_unauthenticated_plaintext_read: bool,
     /// default is `NetV400RetryPolicy::AllowRetry`
     pub net_v4_retry_policy: NetV400RetryPolicy,
     /// default is no limit
@@ -471,8 +487,20 @@ impl<'a> DecryptInput<'a> {
     }
 
     pub(crate) fn validate(&self) -> Result<(), Error> {
+        //# The client MUST require the following as inputs to this operation:
+        //# - [Encrypted Message](#encrypted-message)
+        if self.ciphertext.is_none() {
+            Err(val_err("A ciphertext value must be provided."))
+        }
+        //= specification/client-apis/decrypt.md#input
+        //# The client MUST require exactly one of the following types of inputs:
+        //# - [Cryptographic Materials Manager (CMM)](../framework/cmm-interface.md)
+        //# - [Keyring](../framework/keyring-interface.md)
         if self.source.is_none() {
-            Err(val_err("A Materials Source must be provided."))
+            Err(val_err("A Materials Source (keyring or CMM) must be provided."))
+        //= specification/client-apis/decrypt.md#input
+        //# The following inputs to this behavior MUST be OPTIONAL:
+        //# - [Encryption Context](#encryption-context)
         } else {
             Ok(())
         }

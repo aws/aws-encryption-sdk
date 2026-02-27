@@ -11,8 +11,7 @@ use crate::serialize::serialize_functions::*;
 use crate::types::{SafeRead, SafeWrite};
 use aws_mpl_rs::suites::AlgorithmSuite;
 
-//= ../specification/data-format/message-header.md#reserved
-//= type=implication
+//= specification/data-format/message-header.md#reserved
 //# A reserved sequence of 4 bytes
 //# that MUST have the value (hex) of `00 00 00 00`.
 const RESERVED_BYTES: [u8; 4] = [0x00, 0x00, 0x00, 0x00];
@@ -21,26 +20,23 @@ pub(crate) fn write_v1_header_body(
     w: &mut dyn SafeWrite,
     body: &V1HeaderBody,
 ) -> Result<(), Error> {
-    //= ../specification/data-format/message-header.md#header-body-version-1-0
-    //= type=implication
-    //# The value of the `Version` field MUST be `01` in the Version 1.0 header body.
-
-    //= ../specification/data-format/message-header.md#version-1
-    //= type=implication
+    //= specification/data-format/message-header.md#version-1
     //# The version (hex) of this field MUST be a value that exists in the following table:
+    //= specification/data-format/message-header.md#header-body-version-1-0
+    //# The value of the `Version` field MUST be `01` in the Version 1.0 header body.
     write_msg_format_version(w, MessageFormatVersion::V1)?;
-    //= ../specification/data-format/message-header.md#type
-    //= type=implication
+    //= specification/data-format/message-header.md#type
     //# The type (hex) of this field MUST be a value that exists in the following table:
     write_msg_type(w, body.message_type)?;
     write_esdk_suite_id(w, &body.algorithm_suite)?;
+    //= specification/data-format/message-header.md#message-id
+    //# A Message ID MUST uniquely identify the [message](message.md).
     write_message_id(w, &body.message_id)?;
     write_aad_section(w, &body.encryption_context)?;
     write_edks(w, &body.encrypted_data_keys)?;
     write_content_type(w, body.content_type)?;
     write_bytes(w, &RESERVED_BYTES)?;
-    //= ../specification/data-format/message-header.md#iv-length
-    //= type=implication
+    //= specification/data-format/message-header.md#iv-length
     //# This value MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the
     //# [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
     write_u8(w, get_iv_length(&body.algorithm_suite))?;

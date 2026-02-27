@@ -34,7 +34,15 @@ pub(crate) fn read_edks(
     max_edks: Option<std::num::NonZeroUsize>,
     raw: &mut dyn SafeWrite,
 ) -> Result<Vec<EncryptedDataKey>, Error> {
+    //= specification/data-format/message-header.md#encrypted-data-key-count
+    //# This value MUST be greater than 0.
     let count = read_u16(r, raw)?;
+    //= specification/client-apis/decrypt.md#parse-the-header
+    //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
+    //# deserialized from the [message header](../data-format/message-header.md)
+    //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
+    //# then as soon as that can be determined during deserializing
+    //# decrypt MUST process no more bytes and yield an error.
     if let Some(max_edks) = max_edks
         && count as usize > max_edks.get()
     {

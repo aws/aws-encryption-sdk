@@ -38,6 +38,10 @@ pub(crate) async fn create_cmm_from_input(
         }
         MaterialSource::Cmm(cmm) => Ok(Cmm::Modern(cmm)),
         MaterialSource::Keyring(keyring) => {
+            //= specification/client-apis/encrypt.md#get-the-encryption-materials
+            //# If instead the caller supplied a [keyring](../framework/keyring-interface.md),
+            //# this behavior MUST use a [default CMM](../framework/default-cmm.md)
+            //# constructed using the caller-supplied keyring as input.
             let cmm = aws_mpl_rs::cmm::create_default_cryptographic_materials_manager(keyring)?;
             Ok(Cmm::Modern(cmm))
         }

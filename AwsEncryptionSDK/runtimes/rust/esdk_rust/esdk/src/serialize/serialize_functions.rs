@@ -83,6 +83,8 @@ pub(crate) fn write_str_u16(w: &mut dyn SafeWrite, data: &str) -> Result<(), Err
 pub(crate) fn write_u8(w: &mut dyn SafeWrite, data: u8) -> Result<(), Error> {
     write_bytes(w, &[data])
 }
+//= specification/data-format/message-header.md#structure
+//# The message header is a sequence of bytes that MUST be in big-endian format.
 pub(crate) fn write_u16(w: &mut dyn SafeWrite, data: u16) -> Result<(), Error> {
     write_bytes(w, &data.to_be_bytes())
 }

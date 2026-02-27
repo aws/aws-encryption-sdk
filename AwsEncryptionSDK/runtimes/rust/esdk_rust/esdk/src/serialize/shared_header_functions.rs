@@ -31,13 +31,11 @@ pub(crate) fn read_message_id_v2(
     read_vec(r, MESSAGE_ID_LEN_V2 as usize, raw)
 }
 
-//= ../specification/data-format/message-header.md#algorithm-suite-id
-//= type=implication
+//= specification/data-format/message-header.md#algorithm-suite-id
 //# The value (hex) of this field MUST be a value that exists in the
 //# [Supported Algorithm Suites](../framework/algorithm-suites.md#supported-algorithm-suites) table.
 
-//= ../specification/data-format/message-header.md#algorithm-suite-id
-//= type=implication
+//= specification/data-format/message-header.md#algorithm-suite-id
 //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
 pub(crate) fn write_esdk_suite_id(
     w: &mut dyn SafeWrite,
