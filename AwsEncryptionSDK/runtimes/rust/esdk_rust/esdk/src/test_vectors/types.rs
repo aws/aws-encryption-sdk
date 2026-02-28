@@ -1,5 +1,5 @@
 use crate::types::*;
-use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
+use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 
@@ -109,16 +109,12 @@ pub(crate) struct TestResults {
     pub(crate) not_implemented: u32,
     pub(crate) no_kms_feature: u32,
     pub(crate) no_ddb_feature: u32,
-    #[cfg(feature = "legacy")]
     pub(crate) legacy_passed: u32,
-    #[cfg(feature = "legacy")]
     pub(crate) legacy_failed: u32,
-    #[cfg(feature = "legacy")]
     pub(crate) legacy_skipped: u32,
 }
 
 impl TestResults {
-    #[cfg(feature = "legacy")]
     pub(crate) fn fail_legacy(&mut self, test: &EncryptTest, e: &anyhow::Error) {
         self.legacy_failed += 1;
         println!(

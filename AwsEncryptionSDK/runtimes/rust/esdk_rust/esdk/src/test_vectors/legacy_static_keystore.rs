@@ -3,8 +3,8 @@
 use crate::test_vectors::types::*;
 use aws_mpl_legacy::implementation_from_dafny::_AwsCryptographyKeyStoreOperations_Compile::*;
 use std::sync::Arc;
-use aws_mpl_legacy::aes_gcm::AESEncryption::DynAny;
-use aws_mpl_legacy::aes_gcm::AESEncryption::UpcastObject;
+use aws_mpl_legacy::dafny::aes_gcm::AESEncryption::DynAny;
+use aws_mpl_legacy::dafny::aes_gcm::AESEncryption::UpcastObject;
 use aws_mpl_legacy::implementation_from_dafny::_AwsCryptographyKeyStoreOperations_Compile::Error;
 use aws_mpl_legacy::implementation_from_dafny::AESEncryption::Result;
 

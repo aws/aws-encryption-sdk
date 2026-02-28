@@ -38,7 +38,7 @@ pub const TEST_KEY_STORE_KMS_KEY_ID: &str =
     "arn:aws:kms:us-west-2:370957321024:key/9d989aa2-2f9c-438c-a745-cc57d3ad0126";
 
 // ECDH Utils
-use aws_mpl_rs::aws_cryptography_primitives::types::EcdhCurveSpec;
+use aws_mpl_legacy::aws_cryptography_primitives::types::EcdhCurveSpec;
 use std::io::Write;
 use std::path::Path;
 

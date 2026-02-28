@@ -14,8 +14,8 @@ pub(crate) const START_SEQUENCE_NUMBER: u32 = 1;
 pub(crate) const ENDFRAME_SEQUENCE_NUMBER: u32 = 0xFFFF_FFFF;
 pub(crate) const NONFRAMED_SEQUENCE_NUMBER: u32 = 1;
 pub(crate) const SAFE_MAX_ENCRYPT: u64 = 0x000F_FFFF_FFE0;
-use aws_mpl_rs::suites::AlgorithmSuite;
-use aws_mpl_rs::suites::DerivationAlgorithm;
+use aws_mpl_legacy::suites::AlgorithmSuite;
+use aws_mpl_legacy::suites::DerivationAlgorithm;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub(crate) struct HeaderInfo {

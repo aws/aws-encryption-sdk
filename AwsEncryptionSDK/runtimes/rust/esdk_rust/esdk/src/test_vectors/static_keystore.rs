@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use async_trait::async_trait;
-use aws_mpl_rs::Secret;
-use aws_mpl_rs::keystore;
+use aws_mpl_legacy::Secret;
+use aws_mpl_legacy::keystore;
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
@@ -14,15 +14,15 @@ pub(crate) struct StaticKeyStoreInformation {
     pub(crate) beacon_key: Secret,
 }
 
-// fn mpl_err(message: &str) -> aws_mpl_rs::error::Error {
-//     aws_mpl_rs::error::err(aws_mpl_rs::error::ErrorKind::Consumer(message.to_string()))
+// fn mpl_err(message: &str) -> aws_mpl_legacy::error::Error {
+//     aws_mpl_legacy::error::err(aws_mpl_legacy::error::ErrorKind::Consumer(message.to_string()))
 // }
 
 #[async_trait]
 impl keystore::KeyStore for StaticKeyStoreInformation {
     async fn get_key_store_info(
         &self,
-    ) -> Result<keystore::GetKeyStoreInfoOutput, aws_mpl_rs::error::Error> {
+    ) -> Result<keystore::GetKeyStoreInfoOutput, aws_mpl_legacy::error::Error> {
         Ok(keystore::GetKeyStoreInfoOutput::new(
             "key-store-id".to_string(),
             "key-store-name".to_string(),
@@ -37,7 +37,7 @@ impl keystore::KeyStore for StaticKeyStoreInformation {
     async fn get_active_branch_key(
         &self,
         input: &keystore::GetActiveBranchKeyInput,
-    ) -> Result<keystore::GetActiveBranchKeyOutput, aws_mpl_rs::error::Error> {
+    ) -> Result<keystore::GetActiveBranchKeyOutput, aws_mpl_legacy::error::Error> {
         let materials = keystore::BranchKeyMaterials::new(
             input.branch_key_identifier.clone(),
             self.branch_key_version.clone(),
@@ -50,7 +50,7 @@ impl keystore::KeyStore for StaticKeyStoreInformation {
     async fn get_branch_key_version(
         &self,
         input: &keystore::GetBranchKeyVersionInput,
-    ) -> Result<keystore::GetBranchKeyVersionOutput, aws_mpl_rs::error::Error> {
+    ) -> Result<keystore::GetBranchKeyVersionOutput, aws_mpl_legacy::error::Error> {
         let materials = keystore::BranchKeyMaterials::new(
             input.branch_key_identifier.clone(),
             self.branch_key_version.clone(),
@@ -63,7 +63,7 @@ impl keystore::KeyStore for StaticKeyStoreInformation {
     async fn get_beacon_key(
         &self,
         input: &keystore::GetBeaconKeyInput,
-    ) -> Result<keystore::GetBeaconKeyOutput, aws_mpl_rs::error::Error> {
+    ) -> Result<keystore::GetBeaconKeyOutput, aws_mpl_legacy::error::Error> {
         let materials = keystore::BeaconKeyMaterials::new(
             input.branch_key_identifier.clone(),
             self.beacon_key.clone(),

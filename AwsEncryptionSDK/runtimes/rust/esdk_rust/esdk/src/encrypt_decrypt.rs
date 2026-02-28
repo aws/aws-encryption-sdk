@@ -11,11 +11,11 @@ use crate::serialize::serializable_types::*;
 use crate::serialize::serialize_functions::*;
 use crate::serialize::v2_header_body::get_hkdf;
 use crate::serialize::*;
-use aws_mpl_rs::EncryptedDataKey;
-use aws_mpl_rs::suites::AlgorithmSuite;
+use aws_mpl_legacy::EncryptedDataKey;
+use aws_mpl_legacy::suites::AlgorithmSuite;
 
-use aws_mpl_primitives::ecdsa_verify_context;
-use aws_mpl_primitives::{EcdsaSignatureAlgorithm, aes_encrypt, generate_random_bytes};
+use aws_mpl_legacy::primitives::ecdsa_verify_context;
+use aws_mpl_legacy::primitives::{EcdsaSignatureAlgorithm, aes_encrypt, generate_random_bytes};
 
 const RESERVED_ENCRYPTION_CONTEXT: &str = "aws-crypto-";
 const MAX_DATA: usize = (1usize << 36) - 32;
@@ -226,18 +226,18 @@ pub(crate) fn encrypt_and_serialize(
 }
 
 pub(crate) fn get_ecdsa_alg(
-    alg: aws_mpl_rs::suites::SignatureAlgorithm,
+    alg: aws_mpl_legacy::suites::SignatureAlgorithm,
 ) -> Result<EcdsaSignatureAlgorithm, Error> {
     match alg {
-        aws_mpl_rs::suites::SignatureAlgorithm::Ecdsa(x) => Ok(x),
+        aws_mpl_legacy::suites::SignatureAlgorithm::Ecdsa(x) => Ok(x),
         _ => Err("UnsupportedAlgorithm".into()),
     }
 }
 
 pub(crate) fn verify_signature(
     r: &mut dyn SafeRead,
-    context: aws_mpl_primitives::DigestContext,
-    dec_mat: aws_mpl_rs::DecryptionMaterials,
+    context: aws_mpl_legacy::primitives::DigestContext,
+    dec_mat: aws_mpl_legacy::DecryptionMaterials,
     raw: &mut dyn SafeWrite,
 ) -> Result<(), Error> {
     if dec_mat.verification_key.is_none() {
@@ -410,7 +410,7 @@ pub(crate) fn build_header_body(
     //= specification/client-apis/encrypt.md#construct-the-header
     //# The [message format version](../data-format/message-header.md#supported-versions) MUST be associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites).
     match suite.commitment {
-        aws_mpl_rs::suites::DerivationAlgorithm::Hkdf(h) => {
+        aws_mpl_legacy::suites::DerivationAlgorithm::Hkdf(h) => {
             if suite_data.is_none()
                 || suite_data.as_ref().unwrap().len() != h.output_key_length as usize
             {
@@ -448,7 +448,7 @@ pub(crate) fn build_header_body(
                 suite_data: suite_data.unwrap(),
             }))
         }
-        aws_mpl_rs::suites::DerivationAlgorithm::Identity => Err("Validation Error 2".into()),
+        aws_mpl_legacy::suites::DerivationAlgorithm::Identity => Err("Validation Error 2".into()),
         //= specification/client-apis/encrypt.md#construct-the-header
         //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
         //# then the [message header body](../data-format/message-header.md#header-body-version-1-0) MUST be serialized with the following specifics:
@@ -577,7 +577,7 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     );
 
     let mut result: Vec<u8> = enc_content.clone();
-    aws_mpl_primitives::aes_decrypt(
+    aws_mpl_legacy::primitives::aes_decrypt(
         get_encrypt(&header.suite),
         key,
         &enc_content,

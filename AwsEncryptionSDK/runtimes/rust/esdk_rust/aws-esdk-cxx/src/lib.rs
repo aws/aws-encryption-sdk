@@ -169,15 +169,15 @@ struct MplDdbClient {
 }
 
 struct KeyStore {
-    client: aws_mpl_legacy::deps::aws_cryptography_keyStore::client::Client,
+    client: aws_mpl_legacy::dafny::deps::aws_cryptography_keyStore::client::Client,
 }
 
 struct Keyring {
-    client: aws_mpl_legacy::types::keyring::KeyringRef,
+    client: aws_mpl_legacy::dafny::types::keyring::KeyringRef,
 }
 
-fn convert_commit(x: ffi::EsdkCommitmentPolicy) -> aws_mpl_rs::commitment::EsdkCommitmentPolicy {
-    use aws_mpl_rs::commitment::EsdkCommitmentPolicy as New;
+fn convert_commit(x: ffi::EsdkCommitmentPolicy) -> aws_mpl_legacy::commitment::EsdkCommitmentPolicy {
+    use aws_mpl_legacy::commitment::EsdkCommitmentPolicy as New;
     use ffi::EsdkCommitmentPolicy as Old;
     match x {
         Old::ForbidEncryptAllowDecrypt => New::ForbidEncryptAllowDecrypt,
@@ -255,8 +255,8 @@ fn default_retry_config() -> ffi::RetryConfig {
     }
 }
 
-fn convert_alg_id(e: ffi::EsdkAlgorithmSuiteId) -> aws_mpl_rs::suites::EsdkAlgorithmSuiteId {
-    use aws_mpl_rs::suites::EsdkAlgorithmSuiteId as New;
+fn convert_alg_id(e: ffi::EsdkAlgorithmSuiteId) -> aws_mpl_legacy::suites::EsdkAlgorithmSuiteId {
+    use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId as New;
     use ffi::EsdkAlgorithmSuiteId as Old;
     match e {
         Old::AlgAes128GcmIv12Tag16NoKdf => New::AlgAes128GcmIv12Tag16NoKdf,
@@ -282,8 +282,8 @@ fn convert_alg_id(e: ffi::EsdkAlgorithmSuiteId) -> aws_mpl_rs::suites::EsdkAlgor
     }
 }
 
-fn unconvert_alg_id(e: aws_mpl_rs::suites::EsdkAlgorithmSuiteId) -> ffi::EsdkAlgorithmSuiteId {
-    use aws_mpl_rs::suites::EsdkAlgorithmSuiteId as Old;
+fn unconvert_alg_id(e: aws_mpl_legacy::suites::EsdkAlgorithmSuiteId) -> ffi::EsdkAlgorithmSuiteId {
+    use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId as Old;
     use ffi::EsdkAlgorithmSuiteId as New;
     match e {
         Old::AlgAes128GcmIv12Tag16NoKdf => New::AlgAes128GcmIv12Tag16NoKdf,
@@ -415,16 +415,16 @@ fn delete_keyring(_client: Box<Keyring>) -> Result<(), String> {
 
 fn make_cache_type(
     config: &ffi::HierarchicalKeyringInput,
-) -> Result<aws_mpl_legacy::types::CacheType, String> {
+) -> Result<aws_mpl_legacy::dafny::types::CacheType, String> {
     match config.cache {
-        ffi::CacheType::NoCache => Ok(aws_mpl_legacy::types::CacheType::No(
-            aws_mpl_legacy::types::NoCache::builder().build().unwrap(),
+        ffi::CacheType::NoCache => Ok(aws_mpl_legacy::dafny::types::CacheType::No(
+            aws_mpl_legacy::dafny::types::NoCache::builder().build().unwrap(),
         )),
         ffi::CacheType::MultiThreadedCache => {
             let entry_capacity = config.multi_threaded_cache.entryCapacity;
             let entry_pruning_tail_size = config.multi_threaded_cache.entryPruningTailSize;
-            Ok(aws_mpl_legacy::types::CacheType::MultiThreaded(
-                aws_mpl_legacy::types::MultiThreadedCache::builder()
+            Ok(aws_mpl_legacy::dafny::types::CacheType::MultiThreaded(
+                aws_mpl_legacy::dafny::types::MultiThreadedCache::builder()
                     .entry_capacity(entry_capacity as i32)
                     .entry_pruning_tail_size(entry_pruning_tail_size as i32)
                     .build()
@@ -437,28 +437,28 @@ fn make_cache_type(
 
 fn make_kms_config(
     config: &ffi::KeyStoreConfig,
-) -> Result<aws_mpl_legacy::deps::aws_cryptography_keyStore::types::KmsConfiguration, String> {
+) -> Result<aws_mpl_legacy::dafny::deps::aws_cryptography_keyStore::types::KmsConfiguration, String> {
     match config.kms_configuration_type {
         ffi::KmsConfigurationType::KmsKeyArn => Ok(
-            aws_mpl_legacy::deps::aws_cryptography_keyStore::types::KmsConfiguration::KmsKeyArn(
+            aws_mpl_legacy::dafny::deps::aws_cryptography_keyStore::types::KmsConfiguration::KmsKeyArn(
                 config.kms_configuration_value.clone(),
             ),
         ),
         ffi::KmsConfigurationType::KmsMrKeyArn => Ok(
-            aws_mpl_legacy::deps::aws_cryptography_keyStore::types::KmsConfiguration::KmsMrKeyArn(
+            aws_mpl_legacy::dafny::deps::aws_cryptography_keyStore::types::KmsConfiguration::KmsMrKeyArn(
                 config.kms_configuration_value.clone(),
             ),
         ),
         ffi::KmsConfigurationType::Discovery => Ok(
-            aws_mpl_legacy::deps::aws_cryptography_keyStore::types::KmsConfiguration::Discovery(
-                aws_mpl_legacy::deps::aws_cryptography_keyStore::types::Discovery::builder()
+            aws_mpl_legacy::dafny::deps::aws_cryptography_keyStore::types::KmsConfiguration::Discovery(
+                aws_mpl_legacy::dafny::deps::aws_cryptography_keyStore::types::Discovery::builder()
                     .build()
                     .unwrap(),
             ),
         ),
         ffi::KmsConfigurationType::MrDiscovery => Ok(
-            aws_mpl_legacy::deps::aws_cryptography_keyStore::types::KmsConfiguration::MrDiscovery(
-                aws_mpl_legacy::deps::aws_cryptography_keyStore::types::MrDiscovery::builder()
+            aws_mpl_legacy::dafny::deps::aws_cryptography_keyStore::types::KmsConfiguration::MrDiscovery(
+                aws_mpl_legacy::dafny::deps::aws_cryptography_keyStore::types::MrDiscovery::builder()
                     .build()
                     .unwrap(),
             ),
@@ -470,10 +470,10 @@ fn make_kms_config(
 fn create_hierarchical_keyring(
     input: &ffi::HierarchicalKeyringInput,
 ) -> Result<Box<Keyring>, String> {
-    let mpl_config = aws_mpl_legacy::types::MaterialProvidersConfig::builder()
+    let mpl_config = aws_mpl_legacy::dafny::types::MaterialProvidersConfig::builder()
         .build()
         .unwrap();
-    let mpl = aws_mpl_legacy::Client::from_conf(mpl_config).unwrap();
+    let mpl = aws_mpl_legacy::dafny::Client::from_conf(mpl_config).unwrap();
     if input.branch_key_id.is_empty() {
         return Err("branch_key_id must not be empty in create_hierarchical_keyring".to_string());
     }
@@ -500,7 +500,7 @@ fn create_hierarchical_keyring(
 }
 
 fn create_keystore(input: &ffi::KeyStoreConfig) -> Result<Box<KeyStore>, String> {
-    let mut builder = aws_mpl_legacy::deps::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig::builder();
+    let mut builder = aws_mpl_legacy::dafny::deps::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig::builder();
     if input.kms_client.is_null() {
         return Err("kms_client is null in create_keystore".to_string());
     } else {
@@ -530,7 +530,7 @@ fn create_keystore(input: &ffi::KeyStoreConfig) -> Result<Box<KeyStore>, String>
     }
     let config = builder.build().map_err(|e| format!("{:?}", e))?;
 
-    let store = aws_mpl_legacy::deps::aws_cryptography_keyStore::client::Client::from_conf(config)
+    let store = aws_mpl_legacy::dafny::deps::aws_cryptography_keyStore::client::Client::from_conf(config)
         .map_err(|e| format!("{:?}", e))?;
     let store = KeyStore { client: store };
     Ok(Box::new(store))

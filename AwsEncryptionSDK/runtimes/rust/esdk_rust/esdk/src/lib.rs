@@ -61,7 +61,7 @@
     clippy::unneeded_field_pattern,
 
 )]
-#![cfg_attr(feature = "legacy", allow(clippy::wildcard_enum_match_arm))]
+#![allow(clippy::wildcard_enum_match_arm)]
 #![allow(clippy::multiple_crate_versions)] // nothing to be done
 #![allow(clippy::option_if_let_else)] // disagree
 #![allow(clippy::cast_possible_truncation)] // REMOVE
@@ -89,8 +89,6 @@ pub use types::*;
 
 pub(crate) mod encrypt_decrypt;
 pub(crate) mod key_derivation;
-#[cfg(feature = "legacy")]
-pub(crate) mod legacy;
 pub(crate) mod materials;
 pub(crate) mod message_body;
 pub(crate) mod serialize;

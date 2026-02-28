@@ -6,7 +6,7 @@ use super::*;
 use crate::serialize::serializable_types::*;
 use crate::serialize::serialize_functions::*;
 use crate::types::{SafeRead, SafeWrite};
-use aws_mpl_rs::suites::AlgorithmSuite;
+use aws_mpl_legacy::suites::AlgorithmSuite;
 
 pub(crate) fn write_header_auth_tag(
     w: &mut dyn SafeWrite,

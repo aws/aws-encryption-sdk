@@ -1,10 +1,10 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use aws_mpl_legacy::operation::get_branch_key_id::GetBranchKeyIdInput;
-use aws_mpl_legacy::operation::get_branch_key_id::GetBranchKeyIdOutput;
-use aws_mpl_legacy::types::branch_key_id_supplier::BranchKeyIdSupplier;
-use aws_mpl_legacy::types::error::Error;
+use aws_mpl_legacy::dafny::operation::get_branch_key_id::GetBranchKeyIdInput;
+use aws_mpl_legacy::dafny::operation::get_branch_key_id::GetBranchKeyIdOutput;
+use aws_mpl_legacy::dafny::types::branch_key_id_supplier::BranchKeyIdSupplier;
+use aws_mpl_legacy::dafny::types::error::Error;
 
 /*
  Demonstrates how to create a BranchKeyIdSupplier.

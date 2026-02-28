@@ -6,8 +6,8 @@ use crate::serialize::serializable_types::*;
 use crate::serialize::serialize_functions::{read_bytes, read_seq_u32_bounded, read_u32};
 use crate::serialize::*;
 use crate::types::{SafeRead, SafeWrite};
-use aws_mpl_primitives::{AesGcm, aes_decrypt};
-use aws_mpl_rs::suites::AlgorithmSuite;
+use aws_mpl_legacy::primitives::{AesGcm, aes_decrypt};
+use aws_mpl_legacy::suites::AlgorithmSuite;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub(crate) enum BodyAADContent {
@@ -47,7 +47,7 @@ pub(crate) fn iv_seq(sequence_number: u32, result: &mut [u8]) {
 
 pub(crate) fn get_encrypt(info: &AlgorithmSuite) -> AesGcm {
     match &info.encrypt {
-        aws_mpl_rs::suites::Encrypt::AesGcm(aes_gcm) => *aes_gcm,
+        aws_mpl_legacy::suites::Encrypt::AesGcm(aes_gcm) => *aes_gcm,
         _ => panic!("not an aes gcm"),
     }
 }

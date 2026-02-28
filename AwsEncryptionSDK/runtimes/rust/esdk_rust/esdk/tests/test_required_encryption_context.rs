@@ -1,15 +1,14 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-#![cfg(feature = "legacy")]
 
 mod fixtures;
 use aws_esdk::*;
-use aws_mpl_legacy::aws_cryptography_keyStore::client::Client as KeystoreClient;
-use aws_mpl_legacy::aws_cryptography_keyStore::types::KmsConfiguration;
-use aws_mpl_legacy::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig;
-use aws_mpl_legacy::client::Client as MplClient;
-use aws_mpl_legacy::types::keyring::KeyringRef;
+use aws_mpl_legacy::dafny::aws_cryptography_keyStore::client::Client as KeystoreClient;
+use aws_mpl_legacy::dafny::aws_cryptography_keyStore::types::KmsConfiguration;
+use aws_mpl_legacy::dafny::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig;
+use aws_mpl_legacy::dafny::client::Client as MplClient;
+use aws_mpl_legacy::dafny::types::keyring::KeyringRef;
 use fixtures::*;
 
 // THIS IS A TESTING RESOURCE DO NOT USE IN A PRODUCTION ENVIRONMENT
@@ -20,7 +19,7 @@ async fn get_rsa_keyring(mpl: &MplClient) -> KeyringRef {
     mpl.create_raw_rsa_keyring()
         .key_namespace(namespace.clone())
         .key_name(name.clone())
-        .padding_scheme(aws_mpl_legacy::types::PaddingScheme::OaepSha1Mgf1)
+        .padding_scheme(aws_mpl_legacy::dafny::types::PaddingScheme::OaepSha1Mgf1)
         .public_key(keys.public_key.unwrap().pem.unwrap().as_ref())
         .private_key(keys.private_key.unwrap().pem.unwrap().as_ref())
         .send()
@@ -34,7 +33,7 @@ async fn get_aes_keyring(mpl: &MplClient) -> KeyringRef {
         .key_namespace(namespace.clone())
         .key_name(name.clone())
         .wrapping_key(aws_smithy_types::Blob::new([0; 32]))
-        .wrapping_alg(aws_mpl_legacy::types::AesWrappingAlg::AlgAes256GcmIv12Tag16)
+        .wrapping_alg(aws_mpl_legacy::dafny::types::AesWrappingAlg::AlgAes256GcmIv12Tag16)
         .send()
         .await
         .unwrap()

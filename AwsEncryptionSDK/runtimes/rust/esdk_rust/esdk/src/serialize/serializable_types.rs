@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::types::*;
-use aws_mpl_rs::EncryptedDataKey;
-use aws_mpl_rs::suites::AlgorithmSuite;
+use aws_mpl_legacy::EncryptedDataKey;
+use aws_mpl_legacy::suites::AlgorithmSuite;
 
 pub(crate) type ESDKEncryptionContext = EncryptionContext;
 pub(crate) type ESDKEncryptionContextPair = (String, String);
@@ -13,21 +13,21 @@ const ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH: u64 = u16::MAX as u64 - 2;
 
 pub(crate) const fn get_iv_length(a: &AlgorithmSuite) -> u8 {
     match a.encrypt {
-        aws_mpl_rs::suites::Encrypt::AesGcm(_e) => 12,
+        aws_mpl_legacy::suites::Encrypt::AesGcm(_e) => 12,
         _ => 0,
     }
 }
 
 pub(crate) const fn get_tag_length(a: &AlgorithmSuite) -> u8 {
     match a.encrypt {
-        aws_mpl_rs::suites::Encrypt::AesGcm(_e) => 16,
+        aws_mpl_legacy::suites::Encrypt::AesGcm(_e) => 16,
         _ => 0,
     }
 }
 
 pub(crate) const fn get_encrypt_key_length(a: &AlgorithmSuite) -> u8 {
     match a.encrypt {
-        aws_mpl_rs::suites::Encrypt::AesGcm(e) => e.key_len(),
+        aws_mpl_legacy::suites::Encrypt::AesGcm(e) => e.key_len(),
         _ => 0,
     }
 }

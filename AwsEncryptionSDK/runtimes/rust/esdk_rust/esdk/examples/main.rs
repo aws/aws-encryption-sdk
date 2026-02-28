@@ -1,5 +1,4 @@
 use std::convert::From;
-#[cfg(feature = "legacy")]
 pub mod legacy;
 pub mod modern;
 
@@ -39,7 +38,6 @@ impl<T: std::fmt::Debug> From<T> for BoxError {
 
 #[tokio::main]
 pub async fn main() -> Result<(), BoxError2> {
-    #[cfg(feature = "legacy")]
     legacy::main().await?;
     modern::main().await?;
     Ok(())

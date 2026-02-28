@@ -5,7 +5,7 @@ use super::header_types::*;
 use super::*;
 use crate::serialize::serialize_functions::*;
 use crate::types::{SafeRead, SafeWrite};
-use aws_mpl_rs::suites::AlgorithmSuite;
+use aws_mpl_legacy::suites::AlgorithmSuite;
 
 pub(crate) fn read_esdk_suite_id(
     r: &mut dyn SafeRead,
@@ -14,7 +14,7 @@ pub(crate) fn read_esdk_suite_id(
     let mut esdk_suite_id_bytes = [0; 2];
     read_bytes(r, &mut esdk_suite_id_bytes, raw)?;
 
-    let suite = aws_mpl_rs::suites::get_algorithm_suite_info(esdk_suite_id_bytes)?;
+    let suite = aws_mpl_legacy::suites::get_algorithm_suite_info(esdk_suite_id_bytes)?;
     Ok(suite)
 }
 

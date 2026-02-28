@@ -46,9 +46,9 @@ use crate::legacy::example_utils::utils::EXAMPLE_KMS_ECC_PUBLIC_KEY_FILENAME_SEN
 use crate::legacy::example_utils::utils::exists;
 use crate::legacy::example_utils::utils::write_kms_ecdh_ecc_public_key;
 use aws_esdk::*;
-use aws_mpl_legacy::aws_cryptography_primitives::types::EcdhCurveSpec;
-use aws_mpl_legacy::types::KmsEcdhStaticConfigurations;
-use aws_mpl_legacy::types::KmsPrivateKeyToStaticPublicKeyInput;
+use aws_mpl_legacy::dafny::aws_cryptography_primitives::types::EcdhCurveSpec;
+use aws_mpl_legacy::dafny::types::KmsEcdhStaticConfigurations;
+use aws_mpl_legacy::dafny::types::KmsPrivateKeyToStaticPublicKeyInput;
 use pem::parse;
 use std::path::Path;
 

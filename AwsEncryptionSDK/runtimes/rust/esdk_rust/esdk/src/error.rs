@@ -9,13 +9,12 @@ pub enum ErrorKind {
     Esdk,
     /// Error in serializing or deserializing the data
     SerializationError,
-    /// Low level cryptographic error from `aws_mpl_primitives`
+    /// Low level cryptographic error from `aws_mpl_legacy::primitives`
     CryptographicError,
-    /// Mid level cryptographic error from `aws_mpl_rs`
+    /// Mid level cryptographic error from `aws_mpl_legacy`
     MplError,
     /// Mid level cryptographic error from `aws_mpl_legacy`
-    #[cfg(feature = "legacy")]
-    LegacyError(Arc<aws_mpl_legacy::types::error::Error>),
+    LegacyError(Arc<aws_mpl_legacy::dafny::types::error::Error>),
     /// Malformed input. No cryptography has been attempted.
     ValidationError,
 }
@@ -48,7 +47,6 @@ impl std::fmt::Display for Error {
             ErrorKind::SerializationError => write!(f, "Serialization Error {}", self.message),
             ErrorKind::CryptographicError => write!(f, "Cryptographic Error {}", self.message),
             ErrorKind::MplError => write!(f, "MPL Error {:?} {}", self.cause, self.message),
-            #[cfg(feature = "legacy")]
             ErrorKind::LegacyError(e) => write!(f, "Legacy MPL Error {e} {}", self.message),
             ErrorKind::ValidationError => write!(f, "Validation Error {}", self.message),
         }
@@ -73,10 +71,9 @@ pub(crate) fn val_err(msg: impl Into<String>) -> Error {
     }
 }
 
-#[cfg(feature = "legacy")]
-impl From<aws_mpl_legacy::types::error::Error> for Error {
+impl From<aws_mpl_legacy::dafny::types::error::Error> for Error {
     #[track_caller]
-    fn from(item: aws_mpl_legacy::types::error::Error) -> Self {
+    fn from(item: aws_mpl_legacy::dafny::types::error::Error) -> Self {
         Self {
             kind: ErrorKind::LegacyError(Arc::new(item)),
             message: String::new(),
@@ -86,9 +83,9 @@ impl From<aws_mpl_legacy::types::error::Error> for Error {
     }
 }
 
-impl From<aws_mpl_rs::error::Error> for Error {
+impl From<aws_mpl_legacy::error::Error> for Error {
     #[track_caller]
-    fn from(item: aws_mpl_rs::error::Error) -> Self {
+    fn from(item: aws_mpl_legacy::error::Error) -> Self {
         Self {
             kind: ErrorKind::MplError,
             message: String::new(),
@@ -98,9 +95,9 @@ impl From<aws_mpl_rs::error::Error> for Error {
     }
 }
 
-impl From<aws_mpl_primitives::Error> for Error {
+impl From<aws_mpl_legacy::primitives::Error> for Error {
     #[track_caller]
-    fn from(item: aws_mpl_primitives::Error) -> Self {
+    fn from(item: aws_mpl_legacy::primitives::Error) -> Self {
         Self {
             kind: ErrorKind::CryptographicError,
             message: item.message,
@@ -110,7 +107,6 @@ impl From<aws_mpl_primitives::Error> for Error {
     }
 }
 
-#[cfg(feature = "legacy")]
 impl From<aws_smithy_types::error::operation::BuildError> for Error {
     fn from(item: aws_smithy_types::error::operation::BuildError) -> Self {
         Self {

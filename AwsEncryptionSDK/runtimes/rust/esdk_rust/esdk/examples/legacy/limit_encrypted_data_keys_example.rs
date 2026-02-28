@@ -17,8 +17,8 @@ https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/configure.html
 */
 
 use aws_esdk::*;
-use aws_mpl_legacy::types::AesWrappingAlg;
-use aws_mpl_legacy::types::keyring::KeyringRef;
+use aws_mpl_legacy::dafny::types::AesWrappingAlg;
+use aws_mpl_legacy::dafny::types::keyring::KeyringRef;
 use rand::TryRngCore;
 
 pub async fn encrypt_and_decrypt_with_legacy_keyring(

@@ -3,19 +3,15 @@ use crate::test_vectors::run_tests::is_not_implemented;
 use crate::test_vectors::types::*;
 use crate::{DecryptInput, MaterialSource, decrypt};
 use anyhow::Result;
-#[cfg(any(feature = "kms", feature = "legacy"))]
 use aws_config::Region;
-#[cfg(feature = "ddb")]
-use aws_mpl_rs::Secret;
-use aws_mpl_rs::agreement;
-use aws_mpl_rs::agreement::RawEcdhStaticConfigurations;
-use aws_mpl_rs::keyring::*;
-#[cfg(feature = "kms")]
-use aws_mpl_rs::kms_keyring::*;
+use aws_mpl_legacy::Secret;
+use aws_mpl_legacy::agreement;
+use aws_mpl_legacy::agreement::RawEcdhStaticConfigurations;
+use aws_mpl_legacy::keyring::*;
+use aws_mpl_legacy::kms_keyring::*;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 
-#[cfg(any(feature = "kms", feature = "legacy"))]
 use aws_sdk_kms::Client as KmsClient;
 
 #[cfg(not(any(feature = "kms", feature = "legacy")))]
@@ -25,17 +21,12 @@ pub(crate) struct KmsClient {
     x: u32,
 }
 
-#[cfg(feature = "legacy")]
-use aws_mpl_legacy::aws_cryptography_primitives::types::EcdhCurveSpec as LegacyEcdhCurveSpec;
-#[cfg(feature = "legacy")]
-use aws_mpl_legacy::client::Client as mpl_client;
-#[cfg(feature = "legacy")]
-use aws_mpl_legacy::types::DiscoveryFilter as LegacyDiscoveryFilter;
-#[cfg(feature = "legacy")]
-use aws_mpl_legacy::types::keyring::KeyringRef as LegacyKeyring;
-use aws_mpl_primitives::EcdhCurveSpec;
+use aws_mpl_legacy::dafny::aws_cryptography_primitives::types::EcdhCurveSpec as LegacyEcdhCurveSpec;
+use aws_mpl_legacy::dafny::client::Client as mpl_client;
+use aws_mpl_legacy::dafny::types::DiscoveryFilter as LegacyDiscoveryFilter;
+use aws_mpl_legacy::dafny::types::keyring::KeyringRef as LegacyKeyring;
+use aws_mpl_legacy::primitives::EcdhCurveSpec;
 
-#[cfg(feature = "legacy")]
 use crate::mpl;
 
 type KmsMap = HashMap<String, KmsClient>;
@@ -49,7 +40,6 @@ pub(crate) async fn make_kms_map() -> KmsMap {
     kms_map
 }
 
-#[cfg(any(feature = "kms", feature = "legacy"))]
 pub(crate) async fn create_kms_client(region: &str) -> KmsClient {
     let sdk_config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
     let sdk_config = sdk_config
@@ -65,13 +55,11 @@ pub(crate) async fn create_kms_client(_region: &str) -> KmsClient {
     KmsClient { x: 0 }
 }
 
-#[cfg(any(feature = "kms", feature = "legacy"))]
 pub(crate) fn kms_from_arn<'a>(kms: &'a KmsMap, arn: &str) -> &'a KmsClient {
     let region = region_from_arn(arn);
     &kms[region]
 }
 
-#[cfg(any(feature = "kms", feature = "legacy"))]
 pub(crate) fn region_from_arn(arn: &str) -> &str {
     arn.split(':').nth(3).unwrap()
 }
@@ -131,7 +119,7 @@ pub(crate) async fn do_run_decrypt_test(
         ciphertext: &ciphertext,
         source: Some(ms),
         encryption_context: test.reproduced_encryption_context.clone(),
-        commitment_policy: aws_mpl_rs::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
+        commitment_policy: aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
         ..Default::default()
     };
     let decrypt_output = decrypt(&decrypt_input).await?;
@@ -143,7 +131,6 @@ pub(crate) async fn do_run_decrypt_test(
     Ok(())
 }
 
-#[cfg(feature = "legacy")]
 fn get_curve_legacy(s: &str) -> Result<LegacyEcdhCurveSpec> {
     match s {
         "ecc-256" => Ok(LegacyEcdhCurveSpec::EccNistP256),
@@ -163,7 +150,6 @@ fn get_curve(s: &str) -> Result<EcdhCurveSpec> {
     }
 }
 
-#[cfg(feature = "legacy")]
 pub(crate) async fn get_raw_ecdh_keyring_static_legacy(
     keydesc: &KeyDescription,
     keys: &KeyMap,
@@ -172,13 +158,13 @@ pub(crate) async fn get_raw_ecdh_keyring_static_legacy(
     let key = &keys[&keydesc.sender];
     let pub_key = decode_base64(&key.recipient_material_public_key)?;
     let raw_ecdh_static_configuration_input =
-        aws_mpl_legacy::types::RawPrivateKeyToStaticPublicKeyInput::builder()
+        aws_mpl_legacy::dafny::types::RawPrivateKeyToStaticPublicKeyInput::builder()
             .sender_static_private_key(key.sender_material.as_bytes())
             .recipient_public_key(pub_key)
             .build()?;
 
     let raw_ecdh_static_configuration =
-        aws_mpl_legacy::types::RawEcdhStaticConfigurations::RawPrivateKeyToStaticPublicKey(
+        aws_mpl_legacy::dafny::types::RawEcdhStaticConfigurations::RawPrivateKeyToStaticPublicKey(
             raw_ecdh_static_configuration_input,
         );
 
@@ -204,7 +190,6 @@ pub(crate) fn get_raw_ecdh_keyring_static(
     Ok(KeyringStatus::Ok(keyring))
 }
 
-#[cfg(feature = "legacy")]
 pub(crate) async fn get_raw_ecdh_keyring_ephemeral_legacy(
     keydesc: &KeyDescription,
     keys: &KeyMap,
@@ -213,12 +198,12 @@ pub(crate) async fn get_raw_ecdh_keyring_ephemeral_legacy(
     let key = &keys[&keydesc.recipient];
     let pub_key = decode_base64(&key.recipient_material_public_key)?;
     let raw_ecdh_static_configuration_input =
-        aws_mpl_legacy::types::EphemeralPrivateKeyToStaticPublicKeyInput::builder()
+        aws_mpl_legacy::dafny::types::EphemeralPrivateKeyToStaticPublicKeyInput::builder()
             .recipient_public_key(pub_key)
             .build()?;
 
     let raw_ecdh_static_configuration =
-        aws_mpl_legacy::types::RawEcdhStaticConfigurations::EphemeralPrivateKeyToStaticPublicKey(
+        aws_mpl_legacy::dafny::types::RawEcdhStaticConfigurations::EphemeralPrivateKeyToStaticPublicKey(
             raw_ecdh_static_configuration_input,
         );
 
@@ -244,7 +229,6 @@ pub(crate) fn get_raw_ecdh_keyring_ephemeral(
     Ok(KeyringStatus::Ok(keyring))
 }
 
-#[cfg(feature = "legacy")]
 pub(crate) async fn get_raw_ecdh_keyring_discovery_legacy(
     keydesc: &KeyDescription,
     keys: &KeyMap,
@@ -252,12 +236,12 @@ pub(crate) async fn get_raw_ecdh_keyring_discovery_legacy(
 ) -> Result<LegacyKeyring> {
     let key = &keys[&keydesc.recipient];
     let raw_ecdh_static_configuration_input =
-        aws_mpl_legacy::types::PublicKeyDiscoveryInput::builder()
+        aws_mpl_legacy::dafny::types::PublicKeyDiscoveryInput::builder()
             .recipient_static_private_key(key.recipient_material.as_bytes())
             .build()?;
 
     let raw_ecdh_static_configuration =
-        aws_mpl_legacy::types::RawEcdhStaticConfigurations::PublicKeyDiscovery(
+        aws_mpl_legacy::dafny::types::RawEcdhStaticConfigurations::PublicKeyDiscovery(
             raw_ecdh_static_configuration_input,
         );
 
@@ -282,7 +266,6 @@ pub(crate) fn get_raw_ecdh_keyring_discovery(
     Ok(KeyringStatus::Ok(keyring))
 }
 
-#[cfg(feature = "legacy")]
 pub(crate) async fn get_raw_ecdh_keyring_legacy(
     keydesc: &KeyDescription,
     keys: &KeyMap,
@@ -308,7 +291,6 @@ pub(crate) fn get_raw_ecdh_keyring(
     }
 }
 
-#[cfg(feature = "legacy")]
 pub(crate) async fn get_kms_ecdh_keyring_legacy(
     keydesc: &KeyDescription,
     keys: &KeyMap,
@@ -333,7 +315,6 @@ pub(crate) const fn get_kms_ecdh_keyring(
     Ok(KeyringStatus::NoKmsFeature)
 }
 
-#[cfg(feature = "kms")]
 pub(crate) fn get_kms_ecdh_keyring(
     keydesc: &KeyDescription,
     keys: &KeyMap,
@@ -346,7 +327,6 @@ pub(crate) fn get_kms_ecdh_keyring(
     }
 }
 
-#[cfg(feature = "legacy")]
 pub(crate) async fn get_kms_ecdh_keyring_static_legacy(
     keydesc: &KeyDescription,
     keys: &KeyMap,
@@ -367,7 +347,7 @@ pub(crate) async fn get_kms_ecdh_keyring_static_legacy(
 
     let sender_key = decode_base64(&key.sender_material_public_key)?;
     let recipient_key = decode_base64(&key.recipient_material_public_key)?;
-    let input = aws_mpl_legacy::types::KmsPrivateKeyToStaticPublicKeyInput::builder()
+    let input = aws_mpl_legacy::dafny::types::KmsPrivateKeyToStaticPublicKeyInput::builder()
         .sender_public_key(sender_key)
         .recipient_public_key(recipient_key)
         .sender_kms_identifier(sender_kms_key)
@@ -376,7 +356,7 @@ pub(crate) async fn get_kms_ecdh_keyring_static_legacy(
         .create_aws_kms_ecdh_keyring()
         .curve_spec(get_curve_legacy(&key.key_id)?)
         .key_agreement_scheme(
-            aws_mpl_legacy::types::KmsEcdhStaticConfigurations::KmsPrivateKeyToStaticPublicKey(
+            aws_mpl_legacy::dafny::types::KmsEcdhStaticConfigurations::KmsPrivateKeyToStaticPublicKey(
                 input,
             ),
         )
@@ -387,7 +367,6 @@ pub(crate) async fn get_kms_ecdh_keyring_static_legacy(
     Ok(keyring)
 }
 
-#[cfg(feature = "kms")]
 pub(crate) fn get_kms_ecdh_keyring_static(
     keydesc: &KeyDescription,
     keys: &KeyMap,
@@ -407,7 +386,6 @@ pub(crate) fn get_kms_ecdh_keyring_static(
     Ok(KeyringStatus::Ok(keyring))
 }
 
-#[cfg(feature = "legacy")]
 pub(crate) async fn get_kms_ecdh_keyring_discovery_legacy(
     keydesc: &KeyDescription,
     keys: &KeyMap,
@@ -421,7 +399,7 @@ pub(crate) async fn get_kms_ecdh_keyring_discovery_legacy(
     //       && (recipientMaterial?.value.KMSEcdh?),
     //       KeyVectorException( message = "Not type: KmsEcdh" ));
 
-    let schema = aws_mpl_legacy::types::KmsPublicKeyDiscoveryInput::builder()
+    let schema = aws_mpl_legacy::dafny::types::KmsPublicKeyDiscoveryInput::builder()
         .recipient_kms_identifier(&key.recipient_material)
         .build()?;
 
@@ -429,7 +407,7 @@ pub(crate) async fn get_kms_ecdh_keyring_discovery_legacy(
         .create_aws_kms_ecdh_keyring()
         .curve_spec(get_curve_legacy(&key.key_id)?)
         .key_agreement_scheme(
-            aws_mpl_legacy::types::KmsEcdhStaticConfigurations::KmsPublicKeyDiscovery(schema),
+            aws_mpl_legacy::dafny::types::KmsEcdhStaticConfigurations::KmsPublicKeyDiscovery(schema),
         )
         .kms_client(kms_client.clone())
         .send()
@@ -437,7 +415,6 @@ pub(crate) async fn get_kms_ecdh_keyring_discovery_legacy(
     Ok(keyring)
 }
 
-#[cfg(feature = "kms")]
 pub(crate) fn get_kms_ecdh_keyring_discovery(
     keydesc: &KeyDescription,
     keys: &KeyMap,
@@ -452,7 +429,6 @@ pub(crate) fn get_kms_ecdh_keyring_discovery(
     Ok(KeyringStatus::Ok(keyring))
 }
 
-#[cfg(any(feature = "kms", feature = "legacy"))]
 fn get_kms_enc_alg(s: &str) -> aws_sdk_kms::types::EncryptionAlgorithmSpec {
     match s {
         "RSAES_OAEP_SHA_256" => aws_sdk_kms::types::EncryptionAlgorithmSpec::RsaesOaepSha256,
@@ -461,7 +437,6 @@ fn get_kms_enc_alg(s: &str) -> aws_sdk_kms::types::EncryptionAlgorithmSpec {
     }
 }
 
-#[cfg(feature = "legacy")]
 pub(crate) async fn get_aws_kms_rsa_keyring_legacy(
     keydesc: &KeyDescription,
     key: &Key,
@@ -489,7 +464,6 @@ pub(crate) const fn get_aws_kms_rsa_keyring(
     Ok(KeyringStatus::NoKmsFeature)
 }
 
-#[cfg(feature = "kms")]
 pub(crate) fn get_aws_kms_rsa_keyring(
     keydesc: &KeyDescription,
     key: &Key,
@@ -505,7 +479,6 @@ pub(crate) fn get_aws_kms_rsa_keyring(
     Ok(KeyringStatus::Ok(keyring))
 }
 
-#[cfg(feature = "legacy")]
 pub(crate) async fn get_aws_kms_keyring_legacy(
     key: &Key,
     mpl: &mpl_client,
@@ -520,7 +493,6 @@ pub(crate) async fn get_aws_kms_keyring_legacy(
     Ok(keyring)
 }
 
-#[cfg(feature = "kms")]
 pub(crate) fn get_aws_kms_keyring(key: &Key, kms: &KmsClient) -> Result<KeyringStatus> {
     let keyring = CreateAwsKmsKeyringInput::new(key.key_id.clone(), kms.clone()).go()?;
     Ok(KeyringStatus::Ok(keyring))
@@ -531,7 +503,6 @@ pub(crate) const fn get_aws_kms_keyring(_key: &Key, _kms: &KmsClient) -> Result<
     Ok(KeyringStatus::NotImplemented)
 }
 
-#[cfg(feature = "legacy")]
 pub(crate) async fn get_aws_kms_mrk_keyring_legacy(
     key: &Key,
     mpl: &mpl_client,
@@ -553,14 +524,12 @@ pub(crate) const fn get_aws_kms_mrk_keyring(_key: &Key, _kms: &KmsMap) -> Result
     Ok(KeyringStatus::NoKmsFeature)
 }
 
-#[cfg(feature = "kms")]
 pub(crate) fn get_aws_kms_mrk_keyring(key: &Key, kms: &KmsMap) -> Result<KeyringStatus> {
     let kms = kms_from_arn(kms, &key.key_id);
     let keyring = CreateAwsKmsMrkKeyringInput::new(key.key_id.clone(), kms.clone()).go()?;
     Ok(KeyringStatus::Ok(keyring))
 }
 
-#[cfg(feature = "legacy")]
 pub(crate) async fn get_aws_kms_mrk_discovery_keyring_legacy(
     keydesc: &KeyDescription,
     mpl: &mpl_client,
@@ -600,7 +569,6 @@ pub(crate) const fn get_aws_kms_mrk_discovery_keyring(
     Ok(KeyringStatus::NoKmsFeature)
 }
 
-#[cfg(feature = "kms")]
 pub(crate) fn get_aws_kms_mrk_discovery_keyring(
     keydesc: &KeyDescription,
     kms: &KmsMap,
@@ -618,12 +586,11 @@ pub(crate) fn get_aws_kms_mrk_discovery_keyring(
     Ok(KeyringStatus::Ok(keyring))
 }
 
-#[cfg(feature = "legacy")]
-fn get_aes_alg_legacy(len: usize) -> Result<aws_mpl_legacy::types::AesWrappingAlg> {
+fn get_aes_alg_legacy(len: usize) -> Result<aws_mpl_legacy::dafny::types::AesWrappingAlg> {
     match len {
-        16 => Ok(aws_mpl_legacy::types::AesWrappingAlg::AlgAes128GcmIv12Tag16),
-        24 => Ok(aws_mpl_legacy::types::AesWrappingAlg::AlgAes192GcmIv12Tag16),
-        32 => Ok(aws_mpl_legacy::types::AesWrappingAlg::AlgAes256GcmIv12Tag16),
+        16 => Ok(aws_mpl_legacy::dafny::types::AesWrappingAlg::AlgAes128GcmIv12Tag16),
+        24 => Ok(aws_mpl_legacy::dafny::types::AesWrappingAlg::AlgAes192GcmIv12Tag16),
+        32 => Ok(aws_mpl_legacy::dafny::types::AesWrappingAlg::AlgAes256GcmIv12Tag16),
         _ => anyhow::bail!("Unknown aes key length: {len}"),
     }
 }
@@ -637,7 +604,6 @@ fn get_aes_alg(len: usize) -> Result<AesWrappingAlg> {
     }
 }
 
-#[cfg(feature = "legacy")]
 async fn get_raw_keyring_legacy(
     keydesc: &KeyDescription,
     key: &Key,
@@ -661,17 +627,17 @@ async fn get_raw_keyring_legacy(
             .await?;
         Ok(keyring)
     } else if is_rsa {
-        let mode: aws_mpl_legacy::types::PaddingScheme;
+        let mode: aws_mpl_legacy::dafny::types::PaddingScheme;
         if hash == "sha1" && p_alg == "pkcs1" {
-            mode = aws_mpl_legacy::types::PaddingScheme::Pkcs1;
+            mode = aws_mpl_legacy::dafny::types::PaddingScheme::Pkcs1;
         } else if hash == "sha1" && p_alg == "oaep-mgf1" {
-            mode = aws_mpl_legacy::types::PaddingScheme::OaepSha1Mgf1;
+            mode = aws_mpl_legacy::dafny::types::PaddingScheme::OaepSha1Mgf1;
         } else if hash == "sha256" && p_alg == "oaep-mgf1" {
-            mode = aws_mpl_legacy::types::PaddingScheme::OaepSha256Mgf1;
+            mode = aws_mpl_legacy::dafny::types::PaddingScheme::OaepSha256Mgf1;
         } else if hash == "sha384" && p_alg == "oaep-mgf1" {
-            mode = aws_mpl_legacy::types::PaddingScheme::OaepSha384Mgf1;
+            mode = aws_mpl_legacy::dafny::types::PaddingScheme::OaepSha384Mgf1;
         } else if hash == "sha512" && p_alg == "oaep-mgf1" {
-            mode = aws_mpl_legacy::types::PaddingScheme::OaepSha512Mgf1;
+            mode = aws_mpl_legacy::dafny::types::PaddingScheme::OaepSha512Mgf1;
         } else {
             anyhow::bail!("Unknown rsa padding combo : {hash} {p_alg}");
         }
@@ -761,7 +727,7 @@ pub(crate) enum SourceStatus {
     NoDdbFeature,
 }
 
-#[cfg(all(feature = "legacy", not(feature = "quick_vectors")))]
+
 fn legacy_not_implemented(x: &str) -> bool {
     x == "aws-kms-hierarchy" || x == "unknown"
 }
@@ -771,7 +737,6 @@ fn legacy_not_implemented(x: &str) -> bool {
     x != "raw"
 }
 
-#[cfg(feature = "legacy")]
 pub(crate) async fn get_legacy_cmm(
     keydesc: &KeyDescription,
     keys: &KeyMap,
@@ -824,8 +789,8 @@ fn do_get_cmm(keydesc: &KeyDescription, keys: &KeyMap, kms: &KmsMap) -> Result<S
         match get_keyring(&keydesc.underlying[0], keys, kms)? {
             KeyringStatus::Ok(keyring) => {
                 let under_cmm =
-                    aws_mpl_rs::cmm::create_default_cryptographic_materials_manager(keyring)?;
-                let input = aws_mpl_rs::cmm::CreateRequiredEncryptionContextCMMInput::with_cmm(
+                    aws_mpl_legacy::cmm::create_default_cryptographic_materials_manager(keyring)?;
+                let input = aws_mpl_legacy::cmm::CreateRequiredEncryptionContextCMMInput::with_cmm(
                     under_cmm,
                     &keydesc.required_keys,
                 );
@@ -846,7 +811,6 @@ fn do_get_cmm(keydesc: &KeyDescription, keys: &KeyMap, kms: &KmsMap) -> Result<S
     }
 }
 
-#[cfg(feature = "legacy")]
 pub(crate) async fn get_keyring_legacy(
     keydesc: &KeyDescription,
     keys: &KeyMap,
@@ -870,7 +834,6 @@ pub(crate) async fn get_keyring_legacy(
     }
 }
 
-#[cfg(feature = "ddb")]
 fn get_hierarchy_keyring(keydesc: &KeyDescription, keys: &KeyMap) -> Result<KeyringStatus> {
     let key = &keys[&keydesc.key];
     let store = crate::test_vectors::static_keystore::StaticKeyStoreInformation {
@@ -919,7 +882,6 @@ fn get_key<'a>(keydesc: &KeyDescription, keys: &'a KeyMap) -> &'a Key {
         .unwrap_or_else(|| &keys[super::parse_keys::DEFAULT_KEY])
 }
 
-#[cfg(feature = "legacy")]
 async fn get_multi_keyring_legacy(
     keydesc: &KeyDescription,
     keys: &KeyMap,
@@ -976,7 +938,6 @@ pub(crate) async fn run_decrypt_tests(
     keys: &KeyMap,
     dir: &str,
 ) -> Result<TestResults> {
-    #[cfg(feature = "legacy")]
     let mpl = mpl();
     let kms = make_kms_map().await;
     let mut res = TestResults::default();
@@ -994,9 +955,7 @@ pub(crate) async fn run_decrypt_tests(
                 res.fail(test, &e);
             }
         }
-        #[cfg(feature = "legacy")]
         let cmm = get_legacy_cmm(&test.decrypt_key_description, keys, &mpl, &kms).await?;
-        #[cfg(feature = "legacy")]
         match run_decrypt_test(test, cmm, dir).await {
             Ok(x) => match x {
                 TestStatus::Ok => res.legacy_passed += 1,
@@ -1018,10 +977,7 @@ pub(crate) fn print_test_results(results: &TestResults) {
     println!("{} tests not implemented", results.not_implemented);
     println!("{} tests no ddb feature", results.no_ddb_feature);
     println!("{} tests no kms feature", results.no_kms_feature);
-    #[cfg(feature = "legacy")]
     println!("{} tests passed legacy", results.legacy_passed);
-    #[cfg(feature = "legacy")]
     println!("{} tests failed legacy", results.legacy_failed);
-    #[cfg(feature = "legacy")]
     println!("{} tests skipped legacy", results.legacy_skipped);
 }

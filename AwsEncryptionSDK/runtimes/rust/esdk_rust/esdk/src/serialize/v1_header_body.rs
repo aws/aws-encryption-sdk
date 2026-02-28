@@ -9,7 +9,7 @@ use crate::serialize::header_types::*;
 use crate::serialize::serializable_types::*;
 use crate::serialize::serialize_functions::*;
 use crate::types::{SafeRead, SafeWrite};
-use aws_mpl_rs::suites::AlgorithmSuite;
+use aws_mpl_legacy::suites::AlgorithmSuite;
 
 //= specification/data-format/message-header.md#reserved
 //# A reserved sequence of 4 bytes

@@ -1,6 +1,5 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-#![cfg(feature = "legacy")]
 
 mod fixtures;
 use aws_esdk::*;
@@ -51,7 +50,7 @@ async fn test_net_retry_flag() {
         .key_namespace(key_namespace)
         .key_name(key_name)
         .wrapping_key(aws_smithy_types::Blob::new([0; 32]))
-        .wrapping_alg(aws_mpl_legacy::types::AesWrappingAlg::AlgAes256GcmIv12Tag16)
+        .wrapping_alg(aws_mpl_legacy::dafny::types::AesWrappingAlg::AlgAes256GcmIv12Tag16)
         .send()
         .await
         .unwrap();

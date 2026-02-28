@@ -25,7 +25,7 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 */
 
 use aws_esdk::*;
-use aws_mpl_rs::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+use aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
 
 pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,

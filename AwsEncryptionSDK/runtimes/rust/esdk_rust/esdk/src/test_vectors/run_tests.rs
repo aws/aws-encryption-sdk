@@ -2,8 +2,8 @@ use crate::test_vectors::do_decrypt::read_json;
 use anyhow::{Error, Result};
 
 pub(crate) fn is_not_implemented(e: &Error) -> Option<String> {
-    if let Some(mpl) = e.downcast_ref::<aws_mpl_rs::error::Error>()
-        && matches!(&mpl.kind, aws_mpl_rs::error::ErrorKind::NotImplemented)
+    if let Some(mpl) = e.downcast_ref::<aws_mpl_legacy::error::Error>()
+        && matches!(&mpl.kind, aws_mpl_legacy::error::ErrorKind::NotImplemented)
     {
         return Some(mpl.message.clone());
     }

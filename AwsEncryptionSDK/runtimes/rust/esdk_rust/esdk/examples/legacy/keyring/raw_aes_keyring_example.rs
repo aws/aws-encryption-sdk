@@ -24,7 +24,7 @@ https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-raw-aes-ke
 */
 
 use aws_esdk::*;
-use aws_mpl_legacy::types::AesWrappingAlg;
+use aws_mpl_legacy::dafny::types::AesWrappingAlg;
 use rand::TryRngCore;
 
 pub async fn encrypt_and_decrypt_with_legacy_keyring(

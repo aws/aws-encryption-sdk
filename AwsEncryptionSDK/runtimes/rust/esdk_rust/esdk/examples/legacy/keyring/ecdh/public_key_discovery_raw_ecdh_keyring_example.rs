@@ -49,11 +49,11 @@ use crate::legacy::example_utils::utils::EXAMPLE_ECC_PUBLIC_KEY_FILENAME_RECIPIE
 use crate::legacy::example_utils::utils::exists;
 use crate::legacy::example_utils::utils::write_raw_ecdh_ecc_keys;
 use aws_esdk::*;
-use aws_mpl_legacy::aws_cryptography_primitives::types::EcdhCurveSpec;
-use aws_mpl_legacy::client as mpl_client;
-use aws_mpl_legacy::types::EphemeralPrivateKeyToStaticPublicKeyInput;
-use aws_mpl_legacy::types::PublicKeyDiscoveryInput;
-use aws_mpl_legacy::types::RawEcdhStaticConfigurations;
+use aws_mpl_legacy::dafny::aws_cryptography_primitives::types::EcdhCurveSpec;
+use aws_mpl_legacy::dafny::client as mpl_client;
+use aws_mpl_legacy::dafny::types::EphemeralPrivateKeyToStaticPublicKeyInput;
+use aws_mpl_legacy::dafny::types::PublicKeyDiscoveryInput;
+use aws_mpl_legacy::dafny::types::RawEcdhStaticConfigurations;
 use pem::parse;
 use std::fs::File;
 use std::io::Read;

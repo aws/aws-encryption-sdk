@@ -17,8 +17,8 @@
 
 use super::regional_role_client_supplier::RegionalRoleClientSupplier;
 use aws_esdk::*;
-use aws_mpl_legacy::types::DiscoveryFilter;
-use aws_mpl_legacy::types::error::Error::AwsCryptographicMaterialProvidersException;
+use aws_mpl_legacy::dafny::types::DiscoveryFilter;
+use aws_mpl_legacy::dafny::types::error::Error::AwsCryptographicMaterialProvidersException;
 
 pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,

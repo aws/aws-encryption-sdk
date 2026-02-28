@@ -42,7 +42,7 @@ https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id
 
 use aws_config::Region;
 use aws_esdk::*;
-use aws_mpl_legacy::types::DiscoveryFilter;
+use aws_mpl_legacy::dafny::types::DiscoveryFilter;
 
 pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,

@@ -40,9 +40,9 @@
 use super::create_branch_key_id::create_branch_key_id;
 use super::example_branch_key_id_supplier::ExampleBranchKeyIdSupplier;
 use aws_esdk::*;
-use aws_mpl_legacy::aws_cryptography_keyStore::client as keystore_client;
-use aws_mpl_legacy::aws_cryptography_keyStore::types::KmsConfiguration;
-use aws_mpl_legacy::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig;
+use aws_mpl_legacy::dafny::aws_cryptography_keyStore::client as keystore_client;
+use aws_mpl_legacy::dafny::aws_cryptography_keyStore::types::KmsConfiguration;
+use aws_mpl_legacy::dafny::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig;
 
 pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,

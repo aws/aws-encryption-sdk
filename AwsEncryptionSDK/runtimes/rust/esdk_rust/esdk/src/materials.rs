@@ -2,31 +2,71 @@
 use crate::serialize::header_types::*;
 use crate::serialize::serializable_types::*;
 use crate::*;
-use aws_mpl_rs::DecryptionMaterials;
-use aws_mpl_rs::EncryptionMaterials;
-#[cfg(feature = "legacy")]
-use aws_mpl_rs::Secret;
-use aws_mpl_rs::cmm::DecryptMaterialsInput;
-use aws_mpl_rs::cmm::GetEncryptionMaterialsInput;
-#[cfg(feature = "legacy")]
-use aws_mpl_rs::suites::AlgorithmSuite;
+use aws_mpl_legacy::DecryptionMaterials;
+use aws_mpl_legacy::EncryptionMaterials;
+use aws_mpl_legacy::Secret;
+use aws_mpl_legacy::cmm::DecryptMaterialsInput;
+use aws_mpl_legacy::cmm::GetEncryptionMaterialsInput;
+use aws_mpl_legacy::suites::AlgorithmSuite;
 
-pub(crate) enum Cmm {
-    #[cfg(feature = "legacy")]
-    Legacy(
-        aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef,
-    ),
-    Modern(aws_mpl_rs::cmm::CryptographicMaterialsManagerRef),
+fn from_dafny_esdk_suite_id(
+    legacy: aws_mpl_legacy::dafny::types::EsdkAlgorithmSuiteId,
+) -> aws_mpl_legacy::suites::EsdkAlgorithmSuiteId {
+    use aws_mpl_legacy::dafny::types::EsdkAlgorithmSuiteId as Old;
+    use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId as New;
+    match legacy {
+        Old::AlgAes128GcmIv12Tag16NoKdf => New::AlgAes128GcmIv12Tag16NoKdf,
+        Old::AlgAes192GcmIv12Tag16NoKdf => New::AlgAes192GcmIv12Tag16NoKdf,
+        Old::AlgAes256GcmIv12Tag16NoKdf => New::AlgAes256GcmIv12Tag16NoKdf,
+        Old::AlgAes128GcmIv12Tag16HkdfSha256 => New::AlgAes128GcmIv12Tag16HkdfSha256,
+        Old::AlgAes192GcmIv12Tag16HkdfSha256 => New::AlgAes192GcmIv12Tag16HkdfSha256,
+        Old::AlgAes256GcmIv12Tag16HkdfSha256 => New::AlgAes256GcmIv12Tag16HkdfSha256,
+        Old::AlgAes128GcmIv12Tag16HkdfSha256EcdsaP256 => New::AlgAes128GcmIv12Tag16HkdfSha256EcdsaP256,
+        Old::AlgAes192GcmIv12Tag16HkdfSha384EcdsaP384 => New::AlgAes192GcmIv12Tag16HkdfSha384EcdsaP384,
+        Old::AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384 => New::AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384,
+        Old::AlgAes256GcmHkdfSha512CommitKey => New::AlgAes256GcmHkdfSha512CommitKey,
+        Old::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384 => New::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384,
+        _ => panic!("Unknown ESDK algorithm suite"),
+    }
 }
 
-#[allow(clippy::unused_async, reason = "without legacy, it's not async")]
+fn from_dafny_dbe_suite_id(
+    legacy: aws_mpl_legacy::dafny::types::DbeAlgorithmSuiteId,
+) -> aws_mpl_legacy::suites::DbeAlgorithmSuiteId {
+    use aws_mpl_legacy::dafny::types::DbeAlgorithmSuiteId as Old;
+    use aws_mpl_legacy::suites::DbeAlgorithmSuiteId as New;
+    match legacy {
+        Old::AlgAes256GcmHkdfSha512CommitKeySymsigHmacSha384 => New::AlgAes256GcmHkdfSha512CommitKeySymsigHmacSha384,
+        Old::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384SymsigHmacSha384 => New::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384SymsigHmacSha384,
+        _ => panic!("Unknown DBE algorithm suite"),
+    }
+}
+
+fn from_dafny_suite_id(
+    legacy: &aws_mpl_legacy::dafny::types::AlgorithmSuiteId,
+) -> Result<aws_mpl_legacy::suites::AlgorithmSuiteId, Error> {
+    use aws_mpl_legacy::dafny::types::AlgorithmSuiteId as Old;
+    use aws_mpl_legacy::suites::AlgorithmSuiteId as New;
+    match legacy {
+        Old::Esdk(x) => Ok(New::Esdk(from_dafny_esdk_suite_id(*x))),
+        Old::Dbe(x) => Ok(New::Dbe(from_dafny_dbe_suite_id(*x))),
+        _ => Err(val_err("Unrecognized legacy AlgorithmSuiteId")),
+    }
+}
+
+pub(crate) enum Cmm {
+    Legacy(
+        aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef,
+    ),
+    Modern(aws_mpl_legacy::cmm::CryptographicMaterialsManagerRef),
+}
+
+#[allow(clippy::unused_async)]
 pub(crate) async fn create_cmm_from_input(
     input_source: Option<MaterialSource>,
 ) -> Result<Cmm, Error> {
     match input_source.unwrap() {
-        #[cfg(feature = "legacy")]
         MaterialSource::LegacyCmm(cmm) => Ok(Cmm::Legacy(cmm)),
-        #[cfg(feature = "legacy")]
         MaterialSource::LegacyKeyring(keyring) => {
             let mpl = mpl();
             let cmm = mpl
@@ -42,7 +82,7 @@ pub(crate) async fn create_cmm_from_input(
             //# If instead the caller supplied a [keyring](../framework/keyring-interface.md),
             //# this behavior MUST use a [default CMM](../framework/default-cmm.md)
             //# constructed using the caller-supplied keyring as input.
-            let cmm = aws_mpl_rs::cmm::create_default_cryptographic_materials_manager(keyring)?;
+            let cmm = aws_mpl_legacy::cmm::create_default_cryptographic_materials_manager(keyring)?;
             Ok(Cmm::Modern(cmm))
         }
     }
@@ -50,13 +90,12 @@ pub(crate) async fn create_cmm_from_input(
 
 pub(crate) async fn get_decryption_materials(
     cmm: Cmm,
-    algorithm_suite_id: aws_mpl_rs::suites::AlgorithmSuiteId,
+    algorithm_suite_id: aws_mpl_legacy::suites::AlgorithmSuiteId,
     header_body: &HeaderBody,
     reproduced_encryption_context: &EncryptionContext,
-    commitment_policy: aws_mpl_rs::commitment::EsdkCommitmentPolicy,
+    commitment_policy: aws_mpl_legacy::commitment::EsdkCommitmentPolicy,
 ) -> Result<DecryptionMaterials, Error> {
     let materials = match cmm {
-        #[cfg(feature = "legacy")]
         Cmm::Legacy(cmm) => {
             get_legacy_decryption_materials(
                 cmm,
@@ -86,13 +125,12 @@ pub(crate) async fn get_decryption_materials(
 
 pub(crate) async fn get_encryption_materials(
     cmm: Cmm,
-    algorithm_suite_id: Option<aws_mpl_rs::suites::AlgorithmSuiteId>,
+    algorithm_suite_id: Option<aws_mpl_legacy::suites::AlgorithmSuiteId>,
     encryption_context: EncryptionContext,
     max_plaintext_length: Option<usize>,
-    commitment_policy: aws_mpl_rs::commitment::EsdkCommitmentPolicy,
+    commitment_policy: aws_mpl_legacy::commitment::EsdkCommitmentPolicy,
 ) -> Result<EncryptionMaterials, Error> {
     let materials = match cmm {
-        #[cfg(feature = "legacy")]
         Cmm::Legacy(cmm) => {
             get_legacy_encryption_materials(
                 cmm,
@@ -124,11 +162,11 @@ pub(crate) async fn get_encryption_materials(
 }
 
 pub(crate) async fn get_modern_decryption_materials(
-    cmm: aws_mpl_rs::cmm::CryptographicMaterialsManagerRef,
-    algorithm_suite_id: aws_mpl_rs::suites::AlgorithmSuiteId,
+    cmm: aws_mpl_legacy::cmm::CryptographicMaterialsManagerRef,
+    algorithm_suite_id: aws_mpl_legacy::suites::AlgorithmSuiteId,
     header_body: &HeaderBody,
     reproduced_encryption_context: &EncryptionContext,
-    commitment_policy: aws_mpl_rs::commitment::EsdkCommitmentPolicy,
+    commitment_policy: aws_mpl_legacy::commitment::EsdkCommitmentPolicy,
 ) -> Result<DecryptionMaterials, Error> {
     let encryption_context = from_canonical_pairs(header_body.encryption_context().clone());
     let mut input = DecryptMaterialsInput::default();
@@ -136,7 +174,7 @@ pub(crate) async fn get_modern_decryption_materials(
     //#   (../data-format/message-header.md#algorithm-suite-id) from the
     //#   message header.
     input.algorithm_suite_id = algorithm_suite_id;
-    input.commitment_policy = aws_mpl_rs::commitment::CommitmentPolicy::Esdk(commitment_policy);
+    input.commitment_policy = aws_mpl_legacy::commitment::CommitmentPolicy::Esdk(commitment_policy);
     //#*  Encrypted Data Keys: This is the parsed encrypted data keys
     //#   (../data-format/message-header#encrypted-data-keys) from the
     //#   message header.
@@ -150,44 +188,42 @@ pub(crate) async fn get_modern_decryption_materials(
         .reproduced_encryption_context
         .clone_from(reproduced_encryption_context);
     let materials = cmm.decrypt_materials(&input).await?;
-    aws_mpl_rs::commitment::validate_commitment_policy_on_decrypt(
-        aws_mpl_rs::commitment::ValidateCommitmentPolicyOnDecryptInput::new(
+    aws_mpl_legacy::commitment::validate_commitment_policy_on_decrypt(
+        aws_mpl_legacy::commitment::ValidateCommitmentPolicyOnDecryptInput::new(
             materials.algorithm_suite.id,
-            aws_mpl_rs::commitment::CommitmentPolicy::Esdk(commitment_policy),
+            aws_mpl_legacy::commitment::CommitmentPolicy::Esdk(commitment_policy),
         ),
     )?;
 
-    aws_mpl_rs::materials::decryption_materials_with_plaintext_data_key(&materials)?;
+    aws_mpl_legacy::materials::decryption_materials_with_plaintext_data_key(&materials)?;
     Ok(materials)
 }
 
-#[cfg(feature = "legacy")]
 fn convert_commit(
-    x: aws_mpl_rs::commitment::EsdkCommitmentPolicy,
-) -> aws_mpl_legacy::types::CommitmentPolicy {
+    x: aws_mpl_legacy::commitment::EsdkCommitmentPolicy,
+) -> aws_mpl_legacy::dafny::types::CommitmentPolicy {
     match x {
-        aws_mpl_rs::commitment::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt => {
-            aws_mpl_legacy::types::CommitmentPolicy::Esdk(
-                aws_mpl_legacy::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt,
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt => {
+            aws_mpl_legacy::dafny::types::CommitmentPolicy::Esdk(
+                aws_mpl_legacy::dafny::types::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt,
             )
         }
-        aws_mpl_rs::commitment::EsdkCommitmentPolicy::RequireEncryptAllowDecrypt => {
-            aws_mpl_legacy::types::CommitmentPolicy::Esdk(
-                aws_mpl_legacy::types::EsdkCommitmentPolicy::RequireEncryptAllowDecrypt,
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::RequireEncryptAllowDecrypt => {
+            aws_mpl_legacy::dafny::types::CommitmentPolicy::Esdk(
+                aws_mpl_legacy::dafny::types::EsdkCommitmentPolicy::RequireEncryptAllowDecrypt,
             )
         }
-        aws_mpl_rs::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt => {
-            aws_mpl_legacy::types::CommitmentPolicy::Esdk(
-                aws_mpl_legacy::types::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt => {
+            aws_mpl_legacy::dafny::types::CommitmentPolicy::Esdk(
+                aws_mpl_legacy::dafny::types::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
             )
         }
         _ => panic!(),
     }
 }
 
-#[cfg(feature = "legacy")]
-fn convert_edk(x: &aws_mpl_rs::EncryptedDataKey) -> aws_mpl_legacy::types::EncryptedDataKey {
-    aws_mpl_legacy::types::EncryptedDataKey::builder()
+fn convert_edk(x: &aws_mpl_legacy::EncryptedDataKey) -> aws_mpl_legacy::dafny::types::EncryptedDataKey {
+    aws_mpl_legacy::dafny::types::EncryptedDataKey::builder()
         .key_provider_id(x.key_provider_id.clone())
         .key_provider_info(x.key_provider_info.clone())
         .ciphertext(x.ciphertext.clone())
@@ -195,91 +231,85 @@ fn convert_edk(x: &aws_mpl_rs::EncryptedDataKey) -> aws_mpl_legacy::types::Encry
         .unwrap()
 }
 
-#[cfg(feature = "legacy")]
 fn convert_edks(
-    x: &[aws_mpl_rs::EncryptedDataKey],
-) -> Vec<aws_mpl_legacy::types::EncryptedDataKey> {
+    x: &[aws_mpl_legacy::EncryptedDataKey],
+) -> Vec<aws_mpl_legacy::dafny::types::EncryptedDataKey> {
     x.iter().map(convert_edk).collect()
 }
 
-#[cfg(feature = "legacy")]
 fn convert_esdk_alg(
-    x: aws_mpl_rs::suites::EsdkAlgorithmSuiteId,
-) -> aws_mpl_legacy::types::EsdkAlgorithmSuiteId {
+    x: aws_mpl_legacy::suites::EsdkAlgorithmSuiteId,
+) -> aws_mpl_legacy::dafny::types::EsdkAlgorithmSuiteId {
     match x {
-        aws_mpl_rs::suites::EsdkAlgorithmSuiteId::AlgAes128GcmIv12Tag16NoKdf => {
-            aws_mpl_legacy::types::EsdkAlgorithmSuiteId::AlgAes128GcmIv12Tag16NoKdf
+        aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes128GcmIv12Tag16NoKdf => {
+            aws_mpl_legacy::dafny::types::EsdkAlgorithmSuiteId::AlgAes128GcmIv12Tag16NoKdf
         }
-        aws_mpl_rs::suites::EsdkAlgorithmSuiteId::AlgAes192GcmIv12Tag16NoKdf => {
-            aws_mpl_legacy::types::EsdkAlgorithmSuiteId::AlgAes192GcmIv12Tag16NoKdf
+        aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes192GcmIv12Tag16NoKdf => {
+            aws_mpl_legacy::dafny::types::EsdkAlgorithmSuiteId::AlgAes192GcmIv12Tag16NoKdf
         }
-        aws_mpl_rs::suites::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16NoKdf => {
-            aws_mpl_legacy::types::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16NoKdf
+        aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16NoKdf => {
+            aws_mpl_legacy::dafny::types::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16NoKdf
         }
-        aws_mpl_rs::suites::EsdkAlgorithmSuiteId::AlgAes128GcmIv12Tag16HkdfSha256 => {
-            aws_mpl_legacy::types::EsdkAlgorithmSuiteId::AlgAes128GcmIv12Tag16HkdfSha256
+        aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes128GcmIv12Tag16HkdfSha256 => {
+            aws_mpl_legacy::dafny::types::EsdkAlgorithmSuiteId::AlgAes128GcmIv12Tag16HkdfSha256
         }
-        aws_mpl_rs::suites::EsdkAlgorithmSuiteId::AlgAes192GcmIv12Tag16HkdfSha256 => {
-            aws_mpl_legacy::types::EsdkAlgorithmSuiteId::AlgAes192GcmIv12Tag16HkdfSha256
+        aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes192GcmIv12Tag16HkdfSha256 => {
+            aws_mpl_legacy::dafny::types::EsdkAlgorithmSuiteId::AlgAes192GcmIv12Tag16HkdfSha256
         }
-        aws_mpl_rs::suites::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256 => {
-            aws_mpl_legacy::types::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256
+        aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256 => {
+            aws_mpl_legacy::dafny::types::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256
         }
-        aws_mpl_rs::suites::EsdkAlgorithmSuiteId::AlgAes128GcmIv12Tag16HkdfSha256EcdsaP256 => {
-            aws_mpl_legacy::types::EsdkAlgorithmSuiteId::AlgAes128GcmIv12Tag16HkdfSha256EcdsaP256
+        aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes128GcmIv12Tag16HkdfSha256EcdsaP256 => {
+            aws_mpl_legacy::dafny::types::EsdkAlgorithmSuiteId::AlgAes128GcmIv12Tag16HkdfSha256EcdsaP256
         }
-        aws_mpl_rs::suites::EsdkAlgorithmSuiteId::AlgAes192GcmIv12Tag16HkdfSha384EcdsaP384 => {
-            aws_mpl_legacy::types::EsdkAlgorithmSuiteId::AlgAes192GcmIv12Tag16HkdfSha384EcdsaP384
+        aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes192GcmIv12Tag16HkdfSha384EcdsaP384 => {
+            aws_mpl_legacy::dafny::types::EsdkAlgorithmSuiteId::AlgAes192GcmIv12Tag16HkdfSha384EcdsaP384
         }
-        aws_mpl_rs::suites::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384 => {
-            aws_mpl_legacy::types::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384
+        aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384 => {
+            aws_mpl_legacy::dafny::types::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384
         }
-        aws_mpl_rs::suites::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey => {
-            aws_mpl_legacy::types::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey
+        aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey => {
+            aws_mpl_legacy::dafny::types::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey
         }
-        aws_mpl_rs::suites::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384 => {
-            aws_mpl_legacy::types::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384
+        aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384 => {
+            aws_mpl_legacy::dafny::types::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384
         }
         _ => panic!(),
     }
 }
 
-#[cfg(feature = "legacy")]
-fn convert_alg(x: aws_mpl_rs::suites::AlgorithmSuiteId) -> aws_mpl_legacy::types::AlgorithmSuiteId {
+fn convert_alg(x: aws_mpl_legacy::suites::AlgorithmSuiteId) -> aws_mpl_legacy::dafny::types::AlgorithmSuiteId {
     match x {
-        aws_mpl_rs::suites::AlgorithmSuiteId::Esdk(a) => {
-            aws_mpl_legacy::types::AlgorithmSuiteId::Esdk(convert_esdk_alg(a))
+        aws_mpl_legacy::suites::AlgorithmSuiteId::Esdk(a) => {
+            aws_mpl_legacy::dafny::types::AlgorithmSuiteId::Esdk(convert_esdk_alg(a))
         }
         _ => panic!(),
     }
 }
 
-#[cfg(feature = "legacy")]
 fn from_legacy_aes(
-    x: &aws_mpl_legacy::aws_cryptography_primitives::types::AesGcm,
-) -> aws_mpl_primitives::AesGcm {
+    x: &aws_mpl_legacy::dafny::aws_cryptography_primitives::types::AesGcm,
+) -> aws_mpl_legacy::primitives::AesGcm {
     match x.key_length().unwrap() {
-        16 => aws_mpl_primitives::AesGcm::Aes128Gcm,
-        24 => aws_mpl_primitives::AesGcm::Aes192Gcm,
-        32 => aws_mpl_primitives::AesGcm::Aes256Gcm,
+        16 => aws_mpl_legacy::primitives::AesGcm::Aes128Gcm,
+        24 => aws_mpl_legacy::primitives::AesGcm::Aes192Gcm,
+        32 => aws_mpl_legacy::primitives::AesGcm::Aes256Gcm,
         _ => panic!(),
     }
 }
 
-#[cfg(feature = "legacy")]
-fn from_legacy_encrypt(x: aws_mpl_legacy::types::Encrypt) -> aws_mpl_primitives::AesGcm {
+fn from_legacy_encrypt(x: aws_mpl_legacy::dafny::types::Encrypt) -> aws_mpl_legacy::primitives::AesGcm {
     match x {
-        aws_mpl_legacy::types::Encrypt::AesGcm(x) => from_legacy_aes(&x),
+        aws_mpl_legacy::dafny::types::Encrypt::AesGcm(x) => from_legacy_aes(&x),
         _ => panic!(),
     }
 }
 
-#[cfg(feature = "legacy")]
 const fn from_legacy_hmac(
-    x: aws_mpl_legacy::aws_cryptography_primitives::types::DigestAlgorithm,
-) -> aws_mpl_primitives::DigestAlg {
-    use aws_mpl_legacy::aws_cryptography_primitives::types::DigestAlgorithm as Old;
-    use aws_mpl_primitives::DigestAlg as New;
+    x: aws_mpl_legacy::dafny::aws_cryptography_primitives::types::DigestAlgorithm,
+) -> aws_mpl_legacy::primitives::DigestAlg {
+    use aws_mpl_legacy::dafny::aws_cryptography_primitives::types::DigestAlgorithm as Old;
+    use aws_mpl_legacy::primitives::DigestAlg as New;
     match x {
         Old::Sha256 => New::Sha256,
         Old::Sha384 => New::Sha384,
@@ -287,9 +317,8 @@ const fn from_legacy_hmac(
     }
 }
 
-#[cfg(feature = "legacy")]
-fn from_legacy_hkdf(x: &aws_mpl_legacy::types::Hkdf) -> aws_mpl_rs::suites::Hkdf {
-    let mut n = aws_mpl_rs::suites::Hkdf::default();
+fn from_legacy_hkdf(x: &aws_mpl_legacy::dafny::types::Hkdf) -> aws_mpl_legacy::suites::Hkdf {
+    let mut n = aws_mpl_legacy::suites::Hkdf::default();
     n.hmac = from_legacy_hmac(x.hmac.unwrap());
     n.salt_length = x.salt_length.unwrap() as u32;
     n.input_key_length = x.input_key_length.unwrap() as u32;
@@ -297,12 +326,11 @@ fn from_legacy_hkdf(x: &aws_mpl_legacy::types::Hkdf) -> aws_mpl_rs::suites::Hkdf
     n
 }
 
-#[cfg(feature = "legacy")]
 fn from_legacy_da(
-    x: aws_mpl_legacy::types::DerivationAlgorithm,
-) -> aws_mpl_rs::suites::DerivationAlgorithm {
-    use aws_mpl_legacy::types::DerivationAlgorithm as Old;
-    use aws_mpl_rs::suites::DerivationAlgorithm as New;
+    x: aws_mpl_legacy::dafny::types::DerivationAlgorithm,
+) -> aws_mpl_legacy::suites::DerivationAlgorithm {
+    use aws_mpl_legacy::dafny::types::DerivationAlgorithm as Old;
+    use aws_mpl_legacy::suites::DerivationAlgorithm as New;
     match x {
         Old::Hkdf(x) => New::Hkdf(from_legacy_hkdf(&x)),
         Old::Identity(_x) => New::Identity,
@@ -311,23 +339,21 @@ fn from_legacy_da(
     }
 }
 
-#[cfg(feature = "legacy")]
 const fn from_legacy_ecdsa(
-    x: &aws_mpl_legacy::types::Ecdsa,
-) -> aws_mpl_primitives::EcdsaSignatureAlgorithm {
-    use aws_mpl_legacy::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm as Old;
-    use aws_mpl_primitives::EcdsaSignatureAlgorithm as New;
+    x: &aws_mpl_legacy::dafny::types::Ecdsa,
+) -> aws_mpl_legacy::primitives::EcdsaSignatureAlgorithm {
+    use aws_mpl_legacy::dafny::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm as Old;
+    use aws_mpl_legacy::primitives::EcdsaSignatureAlgorithm as New;
     match x.curve.unwrap() {
         Old::EcdsaP256 => New::EcdsaP256,
         Old::EcdsaP384 => New::EcdsaP384,
     }
 }
-#[cfg(feature = "legacy")]
 fn from_legacy_sig(
-    x: aws_mpl_legacy::types::SignatureAlgorithm,
-) -> aws_mpl_rs::suites::SignatureAlgorithm {
-    use aws_mpl_legacy::types::SignatureAlgorithm as Old;
-    use aws_mpl_rs::suites::SignatureAlgorithm as New;
+    x: aws_mpl_legacy::dafny::types::SignatureAlgorithm,
+) -> aws_mpl_legacy::suites::SignatureAlgorithm {
+    use aws_mpl_legacy::dafny::types::SignatureAlgorithm as Old;
+    use aws_mpl_legacy::suites::SignatureAlgorithm as New;
     match x {
         Old::Ecdsa(x) => New::Ecdsa(from_legacy_ecdsa(&x)),
         Old::None(_x) => New::None,
@@ -335,12 +361,11 @@ fn from_legacy_sig(
     }
 }
 
-#[cfg(feature = "legacy")]
 fn from_legacy_ssig(
-    x: aws_mpl_legacy::types::SymmetricSignatureAlgorithm,
-) -> aws_mpl_rs::suites::SymmetricSignatureAlgorithm {
-    use aws_mpl_legacy::types::SymmetricSignatureAlgorithm as Old;
-    use aws_mpl_rs::suites::SymmetricSignatureAlgorithm as New;
+    x: aws_mpl_legacy::dafny::types::SymmetricSignatureAlgorithm,
+) -> aws_mpl_legacy::suites::SymmetricSignatureAlgorithm {
+    use aws_mpl_legacy::dafny::types::SymmetricSignatureAlgorithm as Old;
+    use aws_mpl_legacy::suites::SymmetricSignatureAlgorithm as New;
     match x {
         Old::Hmac(x) => New::Hmac(from_legacy_hmac(x)),
         Old::None(_x) => New::None,
@@ -348,37 +373,34 @@ fn from_legacy_ssig(
     }
 }
 
-#[cfg(feature = "legacy")]
 fn from_legacy_inter_wrap(
-    x: aws_mpl_legacy::types::IntermediateKeyWrapping,
-) -> aws_mpl_rs::suites::IntermediateKeyWrapping {
-    let mut r = aws_mpl_rs::suites::IntermediateKeyWrapping::default();
+    x: aws_mpl_legacy::dafny::types::IntermediateKeyWrapping,
+) -> aws_mpl_legacy::suites::IntermediateKeyWrapping {
+    let mut r = aws_mpl_legacy::suites::IntermediateKeyWrapping::default();
     r.key_encryption_key_kdf = from_legacy_da(x.key_encryption_key_kdf.unwrap());
     r.mac_key_kdf = from_legacy_da(x.mac_key_kdf.unwrap());
     r.pdk_encrypt_algorithm =
-        aws_mpl_rs::suites::Encrypt::AesGcm(from_legacy_encrypt(x.pdk_encrypt_algorithm.unwrap()));
+        aws_mpl_legacy::suites::Encrypt::AesGcm(from_legacy_encrypt(x.pdk_encrypt_algorithm.unwrap()));
     r
 }
 
-#[cfg(feature = "legacy")]
 fn from_legacy_wrap(
-    x: aws_mpl_legacy::types::EdkWrappingAlgorithm,
-) -> aws_mpl_rs::suites::EdkWrappingAlgorithm {
-    use aws_mpl_legacy::types::EdkWrappingAlgorithm as Old;
-    use aws_mpl_rs::suites::EdkWrappingAlgorithm as New;
+    x: aws_mpl_legacy::dafny::types::EdkWrappingAlgorithm,
+) -> aws_mpl_legacy::suites::EdkWrappingAlgorithm {
+    use aws_mpl_legacy::dafny::types::EdkWrappingAlgorithm as Old;
+    use aws_mpl_legacy::suites::EdkWrappingAlgorithm as New;
     match x {
         Old::DirectKeyWrapping(_x) => New::DirectKeyWrapping,
         Old::IntermediateKeyWrapping(x) => New::IntermediateKeyWrapping(from_legacy_inter_wrap(x)),
         _ => panic!(),
     }
 }
-#[cfg(feature = "legacy")]
-fn from_legacy_as(x: aws_mpl_legacy::types::AlgorithmSuiteInfo) -> Result<AlgorithmSuite, Error> {
+fn from_legacy_as(x: aws_mpl_legacy::dafny::types::AlgorithmSuiteInfo) -> Result<AlgorithmSuite, Error> {
     let mut s = AlgorithmSuite::default();
-    s.id = legacy::from_legacy_suite_id(&x.id.unwrap())?;
+    s.id = from_dafny_suite_id(&x.id.unwrap())?;
     s.binary_id = x.binary_id.unwrap().as_ref()[0..2].try_into().unwrap();
     s.message_version = x.message_version.unwrap() as u32;
-    s.encrypt = aws_mpl_rs::suites::Encrypt::AesGcm(from_legacy_encrypt(x.encrypt.unwrap()));
+    s.encrypt = aws_mpl_legacy::suites::Encrypt::AesGcm(from_legacy_encrypt(x.encrypt.unwrap()));
     s.kdf = from_legacy_da(x.kdf.unwrap());
     s.commitment = from_legacy_da(x.commitment.unwrap());
     s.signature = from_legacy_sig(x.signature.as_ref().unwrap().clone());
@@ -386,9 +408,8 @@ fn from_legacy_as(x: aws_mpl_legacy::types::AlgorithmSuiteInfo) -> Result<Algori
     s.edk_wrapping = from_legacy_wrap(x.edk_wrapping.unwrap());
     Ok(s)
 }
-#[cfg(feature = "legacy")]
 fn from_legacy_em(
-    x: aws_mpl_legacy::types::EncryptionMaterials,
+    x: aws_mpl_legacy::dafny::types::EncryptionMaterials,
 ) -> Result<EncryptionMaterials, Error> {
     let mut ret = EncryptionMaterials::default();
     ret.symmetric_signing_keys = match x.symmetric_signing_keys.as_ref() {
@@ -401,7 +422,7 @@ fn from_legacy_em(
         .unwrap()
         .iter()
         .map(|x| {
-            aws_mpl_rs::EncryptedDataKey::new(
+            aws_mpl_legacy::EncryptedDataKey::new(
                 x.key_provider_id().as_ref().unwrap().clone(),
                 x.key_provider_info().as_ref().unwrap().clone(),
                 x.ciphertext().as_ref().unwrap().clone(),
@@ -416,9 +437,8 @@ fn from_legacy_em(
     Ok(ret)
 }
 
-#[cfg(feature = "legacy")]
 fn from_legacy_dm(
-    x: aws_mpl_legacy::types::DecryptionMaterials,
+    x: aws_mpl_legacy::dafny::types::DecryptionMaterials,
 ) -> Result<DecryptionMaterials, Error> {
     let mut ret = DecryptionMaterials::default();
     ret.algorithm_suite = from_legacy_as(x.algorithm_suite.unwrap())?;
@@ -430,13 +450,12 @@ fn from_legacy_dm(
     ret.symmetric_signing_key = x.symmetric_signing_key.map(|y| Secret(y.into_inner()));
     Ok(ret)
 }
-#[cfg(feature = "legacy")]
 pub(crate) async fn get_legacy_decryption_materials(
-    cmm: aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef,
-    algorithm_suite_id: aws_mpl_rs::suites::AlgorithmSuiteId,
+    cmm: aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef,
+    algorithm_suite_id: aws_mpl_legacy::suites::AlgorithmSuiteId,
     header_body: &HeaderBody,
     reproduced_encryption_context: &EncryptionContext,
-    commitment_policy: aws_mpl_rs::commitment::EsdkCommitmentPolicy,
+    commitment_policy: aws_mpl_legacy::commitment::EsdkCommitmentPolicy,
 ) -> Result<DecryptionMaterials, Error> {
     let encryption_context = from_canonical_pairs(header_body.encryption_context().clone());
     let output = cmm
@@ -497,38 +516,37 @@ pub(crate) async fn get_legacy_decryption_materials(
     pub required_encryption_context_keys: Vec<EncryptionContextKey>,
 */
 pub(crate) async fn get_modern_encryption_materials(
-    cmm: aws_mpl_rs::cmm::CryptographicMaterialsManagerRef,
-    algorithm_suite_id: Option<aws_mpl_rs::suites::AlgorithmSuiteId>,
+    cmm: aws_mpl_legacy::cmm::CryptographicMaterialsManagerRef,
+    algorithm_suite_id: Option<aws_mpl_legacy::suites::AlgorithmSuiteId>,
     encryption_context: EncryptionContext,
     max_plaintext_length: Option<usize>,
-    commitment_policy: aws_mpl_rs::commitment::EsdkCommitmentPolicy,
+    commitment_policy: aws_mpl_legacy::commitment::EsdkCommitmentPolicy,
 ) -> Result<EncryptionMaterials, Error> {
     let mut input = GetEncryptionMaterialsInput::default();
     input.algorithm_suite_id = algorithm_suite_id;
-    input.commitment_policy = aws_mpl_rs::commitment::CommitmentPolicy::Esdk(commitment_policy);
+    input.commitment_policy = aws_mpl_legacy::commitment::CommitmentPolicy::Esdk(commitment_policy);
     input.encryption_context = encryption_context;
     input.max_plaintext_length = max_plaintext_length;
     // input.required_encryption_context_keys = required_encryption_context_keys.clone();
     let materials = cmm.get_encryption_materials(&input).await?;
 
-    aws_mpl_rs::commitment::validate_commitment_policy_on_encrypt(
-        &aws_mpl_rs::commitment::ValidateCommitmentPolicyOnEncryptInput::new(
+    aws_mpl_legacy::commitment::validate_commitment_policy_on_encrypt(
+        &aws_mpl_legacy::commitment::ValidateCommitmentPolicyOnEncryptInput::new(
             materials.algorithm_suite.id,
-            aws_mpl_rs::commitment::CommitmentPolicy::Esdk(commitment_policy),
+            aws_mpl_legacy::commitment::CommitmentPolicy::Esdk(commitment_policy),
         ),
     )?;
 
-    aws_mpl_rs::materials::encryption_materials_has_plaintext_data_key(&materials)?;
+    aws_mpl_legacy::materials::encryption_materials_has_plaintext_data_key(&materials)?;
     Ok(materials)
 }
 
-#[cfg(feature = "legacy")]
 pub(crate) async fn get_legacy_encryption_materials(
-    cmm: aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef,
-    algorithm_suite_id: Option<aws_mpl_rs::suites::AlgorithmSuiteId>,
+    cmm: aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef,
+    algorithm_suite_id: Option<aws_mpl_legacy::suites::AlgorithmSuiteId>,
     encryption_context: EncryptionContext,
     max_plaintext_length: Option<usize>,
-    commitment_policy: aws_mpl_rs::commitment::EsdkCommitmentPolicy,
+    commitment_policy: aws_mpl_legacy::commitment::EsdkCommitmentPolicy,
 ) -> Result<EncryptionMaterials, Error> {
     let mpl = mpl();
     #[expect(

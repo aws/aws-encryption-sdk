@@ -3,16 +3,16 @@
 #![allow(clippy::result_large_err)]
 
 use aws_esdk::mpl;
-use aws_mpl_legacy::operation::decrypt_materials::DecryptMaterialsInput;
-use aws_mpl_legacy::operation::decrypt_materials::DecryptMaterialsOutput;
-use aws_mpl_legacy::operation::get_encryption_materials::GetEncryptionMaterialsInput;
-use aws_mpl_legacy::operation::get_encryption_materials::GetEncryptionMaterialsOutput;
-use aws_mpl_legacy::types::AlgorithmSuiteId;
-use aws_mpl_legacy::types::EsdkAlgorithmSuiteId;
-use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManager;
-use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
-use aws_mpl_legacy::types::error::Error;
-use aws_mpl_legacy::types::keyring::KeyringRef;
+use aws_mpl_legacy::dafny::operation::decrypt_materials::DecryptMaterialsInput;
+use aws_mpl_legacy::dafny::operation::decrypt_materials::DecryptMaterialsOutput;
+use aws_mpl_legacy::dafny::operation::get_encryption_materials::GetEncryptionMaterialsInput;
+use aws_mpl_legacy::dafny::operation::get_encryption_materials::GetEncryptionMaterialsOutput;
+use aws_mpl_legacy::dafny::types::AlgorithmSuiteId;
+use aws_mpl_legacy::dafny::types::EsdkAlgorithmSuiteId;
+use aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManager;
+use aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
+use aws_mpl_legacy::dafny::types::error::Error;
+use aws_mpl_legacy::dafny::types::keyring::KeyringRef;
 use std::vec::Vec;
 
 /*

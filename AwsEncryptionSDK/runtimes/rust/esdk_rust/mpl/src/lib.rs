@@ -89,7 +89,12 @@ pub mod keystore;
 pub mod kms_keyring;
 pub mod materials;
 pub mod suites;
-// pub mod types;
+
+/// Re-export of `aws_mpl_primitives` so downstream crates only need `aws_mpl_legacy`.
+pub use aws_mpl_primitives as primitives;
+
+/// Re-export of the Dafny-transpiled MPL for legacy interop.
+pub use aws_mpl_dafny as dafny;
 
 pub(crate) trait MplPrivate {}
 

@@ -2,7 +2,7 @@ use super::types::*;
 use crate::test_vectors::parse_keys::parse_encryption_context;
 use crate::test_vectors::parse_keys::parse_string_list;
 use anyhow::Result;
-use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
+use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use serde_json::Value as JsonValue;
 
 pub(crate) fn parse_encrypt_tests(data: &JsonValue, version: i64) -> Result<EncryptTests> {

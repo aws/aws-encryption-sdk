@@ -8,7 +8,7 @@ pub(crate) mod serialize_functions;
 pub(crate) mod shared_header_functions;
 pub(crate) mod v1_header_body;
 pub(crate) mod v2_header_body;
-use aws_mpl_primitives::DigestContext;
+use aws_mpl_legacy::primitives::DigestContext;
 use std::backtrace::Backtrace;
 
 pub(crate) use super::error::Error;
@@ -41,22 +41,22 @@ pub(crate) struct DigestWriter {
 }
 impl DigestWriter {
     #[expect(dead_code)]
-    pub(crate) fn new(alg: aws_mpl_primitives::DigestAlg) -> Result<Self, Error> {
+    pub(crate) fn new(alg: aws_mpl_legacy::primitives::DigestAlg) -> Result<Self, Error> {
         let context = Some(DigestContext::new(alg)?);
         Ok(Self { context })
     }
     #[expect(dead_code)]
     pub(crate) fn from_ecdsa(
-        alg: aws_mpl_primitives::EcdsaSignatureAlgorithm,
+        alg: aws_mpl_legacy::primitives::EcdsaSignatureAlgorithm,
     ) -> Result<Self, Error> {
         let context = Some(DigestContext::new_from_ecdsa(alg)?);
         Ok(Self { context })
     }
     pub(crate) fn from_old_ecdsa(
-        alg: aws_mpl_rs::suites::SignatureAlgorithm,
+        alg: aws_mpl_legacy::suites::SignatureAlgorithm,
     ) -> Result<Self, Error> {
         match alg {
-            aws_mpl_rs::suites::SignatureAlgorithm::Ecdsa(x) => {
+            aws_mpl_legacy::suites::SignatureAlgorithm::Ecdsa(x) => {
                 let context = Some(DigestContext::new_from_ecdsa(x)?);
                 Ok(Self { context })
             }

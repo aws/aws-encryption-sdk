@@ -1,9 +1,9 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use aws_mpl_legacy::aws_cryptography_keyStore::client as keystore_client;
-use aws_mpl_legacy::aws_cryptography_keyStore::types::KmsConfiguration;
-use aws_mpl_legacy::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig;
+use aws_mpl_legacy::dafny::aws_cryptography_keyStore::client as keystore_client;
+use aws_mpl_legacy::dafny::aws_cryptography_keyStore::types::KmsConfiguration;
+use aws_mpl_legacy::dafny::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig;
 
 /*
  The Hierarchical Keyring Example relies on the existence

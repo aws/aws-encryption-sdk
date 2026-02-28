@@ -3,14 +3,12 @@
 
 use crate::Error;
 use crate::val_err;
-#[cfg(feature = "legacy")]
-use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef as LegacyCMM;
-#[cfg(feature = "legacy")]
-use aws_mpl_legacy::types::keyring::KeyringRef as LegacyKeyring;
-use aws_mpl_rs::CryptographicMaterialsManagerRef;
-use aws_mpl_rs::KeyringRef;
-use aws_mpl_rs::commitment::EsdkCommitmentPolicy;
-use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
+use aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef as LegacyCMM;
+use aws_mpl_legacy::dafny::types::keyring::KeyringRef as LegacyKeyring;
+use aws_mpl_legacy::CryptographicMaterialsManagerRef;
+use aws_mpl_legacy::KeyringRef;
+use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
+use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use std::num::NonZeroUsize;
 
 #[expect(dead_code)]
@@ -22,13 +20,9 @@ fn comp(x: &KeyringRef, y: &KeyringRef) -> bool {
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub enum MaterialSource {
-    #[cfg(feature = "legacy")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
-    /// Legacy CMM, i.e. `aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef`
+    /// Legacy CMM, i.e. `aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef`
     LegacyCmm(LegacyCMM),
-    #[cfg(feature = "legacy")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
-    /// Legacy Keyring, i.e. `aws_mpl_legacy::types::keyring::KeyringRef`
+    /// Legacy Keyring, i.e. `aws_mpl_legacy::dafny::types::keyring::KeyringRef`
     LegacyKeyring(LegacyKeyring),
     /// CMM
     Cmm(CryptographicMaterialsManagerRef),
@@ -45,9 +39,7 @@ impl PartialEq for MaterialSource {
             (Self::Keyring(x), Self::Keyring(y)) => {
                 std::ptr::addr_eq(std::sync::Arc::as_ptr(x), std::sync::Arc::as_ptr(y))
             }
-            #[cfg(feature = "legacy")]
             (Self::LegacyCmm(x), Self::LegacyCmm(y)) => x == y,
-            #[cfg(feature = "legacy")]
             (Self::LegacyKeyring(x), Self::LegacyKeyring(y)) => x == y,
             _ => false,
         }
@@ -88,12 +80,10 @@ impl FrameLength {
 }
 
 /// Convenience function to return a `MaterialProviders` Client.
-#[cfg(feature = "legacy")]
-#[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
 #[must_use]
-pub fn mpl() -> aws_mpl_legacy::Client {
-    aws_mpl_legacy::Client::from_conf(
-        aws_mpl_legacy::types::MaterialProvidersConfig::builder()
+pub fn mpl() -> aws_mpl_legacy::dafny::Client {
+    aws_mpl_legacy::dafny::Client::from_conf(
+        aws_mpl_legacy::dafny::types::MaterialProvidersConfig::builder()
             .build()
             .unwrap(),
     )
@@ -109,7 +99,7 @@ pub trait SafeRead: std::io::Read + Send + Sync + std::fmt::Debug {}
 impl<T: std::io::Read + Send + Sync + std::fmt::Debug> SafeRead for T {}
 
 /// Key-Value pairs to associate with the encrypted data
-pub use aws_mpl_rs::EncryptionContext;
+pub use aws_mpl_legacy::EncryptionContext;
 
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
 #[non_exhaustive]
@@ -226,8 +216,6 @@ impl<'a> EncryptInput<'a> {
     }
     /// Construct an `EncryptInput` with a legacy `CryptographicMaterialsManagerRef`
     #[must_use]
-    #[cfg(feature = "legacy")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     pub fn with_legacy_cmm(plaintext: &'a [u8], ec: EncryptionContext, cmm: LegacyCMM) -> Self {
         Self {
             plaintext,
@@ -238,8 +226,6 @@ impl<'a> EncryptInput<'a> {
     }
     /// Construct an `EncryptInput` with a legacy `KeyringRef`
     #[must_use]
-    #[cfg(feature = "legacy")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     pub fn with_legacy_keyring(
         plaintext: &'a [u8],
         ec: EncryptionContext,
@@ -316,8 +302,6 @@ impl EncryptStreamInput {
     }
     /// Construct an `EncryptStreamInput` with a legacy `CryptographicMaterialsManagerRef`
     #[must_use]
-    #[cfg(feature = "legacy")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     pub fn with_legacy_cmm(ec: EncryptionContext, cmm: LegacyCMM) -> Self {
         Self {
             encryption_context: ec,
@@ -327,8 +311,6 @@ impl EncryptStreamInput {
     }
     /// Construct an `EncryptStreamInput` with a legacy `KeyringRef`
     #[must_use]
-    #[cfg(feature = "legacy")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     pub fn with_legacy_keyring(ec: EncryptionContext, keyring: LegacyKeyring) -> Self {
         Self {
             encryption_context: ec,
@@ -422,8 +404,6 @@ impl<'a> DecryptInput<'a> {
     }
     /// Construct a `DecryptInput` with a legacy `CryptographicMaterialsManagerRef`
     #[must_use]
-    #[cfg(feature = "legacy")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     pub fn with_legacy_cmm(ciphertext: &'a [u8], ec: EncryptionContext, cmm: LegacyCMM) -> Self {
         Self {
             ciphertext,
@@ -434,8 +414,6 @@ impl<'a> DecryptInput<'a> {
     }
     /// Construct a `DecryptInput` with a legacy `KeyringRef`
     #[must_use]
-    #[cfg(feature = "legacy")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     pub fn with_legacy_keyring(
         ciphertext: &'a [u8],
         ec: EncryptionContext,
@@ -489,8 +467,8 @@ impl<'a> DecryptInput<'a> {
     pub(crate) fn validate(&self) -> Result<(), Error> {
         //# The client MUST require the following as inputs to this operation:
         //# - [Encrypted Message](#encrypted-message)
-        if self.ciphertext.is_none() {
-            Err(val_err("A ciphertext value must be provided."))
+        if self.ciphertext.is_empty() {
+            return Err(val_err("A ciphertext value must be provided."));
         }
         //= specification/client-apis/decrypt.md#input
         //# The client MUST require exactly one of the following types of inputs:
@@ -515,8 +493,6 @@ impl DecryptStreamInput {
     }
     /// Construct a `DecryptStreamInput` with a legacy `CryptographicMaterialsManagerRef`
     #[must_use]
-    #[cfg(feature = "legacy")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     pub fn with_legacy_cmm(ec: EncryptionContext, cmm: LegacyCMM) -> Self {
         Self {
             encryption_context: ec,
@@ -526,8 +502,6 @@ impl DecryptStreamInput {
     }
     /// Construct a `DecryptStreamInput` with a `KeyringRef`
     #[must_use]
-    #[cfg(feature = "legacy")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     pub fn with_legacy_keyring(ec: EncryptionContext, keyring: LegacyKeyring) -> Self {
         Self {
             encryption_context: ec,
@@ -546,8 +520,6 @@ impl DecryptStreamInput {
     }
     /// Construct a `DecryptStreamInput` with a `KeyringRef`
     #[must_use]
-    #[cfg(feature = "legacy")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "legacy")))]
     pub fn with_keyring(ec: EncryptionContext, keyring: KeyringRef) -> Self {
         Self {
             encryption_context: ec,

@@ -30,10 +30,10 @@ https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-kms-ecdh-k
 use crate::legacy::example_utils::utils::TEST_KMS_ECDH_KEY_ID_P256_SENDER;
 use crate::legacy::example_utils::utils::generate_kms_ecc_public_key;
 use aws_esdk::*;
-use aws_mpl_legacy::aws_cryptography_primitives::types::EcdhCurveSpec;
-use aws_mpl_legacy::types::KmsEcdhStaticConfigurations;
-use aws_mpl_legacy::types::KmsPrivateKeyToStaticPublicKeyInput;
-use aws_mpl_legacy::types::KmsPublicKeyDiscoveryInput;
+use aws_mpl_legacy::dafny::aws_cryptography_primitives::types::EcdhCurveSpec;
+use aws_mpl_legacy::dafny::types::KmsEcdhStaticConfigurations;
+use aws_mpl_legacy::dafny::types::KmsPrivateKeyToStaticPublicKeyInput;
+use aws_mpl_legacy::dafny::types::KmsPublicKeyDiscoveryInput;
 
 pub async fn decrypt_with_legacy_keyring(
     example_data: &str,

@@ -4,8 +4,8 @@
 use super::*;
 use crate::serialize::header_types::*;
 use crate::serialize::serializable_types::*;
-use aws_mpl_rs::suites::AlgorithmSuite;
-use aws_mpl_rs::suites::DerivationAlgorithm;
+use aws_mpl_legacy::suites::AlgorithmSuite;
+use aws_mpl_legacy::suites::DerivationAlgorithm;
 
 // Convenience container to hold both a data key and an optional commitment key
 // to support algorithm suites that provide commitment and those that do not
@@ -41,11 +41,11 @@ const fn valid_derivation_alg(
     }
 }
 
-fn digest_length(alg: aws_mpl_primitives::DigestAlg) -> Result<usize, Error> {
+fn digest_length(alg: aws_mpl_legacy::primitives::DigestAlg) -> Result<usize, Error> {
     match alg {
-        aws_mpl_primitives::DigestAlg::Sha256 => Ok(32),
-        aws_mpl_primitives::DigestAlg::Sha384 => Ok(48),
-        aws_mpl_primitives::DigestAlg::Sha512 => Ok(64),
+        aws_mpl_legacy::primitives::DigestAlg::Sha256 => Ok(32),
+        aws_mpl_legacy::primitives::DigestAlg::Sha384 => Ok(48),
+        aws_mpl_legacy::primitives::DigestAlg::Sha512 => Ok(64),
         _ => Err("Unknown DigestAlg".into()),
     }
 }
@@ -77,7 +77,7 @@ pub(crate) fn derive_key(
             let salt = vec![0u8; digest_length(alg)?];
             let mut derived_key = vec![0u8; hkdf.output_key_length as usize];
             if on_net_v4_retry {
-                aws_mpl_primitives::hkdf(
+                aws_mpl_legacy::primitives::hkdf(
                     alg,
                     &salt,
                     plaintext_data_key,
@@ -85,7 +85,7 @@ pub(crate) fn derive_key(
                     &mut derived_key,
                 )?;
             } else {
-                aws_mpl_primitives::hkdf(
+                aws_mpl_legacy::primitives::hkdf(
                     alg,
                     &salt,
                     plaintext_data_key,
@@ -143,11 +143,11 @@ pub(crate) fn expand_key_material(
     let alg = digest;
     let info = [&suite.binary_id[..], KEY_LABEL.as_bytes()];
 
-    let pseudo_random_key = aws_mpl_primitives::hkdf_extract(alg, message_id, plaintext_key);
+    let pseudo_random_key = aws_mpl_legacy::primitives::hkdf_extract(alg, message_id, plaintext_key);
     let mut encrypt_key = vec![0u8; get_kdf_outlen(suite)? as usize];
     let mut commit_key = vec![0u8; commit_len as usize];
-    aws_mpl_primitives::hkdf_expand(&pseudo_random_key, &info, &mut encrypt_key)?;
-    aws_mpl_primitives::hkdf_expand(
+    aws_mpl_legacy::primitives::hkdf_expand(&pseudo_random_key, &info, &mut encrypt_key)?;
+    aws_mpl_legacy::primitives::hkdf_expand(
         &pseudo_random_key,
         &[COMMIT_LABEL.as_bytes()],
         &mut commit_key,

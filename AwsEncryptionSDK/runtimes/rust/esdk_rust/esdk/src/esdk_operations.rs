@@ -12,8 +12,8 @@ use crate::serialize::serializable_types::{from_canonical_pairs, to_canonical_pa
 use crate::serialize::serialize_functions::write_seq_u16;
 use crate::serialize::*;
 use crate::types::*;
-use aws_mpl_primitives::*;
-use aws_mpl_rs::commitment::EsdkCommitmentPolicy;
+use aws_mpl_legacy::primitives::*;
+use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 enum ProtectionNeeded {
@@ -120,7 +120,7 @@ async fn internal_encrypt(
     plaintext_len: Option<usize>,
     input_source: Option<MaterialSource>,
     encryption_context: &EncryptionContext,
-    algorithm_suite_id: Option<aws_mpl_rs::suites::EsdkAlgorithmSuiteId>,
+    algorithm_suite_id: Option<aws_mpl_legacy::suites::EsdkAlgorithmSuiteId>,
     frame_length: FrameLength,
     max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
     commitment_policy: EsdkCommitmentPolicy,
@@ -137,7 +137,7 @@ async fn internal_encrypt(
     //# The CMM used MUST be the input CMM, if supplied.
     let cmm = materials::create_cmm_from_input(input_source).await?;
 
-    let algorithm_suite_id = algorithm_suite_id.map(aws_mpl_rs::suites::AlgorithmSuiteId::Esdk);
+    let algorithm_suite_id = algorithm_suite_id.map(aws_mpl_legacy::suites::AlgorithmSuiteId::Esdk);
     //= specification/client-apis/encrypt.md#algorithm-suite
     //# The [algorithm suite](../framework/algorithm-suites.md) that SHOULD be used for encryption.
     if let Some(id) = algorithm_suite_id {
@@ -145,11 +145,11 @@ async fn internal_encrypt(
         //# If an [input algorithm suite](#algorithm-suite) is provided
         //# that is not supported by the [commitment policy](client.md#commitment-policy)
         //# configured in the [client](client.md) encrypt MUST yield an error.
-        let input = aws_mpl_rs::commitment::ValidateCommitmentPolicyOnEncryptInput::new(
+        let input = aws_mpl_legacy::commitment::ValidateCommitmentPolicyOnEncryptInput::new(
             id,
-            aws_mpl_rs::commitment::CommitmentPolicy::Esdk(commitment_policy),
+            aws_mpl_legacy::commitment::CommitmentPolicy::Esdk(commitment_policy),
         );
-        aws_mpl_rs::commitment::validate_commitment_policy_on_encrypt(&input)?;
+        aws_mpl_legacy::commitment::validate_commitment_policy_on_encrypt(&input)?;
     }
 
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
@@ -220,7 +220,7 @@ async fn internal_encrypt(
     //# If the [algorithm suite](../framework/algorithm-suites.md) contains a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
     //# this operation MUST calculate a signature over the message,
     //# and the output [encrypted message](#encrypted-message) MUST contain a [message footer](../data-format/message-footer.md).
-    if let aws_mpl_rs::suites::SignatureAlgorithm::Ecdsa(_) = &header.suite.signature {
+    if let aws_mpl_legacy::suites::SignatureAlgorithm::Ecdsa(_) = &header.suite.signature {
         let ecdsa_params = encrypt_decrypt::get_ecdsa_alg(header.suite.signature)?;
         //= specification/client-apis/encrypt.md#construct-the-signature
         //# To calculate a signature, this operation MUST use the [signature algorithm](../framework/algorithm-suites.md#signature-algorithm)
@@ -265,10 +265,10 @@ async fn internal_encrypt(
 //= specification/data-format/message-header.md#algorithm-suite-id
 //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
 fn get_esdk_id(
-    id: aws_mpl_rs::suites::AlgorithmSuiteId,
-) -> Result<aws_mpl_rs::suites::EsdkAlgorithmSuiteId, Error> {
+    id: aws_mpl_legacy::suites::AlgorithmSuiteId,
+) -> Result<aws_mpl_legacy::suites::EsdkAlgorithmSuiteId, Error> {
     match id {
-        aws_mpl_rs::suites::AlgorithmSuiteId::Esdk(x) => Ok(x),
+        aws_mpl_legacy::suites::AlgorithmSuiteId::Esdk(x) => Ok(x),
         _ => Err("Unsupported algorithm suite".into()),
     }
 }
@@ -384,10 +384,10 @@ async fn internal_decrypt(
     //# If the parsed [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
     //# is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) decrypt MUST yield an error.
-    aws_mpl_rs::commitment::validate_commitment_policy_on_decrypt(
-        aws_mpl_rs::commitment::ValidateCommitmentPolicyOnDecryptInput::new(
+    aws_mpl_legacy::commitment::validate_commitment_policy_on_decrypt(
+        aws_mpl_legacy::commitment::ValidateCommitmentPolicyOnDecryptInput::new(
             header_body.algorithm_suite().id,
-            aws_mpl_rs::commitment::CommitmentPolicy::Esdk(commitment_policy),
+            aws_mpl_legacy::commitment::CommitmentPolicy::Esdk(commitment_policy),
         ),
     )?;
 
@@ -604,7 +604,7 @@ async fn internal_decrypt(
 // in the decryption material's required encryption context keys.
 // TODO Post-#619: Duvet this section
 fn build_encryption_context_to_only_authenticate(
-    dec_mat: &aws_mpl_rs::DecryptionMaterials,
+    dec_mat: &aws_mpl_legacy::DecryptionMaterials,
 ) -> EncryptionContext {
     dec_mat
         .encryption_context

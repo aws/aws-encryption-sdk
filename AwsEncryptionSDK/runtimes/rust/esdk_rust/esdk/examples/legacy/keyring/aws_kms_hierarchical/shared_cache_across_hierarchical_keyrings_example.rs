@@ -64,12 +64,12 @@
 
 use super::create_branch_key_id::create_branch_key_id;
 use aws_esdk::*;
-use aws_mpl_legacy::aws_cryptography_keyStore::client as keystore_client;
-use aws_mpl_legacy::aws_cryptography_keyStore::types::KmsConfiguration;
-use aws_mpl_legacy::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig;
-use aws_mpl_legacy::types::CacheType;
-use aws_mpl_legacy::types::DefaultCache;
-use aws_mpl_legacy::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef;
+use aws_mpl_legacy::dafny::aws_cryptography_keyStore::client as keystore_client;
+use aws_mpl_legacy::dafny::aws_cryptography_keyStore::types::KmsConfiguration;
+use aws_mpl_legacy::dafny::aws_cryptography_keyStore::types::key_store_config::KeyStoreConfig;
+use aws_mpl_legacy::dafny::types::CacheType;
+use aws_mpl_legacy::dafny::types::DefaultCache;
+use aws_mpl_legacy::dafny::types::cryptographic_materials_cache::CryptographicMaterialsCacheRef;
 
 pub async fn encrypt_and_decrypt_with_legacy_keyring(
     example_data: &str,

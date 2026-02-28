@@ -8,7 +8,7 @@ use super::*;
 use crate::serialize::header_types::*;
 use crate::serialize::serialize_functions::*;
 use crate::types::{SafeRead, SafeWrite};
-use aws_mpl_rs::suites::DerivationAlgorithm;
+use aws_mpl_legacy::suites::DerivationAlgorithm;
 
 pub(crate) fn write_v2_header_body(
     w: &mut dyn SafeWrite,
@@ -30,7 +30,7 @@ pub(crate) fn write_v2_header_body(
     write_bytes(w, &body.suite_data)
 }
 
-pub(crate) const fn get_hkdf(x: &DerivationAlgorithm) -> &aws_mpl_rs::suites::Hkdf {
+pub(crate) const fn get_hkdf(x: &DerivationAlgorithm) -> &aws_mpl_legacy::suites::Hkdf {
     if let DerivationAlgorithm::Hkdf(x) = x {
         x
     } else {

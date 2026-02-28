@@ -8,8 +8,8 @@
 
 use super::signing_suite_only_cmm::SigningSuiteOnlyCMM;
 use aws_esdk::*;
-use aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
-use aws_mpl_rs::suites::EsdkAlgorithmSuiteId;
+use aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef;
+use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 
 pub async fn encrypt_and_decrypt_with_cmm(
     example_data: &str,

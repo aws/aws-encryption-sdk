@@ -48,7 +48,7 @@ https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/use-raw-rsa-ke
 */
 
 use aws_esdk::*;
-use aws_mpl_legacy::types::PaddingScheme;
+use aws_mpl_legacy::dafny::types::PaddingScheme;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
