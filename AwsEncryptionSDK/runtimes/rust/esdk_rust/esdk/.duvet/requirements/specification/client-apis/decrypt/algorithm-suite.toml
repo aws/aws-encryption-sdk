@@ -1,0 +1,23 @@
+target = "specification/client-apis/decrypt.md#algorithm-suite"
+
+# Algorithm Suite
+#
+# The [algorithm suite](../framework/algorithm-suites.md) that is used to decrypt
+# the input [encrypted message](#encrypted-message).
+# 
+# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
+# 
+# This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.
+
+[[spec]]
+level = "MUST"
+quote = '''
+This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
+'''
+
+[[spec]]
+level = "MAY"
+quote = '''
+This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.
+'''
+

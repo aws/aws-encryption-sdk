@@ -1,0 +1,103 @@
+target = "specification/client-apis/encrypt.md#construct-the-signature"
+
+# Construct the signature
+#
+# If the [algorithm suite](../framework/algorithm-suites.md) contains a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
+# this operation MUST calculate a signature over the message,
+# and the output [encrypted message](#encrypted-message) MUST contain a [message footer](../data-format/message-footer.md).
+# 
+# To calculate a signature, this operation MUST use the [signature algorithm](../framework/algorithm-suites.md#signature-algorithm)
+# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following input:
+# 
+# - the signature key MUST be the [signing key](../framework/structures.md#signing-key) in the [encryption materials](../framework/structures.md#encryption-materials)
+# - the input to sign MUST be the concatenation of the serialization of the [message header](../data-format/message-header.md) and [message body](../data-format/message-body.md)
+# 
+# Note that the message header and message body MAY have already been input during previous steps.
+# 
+# This operation MUST then serialize a message footer with the following specifics:
+# 
+# - [Signature Length](../data-format/message-footer.md#signature-length): MUST be the length of the
+#   output of the calculation above.
+# - [Signature](../data-format/message-footer.md#signature): MUST be the output of the calculation above.
+# 
+# The above serialized bytes MUST NOT be released until the entire message footer has been serialized.
+# Once the entire message footer has been serialized,
+# this operation MUST release any previously unreleased serialized bytes from previous steps
+# and MUST release the message footer.
+# 
+# The encrypted message output by this operation MUST have a message footer equal
+# to the message footer calculated in this step.
+
+[[spec]]
+level = "MUST"
+quote = '''
+If the [algorithm suite](../framework/algorithm-suites.md) contains a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
+this operation MUST calculate a signature over the message,
+and the output [encrypted message](#encrypted-message) MUST contain a [message footer](../data-format/message-footer.md).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+To calculate a signature, this operation MUST use the [signature algorithm](../framework/algorithm-suites.md#signature-algorithm)
+specified by the [algorithm suite](../framework/algorithm-suites.md), with the following input:
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- the signature key MUST be the [signing key](../framework/structures.md#signing-key) in the [encryption materials](../framework/structures.md#encryption-materials)
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- the input to sign MUST be the concatenation of the serialization of the [message header](../data-format/message-header.md) and [message body](../data-format/message-body.md)
+'''
+
+[[spec]]
+level = "MAY"
+quote = '''
+Note that the message header and message body MAY have already been input during previous steps.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+This operation MUST then serialize a message footer with the following specifics:
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Signature Length](../data-format/message-footer.md#signature-length): MUST be the length of the
+output of the calculation above.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Signature](../data-format/message-footer.md#signature): MUST be the output of the calculation above.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The above serialized bytes MUST NOT be released until the entire message footer has been serialized.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+Once the entire message footer has been serialized,
+this operation MUST release any previously unreleased serialized bytes from previous steps
+and MUST release the message footer.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The encrypted message output by this operation MUST have a message footer equal
+to the message footer calculated in this step.
+'''
+

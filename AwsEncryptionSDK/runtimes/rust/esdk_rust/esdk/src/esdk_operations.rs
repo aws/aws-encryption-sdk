@@ -7,12 +7,24 @@ use crate::error::Error;
 use crate::key_derivation;
 use crate::materials;
 use crate::message_body;
-use crate::serialize::header_types::ContentType;
+use crate::serialize::header_types::{ContentType, MessageId};
 use crate::serialize::serializable_types::{from_canonical_pairs, to_canonical_pairs};
 use crate::serialize::serialize_functions::write_seq_u16;
 use crate::serialize::*;
 use crate::types::*;
 use aws_mpl_legacy::primitives::*;
+//= specification/client-apis/client.md#commitment-policy
+//# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
+//= specification/client-apis/client.md#initialization
+//= type=implication
+//# If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
+//= specification/client-apis/client.md#initialization
+//= type=implication
+//# If no [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys) is provided
+//# the default MUST result in no limit on the number of encrypted data keys (aside from the limit imposed by the [message format](../format/message-header.md)).
+//= specification/client-apis/client.md#initialization
+//= type=implication
+//# Once a [commitment policy](#commitment-policy) has been set it SHOULD be immutable.
 use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -43,13 +55,10 @@ impl ProtectionNeeded {
 //     }
 // }
 
-/// Decrypt slice into Vec
-//= specification/client-apis/encrypt.md#plaintext
-//# The plaintext to encrypt.
-//# This MUST be a sequence of bytes.
+//= specification/client-apis/client.md#encrypt
+//# The AWS Encryption SDK Client MUST provide an [encrypt](./encrypt.md#input) function
+//# that adheres to [encrypt](./encrypt.md).
 pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
-    //= specification/client-apis/encrypt.md#input
-    //# The following inputs to this behavior are REQUIRED:
     input.validate()?;
 
     let mut cursor: std::io::Cursor<&[u8]> = std::io::Cursor::new(input.plaintext);
@@ -77,14 +86,18 @@ pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
     )
     .await?;
 
-    //= specification/client-apis/encrypt.md#output
-    //# This behavior MUST output the following if the behavior is successful:
-    //= specification/client-apis/encrypt.md#encrypted-message
-    //# This MUST be a sequence of bytes
-    //# and conform to the [message format specification](../data-format/message.md).
     Ok(EncryptOutput {
+        //= specification/client-apis/encrypt.md#output
+        //# - The output of the Encrypt operation MUST include an [encrypted message](#encrypted-message) value.
+        //= specification/client-apis/encrypt.md#encrypted-message
+        //# This MUST be a sequence of bytes
+        //# and conform to the [message format specification](../data-format/message.md).
         ciphertext,
+        //= specification/client-apis/encrypt.md#output
+        //# - The output of the Encrypt operation MUST include an [encryption context](#encryption-context) value.
         encryption_context: out.encryption_context,
+        //= specification/client-apis/encrypt.md#output
+        //# - The output of the Encrypt operation MUST include an [algorithm suite](#algorithm-suite) value.
         algorithm_suite_id: out.algorithm_suite_id,
     })
 }
@@ -111,9 +124,14 @@ pub async fn encrypt_stream(
     .await
 }
 
+/// Intermediate state produced by [step_get_encryption_materials] and consumed by subsequent steps.
+struct EncryptionMaterialsResult {
+    materials: aws_mpl_legacy::EncryptionMaterials,
+    derived_data_keys: key_derivation::ExpandedKeyMaterial,
+    message_id: MessageId,
+}
+
 #[expect(clippy::too_many_arguments)]
-//= specification/client-apis/encrypt.md#encryption-context
-//# See [encryption context](../framework/structures.md#encryption-context).
 async fn internal_encrypt(
     plaintext: &mut dyn SafeRead,
     ciphertext: &mut dyn SafeWrite,
@@ -122,24 +140,98 @@ async fn internal_encrypt(
     encryption_context: &EncryptionContext,
     algorithm_suite_id: Option<aws_mpl_legacy::suites::EsdkAlgorithmSuiteId>,
     frame_length: FrameLength,
+    //= specification/client-apis/client.md#initialization
+    //# - On client initialization,
+    //# the caller MUST have the option to provide a [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys).
     max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
+    //= specification/client-apis/client.md#initialization
+    //# - On client initialization,
+    //# the caller MUST have the option to provide a [commitment policy](#commitment-policy).
     commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<EncryptStreamOutput, Error> {
-    //= specification/client-apis/encrypt.md#behavior
-    //# This operation MUST perform all the above steps unless otherwise specified,
-    //# and it MUST perform them in the above order.
     //= specification/client-apis/encrypt.md#encryption-context
-    //# If the input encryption context contains any entries with a key beginning with this prefix,
+    //# If the input encryption context contains any entries with a key beginning with `aws-crypto-`,
     //# the encryption operation MUST fail.
     encrypt_decrypt::validate_encryption_context(encryption_context)?;
 
+    //= specification/client-apis/encrypt.md#behavior
+    //# If any of these steps fails, this operation MUST halt and indicate a failure to the caller.
+    // Step 1: Get the encryption materials
+    let mat_result = step_get_encryption_materials(
+        plaintext_len,
+        input_source,
+        encryption_context,
+        algorithm_suite_id,
+        max_encrypted_data_keys,
+        commitment_policy,
+    )
+    .await?;
+
+    // Step 2: Construct the header
+    let header = step_construct_header(
+        &mat_result,
+        &mat_result.materials.encryption_context,
+        &mat_result.materials.required_encryption_context_keys,
+        &mat_result.materials.encrypted_data_keys,
+        frame_length,
+    )?;
+
+    // Step 3: Construct the body
+    let mut dw = DigestWriter::from_old_ecdsa(mat_result.materials.algorithm_suite.signature)?;
+    step_construct_body(
+        plaintext,
+        &header,
+        &mat_result.derived_data_keys.data_key,
+        ciphertext,
+        &mut dw,
+    )?;
+
+    //= specification/client-apis/encrypt.md#behavior
+    //# - If the [encryption materials gathered](#get-the-encryption-materials) has a algorithm suite
+    //# including a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
+    //# the Encrypt operation MUST perform this step.
+    //= specification/client-apis/encrypt.md#behavior
+    //# If the materials do not have an algorithm suite including a signature algorithm,
+    //# the Encrypt operation MUST NOT construct a signature.
+    //= specification/client-apis/encrypt.md#behavior
+    //# Any data that is not specified within the [message format](../data-format/message.md)
+    //# MUST NOT be added to the output message.
+    // Step 4: Construct the signature (conditional on algorithm suite)
+    step_construct_signature(
+        &header,
+        &mat_result.materials,
+        dw,
+        ciphertext,
+    )?;
+
+    //= specification/client-apis/encrypt.md#output
+    //# - The output of the Encrypt operation MUST include an [encrypted message](#encrypted-message) value.
+    let suite_id = get_esdk_id(header.suite.id)?;
+    Ok(EncryptStreamOutput {
+        encryption_context: header.encryption_context,
+        algorithm_suite_id: suite_id,
+    })
+}
+
+/// Step 1: [Get the encryption materials](specification/client-apis/encrypt.md#get-the-encryption-materials)
+///
+/// Validates the input algorithm suite against the commitment policy, obtains encryption
+/// materials from the CMM, validates EDK count, generates a message ID, and derives keys.
+async fn step_get_encryption_materials(
+    plaintext_len: Option<usize>,
+    input_source: Option<MaterialSource>,
+    encryption_context: &EncryptionContext,
+    algorithm_suite_id: Option<aws_mpl_legacy::suites::EsdkAlgorithmSuiteId>,
+    max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
+    commitment_policy: EsdkCommitmentPolicy,
+) -> Result<EncryptionMaterialsResult, Error> {
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
     //# The CMM used MUST be the input CMM, if supplied.
     let cmm = materials::create_cmm_from_input(input_source).await?;
 
-    let algorithm_suite_id = algorithm_suite_id.map(aws_mpl_legacy::suites::AlgorithmSuiteId::Esdk);
     //= specification/client-apis/encrypt.md#algorithm-suite
-    //# The [algorithm suite](../framework/algorithm-suites.md) that SHOULD be used for encryption.
+    //# The [algorithm suite](../framework/algorithm-suites.md) that MUST be used for encryption.
+    let algorithm_suite_id = algorithm_suite_id.map(aws_mpl_legacy::suites::AlgorithmSuiteId::Esdk);
     if let Some(id) = algorithm_suite_id {
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
         //# If an [input algorithm suite](#algorithm-suite) is provided
@@ -173,49 +265,99 @@ async fn internal_encrypt(
     //# returned from the [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) call.
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
     //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys) on the [encryption materials](../framework/structures.md#encryption-materials)
-    //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
+    //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md)
     //# encrypt MUST yield an error.
     encrypt_decrypt::validate_max_encrypted_data_keys(
         max_encrypted_data_keys,
         &materials.encrypted_data_keys,
     )?;
 
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
+    //# encrypt MUST yield an error.
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //# If this [algorithm suite](../framework/algorithm-suites.md) is not supported by the [commitment policy](client.md#commitment-policy)
+    //# configured in the [client](client.md) encrypt MUST yield an error.
     let message_id = encrypt_decrypt::generate_message_id(&materials.algorithm_suite)?;
 
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //# The data key used as input for all encryption described below MUST be a data key derived from the plaintext data key
+    //# included in the [encryption materials](../framework/structures.md#encryption-materials).
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //# The algorithm used to derive a data key from the plaintext data key MUST be
+    //# the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
+    //# [algorithm suite](../framework/algorithm-suites.md) defined above.
     // TODO Post-#619: Remove Net v4.0.0 references
     let derived_data_keys = key_derivation::derive_keys(
         &message_id,
-        &materials.plaintext_data_key.unwrap().0, // TODO - can this be None?
+        &materials.plaintext_data_key.as_ref().unwrap().0, // TODO - can this be None?
         &materials.algorithm_suite,
         false,
     )?;
 
+    Ok(EncryptionMaterialsResult {
+        materials,
+        derived_data_keys,
+        message_id,
+    })
+}
+
+/// Step 2: [Construct the header](specification/client-apis/encrypt.md#construct-the-header)
+///
+/// Serializes the message header body and computes the header authentication tag.
+fn step_construct_header(
+    mat_result: &EncryptionMaterialsResult,
+    encryption_context: &EncryptionContext,
+    required_encryption_context_keys: &[String],
+    encrypted_data_keys: &[aws_mpl_legacy::EncryptedDataKey],
+    frame_length: FrameLength,
+) -> Result<header::HeaderInfo, Error> {
     //= specification/client-apis/encrypt.md#construct-the-header
     //# Before encrypting input plaintext,
     //# this operation MUST serialize the [message header body](../data-format/message-header.md).
-    let header = encrypt_decrypt::build_header_for_encrypt(
-        &message_id,
-        &materials.algorithm_suite,
-        &materials.encryption_context,
-        &materials.required_encryption_context_keys,
-        &materials.encrypted_data_keys,
+    encrypt_decrypt::build_header_for_encrypt(
+        &mat_result.message_id,
+        &mat_result.materials.algorithm_suite,
+        encryption_context,
+        required_encryption_context_keys,
+        encrypted_data_keys,
         frame_length.0.get(),
-        &derived_data_keys,
-    )?;
+        &mat_result.derived_data_keys,
+    )
+}
 
-    let mut dw = DigestWriter::from_old_ecdsa(materials.algorithm_suite.signature)?;
-
+/// Step 3: [Construct the body](specification/client-apis/encrypt.md#construct-the-body)
+///
+/// Encrypts the plaintext into framed message body and writes it to the output.
+fn step_construct_body(
+    plaintext: &mut dyn SafeRead,
+    header: &header::HeaderInfo,
+    data_key: &[u8],
+    ciphertext: &mut dyn SafeWrite,
+    dw: &mut DigestWriter,
+) -> Result<(), Error> {
     //= specification/client-apis/encrypt.md#construct-the-body
-    //# The encrypted message output by this operation MUST have a message body equal
+    //# The encrypted message output by the Encrypt operation MUST have a message body equal
     //# to the message body calculated in this step.
     encrypt_decrypt::encrypt_and_serialize(
         plaintext,
-        &header,
-        &derived_data_keys.data_key,
+        header,
+        data_key,
         ciphertext,
-        &mut dw,
-    )?;
-    let suite_id = get_esdk_id(header.suite.id)?;
+        dw,
+    )
+}
+
+/// Step 4: [Construct the signature](specification/client-apis/encrypt.md#construct-the-signature)
+///
+/// If the algorithm suite includes a signature algorithm, computes and serializes the
+/// message footer. Otherwise this is a no-op.
+fn step_construct_signature(
+    header: &header::HeaderInfo,
+    materials: &aws_mpl_legacy::EncryptionMaterials,
+    dw: DigestWriter,
+    ciphertext: &mut dyn SafeWrite,
+) -> Result<(), Error> {
     //= specification/client-apis/encrypt.md#construct-the-signature
     //# If the [algorithm suite](../framework/algorithm-suites.md) contains a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
     //# this operation MUST calculate a signature over the message,
@@ -225,11 +367,15 @@ async fn internal_encrypt(
         //= specification/client-apis/encrypt.md#construct-the-signature
         //# To calculate a signature, this operation MUST use the [signature algorithm](../framework/algorithm-suites.md#signature-algorithm)
         //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following input:
+        //= specification/client-apis/encrypt.md#construct-the-signature
+        //# - the signature key MUST be the [signing key](../framework/structures.md#signing-key) in the [encryption materials](../framework/structures.md#encryption-materials)
+        //= specification/client-apis/encrypt.md#construct-the-signature
+        //# - the input to sign MUST be the concatenation of the serialization of the [message header](../data-format/message-header.md) and [message body](../data-format/message-body.md)
         let bytes = ecdsa_sign_digest(
             ecdsa_params,
-            &materials.signing_key.unwrap().0,
+            &materials.signing_key.as_ref().unwrap().0,
             //= specification/data-format/message-footer.md#signature
-                //# This signature MUST be calculated over both the [message header](message-header.md) and the [message body](message-body.md),
+            //# This signature MUST be calculated over both the [message header](message-header.md) and the [message body](message-body.md),
             //# in the order of serialization.
             dw.context.unwrap(),
         )?;
@@ -253,13 +399,7 @@ async fn internal_encrypt(
         //# to the message footer calculated in this step.
         write_seq_u16(ciphertext, bytes.as_ref())?;
     }
-
-    //= specification/client-apis/encrypt.md#output
-    //# This behavior MUST output the following if the behavior is successful:
-    Ok(EncryptStreamOutput {
-        encryption_context: header.encryption_context,
-        algorithm_suite_id: suite_id,
-    })
+    Ok(())
 }
 
 //= specification/data-format/message-header.md#algorithm-suite-id
@@ -280,13 +420,11 @@ pub async fn decrypt_stream(
     input: &DecryptStreamInput,
 ) -> Result<DecryptStreamOutput, Error> {
     //= specification/client-apis/decrypt.md#input
-    //# The client MUST require the following as inputs to this operation:
-    //# - [Encrypted Message](#encrypted-message)
-    //# The client MUST require exactly one of the following types of inputs:
-    //# - [Cryptographic Materials Manager (CMM)](../framework/cmm-interface.md)
-    //# - [Keyring](../framework/keyring-interface.md)
-    //# The following inputs to this behavior MUST be OPTIONAL:
-    //# - [Encryption Context](#encryption-context)
+    //# - The input to the Decrypt operation MUST accept a required [Encrypted Message](#encrypted-message) argument.
+    //= specification/client-apis/decrypt.md#input
+    //# - The input to the Decrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
+    //= specification/client-apis/decrypt.md#input
+    //# - The input to the Encrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
     input.validate()?;
 
     internal_decrypt(
@@ -295,20 +433,23 @@ pub async fn decrypt_stream(
         input.source.clone(),
         &input.encryption_context,
         input.net_v4_retry_policy,
-        ProtectionNeeded::needs_protection(input.allow_unsafe_unauthenticated_plaintext_read),
+        ProtectionNeeded::needs_protection(input.i_accept_the_danger),
         input.max_encrypted_data_keys,
         input.commitment_policy,
     )
     .await
 }
 
+//= specification/client-apis/client.md#decrypt
+//# The AWS Encryption SDK Client MUST provide an [decrypt](./decrypt.md#input) function
+//# that adheres to [decrypt](./decrypt.md).
 /// Decrypt slice into Vec
 pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
     //= specification/client-apis/decrypt.md#behavior
     //# If the input encrypted message is not being [streamed](streaming.md) to this operation,
     //# all output MUST NOT be released until after these steps complete successfully.
     //= specification/client-apis/decrypt.md#input
-    //# The client MUST require the following as inputs to this operation:
+    //# - The input to the Decrypt operation MUST accept a required [Encrypted Message](#encrypted-message) argument.
     input.validate()?;
     let mut cursor: std::io::Cursor<&[u8]> = std::io::Cursor::new(input.ciphertext);
     let mut plaintext: Vec<u8> = Vec::with_capacity(input.ciphertext.len());
@@ -333,10 +474,11 @@ pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
     }
 
     //= specification/client-apis/decrypt.md#output
-    //# The client MUST return as output to this operation:
-    //# - [Plaintext](#plaintext)
-    //# - [Encryption Context](#encryption-context)
-    //# - [Algorithm Suite](#algorithm-suite)
+    //# - The output of the Decrypt operation MUST include a [Plaintext](#plaintext) value.
+    //= specification/client-apis/decrypt.md#output
+    //# - The output of the Decrypt operation MUST include an [encryption context](#encryption-context) value.
+    //= specification/client-apis/decrypt.md#output
+    //# - The output of the Decrypt operation MUST include an [algorithm suite](#algorithm-suite) value.
     Ok(DecryptOutput {
         plaintext,
         encryption_context: out.encryption_context,
@@ -344,8 +486,7 @@ pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
         //= specification/client-apis/decrypt.md#output
         //= type=exception
         //= reason=Parsed header is not spec'ed out; this is a SHOULD, not a MUST
-        //# The client SHOULD return as an output:
-        //# - [Parsed Header](#parsed-header)
+        //# - The output of the Decrypt operation SHOULD include a [Parsed Header](#parsed-header) value.
     })
 }
 
@@ -361,8 +502,7 @@ async fn internal_decrypt(
     commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<DecryptStreamOutput, Error> {
     //= specification/client-apis/decrypt.md#behavior
-    //# This operation MUST perform all the above steps unless otherwise specified,
-    //# and it MUST perform them in the above order.
+    //# - Decrypt operation Step 1 MUST be [Parse the header](#parse-the-header)
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# The CMM used MUST be the input CMM, if supplied.
     //# If a CMM is not supplied as the input, the decrypt operation MUST construct a [default CMM](../framework/default-cmm.md)
@@ -407,7 +547,7 @@ async fn internal_decrypt(
     .await?;
 
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
-    //# The algorithm suite used as input for all decryption described below is a algorithm suite
+    //# The algorithm suite used as input for all decryption described below MUST be the algorithm suite
     //# included in the [decryption materials](../framework/structures.md#decryption-materials).
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# The algorithm suite used to derive a data key from the plaintext data key MUST be
@@ -532,7 +672,7 @@ async fn internal_decrypt(
     };
 
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
-    //# The data key used as input for all decryption described below is a data key derived from the plaintext data key
+    //# The data key used as input for all decryption described below MUST be a data key derived from the plaintext data key
     //# included in the [decryption materials](../framework/structures.md#decryption-materials).
     let key = derived_data_keys.data_key;
 
@@ -540,8 +680,8 @@ async fn internal_decrypt(
     //# Once the message header is successfully parsed, the next sequential bytes
     //# MUST be deserialized according to the [message body spec](../data-format/message-body.md).
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
-    //# The [content type](../data-format/message-header.md#content-type) field parsed from the
-    //# message header above determines whether these bytes MUST be deserialized as
+    //# The Decrypt operation MUST use the [content type](../data-format/message-header.md#content-type) field parsed from the
+    //# message header to determine whether the operation will deserialize the message bytes as
     //# [framed data](../data-format/message-body.md#framed-data) or
     //# [un-framed data](../data-format/message-body.md#un-framed-data).
     let last_frame = match header.body.content_type() {
@@ -550,8 +690,8 @@ async fn internal_decrypt(
         )?,
         ContentType::Framed => {
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
-                //# Any plaintext decrypted from [unframed data](../data-format/message-body.md#un-framed-data) or
-            //# a final frame MUST NOT be released until [signature verification](#verify-the-signature)
+            //# Any plaintext decrypted from [unframed data](../data-format/message-body.md#un-framed-data) or
+            //# a final frame in a streamed Decrypt operation MUST NOT be released until [signature verification](#verify-the-signature)
             //# successfully completes.
             let fail_if_multi_frame = dec_mat.verification_key.is_some() && safety_needed.yes();
             message_body::read_and_decrypt_framed_message_body(
@@ -567,14 +707,14 @@ async fn internal_decrypt(
 
     //= specification/client-apis/decrypt.md#verify-the-signature
     //# If the algorithm suite has a signature algorithm,
-    //# this operation MUST verify the message footer using the specified signature algorithm.
+    //# the Decrypt operation MUST verify the message footer using the specified signature algorithm.
     //= specification/client-apis/decrypt.md#verify-the-signature
-    //# After deserializing the body, this operation MUST deserialize the next encrypted message bytes
+    //# After deserializing the body, the Decrypt operation MUST deserialize the next encrypted message bytes
     //# as the [message footer](../data-format/message-footer.md).
     if dec_mat.verification_key.is_some() {
         let mut noop = NoopWriter;
         //= specification/client-apis/decrypt.md#verify-the-signature
-        //# Once the message footer is deserialized, this operation MUST use the
+        //# Once the message footer is deserialized, the Decrypt operation MUST use the
         //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm)
         //# from the [algorithm suite](../framework/algorithm-suites.md) in the decryption materials to
         //# verify the encrypted message, with the following inputs:
@@ -584,14 +724,14 @@ async fn internal_decrypt(
     }
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //# Any plaintext decrypted from [unframed data](../data-format/message-body.md#un-framed-data) or
-    //# a final frame MUST NOT be released until [signature verification](#verify-the-signature)
+    //# a final frame in a streamed Decrypt operation MUST NOT be released until [signature verification](#verify-the-signature)
     //# successfully completes.
     // now that we have verified the signature, we can write the last frame of data
     serialize_functions::write_bytes(plaintext, &last_frame)?;
 
     encryption_context_to_only_authenticate.extend(header.encryption_context);
     //= specification/client-apis/decrypt.md#output
-    //# The client MUST return as output to this operation:
+    //# - The output of the Decrypt operation MUST include a [Plaintext](#plaintext) value.
     Ok(DecryptStreamOutput {
         encryption_context: encryption_context_to_only_authenticate,
         algorithm_suite_id: get_esdk_id(header.suite.id)?,

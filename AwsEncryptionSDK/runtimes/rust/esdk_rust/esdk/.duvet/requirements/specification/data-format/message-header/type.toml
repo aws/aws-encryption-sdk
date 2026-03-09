@@ -1,0 +1,13 @@
+target = "specification/data-format/message-header.md#type"
+
+# Type
+#
+# The type of the message format.
+# The type (hex) of this field MUST be a value that exists in the following table:
+
+[[spec]]
+level = "MUST"
+quote = '''
+The type (hex) of this field MUST be a value that exists in the following table:
+'''
+

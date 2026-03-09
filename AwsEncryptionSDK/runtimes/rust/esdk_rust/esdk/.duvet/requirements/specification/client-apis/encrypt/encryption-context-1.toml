@@ -1,0 +1,15 @@
+target = "specification/client-apis/encrypt.md#encryption-context-1"
+
+# Encryption Context
+#
+# The [encryption context](../framework/structures.md#encryption-context) that is used as
+# additional authenticated data during the encryption of the input [plaintext](#plaintext).
+# 
+# This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.
+
+[[spec]]
+level = "MAY"
+quote = '''
+This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.
+'''
+

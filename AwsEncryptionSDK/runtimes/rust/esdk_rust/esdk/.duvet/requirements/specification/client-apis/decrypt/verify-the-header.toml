@@ -1,0 +1,131 @@
+target = "specification/client-apis/decrypt.md#verify-the-header"
+
+# Verify the header
+#
+# Once a valid message header is deserialized and decryption materials are available,
+# this operation MUST validate the [message header body](../data-format/message-header.md#header-body)
+# by using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
+# to decrypt with the following inputs:
+# 
+# - The AAD MUST be the concatenation of the serialized [message header body](../data-format/message-header.md#header-body)
+#   and the serialization of encryption context to only authenticate.
+#   The encryption context to only authenticate MUST be the [encryption context](../framework/structures.md#encryption-context)
+#   in the [decryption materials](../framework/structures.md#decryption-materials)
+#   filtered to only contain key value pairs listed in
+#   the [decryption material's](../framework/structures.md#decryption-materials)
+#   [required encryption context keys](../framework/structures.md#required-encryption-context-keys-1)
+#   serialized according to the [encryption context serialization specification](../framework/structures.md#serialization).
+# - For message format version [1.0](../data-format/message-header.md#supported-versions)
+#   the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header#iv).
+#   For message format version [2.0](../data-format/message-header.md#supported-versions)
+#   the IV MUST be 0.
+# - the cipherkey MUST be the derived data key
+# - the ciphertext MUST be an empty byte array
+# - the tag MUST be the value serialized in the message header's
+#   [authentication tag field](../data-format/message-header.md#authentication-tag)
+# 
+# If this tag verification fails, this operation MUST immediately halt and fail.
+# 
+# If the input encrypted message is being [streamed](streaming.md) to this operation:
+# 
+# - A streamed Decrypt operation SHOULD release the parsed [encryption context](#encryption-context),
+#   [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id),
+#   and [other header information](#parsed-header)
+#   as soon as tag verification succeeds.
+#   However, if the streamed Decrypt operation is using an algorithm suite with a signature algorithm
+#   all released output MUST NOT be considered signed data until
+#   this operation successfully completes.
+#   See [security considerations](#security-considerations) below.
+# - The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
+#   such that the serialized frame isn't required to remain in memory to [verify the signature](#verify-the-signature).
+
+[[spec]]
+level = "MUST"
+quote = '''
+Once a valid message header is deserialized and decryption materials are available,
+this operation MUST validate the [message header body](../data-format/message-header.md#header-body)
+by using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
+to decrypt with the following inputs:
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The AAD MUST be the concatenation of the serialized [message header body](../data-format/message-header.md#header-body)
+and the serialization of encryption context to only authenticate.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The encryption context to only authenticate MUST be the [encryption context](../framework/structures.md#encryption-context)
+in the [decryption materials](../framework/structures.md#decryption-materials)
+filtered to only contain key value pairs listed in
+the [decryption material's](../framework/structures.md#decryption-materials)
+[required encryption context keys](../framework/structures.md#required-encryption-context-keys-1)
+serialized according to the [encryption context serialization specification](../framework/structures.md#serialization).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- For message format version [1.0](../data-format/message-header.md#supported-versions)
+the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header#iv).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+For message format version [2.0](../data-format/message-header.md#supported-versions)
+the IV MUST be 0.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- the cipherkey MUST be the derived data key
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- the ciphertext MUST be an empty byte array
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- the tag MUST be the value serialized in the message header's
+[authentication tag field](../data-format/message-header.md#authentication-tag)
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If this tag verification fails, this operation MUST immediately halt and fail.
+'''
+
+[[spec]]
+level = "SHOULD"
+quote = '''
+- A streamed Decrypt operation SHOULD release the parsed [encryption context](#encryption-context),
+[algorithm suite ID](../data-format/message-header.md#algorithm-suite-id),
+and [other header information](#parsed-header)
+as soon as tag verification succeeds.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+However, if the streamed Decrypt operation is using an algorithm suite with a signature algorithm
+all released output MUST NOT be considered signed data until
+this operation successfully completes.
+'''
+
+[[spec]]
+level = "SHOULD"
+quote = '''
+- The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
+such that the serialized frame isn't required to remain in memory to [verify the signature](#verify-the-signature).
+'''
+

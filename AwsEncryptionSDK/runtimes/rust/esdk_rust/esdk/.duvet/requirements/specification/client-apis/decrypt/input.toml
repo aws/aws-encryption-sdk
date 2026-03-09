@@ -1,0 +1,52 @@
+target = "specification/client-apis/decrypt.md#input"
+
+# Input
+#
+# Required arguments:
+# 
+# - The input to the Decrypt operation MUST accept a required [Encrypted Message](#encrypted-message) argument.
+# - The input to the Decrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
+#   The keyring and CMM inputs SHOULD be optional.
+#   The Decrypt operation MUST validate that exactly one keyring or CMM was provided by the caller.
+#   If the caller does not provide exactly one of a keyring or CMM, the Decrypt operation MUST fail.
+# 
+# Optional arguments:
+# 
+# - The input to the Encrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The input to the Decrypt operation MUST accept a required [Encrypted Message](#encrypted-message) argument.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The input to the Decrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
+'''
+
+[[spec]]
+level = "SHOULD"
+quote = '''
+The keyring and CMM inputs SHOULD be optional.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The Decrypt operation MUST validate that exactly one keyring or CMM was provided by the caller.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If the caller does not provide exactly one of a keyring or CMM, the Decrypt operation MUST fail.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The input to the Encrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
+'''
+

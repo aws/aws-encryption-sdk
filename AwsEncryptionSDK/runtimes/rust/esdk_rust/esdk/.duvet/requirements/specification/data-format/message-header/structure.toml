@@ -1,0 +1,19 @@
+target = "specification/data-format/message-header.md#structure"
+
+# Structure
+#
+# The message header is a sequence of bytes that MUST be in big-endian format.
+# The following table describes the fields that form the header.
+# The bytes are appended in the order shown.
+# 
+# | Field                                           | Length (bytes) | Interpreted as                                  |
+# | ----------------------------------------------- | -------------- | ----------------------------------------------- |
+# | [Header Body](#header-body)                     | Variable       | [Header Body](#header-body)                     |
+# | [Header Authentication](#header-authentication) | Variable       | [Header Authentication](#header-authentication) |
+
+[[spec]]
+level = "MUST"
+quote = '''
+The message header is a sequence of bytes that MUST be in big-endian format.
+'''
+

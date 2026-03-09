@@ -97,12 +97,12 @@ pub(crate) fn read_and_decrypt_framed_message_body(
 
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //# If deserializing [framed data](../data-format/message-body.md#framed-data),
-    //# this operation MUST use the first 4 bytes of a frame to determine if the frame
-    //# MUST be deserialized as a [final frame](../data-format/message-body.md#final-frame)
+    //# the Decrypt operation operation MUST use the first 4 bytes of a frame to determine
+    //# whether the operation will deserialize the frame as a [final frame](../data-format/message-body.md#final-frame)
     //# or [regular frame](../fata-format/message-body/md#regular-frame).
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //# If the first 4 bytes have a value of 0xFFFF,
-    //# then this MUST be deserialized as the [sequence number end](../data-format/message-header.md#sequence-number-end)
+    //# then the Decrypt operation MUST deserialize this as the [sequence number end](../data-format/message-header.md#sequence-number-end)
     //# and the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
     loop {
         let seq_num = read_u32(r, raw)?;
@@ -113,8 +113,8 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             }
             read_bytes(r, &mut iv, raw)?;
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
-                //# If deserializing a [final frame](../data-format/message-body.md#final-frame),
-            //# this operation MUST ensure that the length of the encrypted content field is
+            //# If deserializing a [final frame](../data-format/message-body.md#final-frame),
+            //# the Decrypt operation MUST ensure that the length of the encrypted content field is
             //# less than or equal to the frame length deserialized in the message header.
             read_seq_u32_bounded(
                 r,
@@ -132,10 +132,10 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 &mut aad,
             );
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
-                //# If this decryption fails, this operation MUST immediately halt and fail.
+            //# If this decryption fails, this operation MUST immediately halt and fail.
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
-                //# Once at least a single frame is deserialized (or the entire body in the un-framed case),
-            //# this operation MUST decrypt and authenticate the frame (or body) using the
+            //# Once at least a single frame is deserialized (or the entire body in the un-framed case),
+            //# the Decrypt operation MUST decrypt and authenticate the frame (or body) using the
             //# [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
             //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
             if enc_content.is_empty() {
@@ -152,12 +152,12 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 )?;
             } else {
                 //= specification/client-apis/decrypt.md#decrypt-the-message-body
-                //# Otherwise, this MUST be deserialized as the [sequence number](../data-format/message-header.md#sequence-number)
+                //# Otherwise, the Decrypt operation MUST deserialize this as the [sequence number](../data-format/message-header.md#sequence-number)
                 //# and the following bytes according to the [regular frame spec](../data-format/message-body.md#regular-frame).
                 // write previous frame's data, now that we know we have another frame.
                 if expected_frame != START_SEQUENCE_NUMBER {
                     if fail_if_multi_frame {
-                        return Err("Streaming Interface can return data before signature has been validated. Set `allow_unsafe_unauthenticated_plaintext_read` in the DecryptStreamInput struct if this is ok.".into());
+                        return Err("Streaming Interface can return data before signature has been validated. Set `allow_unsafe_unverified_signature` in the DecryptStreamInput struct if this is ok.".into());
                     }
                     serialize_functions::write_bytes(w, &result)?;
                 }
@@ -178,13 +178,13 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             return Err("Sequence number out of order.".into());
         }
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
-        //# - If this operation is using an algorithm suite with a signature algorithm,
+        //# - If the streamed Decrypt operation is using an algorithm suite with a signature algorithm,
         //# all plaintext decrypted from regular frames SHOULD be released as soon as the above calculation,
         //# including tag verification, succeeds.
         // write previous frame's data, now that we know we have another frame.
         if expected_frame != START_SEQUENCE_NUMBER {
             if fail_if_multi_frame {
-                return Err("Streaming Interface can return data before signature has been validated. Set `allow_unsafe_unauthenticated_plaintext_read` in the DecryptStreamInput struct if this is ok.".into());
+                return Err("Streaming Interface can return data before signature has been validated. Set `allow_unsafe_unverified_signature` in the DecryptStreamInput struct if this is ok.".into());
             }
             serialize_functions::write_bytes(w, &result)?;
         }
@@ -207,7 +207,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         );
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //# Once at least a single frame is deserialized (or the entire body in the un-framed case),
-        //# this operation MUST decrypt and authenticate the frame (or body) using the
+        //# the Decrypt operation MUST decrypt and authenticate the frame (or body) using the
         //# [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
         //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
         //= specification/client-apis/decrypt.md#decrypt-the-message-body

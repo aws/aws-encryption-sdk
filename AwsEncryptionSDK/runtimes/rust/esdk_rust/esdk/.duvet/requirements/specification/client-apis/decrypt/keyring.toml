@@ -1,0 +1,24 @@
+target = "specification/client-apis/decrypt.md#keyring"
+
+# Keyring
+#
+# A Keyring that implements the [keyring interface](../framework/keyring-interface.md).
+# 
+# If the Keyring is provided as the input, the client MUST construct a [default CMM](../framework/default-cmm.md) that uses this keyring,
+# to obtain the [decryption materials](../framework/structures.md#decryption-materials) that is required for decryption.
+# 
+# This default CMM MUST obtain the decryption materials required for decryption.
+
+[[spec]]
+level = "MUST"
+quote = '''
+If the Keyring is provided as the input, the client MUST construct a [default CMM](../framework/default-cmm.md) that uses this keyring,
+to obtain the [decryption materials](../framework/structures.md#decryption-materials) that is required for decryption.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+This default CMM MUST obtain the decryption materials required for decryption.
+'''
+

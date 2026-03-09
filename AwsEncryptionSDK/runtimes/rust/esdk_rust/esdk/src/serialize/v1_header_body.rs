@@ -20,7 +20,7 @@ pub(crate) fn write_v1_header_body(
     w: &mut dyn SafeWrite,
     body: &V1HeaderBody,
 ) -> Result<(), Error> {
-    //= specification/data-format/message-header.md#version-1
+    //= specification/data-format/message-header.md#version
     //# The version (hex) of this field MUST be a value that exists in the following table:
     //= specification/data-format/message-header.md#header-body-version-1-0
     //# The value of the `Version` field MUST be `01` in the Version 1.0 header body.

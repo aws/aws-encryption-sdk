@@ -34,4 +34,4 @@ source = "specification/client-apis/streaming.md"
 enabled = true
 
 [report.snapshot]
-enabled = false
+enabled = true

@@ -1,0 +1,14 @@
+target = "specification/data-format/message-header.md#key-value-pairs-length"
+
+# Key Value Pairs Length
+#
+# The length of the [Key Value Pairs](#key-value-pairs) field in bytes.
+# 
+# When the [encryption context](../framework/structures.md#encryption-context) is empty, the value of this field MUST be 0.
+
+[[spec]]
+level = "MUST"
+quote = '''
+When the [encryption context](../framework/structures.md#encryption-context) is empty, the value of this field MUST be 0.
+'''
+

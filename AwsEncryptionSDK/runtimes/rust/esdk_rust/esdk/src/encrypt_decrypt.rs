@@ -109,7 +109,7 @@ pub(crate) fn encrypt_and_serialize(
             //# of the plaintext being encrypted in this frame.
 
             //= specification/data-format/message-body-aad.md#content-length
-                //# - For [regular frames](message-body.md#regular-frame), this value MUST equal the value of
+            //# - For [regular frames](message-body.md#regular-frame), this value MUST equal the value of
             //# the [frame length](message-header.md#frame-length) field in the message header.
             frame_length as u64,
             &mut aad,
@@ -262,10 +262,7 @@ pub(crate) fn verify_signature(
 }
 
 //= specification/client-apis/encrypt.md#encryption-context
-//# If the input encryption context contains any entries with a key beginning with this prefix,
-//# the encryption operation MUST fail.
-//= specification/client-apis/encrypt.md#encryption-context
-//# If the input encryption context contains any entries with a key beginning with this prefix,
+//# If the input encryption context contains any entries with a key beginning with `aws-crypto-`,
 //# the encryption operation MUST fail.
 pub(crate) fn validate_encryption_context(ec: &EncryptionContext) -> Result<(), Error> {
     for key in ec.keys() {
@@ -306,7 +303,7 @@ pub(crate) fn validate_max_encrypted_data_keys(
 //# implementations MUST use a good source of randomness when generating messages IDs in order to make
 //# the chance of duplicate IDs negligible.
 
-//= specification/client-apis/encrypt.md#construct-the-header
+//= specification/client-apis/encrypt.md#v2-header
 //# - [Message ID](../data-format/message-header.md#message-id): The process used to generate
 //# this identifier MUST use a good source of randomness to make the chance of duplicate identifiers negligible.
 pub(crate) fn generate_message_id(suite: &AlgorithmSuite) -> Result<MessageId, Error> {
@@ -331,7 +328,7 @@ pub(crate) fn build_header_for_encrypt(
 ) -> Result<HeaderInfo, Error> {
     let mut stored_encryption_context = encryption_context.clone();
     let mut required_encryption_context_map: EncryptionContext = EncryptionContext::new();
-    //= specification/client-apis/encrypt.md#construct-the-header
+    //= specification/client-apis/encrypt.md#v2-header
     //# - [AAD](../data-format/message-header.md#aad): MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
     //# in the [encryption materials](../framework/structures.md#encryption-materials),
     //# and this serialization MUST NOT contain any key value pairs listed in
@@ -356,7 +353,7 @@ pub(crate) fn build_header_for_encrypt(
 
     let canonical_req_encryption_context = to_canonical_pairs(required_encryption_context_map);
     let mut serialized_req_encryption_context = Vec::new();
-    //= specification/client-apis/encrypt.md#construct-the-header
+    //= specification/client-apis/encrypt.md#authentication-tag
     //# The encryption context to only authenticate MUST be the [encryption context](../framework/structures.md#encryption-context)
     //# in the [encryption materials](../framework/structures.md#encryption-materials)
     //# filtered to only contain key value pairs listed in
@@ -373,13 +370,13 @@ pub(crate) fn build_header_for_encrypt(
     //# Before encrypting input plaintext,
     //# this operation MUST serialize the [message header body](../data-format/message-header.md).
     //= specification/client-apis/encrypt.md#construct-the-header
-    //# The [message format version](../data-format/message-header.md#supported-versions) MUST be associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites).
-    //= specification/client-apis/encrypt.md#construct-the-header
-    //# The encrypted message output by this operation MUST have a message header equal
+    //# The [message format version](../data-format/message-header.md#supported-versions) MUST be the value associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites).
+    //= specification/client-apis/encrypt.md#authentication-tag
+    //# The encrypted message output by the Encrypt operation MUST have a message header equal
     //# to the message header calculated in this step.
     write_header_body(&mut raw_header, &body)?;
 
-    //= specification/client-apis/encrypt.md#construct-the-header
+    //= specification/client-apis/encrypt.md#authentication-tag
     //# After serializing the message header body,
     //# this operation MUST calculate an [authentication tag](../data-format/message-header.md#authentication-tag)
     //# over the message header body.
@@ -408,7 +405,7 @@ pub(crate) fn build_header_body(
     suite_data: Option<Vec<u8>>,
 ) -> Result<HeaderBody, Error> {
     //= specification/client-apis/encrypt.md#construct-the-header
-    //# The [message format version](../data-format/message-header.md#supported-versions) MUST be associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites).
+    //# The [message format version](../data-format/message-header.md#supported-versions) MUST be the value associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites).
     match suite.commitment {
         aws_mpl_legacy::suites::DerivationAlgorithm::Hkdf(h) => {
             if suite_data.is_none()
@@ -417,21 +414,21 @@ pub(crate) fn build_header_body(
                 return Err("Validation Error 1".into());
             }
 
-            //= specification/client-apis/encrypt.md#construct-the-header
+            //= specification/client-apis/encrypt.md#v2-header
             //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0
             //# then the [message header body](../data-format/message-header.md#header-body-version-1-0) MUST be serialized with the following specifics:
-            //= specification/client-apis/encrypt.md#construct-the-header
+            //= specification/client-apis/encrypt.md#v2-header
             //# - [Version](../data-format/message-header.md#version-1): MUST have a value corresponding to
             //# [2.0](../data-format/message-header.md#supported-versions)
-            //= specification/client-apis/encrypt.md#construct-the-header
+            //= specification/client-apis/encrypt.md#v2-header
             //# - [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data): MUST be the value of the [commit key](../framework/algorithm-suites.md#commit-key)
             //# derived according to the [algorithm suites commit key derivation settings](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
             Ok(HeaderBody::V2Body(V2HeaderBody {
-                //= specification/client-apis/encrypt.md#construct-the-header
+                //= specification/client-apis/encrypt.md#v2-header
                 //# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST correspond to
                 //# the [algorithm suite](../framework/algorithm-suites.md) used in this behavior
                 algorithm_suite: suite.clone(),
-                //= specification/client-apis/encrypt.md#construct-the-header
+                //= specification/client-apis/encrypt.md#v2-header
                 //# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-key-entries): MUST be the serialization of the
                 //# [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials)
                 message_id: message_id.clone(),
@@ -439,45 +436,54 @@ pub(crate) fn build_header_body(
                 encrypted_data_keys: encrypted_data_keys.into(),
                 //= specification/client-apis/encrypt.md#un-framed-message-body-encryption
                 //# Implementations of the AWS Encryption SDK MUST NOT encrypt using the Non-Framed content type.
-                //= specification/client-apis/encrypt.md#construct-the-header
+                //= specification/client-apis/encrypt.md#v2-header
                 //# - [Content Type](../data-format/message-header.md#content-type): MUST be [02](../data-format/message-header.md#supported-content-types)
                 content_type: ContentType::Framed,
-                //= specification/client-apis/encrypt.md#construct-the-header
+                //= specification/client-apis/encrypt.md#v2-header
                 //# - [Frame Length](../data-format/message-header.md#frame-length): MUST be the value of the frame size determined above.
                 frame_length,
                 suite_data: suite_data.unwrap(),
             }))
         }
         aws_mpl_legacy::suites::DerivationAlgorithm::Identity => Err("Validation Error 2".into()),
-        //= specification/client-apis/encrypt.md#construct-the-header
+        //= specification/client-apis/encrypt.md#v1-header
         //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
         //# then the [message header body](../data-format/message-header.md#header-body-version-1-0) MUST be serialized with the following specifics:
         _ => Ok(HeaderBody::V1Body(V1HeaderBody {
-            //= specification/client-apis/encrypt.md#construct-the-header
+            //= specification/client-apis/encrypt.md#v1-header
             //# - [Type](../data-format/message-header.md#type): MUST have a value corresponding to
             //# [Customer Authenticated Encrypted Data](../data-format/message-header.md#supported-types)
             message_type: MessageType::TypeCustomerAed,
-            //= specification/client-apis/encrypt.md#construct-the-header
+            //= specification/client-apis/encrypt.md#v1-header
             //# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST correspond to
             //# the [algorithm suite](../framework/algorithm-suites.md) used in this behavior
             algorithm_suite: suite.clone(),
-            //= specification/client-apis/encrypt.md#construct-the-header
+            //= specification/client-apis/encrypt.md#v1-header
             //# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-key-entries): MUST be the serialization of the
             //# [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials)
+            //= specification/client-apis/encrypt.md#v1-header
+            //# - [Message ID](../data-format/message-header.md#message-id): The process used to generate
+            //# this identifier MUST use a good source of randomness to make the chance of duplicate identifiers negligible.
             message_id: message_id.clone(),
+            //= specification/client-apis/encrypt.md#v1-header
+            //# - [AAD](../data-format/message-header.md#aad): MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
+            //# in the [encryption materials](../framework/structures.md#encryption-materials),
+            //# and this serialization MUST NOT contain any key value pairs listed in
+            //# the [encryption material's](../framework/structures.md#encryption-materials)
+            //# [required encryption context keys](../framework/structures.md#required-encryption-context-keys).
             encryption_context: encryption_context.clone(),
             encrypted_data_keys: encrypted_data_keys.into(),
-            //= specification/client-apis/encrypt.md#construct-the-header
+            //= specification/client-apis/encrypt.md#v1-header
             //# - [Content Type](../data-format/message-header.md#content-type): MUST be [02](../data-format/message-header.md#supported-content-types)
             content_type: ContentType::Framed,
-            //= specification/client-apis/encrypt.md#construct-the-header
+            //= specification/client-apis/encrypt.md#v1-header
             //# - [IV Length](../data-format/message-header.md#iv-length): MUST match the [IV length](../framework/algorithm-suites.md#iv-length)
             //# specified by the [algorithm suite](../framework/algorithm-suites.md)
             header_iv_length: u64::from(get_iv_length(suite)),
-            //= specification/client-apis/encrypt.md#construct-the-header
+            //= specification/client-apis/encrypt.md#v1-header
             //# - [Version](../data-format/message-header.md#version-1): MUST have a value corresponding to
             //# [1.0](../data-format/message-header.md#supported-versions)
-            //= specification/client-apis/encrypt.md#construct-the-header
+            //= specification/client-apis/encrypt.md#v1-header
             //# - [Frame Length](../data-format/message-header.md#frame-length): MUST be the value of the frame size determined above.
             frame_length,
         })),
@@ -495,14 +501,20 @@ pub(crate) fn build_header_auth_tag(
         return Err("Incorrect data key length".into());
     }
 
-    //= specification/client-apis/encrypt.md#construct-the-header
+    //= specification/client-apis/encrypt.md#authentication-tag
     //# The value of this MUST be the output of the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
+    //= specification/client-apis/encrypt.md#authentication-tag
+    //# - The IV MUST have a value of 0.
     let iv = vec![0; get_iv_length(suite) as usize];
     let mut auth_tag = Vec::new();
-    //= specification/client-apis/encrypt.md#construct-the-header
+    //= specification/client-apis/encrypt.md#authentication-tag
     //# - The AAD MUST be the concatenation of the serialized [message header body](../data-format/message-header.md#header-body)
     //# and the serialization of encryption context to only authenticate.
+    //= specification/client-apis/encrypt.md#authentication-tag
+    //# - The cipherkey MUST be the derived data key
+    //= specification/client-apis/encrypt.md#authentication-tag
+    //# - The plaintext MUST be an empty byte array
     aes_encrypt(
         get_encrypt(suite),
         &iv,

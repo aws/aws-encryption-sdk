@@ -1,0 +1,16 @@
+target = "specification/client-apis/encrypt.md#plaintext-length-bound"
+
+# Plaintext Length Bound
+#
+# A bound on the length of [plaintext](#plaintext) with an unknown length to encrypt.
+# 
+# If this input is provided, this operation MUST NOT encrypt a plaintext with length
+# greater than this value.
+
+[[spec]]
+level = "MUST"
+quote = '''
+If this input is provided, this operation MUST NOT encrypt a plaintext with length
+greater than this value.
+'''
+

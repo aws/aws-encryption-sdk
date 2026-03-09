@@ -1,0 +1,62 @@
+target = "specification/client-apis/decrypt.md#parse-the-header"
+
+# Parse the header
+#
+# Given encrypted message bytes, this operation MUST process those bytes sequentially,
+# deserializing those bytes according to the [message format](../data-format/message.md).
+# 
+# This operation MUST attempt to deserialize all consumable encrypted message bytes until it has
+# successfully deserialized a valid [message header](../data-format/message-header.md).
+# 
+# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
+# deserialized from the [message header](../data-format/message-header.md)
+# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
+# then as soon as that can be determined during deserializing
+# decrypt MUST process no more bytes and yield an error.
+# 
+# This operation MUST wait if it doesn't have enough consumable encrypted message bytes to
+# deserialize the next field of the message header until enough input bytes become consumable or
+# the caller indicates an end to the encrypted message.
+# 
+# Until the [header is verified](#verify-the-header), this operation MUST NOT
+# release any parsed information from the header.
+
+[[spec]]
+level = "MUST"
+quote = '''
+Given encrypted message bytes, this operation MUST process those bytes sequentially,
+deserializing those bytes according to the [message format](../data-format/message.md).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+This operation MUST attempt to deserialize all consumable encrypted message bytes until it has
+successfully deserialized a valid [message header](../data-format/message-header.md).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
+deserialized from the [message header](../data-format/message-header.md)
+is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
+then as soon as that can be determined during deserializing
+decrypt MUST process no more bytes and yield an error.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+This operation MUST wait if it doesn't have enough consumable encrypted message bytes to
+deserialize the next field of the message header until enough input bytes become consumable or
+the caller indicates an end to the encrypted message.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+Until the [header is verified](#verify-the-header), this operation MUST NOT
+release any parsed information from the header.
+'''
+

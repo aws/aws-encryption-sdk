@@ -1,0 +1,13 @@
+target = "specification/data-format/message-header.md#content-type"
+
+# Content Type
+#
+# The content type of the [message body](message-body.md).
+# The value (hex) of this field MUST be a value that exists in the following table:
+
+[[spec]]
+level = "MUST"
+quote = '''
+The value (hex) of this field MUST be a value that exists in the following table:
+'''
+

@@ -1,0 +1,34 @@
+target = "specification/client-apis/streaming.md#inputs"
+
+# Inputs
+#
+# In order to support streaming, the operation MUST accept some input within a streaming framework.
+# 
+# This means that:
+# 
+# - There MUST be a mechanism for input bytes to become consumable.
+# - There MUST be a mechanism to indicate that there are no more input bytes.
+# 
+# These mechanisms are used to allow the operation to process input bytes in parts, over time.
+# 
+# The bytes that represent the entire input to the operation are the bytes that the customer intended
+# to be processed.
+
+[[spec]]
+level = "MUST"
+quote = '''
+In order to support streaming, the operation MUST accept some input within a streaming framework.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- There MUST be a mechanism for input bytes to become consumable.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- There MUST be a mechanism to indicate that there are no more input bytes.
+'''
+

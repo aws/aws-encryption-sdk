@@ -1,0 +1,31 @@
+target = "specification/data-format/message-body.md#regular-frame"
+
+# Regular Frame
+#
+# All frames except the [Final Frame](#final-frame) are "Regular Frames".
+# 
+# The following table is a non-normative representation of the normative requirements in this section.
+# 
+# | Field                                     | Length (bytes)                                                                                               | Interpreted as |
+# | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------- |
+# | [Sequence Number](#sequence-number)       | 4                                                                                                            | UInt32         |
+# | [IV](#iv)                                 | [IV Length](message-header.md#iv-length)                                                                     | Bytes          |
+# | [Encrypted Content](#encrypted-content)   | Variable                                                                                                     | Bytes          |
+# | [Authentication Tag](#authentication-tag) | Algorithm suite ID's [Authentication Tag Length](../framework/algorithm-suites.md#authentication-tag-length) | Bytes          |
+# 
+# A regular frame MUST be serialized as, in order,
+# Sequence Number,
+# IV,
+# Encrypted Content,
+# and Authentication Tag.
+
+[[spec]]
+level = "MUST"
+quote = '''
+A regular frame MUST be serialized as, in order,
+Sequence Number,
+IV,
+Encrypted Content,
+and Authentication Tag.
+'''
+
