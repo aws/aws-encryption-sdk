@@ -1,160 +1,66 @@
-// No specific requirement here, too general to annotate
-//= compliance/client-apis/decrypt.txt#2.3
+// Streaming not supported
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#encrypted-message
 //= type=exception
-//# Any client provided by the AWS Encryption SDK that performs
-//# decryption of encrypted messages MUST follow this specification for
-//# decryption.
+//# This input MAY be [streamed](streaming.md) to this operation.
 
 // Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.5.1
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#encrypted-message
 //= type=implication
-//# If an implementation requires holding the entire encrypted message in
-//# memory in order to perform this operation, that implementation SHOULD
-//# NOT provide an API that allows the caller to stream the encrypted
-//# message.
+//# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
+//# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
 
 // Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.5.1
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#plaintext
 //= type=exception
-//# This input MAY be streamed (streaming.md) to this operation.
+//# This operation MAY [stream](streaming.md) the plaintext as output.
 
 // Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.6.1
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#plaintext
 //= type=implication
-//# If an implementation requires holding the entire encrypted message in
-//# memory in order to perform this operation, that implementation SHOULD
-//# NOT provide an API that allows the caller to stream the encrypted
-//# message.
+//# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
+//# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
 
 // Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.6.1
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#behavior
 //= type=exception
-//# This operation MAY stream (streaming.md) the plaintext as output.
+//# - Output MUST NOT be released until otherwise indicated.
 
 // Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.7
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#behavior
 //= type=exception
-//# If the input encrypted message is being streamed (streaming.md) to
-//# this operation:
-//# *  Output MUST NOT be released until otherwise indicated.
-//# *  If all bytes have been provided and this operation is unable to
-//# complete the above steps with the consumable encrypted message
-//# bytes, this operation MUST halt and indicate a failure to the
-//# caller.
-//# *  If this operation successfully completes the above steps but there
-//# are consumable bytes which are intended to be decrypted, this
-//# operation MUST fail.
-//# *  The ESDK MUST provide a configuration option that causes the
-//# decryption operation to fail immediately after parsing the header
-//# if a signed algorithm suite is used.
+//# - If all bytes have been provided and this operation
+//# is unable to complete the above steps with the consumable encrypted message bytes,
+//# this operation MUST halt and indicate a failure to the caller.
 
 // Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.7.3
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#behavior
 //= type=exception
-//# *  This operation SHOULD release the parsed encryption context
-//# (Section 2.6.2), algorithm suite ID (../data-format/message-
-//# header.md#algorithm-suite-id), and other header information
-//# (Section 2.6.4) as soon as tag verification succeeds.
+//# - If this operation successfully completes the above steps
+//# but there are consumable bytes which are intended to be decrypted,
+//# this operation MUST fail.
 
 // Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.7.3
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#behavior
 //= type=exception
-//# However, if
-//# this operation is using an algorithm suite with a signature
-//# algorithm all released output MUST NOT be considered signed data
-//# until this operation successfully completes.
+//# - The ESDK MUST provide a configuration option that causes the decryption operation
+//# to fail immediately after parsing the header if a signed algorithm suite is used.
 
-// Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.7.3
+// Streaming not supported - we release everything at once
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#security-considerations
 //= type=exception
-//# *  This operation SHOULD input the serialized header to the signature
-//# algorithm as soon as it is deserialized, such that the serialized
-//# frame isn't required to remain in memory to verify the signature
-//# (Section 2.7.5).
-
-// Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.7.4
-//= type=exception
-//# While there MAY still be message body left to deserialize and
-//# decrypt, this operation MUST either wait for more of the encrypted
-//# message bytes to become consumable, wait for the end to the encrypted
-//# message to be indicated, or to deserialize and/or decrypt the
-//# consumable bytes.
-
-// Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.7.4
-//= type=exception
-//# *  If this operation is using an algorithm suite without a signature
-//# algorithm, plaintext SHOULD be released as soon as the above
-//# calculation, including tag verification, succeeds.
-
-// Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.7.4
-//= type=exception
-//# *  If this operation is using an algorithm suite with a signature
-//# algorithm, all plaintext decrypted from regular frames SHOULD be
-//# released as soon as the above calculation, including tag
-//# verification, succeeds.
-
-// Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.7.4
-//= type=exception
-//# Any plaintext decrypted from unframed
-//# data (../data-format/message-body.md#un-framed-data) or a final
-//# frame MUST NOT be released until signature verification
-//# (Section 2.7.5) successfully completes.
-
-
-// Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.7.4
-//= type=exception
-//# *  This operation SHOULD input the serialized frame to the signature
-//# algorithm as soon as it is deserialized, such that the serialized
-//# frame isn't required to remain in memory to complete the signature
-//# verification (Section 2.7.5).
-
-// Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.7.5
-//= type=exception
-//# If there are not enough consumable bytes to deserialize the message
-//# footer and the caller has not yet indicated an end to the encrypted
-//# message, this operation MUST wait for enough bytes to become
-//# consumable or for the caller to indicate an end to the encrypted
-//# message.
-
-// Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.7.5
-//= type=exception
-//# Note that the message header and message body MAY have already been
-//# input during previous steps.
-
-// Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.8
-//= type=exception
-//# If this operation is streaming (streaming.md) output to the caller
-//# and is decrypting messages created with an algorithm suite including
-//# a signature algorithm, any released plaintext MUST NOT be considered
-//# signed data until this operation finishes successfully.
-
-// Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.8
-//= type=exception
-//# This means that callers that process such released plaintext MUST NOT
-//# consider any processing successful until this operation completes
+//# If this operation is [streaming](streaming.md) output to the caller
+//# and is decrypting messages created with an algorithm suite including a signature algorithm,
+//# any released plaintext MUST NOT be considered signed data until this operation finishes
 //# successfully.
 
 // Streaming not supported
-//= compliance/client-apis/decrypt.txt#2.8
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#security-considerations
 //= type=exception
-//# Additionally, if this operation fails, callers MUST
-//# discard the released plaintext and encryption context and MUST
-//# rollback any processing done due to the released plaintext or
-//# encryption context.
+//# This means that callers that process such released plaintext MUST NOT consider any processing successful
+//# until this operation completes successfully.
 
-// No specific requirement here, too general to annotate
-//= compliance/client-apis/decrypt.txt#2.7
+// Streaming not supported
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#security-considerations
 //= type=exception
-//# This operation MUST perform all the above steps unless otherwise
-//# specified, and it MUST perform them in the above order.
-
-//
+//# Additionally, if this operation fails, callers MUST discard the released plaintext and encryption context
+//# and MUST rollback any processing done due to the released plaintext or encryption context.

@@ -1,185 +1,116 @@
-// No specific requirement here, too general to annotate
-//= compliance/client-apis/encrypt.txt#2.3
+// Streaming not supported
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#plaintext
 //= type=exception
-//# Any client provided by the AWS Encryption SDK that performs
-//# encryption of caller plaintext MUST follow this specification for
-//# encryption.
+//# This input MAY be [streamed](streaming.md) to this operation.
 
 // Streaming not supported
-//= compliance/client-apis/encrypt.txt#2.4.1
-//= type=exception
-//# This input MAY be streamed (streaming.md) to this operation.
-
-// Streaming not supported
-//= compliance/client-apis/encrypt.txt#2.4.1
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#plaintext
 //= type=implication
-//# If an implementation requires holding the input entire plaintext in
-//# memory in order to perform this operation, that implementation SHOULD
-//# NOT provide an API that allows this input to be streamed.
+//# If an implementation requires holding the input entire plaintext in memory in order to perform this operation,
+//# that implementation SHOULD NOT provide an API that allows this input to be streamed.
 
-// We are not returning parsed header until we decide how to model
-// it in Smithy
-//= compliance/client-apis/encrypt.txt#2.5
+// We are not returning parsed header
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#output
 //= type=exception
-//# The client SHOULD return as an output:
-//*  Parsed Header (Section 2.5.4)
+//# - The output of the Encrypt operation SHOULD include a [Parsed Header](#parsed-header) value.
 
 // Streaming not supported
-//= compliance/client-apis/encrypt.txt#2.5.1
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#encrypted-message
 //= type=exception
-//# This operation MAY stream (streaming.md) the encrypted message.
-
-// For now we do require holding the entire plaintext in memory and do
-// not implement streaming
-//= compliance/client-apis/encrypt.txt#2.5.1
-//= type=implication
-//# If an implementation requires holding the entire input plaintext in
-//# memory in order to perform this operation, that implementation SHOULD
-//# NOT provide an API that allows this output to be streamed.
+//# This operation MAY [stream](streaming.md) the encrypted message.
 
 // No parsed headers on return for now
-//= compliance/client-apis/encrypt.txt#2.5.2
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#encryption-context-1
 //= type=exception
-//# This output MAY be satisfied by outputting a parsed header
-//# (Section 2.5.4) containing this value.
+//# This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.
 
-// No parsed headers on return for now
-//= compliance/client-apis/encrypt.txt#2.5.3
+// Only relevant for cases where plaintext length is not known,
+// i.e. streaming, which we do not support
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#input
 //= type=exception
-//# This output MAY be satisfied by outputting a parsed header
-//# (Section 2.5.4) containing this value.
+//# Implementations SHOULD ensure that a caller is not able to specify both a [plaintext](#plaintext)
+//# with known length and a [Plaintext Length Bound](#plaintext-length-bound) by construction.
 
-// Not specific enough to annotate code with
-//= compliance/client-apis/encrypt.txt#2.6.1
+// Only relevant for cases where plaintext length is not known,
+// i.e. streaming, which we do not support
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#input
 //= type=exception
-//# To construct the encrypted message (Section 2.5.1), some fields MUST
-//# be constructed using information obtained from a set of valid
-//# encryption materials (../framework/structures.md#encryption-
-//# materials).
+//# If a caller is able to specify both an input [plaintext](#plaintext) with known length and
+//# a [Plaintext Length Bound](#plaintext-length-bound),
+//# the [Plaintext Length Bound](#plaintext-length-bound) MUST NOT be used during the Encrypt operation
+//# and MUST be ignored.
 
-// No specific action to take. Other annotations describe
-// what we should do in this case
-//= compliance/client-apis/encrypt.txt#2.6.1
+// Only relevant for cases where plaintext length is not known,
+// i.e. streaming, which we do not support
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#input
 //= type=exception
-//# Note that the
-//# algorithm suite in the retrieved encryption materials MAY be
-//# different from the input algorithm suite (Section 2.4.5).
+//# If the [plaintext](#plaintext) is of unknown length, the caller MAY also input a
+//# [Plaintext Length Bound](#plaintext-length-bound).
+
+// Only relevant for cases where plaintext length is not known,
+// i.e. streaming, which we do not support
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#plaintext-length-bound
+//= type=exception
+//# If this input is provided, this operation MUST NOT encrypt a plaintext with length
+//# greater than this value.
+
+// Too broad to add as a single annotation
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#behavior
+//= type=exception
+//# If any of these steps fails, this operation MUST halt and indicate a failure to the caller.
+
+// Only relevant for cases where plaintext length is not known,
+// i.e. streaming, which we do not support
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-the-body
+//= type=exception
+//# If [Plaintext Length Bound](#plaintext-length-bound) was specified on input
+//# and this operation determines at any time that the plaintext being encrypted
+//# has a length greater than this value,
+//# this operation MUST immediately fail.
 
 // Streaming not supported
-//= compliance/client-apis/encrypt.txt#2.6.2
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#authentication-tag
 //= type=exception
-//# If the algorithm suite contains a signature algorithm and this
-//# operation is streaming (streaming.md) the encrypted message output to
-//# the caller, this operation MUST input the serialized header to the
-//# signature algorithm as soon as it is serialized, such that the
-//# serialized header isn't required to remain in memory to construct the
-//# signature (Section 2.7.2).
+//# If this operation is streaming the encrypted message and
+//# the entire message header has been serialized,
+//# the serialized message header MUST be released.
 
 // Streaming not supported
-//= compliance/client-apis/encrypt.txt#2.7.1
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#authentication-tag
 //= type=exception
-//# If this operation is streaming the
-//# encrypted message and the entire frame has been serialized, the
-//# serialized frame SHOULD be released.
+//# If the algorithm suite contains a signature algorithm and
+//# this operation is [streaming](streaming.md) the encrypted message output to the caller,
+//# this operation MUST input the serialized header to the signature algorithm as soon as it is serialized,
+//# such that the serialized header isn't required to remain in memory to [construct the signature](#construct-the-signature).
+
+// Streaming not supported
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-a-frame
+//= type=exception
+//# If this operation is streaming the encrypted message and
+//# the entire frame has been serialized,
+//# the serialized frame MUST be released.
+
+// Streaming not supported
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-a-frame
+//= type=exception
+//# If the algorithm suite contains a signature algorithm and
+//# this operation is [streaming](streaming.md) the encrypted message output to the caller,
+//# this operation MUST input the serialized frame to the signature algorithm as soon as it is serialized,
+//# such that the serialized frame isn't required to remain in memory to [construct the signature](#construct-the-signature).
 
 // Not relevant for us
-//= compliance/client-apis/encrypt.txt#2.7.2
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-the-signature
 //= type=exception
-//# Note that the message header and message body MAY have already been
-//# input during previous steps.
-
-// Too general, no one place to put this
-//= compliance/client-apis/encrypt.txt#2.7
-//= type=exception
-//# The encrypted message output by this operation MUST have a message
-//# body equal to the message body calculated in this step.
-
-// Not relevant, we only release everything at once
-//= compliance/client-apis/encrypt.txt#2.7.1
-//= type=exception
-//# The above serialized bytes MUST NOT be released until the entire
-//# frame has been serialized.
-
-// Streaming not supported
-//= compliance/client-apis/encrypt.txt#2.7.1
-//= type=exception
-//# If the algorithm suite contains a signature algorithm and this
-//# operation is streaming (streaming.md) the encrypted message output to
-//# the caller, this operation MUST input the serialized frame to the
-//# signature algorithm as soon as it is serialized, such that the
-//# serialized frame isn't required to remain in memory to construct the
-//# signature (Section 2.7.2).
-
-// This is a duplicate
-//= compliance/client-apis/encrypt.txt#2.7.1
-//= type=exception
-//# o  For a regular frame the length of this plaintext MUST equal
-//# the frame length.
-
-// Only relevant for cases where plaintext length is not known,
-// i.e. streaming, which we do not support
-//= compliance/client-apis/encrypt.txt#2.4
-//= type=exception
-//# Implementations SHOULD ensure that a caller is not able to specify
-//# both a plaintext (Section 2.4.1) with known length and a Plaintext
-//# Length Bound (Section 2.4.7) by construction.
-
-// Only relevant for cases where plaintext length is not known,
-// i.e. streaming, which we do not support
-//= compliance/client-apis/encrypt.txt#2.4
-//= type=exception
-//# If a caller is able to
-//# specify both an input plaintext (Section 2.4.1) with known length and
-//# a Plaintext Length Bound (Section 2.4.7), the Plaintext Length Bound
-//# (Section 2.4.7) MUST NOT be used during the Encrypt operation and
-//# MUST be ignored.
-
-// Only relevant for cases where plaintext length is not known,
-// i.e. streaming, which we do not support
-//= compliance/client-apis/encrypt.txt#2.4
-//= type=exception
-//# If the plaintext (Section 2.4.1) is of unknown length, the caller MAY
-//# also input a Plaintext Length Bound (Section 2.4.7).
-
-// Only relevant for cases where plaintext length is not known,
-// i.e. streaming, which we do not support
-//= compliance/client-apis/encrypt.txt#2.4.7
-//= type=exception
-//# If this input is provided, this operation MUST NOT encrypt a
-//# plaintext with length greater than this value.
-
-// Too broad to add as a single annotation
-//= compliance/client-apis/encrypt.txt#2.6
-//= type=exception
-//# This operation MUST perform all the above steps unless otherwise
-//# specified, and it MUST perform them in the above order.
-
-// Too broad to add as a single annotation
-//= compliance/client-apis/encrypt.txt#2.6
-//= type=exception
-//# If any of these steps fails, this operation MUST halt and indicate a
-//# failure to the caller.
-
-// Only relevant for cases where plaintext length is not known,
-// i.e. streaming, which we do not support
-//= compliance/client-apis/encrypt.txt#2.7
-//= type=exception
-//# If Plaintext Length Bound (Section 2.4.7) was specified on input and
-//# this operation determines at any time that the plaintext being
-//# encrypted has a length greater than this value, this operation MUST
-//# immediately fail.
+//# Note that the message header and message body MAY have already been input during previous steps.
 
 // No streaming; all bytes are released at once once complete
-//= compliance/client-apis/encrypt.txt#2.7.2
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-the-signature
 //= type=exception
-//# The above serialized bytes MUST NOT be released until the entire
-//# message footer has been serialized.
+//# The above serialized bytes MUST NOT be released until the entire message footer has been serialized.
 
 // No streaming; all bytes are released at once once complete
-//= compliance/client-apis/encrypt.txt#2.7.2
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-the-signature
 //= type=exception
-//# Once the entire message footer
-//# has been serialized, this operation MUST release any previously
-//# unreleased serialized bytes from previous steps and MUST release the
-//# message footer.
-
+//# Once the entire message footer has been serialized,
+//# this operation MUST release any previously unreleased serialized bytes from previous steps
+//# and MUST release the message footer.

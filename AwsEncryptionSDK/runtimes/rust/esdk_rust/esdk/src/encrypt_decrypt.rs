@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use super::*;
-use crate::message_body::*;
-use crate::serialize::encryption_context::*;
-use crate::serialize::header::*;
-use crate::serialize::header_auth::*;
-use crate::serialize::header_types::*;
-use crate::serialize::serializable_types::*;
-use crate::serialize::serialize_functions::*;
-use crate::serialize::v2_header_body::get_hkdf;
-use crate::serialize::*;
+use crate::message::body::*;
+use crate::message::encryption_context::*;
+use crate::message::header::*;
+use crate::message::header_auth::*;
+use crate::message::header_types::*;
+use crate::message::serializable_types::*;
+use crate::message::serialize_functions::*;
+use crate::message::v2_header_body::get_hkdf;
+use crate::message::*;
 use aws_mpl_legacy::EncryptedDataKey;
 use aws_mpl_legacy::suites::AlgorithmSuite;
 
@@ -244,7 +244,7 @@ pub(crate) fn verify_signature(
         return Ok(());
     }
 
-    let signature = read_seq_u16(r, raw)?;
+    let signature = footer::read_footer(r, raw)?;
     let ecdsa_params = get_ecdsa_alg(dec_mat.algorithm_suite.signature)?;
     //= specification/client-apis/decrypt.md#verify-the-signature
     //# If this verification is not successful, this operation MUST immediately halt and fail.

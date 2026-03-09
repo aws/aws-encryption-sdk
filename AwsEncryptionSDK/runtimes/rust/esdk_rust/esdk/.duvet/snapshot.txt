@@ -1,3 +1,7 @@
+SPECIFICATION: [Message Body](/Users/lucmcdon/workplace/aws-encryption-sdk/AwsEncryptionSDK/../specification/data-format/message-body.md)
+  SECTION: [Framed Data](#framed-data)
+    TEXT[implication]: - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
+
 SPECIFICATION: [Client](specification/client-apis/client.md)
   SECTION: [Initialization](#initialization)
     TEXT[!MUST,implementation]: - On client initialization,
@@ -750,6 +754,9 @@ SPECIFICATION: [Footer Structure](specification/data-format/message-footer.md)
   SECTION: [Overview](#overview)
     TEXT[!MUST]: When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
     TEXT[!MUST]: the [message](message.md) MUST contain a footer.
+
+  SECTION: [Structure](#structure)
+    TEXT[implementation]: The following describes the fields that form the footer.
 
   SECTION: [Signature](#signature)
     TEXT[!MUST,implementation]: This signature MUST be calculated over both the [message header](message-header.md) and the [message body](message-body.md),

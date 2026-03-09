@@ -14,8 +14,8 @@ duvet: | duvet_extract duvet_report
 duvet_extract:
 	rm -rf compliance
 	$(foreach file, $(shell find aws-encryption-sdk-specification/framework -name '*.md'), duvet extract -o compliance -f MARKDOWN $(file);)
-	# $(foreach file, $(shell find aws-encryption-sdk-specification/client-apis -name '*.md'), duvet extract -o compliance -f MARKDOWN $(file);)
-	# $(foreach file, $(shell find aws-encryption-sdk-specification/data-format -name '*.md'), duvet extract -o compliance -f MARKDOWN $(file);)
+	$(foreach file, $(shell find aws-encryption-sdk-specification/client-apis -name '*.md'), duvet extract -o compliance -f MARKDOWN $(file);)
+	$(foreach file, $(shell find aws-encryption-sdk-specification/data-format -name '*.md'), duvet extract -o compliance -f MARKDOWN $(file);)
 
 # TODO add these arguments to duvet_report as the work completes
 #		--ci \
@@ -30,6 +30,10 @@ duvet_report:
 		--source-pattern "AwsCryptographicMaterialProviders/dafny/**/Model/**/*.smithy" \
 		--source-pattern "AwsCryptographicMaterialProviders/compliance_exceptions/**/*.txt" \
 		--source-pattern "(# //=,# //#).github/workflows/duvet.yaml" \
+		--source-pattern "AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/**/*.rs" \
+		--source-pattern "AwsEncryptionSDK/runtimes/rust/esdk_rust/aws-esdk-cxx/**/*.rs" \
+		--source-pattern "AwsEncryptionSDK/runtimes/rust/esdk_rust/prim/**/*.rs" \
+		--source-pattern "compliance_exceptions/**/*.txt" \
 		--html specification_compliance_report.html
 
 setup_semantic_release:

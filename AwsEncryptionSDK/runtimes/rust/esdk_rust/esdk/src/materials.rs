@@ -1,6 +1,6 @@
-// use crate::serialize::header::*;
-use crate::serialize::header_types::*;
-use crate::serialize::serializable_types::*;
+// use crate::message::header::*;
+use crate::message::header_types::*;
+use crate::message::serializable_types::*;
 use crate::*;
 use aws_mpl_legacy::DecryptionMaterials;
 use aws_mpl_legacy::EncryptionMaterials;

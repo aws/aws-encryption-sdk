@@ -78,8 +78,10 @@
 
 mod error;
 pub use error::*;
-mod esdk_operations;
-pub use esdk_operations::*;
+mod encrypt;
+pub use encrypt::*;
+mod decrypt;
+pub use decrypt::*;
 #[cfg(feature = "test_vectors")]
 #[cfg_attr(docsrs, doc(cfg(feature = "test_vectors")))]
 /// test vectors
@@ -90,5 +92,4 @@ pub use types::*;
 pub(crate) mod encrypt_decrypt;
 pub(crate) mod key_derivation;
 pub(crate) mod materials;
-pub(crate) mod message_body;
-pub(crate) mod serialize;
+pub(crate) mod message;

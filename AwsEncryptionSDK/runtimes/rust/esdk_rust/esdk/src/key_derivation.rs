@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use super::*;
-use crate::serialize::header_types::*;
-use crate::serialize::serializable_types::*;
+use crate::message::header_types::*;
+use crate::message::serializable_types::*;
 use aws_mpl_legacy::suites::AlgorithmSuite;
 use aws_mpl_legacy::suites::DerivationAlgorithm;
 

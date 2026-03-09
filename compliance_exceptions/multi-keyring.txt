@@ -1,8 +1,7 @@
-//= compliance/framework/multi-keyring.txt#2.8
+//= aws-encryption-sdk-specification/framework/multi-keyring.md#security-considerations
 //= type=exception
-//# Users SHOULD examine the keyrings (keyring-interface.md) they include
-//# in a multi-keyring to ensure that they understand what set of
-//# keyrings will be capable of obtaining the plaintext data key from the
-//# returned set of encrypted data keys.
+//# Users SHOULD examine the [keyrings](keyring-interface.md) they include in a multi-keyring to ensure
+//# that they understand what set of keyrings will be capable of obtaining the plaintext data key from
+//# the returned set of encrypted data keys.
 // This is targeted at how customers use the keyring; we cannot provide
 // any enforcement here.
