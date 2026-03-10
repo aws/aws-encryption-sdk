@@ -1,7 +1,7 @@
 To publish a new version of the aws-esdk for version N.N.N
 
 1. Acquire the appropriate AWS permissions to run the tests
-1. Ensure that `dafny --version` refers to the appropropriate version for Rust
+1. Ensure that `dafny --version` refers to the appropriate version for Rust
 1. Ensure git checkout of main is fresh and clean
 1. ./start_release.sh N.N.N
 1. `cd ../../../releases/rust/esdk`
