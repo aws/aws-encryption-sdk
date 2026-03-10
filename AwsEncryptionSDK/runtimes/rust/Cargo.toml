@@ -28,7 +28,7 @@ cpu-time = "1.0.0"
 dafny_runtime = { path = "../../../mpl/smithy-dafny/TestModels/dafny-dependencies/dafny_runtime_rust", features = ["sync","small-int"]}
 dashmap = "6.1.0"
 pem = "3.0.6"
-rand = "0.9.2"
+rand = "0.10.0"
 tokio = {version = "1.49.0", features = ["full"] }
 uuid = { version = "1.19.0", features = ["v4"] }
 
