@@ -1,6 +1,6 @@
 [package]
 name = "aws-esdk"
-version = "1.2.2"
+version = "1.2.3"
 edition = "2021"
 keywords = ["cryptography", "security", "dynamodb", "encryption", "client-side"]
 license = "ISC AND (Apache-2.0 OR ISC)"
