@@ -56,6 +56,9 @@ impl Eq for MaterialSource {}
 pub struct FrameLength(pub std::num::NonZeroU32);
 
 impl Default for FrameLength {
+    //= specification/client-apis/encrypt.md#frame-length
+    //= type=implication
+    //# This value MUST default to 4096 bytes.
     fn default() -> Self {
         Self(std::num::NonZeroU32::new(4096).unwrap())
     }
@@ -63,6 +66,9 @@ impl Default for FrameLength {
 
 impl FrameLength {
     /// return new `FrameLength`.
+    //= specification/client-apis/encrypt.md#frame-length
+    //= type=implication
+    //# This value MUST be greater than 0 and MUST NOT exceed the value 2^32 - 1.
     pub fn new(val: u32) -> Result<Self, Error> {
         Ok(Self(
             std::num::NonZeroU32::new(val)
@@ -179,6 +185,21 @@ impl ::std::fmt::Display for NetV400RetryPolicy {
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
 #[non_exhaustive]
 /// Input for [`encrypt`](crate::encrypt).
+//= specification/client-apis/encrypt.md#input
+//= type=implication
+//# - The input to the Encrypt operation MUST accept a required [plaintext](#plaintext) argument.
+//= specification/client-apis/encrypt.md#input
+//= type=implication
+//# - The input to the Encrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
+//= specification/client-apis/encrypt.md#input
+//= type=implication
+//# - The input to the Encrypt operation MUST accept an optional [Algorithm Suite](#algorithm-suite) argument.
+//= specification/client-apis/encrypt.md#input
+//= type=implication
+//# - The input to the Encrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
+//= specification/client-apis/encrypt.md#input
+//= type=implication
+//# - The input to the Encrypt operation MUST accept an optional [Frame Length](#frame-length) argument.
 pub struct EncryptInput<'a> {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
     pub algorithm_suite_id: Option<EsdkAlgorithmSuiteId>,
@@ -189,6 +210,10 @@ pub struct EncryptInput<'a> {
     /// The source of cryptographic materials
     pub source: Option<MaterialSource>,
     /// data to be encrypted
+    //= specification/client-apis/encrypt.md#plaintext
+    //= type=implication
+    //# The plaintext to encrypt.
+    //# This MUST be a sequence of bytes.
     pub plaintext: &'a [u8],
     /// default is no limit
     pub max_encrypted_data_keys: Option<NonZeroUsize>,
@@ -254,6 +279,10 @@ impl<'a> EncryptInput<'a> {
             ..Default::default()
         }
     }
+    //= specification/client-apis/encrypt.md#input
+    //# The Encrypt operation MUST validate that exactly one keyring or CMM was provided by the caller.
+    //= specification/client-apis/encrypt.md#input
+    //# If the caller does not provide exactly one of a keyring or CMM, the Encrypt operation MUST fail.
     pub(crate) fn validate(&self) -> Result<(), Error> {
         if self.source.is_none() {
             Err(val_err("A Materials Source must be provided."))
@@ -342,8 +371,18 @@ impl EncryptStreamInput {
     reason = "Remove when we add with_cmm and with_keyring"
 )]
 /// Input for [`decrypt`](crate::decrypt).
+//= specification/client-apis/decrypt.md#input
+//= type=implication
+//# - The input to the Decrypt operation MUST accept a required [Encrypted Message](#encrypted-message) argument.
+//= specification/client-apis/decrypt.md#input
+//= type=implication
+//# - The input to the Decrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
 pub struct DecryptInput<'a> {
     /// data to be decrypted
+    //= specification/client-apis/decrypt.md#encrypted-message
+    //= type=implication
+    //# The input encrypted message MUST be a sequence of bytes in the
+    //# [message format](../data-format/message.md) specified by the AWS Encryption SDK.
     pub ciphertext: &'a [u8],
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,

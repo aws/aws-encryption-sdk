@@ -3,6 +3,32 @@
 
 // Decrypt operation — maps to client-apis/decrypt.md
 
+//= specification/client-apis/decrypt.md#overview
+//= type=implication
+//# Any client provided by the AWS Encryption SDK that performs decryption of encrypted messages MUST follow
+//# this specification for decryption.
+
+//= specification/client-apis/decrypt.md#authenticated-data
+//= type=implication
+//# This operation MUST NOT release any unauthenticated plaintext or unauthenticated associated data.
+
+//= specification/client-apis/decrypt.md#security-considerations
+//= type=implication
+//# If this operation is [streaming](streaming.md) output to the caller
+//# and is decrypting messages created with an algorithm suite including a signature algorithm,
+//# any released plaintext MUST NOT be considered signed data until this operation finishes
+//# successfully.
+
+//= specification/client-apis/decrypt.md#security-considerations
+//= type=implication
+//# This means that callers that process such released plaintext MUST NOT consider any processing successful
+//# until this operation completes successfully.
+
+//= specification/client-apis/decrypt.md#security-considerations
+//= type=implication
+//# Additionally, if this operation fails, callers MUST discard the released plaintext and encryption context
+//# and MUST rollback any processing done due to the released plaintext or encryption context.
+
 use crate::encrypt::get_esdk_id;
 use crate::encrypt_decrypt;
 use crate::error::Error;
@@ -60,6 +86,8 @@ pub async fn decrypt_stream(
     //# - The input to the Decrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
     //= specification/client-apis/decrypt.md#input
     //# - The input to the Encrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
+    //= specification/client-apis/decrypt.md#input
+    //# The Decrypt operation MUST validate that exactly one keyring or CMM was provided by the caller.
     input.validate()?;
 
     internal_decrypt(
@@ -114,6 +142,8 @@ pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
     //# - The output of the Decrypt operation MUST include an [encryption context](#encryption-context) value.
     //= specification/client-apis/decrypt.md#output
     //# - The output of the Decrypt operation MUST include an [algorithm suite](#algorithm-suite) value.
+    //= specification/client-apis/decrypt.md#algorithm-suite
+    //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
     Ok(DecryptOutput {
         plaintext,
         encryption_context: out.encryption_context,
@@ -155,6 +185,8 @@ async fn internal_decrypt(
     //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
     //# then as soon as that can be determined during deserializing
     //# decrypt MUST process no more bytes and yield an error.
+    //= specification/client-apis/decrypt.md#behavior
+    //# - Decrypt operation Step 2 MUST be [Get the decryption materials](#get-the-decryption-materials)
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# If the parsed [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
     //# is not supported by the [commitment policy](client.md#commitment-policy)
@@ -169,9 +201,23 @@ async fn internal_decrypt(
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
     //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
+    //= specification/client-apis/decrypt.md#cryptographic-materials-manager
+    //# This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# The call to the CMM's [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) operation
     //# MUST be constructed as follows:
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //# - Encryption Context: This MUST be the parsed [encryption context](../data-format/message-header.md#aad)
+    //# from the message header.
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //# - Algorithm Suite ID: This MUST be the parsed
+    //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
+    //# from the message header.
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header#encrypted-data-keys)
+    //# from the message header.
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
     let dec_mat = materials::get_decryption_materials(
         cmm,
         header_body.algorithm_suite().id,
@@ -191,6 +237,9 @@ async fn internal_decrypt(
     //# the returned decryption materials.
     let suite = &dec_mat.algorithm_suite;
 
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //# If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
+    //# configured in the [client](client.md) decrypt MUST yield an error.
     if suite != header_body.algorithm_suite() {
         return Err(
             "Stored header algorithm suite does not match decryption algorithm suite.".into(),
@@ -201,6 +250,9 @@ async fn internal_decrypt(
 
     let header_auth = header_auth::read_header_auth_tag(ciphertext, suite, &mut dw)?;
 
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //# If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
+    //# then the derived data key MUST be the same as the plaintext data key.
     let derived_data_keys = key_derivation::derive_keys(
         header_body.message_id(),
         dec_mat.plaintext_data_key.as_ref().unwrap().as_bytes(),
@@ -227,6 +279,8 @@ async fn internal_decrypt(
 
     let header_encryption_context = from_canonical_pairs(header_body.encryption_context().clone());
 
+    //= specification/client-apis/decrypt.md#behavior
+    //# - Decrypt operation Step 3 MUST be [Verify the header](#verify-the-header)
     //= specification/client-apis/decrypt.md#verify-the-header
     //# The encryption context to only authenticate MUST be the [encryption context](../framework/structures.md#encryption-context)
     //# in the [decryption materials](../framework/structures.md#decryption-materials)
@@ -253,6 +307,19 @@ async fn internal_decrypt(
     //# this operation MUST validate the [message header body](../data-format/message-header.md#header-body)
     //# by using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# to decrypt with the following inputs:
+    //= specification/client-apis/decrypt.md#verify-the-header
+    //# - the cipherkey MUST be the derived data key
+    //= specification/client-apis/decrypt.md#verify-the-header
+    //# - the ciphertext MUST be an empty byte array
+    //= specification/client-apis/decrypt.md#verify-the-header
+    //# - the tag MUST be the value serialized in the message header's
+    //# [authentication tag field](../data-format/message-header.md#authentication-tag)
+    //= specification/client-apis/decrypt.md#verify-the-header
+    //# - For message format version [1.0](../data-format/message-header.md#supported-versions)
+    //# the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header#iv).
+    //= specification/client-apis/decrypt.md#verify-the-header
+    //# For message format version [2.0](../data-format/message-header.md#supported-versions)
+    //# the IV MUST be 0.
     let mut maybe_header_auth = aes_decrypt(
         body::get_encrypt(suite),
         &derived_data_keys.data_key,
@@ -303,6 +370,8 @@ async fn internal_decrypt(
     //# included in the [decryption materials](../framework/structures.md#decryption-materials).
     let key = derived_data_keys.data_key;
 
+    //= specification/client-apis/decrypt.md#behavior
+    //# - Decrypt operation Step 4 MUST be [Decrypt the message body](#decrypt-the-message-body)
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //# Once the message header is successfully parsed, the next sequential bytes
     //# MUST be deserialized according to the [message body spec](../data-format/message-body.md).
@@ -332,6 +401,12 @@ async fn internal_decrypt(
         }
     };
 
+    //= specification/client-apis/decrypt.md#behavior
+    //# - Decrypt operation Step 5 MUST be [Verify the signature](#verify-the-signature)
+    //= specification/client-apis/decrypt.md#behavior
+    //# - If the message header contains an algorithm suite including a
+    //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
+    //# the Decrypt operation MUST perform this step.
     //= specification/client-apis/decrypt.md#verify-the-signature
     //# If the algorithm suite has a signature algorithm,
     //# the Decrypt operation MUST verify the message footer using the specified signature algorithm.
@@ -345,6 +420,12 @@ async fn internal_decrypt(
         //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm)
         //# from the [algorithm suite](../framework/algorithm-suites.md) in the decryption materials to
         //# verify the encrypted message, with the following inputs:
+        //= specification/client-apis/decrypt.md#verify-the-signature
+        //# - The verification key MUST be the [verification key](../framework/structures.md#verification-key)
+        //# in the decryption materials.
+        //= specification/client-apis/decrypt.md#verify-the-signature
+        //# - The input to verify MUST be the concatenation of the serialization of the
+        //# [message header](../data-format/message-header.md) and [message body](../data-format/message-body.md).
         //= specification/client-apis/decrypt.md#verify-the-signature
         //# If this verification is not successful, this operation MUST immediately halt and fail.
         encrypt_decrypt::verify_signature(ciphertext, dw.context.unwrap(), dec_mat, &mut noop)?;

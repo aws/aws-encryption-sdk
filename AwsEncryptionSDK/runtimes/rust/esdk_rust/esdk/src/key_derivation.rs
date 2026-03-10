@@ -67,11 +67,21 @@ pub(crate) fn derive_key(
         plaintext_data_key.len()
     ));
 
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //# The algorithm used to derive a data key from the plaintext data key MUST be
+    //# the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
+    //# [algorithm suite](../framework/algorithm-suites.md) defined above.
     match &suite.kdf {
+        //= specification/client-apis/encrypt.md#get-the-encryption-materials
+        //# - If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
+        //# then the derived data key MUST be the same as the plaintext data key.
         DerivationAlgorithm::Identity => Ok(ExpandedKeyMaterial {
             data_key: plaintext_data_key.to_vec(),
             commitment_key: None,
         }),
+        //= specification/client-apis/encrypt.md#get-the-encryption-materials
+        //# - If the key derivation algorithm is [HKDF](../framework/algorithm-suites.md#hkdf),
+        //# the derivation process used MUST be the process described in [HKDF Encryption Key](../transitive-requirements.md#hkdf-encryption-key).
         DerivationAlgorithm::Hkdf(hkdf) => {
             let alg = hkdf.hmac;
             let salt = vec![0u8; digest_length(alg)?];

@@ -1,6 +1,9 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+//! Message body serialization/deserialization.
+//! Maps to data-format/message-body.md
+
 use super::header::{ENDFRAME_SEQUENCE_NUMBER, HeaderInfo, START_SEQUENCE_NUMBER};
 use super::serializable_types::*;
 use super::serialize_functions::{read_bytes, read_seq_u32_bounded, read_u32};
@@ -28,18 +31,6 @@ const fn body_aad_content_type_string(bc: BodyAADContent) -> &'static str {
     }
 }
 
-//= specification/data-format/message-body.md#iv
-//# The IV MUST be a unique IV within the message.
-// This is true because the sequence number is unique within a message.
-
-//= specification/data-format/message-body.md#iv-1
-//# Each frame in the [Framed Data](#framed-data) MUST include an IV that is unique within the message.
-
-//= specification/data-format/message-body.md#iv-2
-//# The IV MUST be a unique IV within the message.
-
-//= specification/data-format/message-body.md#iv-2
-//# The IV length MUST be equal to the IV length of the [algorithm suite](../framework/algorithm-suites.md) that generated the message.
 pub(crate) fn iv_seq(sequence_number: u32, result: &mut [u8]) {
     let pivot = result.len() - 4;
     result[pivot..].copy_from_slice(&sequence_number.to_be_bytes());
@@ -53,7 +44,7 @@ pub(crate) fn get_encrypt(info: &AlgorithmSuite) -> AesGcm {
 }
 
 /*
- * Serializes the Message Body ADD
+ * Serializes the Message Body AAD
  */
 
 pub(crate) fn body_aad(
@@ -63,15 +54,13 @@ pub(crate) fn body_aad(
     length: u64,
     result: &mut Vec<u8>,
 ) {
+    // Callers are responsible for passing the correct sequence_number and length
+    // per the body-aad spec. See call sites in encrypt_decrypt.rs for the
+    // annotations that document which values satisfy which requirements.
     result.clear();
     result.extend_from_slice(message_id);
     result.extend_from_slice(body_aad_content_type_string(bc).as_bytes());
-    //= specification/data-format/message-body-aad.md#sequence-number
-    //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#sequence-number).
     result.extend_from_slice(&sequence_number.to_be_bytes());
-    //= specification/data-format/message-body-aad.md#content-length
-    //# - For [framed data](message-body.md#framed-data), this value MUST equal the length, in bytes,
-    //# of the plaintext being encrypted in this frame.
     result.extend_from_slice(&length.to_be_bytes());
 }
 
@@ -86,7 +75,14 @@ pub(crate) fn read_and_decrypt_framed_message_body(
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //# If this is framed data and the first frame sequentially, this value MUST be 1.
     let mut expected_frame: u32 = START_SEQUENCE_NUMBER;
+    //= specification/data-format/message-body.md#regular-frame-iv
+    //= type=implication
+    //# The IV length MUST be equal to the IV length of the algorithm suite specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
     let mut iv = vec![0u8; get_iv_length(&header.suite) as usize];
+    //= specification/data-format/message-body.md#regular-frame-authentication-tag
+    //= type=implication
+    //# The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
+    //# specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
     let mut auth_tag = vec![0u8; get_tag_length(&header.suite) as usize];
     let alg = get_encrypt(&header.suite);
     let frame_length_u64 = u64::from(header.body.frame_length());
@@ -100,22 +96,54 @@ pub(crate) fn read_and_decrypt_framed_message_body(
     //# the Decrypt operation operation MUST use the first 4 bytes of a frame to determine
     //# whether the operation will deserialize the frame as a [final frame](../data-format/message-body.md#final-frame)
     //# or [regular frame](../fata-format/message-body/md#regular-frame).
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
-    //# If the first 4 bytes have a value of 0xFFFF,
-    //# then the Decrypt operation MUST deserialize this as the [sequence number end](../data-format/message-header.md#sequence-number-end)
-    //# and the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
     loop {
+        //= specification/data-format/message-body.md#regular-frame-sequence-number
+        //= type=implication
+        //# The length of the serialized sequence number MUST be 4 bytes.
+        //= specification/data-format/message-body.md#regular-frame-sequence-number
+        //= type=implication
+        //# The sequence number MUST be interpreted as a UInt32.
+        //= specification/data-format/message-body.md#sequence-number-end
+        //= type=implication
+        //# The length of the serialized sequence number end MUST be 4 bytes.
+        //= specification/data-format/message-body.md#sequence-number-end
+        //= type=implication
+        //# The sequence number end MUST be interpreted as bytes.
         let seq_num = read_u32(r, raw)?;
+        //= specification/client-apis/decrypt.md#decrypt-the-message-body
+        //# If the first 4 bytes have a value of 0xFFFF,
+        //# then the Decrypt operation MUST deserialize this as the [sequence number end](../data-format/message-header.md#sequence-number-end)
+        //# and the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
         if seq_num == ENDFRAME_SEQUENCE_NUMBER {
+            //= specification/data-format/message-body.md#final-frame-sequence-number
+            //= type=implication
+            //# The length of the serialized sequence number MUST be 4 bytes.
+            //= specification/data-format/message-body.md#final-frame-sequence-number
+            //= type=implication
+            //# The sequence number MUST be interpreted as a UInt32.
             let seq_num: u32 = read_u32(r, raw)?;
             if seq_num != expected_frame {
                 return Err("Final sequence number out of order.".into());
             }
+            //= specification/data-format/message-body.md#final-frame-iv
+            //= type=implication
+            //# The IV length MUST be equal to the IV length of the [algorithm suite](../framework/algorithm-suites.md) that generated the message.
+            //= specification/data-format/message-body.md#final-frame-iv
+            //= type=implication
+            //# The IV MUST be interpreted as bytes.
             read_bytes(r, &mut iv, raw)?;
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //# If deserializing a [final frame](../data-format/message-body.md#final-frame),
             //# the Decrypt operation MUST ensure that the length of the encrypted content field is
             //# less than or equal to the frame length deserialized in the message header.
+            //= specification/data-format/message-body.md#final-frame-encrypted-content-length
+            //= type=implication
+            //# The length of the serialized encrypted content length field MUST be 4 bytes.
+            //= specification/data-format/message-body.md#final-frame-encrypted-content-length
+            //= type=implication
+            //# The encrypted content length MUST be interpreted as a UInt32.
+            //= specification/data-format/message-body.md#final-frame-encrypted-content
+            //# The length of the serialized encrypted content MUST be equal to the value of the [Encrypted Content Length](#encrypted-content-length-1) field.
             read_seq_u32_bounded(
                 r,
                 header.body.frame_length(),
@@ -123,6 +151,13 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 &mut enc_content,
                 raw,
             )?;
+            //= specification/data-format/message-body.md#final-frame-authentication-tag
+            //= type=implication
+            //# The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
+            //# specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
+            //= specification/data-format/message-body.md#final-frame-authentication-tag
+            //= type=implication
+            //# The authentication tag MUST be interpreted as bytes.
             read_bytes(r, &mut auth_tag, raw)?;
             body_aad(
                 header.body.message_id(),
@@ -172,6 +207,12 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 )?;
                 result.resize(enc_content.len(), 0);
             }
+            //= specification/data-format/message-body.md#final-frame
+            //= type=implementation
+            //# Framed data MUST contain exactly one final frame.
+            //= specification/data-format/message-body.md#final-frame
+            //= type=implementation
+            //# The final frame MUST be the last frame.
             return Ok(result);
         }
         if seq_num != expected_frame {
@@ -192,8 +233,17 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //# Otherwise, this value MUST be 1 greater than the value of the sequence number
         //# of the previous frame.
         expected_frame += 1;
+        //= specification/data-format/message-body.md#regular-frame-iv
+        //= type=implication
+        //# The IV MUST be interpreted as bytes.
         read_bytes(r, &mut iv, raw)?;
+        //= specification/data-format/message-body.md#regular-frame-encrypted-content
+        //= type=implication
+        //# The encrypted content MUST be interpreted as bytes.
         read_bytes(r, &mut enc_content, raw)?;
+        //= specification/data-format/message-body.md#regular-frame-authentication-tag
+        //= type=implication
+        //# The authentication tag MUST be interpreted as bytes.
         read_bytes(r, &mut auth_tag, raw)?;
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value

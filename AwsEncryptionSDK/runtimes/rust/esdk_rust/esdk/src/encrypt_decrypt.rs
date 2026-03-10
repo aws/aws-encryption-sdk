@@ -29,22 +29,26 @@ pub(crate) fn encrypt_and_serialize(
 ) -> Result<(), Error> {
     let mut total_data_size: usize = 0;
     let frame_length = header.body.frame_length() as usize;
-    //= specification/data-format/message-body.md#iv-1
+    //= specification/data-format/message-body.md#regular-frame-iv
     //# The IV length MUST be equal to the IV length of the algorithm suite specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
     let iv_len = get_iv_length(&header.suite) as usize;
     let auth_len = get_tag_length(&header.suite) as usize;
     let frame_len = frame_length + iv_len + auth_len + 4;
-    //= specification/data-format/message-body.md#encrypted-content-1
+    //= specification/data-format/message-body.md#regular-frame-encrypted-content
     //# The length of the encrypted content of a Regular Frame MUST be equal to the Frame Length.
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# - For a regular frame the length of this plaintext MUST equal the frame length.
     let mut w = Vec::with_capacity(frame_len);
+    //= specification/data-format/message.md#structure
+    //# - The message MUST begin with [Message Header](message-header.md)
     write_bytes(&mut w, &header.raw_header)?;
     write_header_auth_tag(&mut w, &header.header_auth, &header.suite)?;
     write_bytes(out, &w)?;
     write_bytes(dw, &w)?;
+    //= specification/data-format/message.md#structure
+    //# - The [Message Body](message-body.md) MUST follow the Message Header
 
-    //= specification/data-format/message-body.md#sequence-number
+    //= specification/data-format/message-body.md#regular-frame-sequence-number
     //# Framed Data MUST start at Sequence Number 1.
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# If this is the first frame sequentially, this value MUST be 1.
@@ -57,6 +61,10 @@ pub(crate) fn encrypt_and_serialize(
     let mut in_size: usize;
     let mut next_char: Option<u8> = None;
 
+    //= specification/client-apis/encrypt.md#construct-the-body
+    //# Before the end of the input is indicated,
+    //# this operation MUST process as much of the consumable bytes as possible
+    //# by [constructing regular frames](#construct-a-frame).
     loop {
         w.clear();
         in_size = read_up_to_peek(plaintext, &mut plaintext_frame, next_char)?;
@@ -77,9 +85,6 @@ pub(crate) fn encrypt_and_serialize(
         }
 
         total_data_size += frame_length;
-        //= specification/data-format/message-body.md#encrypted-content-length
-        //# The length MUST NOT be greater than `2^36 - 32`, or 64 gibibytes (64 GiB),
-        //# due to restrictions imposed by the [implemented algorithms](../framework/algorithm-suites.md).
         if total_data_size > MAX_DATA {
             return Err("Plain text too large".into());
         }
@@ -89,6 +94,9 @@ pub(crate) fn encrypt_and_serialize(
         //# [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
         //# specified by the [algorithm suite](../framework/algorithm-suites.md),
         //# with the following inputs:
+        //= specification/data-format/message-body.md#regular-frame-iv
+        //= type=implementation
+        //# Each frame in the [Framed Data](#framed-data) MUST include an IV that is unique within the message.
         iv_seq(sequence_number, &mut iv);
 
         //= specification/client-apis/encrypt.md#construct-a-frame
@@ -116,6 +124,13 @@ pub(crate) fn encrypt_and_serialize(
         );
         //= specification/client-apis/encrypt.md#construct-a-frame
         //# This operation MUST serialize a regular frame or final frame with the following specifics:
+        //= specification/data-format/message-body.md#regular-frame
+        //= type=implementation
+        //# A regular frame MUST be serialized as, in order,
+        //# Sequence Number,
+        //# IV,
+        //# Encrypted Content,
+        //# and Authentication Tag.
         //= specification/client-apis/encrypt.md#construct-a-frame
         //# - [Sequence Number](../data-format/message-body.md#sequence-number): MUST be the sequence number of this frame,
         //# as determined above.
@@ -123,7 +138,7 @@ pub(crate) fn encrypt_and_serialize(
         //= specification/client-apis/encrypt.md#construct-a-frame
         //# - [IV](../data-format/message-body.md#iv): MUST be the IV used when calculating the encrypted content above
         write_bytes(&mut w, &iv)?;
-        //= specification/data-format/message-body.md#authentication-tag-1
+        //= specification/data-format/message-body.md#regular-frame-authentication-tag
         //# The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
         //# specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
         //= specification/client-apis/encrypt.md#construct-a-frame
@@ -137,7 +152,7 @@ pub(crate) fn encrypt_and_serialize(
         write_bytes(out, &w)?;
         write_bytes(dw, &w)?;
 
-        //= specification/data-format/message-body.md#sequence-number
+        //= specification/data-format/message-body.md#regular-frame-sequence-number
         //# Subsequent frames MUST be in order and MUST contain an increment of 1 from the previous frame.
         sequence_number += 1;
     }
@@ -167,6 +182,9 @@ pub(crate) fn encrypt_and_serialize(
     // Final frame should not be empty, unless the whole plaintext was empty
     debug_assert!(in_size > 0 || sequence_number == START_SEQUENCE_NUMBER);
     debug_assert!(in_size <= frame_length);
+    //= specification/data-format/message-body.md#final-frame-iv
+    //= type=implementation
+    //# The IV MUST be a unique IV within the message.
     iv_seq(sequence_number, &mut iv);
     w.clear();
 
@@ -197,18 +215,31 @@ pub(crate) fn encrypt_and_serialize(
     //# The final frame MUST be the last frame.
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# This operation MUST serialize a regular frame or final frame with the following specifics:
+    //= specification/data-format/message-body.md#final-frame
+    //= type=implementation
+    //# A final frame MUST be serialized as, in order,
+    //# Sequence Number End,
+    //# Sequence Number,
+    //# IV,
+    //# Encrypted Content Length,
+    //# Encrypted Content,
+    //# and Authentication Tag.
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# - [Sequence Number](../data-format/message-body.md#sequence-number): MUST be the sequence number of this frame,
     //# as determined above.
+    //= specification/data-format/message-body.md#sequence-number-end
+    //# The value MUST be encoded as the 4 bytes `FF FF FF FF` in hexadecimal notation.
     write_u32(&mut w, ENDFRAME_SEQUENCE_NUMBER)?;
-    //= specification/data-format/message-body.md#sequence-number-1
+    //= specification/data-format/message-body.md#final-frame-sequence-number
     //# The Final Frame Sequence number MUST be equal to the total number of frames in the Framed Data.
     write_u32(&mut w, sequence_number)?;
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# - [IV](../data-format/message-body.md#iv): MUST be the IV used when calculating the encrypted content above
     write_bytes(&mut w, &iv)?;
+    //= specification/data-format/message-body.md#final-frame-encrypted-content-length
+    //# The length of the serialized encrypted content length field MUST be 4 bytes.
     write_u32(&mut w, in_size as u32)?;
-    //= specification/data-format/message-body.md#authentication-tag-2
+    //= specification/data-format/message-body.md#final-frame-authentication-tag
     //# The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
     //# specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
     //= specification/client-apis/encrypt.md#construct-a-frame
