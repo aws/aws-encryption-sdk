@@ -45,7 +45,6 @@ fn construct_frame(
     dw: &mut DigestWriter,
 ) -> Result<(), Error> {
     w.clear();
-    iv_seq(input.sequence_number, iv);
 
     body_aad(
         //= specification/client-apis/encrypt.md#construct-a-frame
@@ -64,11 +63,24 @@ fn construct_frame(
         //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
         //# equal to the length of the plaintext being encrypted.
         input.plaintext.len() as u64,
+        // aad is the output buffer
         aad
     );
 
+    // Serialize the frame.
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# This operation MUST serialize a regular frame or final frame with the following specifics:
+
+    //= specification/client-apis/encrypt.md#construct-a-frame
+    //# - The IV MUST be the [sequence number](../data-format/message-body-aad.md#sequence-number)
+    //# used in the message body AAD above,
+    //# padded to the [IV length](../data-format/message-header.md#iv-length).
+    iv_seq(
+        input.sequence_number,
+        // iv is the output buffer
+        iv
+    );
 
     //= specification/data-format/message-body.md#regular-frame
     //# A regular frame MUST be serialized as, in order,
@@ -91,7 +103,12 @@ fn construct_frame(
     //# Sequence Number End
     //# and Encrypted Content Length.
 
+    //= specification/client-apis/encrypt.md#construct-a-frame
+    //# - Final frame only: [Sequence Number End](../data-format/message-body.md#sequence-number-end) field: This MUST
+    //# be the sequence number end value.
     if input.is_final {
+        //= specification/client-apis/encrypt.md#construct-a-frame
+        //# The Sequence Number End MUST only be serialized for the final frame.
         write_u32(w, ENDFRAME_SEQUENCE_NUMBER)?;
     }
     //= specification/client-apis/encrypt.md#construct-a-frame
@@ -99,8 +116,14 @@ fn construct_frame(
     //# as determined above.
     write_u32(w, input.sequence_number)?;
     //= specification/client-apis/encrypt.md#construct-a-frame
+    //# - [IV](../data-format/message-body.md#iv): MUST be the IV used when calculating the encrypted content above
     write_bytes(w, iv)?;
+    //= specification/client-apis/encrypt.md#construct-a-frame
+    //# - Final frame only: [Encrypted Content Length](../data-format/message-body.md#encrypted-content-length) field: This MUST
+    //# be the encrypted content length value
     if input.is_final {
+        //= specification/client-apis/encrypt.md#construct-a-frame
+        //# The Encrypted Content Length MUST only be serialized for the final frame.
         write_u32(w, input.plaintext.len() as u32)?;
     }
 
@@ -134,15 +157,37 @@ fn construct_frame(
 
     // Write encrypted content
     //= specification/client-apis/encrypt.md#construct-a-frame
+    //# - [Encrypted Content](../data-format/message-body.md#encrypted-content): MUST be the encrypted content calculated above.
     write_bytes(out, w)?;
-    // Write authentigation tag
+    // Write authentication tag
     //= specification/client-apis/encrypt.md#construct-a-frame
+    //# - [Authentication Tag](../data-format/message-body.md#authentication-tag): MUST be the authentication tag
+    //# output when calculating the encrypted content above.
     write_bytes(dw, w)?;
 
     Ok(())
 }
 
-pub(crate) fn encrypt_and_serialize(
+/// Serialize the message header to the output stream.
+pub(crate) fn serialize_header(
+    header: &HeaderInfo,
+    out: &mut dyn SafeWrite,
+    dw: &mut DigestWriter,
+) -> Result<(), Error> {
+    let mut w = Vec::new();
+    //= specification/data-format/message.md#structure
+    //# - The message MUST begin with [Message Header](message-header.md)
+    write_bytes(&mut w, &header.raw_header)?;
+    write_header_auth_tag(&mut w, &header.header_auth, &header.suite)?;
+    write_bytes(out, &w)?;
+    write_bytes(dw, &w)?;
+    //= specification/data-format/message.md#structure
+    //# - The [Message Body](message-body.md) MUST follow the Message Header
+    Ok(())
+}
+
+/// Encrypt plaintext and serialize the message body (framed) to the output stream.
+pub(crate) fn encrypt_and_serialize_body(
     plaintext: &mut dyn SafeRead,
     header: &HeaderInfo,
     key: &[u8],
@@ -155,17 +200,6 @@ pub(crate) fn encrypt_and_serialize(
     let auth_len = get_tag_length(&header.suite) as usize;
     let frame_len = frame_length + iv_len + auth_len + 4;
     let mut w = Vec::with_capacity(frame_len);
-
-    //= specification/data-format/message.md#structure
-    //= type=implementation
-    //# - The message MUST begin with [Message Header](message-header.md)
-    write_bytes(&mut w, &header.raw_header)?;
-    write_header_auth_tag(&mut w, &header.header_auth, &header.suite)?;
-    write_bytes(out, &w)?;
-    write_bytes(dw, &w)?;
-    //= specification/data-format/message.md#structure
-    //= type=implementation
-    //# - The [Message Body](message-body.md) MUST follow the Message Header
 
     //= specification/data-format/message-body.md#regular-frame-sequence-number
     //= type=implementation
@@ -271,7 +305,7 @@ pub(crate) fn encrypt_and_serialize(
     //= specification/data-format/message-body.md#final-frame
     //# The length of the plaintext to be encrypted in the Final Frame MUST be
     //# greater than or equal to 0 and less than or equal to the [Frame Length](message-header.md#frame-length).
-    debug_assert!(in_size >= 0 && in_size <= frame_length);
+    debug_assert!(in_size <= frame_length);
     //= specification/data-format/message-body.md#final-frame
     //# - When the length of the Plaintext is an exact multiple of the Frame Length
     //# (including if it is equal to the frame length),
@@ -308,6 +342,18 @@ pub(crate) fn encrypt_and_serialize(
     //# to the message body calculated in this step.
     //# If the message bodies are not equal, the Encrypt operation MUST fail.
     Ok(())
+}
+
+/// Serialize header + encrypt and serialize body.
+pub(crate) fn encrypt_and_serialize(
+    plaintext: &mut dyn SafeRead,
+    header: &HeaderInfo,
+    key: &[u8],
+    out: &mut dyn SafeWrite,
+    dw: &mut DigestWriter,
+) -> Result<(), Error> {
+    serialize_header(header, out, dw)?;
+    encrypt_and_serialize_body(plaintext, header, key, out, dw)
 }
 
 pub(crate) fn get_ecdsa_alg(
@@ -500,6 +546,7 @@ pub(crate) fn build_header_body(
                 encryption_context: encryption_context.clone(),
                 encrypted_data_keys: encrypted_data_keys.into(),
                 //= specification/client-apis/encrypt.md#un-framed-message-body-encryption
+                //= type=implication
                 //# Implementations of the AWS Encryption SDK MUST NOT encrypt using the Non-Framed content type.
                 content_type: ContentType::Framed,
                 frame_length,
@@ -516,6 +563,9 @@ pub(crate) fn build_header_body(
             message_id: message_id.clone(),
             encryption_context: encryption_context.clone(),
             encrypted_data_keys: encrypted_data_keys.into(),
+            //= specification/client-apis/encrypt.md#un-framed-message-body-encryption
+            //= type=implication
+            //# Implementations of the AWS Encryption SDK MUST NOT encrypt using the Non-Framed content type.
             content_type: ContentType::Framed,
             header_iv_length: u64::from(get_iv_length(suite)),
             frame_length,

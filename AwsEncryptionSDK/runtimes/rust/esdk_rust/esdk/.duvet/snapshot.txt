@@ -558,18 +558,18 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
     TEXT[!MUST,implementation]:   - For a final frame this MUST be the remaining plaintext bytes which have not yet been encrypted,
     TEXT[!MUST,implementation]:     whose length MUST be equal to or less than the frame length.
     TEXT[!MUST,implementation]: This operation MUST serialize a regular frame or final frame with the following specifics:
-    TEXT[!MUST]: - Final frame only: [Sequence Number End](../data-format/message-body.md#sequence-number-end) field: This MUST
-    TEXT[!MUST]:   be the sequence number end value.
-    TEXT[!MUST]:   The Sequence Number End MUST only be serialized for the final frame.
+    TEXT[!MUST,implementation]: - Final frame only: [Sequence Number End](../data-format/message-body.md#sequence-number-end) field: This MUST
+    TEXT[!MUST,implementation]:   be the sequence number end value.
+    TEXT[!MUST,implementation]:   The Sequence Number End MUST only be serialized for the final frame.
     TEXT[!MUST,implementation]: - [Sequence Number](../data-format/message-body.md#sequence-number): MUST be the sequence number of this frame,
     TEXT[!MUST,implementation]:   as determined above.
-    TEXT[!MUST]: - [IV](../data-format/message-body.md#iv): MUST be the IV used when calculating the encrypted content above
-    TEXT[!MUST]: - Final frame only: [Encrypted Content Length](../data-format/message-body.md#encrypted-content-length) field: This MUST
-    TEXT[!MUST]:   be the encrypted content length value
-    TEXT[!MUST]:   The Encrypted Content Length MUST only be serialized for the final frame.
-    TEXT[!MUST]: - [Encrypted Content](../data-format/message-body.md#encrypted-content): MUST be the encrypted content calculated above.
-    TEXT[!MUST]: - [Authentication Tag](../data-format/message-body.md#authentication-tag): MUST be the authentication tag
-    TEXT[!MUST]:   output when calculating the encrypted content above.
+    TEXT[!MUST,implementation]: - [IV](../data-format/message-body.md#iv): MUST be the IV used when calculating the encrypted content above
+    TEXT[!MUST,implementation]: - Final frame only: [Encrypted Content Length](../data-format/message-body.md#encrypted-content-length) field: This MUST
+    TEXT[!MUST,implementation]:   be the encrypted content length value
+    TEXT[!MUST,implementation]:   The Encrypted Content Length MUST only be serialized for the final frame.
+    TEXT[!MUST,implementation]: - [Encrypted Content](../data-format/message-body.md#encrypted-content): MUST be the encrypted content calculated above.
+    TEXT[!MUST,implementation]: - [Authentication Tag](../data-format/message-body.md#authentication-tag): MUST be the authentication tag
+    TEXT[!MUST,implementation]:   output when calculating the encrypted content above.
     TEXT[!MUST]: The above serialized bytes MUST NOT be released until the entire frame has been serialized.
     TEXT[!MUST]: If this operation is streaming the encrypted message and
     TEXT[!MUST]: the entire frame has been serialized,
@@ -600,7 +600,7 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
     TEXT[!MUST,implementation]: to the message footer calculated in this step.
 
   SECTION: [Un-Framed Message Body Encryption](#un-framed-message-body-encryption)
-    TEXT[!MUST,implementation]: Implementations of the AWS Encryption SDK MUST NOT encrypt using the Non-Framed content type.
+    TEXT[!MUST,implication]: Implementations of the AWS Encryption SDK MUST NOT encrypt using the Non-Framed content type.
     TEXT[!MUST]: - [IV](../data-format/message-body.md#iv): MUST be the [sequence number](../data-format/message-body-aad.md#sequence-number)
     TEXT[!MUST]:   used in the [message body AAD](../data-format/message-body-aad.md).
     TEXT[!MUST]: - [Encrypted Content](../data-format/message-body.md#encrypted-content): MUST be the output of the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
@@ -697,8 +697,11 @@ SPECIFICATION: [Message Body](specification/data-format/message-body.md)
   SECTION: [Regular Frame Sequence Number](#regular-frame-sequence-number)
     TEXT[!MUST,implementation]: Framed Data MUST start at Sequence Number 1.
     TEXT[!MUST,implementation]: Subsequent frames MUST be in order and MUST contain an increment of 1 from the previous frame.
-    TEXT[!MUST,implication]: The length of the serialized sequence number MUST be 4 bytes.
-    TEXT[!MUST,implication]: The sequence number MUST be interpreted as a UInt32.
+    TEXT[!MUST]: When serializing the sequence number to a message,
+    TEXT[!MUST,implication]: the length of the serialized sequence number MUST be 4 bytes.
+    TEXT[!MUST]: The sequence number MUST be serialized as a UInt32.
+    TEXT[!MUST]: When reading the sequence number from a message,
+    TEXT[!MUST,implication]: the sequence number MUST be interpreted as a UInt32.
 
   SECTION: [Regular Frame IV](#regular-frame-iv)
     TEXT[!MUST]: Each frame in the [Framed Data](#framed-data) MUST include an IV that is unique within the message.
@@ -742,8 +745,10 @@ SPECIFICATION: [Message Body](specification/data-format/message-body.md)
 
   SECTION: [Final Frame Sequence Number](#final-frame-sequence-number)
     TEXT[!MUST]: The Final Frame Sequence number MUST be equal to the total number of frames in the Framed Data.
-    TEXT[!MUST,implication]: The length of the serialized sequence number MUST be 4 bytes.
-    TEXT[!MUST,implication]: The sequence number MUST be interpreted as a UInt32.
+    TEXT[!MUST]: The Final Frame Sequence Number MUST be serialized to a message the same way as the
+    TEXT[!MUST]: [Regular Frame Sequence Number](#regular-frame-sequence-number).
+    TEXT[!MUST]: The Final Frame Sequence Number MUST be interpreted from a message the same way as the
+    TEXT[!MUST]: [Regular Frame Sequence Number](#regular-frame-sequence-number).
 
   SECTION: [Final Frame IV](#final-frame-iv)
     TEXT[!MUST]: The IV MUST be a unique IV within the message.

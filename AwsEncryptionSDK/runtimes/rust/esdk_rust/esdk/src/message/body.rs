@@ -17,13 +17,16 @@ pub(crate) enum BodyAADContent {
 }
 
 //= specification/data-format/message-body-aad.md#body-aad-content
-//# - The [regular frames](message-body.md#regular-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Frame`.
+//# - The [regular frames](message-body.md#regular-frame) in [framed data](message-body.md#framed-data)
+//# MUST use the value `AWSKMSEncryptionClient Frame`.
 const BODY_AAD_CONTENT_REGULAR_FRAME: &str = "AWSKMSEncryptionClient Frame";
 //= specification/data-format/message-body-aad.md#body-aad-content
-//# - The [final frame](message-body.md#final-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Final Frame`.
+//# - The [final frame](message-body.md#final-frame) in [framed data](message-body.md#framed-data)
+//# MUST use the value `AWSKMSEncryptionClient Final Frame`.
 const BODY_AAD_CONTENT_FINAL_FRAME: &str = "AWSKMSEncryptionClient Final Frame";
 //= specification/data-format/message-body-aad.md#body-aad-content
-//# - [Non-framed data](message-body.md#non-framed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
+//# - [Non-framed data](message-body.md#non-framed-data)
+//# MUST use the value `AWSKMSEncryptionClient Single Block`.
 const BODY_AAD_CONTENT_SINGLE_BLOCK: &str = "AWSKMSEncryptionClient Single Block";
 
 const fn body_aad_content_type_string(bc: BodyAADContent) -> &'static str {
@@ -118,12 +121,6 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //# then the Decrypt operation MUST deserialize this as the [sequence number end](../data-format/message-header.md#sequence-number-end)
         //# and the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
         if seq_num == ENDFRAME_SEQUENCE_NUMBER {
-            //= specification/data-format/message-body.md#final-frame-sequence-number
-            //= type=implication
-            //# The length of the serialized sequence number MUST be 4 bytes.
-            //= specification/data-format/message-body.md#final-frame-sequence-number
-            //= type=implication
-            //# The sequence number MUST be interpreted as a UInt32.
             let seq_num: u32 = read_u32(r, raw)?;
             if seq_num != expected_frame {
                 return Err("Final sequence number out of order.".into());

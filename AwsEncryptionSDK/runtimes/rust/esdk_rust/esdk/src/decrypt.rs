@@ -152,12 +152,12 @@ async fn internal_decrypt(
     //= specification/client-apis/decrypt.md#parse-the-header
     //# Until the [header is verified](#verify-the-header), this operation MUST NOT
     //# release any parsed information from the header.
-    let state = step_verify_header(state, net_v4_retry_policy)?;
+    let mut state = step_verify_header(state, net_v4_retry_policy)?;
 
     //= specification/client-apis/decrypt.md#behavior
     //# - Decrypt operation Step 4 MUST be [Decrypt the message body](#decrypt-the-message-body)
-    let (last_frame, state) =
-        step_decrypt_body(ciphertext, plaintext, state, &safety_needed)?;
+    let last_frame =
+        step_decrypt_body(ciphertext, plaintext, &mut state, &safety_needed)?;
 
     //= specification/client-apis/decrypt.md#behavior
     //# - Decrypt operation Step 5 MUST be [Verify the signature](#verify-the-signature)
@@ -385,9 +385,9 @@ fn step_verify_header(
 fn step_decrypt_body(
     ciphertext: &mut dyn SafeRead,
     plaintext: &mut dyn SafeWrite,
-    state: DecryptState,
+    state: &mut DecryptState,
     safety_needed: &ProtectionNeeded,
-) -> Result<(Vec<u8>, DecryptState), Error> {
+) -> Result<Vec<u8>, Error> {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //# Once the message header is successfully parsed, the next sequential bytes
     //# MUST be deserialized according to the [message body spec](../data-format/message-body.md).
@@ -396,10 +396,10 @@ fn step_decrypt_body(
     //# message header to determine whether the operation will deserialize the message bytes as
     //# [framed data](../data-format/message-body.md#framed-data) or
     //# [un-framed data](../data-format/message-body.md#un-framed-data).
-    let key = &state.derived_data_keys.data_key;
+    let key = state.derived_data_keys.data_key.clone();
     let last_frame = match state.header.body.content_type() {
         ContentType::NonFramed => encrypt_decrypt::read_and_decrypt_non_framed_message_body(
-            ciphertext, &state.header, key, &mut { state.dw.clone() },
+            ciphertext, &state.header, &key, &mut state.dw,
         )?,
         ContentType::Framed => {
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
@@ -411,13 +411,13 @@ fn step_decrypt_body(
                 ciphertext,
                 plaintext,
                 &state.header,
-                key,
-                &mut { state.dw.clone() },
+                &key,
+                &mut state.dw,
                 fail_if_multi_frame,
             )?
         }
     };
-    Ok((last_frame, state))
+    Ok(last_frame)
 }
 
 // Step 5: Verify the signature
