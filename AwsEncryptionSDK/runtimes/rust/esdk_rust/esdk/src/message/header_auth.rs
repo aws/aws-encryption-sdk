@@ -14,7 +14,19 @@ pub(crate) fn write_header_auth_tag(
     suite: &AlgorithmSuite,
 ) -> Result<(), Error> {
     match suite.message_version {
+        //= specification/client-apis/encrypt.md#v1-authentication-tag
+        //# With the authentication tag calculated, if the message format version associated
+        //# with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0, 
+        //# this operation MUST serialize the
+        //# [message header authentication](../data-format/message-header.md#header-authentication-version-1-0)
+        //# with the following specifics:
         1 => write_header_auth_tag_v1(w, header_auth),
+        //= specification/client-apis/encrypt.md#v2-authentication-tag
+        //# With the authentication tag calculated, if the message format version associated
+        //# with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0, 
+        //# this operation MUST serialize the
+        //# [message header authentication](../data-format/message-header.md#header-authentication-version-2-0)
+        //# with the following specifics:
         2 => write_header_auth_tag_v2(w, header_auth),
         _ => ser_err("Unexpected message version"),
     }
@@ -28,7 +40,13 @@ pub(crate) fn write_header_auth_tag_v1(
             header_iv,
             header_auth_tag,
         } => {
+            //= specification/client-apis/encrypt.md#v1-authentication-tag
+            //# - [IV](../data-format/message-header.md#iv): MUST have the value of the IV used in the calculation above,
+            //# padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
             write_bytes(w, header_iv)?;
+            //= specification/client-apis/encrypt.md#v1-authentication-tag
+            //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
+            //# of the authentication tag calculated above.
             write_bytes(w, header_auth_tag)
         }
     }
@@ -40,7 +58,13 @@ pub(crate) fn write_header_auth_tag_v2(
     match header_auth {
         HeaderAuth::AESMac {
             header_auth_tag, ..
-        } => write_bytes(w, header_auth_tag),
+        } => write_bytes(
+            w,
+            //= specification/client-apis/encrypt.md#v2-authentication-tag
+            //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
+            //# of the authentication tag calculated above.
+            header_auth_tag
+        ),
     }
 }
 

@@ -16,8 +16,8 @@ target = "specification/client-apis/encrypt.md#construct-a-frame"
 #     [Message Body AAD](../data-format/message-body-aad.md).
 #   - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be the sequence
 #     number of the frame being encrypted.
-#     If this is the first frame sequentially, this value MUST be 1.
-#     Otherwise, this value MUST be 1 greater than the value of the sequence number
+#     If this is the first frame sequentially, the sequence number value MUST be 1.
+#     Otherwise, the sequence number value MUST be 1 greater than the value of the sequence number
 #     of the previous frame.
 #   - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
 #     equal to the length of the plaintext being encrypted.
@@ -36,9 +36,15 @@ target = "specification/client-apis/encrypt.md#construct-a-frame"
 # 
 # This operation MUST serialize a regular frame or final frame with the following specifics:
 # 
+# - Final frame only: [Sequence Number End](../data-format/message-body.md#sequence-number-end) field: This MUST
+#   be the sequence number end value.
+#   The Sequence Number End MUST only be serialized for the final frame.
 # - [Sequence Number](../data-format/message-body.md#sequence-number): MUST be the sequence number of this frame,
 #   as determined above.
 # - [IV](../data-format/message-body.md#iv): MUST be the IV used when calculating the encrypted content above
+# - Final frame only: [Encrypted Content Length](../data-format/message-body.md#encrypted-content-length) field: This MUST
+#   be the encrypted content length value
+#   The Encrypted Content Length MUST only be serialized for the final frame.
 # - [Encrypted Content](../data-format/message-body.md#encrypted-content): MUST be the encrypted content calculated above.
 # - [Authentication Tag](../data-format/message-body.md#authentication-tag): MUST be the authentication tag
 #   output when calculating the encrypted content above.
@@ -94,13 +100,13 @@ number of the frame being encrypted.
 [[spec]]
 level = "MUST"
 quote = '''
-If this is the first frame sequentially, this value MUST be 1.
+If this is the first frame sequentially, the sequence number value MUST be 1.
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-Otherwise, this value MUST be 1 greater than the value of the sequence number
+Otherwise, the sequence number value MUST be 1 greater than the value of the sequence number
 of the previous frame.
 '''
 
@@ -167,6 +173,19 @@ This operation MUST serialize a regular frame or final frame with the following 
 [[spec]]
 level = "MUST"
 quote = '''
+- Final frame only: [Sequence Number End](../data-format/message-body.md#sequence-number-end) field: This MUST
+be the sequence number end value.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The Sequence Number End MUST only be serialized for the final frame.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
 - [Sequence Number](../data-format/message-body.md#sequence-number): MUST be the sequence number of this frame,
 as determined above.
 '''
@@ -175,6 +194,14 @@ as determined above.
 level = "MUST"
 quote = '''
 - [IV](../data-format/message-body.md#iv): MUST be the IV used when calculating the encrypted content above
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Final frame only: [Encrypted Content Length](../data-format/message-body.md#encrypted-content-length) field: This MUST
+be the encrypted content length value
+The Encrypted Content Length MUST only be serialized for the final frame.
 '''
 
 [[spec]]

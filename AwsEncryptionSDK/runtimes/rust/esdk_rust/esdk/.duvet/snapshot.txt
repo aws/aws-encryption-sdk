@@ -9,12 +9,12 @@ SPECIFICATION: [Client](specification/client-apis/client.md)
     TEXT[!MUST,implementation]: - On client initialization,
     TEXT[!MUST,implementation]:   the caller MUST have the option to provide a [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys).
     TEXT[!MUST,implication]: If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
-    TEXT[!MUST,implication]: If no [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys) is provided
-    TEXT[!MUST,implication]: the default MUST result in no limit on the number of encrypted data keys (aside from the limit imposed by the [message format](../format/message-header.md)).
+    TEXT[!MUST]: If no [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys) is provided
+    TEXT[!MUST]: the default MUST result in no limit on the number of encrypted data keys (aside from the limit imposed by the [message format](../format/message-header.md)).
     TEXT[!SHOULD,implication]: Once a [commitment policy](#commitment-policy) has been set it SHOULD be immutable.
 
   SECTION: [Commitment Policy](#commitment-policy)
-    TEXT[!MUST,implementation]: The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
+    TEXT[!MUST,implication]: The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
 
   SECTION: [Encrypt](#encrypt)
     TEXT[!MUST,implementation]: The AWS Encryption SDK Client MUST provide an [encrypt](./encrypt.md#input) function
@@ -25,24 +25,20 @@ SPECIFICATION: [Client](specification/client-apis/client.md)
     TEXT[!MUST,implementation]: that adheres to [decrypt](./decrypt.md).
 
 SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
-  SECTION: [Overview](#overview)
-    TEXT[!MUST,implication]: Any client provided by the AWS Encryption SDK that performs decryption of encrypted messages MUST follow
-    TEXT[!MUST,implication]: this specification for decryption.
-
   SECTION: [Authenticated Data](#authenticated-data)
-    TEXT[!MUST,implication]: This operation MUST NOT release any unauthenticated plaintext or unauthenticated associated data.
+    TEXT[!MUST]: This operation MUST NOT release any unauthenticated plaintext or unauthenticated associated data.
 
   SECTION: [Input](#input)
-    TEXT[!MUST,implementation,implication]: - The input to the Decrypt operation MUST accept a required [Encrypted Message](#encrypted-message) argument.
-    TEXT[!MUST,implementation,implication]: - The input to the Decrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
+    TEXT[!MUST,implementation]: - The input to the Decrypt operation MUST accept a required [Encrypted Message](#encrypted-message) argument.
+    TEXT[!MUST,implementation]: - The input to the Decrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
     TEXT[!SHOULD]:   The keyring and CMM inputs SHOULD be optional.
-    TEXT[!MUST,implementation]:   The Decrypt operation MUST validate that exactly one keyring or CMM was provided by the caller.
+    TEXT[!MUST]:   The Decrypt operation MUST validate that exactly one keyring or CMM was provided by the caller.
     TEXT[!MUST]:   If the caller does not provide exactly one of a keyring or CMM, the Decrypt operation MUST fail.
-    TEXT[!MUST,implementation]: - The input to the Encrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
+    TEXT[!MUST]: - The input to the Decrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
 
   SECTION: [Encrypted Message](#encrypted-message)
-    TEXT[!MUST,implication]: The input encrypted message MUST be a sequence of bytes in the
-    TEXT[!MUST,implication]: [message format](../data-format/message.md) specified by the AWS Encryption SDK.
+    TEXT[!MUST,implementation]: The input encrypted message MUST be a sequence of bytes in the
+    TEXT[!MUST,implementation]: [message format](../data-format/message.md) specified by the AWS Encryption SDK.
     TEXT[!MAY]: This input MAY be [streamed](streaming.md) to this operation.
     TEXT[!SHOULD]: If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
     TEXT[!SHOULD]: that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
@@ -75,7 +71,7 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
     TEXT[!MAY]: This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.
 
   SECTION: [Algorithm Suite](#algorithm-suite)
-    TEXT[!MUST,implementation]: This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
+    TEXT[!MUST]: This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
     TEXT[!MAY]: This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.
 
   SECTION: [Behavior](#behavior)
@@ -89,8 +85,8 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
     TEXT[!MUST,implementation]:     the Decrypt operation MUST perform this step.
     TEXT[!MUST]:   - If the message header does not contain an algorithm suite including a signature algorithm,
     TEXT[!MUST]:     the Decrypt operation MUST NOT perform this step.
-    TEXT[!MUST,implementation]: If the input encrypted message is not being [streamed](streaming.md) to this operation,
-    TEXT[!MUST,implementation]: all output MUST NOT be released until after these steps complete successfully.
+    TEXT[!MUST]: If the input encrypted message is not being [streamed](streaming.md) to this operation,
+    TEXT[!MUST]: all output MUST NOT be released until after these steps complete successfully.
     TEXT[!MUST]: - Output MUST NOT be released until otherwise indicated.
     TEXT[!MUST]: - If all bytes have been provided and this operation
     TEXT[!MUST]:   is unable to complete the above steps with the consumable encrypted message bytes,
@@ -104,18 +100,18 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
   SECTION: [Parse the header](#parse-the-header)
     TEXT[!MUST,implementation]: Given encrypted message bytes, this operation MUST process those bytes sequentially,
     TEXT[!MUST,implementation]: deserializing those bytes according to the [message format](../data-format/message.md).
-    TEXT[!MUST]: This operation MUST attempt to deserialize all consumable encrypted message bytes until it has
-    TEXT[!MUST]: successfully deserialized a valid [message header](../data-format/message-header.md).
+    TEXT[!MUST,implication]: This operation MUST attempt to deserialize all consumable encrypted message bytes until it has
+    TEXT[!MUST,implication]: successfully deserialized a valid [message header](../data-format/message-header.md).
     TEXT[!MUST,implementation]: If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
     TEXT[!MUST,implementation]: deserialized from the [message header](../data-format/message-header.md)
     TEXT[!MUST,implementation]: is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
     TEXT[!MUST,implementation]: then as soon as that can be determined during deserializing
     TEXT[!MUST,implementation]: decrypt MUST process no more bytes and yield an error.
-    TEXT[!MUST]: This operation MUST wait if it doesn't have enough consumable encrypted message bytes to
-    TEXT[!MUST]: deserialize the next field of the message header until enough input bytes become consumable or
-    TEXT[!MUST]: the caller indicates an end to the encrypted message.
-    TEXT[!MUST]: Until the [header is verified](#verify-the-header), this operation MUST NOT
-    TEXT[!MUST]: release any parsed information from the header.
+    TEXT[!MUST,implication]: This operation MUST wait if it doesn't have enough consumable encrypted message bytes to
+    TEXT[!MUST,implication]: deserialize the next field of the message header until enough input bytes become consumable or
+    TEXT[!MUST,implication]: the caller indicates an end to the encrypted message.
+    TEXT[!MUST,implementation]: Until the [header is verified](#verify-the-header), this operation MUST NOT
+    TEXT[!MUST,implementation]: release any parsed information from the header.
 
   SECTION: [Get the decryption materials](#get-the-decryption-materials)
     TEXT[!MUST,implementation]: If the parsed [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
@@ -136,14 +132,15 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
     TEXT[!MUST,implementation]: - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header#encrypted-data-keys)
     TEXT[!MUST,implementation]:   from the message header.
     TEXT[!MUST,implementation]: - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
+    TEXT[!MUST,implementation]: - Commitment Policy: This MUST be the commitment policy configured on the client.
     TEXT[!MUST,implementation]: The data key used as input for all decryption described below MUST be a data key derived from the plaintext data key
     TEXT[!MUST,implementation]: included in the [decryption materials](../framework/structures.md#decryption-materials).
     TEXT[!MUST,implementation]: The algorithm suite used as input for all decryption described below MUST be the algorithm suite
     TEXT[!MUST,implementation]: included in the [decryption materials](../framework/structures.md#decryption-materials).
     TEXT[!MUST]: If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
     TEXT[!MUST]: encrypt MUST yield an error.
-    TEXT[!MUST,implementation]: If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
-    TEXT[!MUST,implementation]: configured in the [client](client.md) decrypt MUST yield an error.
+    TEXT[!MUST]: If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
+    TEXT[!MUST]: configured in the [client](client.md) decrypt MUST yield an error.
     TEXT[!MUST,implementation]: If the [algorithm suite](../framework/algorithm-suites.md#algorithm-suites-encryption-key-derivation-settings) supports [key commitment](../framework/algorithm-suites.md#key-commitment)
     TEXT[!MUST,implementation]: then the [commit key](../framework/algorithm-suites.md#commit-key) MUST be derived from the plaintext data key
     TEXT[!MUST,implementation]: using the [commit key derivation](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
@@ -152,8 +149,8 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
     TEXT[!MUST,implementation]: the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
     TEXT[!MUST,implementation]: [algorithm suite](../framework/algorithm-suites.md) associated with
     TEXT[!MUST,implementation]: the returned decryption materials.
-    TEXT[!MUST,implementation]: If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
-    TEXT[!MUST,implementation]: then the derived data key MUST be the same as the plaintext data key.
+    TEXT[!MUST]: If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
+    TEXT[!MUST]: then the derived data key MUST be the same as the plaintext data key.
 
   SECTION: [Verify the header](#verify-the-header)
     TEXT[!MUST,implementation]: Once a valid message header is deserialized and decryption materials are available,
@@ -275,14 +272,14 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
     TEXT[!MUST,implementation]: If this verification is not successful, this operation MUST immediately halt and fail.
 
   SECTION: [Security Considerations](#security-considerations)
-    TEXT[!MUST,implication]: If this operation is [streaming](streaming.md) output to the caller
-    TEXT[!MUST,implication]: and is decrypting messages created with an algorithm suite including a signature algorithm,
-    TEXT[!MUST,implication]: any released plaintext MUST NOT be considered signed data until this operation finishes
-    TEXT[!MUST,implication]: successfully.
-    TEXT[!MUST,implication]: This means that callers that process such released plaintext MUST NOT consider any processing successful
-    TEXT[!MUST,implication]: until this operation completes successfully.
-    TEXT[!MUST,implication]: Additionally, if this operation fails, callers MUST discard the released plaintext and encryption context
-    TEXT[!MUST,implication]: and MUST rollback any processing done due to the released plaintext or encryption context.
+    TEXT[!MUST]: If this operation is [streaming](streaming.md) output to the caller
+    TEXT[!MUST]: and is decrypting messages created with an algorithm suite including a signature algorithm,
+    TEXT[!MUST]: any released plaintext MUST NOT be considered signed data until this operation finishes
+    TEXT[!MUST]: successfully.
+    TEXT[!MUST]: This means that callers that process such released plaintext MUST NOT consider any processing successful
+    TEXT[!MUST]: until this operation completes successfully.
+    TEXT[!MUST]: Additionally, if this operation fails, callers MUST discard the released plaintext and encryption context
+    TEXT[!MUST]: and MUST rollback any processing done due to the released plaintext or encryption context.
 
 SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
   SECTION: [Input](#input)
@@ -323,8 +320,8 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
     TEXT[!MUST,implication]: This value MUST default to 4096 bytes.
 
   SECTION: [Plaintext Length Bound](#plaintext-length-bound)
-    TEXT[!MUST,todo]: If this input is provided, this operation MUST NOT encrypt a plaintext with length
-    TEXT[!MUST,todo]: greater than this value.
+    TEXT[!MUST]: If this input is provided, this operation MUST NOT encrypt a plaintext with length
+    TEXT[!MUST]: greater than this value.
 
   SECTION: [Output](#output)
     TEXT[!MUST,implementation]: - The output of the Encrypt operation MUST include an [encrypted message](#encrypted-message) value.
@@ -375,15 +372,15 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
     TEXT[!MUST,implementation]: The call to [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials)
     TEXT[!MUST,implementation]: on that CMM MUST be constructed as follows:
     TEXT[!MUST,implementation]: - Encryption Context: If provided, this MUST be the [input encryption context](#encryption-context).
-    TEXT[!MUST,implementation]:   Otherwise, this MUST be an empty encryption context.
+    TEXT[!MUST]:   Otherwise, this MUST be an empty encryption context.
     TEXT[!MUST,implementation]: - Commitment Policy: This MUST be the [commitment policy](client.md#commitment-policy) configured in the [client](client.md) exposing this encrypt function.
     TEXT[!MUST,implementation]: - Algorithm Suite: If provided, this MUST be the [input algorithm suite](#algorithm-suite).
-    TEXT[!MUST,implementation]:   If no Algorithm Suite is provided, this field MUST NOT be included.
+    TEXT[!MUST]:   If no Algorithm Suite is provided, this field MUST NOT be included.
     TEXT[!MUST,implementation]: - Max Plaintext Length: If the [input plaintext](#plaintext) has known length,
     TEXT[!MUST,implementation]:   this length MUST be used.
-    TEXT[!MUST,implementation]:   If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
-    TEXT[!MUST,implementation]:   was provided, this MUST be the [Plaintext Length Bound](#plaintext-length-bound).
-    TEXT[!MUST,implementation]:   If no Plaintext Length Bound is provided, this field MUST NOT be included.
+    TEXT[!MUST]:   If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
+    TEXT[!MUST]:   was provided, this MUST be the [Plaintext Length Bound](#plaintext-length-bound).
+    TEXT[!MUST]:   If no Plaintext Length Bound is provided, this field MUST NOT be included.
     TEXT[!MUST,implementation]: The [algorithm suite](../framework/algorithm-suites.md) used in all aspects of this operation
     TEXT[!MUST,implementation]: MUST be the algorithm suite in the [encryption materials](../framework/structures.md#encryption-materials)
     TEXT[!MUST,implementation]: returned from the [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) call.
@@ -391,8 +388,8 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
     TEXT[!MAY]: from the [input algorithm suite](#algorithm-suite).
     TEXT[!MUST,implementation]: If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
     TEXT[!MUST,implementation]: encrypt MUST yield an error.
-    TEXT[!MUST,implementation]: If this [algorithm suite](../framework/algorithm-suites.md) is not supported by the [commitment policy](client.md#commitment-policy)
-    TEXT[!MUST,implementation]: configured in the [client](client.md) encrypt MUST yield an error.
+    TEXT[!MUST]: If this [algorithm suite](../framework/algorithm-suites.md) is not supported by the [commitment policy](client.md#commitment-policy)
+    TEXT[!MUST]: configured in the [client](client.md) encrypt MUST yield an error.
     TEXT[!MUST,implementation]: If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys) on the [encryption materials](../framework/structures.md#encryption-materials)
     TEXT[!MUST,implementation]: is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md) encrypt MUST yield an error.
     TEXT[!MUST,implementation]: The data key used as input for all encryption described below MUST be a data key derived from the plaintext data key
@@ -404,9 +401,9 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
     TEXT[!MUST,implementation]:   then the derived data key MUST be the same as the plaintext data key.
     TEXT[!MUST,implementation]: - If the key derivation algorithm is [HKDF](../framework/algorithm-suites.md#hkdf),
     TEXT[!MUST,implementation]:   the derivation process used MUST be the process described in [HKDF Encryption Key](../transitive-requirements.md#hkdf-encryption-key).
-    TEXT[!MUST,implementation]: The frame length used in the procedures described below MUST be the input [frame length](#frame-length),
-    TEXT[!MUST,implementation]: if supplied.
-    TEXT[!MUST,implementation]: If no input frame length is supplied, the default frame length MUST be used.
+    TEXT[!MUST]: The frame length used in the procedures described below MUST be the input [frame length](#frame-length),
+    TEXT[!MUST]: if supplied.
+    TEXT[!MUST]: If no input frame length is supplied, the default frame length MUST be used.
 
   SECTION: [Construct the header](#construct-the-header)
     TEXT[!MUST,implementation]: Before encrypting input plaintext,
@@ -416,46 +413,46 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
   SECTION: [V2 Header](#v2-header)
     TEXT[!MUST,implementation]: If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0
     TEXT[!MUST,implementation]: then the [message header body](../data-format/message-header.md#header-body-version-1-0) MUST be serialized with the following specifics:
-    TEXT[!MUST,implementation]: - [Version](../data-format/message-header.md#version-1): MUST have a value corresponding to
-    TEXT[!MUST,implementation]:   [2.0](../data-format/message-header.md#supported-versions)
-    TEXT[!MUST,implementation]: - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST correspond to
-    TEXT[!MUST,implementation]:   the [algorithm suite](../framework/algorithm-suites.md) used in this behavior
-    TEXT[!MUST,implementation]: - [Message ID](../data-format/message-header.md#message-id): The process used to generate
-    TEXT[!MUST,implementation]:   this identifier MUST use a good source of randomness to make the chance of duplicate identifiers negligible.
+    TEXT[!MUST]: - [Version](../data-format/message-header.md#version-1): MUST have a value corresponding to
+    TEXT[!MUST]:   [2.0](../data-format/message-header.md#supported-versions)
+    TEXT[!MUST]: - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST correspond to
+    TEXT[!MUST]:   the [algorithm suite](../framework/algorithm-suites.md) used in this behavior
+    TEXT[!MUST]: - [Message ID](../data-format/message-header.md#message-id): The process used to generate
+    TEXT[!MUST]:   this identifier MUST use a good source of randomness to make the chance of duplicate identifiers negligible.
     TEXT[!MUST,implementation]: - [AAD](../data-format/message-header.md#aad): MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
     TEXT[!MUST,implementation]:   in the [encryption materials](../framework/structures.md#encryption-materials),
     TEXT[!MUST,implementation]:   and this serialization MUST NOT contain any key value pairs listed in
     TEXT[!MUST,implementation]:   the [encryption material's](../framework/structures.md#encryption-materials)
     TEXT[!MUST,implementation]:   [required encryption context keys](../framework/structures.md#required-encryption-context-keys).
-    TEXT[!MUST,implementation]: - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-key-entries): MUST be the serialization of the
-    TEXT[!MUST,implementation]:   [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials)
-    TEXT[!MUST,implementation]: - [Content Type](../data-format/message-header.md#content-type): MUST be [02](../data-format/message-header.md#supported-content-types)
-    TEXT[!MUST,implementation]: - [Frame Length](../data-format/message-header.md#frame-length): MUST be the value of the frame size determined above.
-    TEXT[!MUST,implementation]: - [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data): MUST be the value of the [commit key](../framework/algorithm-suites.md#commit-key)
-    TEXT[!MUST,implementation]:   derived according to the [algorithm suites commit key derivation settings](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
+    TEXT[!MUST]: - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-key-entries): MUST be the serialization of the
+    TEXT[!MUST]:   [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials)
+    TEXT[!MUST]: - [Content Type](../data-format/message-header.md#content-type): MUST be [02](../data-format/message-header.md#supported-content-types)
+    TEXT[!MUST]: - [Frame Length](../data-format/message-header.md#frame-length): MUST be the value of the frame size determined above.
+    TEXT[!MUST]: - [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data): MUST be the value of the [commit key](../framework/algorithm-suites.md#commit-key)
+    TEXT[!MUST]:   derived according to the [algorithm suites commit key derivation settings](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
 
   SECTION: [V1 Header](#v1-header)
     TEXT[!MUST,implementation]: If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
     TEXT[!MUST,implementation]: then the [message header body](../data-format/message-header.md#header-body-version-1-0) MUST be serialized with the following specifics:
-    TEXT[!MUST,implementation]: - [Version](../data-format/message-header.md#version-1): MUST have a value corresponding to
-    TEXT[!MUST,implementation]:   [1.0](../data-format/message-header.md#supported-versions)
-    TEXT[!MUST,implementation]: - [Type](../data-format/message-header.md#type): MUST have a value corresponding to
-    TEXT[!MUST,implementation]:   [Customer Authenticated Encrypted Data](../data-format/message-header.md#supported-types)
-    TEXT[!MUST,implementation]: - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST correspond to
-    TEXT[!MUST,implementation]:   the [algorithm suite](../framework/algorithm-suites.md) used in this behavior
-    TEXT[!MUST,implementation]: - [Message ID](../data-format/message-header.md#message-id): The process used to generate
-    TEXT[!MUST,implementation]:   this identifier MUST use a good source of randomness to make the chance of duplicate identifiers negligible.
-    TEXT[!MUST,implementation]: - [AAD](../data-format/message-header.md#aad): MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
-    TEXT[!MUST,implementation]:   in the [encryption materials](../framework/structures.md#encryption-materials),
-    TEXT[!MUST,implementation]:   and this serialization MUST NOT contain any key value pairs listed in
-    TEXT[!MUST,implementation]:   the [encryption material's](../framework/structures.md#encryption-materials)
-    TEXT[!MUST,implementation]:   [required encryption context keys](../framework/structures.md#required-encryption-context-keys).
-    TEXT[!MUST,implementation]: - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-key-entries): MUST be the serialization of the
-    TEXT[!MUST,implementation]:   [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials)
-    TEXT[!MUST,implementation]: - [Content Type](../data-format/message-header.md#content-type): MUST be [02](../data-format/message-header.md#supported-content-types)
-    TEXT[!MUST,implementation]: - [IV Length](../data-format/message-header.md#iv-length): MUST match the [IV length](../framework/algorithm-suites.md#iv-length)
-    TEXT[!MUST,implementation]:   specified by the [algorithm suite](../framework/algorithm-suites.md)
-    TEXT[!MUST,implementation]: - [Frame Length](../data-format/message-header.md#frame-length): MUST be the value of the frame size determined above.
+    TEXT[!MUST]: - [Version](../data-format/message-header.md#version-1): MUST have a value corresponding to
+    TEXT[!MUST]:   [1.0](../data-format/message-header.md#supported-versions)
+    TEXT[!MUST]: - [Type](../data-format/message-header.md#type): MUST have a value corresponding to
+    TEXT[!MUST]:   [Customer Authenticated Encrypted Data](../data-format/message-header.md#supported-types)
+    TEXT[!MUST]: - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST correspond to
+    TEXT[!MUST]:   the [algorithm suite](../framework/algorithm-suites.md) used in this behavior
+    TEXT[!MUST]: - [Message ID](../data-format/message-header.md#message-id): The process used to generate
+    TEXT[!MUST]:   this identifier MUST use a good source of randomness to make the chance of duplicate identifiers negligible.
+    TEXT[!MUST]: - [AAD](../data-format/message-header.md#aad): MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
+    TEXT[!MUST]:   in the [encryption materials](../framework/structures.md#encryption-materials),
+    TEXT[!MUST]:   and this serialization MUST NOT contain any key value pairs listed in
+    TEXT[!MUST]:   the [encryption material's](../framework/structures.md#encryption-materials)
+    TEXT[!MUST]:   [required encryption context keys](../framework/structures.md#required-encryption-context-keys).
+    TEXT[!MUST]: - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-key-entries): MUST be the serialization of the
+    TEXT[!MUST]:   [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials)
+    TEXT[!MUST]: - [Content Type](../data-format/message-header.md#content-type): MUST be [02](../data-format/message-header.md#supported-content-types)
+    TEXT[!MUST]: - [IV Length](../data-format/message-header.md#iv-length): MUST match the [IV length](../framework/algorithm-suites.md#iv-length)
+    TEXT[!MUST]:   specified by the [algorithm suite](../framework/algorithm-suites.md)
+    TEXT[!MUST]: - [Frame Length](../data-format/message-header.md#frame-length): MUST be the value of the frame size determined above.
 
   SECTION: [Authentication Tag](#authentication-tag)
     TEXT[!MUST,implementation]: After serializing the message header body,
@@ -474,32 +471,38 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
     TEXT[!MUST,implementation]: - The IV MUST have a value of 0.
     TEXT[!MUST,implementation]: - The cipherkey MUST be the derived data key
     TEXT[!MUST,implementation]: - The plaintext MUST be an empty byte array
-    TEXT[!MUST]: With the authentication tag calculated,
-    TEXT[!MUST]: if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
-    TEXT[!MUST]: this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-2-0) with the following specifics:
-    TEXT[!MUST]: - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
-    TEXT[!MUST]:   of the authentication tag calculated above.
-    TEXT[!MUST]: With the authentication tag calculated,
-    TEXT[!MUST]: if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
-    TEXT[!MUST]: this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-1-0) with the following specifics:
-    TEXT[!MUST]: - [IV](../data-format/message-header.md#iv): MUST have the value of the IV used in the calculation above,
-    TEXT[!MUST]:   padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
     TEXT[!MUST]: The serialized bytes MUST NOT be released until the entire message header has been serialized.
     TEXT[!MUST]: If this operation is streaming the encrypted message and
     TEXT[!MUST]: the entire message header has been serialized,
     TEXT[!MUST]: the serialized message header MUST be released.
-    TEXT[!MUST,implementation]: The encrypted message output by the Encrypt operation MUST have a message header equal
-    TEXT[!MUST,implementation]: to the message header calculated in this step.
+    TEXT[!MUST]: The encrypted message output by the Encrypt operation MUST have a message header equal
+    TEXT[!MUST]: to the message header calculated in this step.
     TEXT[!MUST]: If the message headers are not equal, the Encrypt operation MUST fail.
     TEXT[!MUST]: If the algorithm suite contains a signature algorithm and
     TEXT[!MUST]: this operation is [streaming](streaming.md) the encrypted message output to the caller,
     TEXT[!MUST]: this operation MUST input the serialized header to the signature algorithm as soon as it is serialized,
     TEXT[!MUST]: such that the serialized header isn't required to remain in memory to [construct the signature](#construct-the-signature).
 
+  SECTION: [V2 Authentication Tag](#v2-authentication-tag)
+    TEXT[!MUST,implementation]: With the authentication tag calculated,
+    TEXT[!MUST,implementation]: if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
+    TEXT[!MUST,implementation]: this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-2-0) with the following specifics:
+    TEXT[!MUST,implementation]: - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
+    TEXT[!MUST,implementation]:   of the authentication tag calculated above.
+
+  SECTION: [V1 Authentication Tag](#v1-authentication-tag)
+    TEXT[!MUST,implementation]: With the authentication tag calculated,
+    TEXT[!MUST,implementation]: if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
+    TEXT[!MUST,implementation]: this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-1-0) with the following specifics:
+    TEXT[!MUST,implementation]: - [IV](../data-format/message-header.md#iv): MUST have the value of the IV used in the calculation above,
+    TEXT[!MUST,implementation]:   padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
+    TEXT[!MUST,implementation]: - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
+    TEXT[!MUST,implementation]:   of the authentication tag calculated above.
+
   SECTION: [Construct the body](#construct-the-body)
-    TEXT[!MUST]: The encrypted message output by the Encrypt operation MUST have a message body equal
-    TEXT[!MUST]: to the message body calculated in this step.
-    TEXT[!MUST]: If the message bodies are not equal, the Encrypt operation MUST fail.
+    TEXT[!MUST,implementation]: The encrypted message output by the Encrypt operation MUST have a message body equal
+    TEXT[!MUST,implementation]: to the message body calculated in this step.
+    TEXT[!MUST,implementation]: If the message bodies are not equal, the Encrypt operation MUST fail.
     TEXT[!MUST]: If [Plaintext Length Bound](#plaintext-length-bound) was specified on input
     TEXT[!MUST]: and this operation determines at any time that the plaintext being encrypted
     TEXT[!MUST]: has a length greater than this value,
@@ -507,21 +510,21 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
     TEXT[!MUST,implementation]: Before the end of the input is indicated,
     TEXT[!MUST,implementation]: this operation MUST process as much of the consumable bytes as possible
     TEXT[!MUST,implementation]: by [constructing regular frames](#construct-a-frame).
-    TEXT[!MUST]: When the end of the input is indicated,
-    TEXT[!MUST]: this operation MUST perform the following until all consumable plaintext bytes are processed:
-    TEXT[!MUST]: - If there are exactly enough consumable plaintext bytes to create one regular frame,
-    TEXT[!MUST]:   such that creating a regular frame processes all consumable bytes,
-    TEXT[!MUST]:   then this operation MUST [construct either a final frame or regular frame](#construct-a-frame)
-    TEXT[!MUST]:   with the remaining plaintext.
-    TEXT[!MUST]: - If there are enough input plaintext bytes consumable to create a new regular frame,
-    TEXT[!MUST]:   such that creating a regular frame does not processes all consumable bytes,
-    TEXT[!MUST]:   then this operation MUST [construct a regular frame](#construct-a-frame)
-    TEXT[!MUST]:   using the consumable plaintext bytes.
-    TEXT[!MUST]: - If there are not enough input consumable plaintext bytes to create a new regular frame,
-    TEXT[!MUST]:   then this operation MUST [construct a final frame](#construct-a-frame)
-    TEXT[!MUST]: If an end to the input has been indicated, there are no more consumable plaintext bytes to process,
-    TEXT[!MUST]: and a final frame has not yet been constructed,
-    TEXT[!MUST]: this operation MUST [construct an empty final frame](#construct-a-frame).
+    TEXT[!MUST,implementation]: When the end of the input is indicated,
+    TEXT[!MUST,implementation]: this operation MUST perform the following until all consumable plaintext bytes are processed:
+    TEXT[!MUST,implementation]: - If there are exactly enough consumable plaintext bytes to create one regular frame,
+    TEXT[!MUST,implementation]:   such that creating a regular frame processes all consumable bytes,
+    TEXT[!MUST,implementation]:   then this operation MUST [construct either a final frame or regular frame](#construct-a-frame)
+    TEXT[!MUST,implementation]:   with the remaining plaintext.
+    TEXT[!MUST,implementation]: - If there are enough input plaintext bytes consumable to create a new regular frame,
+    TEXT[!MUST,implementation]:   such that creating a regular frame does not processes all consumable bytes,
+    TEXT[!MUST,implementation]:   then this operation MUST [construct a regular frame](#construct-a-frame)
+    TEXT[!MUST,implementation]:   using the consumable plaintext bytes.
+    TEXT[!MUST,implementation]: - If there are not enough input consumable plaintext bytes to create a new regular frame,
+    TEXT[!MUST,implementation]:   then this operation MUST [construct a final frame](#construct-a-frame)
+    TEXT[!MUST,implementation]: If an end to the input has been indicated, there are no more consumable plaintext bytes to process,
+    TEXT[!MUST,implementation]: and a final frame has not yet been constructed,
+    TEXT[!MUST,implementation]: this operation MUST [construct an empty final frame](#construct-a-frame).
 
   SECTION: [Construct a frame](#construct-a-frame)
     TEXT[!MUST,implementation]: To construct a regular or final frame that represents the next frame in the encrypted message's body,
@@ -529,39 +532,45 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
     TEXT[!MUST,implementation]: [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     TEXT[!MUST,implementation]: specified by the [algorithm suite](../framework/algorithm-suites.md),
     TEXT[!MUST,implementation]: with the following inputs:
-    TEXT[!MUST]: - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
-    TEXT[!MUST]:   constructed as follows:
-    TEXT[!MUST]:   - The [message ID](../data-format/message-body-aad.md#message-id) MUST be the same as the
-    TEXT[!MUST]:     [message ID](../data-frame/message-header.md#message-id) serialized in the header of this message.
-    TEXT[!MUST]:   - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be the structure defined in
-    TEXT[!MUST]:     [Message Body AAD](../data-format/message-body-aad.md).
-    TEXT[!MUST]:   - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be the sequence
-    TEXT[!MUST]:     number of the frame being encrypted.
-    TEXT[!MUST,implementation]:     If this is the first frame sequentially, this value MUST be 1.
-    TEXT[!MUST,implementation]:     Otherwise, this value MUST be 1 greater than the value of the sequence number
+    TEXT[!MUST,implementation]: - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
+    TEXT[!MUST,implementation]:   constructed as follows:
+    TEXT[!MUST,implementation]:   - The [message ID](../data-format/message-body-aad.md#message-id) MUST be the same as the
+    TEXT[!MUST,implementation]:     [message ID](../data-frame/message-header.md#message-id) serialized in the header of this message.
+    TEXT[!MUST,implementation]:   - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be the structure defined in
+    TEXT[!MUST,implementation]:     [Message Body AAD](../data-format/message-body-aad.md).
+    TEXT[!MUST,implementation]:   - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be the sequence
+    TEXT[!MUST,implementation]:     number of the frame being encrypted.
+    TEXT[!MUST,implementation]:     If this is the first frame sequentially, the sequence number value MUST be 1.
+    TEXT[!MUST,implementation]:     Otherwise, the sequence number value MUST be 1 greater than the value of the sequence number
     TEXT[!MUST,implementation]:     of the previous frame.
     TEXT[!MUST,implementation]:   - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
     TEXT[!MUST,implementation]:     equal to the length of the plaintext being encrypted.
     TEXT[!MUST,implementation]:     - For a regular frame the length of this plaintext MUST equal the frame length.
-    TEXT[!MUST]:     - For a final frame this MUST be the length of the remaining plaintext bytes
-    TEXT[!MUST]:       which have not yet been encrypted,
-    TEXT[!MUST]:       whose length MUST be equal to or less than the frame length.
-    TEXT[!MUST]: - The IV MUST be the [sequence number](../data-format/message-body-aad.md#sequence-number)
-    TEXT[!MUST]:   used in the message body AAD above,
-    TEXT[!MUST]:   padded to the [IV length](../data-format/message-header.md#iv-length).
-    TEXT[!MUST]: - The cipherkey MUST be the derived data key
-    TEXT[!MUST]: - The plaintext MUST be the next subsequence of consumable plaintext bytes that have not yet been encrypted.
-    TEXT[!MUST]:   - For a regular frame the length of this plaintext subsequence MUST equal the frame length.
+    TEXT[!MUST,implementation]:     - For a final frame this MUST be the length of the remaining plaintext bytes
+    TEXT[!MUST,implementation]:       which have not yet been encrypted,
+    TEXT[!MUST,implementation]:       whose length MUST be equal to or less than the frame length.
+    TEXT[!MUST,implementation]: - The IV MUST be the [sequence number](../data-format/message-body-aad.md#sequence-number)
+    TEXT[!MUST,implementation]:   used in the message body AAD above,
+    TEXT[!MUST,implementation]:   padded to the [IV length](../data-format/message-header.md#iv-length).
+    TEXT[!MUST,implementation]: - The cipherkey MUST be the derived data key
+    TEXT[!MUST,implementation]: - The plaintext MUST be the next subsequence of consumable plaintext bytes that have not yet been encrypted.
+    TEXT[!MUST,implementation]:   - For a regular frame the length of this plaintext subsequence MUST equal the frame length.
     TEXT[!MUST,implementation]:   - For a final frame this MUST be the remaining plaintext bytes which have not yet been encrypted,
     TEXT[!MUST,implementation]:     whose length MUST be equal to or less than the frame length.
     TEXT[!MUST,implementation]: This operation MUST serialize a regular frame or final frame with the following specifics:
+    TEXT[!MUST]: - Final frame only: [Sequence Number End](../data-format/message-body.md#sequence-number-end) field: This MUST
+    TEXT[!MUST]:   be the sequence number end value.
+    TEXT[!MUST]:   The Sequence Number End MUST only be serialized for the final frame.
     TEXT[!MUST,implementation]: - [Sequence Number](../data-format/message-body.md#sequence-number): MUST be the sequence number of this frame,
     TEXT[!MUST,implementation]:   as determined above.
-    TEXT[!MUST,implementation]: - [IV](../data-format/message-body.md#iv): MUST be the IV used when calculating the encrypted content above
-    TEXT[!MUST,implementation]: - [Encrypted Content](../data-format/message-body.md#encrypted-content): MUST be the encrypted content calculated above.
-    TEXT[!MUST,implementation]: - [Authentication Tag](../data-format/message-body.md#authentication-tag): MUST be the authentication tag
-    TEXT[!MUST,implementation]:   output when calculating the encrypted content above.
-    TEXT[!MUST,implementation]: The above serialized bytes MUST NOT be released until the entire frame has been serialized.
+    TEXT[!MUST]: - [IV](../data-format/message-body.md#iv): MUST be the IV used when calculating the encrypted content above
+    TEXT[!MUST]: - Final frame only: [Encrypted Content Length](../data-format/message-body.md#encrypted-content-length) field: This MUST
+    TEXT[!MUST]:   be the encrypted content length value
+    TEXT[!MUST]:   The Encrypted Content Length MUST only be serialized for the final frame.
+    TEXT[!MUST]: - [Encrypted Content](../data-format/message-body.md#encrypted-content): MUST be the encrypted content calculated above.
+    TEXT[!MUST]: - [Authentication Tag](../data-format/message-body.md#authentication-tag): MUST be the authentication tag
+    TEXT[!MUST]:   output when calculating the encrypted content above.
+    TEXT[!MUST]: The above serialized bytes MUST NOT be released until the entire frame has been serialized.
     TEXT[!MUST]: If this operation is streaming the encrypted message and
     TEXT[!MUST]: the entire frame has been serialized,
     TEXT[!MUST]: the serialized frame MUST be released.
@@ -608,23 +617,23 @@ SPECIFICATION: [Streaming](specification/client-apis/streaming.md)
     TEXT[!SHOULD]: to be able to process arbitrarily large inputs with a finite amount of working memory.
 
   SECTION: [Release](#release)
-    TEXT[!MUST,implication]: The decrypt and encrypt operations specify when output bytes MUST NOT be released
-    TEXT[!MUST,implication]: and when they SHOULD be released.
+    TEXT[!MUST]: The decrypt and encrypt operations specify when output bytes MUST NOT be released
+    TEXT[!MUST]: and when they SHOULD be released.
 
   SECTION: [Inputs](#inputs)
-    TEXT[!MUST,implication]: In order to support streaming, the operation MUST accept some input within a streaming framework.
-    TEXT[!MUST,implication]: - There MUST be a mechanism for input bytes to become consumable.
-    TEXT[!MUST,implication]: - There MUST be a mechanism to indicate that there are no more input bytes.
+    TEXT[!MUST]: In order to support streaming, the operation MUST accept some input within a streaming framework.
+    TEXT[!MUST]: - There MUST be a mechanism for input bytes to become consumable.
+    TEXT[!MUST]: - There MUST be a mechanism to indicate that there are no more input bytes.
 
   SECTION: [Outputs](#outputs)
-    TEXT[!MUST,implication]: In order to support streaming, the operation MUST produce some output within a streaming framework.
-    TEXT[!MUST,implication]: - There MUST be a mechanism for output bytes to be released.
-    TEXT[!MUST,implication]: - There MUST be a mechanism to indicate that the entire output has been released.
-    TEXT[!MUST,implication]: Operations MUST NOT indicate completion or success until an end to the output has been indicated.
+    TEXT[!MUST]: In order to support streaming, the operation MUST produce some output within a streaming framework.
+    TEXT[!MUST]: - There MUST be a mechanism for output bytes to be released.
+    TEXT[!MUST]: - There MUST be a mechanism to indicate that the entire output has been released.
+    TEXT[!MUST]: Operations MUST NOT indicate completion or success until an end to the output has been indicated.
 
   SECTION: [Behavior](#behavior)
-    TEXT[!MUST,implication]: The behavior of the operation specifies how the operation processes consumable bytes,
-    TEXT[!MUST,implication]: and specifies when processed bytes MUST NOT and SHOULD be released.
+    TEXT[!MUST]: The behavior of the operation specifies how the operation processes consumable bytes,
+    TEXT[!MUST]: and specifies when processed bytes MUST NOT and SHOULD be released.
 
 SPECIFICATION: [Message Body AAD](specification/data-format/message-body-aad.md)
   SECTION: [Body AAD Content](#body-aad-content)
@@ -633,19 +642,19 @@ SPECIFICATION: [Message Body AAD](specification/data-format/message-body-aad.md)
     TEXT[!MUST,implementation]: - The [final frame](message-body.md#final-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Final Frame`.
 
   SECTION: [Sequence Number](#sequence-number)
-    TEXT[!MUST,implementation]: For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#sequence-number).
+    TEXT[!MUST]: For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#sequence-number).
     TEXT[!MUST,implementation]: For [non-framed data](message-body.md#non-framed-data), the value of this field MUST be `1`.
 
   SECTION: [Content Length](#content-length)
     TEXT[!MUST,implementation]: - For [non-framed data](message-body.md#non-framed-data), this value MUST equal the length, in bytes,
     TEXT[!MUST,implementation]:   of the plaintext data provided to the algorithm for encryption.
-    TEXT[!MUST,implementation]: - For [framed data](message-body.md#framed-data), this value MUST equal the length, in bytes,
-    TEXT[!MUST,implementation]:   of the plaintext being encrypted in this frame.
-    TEXT[!MUST,implementation]:   - For [regular frames](message-body.md#regular-frame), this value MUST equal the value of
-    TEXT[!MUST,implementation]:     the [frame length](message-header.md#frame-length) field in the message header.
-    TEXT[!MUST,implementation]:   - For the [final frame](message-body.md#final-frame), this value MUST be greater than or equal to
-    TEXT[!MUST,implementation]:     0 and less than or equal to the value of the [frame length](message-header.md#frame-length)
-    TEXT[!MUST,implementation]:     field in the message header.
+    TEXT[!MUST]: - For [framed data](message-body.md#framed-data), this value MUST equal the length, in bytes,
+    TEXT[!MUST]:   of the plaintext being encrypted in this frame.
+    TEXT[!MUST]:   - For [regular frames](message-body.md#regular-frame), this value MUST equal the value of
+    TEXT[!MUST]:     the [frame length](message-header.md#frame-length) field in the message header.
+    TEXT[!MUST]:   - For the [final frame](message-body.md#final-frame), this value MUST be greater than or equal to
+    TEXT[!MUST]:     0 and less than or equal to the value of the [frame length](message-header.md#frame-length)
+    TEXT[!MUST]:     field in the message header.
 
 SPECIFICATION: [Message Body](specification/data-format/message-body.md)
   SECTION: [Non-Framed Data](#non-framed-data)
@@ -692,8 +701,8 @@ SPECIFICATION: [Message Body](specification/data-format/message-body.md)
     TEXT[!MUST,implication]: The sequence number MUST be interpreted as a UInt32.
 
   SECTION: [Regular Frame IV](#regular-frame-iv)
-    TEXT[!MUST,implementation]: Each frame in the [Framed Data](#framed-data) MUST include an IV that is unique within the message.
-    TEXT[!MUST,implementation,implication]: The IV length MUST be equal to the IV length of the algorithm suite specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
+    TEXT[!MUST]: Each frame in the [Framed Data](#framed-data) MUST include an IV that is unique within the message.
+    TEXT[!MUST,implication]: The IV length MUST be equal to the IV length of the algorithm suite specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
     TEXT[!MUST,implication]: The IV MUST be interpreted as bytes.
 
   SECTION: [Regular Frame Encrypted Content](#regular-frame-encrypted-content)
@@ -701,8 +710,8 @@ SPECIFICATION: [Message Body](specification/data-format/message-body.md)
     TEXT[!MUST,implication]: The encrypted content MUST be interpreted as bytes.
 
   SECTION: [Regular Frame Authentication Tag](#regular-frame-authentication-tag)
-    TEXT[!MUST,implementation,implication]: The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
-    TEXT[!MUST,implementation,implication]: specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
+    TEXT[!MUST,implication]: The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
+    TEXT[!MUST,implication]: specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
     TEXT[!MUST,implication]: The authentication tag MUST be interpreted as bytes.
 
   SECTION: [Final Frame](#final-frame)
@@ -722,6 +731,9 @@ SPECIFICATION: [Message Body](specification/data-format/message-body.md)
     TEXT[!MUST,implementation]: Encrypted Content Length,
     TEXT[!MUST,implementation]: Encrypted Content,
     TEXT[!MUST,implementation]: and Authentication Tag.
+    TEXT[!MUST,implementation]: This means a final frame MUST be a regular frame with the addition of the serialized
+    TEXT[!MUST,implementation]: Sequence Number End
+    TEXT[!MUST,implementation]: and Encrypted Content Length.
 
   SECTION: [Sequence Number End](#sequence-number-end)
     TEXT[!MUST,implementation]: The value MUST be encoded as the 4 bytes `FF FF FF FF` in hexadecimal notation.
@@ -729,17 +741,17 @@ SPECIFICATION: [Message Body](specification/data-format/message-body.md)
     TEXT[!MUST,implication]: The sequence number end MUST be interpreted as bytes.
 
   SECTION: [Final Frame Sequence Number](#final-frame-sequence-number)
-    TEXT[!MUST,implementation]: The Final Frame Sequence number MUST be equal to the total number of frames in the Framed Data.
+    TEXT[!MUST]: The Final Frame Sequence number MUST be equal to the total number of frames in the Framed Data.
     TEXT[!MUST,implication]: The length of the serialized sequence number MUST be 4 bytes.
     TEXT[!MUST,implication]: The sequence number MUST be interpreted as a UInt32.
 
   SECTION: [Final Frame IV](#final-frame-iv)
-    TEXT[!MUST,implementation]: The IV MUST be a unique IV within the message.
+    TEXT[!MUST]: The IV MUST be a unique IV within the message.
     TEXT[!MUST,implication]: The IV length MUST be equal to the IV length of the [algorithm suite](../framework/algorithm-suites.md) that generated the message.
     TEXT[!MUST,implication]: The IV MUST be interpreted as bytes.
 
   SECTION: [Final Frame Encrypted Content Length](#final-frame-encrypted-content-length)
-    TEXT[!MUST,implementation,implication]: The length of the serialized encrypted content length field MUST be 4 bytes.
+    TEXT[!MUST,implication]: The length of the serialized encrypted content length field MUST be 4 bytes.
     TEXT[!MUST,implication]: The encrypted content length MUST be interpreted as a UInt32.
 
   SECTION: [Final Frame Encrypted Content](#final-frame-encrypted-content)
@@ -747,8 +759,8 @@ SPECIFICATION: [Message Body](specification/data-format/message-body.md)
     TEXT[!MUST]: The encrypted content MUST be interpreted as bytes.
 
   SECTION: [Final Frame Authentication Tag](#final-frame-authentication-tag)
-    TEXT[!MUST,implementation,implication]: The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
-    TEXT[!MUST,implementation,implication]: specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
+    TEXT[!MUST,implication]: The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
+    TEXT[!MUST,implication]: specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
     TEXT[!MUST,implication]: The authentication tag MUST be interpreted as bytes.
 
 SPECIFICATION: [Footer Structure](specification/data-format/message-footer.md)
@@ -766,7 +778,7 @@ SPECIFICATION: [Footer Structure](specification/data-format/message-footer.md)
 
 SPECIFICATION: [Message Header](specification/data-format/message-header.md)
   SECTION: [Structure](#structure)
-    TEXT[!MUST,implementation]: The message header is a sequence of bytes that MUST be in big-endian format.
+    TEXT[!MUST,implementation,implication]: The message header is a sequence of bytes that MUST be in big-endian format.
 
   SECTION: [Header Body Version 1.0](#header-body-version-1-0)
     TEXT[!MUST,implementation]: The value of the `Version` field MUST be `01` in the Version 1.0 header body.

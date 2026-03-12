@@ -27,6 +27,7 @@ target = "specification/client-apis/decrypt.md#get-the-decryption-materials"
 # - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header#encrypted-data-keys)
 #   from the message header.
 # - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
+# - Commitment Policy: This MUST be the commitment policy configured on the client.
 # 
 # The data key used as input for all decryption described below MUST be a data key derived from the plaintext data key
 # included in the [decryption materials](../framework/structures.md#decryption-materials).
@@ -109,6 +110,12 @@ from the message header.
 level = "MUST"
 quote = '''
 - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Commitment Policy: This MUST be the commitment policy configured on the client.
 '''
 
 [[spec]]

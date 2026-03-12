@@ -42,6 +42,10 @@ target = "specification/data-format/message-body.md#final-frame"
 # Encrypted Content Length,
 # Encrypted Content,
 # and Authentication Tag.
+# 
+# This means a final frame MUST be a regular frame with the addition of the serialized
+# Sequence Number End
+# and Encrypted Content Length.
 
 [[spec]]
 level = "MUST"
@@ -87,5 +91,13 @@ IV,
 Encrypted Content Length,
 Encrypted Content,
 and Authentication Tag.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+This means a final frame MUST be a regular frame with the addition of the serialized
+Sequence Number End
+and Encrypted Content Length.
 '''
 

@@ -16,8 +16,6 @@ pub(crate) fn write_v2_header_body(
 ) -> Result<(), Error> {
     //= specification/data-format/message-header.md#header-body-version-2-0
     //# The value of the `Version` field MUST be `02` in the Version 2.0 header body.
-    //= specification/data-format/message-header.md#header-body-version-2-0
-    //# The value of the `Version` field MUST be `02` in the Version 2.0 header body.
     write_msg_format_version(w, MessageFormatVersion::V2)?;
     write_esdk_suite_id(w, &body.algorithm_suite)?;
     //= specification/data-format/message-header.md#message-id
@@ -53,6 +51,17 @@ pub(crate) fn read_v2_header_body(
     let message_id = read_message_id_v2(r, raw)?;
     let encryption_context: Vec<(String, String)> = read_canonical_ec(r, raw)?;
     let encrypted_data_keys = read_edks(r, max_edks, raw)?;
+    //= specification/client-apis/decrypt.md#parse-the-header
+    //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
+    //# deserialized from the [message header](../data-format/message-header.md)
+    //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
+    //# then as soon as that can be determined during deserializing
+    //# decrypt MUST process no more bytes and yield an error.
+    if let Some(max) = max_edks {
+        if encrypted_data_keys.len() > max.get() {
+            return ser_err("Number of encrypted data keys exceeds the maximum allowed.");
+        }
+    }
     let content_type = read_content_type(r, raw)?;
     let frame_length = read_u32(r, raw)?;
     let len = get_hkdf(&algorithm_suite.commitment).output_key_length;

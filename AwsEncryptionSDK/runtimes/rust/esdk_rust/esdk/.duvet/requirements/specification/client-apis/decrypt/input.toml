@@ -12,7 +12,7 @@ target = "specification/client-apis/decrypt.md#input"
 # 
 # Optional arguments:
 # 
-# - The input to the Encrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
+# - The input to the Decrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
 
 [[spec]]
 level = "MUST"
@@ -47,6 +47,6 @@ If the caller does not provide exactly one of a keyring or CMM, the Decrypt oper
 [[spec]]
 level = "MUST"
 quote = '''
-- The input to the Encrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
+- The input to the Decrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
 '''
 

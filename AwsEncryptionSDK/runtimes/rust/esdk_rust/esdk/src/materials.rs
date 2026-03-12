@@ -461,22 +461,35 @@ pub(crate) async fn get_legacy_decryption_materials(
     commitment_policy: aws_mpl_legacy::commitment::EsdkCommitmentPolicy,
 ) -> Result<DecryptionMaterials, Error> {
     let encryption_context = from_canonical_pairs(header_body.encryption_context().clone());
+
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
+    //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
+    //= specification/client-apis/decrypt.md#cryptographic-materials-manager
+    //# This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //# The call to the CMM's [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) operation
+    //# MUST be constructed as follows:
     let output = cmm
         .decrypt_materials()
-        //#*  Algorithm Suite ID: This is the parsed algorithm suite ID
-        //#   (../data-format/message-header.md#algorithm-suite-id) from the
-        //#   message header.
+        //= specification/client-apis/decrypt.md#get-the-decryption-materials
+        //# - Algorithm Suite ID: This MUST be the parsed
+        //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
+        //# from the message header.
         .algorithm_suite_id(convert_alg(algorithm_suite_id))
+        //= specification/client-apis/decrypt.md#get-the-decryption-materials
+        //# - Commitment Policy: This MUST be the commitment policy configured on the client.
         .commitment_policy(convert_commit(commitment_policy))
-        //#*  Encrypted Data Keys: This is the parsed encrypted data keys
-        //#   (../data-format/message-header#encrypted-data-keys) from the
-        //#   message header.
+        //= specification/client-apis/decrypt.md#get-the-decryption-materials
+        //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header#encrypted-data-keys)
+        //# from the message header.
         .encrypted_data_keys(convert_edks(header_body.encrypted_data_keys()))
-        //#*  Encryption Context: This is the parsed encryption context
-        //#   (../data-format/message-header.md#aad) from the message header.
+        //= specification/client-apis/decrypt.md#get-the-decryption-materials
+        //# - Encryption Context: This MUST be the parsed [encryption context](../data-format/message-header.md#aad)
+        //# from the message header.
         .encryption_context(encryption_context)
-        //#* Reproduced Encryption Context: This is the
-        //# [input](#input) encryption context.
+        //= specification/client-apis/decrypt.md#get-the-decryption-materials
+        //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
         .reproduced_encryption_context(reproduced_encryption_context.clone())
         .send()
         .await?;

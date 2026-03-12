@@ -103,12 +103,12 @@ async fn internal_encrypt(
     //= specification/client-apis/client.md#initialization
     //# - On client initialization,
     //# the caller MUST have the option to provide a [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys).
-    /// ESDK Rust does not use a client interface but instead exposes static methods that take in this param.
+    // ESDK Rust does not use a client interface but instead exposes static methods that take in this param.
     max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
     //= specification/client-apis/client.md#initialization
     //# - On client initialization,
     //# the caller MUST have the option to provide a [commitment policy](#commitment-policy).
-    /// ESDK Rust does not use a client interface but instead exposes static methods that take in this param.
+    // ESDK Rust does not use a client interface but instead exposes static methods that take in this param.
     commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<EncryptStreamOutput, Error> {
     //= specification/client-apis/encrypt.md#encryption-context

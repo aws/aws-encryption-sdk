@@ -1,9 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Message body serialization/deserialization.
-//! Maps to data-format/message-body.md
-
 use super::header::{ENDFRAME_SEQUENCE_NUMBER, HeaderInfo, START_SEQUENCE_NUMBER};
 use super::serializable_types::*;
 use super::serialize_functions::{read_bytes, read_seq_u32_bounded, read_u32};
@@ -19,8 +16,14 @@ pub(crate) enum BodyAADContent {
     SingleBlock,
 }
 
+//= specification/data-format/message-body-aad.md#body-aad-content
+//# - The [regular frames](message-body.md#regular-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Frame`.
 const BODY_AAD_CONTENT_REGULAR_FRAME: &str = "AWSKMSEncryptionClient Frame";
+//= specification/data-format/message-body-aad.md#body-aad-content
+//# - The [final frame](message-body.md#final-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Final Frame`.
 const BODY_AAD_CONTENT_FINAL_FRAME: &str = "AWSKMSEncryptionClient Final Frame";
+//= specification/data-format/message-body-aad.md#body-aad-content
+//# - [Non-framed data](message-body.md#non-framed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
 const BODY_AAD_CONTENT_SINGLE_BLOCK: &str = "AWSKMSEncryptionClient Single Block";
 
 const fn body_aad_content_type_string(bc: BodyAADContent) -> &'static str {

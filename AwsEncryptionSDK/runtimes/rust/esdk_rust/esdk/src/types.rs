@@ -371,22 +371,19 @@ impl EncryptStreamInput {
     reason = "Remove when we add with_cmm and with_keyring"
 )]
 /// Input for [`decrypt`](crate::decrypt).
-//= specification/client-apis/decrypt.md#input
-//= type=implication
-//# - The input to the Decrypt operation MUST accept a required [Encrypted Message](#encrypted-message) argument.
-//= specification/client-apis/decrypt.md#input
-//= type=implication
-//# - The input to the Decrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
 pub struct DecryptInput<'a> {
     /// data to be decrypted
+    //= specification/client-apis/decrypt.md#input
+    //# - The input to the Decrypt operation MUST accept a required [Encrypted Message](#encrypted-message) argument.
     //= specification/client-apis/decrypt.md#encrypted-message
-    //= type=implication
     //# The input encrypted message MUST be a sequence of bytes in the
     //# [message format](../data-format/message.md) specified by the AWS Encryption SDK.
     pub ciphertext: &'a [u8],
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
     /// The source of cryptographic materials
+    //= specification/client-apis/decrypt.md#input
+    //# - The input to the Decrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
     pub source: Option<MaterialSource>,
     /// default is `NetV400RetryPolicy::AllowRetry`
     pub net_v4_retry_policy: NetV400RetryPolicy,
