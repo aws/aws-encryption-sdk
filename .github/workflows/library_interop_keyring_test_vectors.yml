@@ -65,7 +65,10 @@ jobs:
 
       - name: Install LibCurl
         if: matrix.os == 'ubuntu-22.04' && matrix.language == 'c'
-        run: sudo apt-get install libcurl4-openssl-dev
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install libcurl4-openssl-dev --fix-missing
 
       - name: Checkout C-ESDK
         if: matrix.language == 'c'
@@ -352,7 +355,10 @@ jobs:
 
       - name: Install LibCurl
         if: matrix.os == 'ubuntu-22.04' && matrix.decrypting_language == 'c'
-        run: sudo apt-get install libcurl4-openssl-dev
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install libcurl4-openssl-dev --fix-missing
 
       - name: Checkout C-ESDK
         if: matrix.decrypting_language == 'c'
