@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        library: [TestVectors]
+        library: [AwsEncryptionSDK, TestVectors]
         go-version: ["1.23"]
         os: [
             # Sed script doesn't work properly on windows
@@ -97,8 +97,32 @@ jobs:
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_go CORES=$CORES
 
+      - name: Unzip .NET Retry Flag Manifests
+        if: matrix.library == 'TestVectors'
+        shell: bash
+        working-directory: TestVectors/dafny/TestVectors/test/
+        run: |
+          unzip invalid-Net-4.0.0.zip -d invalid-Net-4.0.0
+          unzip v4-Net-4.0.1.zip -d v4-Net-4.0.1
+          unzip valid-Net-4.0.0.zip -d valid-Net-4.0.0
+
+      # TODO: Remove this after Go polymorph does not generate unwanted duplicate code.
+      - name: Purge polymorph code in Go
+        if: matrix.library == 'TestVectors'
+        working-directory: ./${{ matrix.library }}
+        shell: bash
+        run: |
+          make purge_polymorph_code
+
       - name: Test Go
         working-directory: ${{ matrix.library }}
         shell: bash
         run: |
           make test_go
+
+      - name: Test Examples for Go
+        if: matrix.library == 'AwsEncryptionSDK'
+        working-directory: ${{ matrix.library }}/runtimes/go/examples
+        shell: bash
+        run: |
+          go run main.go

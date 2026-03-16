@@ -33,7 +33,12 @@ jobs:
   decrypt_python_vectors:
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-22.04, macos-15]
+        os: [
+            windows-latest,
+            ubuntu-22.04,
+            # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
+            # macos-15,
+          ]
     runs-on: ${{matrix.os}}
     permissions:
       id-token: write
@@ -140,7 +145,11 @@ jobs:
   generate_vectors:
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-15]
+        os: [
+            ubuntu-22.04,
+            # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
+            # macos-15,
+          ]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
@@ -242,7 +251,11 @@ jobs:
     needs: generate_vectors
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-15]
+        os: [
+            ubuntu-22.04,
+            # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
+            # macos-15,
+          ]
     runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
