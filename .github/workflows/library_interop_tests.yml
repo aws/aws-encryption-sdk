@@ -215,7 +215,7 @@ jobs:
           zip -qq net41.zip -r .
 
       - name: Upload Zip File
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: matrix.os != 'windows-latest'
         with:
           name: ${{matrix.os}}_vector_artifact

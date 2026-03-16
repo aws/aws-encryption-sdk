@@ -300,7 +300,7 @@ jobs:
         run: make test_encrypt_vectors_c_unix
 
       - name: Upload Keyring Encrypt Manifest and keys.json files
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{matrix.os}}_vector_artifact_${{matrix.language}}_${{github.sha}}
           path: |

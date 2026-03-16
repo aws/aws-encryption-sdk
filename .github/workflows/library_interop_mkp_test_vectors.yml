@@ -212,7 +212,7 @@ jobs:
           make test_encrypt_vectors_${{ matrix.language }}_legacy_format
 
       - name: Upload Encrypt Manifest and keys.json files
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{matrix.os}}_vector_artifact_${{matrix.language}}_legacy_format_${{github.sha}}
           path: |
@@ -638,7 +638,7 @@ jobs:
           npx -y @aws-crypto/integration-node encrypt -m encrypt-manifest.json -k keys.json -d decrypt-manifest-js.zip -C
 
       - name: Upload Encrypt Manifest and keys.json files
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{matrix.os}}_vector_artifact_javascript_legacy_format_${{github.sha}}
           path: |
