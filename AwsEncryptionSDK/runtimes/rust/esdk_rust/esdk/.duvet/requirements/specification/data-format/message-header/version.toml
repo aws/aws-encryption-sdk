@@ -3,11 +3,11 @@ target = "specification/data-format/message-header.md#version"
 # Version
 #
 # The version of the message format.
-# The version (hex) of this field MUST be a value that exists in the following table:
+# The length of the serialized version field MUST be 1 byte.
 
 [[spec]]
 level = "MUST"
 quote = '''
-The version (hex) of this field MUST be a value that exists in the following table:
+The length of the serialized version field MUST be 1 byte.
 '''
 

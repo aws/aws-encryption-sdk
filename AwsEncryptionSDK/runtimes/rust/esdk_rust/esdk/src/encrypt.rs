@@ -94,6 +94,7 @@ pub async fn encrypt_stream(
 #[expect(clippy::too_many_arguments)]
 async fn internal_encrypt(
     plaintext: &mut dyn SafeRead,
+    // ciphertext is the output buffer for this function
     ciphertext: &mut dyn SafeWrite,
     plaintext_len: Option<usize>,
     input_source: Option<MaterialSource>,
@@ -101,14 +102,16 @@ async fn internal_encrypt(
     algorithm_suite_id: Option<aws_mpl_legacy::suites::EsdkAlgorithmSuiteId>,
     frame_length: FrameLength,
     //= specification/client-apis/client.md#initialization
+    //= type=exception
+    //= reason=ESDK Rust does not use a client interface, but instead exposes static methods that take in this param.
     //# - On client initialization,
     //# the caller MUST have the option to provide a [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys).
-    // ESDK Rust does not use a client interface but instead exposes static methods that take in this param.
     max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
     //= specification/client-apis/client.md#initialization
+    //= type=exception
+    //= reason=ESDK Rust does not use a client interface, but instead exposes static methods that take in this param.
     //# - On client initialization,
     //# the caller MUST have the option to provide a [commitment policy](#commitment-policy).
-    // ESDK Rust does not use a client interface but instead exposes static methods that take in this param.
     commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<EncryptStreamOutput, Error> {
     //= specification/client-apis/encrypt.md#encryption-context
@@ -117,9 +120,7 @@ async fn internal_encrypt(
     encrypt_decrypt::validate_encryption_context(encryption_context)?;
 
     //= specification/client-apis/encrypt.md#behavior
-    //# If any of these steps fails, this operation MUST halt and indicate a failure to the caller.
-
-    //= specification/client-apis/encrypt.md#behavior
+    //= type=implication
     //# - Encrypt operation Step 1 MUST be [Get the encryption materials](#get-the-encryption-materials)
     let mat_result = step_get_encryption_materials(
         plaintext_len,
@@ -131,26 +132,45 @@ async fn internal_encrypt(
     )
     .await?;
 
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=implication
+    //= reason=The next steps use the encryption materials (mat_result) obtained in step 1
+    //# To construct the [encrypted message](#encrypted-message),
+    //# some fields MUST be constructed using information obtained
+    //# from a set of valid [encryption materials](../framework/structures.md#encryption-materials).
+
     //= specification/client-apis/encrypt.md#behavior
+    //= type=implication
     //# - Encrypt operation step 2 MUST be [Construct the header](#construct-the-header)
+
     //= specification/client-apis/encrypt.md#construct-the-header
+    //= type=implication
+    //= reason=Step 2 (serialize header) comes before step 3 (encrypt body)
     //# Before encrypting input plaintext,
     //# this operation MUST serialize the [message header body](../data-format/message-header.md).
+
+    //= specification/data-format/message.md#structure
+    //# - The message MUST begin with [Message Header](message-header.md)
+    let mut dw = DigestWriter::from_old_ecdsa(mat_result.materials.algorithm_suite.signature)?;
     let header = step_construct_header(
-        //= specification/client-apis/encrypt.md#get-the-encryption-materials
-        //# To construct the [encrypted message](#encrypted-message),
-        //# some fields MUST be constructed using information obtained
-        //# from a set of valid [encryption materials](../framework/structures.md#encryption-materials).
         &mat_result,
         &mat_result.materials.encryption_context,
         &mat_result.materials.required_encryption_context_keys,
         &mat_result.materials.encrypted_data_keys,
         frame_length,
+        ciphertext,
+        &mut dw,
     )?;
 
     //= specification/client-apis/encrypt.md#behavior
+    //= type=implication
     //# - Encrypt operation step 3 MUST be [Construct the body](#construct-the-body)
-    let mut dw = DigestWriter::from_old_ecdsa(mat_result.materials.algorithm_suite.signature)?;
+    //= specification/data-format/message.md#structure
+    //# - The [Message Body](message-body.md) MUST follow the Message Header
+    //= specification/client-apis/encrypt.md#construct-the-body
+    //# The encrypted message output by the Encrypt operation MUST have a message body equal
+    //# to the message body calculated in this step.
+    //# If the message bodies are not equal, the Encrypt operation MUST fail.
     step_construct_body(
         plaintext,
         &header,
@@ -160,21 +180,24 @@ async fn internal_encrypt(
     )?;
 
     //= specification/client-apis/encrypt.md#behavior
+    //= type=implication
     //# - Encrypt operation step 4 MUST be [Construct the signature](#construct-the-signature)
     //= specification/client-apis/encrypt.md#behavior
     //# If the materials do not have an algorithm suite including a signature algorithm,
     //# the Encrypt operation MUST NOT construct a signature.
     if !matches!(mat_result.materials.algorithm_suite.signature, aws_mpl_legacy::suites::SignatureAlgorithm::None) {
+        //= specification/client-apis/encrypt.md#behavior
         //# - If the [encryption materials gathered](#get-the-encryption-materials) has a algorithm suite
         //# including a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
         //# the Encrypt operation MUST perform this step.
         step_construct_signature(
+            //= specification/client-apis/encrypt.md#construct-the-signature
+            //= type=implication
+            //= reason=`header` is the message header; `ciphertext` is the message body
+            //# Note that the message header and message body MAY have already been input during previous steps.
             &header,
             &mat_result.materials,
             dw,
-            //= specification/client-apis/encrypt.md#construct-the-signature
-            //= type=implication
-            //# Note that the message header and message body MAY have already been input during previous steps.
             ciphertext,
         )?;
     }
@@ -184,12 +207,14 @@ async fn internal_encrypt(
     //# this operation MUST release any previously unreleased serialized bytes from previous steps
     //# and MUST release the message footer.
     /// This is released via the ciphertext variable
-
     let suite_id = get_esdk_id(header.suite.id)?;
     Ok(EncryptStreamOutput {
         encryption_context: header.encryption_context,
         algorithm_suite_id: suite_id,
     })
+
+    //= specification/client-apis/encrypt.md#behavior
+    //# If any of these steps fails, this operation MUST halt and indicate a failure to the caller.
 }
 
 /// Step 1: [Get the encryption materials](specification/client-apis/encrypt.md#get-the-encryption-materials)
@@ -216,7 +241,6 @@ async fn step_get_encryption_materials(
         //# If an [input algorithm suite](#algorithm-suite) is provided
         //# that is not supported by the [commitment policy](client.md#commitment-policy)
         //# configured in the [client](client.md) encrypt MUST yield an error.
-        /// This is checked by the MPL-provided method
         let input = aws_mpl_legacy::commitment::ValidateCommitmentPolicyOnEncryptInput::new(
             id,
             aws_mpl_legacy::commitment::CommitmentPolicy::Esdk(commitment_policy),
@@ -292,8 +316,10 @@ fn step_construct_header(
     required_encryption_context_keys: &[String],
     encrypted_data_keys: &[aws_mpl_legacy::EncryptedDataKey],
     frame_length: FrameLength,
+    ciphertext: &mut dyn SafeWrite,
+    dw: &mut DigestWriter,
 ) -> Result<header::HeaderInfo, Error> {
-    encrypt_decrypt::build_header_for_encrypt(
+    let header = encrypt_decrypt::build_header_for_encrypt(
         &mat_result.message_id,
         &mat_result.materials.algorithm_suite,
         encryption_context,
@@ -301,7 +327,9 @@ fn step_construct_header(
         encrypted_data_keys,
         frame_length.0.get(),
         &mat_result.derived_data_keys,
-    )
+    )?;
+    encrypt_decrypt::serialize_header(&header, ciphertext, dw)?;
+    Ok(header)
 }
 
 /// Step 3: [Construct the body](specification/client-apis/encrypt.md#construct-the-body)
@@ -312,7 +340,7 @@ fn step_construct_body(
     ciphertext: &mut dyn SafeWrite,
     dw: &mut DigestWriter,
 ) -> Result<(), Error> {
-    encrypt_decrypt::encrypt_and_serialize(
+    encrypt_decrypt::encrypt_and_serialize_body(
         plaintext,
         header,
         data_key,
@@ -349,7 +377,8 @@ fn step_construct_signature(
                 //# - the signature key MUST be the [signing key](../framework/structures.md#signing-key) in the [encryption materials](../framework/structures.md#encryption-materials)
                 &materials.signing_key.as_ref().unwrap().0,
                 //= specification/client-apis/encrypt.md#construct-the-signature
-                //# - the input to sign MUST be the concatenation of the serialization of the [message header](../data-format/message-header.md) and [message body](../data-format/message-body.md)
+                //# - the input to sign MUST be the concatenation of the serialization of the [message header](../data-format/message-header.md)
+                //# and [message body](../data-format/message-body.md)
                 dw.context.unwrap(),
             )?;
             //= specification/client-apis/encrypt.md#construct-the-signature

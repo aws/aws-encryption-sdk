@@ -20,17 +20,14 @@ pub(crate) fn write_v1_header_body(
     w: &mut dyn SafeWrite,
     body: &V1HeaderBody,
 ) -> Result<(), Error> {
-    //= specification/data-format/message-header.md#version
-    //# The version (hex) of this field MUST be a value that exists in the following table:
     //= specification/data-format/message-header.md#header-body-version-1-0
     //# The value of the `Version` field MUST be `01` in the Version 1.0 header body.
     write_msg_format_version(w, MessageFormatVersion::V1)?;
-    //= specification/data-format/message-header.md#type
-    //# The type (hex) of this field MUST be a value that exists in the following table:
     write_msg_type(w, body.message_type)?;
     write_esdk_suite_id(w, &body.algorithm_suite)?;
     //= specification/data-format/message-header.md#message-id
-    //# A Message ID MUST uniquely identify the [message](message.md).
+    //# implementations MUST use a good source of randomness when generating messages IDs in order to make
+    //# the chance of duplicate IDs negligible.
     write_message_id(w, &body.message_id)?;
     write_aad_section(w, &body.encryption_context)?;
     write_edks(w, &body.encrypted_data_keys)?;

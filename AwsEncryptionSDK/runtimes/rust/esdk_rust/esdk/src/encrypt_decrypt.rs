@@ -152,14 +152,13 @@ fn construct_frame(
         //# - The plaintext MUST be the next subsequence of consumable plaintext bytes
         //# that have not yet been encrypted.
         input.plaintext,
+        // w is the output buffer
         w
     )?;
 
-    // Write encrypted content
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# - [Encrypted Content](../data-format/message-body.md#encrypted-content): MUST be the encrypted content calculated above.
     write_bytes(out, w)?;
-    // Write authentication tag
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# - [Authentication Tag](../data-format/message-body.md#authentication-tag): MUST be the authentication tag
     //# output when calculating the encrypted content above.
@@ -175,14 +174,10 @@ pub(crate) fn serialize_header(
     dw: &mut DigestWriter,
 ) -> Result<(), Error> {
     let mut w = Vec::new();
-    //= specification/data-format/message.md#structure
-    //# - The message MUST begin with [Message Header](message-header.md)
     write_bytes(&mut w, &header.raw_header)?;
     write_header_auth_tag(&mut w, &header.header_auth, &header.suite)?;
     write_bytes(out, &w)?;
     write_bytes(dw, &w)?;
-    //= specification/data-format/message.md#structure
-    //# - The [Message Body](message-body.md) MUST follow the Message Header
     Ok(())
 }
 
@@ -216,41 +211,43 @@ pub(crate) fn encrypt_and_serialize_body(
     let mut next_char: Option<u8> = None;
 
     //= specification/client-apis/encrypt.md#construct-the-body
-    //= type=implementation
     //# Before the end of the input is indicated,
     //# this operation MUST process as much of the consumable bytes as possible
     //# by [constructing regular frames](#construct-a-frame).
-    //# When the end of the input is indicated,
-    //# this operation MUST perform the following until all consumable plaintext bytes are processed:
     loop {
         in_size = read_up_to_peek(plaintext, &mut plaintext_frame, next_char)?;
 
-        if in_size != frame_length {
-            //= specification/client-apis/encrypt.md#construct-the-body
-            //= type=implementation
-            //# - If there are not enough input consumable plaintext bytes to create a new regular frame,
-            //# then this operation MUST [construct a final frame](#construct-a-frame)
-            break;
-        }
         //= specification/client-apis/encrypt.md#construct-the-body
         //= type=implementation
+        //# - If there are not enough input consumable plaintext bytes to create a new regular frame,
+        //# then this operation MUST [construct a final frame](#construct-a-frame)
+        if in_size != frame_length {
+            // This break exits the loop and goes to the final frame construction
+            break;
+        }
+
+        //= specification/client-apis/encrypt.md#construct-the-body
+        //# When the end of the input is indicated,
+        //# this operation MUST perform the following until all consumable plaintext bytes are processed:
+
+        //= specification/client-apis/encrypt.md#construct-the-body
         //# - If there are exactly enough consumable plaintext bytes to create one regular frame,
         //# such that creating a regular frame processes all consumable bytes,
         //# then this operation MUST [construct either a final frame or regular frame](#construct-a-frame)
         //# with the remaining plaintext.
         //= specification/client-apis/encrypt.md#construct-the-body
-        //= type=implementation
         //# - If there are enough input plaintext bytes consumable to create a new regular frame,
         //# such that creating a regular frame does not processes all consumable bytes,
         //# then this operation MUST [construct a regular frame](#construct-a-frame)
         //# using the consumable plaintext bytes.
         next_char = read_opt_u8(plaintext)?;
+
+        //= specification/client-apis/encrypt.md#construct-the-body
+        //= type=implementation
+        //# If an end to the input has been indicated, there are no more consumable plaintext bytes to process,
+        //# and a final frame has not yet been constructed,
+        //# this operation MUST [construct an empty final frame](#construct-a-frame).
         if next_char.is_none() {
-            //= specification/client-apis/encrypt.md#construct-the-body
-            //= type=implementation
-            //# If an end to the input has been indicated, there are no more consumable plaintext bytes to process,
-            //# and a final frame has not yet been constructed,
-            //# this operation MUST [construct an empty final frame](#construct-a-frame).
             break;
         }
 
@@ -337,23 +334,7 @@ pub(crate) fn encrypt_and_serialize_body(
         &mut iv, &mut aad, &mut w, out, dw,
     )?;
 
-    //= specification/client-apis/encrypt.md#construct-the-body
-    //# The encrypted message output by the Encrypt operation MUST have a message body equal
-    //# to the message body calculated in this step.
-    //# If the message bodies are not equal, the Encrypt operation MUST fail.
     Ok(())
-}
-
-/// Serialize header + encrypt and serialize body.
-pub(crate) fn encrypt_and_serialize(
-    plaintext: &mut dyn SafeRead,
-    header: &HeaderInfo,
-    key: &[u8],
-    out: &mut dyn SafeWrite,
-    dw: &mut DigestWriter,
-) -> Result<(), Error> {
-    serialize_header(header, out, dw)?;
-    encrypt_and_serialize_body(plaintext, header, key, out, dw)
 }
 
 pub(crate) fn get_ecdsa_alg(
@@ -425,14 +406,7 @@ pub(crate) fn validate_max_encrypted_data_keys(
     Ok(())
 }
 
-//= specification/data-format/message-header.md#message-id
-//= type=implementation
-//# A Message ID MUST uniquely identify the [message](message.md).
-//= specification/data-format/message-header.md#message-id
-//= type=implementation
-//# While implementations cannot guarantee complete uniqueness,
-//# implementations MUST use a good source of randomness when generating messages IDs in order to make
-//# the chance of duplicate IDs negligible.
+
 pub(crate) fn generate_message_id(suite: &AlgorithmSuite) -> Result<MessageId, Error> {
     let length = if suite.message_version == 1 {
         MESSAGE_ID_LEN_V1
@@ -440,6 +414,11 @@ pub(crate) fn generate_message_id(suite: &AlgorithmSuite) -> Result<MessageId, E
         MESSAGE_ID_LEN_V2
     };
     let mut rand_bytes: Vec<u8> = vec![0; length as usize];
+    //= specification/data-format/message-header.md#message-id
+    //= type=implication
+    //# While implementations cannot guarantee complete uniqueness,
+    //# implementations MUST use a good source of randomness when generating messages IDs in order to make
+    //# the chance of duplicate IDs negligible.
     generate_random_bytes(&mut rand_bytes)?;
     Ok(rand_bytes)
 }
@@ -455,12 +434,6 @@ pub(crate) fn build_header_for_encrypt(
 ) -> Result<HeaderInfo, Error> {
     let mut stored_encryption_context = encryption_context.clone();
     let mut required_encryption_context_map: EncryptionContext = EncryptionContext::new();
-    //= specification/client-apis/encrypt.md#v2-header
-    //# - [AAD](../data-format/message-header.md#aad): MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
-    //# in the [encryption materials](../framework/structures.md#encryption-materials),
-    //# and this serialization MUST NOT contain any key value pairs listed in
-    //# the [encryption material's](../framework/structures.md#encryption-materials)
-    //# [required encryption context keys](../framework/structures.md#required-encryption-context-keys).
     for key in required_encryption_context_keys {
         if stored_encryption_context.contains_key(key) {
             required_encryption_context_map

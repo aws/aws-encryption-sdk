@@ -27,7 +27,6 @@ pub(crate) struct HeaderInfo {
 }
 
 //= specification/data-format/message-header.md#structure
-//= type=implication
 //# The message header is a sequence of bytes that MUST be in big-endian format.
 pub(crate) fn write_header_body(w: &mut dyn SafeWrite, body: &HeaderBody) -> Result<(), Error> {
     match body {
@@ -39,6 +38,8 @@ pub(crate) fn write_header_body(w: &mut dyn SafeWrite, body: &HeaderBody) -> Res
 pub(crate) fn read_header_body(
     //= specification/client-apis/decrypt.md#parse-the-header
     //= type=implication
+    //= reason=SafeRead (std::io::Read) only supports sequential consumption with no skip/seek,
+    //= reason=so reading from it inherently processes all consumable bytes until a valid header is formed.
     //# This operation MUST attempt to deserialize all consumable encrypted message bytes
     //# until it has successfully deserialized a valid [message header](../data-format/message-header.md).
     //= specification/client-apis/decrypt.md#parse-the-header
@@ -46,8 +47,6 @@ pub(crate) fn read_header_body(
     //# This operation MUST wait if it doesn't have enough consumable encrypted message bytes
     //# to deserialize the next field of the message header until enough input bytes become consumable
     //# or the caller indicates an end to the encrypted message.
-    // SafeRead (std::io::Read) only supports sequential consumption with no skip/seek,
-    // so reading from it inherently processes all consumable bytes until a valid header is formed.
     r: &mut dyn SafeRead,
     max_edks: Option<std::num::NonZeroUsize>,
     raw: &mut dyn SafeWrite,

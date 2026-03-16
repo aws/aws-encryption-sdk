@@ -3,7 +3,14 @@ target = "specification/data-format/message-header.md#type"
 # Type
 #
 # The type of the message format.
+# The length of the serialized type field MUST be 1 byte.
 # The type (hex) of this field MUST be a value that exists in the following table:
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized type field MUST be 1 byte.
+'''
 
 [[spec]]
 level = "MUST"

@@ -3,8 +3,22 @@ target = "specification/data-format/message-header.md#iv-length"
 # IV Length
 #
 # The length of the initialization vector (IV).
+# The length of the serialized IV length field MUST be 1 byte.
+# The IV length MUST be serialized as a UInt8.
 # This value MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the
 # [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized IV length field MUST be 1 byte.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The IV length MUST be serialized as a UInt8.
+'''
 
 [[spec]]
 level = "MUST"

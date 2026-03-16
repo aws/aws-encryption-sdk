@@ -44,14 +44,9 @@ pub(crate) fn write_esdk_suite_id(
     write_bytes(w, &suite.binary_id[..])
 }
 
-/*
- * Writes the message id as bytes, which, since the message id is already stored
- * as bytes, simply returns the message id.
- *
- * Though we have different V1 and V2 methods for the read path, since
- * they read different numbers of bytes, a single method on the write path
- * is fine since writing is identical for both.
- */
+//= specification/data-format/message-header.md#message-id
+//# implementations MUST use a good source of randomness when generating messages IDs in order to make
+//# the chance of duplicate IDs negligible.
 pub(crate) fn write_message_id(w: &mut dyn SafeWrite, message_id: &MessageId) -> Result<(), Error> {
     write_bytes(w, message_id)
 }

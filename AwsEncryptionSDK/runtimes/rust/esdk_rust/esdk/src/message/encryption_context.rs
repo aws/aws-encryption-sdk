@@ -68,8 +68,7 @@ pub(crate) fn write_aad(
     write_u16(w, data.len() as u16)?;
     for pair in data {
         //= specification/data-format/message-header.md#key-value-pairs
-        //# The encoding of the key-value pairs of the [encryption context](../framework/structures.md#encryption-context),
-        //# serialized according to it's [specification for serialization](../framework/structures.md#serialization).
+        //# The encryption context key-value pairs MUST be serialized according to its [specification for serialization](../framework/structures.md#serialization).
         write_u16(w, pair.0.len() as u16)?;
         write_bytes(w, pair.0.as_bytes())?;
         write_u16(w, pair.1.len() as u16)?;

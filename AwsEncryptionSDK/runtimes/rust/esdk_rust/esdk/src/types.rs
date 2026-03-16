@@ -49,7 +49,7 @@ impl Eq for MaterialSource {}
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// The length of one frame, must be non-zero, defaults to 4096.
-//= ../specification/data-format/message-body.md#framed-data
+//= specification/data-format/message-body.md#framed-data
 //= type=implication
 //# - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
 #[expect(clippy::exhaustive_structs)]

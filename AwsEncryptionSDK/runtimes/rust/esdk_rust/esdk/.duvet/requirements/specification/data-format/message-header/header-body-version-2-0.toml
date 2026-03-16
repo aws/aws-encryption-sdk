@@ -2,9 +2,9 @@ target = "specification/data-format/message-header.md#header-body-version-2-0"
 
 # Header Body Version 2.0
 #
-# The following table describes the fields that form the Version 2.0 header body.
 # The value of the `Version` field MUST be `02` in the Version 2.0 header body.
-# The bytes are appended in the order shown.
+# 
+# The following table is a non-normative representation of the normative requirements for a Version 2.0 header.
 # 
 # | Field                                         | Length (bytes)                                                                    | Interpreted as                                                                                |
 # | --------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
@@ -16,10 +16,34 @@ target = "specification/data-format/message-header.md#header-body-version-2-0"
 # | [Content Type](#content-type)                 | 1                                                                                 | See [Supported Types](#supported-content-types)                                               |
 # | [Frame Length](#frame-length)                 | 4                                                                                 | UInt32                                                                                        |
 # | [Algorithm Suite Data](#algorithm-suite-data) | Variable. Determined by the Algorithm Suite ID                                    | See [Algorithm Suite Data](../framework/algorithm-suites.md#algorithm-suite-data)             |
+# 
+# The V2 Header Body MUST be serialized as, in order,
+# Version,
+# Algorithm Suite ID,
+# Message ID,
+# AAD,
+# Encrypted Data Keys,
+# Content Type,
+# Frame Length,
+# and Algorithm Suite Data.
 
 [[spec]]
 level = "MUST"
 quote = '''
 The value of the `Version` field MUST be `02` in the Version 2.0 header body.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The V2 Header Body MUST be serialized as, in order,
+Version,
+Algorithm Suite ID,
+Message ID,
+AAD,
+Encrypted Data Keys,
+Content Type,
+Frame Length,
+and Algorithm Suite Data.
 '''
 

@@ -4,11 +4,18 @@ target = "specification/data-format/message-header.md#reserved"
 #
 # A reserved sequence of 4 bytes
 # that MUST have the value (hex) of `00 00 00 00`.
+# The length of the serialized reserved field MUST be 4 bytes.
 
 [[spec]]
 level = "MUST"
 quote = '''
 A reserved sequence of 4 bytes
 that MUST have the value (hex) of `00 00 00 00`.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized reserved field MUST be 4 bytes.
 '''
 
