@@ -272,7 +272,7 @@ jobs:
           mkdir -p $NET_41_VECTOR_PATH
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{matrix.os}}_mpl-${{inputs.mpl-dafny}}_esdk-${{inputs.esdk-dafny}}_vectors
           path: AwsEncryptionSDK/net41/vectors

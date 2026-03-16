@@ -389,7 +389,7 @@ jobs:
           role-duration-seconds: 3600
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{matrix.os}}_vector_artifact_java_legacy_format_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
@@ -408,7 +408,7 @@ jobs:
           role-duration-seconds: 3600
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{matrix.os}}_vector_artifact_net_legacy_format_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
@@ -427,7 +427,7 @@ jobs:
           role-duration-seconds: 3600
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{matrix.os}}_vector_artifact_rust_legacy_format_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
@@ -446,7 +446,7 @@ jobs:
           role-duration-seconds: 3600
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{matrix.os}}_vector_artifact_python_legacy_format_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
@@ -465,7 +465,7 @@ jobs:
           role-duration-seconds: 3600
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{matrix.os}}_vector_artifact_python_mkp_legacy_format_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
@@ -484,7 +484,7 @@ jobs:
           role-duration-seconds: 3600
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{matrix.os}}_vector_artifact_java_mkp_legacy_format_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
@@ -503,7 +503,7 @@ jobs:
           role-duration-seconds: 3600
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{matrix.os}}_vector_artifact_go_legacy_format_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
@@ -560,7 +560,7 @@ jobs:
           npm install fast-xml-parser
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{matrix.os}}_vector_artifact_${{matrix.encrypting_language}}_legacy_format_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/
@@ -625,7 +625,7 @@ jobs:
           npm install fast-xml-parser
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           # we can pick any manifest we want. i choose java because it runs 6 billion devices
           name: ubuntu-22.04_vector_artifact_java_legacy_format_${{github.sha}}
@@ -804,7 +804,7 @@ jobs:
           make transpile_python CORES=$CORES
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{matrix.os}}_vector_artifact_javascript_legacy_format_${{github.sha}}
           path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
