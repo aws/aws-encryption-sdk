@@ -49,7 +49,7 @@ jobs:
           git submodule update --init --recursive mpl
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
@@ -147,7 +147,7 @@ jobs:
           git submodule update --init --recursive mpl
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
@@ -215,7 +215,7 @@ jobs:
           zip -qq net41.zip -r .
 
       - name: Upload Zip File
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: matrix.os != 'windows-latest'
         with:
           name: ${{matrix.os}}_vector_artifact
@@ -246,7 +246,7 @@ jobs:
           git submodule update --init --recursive mpl
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
@@ -264,7 +264,7 @@ jobs:
           name: ${{matrix.os}}_vector_artifact
           path: AwsEncryptionSDK/net41/vectors
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 17
 
