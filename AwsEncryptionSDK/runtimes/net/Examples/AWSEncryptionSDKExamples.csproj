@@ -25,7 +25,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <!-- AWSSDK.SecurityToken is included for the Client Supplier Example -->
-    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.1" />
+    <PackageReference Include="AWSSDK.SecurityToken" Version="4.*" />
     <PackageReference
             Include="Microsoft.NETFramework.ReferenceAssemblies"
             Version="1.0.0"
