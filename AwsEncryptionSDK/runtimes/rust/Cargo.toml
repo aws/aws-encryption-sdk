@@ -17,7 +17,7 @@ readme = "README.md"
 [dependencies]
 aws-config = "1.8.12"
 aws-lc-rs = {version = "1.15.4"}
-aws-lc-sys = { version = "0.38", optional = true }
+aws-lc-sys = { version = "0.39", optional = true }
 aws-lc-fips-sys = { version = "0.13", optional = true }
 aws-sdk-dynamodb = "1.103.0"
 aws-sdk-kms = "1.98.0"
