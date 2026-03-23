@@ -2,10 +2,6 @@
 
 ## [5.0.0](https://github.com/aws/aws-encryption-sdk-dafny/compare/v4.1.0...v5.0.0) (2026-03-23)
 
-This release is available in the following languages:
-
-- .NET
-
 ### ⚠ BREAKING CHANGES
 
 - Adds MPL V2 and removes MPL V1, which removed AWS SDK V3 and replaced it with AWS SDK V4.
