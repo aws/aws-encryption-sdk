@@ -8,7 +8,7 @@
       <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
       <IsPackable>true</IsPackable>
       
-      <Version>4.1.0</Version>
+      <Version>5.0.0</Version>
 
       <AssemblyName>AWS.Cryptography.EncryptionSDK</AssemblyName>
       <PackageId>AWS.Cryptography.EncryptionSDK</PackageId>
