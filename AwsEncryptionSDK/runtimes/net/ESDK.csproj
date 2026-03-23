@@ -30,8 +30,7 @@
 
   <ItemGroup>
       <!-- TODO: manually upgraded to match the latest from MPL, is that reasonable? -->
-      <PackageReference Include="DafnyRuntime" Version="4.9.0" />
-      <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2" />
+      <PackageReference Include="DafnyRuntime" Version="[4.9.0]" />
       <PackageReference Include="AWS.Cryptography.MaterialProviders" Version="[2.0.0]" />
       <!--
         System.Collections.Immutable can be removed once dafny.msbuild is updated with
