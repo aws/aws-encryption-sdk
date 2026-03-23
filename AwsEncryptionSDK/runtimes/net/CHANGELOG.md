@@ -4,7 +4,7 @@
 
 ### ⚠ BREAKING CHANGES
 
-- Adds MPL V2 and removes MPL V1, which removed AWS SDK V3 and replaced it with AWS SDK V4.
+- This version now explicitly depends on AWS SDK V4, if you need to use AWS SDK V3 you MUST use a previous version of this library.
 
 ### Features
 
