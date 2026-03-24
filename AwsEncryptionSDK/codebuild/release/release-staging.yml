@@ -36,10 +36,10 @@ phases:
       - sudo apt update
       - sudo apt-get install mono-devel -y
       # we need to build the test vector lib
+      - make -C aws-encryption-sdk/mpl/TestVectorsAwsCryptographicMaterialProviders mvn_local_deploy_polymorph_dependencies
       - make -C aws-encryption-sdk/mpl/TestVectorsAwsCryptographicMaterialProviders transpile_net
       # Switch back to the main directory
       - cd aws-encryption-sdk/AwsEncryptionSDK
-      - make mvn_local_deploy_polymorph_dependencies
   pre_build:
     commands:
       # UNIQUE_ID should be passed in as an environment variable. It is used to tie
