@@ -37,6 +37,7 @@ phases:
       - sudo apt-get install mono-devel -y
       # Switch back to the main directory
       - cd aws-encryption-sdk/AwsEncryptionSDK
+      - make mvn_local_deploy_polymorph_dependencies
   pre_build:
     commands:
       # UNIQUE_ID should be passed in as an environment variable. It is used to tie

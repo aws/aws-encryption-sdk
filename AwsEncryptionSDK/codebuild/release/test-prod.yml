@@ -25,6 +25,7 @@ phases:
       - sudo apt-get install mono-devel -y
       # Switch back to the main directory
       - cd aws-encryption-sdk/AwsEncryptionSDK
+      - make mvn_local_deploy_polymorph_dependencies
   pre_build:
     commands:
       - make transpile_net
