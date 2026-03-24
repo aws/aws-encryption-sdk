@@ -35,6 +35,9 @@ phases:
       - echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
       - sudo apt update
       - sudo apt-get install mono-devel -y
+      # we need to build the test vector lib
+      - make -C aws-encryption-sdk/mpl/TestVectorsAwsCryptographicMaterialProviders mvn_local_deploy_polymorph_dependencies
+      - make -C aws-encryption-sdk/mpl/TestVectorsAwsCryptographicMaterialProviders transpile_net
       # Switch back to the main directory
       - cd aws-encryption-sdk/AwsEncryptionSDK
   pre_build:
@@ -67,7 +70,7 @@ phases:
       # Set a unique version for releasing to staging, because this may fail and we don't
       # want to collide with previous runs
       - export VERSION=`grep '<Version>' runtimes/net/ESDK.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/'`
-      - dotnet pack runtimes/net/ESDK.csproj --no-build /p:Configuration=Release,Version=$VERSION --output build
+      - dotnet pack runtimes/net/ESDK.csproj --no-build /p:Configuration=Release --output build
       - dotnet nuget push build/AWS.Cryptography.EncryptionSDK.$VERSION.nupkg --source crypto-tools-internal/esdk-net-staging
       # Now validate we can run examples
       - sed -i.backup  "/\<ProjectReference Include=\"..\/ESDK.csproj\" \/>/d" runtimes/net/tests/Test-ESDK.csproj
