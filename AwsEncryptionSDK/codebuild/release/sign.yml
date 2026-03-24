@@ -13,6 +13,7 @@ phases:
       - export PATH="$PWD/dafny:$PATH"
       # Switch back to the main directory
       - cd aws-encryption-sdk
+      - make -C AwsEncryptionSDK mvn_local_deploy_polymorph_dependencies
   pre_build:
     commands:
       # UNIQUE_ID should be passed in as an environment variable. It is used to tie
