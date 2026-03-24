@@ -3,14 +3,8 @@
 //= type=exception
 //# The message header is a sequence of bytes that MUST be in big-endian format.
 
-// Not useful as a specification.
-//= aws-encryption-sdk-specification/data-format/message-header.md#message-id
-//= type=exception
-//# A Message ID MUST uniquely identify the [message](message.md).
-
 // This can't be tested.
 //= aws-encryption-sdk-specification/data-format/message-header.md#message-id
 //= type=test
-//# While implementations cannot guarantee complete uniqueness,
 //# implementations MUST use a good source of randomness when generating messages IDs in order to make
 //# the chance of duplicate IDs negligible.

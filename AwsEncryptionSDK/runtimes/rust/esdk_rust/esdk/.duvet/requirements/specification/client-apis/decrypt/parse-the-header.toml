@@ -8,6 +8,38 @@ target = "specification/client-apis/decrypt.md#parse-the-header"
 # This operation MUST attempt to deserialize all consumable encrypted message bytes until it has
 # successfully deserialized a valid [message header](../data-format/message-header.md).
 # 
+# The header deserialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10)
+# or [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification,
+# depending on the [Version](../data-format/message-header.md#version) field.
+# 
+# Each header field MUST be deserialized according to its specification in the [message header](../data-format/message-header.md):
+# 
+# - [Version](../data-format/message-header.md#version): MUST be deserialized according to the
+#   [Version](../data-format/message-header.md#version) specification.
+#   The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
+# - [Type](../data-format/message-header.md#type) (V1 only): MUST be deserialized according to the
+#   [Type](../data-format/message-header.md#type) specification.
+#   The value MUST be a [supported type](../data-format/message-header.md#supported-types).
+# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST be deserialized according to the
+#   [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id) specification.
+# - [Message ID](../data-format/message-header.md#message-id): MUST be deserialized according to the
+#   [Message ID](../data-format/message-header.md#message-id) specification.
+# - [AAD](../data-format/message-header.md#aad): MUST be deserialized according to the
+#   [AAD](../data-format/message-header.md#aad) specification.
+# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be deserialized according to the
+#   [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
+# - [Content Type](../data-format/message-header.md#content-type): MUST be deserialized according to the
+#   [Content Type](../data-format/message-header.md#content-type) specification.
+#   The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
+# - [Reserved](../data-format/message-header.md#reserved) (V1 only): MUST be deserialized according to the
+#   [Reserved](../data-format/message-header.md#reserved) specification.
+# - [IV Length](../data-format/message-header.md#iv-length) (V1 only): MUST be deserialized according to the
+#   [IV Length](../data-format/message-header.md#iv-length) specification.
+# - [Frame Length](../data-format/message-header.md#frame-length): MUST be deserialized according to the
+#   [Frame Length](../data-format/message-header.md#frame-length) specification.
+# - [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data) (V2 only): MUST be deserialized according to the
+#   [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data) specification.
+# 
 # If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
 # deserialized from the [message header](../data-format/message-header.md)
 # is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
@@ -33,6 +65,115 @@ level = "MUST"
 quote = '''
 This operation MUST attempt to deserialize all consumable encrypted message bytes until it has
 successfully deserialized a valid [message header](../data-format/message-header.md).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The header deserialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10)
+or [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification,
+depending on the [Version](../data-format/message-header.md#version) field.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+Each header field MUST be deserialized according to its specification in the [message header](../data-format/message-header.md):
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Version](../data-format/message-header.md#version): MUST be deserialized according to the
+[Version](../data-format/message-header.md#version) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Type](../data-format/message-header.md#type) (V1 only): MUST be deserialized according to the
+[Type](../data-format/message-header.md#type) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The value MUST be a [supported type](../data-format/message-header.md#supported-types).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST be deserialized according to the
+[Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Message ID](../data-format/message-header.md#message-id): MUST be deserialized according to the
+[Message ID](../data-format/message-header.md#message-id) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [AAD](../data-format/message-header.md#aad): MUST be deserialized according to the
+[AAD](../data-format/message-header.md#aad) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be deserialized according to the
+[Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Content Type](../data-format/message-header.md#content-type): MUST be deserialized according to the
+[Content Type](../data-format/message-header.md#content-type) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Reserved](../data-format/message-header.md#reserved) (V1 only): MUST be deserialized according to the
+[Reserved](../data-format/message-header.md#reserved) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [IV Length](../data-format/message-header.md#iv-length) (V1 only): MUST be deserialized according to the
+[IV Length](../data-format/message-header.md#iv-length) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Frame Length](../data-format/message-header.md#frame-length): MUST be deserialized according to the
+[Frame Length](../data-format/message-header.md#frame-length) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data) (V2 only): MUST be deserialized according to the
+[Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data) specification.
 '''
 
 [[spec]]

@@ -3,67 +3,118 @@ target = "specification/client-apis/encrypt.md#v1-header"
 # V1 Header
 #
 # If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
-# then the [message header body](../data-format/message-header.md#header-body-version-1-0) MUST be serialized with the following specifics:
+# then the [message header body](../data-format/message-header.md#header-body-version-10) MUST be serialized with the following specifics:
 # 
-# - [Version](../data-format/message-header.md#version-1): MUST have a value corresponding to
-#   [1.0](../data-format/message-header.md#supported-versions)
-# - [Type](../data-format/message-header.md#type): MUST have a value corresponding to
-#   [Customer Authenticated Encrypted Data](../data-format/message-header.md#supported-types)
-# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST correspond to
-#   the [algorithm suite](../framework/algorithm-suites.md) used in this behavior
-# - [Message ID](../data-format/message-header.md#message-id): The process used to generate
-#   this identifier MUST use a good source of randomness to make the chance of duplicate identifiers negligible.
-# - [AAD](../data-format/message-header.md#aad): MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
+# - [Version](../data-format/message-header.md#version): MUST be serialized according to the
+#   [Version](../data-format/message-header.md#version) specification.
+#   The value MUST correspond to [1.0](../data-format/message-header.md#supported-versions).
+# - [Type](../data-format/message-header.md#type): MUST be serialized according to the
+#   [Type](../data-format/message-header.md#type) specification.
+#   The value MUST correspond to [Customer Authenticated Encrypted Data](../data-format/message-header.md#supported-types).
+# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST be serialized according to the
+#   [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id) specification.
+#   The value MUST correspond to the [algorithm suite](../framework/algorithm-suites.md) used in this behavior.
+# - [Message ID](../data-format/message-header.md#message-id): MUST be serialized according to the
+#   [Message ID](../data-format/message-header.md#message-id) specification.
+#   The process used to generate this identifier MUST use a good source of randomness
+#   to make the chance of duplicate identifiers negligible.
+# - [AAD](../data-format/message-header.md#aad): MUST be serialized according to the
+#   [AAD](../data-format/message-header.md#aad) specification.
+#   The value MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
 #   in the [encryption materials](../framework/structures.md#encryption-materials),
 #   and this serialization MUST NOT contain any key value pairs listed in
 #   the [encryption material's](../framework/structures.md#encryption-materials)
 #   [required encryption context keys](../framework/structures.md#required-encryption-context-keys).
-# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-key-entries): MUST be the serialization of the
-#   [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials)
-# - [Content Type](../data-format/message-header.md#content-type): MUST be [02](../data-format/message-header.md#supported-content-types)
-# - [IV Length](../data-format/message-header.md#iv-length): MUST match the [IV length](../framework/algorithm-suites.md#iv-length)
-#   specified by the [algorithm suite](../framework/algorithm-suites.md)
-# - [Frame Length](../data-format/message-header.md#frame-length): MUST be the value of the frame size determined above.
+# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be serialized according to the
+#   [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
+#   The value MUST be the serialization of the
+#   [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials).
+# - [Content Type](../data-format/message-header.md#content-type): MUST be serialized according to the
+#   [Content Type](../data-format/message-header.md#content-type) specification.
+#   The value MUST be [02](../data-format/message-header.md#supported-content-types).
+# - [Reserved](../data-format/message-header.md#reserved): MUST be serialized according to the
+#   [Reserved](../data-format/message-header.md#reserved) specification.
+# - [IV Length](../data-format/message-header.md#iv-length): MUST be serialized according to the
+#   [IV Length](../data-format/message-header.md#iv-length) specification.
+#   The value MUST match the [IV length](../framework/algorithm-suites.md#iv-length)
+#   specified by the [algorithm suite](../framework/algorithm-suites.md).
+# - [Frame Length](../data-format/message-header.md#frame-length): MUST be serialized according to the
+#   [Frame Length](../data-format/message-header.md#frame-length) specification.
+#   The value MUST be the value of the frame size determined above.
+# 
+# The serialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification.
 
 [[spec]]
 level = "MUST"
 quote = '''
 If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
-then the [message header body](../data-format/message-header.md#header-body-version-1-0) MUST be serialized with the following specifics:
+then the [message header body](../data-format/message-header.md#header-body-version-10) MUST be serialized with the following specifics:
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-- [Version](../data-format/message-header.md#version-1): MUST have a value corresponding to
-[1.0](../data-format/message-header.md#supported-versions)
+- [Version](../data-format/message-header.md#version): MUST be serialized according to the
+[Version](../data-format/message-header.md#version) specification.
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-- [Type](../data-format/message-header.md#type): MUST have a value corresponding to
-[Customer Authenticated Encrypted Data](../data-format/message-header.md#supported-types)
+The value MUST correspond to [1.0](../data-format/message-header.md#supported-versions).
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-- [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST correspond to
-the [algorithm suite](../framework/algorithm-suites.md) used in this behavior
+- [Type](../data-format/message-header.md#type): MUST be serialized according to the
+[Type](../data-format/message-header.md#type) specification.
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-- [Message ID](../data-format/message-header.md#message-id): The process used to generate
-this identifier MUST use a good source of randomness to make the chance of duplicate identifiers negligible.
+The value MUST correspond to [Customer Authenticated Encrypted Data](../data-format/message-header.md#supported-types).
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-- [AAD](../data-format/message-header.md#aad): MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
+- [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST be serialized according to the
+[Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The value MUST correspond to the [algorithm suite](../framework/algorithm-suites.md) used in this behavior.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Message ID](../data-format/message-header.md#message-id): MUST be serialized according to the
+[Message ID](../data-format/message-header.md#message-id) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The process used to generate this identifier MUST use a good source of randomness
+to make the chance of duplicate identifiers negligible.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [AAD](../data-format/message-header.md#aad): MUST be serialized according to the
+[AAD](../data-format/message-header.md#aad) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The value MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
 in the [encryption materials](../framework/structures.md#encryption-materials),
 and this serialization MUST NOT contain any key value pairs listed in
 the [encryption material's](../framework/structures.md#encryption-materials)
@@ -73,26 +124,67 @@ the [encryption material's](../framework/structures.md#encryption-materials)
 [[spec]]
 level = "MUST"
 quote = '''
-- [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-key-entries): MUST be the serialization of the
-[encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials)
+- [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be serialized according to the
+[Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-- [Content Type](../data-format/message-header.md#content-type): MUST be [02](../data-format/message-header.md#supported-content-types)
+The value MUST be the serialization of the
+[encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials).
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-- [IV Length](../data-format/message-header.md#iv-length): MUST match the [IV length](../framework/algorithm-suites.md#iv-length)
-specified by the [algorithm suite](../framework/algorithm-suites.md)
+- [Content Type](../data-format/message-header.md#content-type): MUST be serialized according to the
+[Content Type](../data-format/message-header.md#content-type) specification.
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-- [Frame Length](../data-format/message-header.md#frame-length): MUST be the value of the frame size determined above.
+The value MUST be [02](../data-format/message-header.md#supported-content-types).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Reserved](../data-format/message-header.md#reserved): MUST be serialized according to the
+[Reserved](../data-format/message-header.md#reserved) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [IV Length](../data-format/message-header.md#iv-length): MUST be serialized according to the
+[IV Length](../data-format/message-header.md#iv-length) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The value MUST match the [IV length](../framework/algorithm-suites.md#iv-length)
+specified by the [algorithm suite](../framework/algorithm-suites.md).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Frame Length](../data-format/message-header.md#frame-length): MUST be serialized according to the
+[Frame Length](../data-format/message-header.md#frame-length) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The value MUST be the value of the frame size determined above.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The serialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification.
 '''
 

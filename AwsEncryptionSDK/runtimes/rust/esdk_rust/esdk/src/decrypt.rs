@@ -4,7 +4,6 @@
 // Decrypt operation — maps to client-apis/decrypt.md
 
 use crate::encrypt::get_esdk_id;
-use crate::encrypt_decrypt;
 use crate::error::Error;
 use crate::key_derivation;
 use crate::materials;
@@ -270,7 +269,7 @@ async fn step_get_decryption_materials(
     if v2_header_body::has_hkdf(&suite.commitment) {
         //= specification/client-apis/decrypt.md#get-the-decryption-materials
         //# The derived commit key MUST equal the commit key stored in the message header.
-        encrypt_decrypt::validate_suite_data(
+        header::validate_suite_data(
             suite,
             header_body,
             derived_data_keys.commitment_key.as_ref().unwrap(),
@@ -395,10 +394,10 @@ fn step_decrypt_body(
     //# The Decrypt operation MUST use the [content type](../data-format/message-header.md#content-type) field parsed from the
     //# message header to determine whether the operation will deserialize the message bytes as
     //# [framed data](../data-format/message-body.md#framed-data) or
-    //# [un-framed data](../data-format/message-body.md#un-framed-data).
+    //# [un-framed data](../data-format/message-body.md#non-framed-data).
     let key = state.derived_data_keys.data_key.clone();
     let last_frame = match state.header.body.content_type() {
-        ContentType::NonFramed => encrypt_decrypt::read_and_decrypt_non_framed_message_body(
+        ContentType::NonFramed => body::read_and_decrypt_non_framed_message_body(
             ciphertext, &state.header, &key, &mut state.dw,
         )?,
         ContentType::Framed => {
@@ -446,7 +445,7 @@ fn step_verify_signature(
         //# [message header](../data-format/message-header.md) and [message body](../data-format/message-body.md).
         //= specification/client-apis/decrypt.md#verify-the-signature
         //# If this verification is not successful, this operation MUST immediately halt and fail.
-        encrypt_decrypt::verify_signature(
+        verify_signature(
             ciphertext,
             state.dw.context.clone().unwrap(),
             state.dec_mat.clone(),
@@ -470,4 +469,40 @@ fn build_encryption_context_to_only_authenticate(
         .filter(|(k, _)| dec_mat.required_encryption_context_keys.contains(k))
         .map(|(k, v)| (k.clone(), v.clone()))
         .collect()
+}
+
+pub(crate) fn get_ecdsa_alg(
+    alg: aws_mpl_legacy::suites::SignatureAlgorithm,
+) -> Result<EcdsaSignatureAlgorithm, Error> {
+    match alg {
+        aws_mpl_legacy::suites::SignatureAlgorithm::Ecdsa(x) => Ok(x),
+        _ => Err("UnsupportedAlgorithm".into()),
+    }
+}
+
+fn verify_signature(
+    r: &mut dyn SafeRead,
+    context: DigestContext,
+    dec_mat: aws_mpl_legacy::DecryptionMaterials,
+    raw: &mut dyn SafeWrite,
+) -> Result<(), Error> {
+    if dec_mat.verification_key.is_none() {
+        return Ok(());
+    }
+
+    let signature = footer::read_footer(r, raw)?;
+    let ecdsa_params = get_ecdsa_alg(dec_mat.algorithm_suite.signature)?;
+    //= specification/client-apis/decrypt.md#verify-the-signature
+    //# If this verification is not successful, this operation MUST immediately halt and fail.
+    let valid = ecdsa_verify_context(
+        ecdsa_params,
+        &dec_mat.verification_key.unwrap().0,
+        context,
+        &signature,
+    )?;
+
+    if !valid {
+        return Err("InvalidSignature".into());
+    }
+    Ok(())
 }

@@ -2,6 +2,9 @@ target = "specification/client-apis/encrypt.md#construct-the-body"
 
 # Construct the body
 #
+# Regular frame serialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
+# Final frame serialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
+# 
 # The encrypted message output by the Encrypt operation MUST have a message body equal
 # to the message body calculated in this step.
 # If the message bodies are not equal, the Encrypt operation MUST fail.
@@ -32,6 +35,18 @@ target = "specification/client-apis/encrypt.md#construct-the-body"
 # If an end to the input has been indicated, there are no more consumable plaintext bytes to process,
 # and a final frame has not yet been constructed,
 # this operation MUST [construct an empty final frame](#construct-a-frame).
+
+[[spec]]
+level = "MUST"
+quote = '''
+Regular frame serialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+Final frame serialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
+'''
 
 [[spec]]
 level = "MUST"

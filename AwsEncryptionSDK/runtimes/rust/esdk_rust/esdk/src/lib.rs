@@ -89,7 +89,6 @@ pub mod test_vectors;
 mod types;
 pub use types::*;
 
-pub(crate) mod encrypt_decrypt;
 pub(crate) mod key_derivation;
 pub(crate) mod materials;
 pub(crate) mod message;

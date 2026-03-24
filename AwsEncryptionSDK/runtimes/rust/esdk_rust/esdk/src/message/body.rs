@@ -3,10 +3,10 @@
 
 use super::header::{ENDFRAME_SEQUENCE_NUMBER, HeaderInfo, START_SEQUENCE_NUMBER};
 use super::serializable_types::*;
-use super::serialize_functions::{read_bytes, read_seq_u32_bounded, read_u32};
+use super::serialize_functions::{read_bytes, read_seq_u32_bounded, read_u32, write_u32, write_bytes, read_up_to_peek, read_opt_u8};
 use super::*;
 use crate::types::{SafeRead, SafeWrite};
-use aws_mpl_legacy::primitives::{AesGcm, aes_decrypt};
+use aws_mpl_legacy::primitives::{AesGcm, aes_decrypt, aes_encrypt};
 use aws_mpl_legacy::suites::AlgorithmSuite;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -61,8 +61,8 @@ pub(crate) fn body_aad(
     result: &mut Vec<u8>,
 ) {
     // Callers are responsible for passing the correct sequence_number and length
-    // per the body-aad spec. See call sites in encrypt_decrypt.rs for the
-    // annotations that document which values satisfy which requirements.
+    // per the body-aad spec. See call sites for the annotations that document
+    // which values satisfy which requirements.
     result.clear();
     result.extend_from_slice(message_id);
     result.extend_from_slice(body_aad_content_type_string(bc).as_bytes());
@@ -78,6 +78,12 @@ pub(crate) fn read_and_decrypt_framed_message_body(
     raw: &mut dyn SafeWrite,
     fail_if_multi_frame: bool,
 ) -> Result<Vec<u8>, Error> {
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=implementation
+    //# Regular frame deserialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=implementation
+    //# Final frame deserialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //# If this is framed data and the first frame sequentially, this value MUST be 1.
     let mut expected_frame: u32 = START_SEQUENCE_NUMBER;
@@ -99,9 +105,9 @@ pub(crate) fn read_and_decrypt_framed_message_body(
 
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //# If deserializing [framed data](../data-format/message-body.md#framed-data),
-    //# the Decrypt operation operation MUST use the first 4 bytes of a frame to determine
+    //# the Decrypt operation MUST use the first 4 bytes of a frame to determine
     //# whether the operation will deserialize the frame as a [final frame](../data-format/message-body.md#final-frame)
-    //# or [regular frame](../fata-format/message-body/md#regular-frame).
+    //# or [regular frame](../data-format/message-body.md#regular-frame).
     loop {
         //= specification/data-format/message-body.md#regular-frame-sequence-number
         //= type=implication
@@ -118,8 +124,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         let seq_num = read_u32(r, raw)?;
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //# If the first 4 bytes have a value of 0xFFFF,
-        //# then the Decrypt operation MUST deserialize this as the [sequence number end](../data-format/message-header.md#sequence-number-end)
-        //# and the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
+        //# then the Decrypt operation MUST deserialize the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
         if seq_num == ENDFRAME_SEQUENCE_NUMBER {
             let seq_num: u32 = read_u32(r, raw)?;
             if seq_num != expected_frame {
@@ -187,14 +192,13 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 )?;
             } else {
                 //= specification/client-apis/decrypt.md#decrypt-the-message-body
-                //# Otherwise, the Decrypt operation MUST deserialize this as the [sequence number](../data-format/message-header.md#sequence-number)
-                //# and the following bytes according to the [regular frame spec](../data-format/message-body.md#regular-frame).
+                //# Otherwise, the Decrypt operation MUST deserialize the bytes according to the [regular frame spec](../data-format/message-body.md#regular-frame).
                 // write previous frame's data, now that we know we have another frame.
                 if expected_frame != START_SEQUENCE_NUMBER {
                     if fail_if_multi_frame {
                         return Err("Streaming Interface can return data before signature has been validated. Set `allow_unsafe_unverified_signature` in the DecryptStreamInput struct if this is ok.".into());
                     }
-                    serialize_functions::write_bytes(w, &result)?;
+                    write_bytes(w, &result)?;
                 }
                 aes_decrypt(
                     alg,
@@ -227,7 +231,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             if fail_if_multi_frame {
                 return Err("Streaming Interface can return data before signature has been validated. Set `allow_unsafe_unverified_signature` in the DecryptStreamInput struct if this is ok.".into());
             }
-            serialize_functions::write_bytes(w, &result)?;
+            write_bytes(w, &result)?;
         }
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //# Otherwise, this value MUST be 1 greater than the value of the sequence number
@@ -266,4 +270,189 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //# This operation MUST NOT release any unauthenticated plaintext.
         aes_decrypt(alg, key, &enc_content, &auth_tag, &iv, &aad, &mut result)?;
     }
+}
+
+pub(crate) fn read_and_decrypt_non_framed_message_body(
+    r: &mut dyn SafeRead,
+    header: &HeaderInfo,
+    key: &[u8],
+    raw: &mut dyn SafeWrite,
+) -> Result<Vec<u8>, Error> {
+    //= specification/data-format/message-header.md#frame-length
+    //# When the [content type](#content-type) is non-framed, the value of this field MUST be 0.
+    if header.body.frame_length() != 0 {
+        return Err("Non-framed message contains non-zero frame length.".into());
+    }
+    let iv = serialize_functions::read_vec(r, get_iv_length(&header.suite) as usize, raw)?;
+    let enc_content = serialize_functions::read_seq_u64_bounded(
+        r,
+        header::SAFE_MAX_ENCRYPT,
+        "Frame exceeds AES-GCM cryptographic safety for a single key/iv.",
+        raw,
+    )?;
+    let auth_tag = serialize_functions::read_vec(r, get_tag_length(&header.suite) as usize, raw)?;
+    let mut aad = Vec::new();
+    body_aad(
+        header.body.message_id(),
+        //= specification/data-format/message-body-aad.md#body-aad-content
+        //# - [Non-framed data](message-body.md#non-framed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
+        BodyAADContent::SingleBlock,
+        //= specification/data-format/message-body-aad.md#sequence-number
+        //# For [non-framed data](message-body.md#non-framed-data), the value of this field MUST be `1`.
+        header::NONFRAMED_SEQUENCE_NUMBER,
+        //= specification/data-format/message-body-aad.md#content-length
+        //# - For [non-framed data](message-body.md#non-framed-data), this value MUST equal the length, in bytes,
+        //# of the plaintext data provided to the algorithm for encryption.
+        enc_content.len() as u64,
+        &mut aad,
+    );
+
+    let mut result: Vec<u8> = enc_content.clone();
+    aes_decrypt(
+        get_encrypt(&header.suite),
+        key,
+        &enc_content,
+        &auth_tag,
+        &iv,
+        &aad,
+        result.as_mut(),
+    )?;
+
+    Ok(result)
+}
+
+const MAX_DATA: usize = (1usize << 36) - 32;
+
+/// Input for constructing a single frame (regular or final).
+pub(crate) struct ConstructFrameInput<'a> {
+    pub(crate) alg: AesGcm,
+    pub(crate) key: &'a [u8],
+    pub(crate) plaintext: &'a [u8],
+    pub(crate) message_id: &'a [u8],
+    pub(crate) aad_content: BodyAADContent,
+    pub(crate) sequence_number: u32,
+    pub(crate) is_final: bool,
+}
+
+/// Construct and serialize a single frame (regular or final).
+pub(crate) fn construct_frame(
+    input: &ConstructFrameInput<'_>,
+    iv: &mut [u8],
+    aad: &mut Vec<u8>,
+    w: &mut Vec<u8>,
+    out: &mut dyn SafeWrite,
+    dw: &mut DigestWriter,
+) -> Result<(), Error> {
+    w.clear();
+    body_aad(input.message_id, input.aad_content, input.sequence_number, input.plaintext.len() as u64, aad);
+    iv_seq(input.sequence_number, iv);
+
+    if input.is_final {
+        write_u32(w, ENDFRAME_SEQUENCE_NUMBER)?;
+    }
+    write_u32(w, input.sequence_number)?;
+    write_bytes(w, iv)?;
+    if input.is_final {
+        write_u32(w, input.plaintext.len() as u32)?;
+    }
+
+    aes_encrypt(input.alg, iv, input.key, input.plaintext, aad, w)?;
+    write_bytes(out, w)?;
+    write_bytes(dw, w)?;
+    Ok(())
+}
+
+/// Encrypt plaintext and serialize the message body (framed) to the output stream.
+pub(crate) fn encrypt_and_serialize_body(
+    plaintext: &mut dyn SafeRead,
+    header: &HeaderInfo,
+    key: &[u8],
+    out: &mut dyn SafeWrite,
+    dw: &mut DigestWriter,
+) -> Result<(), Error> {
+    let mut total_data_size: usize = 0;
+    let frame_length = header.body.frame_length() as usize;
+    let iv_len = get_iv_length(&header.suite) as usize;
+    let auth_len = get_tag_length(&header.suite) as usize;
+    let frame_len = frame_length + iv_len + auth_len + 4;
+    let mut w = Vec::with_capacity(frame_len);
+
+    //= specification/data-format/message-body.md#regular-frame-sequence-number
+    //= type=implementation
+    //# Framed Data MUST start at Sequence Number 1.
+    let mut sequence_number = START_SEQUENCE_NUMBER;
+    let alg = get_encrypt(&header.suite);
+
+    let mut iv = vec![0; iv_len];
+    let mut plaintext_frame = vec![0; frame_length];
+    let mut aad = Vec::new();
+    let mut in_size: usize;
+    let mut next_char: Option<u8> = None;
+
+    loop {
+        in_size = read_up_to_peek(plaintext, &mut plaintext_frame, next_char)?;
+        if in_size != frame_length {
+            break;
+        }
+        next_char = read_opt_u8(plaintext)?;
+        if next_char.is_none() {
+            break;
+        }
+
+        //= specification/data-format/message-body.md#framed-data
+        //= type=implementation
+        //# - The number of frames in a single message MUST be less than or equal to `2^32 - 1`.
+        if sequence_number == ENDFRAME_SEQUENCE_NUMBER {
+            return Err("too many frames".into());
+        }
+
+        total_data_size += frame_length;
+        if total_data_size > MAX_DATA {
+            return Err("Plain text too large".into());
+        }
+
+        construct_frame(
+            &ConstructFrameInput {
+                alg, key,
+                plaintext: &plaintext_frame,
+                message_id: header.body.message_id(),
+                aad_content: BodyAADContent::RegularFrame,
+                sequence_number,
+                is_final: false,
+            },
+            &mut iv, &mut aad, &mut w, out, dw,
+        )?;
+
+        //= specification/data-format/message-body.md#regular-frame-sequence-number
+        //= type=implementation
+        //# Subsequent frames MUST be in order and MUST contain an increment of 1 from the previous frame.
+        sequence_number += 1;
+    }
+
+    // Final frame
+    total_data_size += in_size;
+    if total_data_size > MAX_DATA {
+        return Err("Plain text too large".into());
+    }
+
+    debug_assert!(in_size <= frame_length);
+    debug_assert!(in_size > 0 || sequence_number == START_SEQUENCE_NUMBER,
+        "empty final frame only allowed when entire plaintext is empty");
+
+    //= specification/client-apis/encrypt.md#construct-the-body
+    //= type=implementation
+    //# Final frame serialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
+    construct_frame(
+        &ConstructFrameInput {
+            alg, key,
+            plaintext: &plaintext_frame[0..in_size],
+            message_id: header.body.message_id(),
+            aad_content: BodyAADContent::FinalFrame,
+            sequence_number,
+            is_final: true,
+        },
+        &mut iv, &mut aad, &mut w, out, dw,
+    )?;
+
+    Ok(())
 }

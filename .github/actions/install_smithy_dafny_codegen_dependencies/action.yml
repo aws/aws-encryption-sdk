@@ -13,17 +13,31 @@ runs:
       with:
         distribution: "corretto"
         java-version: "17"
+        cache: "gradle"
+
+    - name: Cache Maven local repository
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-smithy-dafny
+        restore-keys: |
+          ${{ runner.os }}-maven-
 
     - name: Install smithy-dafny-codegen dependencies locally
-      shell: bash
-      run: |
-        make -C mpl/smithy-dafny mvn_local_deploy_polymorph_dependencies
+      uses: nick-fields/retry@v3
+      with:
+        timeout_minutes: 10
+        retry_wait_seconds: 30
+        max_attempts: 3
+        shell: bash
+        command: make -C mpl/smithy-dafny mvn_local_deploy_polymorph_dependencies
 
     - name: Setup Python, black, and docformatter for code formatting
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
         architecture: x64
+        cache: "pip"
     - shell: bash
       run: |
         python -m pip install --upgrade pip
@@ -34,11 +48,16 @@ runs:
       uses: actions/setup-go@v6
       with:
         go-version: "1.23"
+        cache: false # No go.mod at repo root; project-level caching handled in test workflows
 
     - name: Install Go imports
-      shell: bash
-      run: |
-        go install golang.org/x/tools/cmd/goimports@v0.36.0
+      uses: nick-fields/retry@v3
+      with:
+        timeout_minutes: 10
+        retry_wait_seconds: 30
+        max_attempts: 3
+        shell: bash
+        command: go install golang.org/x/tools/cmd/goimports@v0.36.0
 
     # Without this the if-dafny-at-least command includes "Downloading ..." output
     - name: Arbitrary makefile target to force downloading Gradle

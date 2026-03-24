@@ -15,7 +15,13 @@ target = "specification/data-format/message-body.md#non-framed-data"
 # | [Encrypted Content](#encrypted-content)               | Variable                                 | Bytes          |
 # | [Authentication Tag](#authentication-tag)             | Variable                                 | Bytes          |
 # 
-# Non-framed data MUST be serialized as, in order,
+# Non-framed data MUST be serialized (written) as, in order,
+# IV,
+# Encrypted Content Length,
+# Encrypted Content,
+# and Authentication Tag.
+# 
+# Non-framed data MUST be deserialized (read) as, in order,
 # IV,
 # Encrypted Content Length,
 # Encrypted Content,
@@ -24,7 +30,17 @@ target = "specification/data-format/message-body.md#non-framed-data"
 [[spec]]
 level = "MUST"
 quote = '''
-Non-framed data MUST be serialized as, in order,
+Non-framed data MUST be serialized (written) as, in order,
+IV,
+Encrypted Content Length,
+Encrypted Content,
+and Authentication Tag.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+Non-framed data MUST be deserialized (read) as, in order,
 IV,
 Encrypted Content Length,
 Encrypted Content,

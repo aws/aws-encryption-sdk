@@ -94,3 +94,67 @@ pub(crate) const fn header_version_supports_commitment(
         _ => false,
     }
 }
+
+//= specification/data-format/message-header.md#encrypted-data-key-count
+//= type=implementation
+//# This value MUST be greater than 0.
+pub(crate) fn validate_max_encrypted_data_keys(
+    max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
+    edks: &[aws_mpl_legacy::EncryptedDataKey],
+) -> Result<(), Error> {
+    if let Some(max) = max_encrypted_data_keys {
+        if edks.len() > max.get() {
+            return Err("Encrypted data keys exceed maxEncryptedDataKeys".into());
+        }
+        if edks.is_empty() {
+            return Err("Encrypted data keys is empty.".into());
+        }
+    }
+    Ok(())
+}
+
+//= specification/data-format/message-header.md#message-id
+//= type=implementation
+//# implementations MUST use a good source of randomness when generating messages IDs in order to make
+//# the chance of duplicate IDs negligible.
+pub(crate) fn generate_message_id(suite: &AlgorithmSuite) -> Result<MessageId, Error> {
+    let length = if suite.message_version == 1 {
+        MESSAGE_ID_LEN_V1
+    } else {
+        MESSAGE_ID_LEN_V2
+    };
+    let mut rand_bytes: Vec<u8> = vec![0; length as usize];
+    aws_mpl_legacy::primitives::generate_random_bytes(&mut rand_bytes)?;
+    Ok(rand_bytes)
+}
+
+pub(crate) fn validate_suite_data(
+    suite: &AlgorithmSuite,
+    header_body: &HeaderBody,
+    expected_suite_data: &[u8],
+) -> Result<(), Error> {
+    if header_body.suite_data() != expected_suite_data {
+        return Err("Commitment key does not match".into());
+    }
+    //= specification/data-format/message-header.md#algorithm-suite-data
+    //# The length of the suite data field MUST be equal to the [Algorithm Suite Data Length](../framework/algorithm-suites.md#algorithm-suite-data-length) value
+    //# of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
+    if get_hkdf(&suite.commitment).output_key_length != expected_suite_data.len() as u32 {
+        return Err("Commitment key is invalid".into());
+    }
+    Ok(())
+}
+
+/// Serialize the message header (body + auth tag) to the output stream.
+pub(crate) fn serialize_header(
+    header: &HeaderInfo,
+    out: &mut dyn SafeWrite,
+    dw: &mut DigestWriter,
+) -> Result<(), Error> {
+    let mut w = Vec::new();
+    serialize_functions::write_bytes(&mut w, &header.raw_header)?;
+    header_auth::write_header_auth_tag(&mut w, &header.header_auth, &header.suite)?;
+    serialize_functions::write_bytes(out, &w)?;
+    serialize_functions::write_bytes(dw, &w)?;
+    Ok(())
+}

@@ -3,15 +3,18 @@
 
 // Encrypt operation — maps to client-apis/encrypt.md
 
-use crate::encrypt_decrypt;
 use crate::error::Error;
 use crate::key_derivation;
 use crate::materials;
-use crate::message::header_types::MessageId;
+use crate::message::encryption_context::write_empty_ec_or_write_aad;
+use crate::message::header_types::*;
+use crate::message::serializable_types::*;
 use crate::message::*;
 use crate::types::*;
+use aws_mpl_legacy::EncryptedDataKey;
 use aws_mpl_legacy::primitives::*;
 use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
+use aws_mpl_legacy::suites::AlgorithmSuite;
 
 /// Intermediate state produced by [step_get_encryption_materials] and consumed by subsequent steps.
 struct EncryptionMaterialsResult {
@@ -101,23 +104,13 @@ async fn internal_encrypt(
     encryption_context: &EncryptionContext,
     algorithm_suite_id: Option<aws_mpl_legacy::suites::EsdkAlgorithmSuiteId>,
     frame_length: FrameLength,
-    //= specification/client-apis/client.md#initialization
-    //= type=exception
-    //= reason=ESDK Rust does not use a client interface, but instead exposes static methods that take in this param.
-    //# - On client initialization,
-    //# the caller MUST have the option to provide a [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys).
     max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
-    //= specification/client-apis/client.md#initialization
-    //= type=exception
-    //= reason=ESDK Rust does not use a client interface, but instead exposes static methods that take in this param.
-    //# - On client initialization,
-    //# the caller MUST have the option to provide a [commitment policy](#commitment-policy).
     commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<EncryptStreamOutput, Error> {
     //= specification/client-apis/encrypt.md#encryption-context
     //# If the input encryption context contains any entries with a key beginning with `aws-crypto-`,
     //# the encryption operation MUST fail.
-    encrypt_decrypt::validate_encryption_context(encryption_context)?;
+    validate_encryption_context(encryption_context)?;
 
     //= specification/client-apis/encrypt.md#behavior
     //= type=implication
@@ -276,7 +269,7 @@ async fn step_get_encryption_materials(
     //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys) on the [encryption materials](../framework/structures.md#encryption-materials)
     //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md)
     //# encrypt MUST yield an error.
-    encrypt_decrypt::validate_max_encrypted_data_keys(
+    header::validate_max_encrypted_data_keys(
         max_encrypted_data_keys,
         &materials.encrypted_data_keys,
     )?;
@@ -290,7 +283,7 @@ async fn step_get_encryption_materials(
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
     //# encrypt MUST yield an error.
-    let message_id = encrypt_decrypt::generate_message_id(&materials.algorithm_suite)?;
+    let message_id = header::generate_message_id(&materials.algorithm_suite)?;
 
     let derived_data_keys = key_derivation::derive_keys(
         &message_id,
@@ -314,12 +307,12 @@ fn step_construct_header(
     mat_result: &EncryptionMaterialsResult,
     encryption_context: &EncryptionContext,
     required_encryption_context_keys: &[String],
-    encrypted_data_keys: &[aws_mpl_legacy::EncryptedDataKey],
+    encrypted_data_keys: &[EncryptedDataKey],
     frame_length: FrameLength,
     ciphertext: &mut dyn SafeWrite,
     dw: &mut DigestWriter,
 ) -> Result<header::HeaderInfo, Error> {
-    let header = encrypt_decrypt::build_header_for_encrypt(
+    let header = build_header_for_encrypt(
         &mat_result.message_id,
         &mat_result.materials.algorithm_suite,
         encryption_context,
@@ -328,7 +321,7 @@ fn step_construct_header(
         frame_length.0.get(),
         &mat_result.derived_data_keys,
     )?;
-    encrypt_decrypt::serialize_header(&header, ciphertext, dw)?;
+    header::serialize_header(&header, ciphertext, dw)?;
     Ok(header)
 }
 
@@ -340,7 +333,7 @@ fn step_construct_body(
     ciphertext: &mut dyn SafeWrite,
     dw: &mut DigestWriter,
 ) -> Result<(), Error> {
-    encrypt_decrypt::encrypt_and_serialize_body(
+    body::encrypt_and_serialize_body(
         plaintext,
         header,
         data_key,
@@ -367,7 +360,7 @@ fn step_construct_signature(
     //# [message footer](message-footer.md) serialized after the [message body](message-body.md).
     match &header.suite.signature {
         aws_mpl_legacy::suites::SignatureAlgorithm::Ecdsa(_) => {
-            let ecdsa_params = encrypt_decrypt::get_ecdsa_alg(header.suite.signature)?;
+            let ecdsa_params = crate::decrypt::get_ecdsa_alg(header.suite.signature)?;
             //= specification/client-apis/encrypt.md#construct-the-signature
             //# To calculate a signature, this operation MUST use the [signature algorithm](../framework/algorithm-suites.md#signature-algorithm)
             //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following input:
@@ -416,4 +409,135 @@ pub(crate) fn get_esdk_id(
         aws_mpl_legacy::suites::AlgorithmSuiteId::Esdk(x) => Ok(x),
         _ => Err("Unsupported algorithm suite".into()),
     }
+}
+
+const RESERVED_ENCRYPTION_CONTEXT: &str = "aws-crypto-";
+
+//= specification/client-apis/encrypt.md#encryption-context
+//= type=implementation
+//# If the input encryption context contains any entries with a key beginning with `aws-crypto-`,
+//# the encryption operation MUST fail.
+fn validate_encryption_context(ec: &EncryptionContext) -> Result<(), Error> {
+    for key in ec.keys() {
+        if key.starts_with(RESERVED_ENCRYPTION_CONTEXT) {
+            return Err(
+                "Encryption context keys cannot contain reserved prefix 'aws-crypto-'".into(),
+            );
+        }
+    }
+    Ok(())
+}
+
+fn build_header_for_encrypt(
+    message_id: &MessageId,
+    suite: &AlgorithmSuite,
+    encryption_context: &EncryptionContext,
+    required_encryption_context_keys: &[String],
+    encrypted_data_keys: &[EncryptedDataKey],
+    frame_length: u32,
+    derived_data_keys: &key_derivation::ExpandedKeyMaterial,
+) -> Result<header::HeaderInfo, Error> {
+    let mut stored_encryption_context = encryption_context.clone();
+    let mut required_encryption_context_map: EncryptionContext = EncryptionContext::new();
+    for key in required_encryption_context_keys {
+        if stored_encryption_context.contains_key(key) {
+            required_encryption_context_map
+                .insert(key.clone(), stored_encryption_context.remove(key).unwrap());
+        }
+    }
+    let canonical_stored_encryption_context = to_canonical_pairs(stored_encryption_context);
+
+    let body: HeaderBody = build_header_body(
+        message_id, suite, &canonical_stored_encryption_context,
+        encrypted_data_keys, frame_length, derived_data_keys.commitment_key.clone(),
+    )?;
+
+    let canonical_req_encryption_context = to_canonical_pairs(required_encryption_context_map);
+    let mut serialized_req_encryption_context = Vec::new();
+    write_empty_ec_or_write_aad(
+        &mut serialized_req_encryption_context,
+        &canonical_req_encryption_context,
+    )?;
+
+    let mut raw_header = Vec::new();
+    header::write_header_body(&mut raw_header, &body)?;
+
+    let header_auth = build_header_auth_tag(
+        suite, &derived_data_keys.data_key,
+        &raw_header, &serialized_req_encryption_context,
+    )?;
+
+    Ok(header::HeaderInfo {
+        suite: suite.clone(), body,
+        encryption_context: encryption_context.clone(),
+        header_auth, raw_header,
+    })
+}
+
+fn build_header_body(
+    message_id: &MessageId,
+    suite: &AlgorithmSuite,
+    encryption_context: &ESDKCanonicalEncryptionContext,
+    encrypted_data_keys: &[EncryptedDataKey],
+    frame_length: u32,
+    suite_data: Option<Vec<u8>>,
+) -> Result<HeaderBody, Error> {
+    match suite.commitment {
+        aws_mpl_legacy::suites::DerivationAlgorithm::Hkdf(h) => {
+            if suite_data.is_none()
+                || suite_data.as_ref().unwrap().len() != h.output_key_length as usize
+            {
+                return Err("Validation Error 1".into());
+            }
+            Ok(HeaderBody::V2Body(V2HeaderBody {
+                algorithm_suite: suite.clone(),
+                message_id: message_id.clone(),
+                encryption_context: encryption_context.clone(),
+                encrypted_data_keys: encrypted_data_keys.into(),
+                //= specification/client-apis/encrypt.md#un-framed-message-body-encryption
+                //= type=implication
+                //# Implementations of the AWS Encryption SDK MUST NOT encrypt using the Non-Framed content type.
+                content_type: ContentType::Framed,
+                frame_length,
+                suite_data: suite_data.unwrap(),
+            }))
+        }
+        aws_mpl_legacy::suites::DerivationAlgorithm::Identity => Err("Validation Error 2".into()),
+        _ => Ok(HeaderBody::V1Body(V1HeaderBody {
+            message_type: MessageType::TypeCustomerAed,
+            algorithm_suite: suite.clone(),
+            message_id: message_id.clone(),
+            encryption_context: encryption_context.clone(),
+            encrypted_data_keys: encrypted_data_keys.into(),
+            content_type: ContentType::Framed,
+            header_iv_length: u64::from(get_iv_length(suite)),
+            frame_length,
+        })),
+    }
+}
+
+fn build_header_auth_tag(
+    suite: &AlgorithmSuite,
+    data_key: &[u8],
+    raw_header: &[u8],
+    serialized_req_encryption_context: &[u8],
+) -> Result<HeaderAuth, Error> {
+    let key_length = get_encrypt_key_length(suite);
+    if data_key.len() != key_length as usize {
+        return Err("Incorrect data key length".into());
+    }
+
+    let iv = vec![0; get_iv_length(suite) as usize];
+    let mut auth_tag = Vec::new();
+    aes_encrypt(
+        body::get_encrypt(suite),
+        &iv, data_key, &[],
+        &[raw_header, serialized_req_encryption_context].concat(),
+        &mut auth_tag,
+    )?;
+
+    Ok(HeaderAuth::AESMac {
+        header_iv: iv,
+        header_auth_tag: auth_tag,
+    })
 }
