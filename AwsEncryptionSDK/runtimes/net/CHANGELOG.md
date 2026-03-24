@@ -1,5 +1,32 @@
 # Changelog
 
+## [5.0.0](https://github.com/aws/aws-encryption-sdk-dafny/compare/v4.1.0...v5.0.0) (2026-03-23)
+
+### ⚠ BREAKING CHANGES
+
+- This version now explicitly depends on AWS SDK V4, if you need to use AWS SDK V3 you MUST use a previous version of this library.
+
+### Features
+
+- Bump to MPL V2 ([#869](https://github.com/aws/aws-encryption-sdk-dafny/issues/869)) ([9ddae5c](https://github.com/aws/aws-encryption-sdk-dafny/commit/9ddae5cdf6a6668cbaf43e551958100533d46fae))
+
+### Fixes
+
+- **.NET:** Improve Collection of Errors string ([#728](https://github.com/aws/aws-encryption-sdk-dafny/issues/728)) ([d66248b](https://github.com/aws/aws-encryption-sdk-dafny/commit/d66248b956e5bce553fd64ba46189a5ac6eb69ee))
+
+### Maintenance
+
+- add C to list of languages checked for interoperability ([#773](https://github.com/aws/aws-encryption-sdk-dafny/issues/773)) ([3b9297a](https://github.com/aws/aws-encryption-sdk-dafny/commit/3b9297aa54dc984885e426236987d55197cffc9f))
+- **TestVectors:** add DefaultCmm Tests ([#698](https://github.com/aws/aws-encryption-sdk-dafny/issues/698)) ([a287d45](https://github.com/aws/aws-encryption-sdk-dafny/commit/a287d45c25688dfc07b3b94587bc1f0f152b810e))
+
+## 4.1.1
+
+### Notes
+
+- Update .csproj files to prevent use of AWS-SDK-NET V4
+
+**Full Changelog**: <https://github.com/aws/aws-encryption-sdk/compare/v4.1.0...v4.1.1>
+
 ## 4.1.0
 
 ### Notes
