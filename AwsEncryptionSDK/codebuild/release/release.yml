@@ -22,18 +22,18 @@ batch:
         image: aws/codebuild/standard:6.0
       depend-on:
         - sign
-    #- identifier: release_prod
-    #  buildspec: AwsEncryptionSDK/codebuild/release/release-prod.yml
-    #  env:
-    #    type: LINUX_CONTAINER
-    #    image: aws/codebuild/standard:6.0
-    #  depend-on:
-    #    - verify
-    #    - release_staging
-    #- identifier: test_prod
-    #  buildspec: AwsEncryptionSDK/codebuild/release/test-prod.yml
-    #  env:
-    #    type: LINUX_CONTAINER
-    #    image: aws/codebuild/standard:6.0
-    #  depend-on:
-    #    - release_prod
+    - identifier: release_prod
+      buildspec: AwsEncryptionSDK/codebuild/release/release-prod.yml
+      env:
+        type: LINUX_CONTAINER
+        image: aws/codebuild/standard:6.0
+      depend-on:
+        - verify
+        - release_staging
+    - identifier: test_prod
+      buildspec: AwsEncryptionSDK/codebuild/release/test-prod.yml
+      env:
+        type: LINUX_CONTAINER
+        image: aws/codebuild/standard:6.0
+      depend-on:
+        - release_prod
