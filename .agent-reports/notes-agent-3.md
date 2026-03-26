@@ -1,64 +1,70 @@
-# Agent 3 Review Notes — Round 2
+# Agent 3 Review Notes — Round 3
+
+## Context
+This is a test-only update. Agent 2 rewrote `test_construct_the_body.rs` to parse output ciphertext bytes and assert on frame structure (regular frame count, final frame count, final frame content length) instead of just doing round-trip equality checks. All 7 existing duvet `type=test` annotations were preserved. No source code changes.
 
 ## Adversarial Pre-Review (Step 2)
 
-### Question 1: Does each annotation's next line actually implement THAT requirement?
+### Question 1: Do the test annotations match the requirements they claim to test?
 
-Focus on the two changes from round 1 feedback:
+**Req 1 test** (`test_regular_frame_serialization_conforms_to_spec`): Encrypts 30 bytes with frame_length=10, asserts 2 regular frames + 1 final frame, plus round-trip. The structural assertion proves regular frames were constructed with the correct size. The round-trip proves they conform to the spec (decrypt can parse them). PASS.
 
-**Req 5 (moved to line ~419)**: "If there are enough input plaintext bytes consumable to create a new regular frame, such that creating a regular frame does not processes all consumable bytes, then this operation MUST construct a regular frame using the consumable plaintext bytes." → At this point in the code, both break conditions have been checked and failed: `in_size == frame_length` (enough bytes) AND `next_char.is_some()` (more bytes remain). This IS the decision point where we know the Req 5 condition is true. The remaining loop body constructs the regular frame. Semantic match via Pattern 3. PASS.
+**Req 2 test** (`test_process_consumable_bytes_as_regular_frames`): Encrypts 50 bytes with frame_length=10, asserts 4 regular frames + 1 final frame. This proves "as much of the consumable bytes as possible" were processed as regular frames (4 × 10 = 40 regular + 10 final = 50). PASS.
 
-**Cross-ref implication (line ~437)**: Now has `//= reason=Serialization order is enforced by construct_frame's implementation; this annotation traces the structural requirement`. The reason is factually correct — construct_frame internally serializes Sequence Number, IV, Encrypted Content, and Authentication Tag in order. PASS.
+**Req 3 test** (`test_end_of_input_processing`): Encrypts 15 bytes with frame_length=10, asserts 1 regular + 1 final with content_length=5. Proves end-of-input processing creates the final frame with remaining bytes. PASS.
+
+**Req 4 test** (`test_exact_frame_length_constructs_final_or_regular`): Encrypts 10 bytes with frame_length=10, asserts 0 regular + 1 final with content_length=10. This is the exact-match case. The spec says "MUST construct either a final frame or regular frame" — the implementation chooses final frame. The test verifies this. PASS.
+
+**Req 5 test** (`test_enough_bytes_constructs_regular_frame`): Encrypts 25 bytes with frame_length=10, asserts 2 regular + 1 final with content_length=5. Proves regular frames are constructed when more bytes remain. PASS.
+
+**Req 6 test** (`test_not_enough_bytes_constructs_final_frame`): Encrypts 7 bytes with frame_length=10, asserts 0 regular + 1 final with content_length=7. Proves short input goes directly to final frame. PASS.
+
+**Req 7 test** (`test_empty_plaintext_constructs_empty_final_frame`): Encrypts 0 bytes, asserts 0 regular + 1 final with content_length=0. Proves empty final frame is constructed. PASS.
 
 ### Question 2: Annotation stacking check
-
-**Before construct_frame (regular frame, line ~447)**: Now only 2 annotation blocks:
-1. Req 1 (encrypt.md#construct-the-body): "Regular frame serialization MUST conform..."
-2. Cross-ref (message-body.md#regular-frame): "A regular frame MUST be serialized as..."
-
-2 blocks — within the limit. PASS. The 3-stack is eliminated.
-
-**Before construct_frame (final frame, line ~484)**: 2 annotation blocks:
-1. Req 7: "If an end to the input has been indicated..."
-2. Final frame serialization: "Final frame serialization MUST conform..."
-
-2 blocks — within the limit. PASS. (Unchanged from round 1.)
-
-**Req 5 + framed-data (lines ~419-427)**: Req 5 annotation, blank line, framed-data annotation, then `if sequence_number == ENDFRAME_SEQUENCE_NUMBER`. These are 2 annotation blocks before the `if` check. Within the limit. But they describe different things (Req 5 = decision to construct regular frame; framed-data = frame count limit). Req 5 is Pattern 3 covering the whole remaining loop body. The framed-data annotation is Pattern 1 (error condition inside validation block). They are logically separate. Acceptable.
+No annotation stacking in the test file. Each test has exactly 1 annotation block. PASS.
 
 ### Question 3: Per-block isolation evaluation
-
-**Block: Req 5 (line ~419-423)**: In isolation, "enough bytes, more remain, MUST construct regular frame." The code that follows (after blank line + framed-data annotation) is the frame count check, data size check, then construct_frame. The entire remaining loop body IS the "construct a regular frame" operation. In isolation, this makes sense — we're at the point where the decision is made, and everything after is the execution. PASS.
-
-**Block: Req 1 + cross-ref (lines ~437-445)**: In isolation, "Regular frame serialization MUST conform to Regular Frame spec" + "A regular frame MUST be serialized as Sequence Number, IV, Encrypted Content, and Authentication Tag." Next code is `construct_frame(...)`. Obvious connection. PASS.
+Each annotation block is inside its test function, immediately before the test setup code. The connection between annotation and test is obvious in every case. PASS.
 
 ### Question 4: Semantic relationship
-All annotations have correct semantic relationships to their code. No mismatches.
+All test annotations semantically match their test functions. Each test exercises the specific scenario described by its annotation. PASS.
 
 ### Question 5: Spec sub-items
-The three sub-items (Req 4, 5, 6) are each annotated at their specific branch points. PASS.
+N/A for test file — the sub-items (Req 4, 5, 6) each have their own dedicated test. PASS.
 
 ### Question 6: Code structure mirrors spec
-Yes. Loop = "before end of input." Post-loop = "when end of input indicated." Branch points map to spec conditionals.
+Tests are ordered Req 1 through Req 7, matching the spec's order. PASS.
 
 ### Question 7: Top-to-bottom readability
-Improved from round 1. Req 5 now reads naturally at the decision point rather than being stacked before construct_frame. The flow is: check not-enough-bytes → check exact-match → decision: enough-bytes-more-remain → validate frame count → validate data size → construct regular frame. Linear and clear.
+File reads linearly: helpers at top, then 7 tests in spec order. PASS.
 
 ## Anti-Rationalization Check (Step 3)
 
-1. I noticed the blank line between Req 5 annotation and the framed-data annotation. I thought "but it's Pattern 3." Am I rationalizing? No — Pattern 3 explicitly covers general behavior annotations at block start. The blank line is whitespace formatting, not a structural problem. The annotation is at the correct decision point per the round 1 fix instruction.
+1. I noticed the `count_frames` helper reads `_content_len` but doesn't use it (prefixed with `_`). This is dead code in the helper. However, it's a test helper, and the value is used by the separate `final_frame_content_length` helper. Not a problem — it's just reading past the field to count frames. Not rationalizing.
 
-2. I noticed Req 3 has a blank line + comment after it. This was present in round 1 and was already reviewed and passed. Not a new issue.
+2. I noticed clippy warns about collapsible `if` in `find_body_start`. This is a real lint warning. It's minor (style, not correctness) but should be fixed. Flagging it.
 
-3. No other "but" patterns in my reasoning.
+3. I noticed `final_frame_content_length` scans from byte 0, not from `find_body_start`. This means it could theoretically match a false ENDFRAME marker in the header. However, the header doesn't contain `0xFFFFFFFF` in normal messages, and the tests use small plaintexts where the header is well-formed. This is a test helper, not production code. The risk is negligible. Not blocking.
 
-## Conclusion
+4. I noticed the empty plaintext test uses `frame_length=4096` while all other tests use `frame_length=10`. This is intentional — it uses the default frame length to test the empty case. Not a problem.
 
-Both round 1 issues are correctly fixed:
-1. 3-annotation stack eliminated — Req 5 moved to correct decision point
-2. reason= line added to type=implication — factually correct
+## Frame-Parsing Logic Verification
 
-No new issues introduced by the fixes.
+Verified against `aws-encryption-sdk-specification/data-format/message-body.md`:
+
+**Regular frame**: SeqNum(4) + IV(12) + Content(frame_length) + Tag(16)
+- Code: `4 + IV_LEN + frame_length as usize + TAG_LEN` = `4 + 12 + frame_length + 16` ✅
+
+**Final frame**: ENDFRAME(4) + SeqNum(4) + IV(12) + ContentLength(4) + Content(N) + Tag(16)
+- Content length offset from ENDFRAME: 4 + 4 + 12 = 20 bytes
+- Code: `ct[pos + 20..pos + 24]` ✅
+
+**find_body_start**: Scans for either ENDFRAME+SeqNum=1 (final frame as first frame) or SeqNum=1 validated by walking regular frames to ENDFRAME. Correct approach.
+
+**count_frames**: Walks from body_start, counting regular frames by size and detecting final frame by ENDFRAME marker. Correct.
+
+**final_frame_content_length**: Scans for ENDFRAME marker and reads 4 bytes at offset 20. Correct per spec.
 
 ## Potential Spec Gaps
-None identified beyond what was noted in round 1.
+None identified.

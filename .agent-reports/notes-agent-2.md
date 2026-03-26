@@ -1,19 +1,28 @@
-# Agent 2 Notes — Round 2 (Review Feedback)
+# Agent 2 Notes — Test Update: Parse Output Bytes
 
-## Feedback Received
-Two issues from Agent 3:
-1. 3-annotation stack before regular frame `construct_frame` call
-2. `type=implication` without `reason=` line on cross-reference annotation
+## Pre-Implementation Reasoning
 
-## Changes Made
+### 1. What are the logical steps?
+1. Create a `count_frames` helper that parses ciphertext bytes to count regular and final frames
+2. Create an `encrypt_with_frame_length` helper (duplicated from test_construct_a_frame.rs)
+3. Update each test to add structural assertions using `count_frames`
+4. Keep existing round-trip assertions and duvet annotations
 
-### Issue 1: 3-annotation stack
-Moved Req 5 ("If there are enough input plaintext bytes consumable...") from immediately before `construct_frame` to immediately after the `next_char.is_none()` break. This is the correct decision point: at that location, we know `in_size == frame_length` (enough bytes) AND `next_char.is_some()` (more bytes remain), which is exactly what Req 5 describes.
+### 2. Approach for `count_frames`
+The simplest approach: scan for the 0xFFFFFFFF ENDFRAME marker to find the final frame boundary.
+- Walk from body start: try to find SeqNum=1 (regular frame start) or 0xFFFFFFFF+SeqNum=1 (final frame start)
+- For regular frames: advance by 4(seq) + 12(iv) + frame_length(content) + 16(tag)
+- For final frames: read content_length at offset +20, advance by 4(end) + 4(seq) + 12(iv) + 4(len) + content_length + 16(tag)
+- Return (regular_count, final_count)
 
-This leaves only 2 annotation blocks before `construct_frame`: Req 1 (regular frame conformance) + cross-ref (regular-frame serialization order), which is within the 2-block limit.
+Also add a `final_frame_content_length` helper to extract the content length from the final frame.
 
-### Issue 2: Missing reason= line
-Added `//= reason=Serialization order is enforced by construct_frame's implementation; this annotation traces the structural requirement` to the `type=implication` cross-reference annotation for `message-body.md#regular-frame`.
+### 3. What existing code does something similar?
+`test_construct_a_frame.rs` already has:
+- `encrypt_with_frame_length` helper
+- Pattern of scanning for ENDFRAME marker and sequence numbers
+- Pattern of parsing final frame content length at offset +20 from ENDFRAME marker
 
-### Bonus cleanup
-Removed redundant `//= type=implementation` from the `framed-data` and `regular-frame-sequence-number` annotations that were part of my original changes. Pre-existing `type=implementation` lines elsewhere in the file were left untouched (out of scope).
+### 4. Key insight for exact-match test
+When plaintext length == frame_length, the implementation constructs a FINAL frame (not regular).
+The test should verify: 0 regular frames, 1 final frame, content_length == frame_length.

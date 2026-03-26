@@ -103,3 +103,47 @@ Cross-ref ratio: 1/2 external links have cross-references.
 - `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_construct_the_body.rs`
 
 **Commit Message**: `feat(encrypt): add construct-the-body annotations to encrypt_and_serialize_body`
+
+## Round 3
+
+## Review: APPROVED AND COMMITTED ✅
+
+### Summary
+Test-only update. Agent 2 rewrote `test_construct_the_body.rs` to parse output ciphertext bytes and assert on frame structure (regular frame count, final frame count, final frame content length) instead of relying solely on round-trip equality checks. All 7 existing `type=test` annotations preserved. Frame-parsing logic verified correct against the message body spec. Tests are significantly stronger now — they prove the implementation produces the correct frame structure, not just that encrypt/decrypt round-trips.
+
+### What Was Verified
+- ✅ Duvet annotations use exact quotes from TOML files (all 7 verified character-for-character)
+- ✅ Annotation placement follows correct patterns — each test has exactly 1 annotation block inside the test function
+- ✅ Implementation matches specification requirements (no source changes, tests verify existing implementation)
+- ✅ Tests cover all implementation annotations (7 type=test for 7 implementation requirements)
+- ✅ Code quality is acceptable
+- ✅ Commit message follows Conventional Commits format
+
+### Frame-Parsing Logic Verification
+Verified helper functions against `aws-encryption-sdk-specification/data-format/message-body.md`:
+- Regular frame: SeqNum(4) + IV(12) + Content(frame_length) + Tag(16) — code matches ✅
+- Final frame: ENDFRAME(4) + SeqNum(4) + IV(12) + ContentLength(4) + Content(N) + Tag(16) — content length at offset 20 matches ✅
+- `find_body_start`: Two-phase scan (ENDFRAME+SeqNum=1 for final-as-first, or SeqNum=1 validated by frame walk) — correct ✅
+- `count_frames`: Walks from body_start counting regular frames by size, detects final by ENDFRAME — correct ✅
+- `final_frame_content_length`: Scans for ENDFRAME, reads UInt32 at offset 20 — correct ✅
+
+### Test Results (from manual validation)
+- Check 1 (Tests): PASS — all 7 tests pass; 5 pre-existing failures in `test_encrypt_decrypt` due to expired AWS credentials (unrelated)
+- Check 2 (Coverage): Not available (no pre-spawn hook)
+- Check 3 (Duvet Report): PASS — `make duvet` succeeds, 679 annotations parsed, 1230 references matched
+- Check 4 (Snapshot): Not available
+- Check 5 (Linter): PASS (exit 0) — 1 new clippy warning (collapsible_if in `find_body_start` line 64, style only); 8 pre-existing lib warnings unrelated to this change
+
+### Suggestions (Non-Blocking)
+1. **CODE_QUALITY**: Clippy warns about collapsible `if` in `find_body_start` (line 64). Collapse the nested `if` into `if ct[i..i + 4] == seq_one && validate_frame_walk(ct, i, frame_length)`. This is a style warning, not a correctness issue.
+
+### Commit
+`6ce41373 test(encrypt): parse output bytes to verify frame structure in construct-the-body tests`
+
+### Test Handoff
+**Spec**: `aws-encryption-sdk-specification/client-apis/encrypt.md#construct-the-body`
+
+**Files Modified**:
+- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_construct_the_body.rs`
+
+**Commit Message**: `test(encrypt): parse output bytes to verify frame structure in construct-the-body tests`
