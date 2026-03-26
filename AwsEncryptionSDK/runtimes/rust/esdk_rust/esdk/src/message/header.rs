@@ -151,6 +151,10 @@ pub(crate) fn serialize_header(
     out: &mut dyn SafeWrite,
     dw: &mut DigestWriter,
 ) -> Result<(), Error> {
+    //= specification/data-format/message-header.md#structure
+    //# The header MUST be serialized as, in order,
+    //# Header Body,
+    //# and Header Authentication.
     let mut w = Vec::new();
     serialize_functions::write_bytes(&mut w, &header.raw_header)?;
     header_auth::write_header_auth_tag(&mut w, &header.header_auth, &header.suite)?;
