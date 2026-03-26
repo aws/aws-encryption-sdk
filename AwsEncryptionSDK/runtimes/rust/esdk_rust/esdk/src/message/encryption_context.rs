@@ -46,15 +46,29 @@ fn get_length(data: &ESDKCanonicalEncryptionContext) -> usize {
     length
 }
 
+//= specification/data-format/message-header.md#aad
+//# The AAD MUST be serialized as, in order,
+//# Key Value Pairs Length,
+//# and Key Value Pairs.
 pub(crate) fn write_aad_section(
     w: &mut dyn SafeWrite,
     data: &ESDKCanonicalEncryptionContext,
 ) -> Result<(), Error> {
     if data.is_empty() {
+        //= specification/data-format/message-header.md#key-value-pairs-length
+        //# When the [encryption context](../framework/structures.md#encryption-context) is empty, the value of this field MUST be 0.
         write_u16(w, 0)?;
         return Ok(());
     }
     let bytes = get_length(data);
+    //= specification/data-format/message-header.md#key-value-pairs-length
+    //= type=implication
+    //= reason=write_u16 always writes exactly 2 bytes as a big-endian UInt16
+    //# The length of the serialized key value pairs length field MUST be 2 bytes.
+    //= specification/data-format/message-header.md#key-value-pairs-length
+    //= type=implication
+    //= reason=write_u16 serializes the value as a big-endian UInt16
+    //# The key value pairs length MUST be serialized as a UInt16.
     write_u16(w, bytes as u16)?;
     write_aad(w, data)
 }
@@ -63,8 +77,6 @@ pub(crate) fn write_aad(
     w: &mut dyn SafeWrite,
     data: &ESDKCanonicalEncryptionContext,
 ) -> Result<(), Error> {
-    //= specification/data-format/message-header.md#key-value-pairs-length
-    //# When the [encryption context](../framework/structures.md#encryption-context) is empty, the value of this field MUST be 0.
     write_u16(w, data.len() as u16)?;
     for pair in data {
         //= specification/data-format/message-header.md#key-value-pairs
