@@ -22,12 +22,16 @@ pub(crate) fn read_message_id_v1(
     r: &mut dyn SafeRead,
     raw: &mut dyn SafeWrite,
 ) -> Result<MessageId, Error> {
+    //= aws-encryption-sdk-specification/data-format/message-header.md#message-id
+    //# The length of the serialized message ID MUST be 16 bytes for [version 1.0](#header-body-version-10) headers.
     read_vec(r, MESSAGE_ID_LEN_V1 as usize, raw)
 }
 pub(crate) fn read_message_id_v2(
     r: &mut dyn SafeRead,
     raw: &mut dyn SafeWrite,
 ) -> Result<MessageId, Error> {
+    //= aws-encryption-sdk-specification/data-format/message-header.md#message-id
+    //# The length of the serialized message ID MUST be 32 bytes for [version 2.0](#header-body-version-20) headers.
     read_vec(r, MESSAGE_ID_LEN_V2 as usize, raw)
 }
 
@@ -48,5 +52,9 @@ pub(crate) fn write_esdk_suite_id(
 //# implementations MUST use a good source of randomness when generating messages IDs in order to make
 //# the chance of duplicate IDs negligible.
 pub(crate) fn write_message_id(w: &mut dyn SafeWrite, message_id: &MessageId) -> Result<(), Error> {
+    //= aws-encryption-sdk-specification/data-format/message-header.md#message-id
+    //= type=implication
+    //= reason=MessageId is Vec<u8>; write_bytes treats it as raw bytes
+    //# The message ID MUST be interpreted as bytes.
     write_bytes(w, message_id)
 }

@@ -117,6 +117,9 @@ async fn test_v1_header_message_id() {
     let msg_id_1 = &ct1[4..20];
     let msg_id_2 = &ct2[4..20];
     assert_ne!(msg_id_1, msg_id_2, "Message IDs must be unique (random)");
+    //= aws-encryption-sdk-specification/data-format/message-header.md#message-id
+    //= type=test
+    //# The length of the serialized message ID MUST be 16 bytes for [version 1.0](#header-body-version-10) headers.
     assert_eq!(msg_id_1.len(), 16, "V1 Message ID must be 16 bytes");
 }
 

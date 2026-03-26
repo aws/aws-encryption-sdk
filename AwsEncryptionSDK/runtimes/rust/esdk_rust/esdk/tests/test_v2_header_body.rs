@@ -169,3 +169,17 @@ async fn test_v2_header_body_serialization_order() {
         }
     }
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v2_header_message_id() {
+    //= aws-encryption-sdk-specification/data-format/message-header.md#message-id
+    //= type=test
+    //# The length of the serialized message ID MUST be 32 bytes for [version 2.0](#header-body-version-20) headers.
+    let ct1 = encrypt_default(b"msg id v2 test").await;
+    let ct2 = encrypt_default(b"msg id v2 test").await;
+    // V2 header: [0] = version (0x02), [1..3] = algorithm suite ID, [3..35] = message ID (32 bytes)
+    let msg_id_1 = &ct1[3..35];
+    let msg_id_2 = &ct2[3..35];
+    assert_eq!(msg_id_1.len(), 32, "V2 Message ID must be 32 bytes");
+    assert_ne!(msg_id_1, msg_id_2, "V2 Message IDs must be unique (random)");
+}
