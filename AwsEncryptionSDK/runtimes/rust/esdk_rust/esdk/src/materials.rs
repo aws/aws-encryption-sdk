@@ -173,23 +173,35 @@ pub(crate) async fn get_modern_decryption_materials(
 ) -> Result<DecryptionMaterials, Error> {
     let encryption_context = from_canonical_pairs(header_body.encryption_context().clone());
     let mut input = DecryptMaterialsInput::default();
-    //#*  Algorithm Suite ID: This is the parsed algorithm suite ID
-    //#   (../data-format/message-header.md#algorithm-suite-id) from the
-    //#   message header.
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //# The call to the CMM's [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) operation
+    //# MUST be constructed as follows:
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //# - Algorithm Suite ID: This MUST be the parsed
+    //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
+    //# from the message header.
     input.algorithm_suite_id = algorithm_suite_id;
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //# - Commitment Policy: This MUST be the commitment policy configured on the client.
     input.commitment_policy = aws_mpl_legacy::commitment::CommitmentPolicy::Esdk(commitment_policy);
-    //#*  Encrypted Data Keys: This is the parsed encrypted data keys
-    //#   (../data-format/message-header#encrypted-data-keys) from the
-    //#   message header.
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header#encrypted-data-keys)
+    //# from the message header.
     input.encrypted_data_keys = header_body.encrypted_data_keys().into();
-    //#*  Encryption Context: This is the parsed encryption context
-    //#   (../data-format/message-header.md#aad) from the message header.
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //# - Encryption Context: This MUST be the parsed [encryption context](../data-format/message-header.md#aad)
+    //# from the message header.
     input.encryption_context = encryption_context;
-    //#* Reproduced Encryption Context: This is the
-    //# [input](#input) encryption context.
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
     input
         .reproduced_encryption_context
         .clone_from(reproduced_encryption_context);
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
+    //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
+    //= specification/client-apis/decrypt.md#cryptographic-materials-manager
+    //# This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
     let materials = cmm.decrypt_materials(&input).await?;
     aws_mpl_legacy::commitment::validate_commitment_policy_on_decrypt(
         aws_mpl_legacy::commitment::ValidateCommitmentPolicyOnDecryptInput::new(
