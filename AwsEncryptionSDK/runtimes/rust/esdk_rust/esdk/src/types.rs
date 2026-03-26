@@ -380,6 +380,9 @@ pub struct DecryptInput<'a> {
     //# [message format](../data-format/message.md) specified by the AWS Encryption SDK.
     pub ciphertext: &'a [u8],
     /// Key-Value pairs to associate with the encrypted data
+    //= specification/client-apis/decrypt.md#input
+    //= type=implication
+    //# - The input to the Decrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
     pub encryption_context: EncryptionContext,
     /// The source of cryptographic materials
     //= specification/client-apis/decrypt.md#input
@@ -484,6 +487,10 @@ impl<'a> DecryptInput<'a> {
         }
     }
 
+    //= specification/client-apis/decrypt.md#input
+    //# The Decrypt operation MUST validate that exactly one keyring or CMM was provided by the caller.
+    //= specification/client-apis/decrypt.md#input
+    //# If the caller does not provide exactly one of a keyring or CMM, the Decrypt operation MUST fail.
     pub(crate) fn validate(&self) -> Result<(), Error> {
         if self.source.is_none() {
             Err(val_err("A Materials Source must be provided."))
