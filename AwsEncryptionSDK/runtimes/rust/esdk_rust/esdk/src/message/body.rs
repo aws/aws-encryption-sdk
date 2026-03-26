@@ -370,6 +370,12 @@ pub(crate) fn encrypt_and_serialize_body(
     out: &mut dyn SafeWrite,
     dw: &mut DigestWriter,
 ) -> Result<(), Error> {
+    //= specification/client-apis/encrypt.md#construct-the-body
+    //= type=todo
+    //# If [Plaintext Length Bound](#plaintext-length-bound) was specified on input
+    //# and this operation determines at any time that the plaintext being encrypted
+    //# has a length greater than this value,
+    //# this operation MUST immediately fail.
     let mut total_data_size: usize = 0;
     let frame_length = header.body.frame_length() as usize;
     let iv_len = get_iv_length(&header.suite) as usize;
@@ -389,18 +395,35 @@ pub(crate) fn encrypt_and_serialize_body(
     let mut in_size: usize;
     let mut next_char: Option<u8> = None;
 
+    //= specification/client-apis/encrypt.md#construct-the-body
+    //# Before the end of the input is indicated,
+    //# this operation MUST process as much of the consumable bytes as possible
+    //# by [constructing regular frames](#construct-a-frame).
     loop {
         in_size = read_up_to_peek(plaintext, &mut plaintext_frame, next_char)?;
+        //= specification/client-apis/encrypt.md#construct-the-body
+        //# - If there are not enough input consumable plaintext bytes to create a new regular frame,
+        //# then this operation MUST [construct a final frame](#construct-a-frame)
         if in_size != frame_length {
             break;
         }
         next_char = read_opt_u8(plaintext)?;
+        //= specification/client-apis/encrypt.md#construct-the-body
+        //# - If there are exactly enough consumable plaintext bytes to create one regular frame,
+        //# such that creating a regular frame processes all consumable bytes,
+        //# then this operation MUST [construct either a final frame or regular frame](#construct-a-frame)
+        //# with the remaining plaintext.
         if next_char.is_none() {
             break;
         }
 
+        //= specification/client-apis/encrypt.md#construct-the-body
+        //# - If there are enough input plaintext bytes consumable to create a new regular frame,
+        //# such that creating a regular frame does not processes all consumable bytes,
+        //# then this operation MUST [construct a regular frame](#construct-a-frame)
+        //# using the consumable plaintext bytes.
+
         //= specification/data-format/message-body.md#framed-data
-        //= type=implementation
         //# - The number of frames in a single message MUST be less than or equal to `2^32 - 1`.
         if sequence_number == ENDFRAME_SEQUENCE_NUMBER {
             return Err("too many frames".into());
@@ -411,6 +434,16 @@ pub(crate) fn encrypt_and_serialize_body(
             return Err("Plain text too large".into());
         }
 
+        //= specification/client-apis/encrypt.md#construct-the-body
+        //# Regular frame serialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
+        //= specification/data-format/message-body.md#regular-frame
+        //= type=implication
+        //= reason=Serialization order is enforced by construct_frame's implementation; this annotation traces the structural requirement
+        //# A regular frame MUST be serialized as, in order,
+        //# Sequence Number,
+        //# IV,
+        //# Encrypted Content,
+        //# and Authentication Tag.
         construct_frame(
             &ConstructFrameInput {
                 alg, key,
@@ -424,10 +457,13 @@ pub(crate) fn encrypt_and_serialize_body(
         )?;
 
         //= specification/data-format/message-body.md#regular-frame-sequence-number
-        //= type=implementation
         //# Subsequent frames MUST be in order and MUST contain an increment of 1 from the previous frame.
         sequence_number += 1;
     }
+
+    //= specification/client-apis/encrypt.md#construct-the-body
+    //# When the end of the input is indicated,
+    //# this operation MUST perform the following until all consumable plaintext bytes are processed:
 
     // Final frame
     total_data_size += in_size;
@@ -440,7 +476,10 @@ pub(crate) fn encrypt_and_serialize_body(
         "empty final frame only allowed when entire plaintext is empty");
 
     //= specification/client-apis/encrypt.md#construct-the-body
-    //= type=implementation
+    //# If an end to the input has been indicated, there are no more consumable plaintext bytes to process,
+    //# and a final frame has not yet been constructed,
+    //# this operation MUST [construct an empty final frame](#construct-a-frame).
+    //= specification/client-apis/encrypt.md#construct-the-body
     //# Final frame serialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
     construct_frame(
         &ConstructFrameInput {
