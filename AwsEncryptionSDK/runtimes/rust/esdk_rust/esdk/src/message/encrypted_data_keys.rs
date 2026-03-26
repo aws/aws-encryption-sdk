@@ -7,11 +7,19 @@ use crate::types::{SafeRead, SafeWrite};
 use aws_mpl_legacy::EncryptedDataKey;
 
 pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result<(), Error> {
+    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-id-length
+    //= type=implication
+    //= reason=write_str_u16 calls write_seq_u16 which calls write_u16, writing exactly 2 bytes (big-endian u16) for the length prefix
+    //# The length of the serialized key provider ID length field MUST be 2 bytes.
     write_str_u16(w, &edk.key_provider_id)?;
     write_seq_u16(w, &edk.key_provider_info)?;
     write_seq_u16(w, &edk.ciphertext)
 }
 pub(crate) fn write_edks(w: &mut dyn SafeWrite, edks: &[EncryptedDataKey]) -> Result<(), Error> {
+    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-keys
+    //# The Encrypted Data Keys MUST be serialized as, in order,
+    //# Encrypted Data Key Count,
+    //# and Encrypted Data Key Entries.
     write_u16(w, edks.len() as u16)?;
     for edk in edks {
         write_edk(w, edk)?;
@@ -34,8 +42,6 @@ pub(crate) fn read_edks(
     max_edks: Option<std::num::NonZeroUsize>,
     raw: &mut dyn SafeWrite,
 ) -> Result<Vec<EncryptedDataKey>, Error> {
-    //= specification/data-format/message-header.md#encrypted-data-key-count
-    //# This value MUST be greater than 0.
     let count = read_u16(r, raw)?;
     //= specification/client-apis/decrypt.md#parse-the-header
     //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
