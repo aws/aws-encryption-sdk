@@ -180,11 +180,19 @@ pub(crate) enum MessageType {
     TypeCustomerAed = 0x80,
 }
 
-//= specification/data-format/message-header.md#content-type
-//# The value (hex) of this field MUST be a value that exists in the following table:
+//= specification/data-format/message-header.md#supported-content-types
+//= type=implication
+//= reason=The enum definition structurally constrains valid content types to exactly these two variants.
+//# The supported content types MUST be:
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub(crate) enum ContentType {
+    //= specification/data-format/message-header.md#supported-content-types
+    //= type=implication
+    //# - `01` for [Non-Framed](message-body.md#non-framed-data)
     NonFramed = 1,
+    //= specification/data-format/message-header.md#supported-content-types
+    //= type=implication
+    //# - `02` for [Framed](message-body.md#framed-data)
     #[default]
     Framed = 2,
 }
