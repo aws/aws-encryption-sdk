@@ -312,6 +312,10 @@ fn step_construct_header(
     ciphertext: &mut dyn SafeWrite,
     dw: &mut DigestWriter,
 ) -> Result<header::HeaderInfo, Error> {
+    //= specification/client-apis/encrypt.md#authentication-tag
+    //= type=implication
+    //= reason=build_header_for_encrypt builds the complete header (body + auth tag) before returning
+    //# The serialized bytes MUST NOT be released until the entire message header has been serialized.
     let header = build_header_for_encrypt(
         &mat_result.message_id,
         &mat_result.materials.algorithm_suite,
@@ -321,7 +325,33 @@ fn step_construct_header(
         frame_length.0.get(),
         &mat_result.derived_data_keys,
     )?;
-    header::serialize_header(&header, ciphertext, dw)?;
+    //= specification/client-apis/encrypt.md#authentication-tag
+    //= type=implication
+    //= reason=serialize_header writes the complete header to ciphertext, releasing it
+    //# If this operation is streaming the encrypted message and
+    //# the entire message header has been serialized,
+    //# the serialized message header MUST be released.
+    header::serialize_header(
+        &header,
+        ciphertext,
+        //= specification/client-apis/encrypt.md#authentication-tag
+        //= type=implication
+        //= reason=dw (DigestWriter) feeds header bytes to the signature algorithm during serialization
+        //# If the algorithm suite contains a signature algorithm and
+        //# this operation is [streaming](streaming.md) the encrypted message output to the caller,
+        //# this operation MUST input the serialized header to the signature algorithm as soon as it is serialized,
+        //# such that the serialized header isn't required to remain in memory to [construct the signature](#construct-the-signature).
+        dw,
+    )?;
+    //= specification/client-apis/encrypt.md#authentication-tag
+    //= type=implication
+    //= reason=single code path: the header built here is serialized directly to output
+    //# The encrypted message output by the Encrypt operation MUST have a message header equal
+    //# to the message header calculated in this step.
+    //= specification/client-apis/encrypt.md#authentication-tag
+    //= type=implication
+    //= reason=single code path means header inequality is impossible by construction
+    //# If the message headers are not equal, the Encrypt operation MUST fail.
     Ok(header)
 }
 
@@ -438,6 +468,13 @@ fn build_header_for_encrypt(
     derived_data_keys: &key_derivation::ExpandedKeyMaterial,
 ) -> Result<header::HeaderInfo, Error> {
     let mut stored_encryption_context = encryption_context.clone();
+    //= specification/client-apis/encrypt.md#authentication-tag
+    //# The encryption context to only authenticate MUST be the [encryption context](../framework/structures.md#encryption-context)
+    //# in the [encryption materials](../framework/structures.md#encryption-materials)
+    //# filtered to only contain key value pairs listed in
+    //# the [encryption material's](../framework/structures.md#encryption-materials)
+    //# [required encryption context keys](../framework/structures.md#required-encryption-context-keys)
+    //# serialized according to the [encryption context serialization specification](../framework/structures.md#serialization).
     let mut required_encryption_context_map: EncryptionContext = EncryptionContext::new();
     for key in required_encryption_context_keys {
         if stored_encryption_context.contains_key(key) {
@@ -462,6 +499,14 @@ fn build_header_for_encrypt(
     let mut raw_header = Vec::new();
     header::write_header_body(&mut raw_header, &body)?;
 
+    //= specification/client-apis/encrypt.md#authentication-tag
+    //# After serializing the message header body,
+    //# this operation MUST calculate an [authentication tag](../data-format/message-header.md#authentication-tag)
+    //# over the message header body.
+    //= specification/data-format/message-header.md#authentication-tag
+    //= type=implication
+    //= reason=the authentication tag is computed by build_header_auth_tag and stored in HeaderAuth
+    //# The authentication tag MUST be interpreted as bytes.
     let header_auth = build_header_auth_tag(
         suite, &derived_data_keys.data_key,
         &raw_header, &serialized_req_encryption_context,
@@ -527,11 +572,25 @@ fn build_header_auth_tag(
         return Err("Incorrect data key length".into());
     }
 
+    //= specification/client-apis/encrypt.md#authentication-tag
+    //# - The IV MUST have a value of 0.
     let iv = vec![0; get_iv_length(suite) as usize];
     let mut auth_tag = Vec::new();
+    //= specification/client-apis/encrypt.md#authentication-tag
+    //# The value of this MUST be the output of the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
+    //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
     aes_encrypt(
         body::get_encrypt(suite),
-        &iv, data_key, &[],
+        &iv,
+        //= specification/client-apis/encrypt.md#authentication-tag
+        //# - The cipherkey MUST be the derived data key
+        data_key,
+        //= specification/client-apis/encrypt.md#authentication-tag
+        //# - The plaintext MUST be an empty byte array
+        &[],
+        //= specification/client-apis/encrypt.md#authentication-tag
+        //# - The AAD MUST be the concatenation of the serialized [message header body](../data-format/message-header.md#header-body)
+        //# and the serialization of encryption context to only authenticate.
         &[raw_header, serialized_req_encryption_context].concat(),
         &mut auth_tag,
     )?;
