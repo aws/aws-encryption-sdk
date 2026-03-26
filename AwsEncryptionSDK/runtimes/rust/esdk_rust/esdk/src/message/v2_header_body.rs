@@ -19,6 +19,24 @@ pub(crate) fn write_v2_header_body(
     //# then the [message header body](../data-format/message-header.md#header-body-version-2-0) MUST be serialized with the following specifics:
 
     //= specification/client-apis/encrypt.md#v2-header
+    //= type=implication
+    //= reason=The sequential write calls in this function body enforce the serialization order structurally.
+    //# The serialization order MUST follow the [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification.
+
+    //= specification/data-format/message-header.md#header-body-version-2-0
+    //= type=implication
+    //= reason=The sequential write calls below serialize each field in the specified order.
+    //# The V2 Header Body MUST be serialized as, in order,
+    //# Version,
+    //# Algorithm Suite ID,
+    //# Message ID,
+    //# AAD,
+    //# Encrypted Data Keys,
+    //# Content Type,
+    //# Frame Length,
+    //# and Algorithm Suite Data.
+
+    //= specification/client-apis/encrypt.md#v2-header
     //# - [Version](../data-format/message-header.md#version): MUST be serialized according to the
     //# [Version](../data-format/message-header.md#version) specification.
     //# The value MUST correspond to [2.0](../data-format/message-header.md#supported-versions).

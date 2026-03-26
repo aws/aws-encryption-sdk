@@ -3,6 +3,9 @@
 [[source]]
 pattern = "./src/**/*.rs"
 
+[[source]]
+pattern = "./tests/**/*.rs"
+
 [[specification]]
 source = "specification/data-format/message-header.md"
 
