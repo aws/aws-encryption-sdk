@@ -40,6 +40,11 @@ pub(crate) fn write_header_auth_tag_v1(
             header_iv,
             header_auth_tag,
         } => {
+            //= aws-encryption-sdk-specification/data-format/message-header.md#header-authentication-version-1-0
+            //# The V1 Header Authentication MUST be serialized as, in order,
+            //# IV,
+            //# and Authentication Tag.
+
             //= specification/client-apis/encrypt.md#v1-authentication-tag
             //# - [IV](../data-format/message-header.md#iv): MUST have the value of the IV used in the calculation above,
             //# padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
@@ -58,13 +63,15 @@ pub(crate) fn write_header_auth_tag_v2(
     match header_auth {
         HeaderAuth::AESMac {
             header_auth_tag, ..
-        } => write_bytes(
-            w,
+        } => {
+            //= aws-encryption-sdk-specification/data-format/message-header.md#header-authentication-version-2-0
+            //# The V2 Header Authentication MUST be serialized as the Authentication Tag only.
+
             //= specification/client-apis/encrypt.md#v2-authentication-tag
             //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
             //# of the authentication tag calculated above.
-            header_auth_tag
-        ),
+            write_bytes(w, header_auth_tag)
+        }
     }
 }
 
