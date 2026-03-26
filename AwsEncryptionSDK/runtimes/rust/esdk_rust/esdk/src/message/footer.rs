@@ -4,7 +4,7 @@
 //! Message footer serialization/deserialization.
 //! Maps to data-format/message-footer.md
 
-use super::serialize_functions::{read_seq_u16, write_seq_u16};
+use super::serialize_functions::{read_seq_u16, write_bytes, write_u16};
 use super::*;
 use crate::types::{SafeRead, SafeWrite};
 
@@ -34,9 +34,21 @@ pub(crate) fn write_footer(
     //= specification/client-apis/encrypt.md#construct-the-signature
     //# - [Signature Length](../data-format/message-footer.md#signature-length): MUST be the length of the
     //# output of the calculation above.
+    let len = u16::try_from(signature.len())
+        .map_err(|_| Error::from("Sequence length too long for 16 bits"))?;
+    //= specification/data-format/message-footer.md#signature-length
+    //= type=implication
+    //= reason=write_u16 writes exactly 2 bytes as a big-endian u16
+    //# This length of the signature length field MUST be 2 bytes.
+    //= specification/data-format/message-footer.md#signature-length
+    //= type=implication
+    //= reason=write_u16 serializes the value as a big-endian UInt16
+    //# The signature length field MUST be interpreted as a UInt16.
+    write_u16(w, len)?;
     //= specification/client-apis/encrypt.md#construct-the-signature
     //# - [Signature](../data-format/message-footer.md#signature): MUST be the output of the calculation above.
-    write_seq_u16(w, signature)
+    write_bytes(w, signature)?;
+    Ok(())
 
     //= specification/client-apis/encrypt.md#construct-the-signature
     //= type=implication
@@ -48,5 +60,13 @@ pub(crate) fn read_footer(
     r: &mut dyn SafeRead,
     raw: &mut dyn SafeWrite,
 ) -> Result<Vec<u8>, Error> {
+    //= specification/data-format/message-footer.md#signature-length
+    //= type=implication
+    //= reason=read_seq_u16 calls read_u16 which reads exactly 2 bytes
+    //# This length of the signature length field MUST be 2 bytes.
+    //= specification/data-format/message-footer.md#signature-length
+    //= type=implication
+    //= reason=read_seq_u16 calls read_u16 which interprets 2 bytes as a big-endian UInt16
+    //# The signature length field MUST be interpreted as a UInt16.
     read_seq_u16(r, raw)
 }
