@@ -11,6 +11,10 @@ pub(crate) fn read_esdk_suite_id(
     r: &mut dyn SafeRead,
     raw: &mut dyn SafeWrite,
 ) -> Result<&'static AlgorithmSuite, Error> {
+    //= aws-encryption-sdk-specification/data-format/message-header.md#algorithm-suite-id
+    //= type=implication
+    //= reason=Fixed-size [u8; 2] array structurally constrains the serialized algorithm suite ID to exactly 2 bytes.
+    //# The length of the serialized algorithm suite ID field MUST be 2 bytes.
     let mut esdk_suite_id_bytes = [0; 2];
     read_bytes(r, &mut esdk_suite_id_bytes, raw)?;
 
