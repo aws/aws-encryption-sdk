@@ -571,9 +571,26 @@ pub(crate) async fn get_modern_encryption_materials(
     commitment_policy: aws_mpl_legacy::commitment::EsdkCommitmentPolicy,
 ) -> Result<EncryptionMaterials, Error> {
     let mut input = GetEncryptionMaterialsInput::default();
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=implication
+    //= reason=algorithm_suite_id is Option; None means the field is not set on the input
+    //# If no Algorithm Suite is provided, this field MUST NOT be included.
     input.algorithm_suite_id = algorithm_suite_id;
     input.commitment_policy = aws_mpl_legacy::commitment::CommitmentPolicy::Esdk(commitment_policy);
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=implication
+    //= reason=The caller passes an empty EncryptionContext when none is provided as input
+    //# Otherwise, this MUST be an empty encryption context.
     input.encryption_context = encryption_context;
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=implication
+    //= reason=The caller resolves known length vs Plaintext Length Bound before calling; this receives the resolved value
+    //# If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
+    //# was provided, this MUST be the [Plaintext Length Bound](#plaintext-length-bound).
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=implication
+    //= reason=max_plaintext_length is Option; None means the field is not set on the input
+    //# If no Plaintext Length Bound is provided, this field MUST NOT be included.
     input.max_plaintext_length = max_plaintext_length;
     // input.required_encryption_context_keys = required_encryption_context_keys.clone();
     let materials = cmm.get_encryption_materials(&input).await?;
@@ -606,9 +623,26 @@ pub(crate) async fn get_legacy_encryption_materials(
     )]
     let output = cmm
         .get_encryption_materials()
+        //= specification/client-apis/encrypt.md#get-the-encryption-materials
+        //= type=implication
+        //= reason=The caller passes an empty EncryptionContext when none is provided as input
+        //# Otherwise, this MUST be an empty encryption context.
         .encryption_context(encryption_context)
         .commitment_policy(convert_commit(commitment_policy))
+        //= specification/client-apis/encrypt.md#get-the-encryption-materials
+        //= type=implication
+        //= reason=algorithm_suite_id is Option; .set_ with None means the field is not set
+        //# If no Algorithm Suite is provided, this field MUST NOT be included.
         .set_algorithm_suite_id(algorithm_suite_id.map(convert_alg))
+        //= specification/client-apis/encrypt.md#get-the-encryption-materials
+        //= type=implication
+        //= reason=The caller resolves known length vs Plaintext Length Bound before calling; this receives the resolved value
+        //# If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
+        //# was provided, this MUST be the [Plaintext Length Bound](#plaintext-length-bound).
+        //= specification/client-apis/encrypt.md#get-the-encryption-materials
+        //= type=implication
+        //= reason=max_plaintext_length is Option; .set_ with None means the field is not set
+        //# If no Plaintext Length Bound is provided, this field MUST NOT be included.
         .set_max_plaintext_length(max_plaintext_length.map(|x| x as i64))
         .send()
         .await?;
