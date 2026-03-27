@@ -495,6 +495,13 @@ fn verify_signature(
         return Ok(());
     }
 
+    //= specification/client-apis/decrypt.md#verify-the-signature
+    //= type=implication
+    //= reason=blocking read on the input stream implicitly waits for enough bytes
+    //# If there are not enough consumable bytes to deserialize the message footer and
+    //# the caller has not yet indicated an end to the encrypted message,
+    //# the Decrypt operation MUST wait for enough bytes to become consumable or for the caller
+    //# to indicate an end to the encrypted message.
     let signature = footer::read_footer(r, raw)?;
     let ecdsa_params = get_ecdsa_alg(dec_mat.algorithm_suite.signature)?;
     //= specification/client-apis/decrypt.md#verify-the-signature
