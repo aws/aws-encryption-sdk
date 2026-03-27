@@ -14,6 +14,11 @@ use aws_mpl_legacy::suites::AlgorithmSuite;
 //= specification/data-format/message-header.md#reserved
 //# A reserved sequence of 4 bytes
 //# that MUST have the value (hex) of `00 00 00 00`.
+
+//= specification/data-format/message-header.md#reserved
+//= type=implication
+//= reason=[u8; 4] structurally constrains the serialized reserved field to exactly 4 bytes.
+//# The length of the serialized reserved field MUST be 4 bytes.
 const RESERVED_BYTES: [u8; 4] = [0x00, 0x00, 0x00, 0x00];
 
 pub(crate) fn write_v1_header_body(
@@ -99,22 +104,30 @@ pub(crate) fn write_v1_header_body(
     //= specification/data-format/message-header.md#iv-length
     //# This value MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the
     //# [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-    write_u8(w, get_iv_length(&body.algorithm_suite))?;
+    let iv_length = get_iv_length(&body.algorithm_suite);
+    //= specification/data-format/message-header.md#iv-length
+    //= type=implication
+    //= reason=write_u8 structurally constrains the serialized IV length to exactly 1 byte.
+    //# The length of the serialized IV length field MUST be 1 byte.
+    //= specification/data-format/message-header.md#iv-length
+    //= type=implication
+    //= reason=write_u8 serializes a u8 value, which is UInt8.
+    //# The IV length MUST be serialized as a UInt8.
+    write_u8(w, iv_length)?;
     //= specification/client-apis/encrypt.md#v1-header
     //# - [Frame Length](../data-format/message-header.md#frame-length): MUST be serialized according to the
     //# [Frame Length](../data-format/message-header.md#frame-length) specification.
     //# The value MUST be the value of the frame size determined above.
-
+    let frame_len = body.frame_length;
     //= specification/data-format/message-header.md#frame-length
     //= type=implication
     //= reason=write_u32 writes exactly 4 bytes (big-endian u32)
     //# The length of the serialized frame length field MUST be 4 bytes.
-
     //= specification/data-format/message-header.md#frame-length
     //= type=implication
     //= reason=write_u32 serializes a u32 in big-endian format, which is UInt32
     //# The frame length MUST be serialized as a UInt32.
-    write_u32(w, body.frame_length)
+    write_u32(w, frame_len)
 }
 
 pub(crate) fn read_v1_reserved_bytes(
@@ -135,7 +148,19 @@ pub(crate) fn read_v1_header_iv_length(
     suite: &AlgorithmSuite,
     raw: &mut dyn SafeWrite,
 ) -> Result<u8, Error> {
+    //= specification/data-format/message-header.md#iv-length
+    //= type=implication
+    //= reason=read_u8 reads exactly 1 byte from the stream.
+    //# The length of the serialized IV length field MUST be 1 byte.
+
+    //= specification/data-format/message-header.md#iv-length
+    //= type=implication
+    //= reason=read_u8 deserializes a single byte as a u8, which is UInt8.
+    //# The IV length MUST be serialized as a UInt8.
     let raw = read_u8(r, raw)?;
+    //= specification/data-format/message-header.md#iv-length
+    //# This value MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the
+    //# [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
     if raw == get_iv_length(suite) {
         Ok(raw)
     } else {

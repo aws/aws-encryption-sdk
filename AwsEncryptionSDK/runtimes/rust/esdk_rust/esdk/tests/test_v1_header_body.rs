@@ -125,6 +125,9 @@ async fn test_v1_header_message_id() {
     let ct1 = encrypt_v1(b"msg id test", EncryptionContext::new()).await;
     let ct2 = encrypt_v1(b"msg id test", EncryptionContext::new()).await;
     // Message ID is 16 bytes at offset 4
+    //= specification/data-format/message-header.md#message-id
+    //= type=test
+    //# The message ID MUST be interpreted as bytes.
     let msg_id_1 = &ct1[4..20];
     let msg_id_2 = &ct2[4..20];
     //= specification/data-format/message-header.md#message-id
@@ -133,7 +136,7 @@ async fn test_v1_header_message_id() {
     //# implementations MUST use a good source of randomness when generating messages IDs in order to make
     //# the chance of duplicate IDs negligible.
     assert_ne!(msg_id_1, msg_id_2, "Message IDs must be unique (random)");
-    //= aws-encryption-sdk-specification/data-format/message-header.md#message-id
+    //= specification/data-format/message-header.md#message-id
     //= type=test
     //# The length of the serialized message ID MUST be 16 bytes for [version 1.0](#header-body-version-10) headers.
     assert_eq!(msg_id_1.len(), 16, "V1 Message ID must be 16 bytes");
@@ -261,4 +264,178 @@ async fn test_v1_header_serialization_order() {
     // Round-trip proves the entire header is correctly ordered
     let result = round_trip_v1(b"order test", EncryptionContext::new()).await;
     assert_eq!(result, b"order test", "round-trip proves serialization order is correct");
+}
+
+/// Parse V1 header trailing field offsets from ciphertext.
+/// Returns (content_type_offset, reserved_offset, iv_length_offset, frame_length_offset).
+fn parse_v1_trailing_offsets(ct: &[u8]) -> (usize, usize, usize, usize) {
+    // V1 header: Version(1) + Type(1) + AlgSuiteID(2) + MessageID(16) = 20 fixed bytes
+    let mut pos: usize = 20;
+
+    // AAD: 2-byte length, then if non-zero: 2-byte kv_count + aad_byte_len bytes
+    let aad_byte_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
+    pos += 2;
+    if aad_byte_len > 0 {
+        pos += 2 + aad_byte_len;
+    }
+
+    // EDKs: 2-byte count, then for each: provider_id(2+len) + provider_info(2+len) + ciphertext(2+len)
+    let edk_count = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
+    pos += 2;
+    for _ in 0..edk_count {
+        let pid_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
+        pos += 2 + pid_len;
+        let pinfo_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
+        pos += 2 + pinfo_len;
+        let ct_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
+        pos += 2 + ct_len;
+    }
+
+    let content_type_offset = pos;
+    let reserved_offset = pos + 1;
+    let iv_length_offset = pos + 1 + 4;
+    let frame_length_offset = pos + 1 + 4 + 1;
+    (content_type_offset, reserved_offset, iv_length_offset, frame_length_offset)
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v1_version_field_is_1_byte() {
+    //= specification/data-format/message-header.md#version
+    //= type=test
+    //# The length of the serialized version field MUST be 1 byte.
+    //= aws-encryption-sdk-specification/data-format/message-header.md#version
+    //= type=test
+    //# The length of the serialized version field MUST be 1 byte.
+    let ct = encrypt_v1(b"version 1 byte test", EncryptionContext::new()).await;
+    // Version is at offset 0, Type is at offset 1 — proving version is exactly 1 byte
+    assert_eq!(ct[0], 0x01, "version byte must be 0x01");
+    assert_eq!(ct[1], 0x80, "type byte immediately follows at offset 1, proving version is 1 byte");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v1_type_field_is_1_byte() {
+    //= specification/data-format/message-header.md#type
+    //= type=test
+    //# The length of the serialized type field MUST be 1 byte.
+    //= aws-encryption-sdk-specification/data-format/message-header.md#type
+    //= type=test
+    //# The length of the serialized type field MUST be 1 byte.
+    let ct = encrypt_v1(b"type 1 byte test", EncryptionContext::new()).await;
+    // Type is at offset 1, Algorithm Suite ID starts at offset 2 — proving type is exactly 1 byte
+    assert_eq!(ct[1], 0x80, "type byte must be 0x80");
+    let suite_id = u16::from_be_bytes([ct[2], ct[3]]);
+    assert_eq!(suite_id, 0x0178, "algorithm suite ID immediately follows at offset 2, proving type is 1 byte");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v1_content_type_field_is_1_byte() {
+    //= specification/data-format/message-header.md#content-type
+    //= type=test
+    //# The length of the serialized content type field MUST be 1 byte.
+    //= aws-encryption-sdk-specification/data-format/message-header.md#content-type
+    //= type=test
+    //# The length of the serialized content type field MUST be 1 byte.
+    let ct = encrypt_v1(b"content type 1 byte test", EncryptionContext::new()).await;
+    let (ct_offset, reserved_offset, _, _) = parse_v1_trailing_offsets(&ct);
+    // Content type is 1 byte, reserved immediately follows
+    assert_eq!(reserved_offset - ct_offset, 1, "content type field must be exactly 1 byte");
+    assert_eq!(ct[ct_offset], 0x02, "content type must be 0x02 (framed)");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v1_reserved_value() {
+    //= specification/data-format/message-header.md#reserved
+    //= type=test
+    //# A reserved sequence of 4 bytes
+    //# that MUST have the value (hex) of `00 00 00 00`.
+    let ct = encrypt_v1(b"reserved value test", EncryptionContext::new()).await;
+    let (_, reserved_offset, _, _) = parse_v1_trailing_offsets(&ct);
+    assert_eq!(
+        &ct[reserved_offset..reserved_offset + 4],
+        &[0x00, 0x00, 0x00, 0x00],
+        "reserved bytes must be 00 00 00 00"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v1_reserved_field_is_4_bytes() {
+    //= specification/data-format/message-header.md#reserved
+    //= type=test
+    //# The length of the serialized reserved field MUST be 4 bytes.
+    let ct = encrypt_v1(b"reserved 4 bytes test", EncryptionContext::new()).await;
+    let (_, reserved_offset, iv_length_offset, _) = parse_v1_trailing_offsets(&ct);
+    assert_eq!(iv_length_offset - reserved_offset, 4, "reserved field must be exactly 4 bytes");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v1_iv_length_field_is_1_byte() {
+    //= specification/data-format/message-header.md#iv-length
+    //= type=test
+    //# The length of the serialized IV length field MUST be 1 byte.
+    let ct = encrypt_v1(b"iv length 1 byte test", EncryptionContext::new()).await;
+    let (_, _, iv_length_offset, frame_length_offset) = parse_v1_trailing_offsets(&ct);
+    assert_eq!(frame_length_offset - iv_length_offset, 1, "IV length field must be exactly 1 byte");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v1_iv_length_serialized_as_uint8() {
+    //= specification/data-format/message-header.md#iv-length
+    //= type=test
+    //# The IV length MUST be serialized as a UInt8.
+    let ct = encrypt_v1(b"iv length uint8 test", EncryptionContext::new()).await;
+    let (_, _, iv_length_offset, _) = parse_v1_trailing_offsets(&ct);
+    // AlgAes256GcmIv12Tag16HkdfSha256 has IV length 12
+    let iv_length = ct[iv_length_offset];
+    assert_eq!(iv_length, 12, "IV length must be 12 for this algorithm suite, serialized as single UInt8 byte");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v1_iv_length_equals_suite_iv_length() {
+    //= specification/data-format/message-header.md#iv-length
+    //= type=test
+    //# This value MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the
+    //# [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
+    let ct = encrypt_v1(b"iv length suite test", EncryptionContext::new()).await;
+    let (_, _, iv_length_offset, _) = parse_v1_trailing_offsets(&ct);
+    // AlgAes256GcmIv12Tag16HkdfSha256 has IV length 12
+    assert_eq!(ct[iv_length_offset], 12, "IV length must match algorithm suite IV length (12)");
+    // Confirm round-trip succeeds, proving the IV length is validated during decrypt
+    let result = round_trip_v1(b"iv length suite test", EncryptionContext::new()).await;
+    assert_eq!(result, b"iv length suite test");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v1_frame_length_field_is_4_bytes() {
+    //= specification/data-format/message-header.md#frame-length
+    //= type=test
+    //# The length of the serialized frame length field MUST be 4 bytes.
+    let ct = encrypt_v1(b"frame length 4 bytes v1 test", EncryptionContext::new()).await;
+    let (_, _, _, frame_length_offset) = parse_v1_trailing_offsets(&ct);
+    let frame_length = u32::from_be_bytes([
+        ct[frame_length_offset],
+        ct[frame_length_offset + 1],
+        ct[frame_length_offset + 2],
+        ct[frame_length_offset + 3],
+    ]);
+    assert_eq!(frame_length, 4096, "default frame length should be 4096");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v1_frame_length_serialized_as_uint32() {
+    //= specification/data-format/message-header.md#frame-length
+    //= type=test
+    //# The frame length MUST be serialized as a UInt32.
+    let ct = encrypt_v1(b"frame length uint32 v1 test", EncryptionContext::new()).await;
+    let (_, _, _, frame_length_offset) = parse_v1_trailing_offsets(&ct);
+    // Parse as big-endian UInt32
+    let frame_length = u32::from_be_bytes([
+        ct[frame_length_offset],
+        ct[frame_length_offset + 1],
+        ct[frame_length_offset + 2],
+        ct[frame_length_offset + 3],
+    ]);
+    assert_eq!(frame_length, 4096, "default frame length should be 4096 when serialized as UInt32");
+    // Confirm round-trip succeeds
+    let result = round_trip_v1(b"frame length uint32 v1 test", EncryptionContext::new()).await;
+    assert_eq!(result, b"frame length uint32 v1 test");
 }
