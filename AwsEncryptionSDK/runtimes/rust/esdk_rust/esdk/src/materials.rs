@@ -86,6 +86,10 @@ pub(crate) async fn create_cmm_from_input(
             //# If the Keyring is provided as the input, the client MUST construct a [default CMM](../framework/default-cmm.md) that uses this keyring,
             //# to obtain the [decryption materials](../framework/structures.md#decryption-materials) that is required for decryption.
             let cmm = aws_mpl_legacy::cmm::create_default_cryptographic_materials_manager(keyring)?;
+            //= specification/client-apis/decrypt.md#keyring
+            //= type=implication
+            //= reason=The default CMM constructed above will obtain decryption materials when decrypt_materials is called on it
+            //# This default CMM MUST obtain the decryption materials required for decryption.
             Ok(Cmm::Modern(cmm))
         }
     }
