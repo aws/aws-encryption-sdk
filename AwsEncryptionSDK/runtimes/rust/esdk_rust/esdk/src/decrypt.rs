@@ -451,6 +451,11 @@ fn step_verify_signature(
             state.dec_mat.clone(),
             &mut noop,
         )?;
+    } else {
+        //= specification/client-apis/decrypt.md#behavior
+        //# - If the message header does not contain an algorithm suite including a signature algorithm,
+        //# the Decrypt operation MUST NOT perform this step.
+        return Ok(());
     }
     Ok(())
 }
