@@ -122,7 +122,7 @@ fn parse_frames(ct: &[u8], frame_length: u32) -> Vec<ParsedFrame> {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_framed_data_max_frame_size() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#framed-data
+    //= specification/data-format/message-body.md#framed-data
     //= type=test
     //# - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
     // FrameLength::new enforces the u32 max. Encrypt with a large but valid frame length.
@@ -133,7 +133,7 @@ async fn test_framed_data_max_frame_size() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_framed_data_max_frame_count() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#framed-data
+    //= specification/data-format/message-body.md#framed-data
     //= type=test
     //# - The number of frames in a single message MUST be less than or equal to `2^32 - 1`.
     // With frame_length=4 and 20 bytes, we get 4 regular + 1 final = 5 frames.
@@ -147,7 +147,7 @@ async fn test_framed_data_max_frame_count() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_serialization_order() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#regular-frame
+    //= specification/data-format/message-body.md#regular-frame
     //= type=test
     //# A regular frame MUST be serialized as, in order,
     //# Sequence Number,
@@ -168,7 +168,7 @@ async fn test_regular_frame_serialization_order() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_sequence_number_starts_at_one() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-sequence-number
+    //= specification/data-format/message-body.md#regular-frame-sequence-number
     //= type=test
     //# Framed Data MUST start at Sequence Number 1.
     let pt = vec![0xDDu8; 20];
@@ -178,7 +178,7 @@ async fn test_regular_frame_sequence_number_starts_at_one() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_sequence_number_increments() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-sequence-number
+    //= specification/data-format/message-body.md#regular-frame-sequence-number
     //= type=test
     //# Subsequent frames MUST be in order and MUST contain an increment of 1 from the previous frame.
     let pt = vec![0xEEu8; 40];
@@ -196,7 +196,7 @@ async fn test_regular_frame_sequence_number_increments() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_sequence_number_4_bytes() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-sequence-number
+    //= specification/data-format/message-body.md#regular-frame-sequence-number
     //= type=test
     //# When serializing the sequence number to a message, the length of the serialized sequence number MUST be 4 bytes.
     let pt = vec![0xFFu8; 20];
@@ -210,7 +210,7 @@ async fn test_regular_frame_sequence_number_4_bytes() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_sequence_number_uint32() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-sequence-number
+    //= specification/data-format/message-body.md#regular-frame-sequence-number
     //= type=test
     //# The sequence number MUST be serialized as a UInt32.
     let pt = vec![0xAAu8; 30];
@@ -223,7 +223,7 @@ async fn test_regular_frame_sequence_number_uint32() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_sequence_number_read_as_uint32() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-sequence-number
+    //= specification/data-format/message-body.md#regular-frame-sequence-number
     //= type=test
     //# When reading the sequence number from a message, the sequence number MUST be interpreted as a UInt32.
     // Successful round-trip proves the decrypt path reads sequence numbers as UInt32
@@ -234,7 +234,7 @@ async fn test_regular_frame_sequence_number_read_as_uint32() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_iv_unique() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-iv
+    //= specification/data-format/message-body.md#regular-frame-iv
     //= type=test
     //# Each frame in the [Framed Data](#framed-data) MUST include an IV that is unique within the message.
     let pt = vec![0xCCu8; 40];
@@ -249,7 +249,7 @@ async fn test_regular_frame_iv_unique() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_iv_length_matches_algorithm() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-iv
+    //= specification/data-format/message-body.md#regular-frame-iv
     //= type=test
     //# The IV length MUST be equal to the IV length of the algorithm suite specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
     let pt = vec![0xDDu8; 20];
@@ -261,7 +261,7 @@ async fn test_regular_frame_iv_length_matches_algorithm() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_iv_interpreted_as_bytes() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-iv
+    //= specification/data-format/message-body.md#regular-frame-iv
     //= type=test
     //# The IV MUST be interpreted as bytes.
     // Round-trip proves the IV bytes are correctly interpreted during decrypt
@@ -272,7 +272,7 @@ async fn test_regular_frame_iv_interpreted_as_bytes() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_encrypted_content_length_equals_frame_length() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-encrypted-content
+    //= specification/data-format/message-body.md#regular-frame-encrypted-content
     //= type=test
     //# The length of the encrypted content of a Regular Frame MUST be equal to the Frame Length.
     let frame_length: u32 = 10;
@@ -291,7 +291,7 @@ async fn test_regular_frame_encrypted_content_length_equals_frame_length() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_encrypted_content_interpreted_as_bytes() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-encrypted-content
+    //= specification/data-format/message-body.md#regular-frame-encrypted-content
     //= type=test
     //# The encrypted content MUST be interpreted as bytes.
     let pt = vec![0xAAu8; 20];
@@ -301,7 +301,7 @@ async fn test_regular_frame_encrypted_content_interpreted_as_bytes() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_auth_tag_length_matches_algorithm() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-authentication-tag
+    //= specification/data-format/message-body.md#regular-frame-authentication-tag
     //= type=test
     //# The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
     //# specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
@@ -314,7 +314,7 @@ async fn test_regular_frame_auth_tag_length_matches_algorithm() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_auth_tag_interpreted_as_bytes() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-authentication-tag
+    //= specification/data-format/message-body.md#regular-frame-authentication-tag
     //= type=test
     //# The authentication tag MUST be interpreted as bytes.
     let pt = vec![0xCCu8; 20];
@@ -324,7 +324,7 @@ async fn test_regular_frame_auth_tag_interpreted_as_bytes() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_serialization_order() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame
+    //= specification/data-format/message-body.md#final-frame
     //= type=test
     //# A final frame MUST be serialized as, in order,
     //# Sequence Number End,
@@ -347,7 +347,7 @@ async fn test_final_frame_serialization_order() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_is_regular_frame_plus_additions() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame
+    //= specification/data-format/message-body.md#final-frame
     //= type=test
     //# This means a final frame MUST be a regular frame with the addition of the serialized
     //# Sequence Number End
@@ -366,7 +366,7 @@ async fn test_final_frame_is_regular_frame_plus_additions() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_sequence_number_end_value() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#sequence-number-end
+    //= specification/data-format/message-body.md#sequence-number-end
     //= type=test
     //# The value MUST be encoded as the 4 bytes `FF FF FF FF` in hexadecimal notation.
     let pt = b"test";
@@ -380,7 +380,7 @@ async fn test_sequence_number_end_value() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_sequence_number_end_4_bytes() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#sequence-number-end
+    //= specification/data-format/message-body.md#sequence-number-end
     //= type=test
     //# The length of the serialized sequence number end MUST be 4 bytes.
     let pt = b"test";
@@ -392,7 +392,7 @@ async fn test_sequence_number_end_4_bytes() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_sequence_number_end_interpreted_as_bytes() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#sequence-number-end
+    //= specification/data-format/message-body.md#sequence-number-end
     //= type=test
     //# The sequence number end MUST be interpreted as bytes.
     // Successful round-trip proves the decrypt path correctly interprets the ENDFRAME marker bytes
@@ -403,7 +403,7 @@ async fn test_sequence_number_end_interpreted_as_bytes() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_sequence_number_equals_total_frames() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame-sequence-number
+    //= specification/data-format/message-body.md#final-frame-sequence-number
     //= type=test
     //# The Final Frame Sequence number MUST be equal to the total number of frames in the Framed Data.
     // 30 bytes / 10-byte frames → 2 regular + 1 final = 3 total frames
@@ -416,7 +416,7 @@ async fn test_final_frame_sequence_number_equals_total_frames() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_sequence_number_serialized_same_as_regular() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame-sequence-number
+    //= specification/data-format/message-body.md#final-frame-sequence-number
     //= type=test
     //# The Final Frame Sequence Number MUST be serialized to a message the same way as the
     //# [Regular Frame Sequence Number](#regular-frame-sequence-number).
@@ -432,7 +432,7 @@ async fn test_final_frame_sequence_number_serialized_same_as_regular() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_sequence_number_interpreted_same_as_regular() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame-sequence-number
+    //= specification/data-format/message-body.md#final-frame-sequence-number
     //= type=test
     //# The Final Frame Sequence Number MUST be interpreted from a message the same way as the
     //# [Regular Frame Sequence Number](#regular-frame-sequence-number).
@@ -444,7 +444,7 @@ async fn test_final_frame_sequence_number_interpreted_same_as_regular() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_iv_unique() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame-iv
+    //= specification/data-format/message-body.md#final-frame-iv
     //= type=test
     //# The IV MUST be a unique IV within the message.
     let pt = vec![0xDDu8; 30];
@@ -459,7 +459,7 @@ async fn test_final_frame_iv_unique() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_iv_length_matches_algorithm() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame-iv
+    //= specification/data-format/message-body.md#final-frame-iv
     //= type=test
     //# The IV length MUST be equal to the IV length of the [algorithm suite](../framework/algorithm-suites.md) that generated the message.
     let pt = vec![0xEEu8; 5];
@@ -471,7 +471,7 @@ async fn test_final_frame_iv_length_matches_algorithm() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_iv_interpreted_as_bytes() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame-iv
+    //= specification/data-format/message-body.md#final-frame-iv
     //= type=test
     //# The IV MUST be interpreted as bytes.
     let pt = vec![0xFFu8; 5];
@@ -481,7 +481,7 @@ async fn test_final_frame_iv_interpreted_as_bytes() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_encrypted_content_length_4_bytes() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame-encrypted-content-length
+    //= specification/data-format/message-body.md#final-frame-encrypted-content-length
     //= type=test
     //# When serializing the encrypted content length to a message, the length of the serialized encrypted content length field MUST be 4 bytes.
     let pt = vec![0xAAu8; 7];
@@ -494,7 +494,7 @@ async fn test_final_frame_encrypted_content_length_4_bytes() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_encrypted_content_length_uint32() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame-encrypted-content-length
+    //= specification/data-format/message-body.md#final-frame-encrypted-content-length
     //= type=test
     //# The encrypted content length MUST be serialized as a UInt32.
     let pt = vec![0xBBu8; 7];
@@ -506,7 +506,7 @@ async fn test_final_frame_encrypted_content_length_uint32() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_encrypted_content_length_read_as_uint32() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame-encrypted-content-length
+    //= specification/data-format/message-body.md#final-frame-encrypted-content-length
     //= type=test
     //# When reading the encrypted content length from a message, the encrypted content length MUST be interpreted as a UInt32.
     // Successful round-trip proves decrypt reads the content length as UInt32
@@ -517,7 +517,7 @@ async fn test_final_frame_encrypted_content_length_read_as_uint32() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_encrypted_content_length_matches() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame-encrypted-content
+    //= specification/data-format/message-body.md#final-frame-encrypted-content
     //= type=test
     //# The length of the serialized encrypted content MUST be equal to the value of the [Encrypted Content Length](#encrypted-content-length-1) field.
     let pt = vec![0xDDu8; 7];
@@ -531,7 +531,7 @@ async fn test_final_frame_encrypted_content_length_matches() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_encrypted_content_interpreted_as_bytes() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame-encrypted-content
+    //= specification/data-format/message-body.md#final-frame-encrypted-content
     //= type=test
     //# The encrypted content MUST be interpreted as bytes.
     let pt = vec![0xEEu8; 5];
@@ -541,7 +541,7 @@ async fn test_final_frame_encrypted_content_interpreted_as_bytes() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_auth_tag_length_matches_algorithm() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame-authentication-tag
+    //= specification/data-format/message-body.md#final-frame-authentication-tag
     //= type=test
     //# The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
     //# specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
@@ -554,7 +554,7 @@ async fn test_final_frame_auth_tag_length_matches_algorithm() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_auth_tag_interpreted_as_bytes() {
-    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame-authentication-tag
+    //= specification/data-format/message-body.md#final-frame-authentication-tag
     //= type=test
     //# The authentication tag MUST be interpreted as bytes.
     let pt = vec![0xAAu8; 5];

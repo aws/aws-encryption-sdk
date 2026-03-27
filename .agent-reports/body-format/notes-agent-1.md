@@ -1,67 +1,62 @@
-# Agent 1 Notes — body-format Cycle 2
+# Discovery Notes — body-format (Cycle 3)
 
 ## Spec-Aligned Structure Analysis
 
-### Non-Framed Data (§non-framed-data)
-Logical flow:
-1. Serialization order: IV → Content Length → Content → Auth Tag
-2. Deserialization order: IV → Content Length → Content → Auth Tag
+### Spec Section Logical Flow
 
-Code fulfillment:
-- Serialization: ESDK does NOT encrypt non-framed (exception needed)
-- Deserialization: `read_and_decrypt_non_framed_message_body` reads IV, then content length via `read_seq_u64_bounded`, then auth tag via `read_vec`
+**Non-Framed Data**: Serialize/deserialize order → IV → Content Length → Content → Auth Tag.
+All non-framed write-path requirements are `type=exception` (ESDK only encrypts framed).
+All non-framed read-path requirements are `type=implication`.
+Non-framed data is fully annotated with correct `specification/` prefix.
 
-### Non-Framed Data Sub-Sections
-Each sub-section (IV, Content Length, Content, Auth Tag) has requirements about:
-- Uniqueness (IV)
-- Byte length constraints
-- Serialization format (Uint64 for content length)
-- Interpretation as bytes
+**Framed Data**: Two constraints (max frame size, max frame count) → Regular Frame → Final Frame.
 
-Code fulfillment:
-- IV: `read_vec(r, get_iv_length(...))` — reads IV length bytes
-- Content Length: `read_seq_u64_bounded(r, SAFE_MAX_ENCRYPT, ...)` — reads 8 bytes as u64, enforces 2^36-32 limit
-- Content: returned by `read_seq_u64_bounded` which reads content_len bytes
-- Auth Tag: `read_vec(r, get_tag_length(...))` — reads tag length bytes
+**Regular Frame**: Serialization order → Sequence Number → IV → Encrypted Content → Auth Tag.
+Each sub-field has its own section with serialization/deserialization requirements.
 
-### Framed Data Sections
-Most framed data requirements are covered by Cycle 1 annotations.
-Remaining gaps are:
-- Missing impl annotations for structural/implication requirements
-- Misquoted annotations that don't match TOML exactly
+**Final Frame**: Exactly one, must be last → plaintext length constraints → serialization order →
+Sequence Number End → Sequence Number → IV → Content Length → Content → Auth Tag.
 
-## Misquoted Annotations (FIX_ANNOTATION)
+### Root Cause of Remaining Gaps
 
-1. body.rs line 114: `The length of the serialized sequence number MUST be 4 bytes.`
-   Should be: `When serializing the sequence number to a message, the length of the serialized sequence number MUST be 4 bytes.`
+The primary issue is a **spec path prefix mismatch**:
+- The local duvet config (`esdk/.duvet/config.toml`) uses `specification/` as the spec source prefix
+- 8 implementation annotations in `body.rs` use `aws-encryption-sdk-specification/` prefix (wrong)
+- ALL 40 test annotations in `test_message_body_format.rs` and `test_construct_the_body.rs` use `aws-encryption-sdk-specification/` prefix (wrong)
 
-2. body.rs line 117: `The sequence number MUST be interpreted as a UInt32.`
-   Should be: `When reading the sequence number from a message, the sequence number MUST be interpreted as a UInt32.`
+This means the local duvet report sees implementation/implication annotations (with correct prefix)
+but does NOT see test annotations (wrong prefix) for any `specification/` prefix requirements.
 
-3. body.rs line 146: `The length of the serialized encrypted content length field MUST be 4 bytes.`
-   Should be: `When serializing the encrypted content length to a message, the length of the serialized encrypted content length field MUST be 4 bytes.`
+Additionally, 2 requirements have NO annotation at all (not even wrong-prefix):
+1. `#final-frame-iv`: "The IV MUST be a unique IV within the message."
+2. `#final-frame-encrypted-content`: "The encrypted content MUST be interpreted as bytes."
 
-4. body.rs line 148: `The encrypted content length MUST be interpreted as a UInt32.`
-   Should be: `When reading the encrypted content length from a message, the encrypted content length MUST be interpreted as a UInt32.`
+### Where Each Requirement Is Fulfilled in Code
 
-## Most Likely Structural Mistake
+| Requirement | Code Construct |
+|---|---|
+| Regular frame seq num serialized as UInt32 | `write_u32(w, input.sequence_number)` in `construct_frame` |
+| Regular frame IV unique | `iv_seq(input.sequence_number, iv)` in `construct_frame` |
+| Regular frame encrypted content = frame length | `plaintext: &plaintext_frame` (exactly frame_length bytes) |
+| Final frame seq num = total frames | `sequence_number` param in final `construct_frame` call |
+| Final frame seq num serialized same as regular | Same `write_u32` call in `construct_frame` |
+| Final frame seq num interpreted same as regular | `read_u32(r, raw)` in `read_and_decrypt_framed_message_body` |
+| Final frame IV unique | `iv_seq(input.sequence_number, iv)` in `construct_frame` (same as regular) |
+| Final frame encrypted content length as UInt32 | `write_u32(w, input.plaintext.len() as u32)` in `construct_frame` |
+| Final frame encrypted content as bytes | `read_seq_u32_bounded` returns `Vec<u8>` in decrypt path |
 
-The implementer may be tempted to annotate non-framed-data requirements
-at the `read_and_decrypt_non_framed_message_body` function signature
-rather than at the specific read calls that fulfill each sub-requirement.
-Each `read_vec` / `read_seq_u64_bounded` call fulfills a specific sub-section requirement.
+### Most Likely Structural Mistake
+
+The implementer might be tempted to add new annotations instead of fixing the prefix.
+The correct fix is to change `aws-encryption-sdk-specification/` to `specification/` in existing annotations.
+No new annotation logic is needed for the 7 wrong-prefix cases — only the path prefix changes.
+
+For the 2 genuinely missing annotations, the implementer should add them at the same code locations
+where the related requirements are already annotated (construct_frame for IV uniqueness,
+read_and_decrypt_framed_message_body for encrypted content bytes).
 
 ## Potential Spec Gaps
 
-### 1. Non-framed content length upper bound enforcement on read
-- **Code location**: `read_and_decrypt_non_framed_message_body` uses `read_seq_u64_bounded(r, SAFE_MAX_ENCRYPT, ...)`
-- **Behavior**: Rejects content lengths > 2^36-32 during deserialization
-- **Why it matters**: Security — prevents memory exhaustion attacks
-- **Spec says**: The length MUST NOT be greater than 2^36-32 (covers this)
-- **Status**: Spec covers this, just needs annotation
-
-### 2. Non-framed sequence number is always 1
-- **Code location**: `body_aad` call uses `NONFRAMED_SEQUENCE_NUMBER` (= 1)
-- **Behavior**: Hardcoded to 1 for non-framed data
-- **Why it matters**: Interoperability — other implementations expect this
-- **Status**: Covered by message-body-aad.md spec, not message-body.md
+No significant spec gaps identified. The code behavior aligns well with the spec requirements.
+The `iv_seq` function derives IVs from sequence numbers, which guarantees uniqueness within a message
+as long as sequence numbers are unique — this is enforced by the incrementing counter.

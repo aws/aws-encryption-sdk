@@ -54,3 +54,74 @@ All 24 annotation quotes are character-perfect against the TOML files. Annotatio
 - ✅ Tests pass (33/33 body format tests)
 - ✅ Clippy clean (0 warnings in modified files)
 - ✅ Duvet report generates successfully
+
+## Round 2
+
+## Review: APPROVED AND COMMITTED ✅
+
+### Summary
+All 3 blocking annotation stacking violations from Round 1 are resolved. Both non-blocking suggestions (B2/B5 3-stacks reduced to 2-stacks, duplicate B1 removed) were addressed. No new issues introduced. All annotation quotes remain character-perfect against TOML files.
+
+### What Was Verified
+- ✅ Duvet annotations use exact quotes from TOML files
+- ✅ Annotation placement follows correct patterns (stacking violations resolved)
+- ✅ Implementation matches specification requirements
+- ✅ Tests cover all implementation annotations (33/33 body format tests pass)
+- ✅ Code quality is acceptable (sentinel lines follow existing codebase patterns)
+- ✅ Commit message follows Conventional Commits format
+
+### Test Results (manual validation)
+- Check 1 (Tests): PASS — 33/33 body format tests pass; all other tests pass except 13 pre-existing credential failures
+- Check 2 (Coverage): N/A — pre-spawn hook logs not available
+- Check 3 (Duvet Report): PASS — report generates successfully (1265 annotations, 2256 references)
+- Check 4 (Snapshot): N/A — pre-spawn hook logs not available
+- Check 5 (Linter): PASS — 0 clippy warnings in modified files (8 pre-existing in other files)
+
+### Commit
+`e11d3d63 fix(message-body): resolve annotation stacking violations in body.rs`
+
+### Test Handoff
+**Spec**: `aws-encryption-sdk-specification/data-format/message-body.md#non-framed-data`, `#non-framed-data-iv`, `#non-framed-data-encrypted-content-length`, `#non-framed-data-encrypted-content`, `#non-framed-data-authentication-tag`, `#framed-data`, `#regular-frame-iv`, `#regular-frame-encrypted-content`, `#regular-frame-sequence-number`, `#final-frame-sequence-number`, `#final-frame-encrypted-content-length`
+
+**Files Modified**:
+- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/body.rs`
+
+# Review History — body-format Cycle 3
+
+## Round 1
+
+## Review: CHANGES REQUESTED
+
+### Summary
+All 48 prefix fixes are correct — zero remaining `aws-encryption-sdk-specification/data-format/message-body.md` annotations in any of the 3 files. B1 (final-frame-iv uniqueness) is well-placed. However, B2 (final-frame-encrypted-content bytes) creates a 3-annotation stack before `read_bytes(r, &mut auth_tag, raw)?;`, which is a hard-limit violation.
+
+### Critical Issues (Must Fix)
+
+1. **ANNOTATION_PLACEMENT / STACKING**: B2 creates a 3-stack before `read_bytes(r, &mut auth_tag, raw)?;`
+   - **File**: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/body.rs`
+   - **Line/Area**: Lines ~168-178 (B2 + 2 auth_tag annotations before `read_bytes`)
+   - **Problem**: B2 (`final-frame-encrypted-content` / "encrypted content MUST be interpreted as bytes") is placed after `read_seq_u32_bounded()?;` but before the 2 pre-existing `final-frame-authentication-tag` annotations and their `read_bytes` call. This creates 3 annotation blocks before a single executable line. Additionally, B2 describes a property of the encrypted content, but the next executable line reads the auth tag — a semantic mismatch that fails the context reset test.
+   - **Fix**: Add a sentinel line immediately after B2 to separate it from the auth_tag annotations. For example:
+     ```rust
+            //= specification/data-format/message-body.md#final-frame-encrypted-content
+            //= type=implication
+            //= reason=read_seq_u32_bounded returns Vec<u8>
+            //# The encrypted content MUST be interpreted as bytes.
+            let _enc_content_is_bytes = &enc_content;
+            //= specification/data-format/message-body.md#final-frame-authentication-tag
+            ...
+     ```
+     This gives B2 its own fulfillment point (the sentinel references `enc_content`, matching the annotation's subject) and reduces the auth_tag stack to 2 annotations.
+
+### Checklist Summary
+
+- ✅ All 48 prefix fixes verified (0 remaining wrong-prefix annotations)
+- ✅ B1 annotation quote matches TOML exactly
+- ✅ B2 annotation quote matches TOML exactly
+- ✅ B1 placement is correct (2-stack within limit)
+- ❌ B2 placement creates 3-stack (blocking)
+- ✅ All annotation types correct (implication with reason lines)
+- ✅ `aws-encryption-sdk-specification/client-apis/encrypt.md` annotations intentionally untouched
+- ✅ Tests: 33/33 body format + 7/7 construct body PASS
+- ✅ Clippy: 0 warnings in modified files
+- ✅ Duvet: 0 `!MUST` entries for `specification/data-format/message-body.md`

@@ -1,387 +1,293 @@
-# Work Item: Non-Framed Data Annotations + Framed Data Annotation Fixes
+# Work Item: Fix Spec Path Prefix Mismatches and Add Missing Annotations for message-body.md
 
 ## Specification
 - **File**: `aws-encryption-sdk-specification/data-format/message-body.md`
-- **Sections**: `#non-framed-data`, `#non-framed-data-iv`, `#non-framed-data-encrypted-content-length`, `#non-framed-data-encrypted-content`, `#non-framed-data-authentication-tag`, `#framed-data`, `#regular-frame-iv`, `#regular-frame-encrypted-content`, `#regular-frame-sequence-number`, `#final-frame-sequence-number`, `#final-frame-encrypted-content-length`
-- **Duvet Targets**:
-  - `aws-encryption-sdk-specification/data-format/message-body.md#non-framed-data`
-  - `aws-encryption-sdk-specification/data-format/message-body.md#non-framed-data-iv`
-  - `aws-encryption-sdk-specification/data-format/message-body.md#non-framed-data-encrypted-content-length`
-  - `aws-encryption-sdk-specification/data-format/message-body.md#non-framed-data-encrypted-content`
-  - `aws-encryption-sdk-specification/data-format/message-body.md#non-framed-data-authentication-tag`
-  - `aws-encryption-sdk-specification/data-format/message-body.md#framed-data`
-  - `aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-iv`
-  - `aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-encrypted-content`
-  - `aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-sequence-number`
-  - `aws-encryption-sdk-specification/data-format/message-body.md#final-frame-sequence-number`
-  - `aws-encryption-sdk-specification/data-format/message-body.md#final-frame-encrypted-content-length`
+- **Section**: `## Structure` (all sub-sections: Non-Framed Data, Framed Data, Regular Frame, Final Frame)
+- **Duvet Target**: `specification/data-format/message-body.md#*` (multiple sections)
 
 ## Type of Work
-FIX_ANNOTATION + ADD_TESTS + NEW_IMPLEMENTATION (annotations only — code already exists)
+FIX_ANNOTATION
+
+## Problem Summary
+
+The local duvet config (`esdk/.duvet/config.toml`) uses `specification/` as the spec source prefix.
+However, 8 implementation annotations in `body.rs` and ALL 40 test annotations in
+`test_message_body_format.rs` (33) and `test_construct_the_body.rs` (7) use the wrong prefix
+`aws-encryption-sdk-specification/` instead of `specification/`.
+
+This means the local duvet report sees implementation/implication annotations but does NOT see
+test annotations for any `specification/` prefix requirements.
+
+Additionally, 2 requirements have NO annotation at all (not even wrong-prefix).
 
 ## Requirements to Address
 
----
+### Group A: Wrong-Prefix Implementation Annotations in body.rs (8 annotations)
 
-### GROUP A: Non-Framed Data — All Missing (14 requirements)
+These annotations exist but use `aws-encryption-sdk-specification/` instead of `specification/`.
+Fix: change the prefix.
 
-#### Requirement A1 — non-framed-data serialization order
+#### A1. Regular Frame Sequence Number — serialized as UInt32
 - **Level**: MUST
 - **Exact Quote** (from TOML):
   ```toml
-  Non-framed data MUST be serialized (written) as, in order,
-  IV,
-  Encrypted Content Length,
-  Encrypted Content,
-  and Authentication Tag.
+  The sequence number MUST be serialized as a UInt32.
   ```
-- **Current State**: missing (both impl and test)
-- **Note**: The ESDK does NOT encrypt non-framed data (`ContentType::Framed` is hardcoded in encrypt.rs). This requirement needs a `type=exception` annotation with `reason=` explaining the ESDK only encrypts framed data.
+- **Current State**: wrong-prefix (line 516 of body.rs)
+- **Fix**: Change `aws-encryption-sdk-specification/` to `specification/`
 
-#### Requirement A2 — non-framed-data deserialization order
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  Non-framed data MUST be deserialized (read) as, in order,
-  IV,
-  Encrypted Content Length,
-  Encrypted Content,
-  and Authentication Tag.
-  ```
-- **Current State**: missing (both impl and test)
-- **Note**: Fulfilled by `read_and_decrypt_non_framed_message_body` which reads in this exact order.
-
-#### Requirement A3 — non-framed-data-iv: unique IV on write
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  When writing a message, the IV MUST be a unique IV within the message.
-  ```
-- **Current State**: missing (both impl and test)
-- **Note**: The ESDK does NOT encrypt non-framed data. This needs `type=exception`.
-
-#### Requirement A4 — non-framed-data-iv: serialize IV length
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  When writing a message, the operation MUST serialize the IV to be [IV Length](message-header.md#iv-length) bytes.
-  ```
-- **Current State**: missing (both impl and test)
-- **Note**: The ESDK does NOT encrypt non-framed data. This needs `type=exception`.
-
-#### Requirement A5 — non-framed-data-iv: deserialize IV length
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  When reading a message, the operation MUST deserialize [IV Length](message-header.md#iv-length) bytes and interpret it as the IV.
-  ```
-- **Current State**: missing (both impl and test)
-- **Note**: Fulfilled by `read_vec(r, get_iv_length(&header.suite) as usize, raw)` in `read_and_decrypt_non_framed_message_body`.
-
-#### Requirement A6 — non-framed-data-iv: interpreted as bytes
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  When reading a message, the deserialized IV MUST be interpreted as bytes.
-  ```
-- **Current State**: missing (both impl and test)
-- **Note**: Fulfilled by `read_vec` returning `Vec<u8>`.
-
-#### Requirement A7 — non-framed-data-encrypted-content-length: max size
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  The length MUST NOT be greater than `2^36 - 32`, or 64 gibibytes (64 GiB),
-  due to restrictions imposed by the [implemented algorithms](../framework/algorithm-suites.md).
-  ```
-- **Current State**: missing (both impl and test)
-- **Note**: Fulfilled by `read_seq_u64_bounded(r, header::SAFE_MAX_ENCRYPT, ...)` where `SAFE_MAX_ENCRYPT = 0x000F_FFFF_FFE0 = 2^36 - 32`.
-
-#### Requirement A8 — non-framed-data-encrypted-content-length: serialized length 8 bytes
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  When serializing the encrypted content length to a message, the length of the serialized encrypted content length MUST be 8 bytes.
-  ```
-- **Current State**: missing (both impl and test)
-- **Note**: The ESDK does NOT encrypt non-framed data. This needs `type=exception`.
-
-#### Requirement A9 — non-framed-data-encrypted-content-length: serialized as Uint64
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  The encrypted content length MUST be serialized as a Uint64.
-  ```
-- **Current State**: missing (both impl and test)
-- **Note**: The ESDK does NOT encrypt non-framed data. This needs `type=exception`.
-
-#### Requirement A10 — non-framed-data-encrypted-content-length: read as Uint64
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  When reading the encrypted content length from a message, the encrypted content length MUST be interpreted as a Uint64.
-  ```
-- **Current State**: missing (both impl and test)
-- **Note**: Fulfilled by `read_seq_u64_bounded` which reads 8 bytes as u64.
-
-#### Requirement A11 — non-framed-data-encrypted-content: length matches field
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  The length of the serialized encrypted content MUST be equal to the value of the [Encrypted Content Length](#encrypted-content-length) field.
-  ```
-- **Current State**: missing (both impl and test)
-- **Note**: Fulfilled by `read_seq_u64_bounded` which reads exactly `content_length` bytes.
-
-#### Requirement A12 — non-framed-data-encrypted-content: interpreted as bytes
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  The encrypted content MUST be interpreted as bytes.
-  ```
-- **Current State**: missing (both impl and test)
-- **Note**: Fulfilled by returning `Vec<u8>`.
-
-#### Requirement A13 — non-framed-data-authentication-tag: length matches algorithm
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
-  ```
-- **Current State**: missing (both impl and test)
-- **Note**: Fulfilled by `read_vec(r, get_tag_length(&header.suite) as usize, raw)`.
-
-#### Requirement A14 — non-framed-data-authentication-tag: interpreted as bytes
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  The authentication tag MUST be interpreted as bytes.
-  ```
-- **Current State**: missing (both impl and test)
-- **Note**: Fulfilled by `read_vec` returning `Vec<u8>`.
-
----
-
-### GROUP B: Framed Data — Missing Implementation Annotations (5 requirements)
-
-#### Requirement B1 — framed-data: max frame size
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
-  ```
-- **Current State**: needs-impl (test exists in `test_message_body_format.rs`)
-- **Note**: Enforced by `FrameLength` wrapping `NonZeroU32` (max value is `u32::MAX = 2^32 - 1`). Annotate at `FrameLength::new` in `types.rs` or at the `frame_length` usage in `encrypt_and_serialize_body`.
-
-#### Requirement B2 — regular-frame-iv: unique IV
+#### A2. Regular Frame IV — unique within message
 - **Level**: MUST
 - **Exact Quote** (from TOML):
   ```toml
   Each frame in the [Framed Data](#framed-data) MUST include an IV that is unique within the message.
   ```
-- **Current State**: needs-impl (test exists in `test_message_body_format.rs`)
-- **Note**: Fulfilled by `iv_seq(input.sequence_number, iv)` in `construct_frame` — each frame gets a unique IV derived from its unique sequence number.
+- **Current State**: wrong-prefix (line 478 of body.rs)
+- **Fix**: Change `aws-encryption-sdk-specification/` to `specification/`
 
-#### Requirement B3 — regular-frame-encrypted-content: length equals frame length
+#### A3. Regular Frame Encrypted Content — length equals frame length
 - **Level**: MUST
 - **Exact Quote** (from TOML):
   ```toml
   The length of the encrypted content of a Regular Frame MUST be equal to the Frame Length.
   ```
-- **Current State**: needs-impl (test exists in `test_message_body_format.rs`)
-- **Note**: Enforced by `encrypt_and_serialize_body` which passes `&plaintext_frame` (exactly `frame_length` bytes) to `construct_frame` for regular frames.
+- **Current State**: wrong-prefix (line 723 of body.rs)
+- **Fix**: Change `aws-encryption-sdk-specification/` to `specification/`
 
-#### Requirement B4 — final-frame-sequence-number: equals total frames
+#### A4. Final Frame Sequence Number — equals total frames
 - **Level**: MUST
 - **Exact Quote** (from TOML):
   ```toml
   The Final Frame Sequence number MUST be equal to the total number of frames in the Framed Data.
   ```
-- **Current State**: needs-impl (test exists in `test_message_body_format.rs`)
-- **Note**: Fulfilled by `encrypt_and_serialize_body` which increments `sequence_number` for each regular frame and passes it to the final frame's `construct_frame` call.
+- **Current State**: wrong-prefix (line 787 of body.rs)
+- **Fix**: Change `aws-encryption-sdk-specification/` to `specification/`
 
-#### Requirement B5 — final-frame-sequence-number: serialized same as regular
+#### A5. Final Frame Sequence Number — serialized same as regular
 - **Level**: MUST
 - **Exact Quote** (from TOML):
   ```toml
   The Final Frame Sequence Number MUST be serialized to a message the same way as the
   [Regular Frame Sequence Number](#regular-frame-sequence-number).
   ```
-- **Current State**: needs-impl (test exists in `test_message_body_format.rs`)
-- **Note**: Fulfilled by `construct_frame` which uses the same `write_u32(w, input.sequence_number)` for both regular and final frames.
+- **Current State**: wrong-prefix (line 521 of body.rs)
+- **Fix**: Change `aws-encryption-sdk-specification/` to `specification/`
 
-#### Requirement B6 — final-frame-sequence-number: interpreted same as regular
+#### A6. Final Frame Sequence Number — interpreted same as regular
 - **Level**: MUST
 - **Exact Quote** (from TOML):
   ```toml
   The Final Frame Sequence Number MUST be interpreted from a message the same way as the
   [Regular Frame Sequence Number](#regular-frame-sequence-number).
   ```
-- **Current State**: needs-impl (test exists in `test_message_body_format.rs`)
-- **Note**: Fulfilled by `read_and_decrypt_framed_message_body` which uses the same `read_u32(r, raw)` for both regular and final frame sequence numbers.
+- **Current State**: wrong-prefix (line 129 of body.rs)
+- **Fix**: Change `aws-encryption-sdk-specification/` to `specification/`
 
----
-
-### GROUP C: Misquoted Annotations (4 fixes)
-
-#### Requirement C1 — regular-frame-sequence-number: serialized length 4 bytes
+#### A7. Final Frame Encrypted Content Length — serialized as UInt32
 - **Level**: MUST
 - **Exact Quote** (from TOML):
   ```toml
-  When serializing the sequence number to a message, the length of the serialized sequence number MUST be 4 bytes.
+  The encrypted content length MUST be serialized as a UInt32.
   ```
-- **Current State**: FIX_ANNOTATION — body.rs line 114 misquotes as `The length of the serialized sequence number MUST be 4 bytes.`
+- **Current State**: wrong-prefix (line 551 of body.rs)
+- **Fix**: Change `aws-encryption-sdk-specification/` to `specification/`
 
-#### Requirement C2 — regular-frame-sequence-number: read as UInt32
+#### A8. Sequence Number End — value encoded as FF FF FF FF
 - **Level**: MUST
 - **Exact Quote** (from TOML):
   ```toml
-  When reading the sequence number from a message, the sequence number MUST be interpreted as a UInt32.
+  The value MUST be encoded as the 4 bytes `FF FF FF FF` in hexadecimal notation.
   ```
-- **Current State**: FIX_ANNOTATION — body.rs line 117 misquotes as `The sequence number MUST be interpreted as a UInt32.`
+- **Current State**: wrong-prefix (line 505 of body.rs); also has correct-prefix annotation in header.rs line 12
+- **Fix**: Change `aws-encryption-sdk-specification/` to `specification/`
 
-#### Requirement C3 — final-frame-encrypted-content-length: serialized length 4 bytes
+### Group B: Missing Implementation Annotations (2 annotations)
+
+These requirements have NO annotation at all in any file.
+
+#### B1. Final Frame IV — unique within message
 - **Level**: MUST
 - **Exact Quote** (from TOML):
   ```toml
-  When serializing the encrypted content length to a message, the length of the serialized encrypted content length field MUST be 4 bytes.
+  The IV MUST be a unique IV within the message.
   ```
-- **Current State**: FIX_ANNOTATION — body.rs line 146 misquotes as `The length of the serialized encrypted content length field MUST be 4 bytes.`
+- **Current State**: missing
+- **Placement**: In `construct_frame()` in body.rs, near the existing `#regular-frame-iv` uniqueness annotation (line 478). The `construct_frame` function is called for both regular and final frames, so the final frame IV uniqueness is fulfilled by the same `iv_seq` call. Add a `specification/data-format/message-body.md#final-frame-iv` implication annotation alongside the existing `#regular-frame-iv` one.
 
-#### Requirement C4 — final-frame-encrypted-content-length: read as UInt32
+#### B2. Final Frame Encrypted Content — interpreted as bytes
 - **Level**: MUST
 - **Exact Quote** (from TOML):
   ```toml
-  When reading the encrypted content length from a message, the encrypted content length MUST be interpreted as a UInt32.
+  The encrypted content MUST be interpreted as bytes.
   ```
-- **Current State**: FIX_ANNOTATION — body.rs line 148 misquotes as `The encrypted content length MUST be interpreted as a UInt32.`
+- **Current State**: missing
+- **Placement**: In `read_and_decrypt_framed_message_body()` in body.rs, near the `read_seq_u32_bounded` call for the final frame (around line 163). The encrypted content is read as bytes via `read_seq_u32_bounded` which returns `Vec<u8>`. Add a `specification/data-format/message-body.md#final-frame-encrypted-content` implication annotation.
 
----
+### Group C: Wrong-Prefix Test Annotations (40 annotations)
+
+ALL test annotations in `test_message_body_format.rs` (33 annotations) and `test_construct_the_body.rs` (7 annotations) use `aws-encryption-sdk-specification/` instead of `specification/`.
+
+Fix: Change ALL occurrences of `aws-encryption-sdk-specification/data-format/message-body.md` to `specification/data-format/message-body.md` in both test files.
+
+**test_message_body_format.rs** — 33 annotations covering:
+- `#framed-data` (2 tests)
+- `#regular-frame` (1 test)
+- `#regular-frame-sequence-number` (5 tests)
+- `#regular-frame-iv` (3 tests)
+- `#regular-frame-encrypted-content` (2 tests)
+- `#regular-frame-authentication-tag` (2 tests)
+- `#final-frame` (2 tests)
+- `#sequence-number-end` (3 tests)
+- `#final-frame-sequence-number` (3 tests)
+- `#final-frame-iv` (3 tests)
+- `#final-frame-encrypted-content-length` (3 tests)
+- `#final-frame-encrypted-content` (2 tests)
+- `#final-frame-authentication-tag` (2 tests)
+
+**test_construct_the_body.rs** — 7 annotations covering:
+- `#final-frame` (7 tests: Framed data MUST contain exactly one final frame, The final frame MUST be the last frame, plaintext length constraints, SHOULD equal frame length, less than frame length)
 
 ## Existing Code Context
 
 ### Source File: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/body.rs`
 
-Non-framed decrypt function (where most Group A annotations go):
+Wrong-prefix example (line 516):
 ```rust
-pub(crate) fn read_and_decrypt_non_framed_message_body(
-    r: &mut dyn SafeRead,
-    header: &HeaderInfo,
-    key: &[u8],
-    raw: &mut dyn SafeWrite,
-) -> Result<Vec<u8>, Error> {
-    //= specification/data-format/message-header.md#frame-length
-    //# When the [content type](#content-type) is non-framed, the value of this field MUST be 0.
-    if header.body.frame_length() != 0 {
-        return Err("Non-framed message contains non-zero frame length.".into());
-    }
-    let iv = serialize_functions::read_vec(r, get_iv_length(&header.suite) as usize, raw)?;
-    let enc_content = serialize_functions::read_seq_u64_bounded(
-        r,
-        header::SAFE_MAX_ENCRYPT,
-        "Frame exceeds AES-GCM cryptographic safety for a single key/iv.",
-        raw,
-    )?;
-    let auth_tag = serialize_functions::read_vec(r, get_tag_length(&header.suite) as usize, raw)?;
+    //= aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-sequence-number
+    //= type=implication
+    //= reason=write_u32 serializes as a 4-byte big-endian UInt32
+    //# The sequence number MUST be serialized as a UInt32.
+    write_u32(w, input.sequence_number)?;
 ```
 
-Misquoted annotations in read path (Group C fixes):
+Should be:
 ```rust
-    loop {
-        //= specification/data-format/message-body.md#regular-frame-sequence-number
-        //= type=implication
-        //# The length of the serialized sequence number MUST be 4 bytes.   // <-- WRONG
-        //= specification/data-format/message-body.md#regular-frame-sequence-number
-        //= type=implication
-        //# The sequence number MUST be interpreted as a UInt32.   // <-- WRONG
+    //= specification/data-format/message-body.md#regular-frame-sequence-number
+    //= type=implication
+    //= reason=write_u32 serializes as a 4-byte big-endian UInt32
+    //# The sequence number MUST be serialized as a UInt32.
+    write_u32(w, input.sequence_number)?;
 ```
 
 ### Test File: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_message_body_format.rs`
 
-Existing test infrastructure (reuse for non-framed tests):
+Wrong-prefix example (line 125):
 ```rust
-async fn round_trip(plaintext: &[u8], frame_length: u32) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    enc_input.frame_length = FrameLength::new(frame_length).unwrap();
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    decrypt(&dec_input).await.unwrap().plaintext
-}
+    //= aws-encryption-sdk-specification/data-format/message-body.md#framed-data
+    //= type=test
+    //# - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
 ```
 
-Note: Non-framed data tests require a non-framed ciphertext. Since the ESDK only encrypts framed data, tests must either:
-1. Use a pre-built non-framed ciphertext from test vectors, or
-2. Construct a non-framed ciphertext manually in the test
+Should be:
+```rust
+    //= specification/data-format/message-body.md#framed-data
+    //= type=test
+    //# - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
+```
+
+### Test File: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_construct_the_body.rs`
+
+Wrong-prefix example (line 150):
+```rust
+    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame
+    //= type=test
+    //# Framed data MUST contain exactly one final frame.
+```
+
+Should be:
+```rust
+    //= specification/data-format/message-body.md#final-frame
+    //= type=test
+    //# Framed data MUST contain exactly one final frame.
+```
 
 ## Implementation Guidance
 
-### Group A: Non-Framed Data Annotations
-
-**Write-path requirements (A1, A3, A4, A8, A9)**: The ESDK does NOT encrypt non-framed data. These need `type=exception` annotations with `reason=The ESDK only encrypts framed data per encrypt.md`. Place these in `body.rs` near the top of the file or in a compliance document.
-
-**Read-path requirements (A2, A5, A6, A7, A10, A11, A12, A13, A14)**: These are fulfilled by `read_and_decrypt_non_framed_message_body`. Annotate at the specific code lines:
-
-- A2 (deserialization order) → at the function entry, before the first `read_vec` call
-- A5 (deserialize IV length bytes) → at `let iv = serialize_functions::read_vec(r, get_iv_length(...))`
-- A6 (IV interpreted as bytes) → at the same `read_vec` call (returns `Vec<u8>`)
-- A7 (max content length) → at `read_seq_u64_bounded(r, header::SAFE_MAX_ENCRYPT, ...)`
-- A10 (content length as Uint64) → at the same `read_seq_u64_bounded` call
-- A11 (content length matches field) → at the same `read_seq_u64_bounded` call (reads exactly that many bytes)
-- A12 (content interpreted as bytes) → at the same `read_seq_u64_bounded` call (returns `Vec<u8>`)
-- A13 (auth tag length matches algorithm) → at `let auth_tag = serialize_functions::read_vec(r, get_tag_length(...))`
-- A14 (auth tag interpreted as bytes) → at the same `read_vec` call
-
-Use `type=implication` for structural/interpretation requirements (A6, A10, A12, A14).
-
-**Test annotations for non-framed read-path**: The ESDK's test vector infrastructure decrypts non-framed ciphertexts from other implementations. Check if existing test vector tests can be annotated, or create a dedicated test that constructs a non-framed ciphertext manually and decrypts it.
-
-### Group B: Missing Implementation Annotations
-
-- B1 (max frame size) → annotate at `FrameLength::new` in `types.rs` with `type=implication` and `reason=FrameLength wraps NonZeroU32 which has max value 2^32-1`
-- B2 (unique IV) → annotate at `iv_seq(input.sequence_number, iv)` in `construct_frame` with `type=implication` and `reason=Each frame's IV is derived from its unique sequence number`
-- B3 (regular frame content length = frame length) → annotate at `plaintext: &plaintext_frame` in the regular frame `construct_frame` call with `type=implication` and `reason=plaintext_frame is exactly frame_length bytes`
-- B4 (final frame seq num = total frames) → annotate at `sequence_number` passed to final frame `construct_frame` call with `type=implication` and `reason=sequence_number is incremented for each frame and equals the total frame count at the final frame`
-- B5 (final frame seq num serialized same as regular) → annotate at `write_u32(w, input.sequence_number)` in `construct_frame` with `type=implication` and `reason=construct_frame uses the same write_u32 for both regular and final frames`
-- B6 (final frame seq num interpreted same as regular) → annotate at `read_u32(r, raw)` in the final frame branch of `read_and_decrypt_framed_message_body` with `type=implication` and `reason=read_u32 is used for both regular and final frame sequence numbers`
-
-### Group C: Misquoted Annotation Fixes
-
-Fix the 4 misquoted annotations in `body.rs` to match the exact TOML quotes. These are in the `read_and_decrypt_framed_message_body` function.
+- This is a **prefix replacement** task. No new test logic or implementation code is needed.
+- For Group A: In `body.rs`, find-and-replace `//= aws-encryption-sdk-specification/data-format/message-body.md#` with `//= specification/data-format/message-body.md#` at the 8 specific lines listed above. Do NOT change annotations that reference `aws-encryption-sdk-specification/client-apis/encrypt.md` — those are a different spec and may use a different prefix intentionally.
+- For Group B: Add 2 new implication annotations at the specified locations.
+- For Group C: In `test_message_body_format.rs` and `test_construct_the_body.rs`, find-and-replace `//= aws-encryption-sdk-specification/data-format/message-body.md#` with `//= specification/data-format/message-body.md#` for ALL occurrences.
+- Follow the existing annotation patterns in body.rs (see the `specification/` prefix annotations already present).
 
 ### Spec-Aligned Structure
 
-Non-framed data deserialization flow:
-1. Read IV (IV Length bytes) → annotate at `read_vec(r, get_iv_length(...))`
-2. Read Content Length (8 bytes as Uint64) → annotate at `read_seq_u64_bounded(...)`
-3. Read Content (Content Length bytes) → annotate at same `read_seq_u64_bounded` (it reads the content)
-4. Read Auth Tag (tag length bytes) → annotate at `read_vec(r, get_tag_length(...))`
+The fix is purely mechanical — no structural changes needed:
+1. Fix 8 wrong-prefix annotations in `body.rs` → changes `aws-encryption-sdk-specification/` to `specification/`
+2. Add 2 missing implication annotations in `body.rs`
+3. Fix 33 wrong-prefix test annotations in `test_message_body_format.rs`
+4. Fix 7 wrong-prefix test annotations in `test_construct_the_body.rs`
 
-Non-framed data serialization (exception):
-- Annotate all write-path requirements as `type=exception` with `reason=`
+### Missing Annotation Placement
 
-### Pattern References
+For B1 (Final Frame IV unique), add near line 478 of body.rs:
+```rust
+    //= specification/data-format/message-body.md#final-frame-iv
+    //= type=implication
+    //= reason=Each frame's IV is derived from its unique sequence number via iv_seq
+    //# The IV MUST be a unique IV within the message.
+```
 
-Follow the existing annotation patterns in `body.rs`:
-- `type=implication` with `reason=` for structural properties (see lines 90-96, 112-123)
-- `type=exception` with `reason=` for requirements the ESDK intentionally does not implement
+For B2 (Final Frame Encrypted Content bytes), add near line 163 of body.rs after the `read_seq_u32_bounded` call:
+```rust
+    //= specification/data-format/message-body.md#final-frame-encrypted-content
+    //= type=implication
+    //= reason=read_seq_u32_bounded returns Vec<u8>
+    //# The encrypted content MUST be interpreted as bytes.
+```
 
 ## Targeted Tests
 
-For non-framed data tests, the test vector decrypt tests exercise the non-framed path. Check:
-- `test_vectors/` test files for non-framed decrypt tests
-- If none exist, create a test that manually constructs a non-framed ciphertext
+No new tests needed. Existing tests already cover all requirements — they just use the wrong prefix.
 
-For framed data, existing tests in `test_message_body_format.rs` already cover all Group B requirements (test annotations exist).
+Tests in `test_message_body_format.rs`:
+- `test_framed_data_max_frame_size`
+- `test_framed_data_max_frame_count`
+- `test_regular_frame_serialization_order`
+- `test_regular_frame_sequence_number_starts_at_one`
+- `test_regular_frame_sequence_number_increments`
+- `test_regular_frame_sequence_number_4_bytes`
+- `test_regular_frame_sequence_number_uint32`
+- `test_regular_frame_sequence_number_read_as_uint32`
+- `test_regular_frame_iv_unique`
+- `test_regular_frame_iv_length_matches_algorithm`
+- `test_regular_frame_iv_interpreted_as_bytes`
+- `test_regular_frame_encrypted_content_length_equals_frame_length`
+- `test_regular_frame_encrypted_content_interpreted_as_bytes`
+- `test_regular_frame_auth_tag_length_matches_algorithm`
+- `test_regular_frame_auth_tag_interpreted_as_bytes`
+- `test_final_frame_serialization_order`
+- `test_final_frame_is_regular_frame_plus_additions`
+- `test_sequence_number_end_value`
+- `test_sequence_number_end_4_bytes`
+- `test_sequence_number_end_interpreted_as_bytes`
+- `test_final_frame_sequence_number_equals_total_frames`
+- `test_final_frame_sequence_number_serialized_same_as_regular`
+- `test_final_frame_sequence_number_interpreted_same_as_regular`
+- `test_final_frame_iv_unique`
+- `test_final_frame_iv_length_matches_algorithm`
+- `test_final_frame_iv_interpreted_as_bytes`
+- `test_final_frame_encrypted_content_length_4_bytes`
+- `test_final_frame_encrypted_content_length_uint32`
+- `test_final_frame_encrypted_content_length_read_as_uint32`
+- `test_final_frame_encrypted_content_length_matches`
+- `test_final_frame_encrypted_content_interpreted_as_bytes`
+- `test_final_frame_auth_tag_length_matches_algorithm`
+- `test_final_frame_auth_tag_interpreted_as_bytes`
+
+Tests in `test_construct_the_body.rs`:
+- `test_regular_frame_serialization_conforms_to_spec`
+- `test_end_of_input_processing`
+- `test_exact_frame_length_constructs_final_or_regular`
+- `test_not_enough_bytes_constructs_final_frame`
 
 ## Success Criteria
 ```bash
-cargo test
-make duvet
+cargo test --test test_message_body_format
+cargo test --test test_construct_the_body
+make duvet  # from esdk/ directory
 ```
-- [ ] All misquoted annotations fixed (Group C)
-- [ ] All non-framed-data requirements annotated (Group A)
-- [ ] All missing framed-data impl annotations added (Group B)
-- [ ] duvet report shows no gaps for `message-body.md` sections: `#non-framed-data`, `#non-framed-data-iv`, `#non-framed-data-encrypted-content-length`, `#non-framed-data-encrypted-content`, `#non-framed-data-authentication-tag`, `#framed-data`, `#regular-frame-iv`, `#regular-frame-encrypted-content`, `#regular-frame-sequence-number`, `#final-frame-sequence-number`, `#final-frame-encrypted-content-length`
-- [ ] All implementations have corresponding `type=test` (except `type=exception` and `type=implication`)
+- [ ] All tests pass (no test logic changes, only annotation prefix changes)
+- [ ] duvet snapshot shows NO `TEXT[!MUST]` entries for `specification/data-format/message-body.md` sections
+- [ ] All requirements have `implication`, `implementation`, or `exception` annotations
+- [ ] All implementations have corresponding `type=test` annotations
+- [ ] The 2 new implication annotations (B1, B2) appear in the snapshot

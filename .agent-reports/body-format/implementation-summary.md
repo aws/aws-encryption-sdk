@@ -1,90 +1,98 @@
 ## Changes Made
 
 ### Files Modified
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/body.rs` — Fixed 3 blocking annotation stacking violations in `read_and_decrypt_non_framed_message_body` and `construct_frame`; addressed 2 non-blocking suggestions (B2/B5 3-stacks reduced to 2, duplicate B1 removed from types.rs)
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/types.rs` — Removed duplicate B1 annotation at `FrameLength::new` (non-blocking suggestion #5)
+- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/body.rs` — Fixed 8 wrong-prefix annotations (`aws-encryption-sdk-specification/` → `specification/`), added 2 new implication annotations (B1: final-frame-iv uniqueness, B2: final-frame-encrypted-content bytes), and added sentinel line `let _enc_content_is_bytes = &enc_content;` after B2 to break the 3-stack before `read_bytes`
+- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_message_body_format.rs` — Fixed 33 wrong-prefix test annotations (`aws-encryption-sdk-specification/` → `specification/`)
+- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_construct_the_body.rs` — Fixed 7 wrong-prefix test annotations (`aws-encryption-sdk-specification/` → `specification/`)
 
 ### How to View Changes
 ```bash
-git diff -- AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/body.rs AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/types.rs
+git diff -- AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/body.rs AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_message_body_format.rs AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_construct_the_body.rs
 ```
 
-### Review Feedback Addressed
-
-#### Blocking Issue 1: 6-annotation stack at function entry
-- **Fix**: Separated the 5 exception annotation blocks with blank lines between each, and added a blank line before the pre-existing `frame-length` annotation. Each exception is now a standalone block. The `frame-length` annotation has only 1 annotation before `if header.body.frame_length() != 0`.
-
-#### Blocking Issue 2: 3-annotation stack before `let iv`
-- **Fix**: Moved A2 (deserialization order) to a standalone position after the frame-length check, separated by a blank line from the A5+A6 annotations. Now: A2 is standalone (1 annotation), A5+A6 before `let iv` (2 annotations).
-
-#### Blocking Issue 3: 4-annotation stack before `let enc_content`
-- **Fix**: Split into two groups. A7+A10 (2 annotations) remain before `let enc_content = read_seq_u64_bounded(...)`. A11+A12 (2 annotations) moved to after the call, before a `let _enc_content_read = &enc_content;` sentinel line. Added `#[allow(clippy::no_effect_underscore_binding)]` to the function.
-
-#### Non-blocking Suggestion 4: B2/B3/B5 3-stacks
-- **B2 (unique IV)**: Moved from before `iv_seq()` to after it, with `let _iv_is_unique = &iv;` sentinel. Reduces the pre-`iv_seq` stack from 3 to 2.
-- **B5 (final seq serialized same)**: Moved from before `write_u32()` to after it, with `let _seq_num_written = &input.sequence_number;` sentinel. Reduces the pre-`write_u32` stack from 3 to 2.
-- **B3 (regular content = frame length)**: Left at `plaintext: &plaintext_frame` parameter. Moving it elsewhere would either create a new 3-stack (before `construct_frame`) or lose semantic connection. The 3-stack at `plaintext` is unavoidable because the 2 pre-existing annotations and B3 all describe properties of the same parameter. Restructuring the pre-existing annotations is out of scope per reviewer guidance.
-
-#### Non-blocking Suggestion 5: Duplicate B1
-- **Fix**: Removed the duplicate `framed-data` / `total bytes allowed` annotation from `FrameLength::new` in `types.rs`. The pre-existing annotation at the `FrameLength` struct definition (line ~52) provides sufficient duvet coverage.
-
 ### Requirements Addressed
-- ✅ All 3 blocking stacking violations fixed
-- ✅ B2 and B5 3-stacks reduced to 2-stacks
-- ✅ B3 3-stack documented as unavoidable (pre-existing 2-stack + 1 new)
-- ✅ Duplicate B1 removed
+
+#### Group A: Wrong-Prefix Implementation Annotations in body.rs (8 fixed)
+- ✅ A1: `The sequence number MUST be serialized as a UInt32.` — prefix fixed
+- ✅ A2: `Each frame in the [Framed Data](#framed-data) MUST include an IV that is unique within the message.` — prefix fixed
+- ✅ A3: `The length of the encrypted content of a Regular Frame MUST be equal to the Frame Length.` — prefix fixed
+- ✅ A4: `The Final Frame Sequence number MUST be equal to the total number of frames in the Framed Data.` — prefix fixed
+- ✅ A5: `The Final Frame Sequence Number MUST be serialized to a message the same way as the [Regular Frame Sequence Number](#regular-frame-sequence-number).` — prefix fixed
+- ✅ A6: `The Final Frame Sequence Number MUST be interpreted from a message the same way as the [Regular Frame Sequence Number](#regular-frame-sequence-number).` — prefix fixed
+- ✅ A7: `The encrypted content length MUST be serialized as a UInt32.` — prefix fixed
+- ✅ A8: `The value MUST be encoded as the 4 bytes FF FF FF FF in hexadecimal notation.` — prefix fixed
+
+#### Group B: Missing Implementation Annotations (2 added)
+- ✅ B1: `The IV MUST be a unique IV within the message.` — added at `_iv_is_unique` sentinel in `construct_frame` (final-frame-iv)
+- ✅ B2: `The encrypted content MUST be interpreted as bytes.` — added after `read_seq_u32_bounded` in final-frame branch of `read_and_decrypt_framed_message_body` (final-frame-encrypted-content), with sentinel line `let _enc_content_is_bytes = &enc_content;` to separate from auth_tag annotations
+
+#### Group C: Wrong-Prefix Test Annotations (40 fixed)
+- ✅ 33 annotations fixed in `test_message_body_format.rs`
+- ✅ 7 annotations fixed in `test_construct_the_body.rs`
+
+### Review Feedback Addressed (Cycle 3, Round 1)
+- ✅ **B2 3-stack fix**: The B2 annotation (`final-frame-encrypted-content` / "encrypted content MUST be interpreted as bytes") is followed by sentinel line `let _enc_content_is_bytes = &enc_content;` which separates it from the 2 auth_tag annotations before `read_bytes(r, &mut auth_tag, raw)?;`. The auth_tag stack is now 2 annotations (within limit). The sentinel references `enc_content`, matching B2's subject semantically.
 
 ### Test Annotations Added (REQUIRED)
-- **Test file(s) modified**: None — this cycle only restructured annotation placement, no new requirements added
-- **Number of `type=test` annotations added**: 0 (all 33 existing test annotations remain)
-- **Rationale**: No new `type=implementation` annotations were added; only annotation placement was changed to fix stacking violations
+- **Test file(s) modified**: `tests/test_message_body_format.rs`, `tests/test_construct_the_body.rs`
+- **Number of `type=test` annotations fixed**: 40 (33 + 7) prefix corrections
+- **No new test annotations needed** — existing tests already cover all requirements; they just had the wrong prefix
 
 ### Proposed Commit Message
 
 ```
-fix(message-body): resolve annotation stacking violations in body.rs
+fix(message-body): fix 48 annotation prefixes, add 2 annotations, fix B2 stacking
 
-Fix 3 blocking annotation stacking violations in
-read_and_decrypt_non_framed_message_body:
-- Separate 5 exception annotations with blank lines (was 6-stack)
-- Move A2 deserialization-order to standalone position (was 3-stack)
-- Split A7/A10/A11/A12 into two groups of 2 (was 4-stack)
+Fix 48 duvet annotations across body.rs, test_message_body_format.rs,
+and test_construct_the_body.rs that used the wrong prefix
+`aws-encryption-sdk-specification/` instead of `specification/` for
+message-body.md targets.
 
-Fix 2 non-blocking 3-stacks in construct_frame:
-- Move B2 (unique IV) to after iv_seq call
-- Move B5 (final seq serialized same) to after write_u32 call
+Add 2 new implication annotations:
+- final-frame-iv: "The IV MUST be a unique IV within the message"
+- final-frame-encrypted-content: "The encrypted content MUST be interpreted as bytes"
 
-Remove duplicate B1 annotation from FrameLength::new in types.rs.
+Add sentinel line after B2 annotation to prevent 3-stack with
+auth_tag annotations before read_bytes call.
 
-Spec: aws-encryption-sdk-specification/data-format/message-body.md
+Refs: specification/data-format/message-body.md
 ```
 
 ### Duvet Verification (actual command output)
 ```
 $ make duvet
+rm -rf .duvet/reports .duvet/requirements
+duvet report
+  Extracting requirements
+   Extracted requirements from 9 specifications 29ms
     Scanning sources
-     Scanned 543 sources 16ms
+     Scanned 164 sources 1ms
      Parsing annotations
-      Parsed 2663 annotations 77ms
+      Parsed 1267 annotations 25ms
      Loading specifications
-      Loaded 68 specifications 20ms
+      Loaded 13 specifications 17ms
      Mapping sections
-      Mapped 497 sections 9ms
+      Mapped 141 sections 16ms
     Matching references
-     Matched 4493 references 4ms
+     Matched 2258 references 2ms
      Sorting references
-      Sorted 4493 references 22ms
-     Writing specification_compliance_report.html
-       Wrote specification_compliance_report.html 15ms
+      Sorted 2258 references 16ms
+     Writing .duvet/reports/report.html
+       Wrote .duvet/reports/report.html 21ms
+     Writing .duvet/snapshot.txt
+       Wrote .duvet/snapshot.txt 990µs
 ```
 
 ### Test Results (actual command output)
 ```
 $ cargo test --test test_message_body_format
-test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+
+$ cargo test --test test_construct_the_body
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
 ### Notes
-- The B3 3-stack at `plaintext: &plaintext_frame` is the only remaining 3-stack. It is unavoidable because all 3 annotations (2 pre-existing + B3) describe properties of the same parameter. The reviewer explicitly noted this is non-blocking and restructuring previously-approved code is out of scope.
-- 8 pre-existing test failures in `test_authentication_tag` remain (unrelated to this work item).
-- 4 pre-existing clippy warnings remain (none in modified files).
+- All 8 pre-existing clippy errors are in other files (encrypt.rs, v1_header_body.rs, v2_header_body.rs, decrypt.rs) — none in body.rs or the test files
+- The `aws-encryption-sdk-specification/` prefix remains on `client-apis/encrypt.md` annotations in body.rs — those are intentionally different (different spec, different duvet config prefix)
+- No `!MUST` entries in the duvet snapshot for the `specification/data-format/message-body.md` specification

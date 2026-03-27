@@ -1,18 +1,25 @@
-# Agent 2 Notes — body-format Cycle 2
+# Agent 2 Notes — body-format Cycle 3
 
-## Pre-Implementation Reasoning (Cycle 2 — Review Feedback)
+## Cycle 3, Round 1 Feedback
 
-### Blocking Issues Analysis
+The single blocking issue was B2 creating a 3-annotation stack before `read_bytes(r, &mut auth_tag, raw)?;` in the final-frame branch of `read_and_decrypt_framed_message_body`.
 
-1. **6-annotation stack at function entry**: The 5 exception annotations were stacked contiguously with the pre-existing `frame-length` annotation. Fix: blank lines between each exception block, and blank line before `frame-length`. Exception annotations don't need to be before specific code — they document intentional non-implementation.
+### Fix Applied
 
-2. **3-annotation stack before `let iv`**: A2 (deserialization order) is a Pattern 3 general-behavior annotation about the function's overall structure. It doesn't belong stacked with A5/A6 which are specific to the IV read. Fix: move A2 to standalone position after frame-length check.
+The sentinel line `let _enc_content_is_bytes = &enc_content;` was already present in the working copy immediately after the B2 annotation block. This gives B2 its own fulfillment point (the sentinel references `enc_content`, matching the annotation's subject) and reduces the auth_tag stack to 2 annotations.
 
-3. **4-annotation stack before `let enc_content`**: A7+A10 describe the length field reading. A11+A12 describe properties of the content that was read. Fix: A7+A10 before the call, A11+A12 after the call on a sentinel line.
+The code structure at lines 168-181 is now:
+```
+B2 annotation (final-frame-encrypted-content / "interpreted as bytes")
+let _enc_content_is_bytes = &enc_content;    ← sentinel separates B2 from auth_tag
+auth_tag annotation 1 (tag length)
+auth_tag annotation 2 (tag interpreted as bytes)
+read_bytes(r, &mut auth_tag, raw)?;          ← only 2 annotations before this line
+```
 
-### Non-Blocking Analysis
-
-- **B2**: Can move to after `iv_seq()` since uniqueness is a property of the result. Sentinel `let _iv_is_unique = &iv;` follows the existing pattern of `let _endframe_written = ()` etc.
-- **B5**: Can move to after `write_u32()` since "serialized same way" is a property of what was just written. Sentinel `let _seq_num_written = &input.sequence_number;`.
-- **B3**: Cannot move without creating a new 3-stack elsewhere or losing semantic connection. The `plaintext` parameter is the only place where "encrypted content length equals frame length" makes sense. Left as-is per reviewer guidance.
-- **Duplicate B1**: Removed from `FrameLength::new`. The struct-level annotation is sufficient.
+### Verification
+- `cargo check` — compiles clean
+- `cargo test --test test_message_body_format` — 33/33 pass
+- `cargo clippy` — 0 warnings in body.rs (8 pre-existing in other files)
+- `make duvet` — 1267 annotations, 2258 references, report generates successfully
+- The `#[allow(clippy::no_effect_underscore_binding)]` on `read_and_decrypt_framed_message_body` suppresses the clippy lint for sentinel bindings

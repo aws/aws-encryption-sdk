@@ -70,6 +70,7 @@ pub(crate) fn body_aad(
     result.extend_from_slice(&length.to_be_bytes());
 }
 
+#[allow(clippy::no_effect_underscore_binding)]
 pub(crate) fn read_and_decrypt_framed_message_body(
     r: &mut dyn SafeRead,
     w: &mut dyn SafeWrite,
@@ -126,7 +127,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //# If the first 4 bytes have a value of 0xFFFF,
         //# then the Decrypt operation MUST deserialize the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
         if seq_num == ENDFRAME_SEQUENCE_NUMBER {
-            //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame-sequence-number
+            //= specification/data-format/message-body.md#final-frame-sequence-number
             //= type=implication
             //= reason=read_u32 is used for both regular and final frame sequence numbers
             //# The Final Frame Sequence Number MUST be interpreted from a message the same way as the
@@ -165,6 +166,11 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 &mut enc_content,
                 raw,
             )?;
+            //= specification/data-format/message-body.md#final-frame-encrypted-content
+            //= type=implication
+            //= reason=read_seq_u32_bounded returns Vec<u8>
+            //# The encrypted content MUST be interpreted as bytes.
+            let _enc_content_is_bytes = &enc_content;
             //= specification/data-format/message-body.md#final-frame-authentication-tag
             //= type=implication
             //# The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
@@ -475,10 +481,14 @@ pub(crate) fn construct_frame(
     //= reason=Serialization order is enforced by the sequence of write calls below
     //# The Encrypt operation MUST serialize a regular frame or final frame with the following specifics:
     iv_seq(input.sequence_number, iv);
-    //= aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-iv
+    //= specification/data-format/message-body.md#regular-frame-iv
     //= type=implication
     //= reason=Each frame's IV is derived from its unique sequence number via iv_seq
     //# Each frame in the [Framed Data](#framed-data) MUST include an IV that is unique within the message.
+    //= specification/data-format/message-body.md#final-frame-iv
+    //= type=implication
+    //= reason=Each frame's IV is derived from its unique sequence number via iv_seq; construct_frame is called for both regular and final frames
+    //# The IV MUST be a unique IV within the message.
     let _iv_is_unique = &iv;
 
     //= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-a-frame
@@ -502,7 +512,7 @@ pub(crate) fn construct_frame(
         //# - [Sequence Number End](../data-format/message-body.md#sequence-number-end): MUST be serialized according to the
         //# [Sequence Number End](../data-format/message-body.md#sequence-number-end) specification.
         write_u32(w, ENDFRAME_SEQUENCE_NUMBER)?;
-        //= aws-encryption-sdk-specification/data-format/message-body.md#sequence-number-end
+        //= specification/data-format/message-body.md#sequence-number-end
         //= type=implication
         //= reason=ENDFRAME_SEQUENCE_NUMBER is defined as 0xFFFFFFFF
         //# The value MUST be encoded as the 4 bytes `FF FF FF FF` in hexadecimal notation.
@@ -513,12 +523,12 @@ pub(crate) fn construct_frame(
     //# - [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number): MUST be serialized according to the
     //# [Regular Frame Sequence Number](../data-format/message-body.md#regular-frame-sequence-number) specification.
     //# The value MUST be the sequence number of this frame.
-    //= aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-sequence-number
+    //= specification/data-format/message-body.md#regular-frame-sequence-number
     //= type=implication
     //= reason=write_u32 serializes as a 4-byte big-endian UInt32
     //# The sequence number MUST be serialized as a UInt32.
     write_u32(w, input.sequence_number)?;
-    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame-sequence-number
+    //= specification/data-format/message-body.md#final-frame-sequence-number
     //= type=implication
     //= reason=construct_frame uses the same write_u32 for both regular and final frames
     //# The Final Frame Sequence Number MUST be serialized to a message the same way as the
@@ -548,7 +558,7 @@ pub(crate) fn construct_frame(
         //= reason=write_u32 serializes as a 4-byte big-endian UInt32
         //# - [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length): MUST be serialized according to the
         //# [Final Frame Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length) specification.
-        //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame-encrypted-content-length
+        //= specification/data-format/message-body.md#final-frame-encrypted-content-length
         //= type=implication
         //= reason=write_u32 serializes as a 4-byte big-endian UInt32
         //# The encrypted content length MUST be serialized as a UInt32.
@@ -720,7 +730,7 @@ pub(crate) fn encrypt_and_serialize_body(
                 //= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-a-frame
                 //= reason=plaintext_frame is exactly frame_length bytes for a regular frame
                 //# - For a regular frame the length of this plaintext subsequence MUST equal the frame length.
-                //= aws-encryption-sdk-specification/data-format/message-body.md#regular-frame-encrypted-content
+                //= specification/data-format/message-body.md#regular-frame-encrypted-content
                 //= type=implication
                 //= reason=plaintext_frame is exactly frame_length bytes, so encrypted content length equals frame length
                 //# The length of the encrypted content of a Regular Frame MUST be equal to the Frame Length.
@@ -784,7 +794,7 @@ pub(crate) fn encrypt_and_serialize_body(
             plaintext: &plaintext_frame[0..in_size],
             message_id: header.body.message_id(),
             aad_content: BodyAADContent::FinalFrame,
-            //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame-sequence-number
+            //= specification/data-format/message-body.md#final-frame-sequence-number
             //= type=implication
             //= reason=sequence_number is incremented for each regular frame and equals the total frame count at the final frame
             //# The Final Frame Sequence number MUST be equal to the total number of frames in the Framed Data.
