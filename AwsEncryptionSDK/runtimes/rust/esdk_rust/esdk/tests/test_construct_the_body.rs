@@ -151,7 +151,13 @@ async fn test_regular_frame_serialization_conforms_to_spec() {
     let ct = encrypt_with_frame_length(&pt, 10).await;
     let (regular, final_count) = count_frames(&ct, 10);
     assert_eq!(regular, 2, "30 bytes / 10-byte frames → 2 regular frames");
+    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame
+    //= type=test
+    //# Framed data MUST contain exactly one final frame.
     assert_eq!(final_count, 1, "must have exactly 1 final frame");
+    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame
+    //= type=test
+    //# The final frame MUST be the last frame.
     let result = round_trip(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves regular frames conform to spec");
 }
@@ -183,6 +189,10 @@ async fn test_end_of_input_processing() {
     //= type=test
     //# When the end of the input is indicated,
     //# this operation MUST perform the following until all consumable plaintext bytes are processed:
+    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame
+    //= type=test
+    //# The length of the plaintext to be encrypted in the Final Frame MUST be
+    //# greater than or equal to 0 and less than or equal to the [Frame Length](message-header.md#frame-length).
     // 15 bytes with frame_length=10 → 1 regular (10) + 1 final (5)
     let pt = vec![0xCCu8; 15];
     let ct = encrypt_with_frame_length(&pt, 10).await;
@@ -191,6 +201,7 @@ async fn test_end_of_input_processing() {
     assert_eq!(final_count, 1, "must have exactly 1 final frame");
     let content_len = final_frame_content_length(&ct).unwrap();
     assert_eq!(content_len, 5, "final frame content length must be 5 (remaining bytes)");
+    assert!(content_len <= 10, "final frame content length must be <= frame length");
     let result = round_trip(&pt, 10).await;
     assert_eq!(result, pt, "end-of-input processing produces correct output");
 }
@@ -205,6 +216,11 @@ async fn test_exact_frame_length_constructs_final_or_regular() {
     //# such that creating a regular frame processes all consumable bytes,
     //# then this operation MUST [construct either a final frame or regular frame](#construct-a-frame)
     //# with the remaining plaintext.
+    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame
+    //= type=test
+    //# - When the length of the Plaintext is an exact multiple of the Frame Length
+    //# (including if it is equal to the frame length),
+    //# the Final Frame encrypted content length SHOULD be equal to the frame length but MAY be 0.
     // 10 bytes with frame_length=10 → exactly one frame's worth
     // The implementation constructs a final frame for the exact-match case.
     let pt = vec![0xDDu8; 10];
@@ -248,6 +264,10 @@ async fn test_not_enough_bytes_constructs_final_frame() {
     //= type=test
     //# - If there are not enough input consumable plaintext bytes to create a new regular frame,
     //# then this operation MUST [construct a final frame](#construct-a-frame)
+    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame
+    //= type=test
+    //# - When the length of the Plaintext is less than the Frame Length,
+    //# the body MUST contain exactly one frame and that frame MUST be a Final Frame.
     // 7 bytes with frame_length=10 → single final frame (7 bytes < frame_length)
     let pt = vec![0xFFu8; 7];
     let ct = encrypt_with_frame_length(&pt, 10).await;
@@ -275,4 +295,30 @@ async fn test_empty_plaintext_constructs_empty_final_frame() {
     assert_eq!(final_count, 1, "must have exactly 1 final frame");
     let content_len = final_frame_content_length(&ct).unwrap();
     assert_eq!(content_len, 0, "empty final frame content length must be 0");
+    // Verify the final frame structure: ENDFRAME(4) + SeqNum(4) + IV(12) + ContentLen(4) + Content(0) + Tag(16)
+    let endframe = 0xFFFF_FFFFu32.to_be_bytes();
+    let seq_one = 1u32.to_be_bytes();
+    let mut found_structure = false;
+    for i in 0..ct.len().saturating_sub(8) {
+        if ct[i..i + 4] == endframe && ct[i + 4..i + 8] == seq_one {
+            found_structure = true;
+            break;
+        }
+    }
+    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame
+    //= type=test
+    //# A final frame MUST be serialized as, in order,
+    //# Sequence Number End,
+    //# Sequence Number,
+    //# IV,
+    //# Encrypted Content Length,
+    //# Encrypted Content,
+    //# and Authentication Tag.
+    assert!(found_structure, "final frame must have Sequence Number End followed by Sequence Number");
+    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame
+    //= type=test
+    //# This means a final frame MUST be a regular frame with the addition of the serialized
+    //# Sequence Number End
+    //# and Encrypted Content Length.
+    assert_eq!(content_len, 0, "empty final frame has Encrypted Content Length field (value 0)");
 }

@@ -83,21 +83,6 @@
 //# this operation MUST input the serialized header to the signature algorithm as soon as it is serialized,
 //# such that the serialized header isn't required to remain in memory to [construct the signature](#construct-the-signature).
 
-// Streaming not supported
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-a-frame
-//= type=exception
-//# If this operation is streaming the encrypted message and
-//# the entire frame has been serialized,
-//# the serialized frame MUST be released.
-
-// Streaming not supported
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-a-frame
-//= type=exception
-//# If the algorithm suite contains a signature algorithm and
-//# this operation is [streaming](streaming.md) the encrypted message output to the caller,
-//# this operation MUST input the serialized frame to the signature algorithm as soon as it is serialized,
-//# such that the serialized frame isn't required to remain in memory to [construct the signature](#construct-the-signature).
-
 // Not relevant for us
 //= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-the-signature
 //= type=exception
