@@ -179,7 +179,7 @@ async fn internal_encrypt(
     //= type=implication
     //# - Encrypt operation step 4 MUST be [Construct the signature](#construct-the-signature)
     //= specification/client-apis/encrypt.md#behavior
-    //# If the materials do not have an algorithm suite including a signature algorithm,
+    //# - If the materials do not have an algorithm suite including a signature algorithm,
     //# the Encrypt operation MUST NOT construct a signature.
     if !matches!(mat_result.materials.algorithm_suite.signature, aws_mpl_legacy::suites::SignatureAlgorithm::None) {
         //= specification/client-apis/encrypt.md#behavior
@@ -405,6 +405,12 @@ fn step_construct_signature(
             return Err("Unrecognized signature algorithm in algorithm suite".into());
         }
     }
+    //= specification/client-apis/encrypt.md#construct-the-signature
+    //= type=implication
+    //= reason=step_construct_signature writes directly to the output buffer; returning Ok(()) releases all serialized bytes
+    //# Once the entire message footer has been serialized,
+    //# this operation MUST release any previously unreleased serialized bytes from previous steps
+    //# and MUST release the message footer.
     Ok(())
 }
 
