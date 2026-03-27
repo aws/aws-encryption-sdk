@@ -10,21 +10,43 @@ use aws_mpl_legacy::suites::AlgorithmSuite;
 
 pub(crate) type MessageId = Vec<u8>;
 
+//= aws-encryption-sdk-specification/data-format/message-header.md#supported-versions
+//= type=implication
+//= reason=The enum definition structurally constrains valid versions to exactly these two variants.
+//# The supported versions MUST be:
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub(crate) enum MessageFormatVersion {
+    //= aws-encryption-sdk-specification/data-format/message-header.md#supported-versions
+    //= type=implication
+    //# - `01` MUST be version 1.0
     V1 = 1,
+    //= aws-encryption-sdk-specification/data-format/message-header.md#supported-versions
+    //= type=implication
+    //# - `02` MUST be version 2.0
     V2 = 2,
 }
 
+//= aws-encryption-sdk-specification/data-format/message-header.md#version
+//= type=implication
+//= reason=write_u8 structurally constrains the serialized version to exactly 1 byte.
+//# The length of the serialized version field MUST be 1 byte.
 pub(crate) fn write_msg_format_version(
     w: &mut dyn SafeWrite,
     data: MessageFormatVersion,
 ) -> Result<(), Error> {
     write_u8(w, data as u8)
 }
+//= aws-encryption-sdk-specification/data-format/message-header.md#type
+//= type=implication
+//= reason=write_u8 structurally constrains the serialized type to exactly 1 byte.
+//# The length of the serialized type field MUST be 1 byte.
 pub(crate) fn write_msg_type(w: &mut dyn SafeWrite, data: MessageType) -> Result<(), Error> {
     write_u8(w, data as u8)
 }
+//= aws-encryption-sdk-specification/data-format/message-header.md#content-type
+//= type=implication
+//= reason=write_u8 structurally constrains the serialized content type to exactly 1 byte.
+//# The length of the serialized content type field MUST be 1 byte.
 pub(crate) fn write_content_type(w: &mut dyn SafeWrite, data: ContentType) -> Result<(), Error> {
     write_u8(w, data as u8)
 }
@@ -40,6 +62,8 @@ pub(crate) fn read_msg_format_version(
         _ => ser_err("Unsupported Version."),
     }
 }
+//= aws-encryption-sdk-specification/data-format/message-header.md#type
+//# The type (hex) of this field MUST be a value that exists in the following table:
 pub(crate) fn read_msg_type(
     r: &mut dyn SafeRead,
     raw: &mut dyn SafeWrite,
@@ -174,8 +198,15 @@ impl HeaderAuth {
         }
     }
 }
+//= aws-encryption-sdk-specification/data-format/message-header.md#supported-types
+//= type=implication
+//= reason=The enum definition structurally constrains valid types to exactly this variant.
+//# The supported types MUST be:
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub(crate) enum MessageType {
+    //= aws-encryption-sdk-specification/data-format/message-header.md#supported-types
+    //= type=implication
+    //# - `80` MUST be Customer Authenticated Encrypted Data
     #[default]
     TypeCustomerAed = 0x80,
 }
