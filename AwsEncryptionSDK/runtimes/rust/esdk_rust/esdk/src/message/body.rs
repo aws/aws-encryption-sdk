@@ -641,6 +641,10 @@ pub(crate) fn encrypt_and_serialize_body(
     //# has a length greater than this value,
     //# this operation MUST immediately fail.
     let mut total_data_size: usize = 0;
+    //= specification/data-format/message-body.md#framed-data
+    //= type=implication
+    //= reason=frame_length() returns u32, which is bounded by 2^32 - 1
+    //# - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
     let frame_length = header.body.frame_length() as usize;
     let iv_len = get_iv_length(&header.suite) as usize;
     let auth_len = get_tag_length(&header.suite) as usize;
