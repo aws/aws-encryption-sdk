@@ -148,6 +148,10 @@ fn test_encrypt_input_accepts_plaintext() {
     //= specification/client-apis/encrypt.md#input
     //= type=test
     //# - The input to the Encrypt operation MUST accept a required [plaintext](#plaintext) argument.
+
+    //= specification/client-apis/encrypt.md#plaintext
+    //= type=test
+    //# This MUST be a sequence of bytes.
     let plaintext = b"hello world";
     let mut input = EncryptInput::default();
     input.plaintext = plaintext;
@@ -197,6 +201,11 @@ fn test_decrypt_input_accepts_encrypted_message() {
     //= specification/client-apis/decrypt.md#input
     //= type=test
     //# - The input to the Decrypt operation MUST accept a required [Encrypted Message](#encrypted-message) argument.
+
+    //= specification/client-apis/decrypt.md#encrypted-message
+    //= type=test
+    //# The input encrypted message MUST be a sequence of bytes in the
+    //# [message format](../data-format/message.md) specified by the AWS Encryption SDK.
     let ciphertext = b"fake ciphertext";
     let mut input = DecryptInput::default();
     input.ciphertext = ciphertext;
@@ -220,4 +229,29 @@ fn test_decrypt_input_accepts_optional_encryption_context() {
     //# - The input to the Decrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
     let input = DecryptInput::default();
     assert!(input.encryption_context.is_empty());
+}
+
+#[test]
+fn test_frame_length_rejects_zero() {
+    //= specification/client-apis/encrypt.md#frame-length
+    //= type=test
+    //# This value MUST be greater than 0 and MUST NOT exceed the value 2^32 - 1.
+    assert!(FrameLength::new(0).is_err());
+}
+
+#[test]
+fn test_frame_length_accepts_max_u32() {
+    //= specification/client-apis/encrypt.md#frame-length
+    //= type=test
+    //# This value MUST be greater than 0 and MUST NOT exceed the value 2^32 - 1.
+    let fl = FrameLength::new(u32::MAX).unwrap();
+    assert_eq!(fl.0.get(), u32::MAX);
+}
+
+#[test]
+fn test_frame_length_default_is_4096() {
+    //= specification/client-apis/encrypt.md#frame-length
+    //= type=test
+    //# This value MUST default to 4096 bytes.
+    assert_eq!(FrameLength::default().0.get(), 4096);
 }
