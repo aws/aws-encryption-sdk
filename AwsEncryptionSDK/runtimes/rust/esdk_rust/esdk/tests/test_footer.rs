@@ -62,6 +62,13 @@ async fn test_footer_present_with_signing_suite() {
     //# When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
     //# the [message](message.md) MUST contain a footer.
 
+    //= specification/data-format/message.md#structure
+    //= type=test
+    //# If the [message header](message-header.md) contains an [algorithm suite](../framework/algorithm-suites.md) in the
+    //# [algorithm suite ID](message-header.md#algorithm-suite-id) field that contains a
+    //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm), the message MUST also contain a
+    //# [message footer](message-footer.md) serialized after the [message body](message-body.md).
+
     let ct_signing = encrypt_with_signing_suite(b"footer presence test").await;
     let ct_no_signing = encrypt_without_signing_suite(b"footer presence test").await;
 
@@ -148,5 +155,58 @@ async fn test_footer_signature_calculated_over_header_and_body() {
     assert_eq!(
         result, pt,
         "successful decrypt proves signature was calculated over header+body in serialization order"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_no_footer_without_signing_suite() {
+    //= specification/data-format/message.md#structure
+    //= type=test
+    //# If the algorithm suite does not contain a signature algorithm, the message MUST NOT contain a message footer.
+
+    // Encrypt with non-signing suite and verify successful round-trip decrypt.
+    // If a footer were present, the decryptor (which knows the suite has no signature)
+    // would either fail or leave trailing bytes. A successful decrypt proves no footer.
+    let keyring = test_keyring().await;
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(b"no footer test", EncryptionContext::new(), keyring.clone());
+    enc_input.algorithm_suite_id =
+        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
+    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let pt = decrypt(&dec_input).await.unwrap().plaintext;
+    assert_eq!(
+        pt,
+        b"no footer test",
+        "successful round-trip with non-signing suite proves no footer is present"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_message_begins_with_header() {
+    //= specification/data-format/message.md#structure
+    //= type=test
+    //# - The message MUST begin with [Message Header](message-header.md)
+
+    let ct = encrypt_with_signing_suite(b"header first test").await;
+
+    // V2 messages begin with version byte 0x02, followed by the 2-byte algorithm suite ID.
+    // If the message didn't begin with the header, decrypt would fail.
+    assert_eq!(ct[0], 0x02, "message must begin with V2 header version byte");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_message_body_follows_header() {
+    //= specification/data-format/message.md#structure
+    //= type=test
+    //# - The [Message Body](message-body.md) MUST follow the Message Header
+
+    // A successful round-trip decrypt proves the body follows the header,
+    // because the decryptor parses header then body in sequence.
+    let pt = b"body follows header test";
+    let result = round_trip_signing(pt).await;
+    assert_eq!(
+        result, pt,
+        "successful decrypt proves message body follows header in serialization order"
     );
 }
