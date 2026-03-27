@@ -1,19 +1,19 @@
-### Test Handoff
+# Test Handoff — header (Round 3)
 
-**Spec**: `aws-encryption-sdk-specification/data-format/message-header.md#structure`
+**Spec**: `aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-count`, `aws-encryption-sdk-specification/data-format/message-header.md#algorithm-suite-data`, `aws-encryption-sdk-specification/data-format/message-header.md#frame-length`
 
 **Files Modified**:
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/header.rs`
 - `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_header_structure.rs`
 
 **Commit Message**:
 ```
-fix(message-header): add missing serialization order annotation and tests
+test(message-header): add missing test annotations for EDK count, suite data length, and frame length
 
-Add the missing implementation annotation for the header serialization
-order requirement inside serialize_header() in header.rs. Add test file
-test_header_structure.rs with type=test annotations for both structure
-requirements using correct specification/ target path prefix.
+Add type=test annotations for three message-header requirements that had
+implementation annotations but no corresponding test coverage:
+- encrypted-data-key-count: "This value MUST be greater than 0"
+- algorithm-suite-data: suite data length must match algorithm suite
+- frame-length: "When content type is non-framed, value MUST be 0"
 
-Spec: aws-encryption-sdk-specification/data-format/message-header.md#structure
+Spec: aws-encryption-sdk-specification/data-format/message-header.md
 ```

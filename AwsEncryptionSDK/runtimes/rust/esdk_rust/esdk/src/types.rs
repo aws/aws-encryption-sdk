@@ -215,9 +215,23 @@ pub struct EncryptInput<'a> {
     //# The plaintext to encrypt.
     //# This MUST be a sequence of bytes.
     pub plaintext: &'a [u8],
-    /// default is no limit
+    /// Default is no limit
+    //= specification/client-apis/client.md#initialization
+    //= type=implication
+    //# - On client initialization,
+    //# the caller MUST have the option to provide a [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys).
+    //= specification/client-apis/client.md#initialization
+    //= type=implication
+    //= reason=Option<NonZeroUsize> defaults to None via derive(Default), which means no limit
+    //# If no [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys) is provided
+    //# the default MUST result in no limit on the number of encrypted data keys (aside from the limit imposed by the [message format](../format/message-header.md)).
     pub max_encrypted_data_keys: Option<NonZeroUsize>,
-    /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
+    /// Default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
+    //= specification/client-apis/client.md#initialization
+    //= type=implication
+    //= reason=EsdkCommitmentPolicy derives Default with RequireEncryptRequireDecrypt as the default variant
+    //# - On client initialization,
+    //# the caller MUST have the option to provide a [commitment policy](#commitment-policy).
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 

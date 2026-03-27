@@ -124,3 +124,4 @@ Three new test functions with `type=test` annotations correctly cover the three 
 - These tests use KMS keyrings and require valid AWS credentials
 
 ### Commit
+`28845426 test(message-header): add missing test annotations for EDK count, suite data length, and frame length`

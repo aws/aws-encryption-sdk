@@ -72,3 +72,73 @@ async fn test_net_retry_flag() {
     let expect_success = decrypt(&input).await.unwrap();
     assert!(expect_success.plaintext == expected_message);
 }
+
+#[test]
+fn test_encrypt_input_default_commitment_policy() {
+    //= specification/client-apis/client.md#initialization
+    //= type=test
+    //# If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
+    let input = EncryptInput::default();
+    assert_eq!(
+        input.commitment_policy,
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt
+    );
+}
+
+#[test]
+fn test_decrypt_input_default_commitment_policy() {
+    //= specification/client-apis/client.md#initialization
+    //= type=test
+    //# If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
+    let input = DecryptInput::default();
+    assert_eq!(
+        input.commitment_policy,
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt
+    );
+}
+
+#[test]
+fn test_encrypt_input_default_max_edks_is_none() {
+    //= specification/client-apis/client.md#initialization
+    //= type=test
+    //# If no [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys) is provided
+    //# the default MUST result in no limit on the number of encrypted data keys (aside from the limit imposed by the [message format](../format/message-header.md)).
+    let input = EncryptInput::default();
+    assert!(input.max_encrypted_data_keys.is_none());
+}
+
+#[test]
+fn test_decrypt_input_default_max_edks_is_none() {
+    //= specification/client-apis/client.md#initialization
+    //= type=test
+    //# If no [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys) is provided
+    //# the default MUST result in no limit on the number of encrypted data keys (aside from the limit imposed by the [message format](../format/message-header.md)).
+    let input = DecryptInput::default();
+    assert!(input.max_encrypted_data_keys.is_none());
+}
+
+#[test]
+fn test_encrypt_input_custom_commitment_policy() {
+    //= specification/client-apis/client.md#initialization
+    //= type=test
+    //# - On client initialization,
+    //# the caller MUST have the option to provide a [commitment policy](#commitment-policy).
+    let mut input = EncryptInput::default();
+    input.commitment_policy =
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    assert_eq!(
+        input.commitment_policy,
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt
+    );
+}
+
+#[test]
+fn test_encrypt_input_custom_max_edks() {
+    //= specification/client-apis/client.md#initialization
+    //= type=test
+    //# - On client initialization,
+    //# the caller MUST have the option to provide a [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys).
+    let mut input = EncryptInput::default();
+    input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(5).unwrap());
+    assert_eq!(input.max_encrypted_data_keys.unwrap().get(), 5);
+}
