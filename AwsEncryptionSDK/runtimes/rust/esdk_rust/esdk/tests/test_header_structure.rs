@@ -117,6 +117,16 @@ async fn test_suite_data_length_matches_algorithm_suite() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn test_suite_data_interpreted_as_bytes() {
+    //= specification/data-format/message-header.md#algorithm-suite-data
+    //= type=test
+    //# The algorithm suite data MUST be interpreted as bytes.
+    let pt = b"suite data bytes test";
+    let result = round_trip(pt).await;
+    assert_eq!(result, pt, "successful V2 round-trip proves suite data is compared as bytes (validate_suite_data compares &[u8] slices)");
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn test_nonframed_frame_length_must_be_zero() {
     //= specification/data-format/message-header.md#frame-length
     //= type=test

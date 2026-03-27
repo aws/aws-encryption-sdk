@@ -1,62 +1,60 @@
-# Agent 1 Notes — header.rs
+# Agent 1 Notes — header.rs / data-format/message-header.md
 
-## Discovery Summary
+## Spec-Aligned Structure (Step 6.8)
 
-Analyzed `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/header.rs` against
-`aws-encryption-sdk-specification/data-format/message-header.md`.
+### 1. Spec Section Logical Flow
+The `data-format/message-header.md` spec describes the binary format of the message header:
+- Structure: big-endian, Header Body + Header Authentication
+- Header Body V1: Version, Type, AlgSuiteID, MessageID, AAD, EDKs, ContentType, Reserved, IVLength, FrameLength
+- Header Body V2: Version, AlgSuiteID, MessageID, AAD, EDKs, ContentType, FrameLength, AlgSuiteData
+- Header Auth V1: IV + AuthTag
+- Header Auth V2: AuthTag only
+- Each field has length, format, and value constraints
 
-### Annotations in header.rs (current state)
-1. `#structure` — "MUST be in big-endian format" — implementation ✓, test ✓
-2. `#structure` — "MUST be serialized as, in order, Header Body, and Header Authentication" — implementation ✓, test ✓
-3. `#encrypted-data-key-count` — "This value MUST be greater than 0" — implementation ✓, **test MISSING**
-4. `#message-id` — "MUST use a good source of randomness" — implementation ✓, **test MISSING** (but tests exist in test_v1_header_body.rs and test_v2_header_body.rs)
-5. `#algorithm-suite-data` — "length MUST be equal to Algorithm Suite Data Length" — implementation ✓, **test MISSING**
+### 2. Where Each Requirement is Fulfilled in Code
+For requirements relevant to `header.rs`:
+- `#structure` big-endian → `write_header_body` function signature (entry point)
+- `#structure` serialization order → `serialize_header` function body (write raw_header then auth tag)
+- `#message-id` randomness → `generate_message_id` function body (`generate_random_bytes` call)
+- `#encrypted-data-key-count` > 0 → `validate_max_encrypted_data_keys` function body (`edks.is_empty()` check)
+- `#algorithm-suite-data` length → `validate_suite_data` function body (length comparison)
+- `#algorithm-suite-data` interpreted as bytes → `validate_suite_data` function body (byte slice comparison)
 
-### Priority Assessment
-- Priority 2 (missing test annotations) applies to requirements 3, 4, and 5 above.
-- Requirement 4 (#message-id randomness) already has tests in test_v1_header_body.rs and test_v2_header_body.rs that test the same quote, so it may already be covered by duvet (the test annotations use `aws-encryption-sdk-specification` prefix while the implementation uses `specification` prefix — these are equivalent via symlink).
-- Requirements 3 and 5 have NO test annotations anywhere.
+### 3. Sub-items Under Normative Requirements
+No sub-items relevant to header.rs. The sub-item patterns (V1/V2 field lists) are in v1_header_body.rs and v2_header_body.rs.
 
-### Broader Gaps in message-header.md (not in header.rs)
-Many serialization-format requirements (field lengths, UInt types, "interpreted as bytes") are missing both implementation and test annotations across the codebase. These are structural/implication-type requirements that could be annotated with `type=implication` at the relevant struct fields or serialization functions. However, per the task scope, only header.rs gaps are addressed.
-
-## Spec-Aligned Structure Analysis
-
-### Q1: Logical flow of encrypted-data-key-count section
-1. The count field is 2 bytes (serialization format)
-2. Serialized as UInt16 (encoding)
-3. Value MUST be > 0 (validation constraint)
-
-### Q2: Code constructs fulfilling each requirement
-- "2 bytes" → `write_u16` / `read_u16` calls in encrypted_data_keys.rs
-- "serialized as UInt16" → same `write_u16` / `read_u16`
-- "greater than 0" → `validate_max_encrypted_data_keys` in header.rs (checks `edks.is_empty()`)
-
-### Q3: Sub-items
-No sub-items for the targeted requirements.
-
-### Q4: Most likely structural mistake
-The implementer might be tempted to add the test annotation at a round-trip test that doesn't actually exercise the validation path. The `validate_max_encrypted_data_keys` function only checks emptiness when `max_encrypted_data_keys` is `Some(...)`. A round-trip test without setting `max_encrypted_data_keys` would NOT exercise the `edks.is_empty()` check. The test should either:
-- Set `max_encrypted_data_keys` to trigger the validation path, OR
-- Verify at the byte level that the EDK count in the ciphertext is > 0
+### 4. Most Likely Structural Mistake
+The main risk is annotating "interpreted as bytes" at a variable declaration rather than at the point where the byte interpretation matters (comparison, serialization). The annotation should go at the byte-level operation, not at a `let` binding.
 
 ## Potential Spec Gaps
 
-### 1. validate_max_encrypted_data_keys only checks when max is set
-- **Code location**: `header.rs:validate_max_encrypted_data_keys`
-- **Behavior**: The "greater than 0" check (`edks.is_empty()`) is only executed when `max_encrypted_data_keys` is `Some(...)`. If no max is configured, an empty EDK list would not be caught by this function.
-- **Why it matters**: Correctness — the spec says the count MUST be > 0 unconditionally, but the code only enforces it conditionally.
-- **Suggested spec clarification**: The implementation should validate EDK count > 0 regardless of whether a max is configured. This may be a code bug rather than a spec gap.
+### 1. Framed Content Must Have Positive Frame Length
+- **Code location**: `header.rs` `read_header_body`, lines 76-80
+- **Behavior**: If content_type is Framed and frame_length is 0, returns error "Frame length must be positive if content is framed"
+- **Why it matters**: Correctness — a framed message with frame_length=0 would cause division by zero or infinite loops during body processing
+- **Suggested spec requirement**: "When the [content type](#content-type) is framed, the value of the [Frame Length](#frame-length) field MUST be greater than 0."
+- **Note**: The spec only says "When the content type is non-framed, the value of this field MUST be 0" — it doesn't explicitly require positive frame length for framed content.
 
-### 2. Frame length vs content type cross-validation
-- **Code location**: `header.rs:read_header_body` lines 74-84
-- **Behavior**: The code validates that framed content must have frame_length > 0 and non-framed content must have frame_length == 0. The spec only states the non-framed case ("When the content type is non-framed, the value of this field MUST be 0") but doesn't explicitly state the framed case must be > 0.
-- **Why it matters**: Interoperability — other implementations might not enforce the framed case.
-- **Suggested spec requirement**: "When the content type is framed, the value of this field MUST be greater than 0."
+### 2. Header Version Must Support Commitment
+- **Code location**: `header.rs` `header_version_supports_commitment`, lines 87-95
+- **Behavior**: V2 bodies must have suite_data length matching the HKDF output key length; V1 bodies always pass
+- **Why it matters**: Security — ensures commitment key is present and correctly sized for committing algorithm suites
+- **Suggested spec requirement**: Already partially covered by `#algorithm-suite-data` length requirement, but the V1/V2 version-commitment relationship is implicit.
 
-## Self-Verification
+## Duplicate Annotation Inventory
 
-1. ✅ TOML content was read from `compliance/aws-encryption-sdk-specification/data-format/message-header/encrypted-data-key-count.toml` — confirmed exact quote matches
-2. ✅ Source file `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/header.rs` exists and was read
-3. ✅ Duvet snapshot was read from `.duvet/snapshot.txt` — confirmed coverage state
-4. ✅ Test files were read and verified to not contain test annotations for the targeted requirements
+| Requirement | Locations | Correct Location |
+|---|---|---|
+| `#message-id` randomness | header.rs, shared_header_functions.rs, v1_header_body.rs | header.rs (generate_message_id) |
+| `#structure` big-endian | header.rs, serialize_functions.rs | header.rs (write_header_body) |
+
+## Coverage Summary for header.rs
+
+| Requirement | Impl | Test | Status |
+|---|---|---|---|
+| `#structure` big-endian | ✅ header.rs | ✅ test_header_structure.rs | DUPLICATE (also in serialize_functions.rs) |
+| `#structure` serialization order | ✅ header.rs | ✅ test_header_structure.rs | OK |
+| `#message-id` randomness | ✅ header.rs | ❌ missing data-format test | DUPLICATE + NEEDS TEST |
+| `#encrypted-data-key-count` > 0 | ✅ header.rs | ✅ test_header_structure.rs + test_encrypted_data_keys.rs | STYLE FIX (explicit type=implementation) |
+| `#algorithm-suite-data` length | ✅ header.rs | ✅ test_header_structure.rs | OK |
+| `#algorithm-suite-data` bytes | ❌ missing | ❌ missing | NEEDS IMPL + TEST |

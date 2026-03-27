@@ -231,6 +231,11 @@ async fn test_v2_header_message_id() {
     let msg_id_1 = &ct1[3..35];
     let msg_id_2 = &ct2[3..35];
     assert_eq!(msg_id_1.len(), 32, "V2 Message ID must be 32 bytes");
+    //= specification/data-format/message-header.md#message-id
+    //= type=test
+    //# While implementations cannot guarantee complete uniqueness,
+    //# implementations MUST use a good source of randomness when generating messages IDs in order to make
+    //# the chance of duplicate IDs negligible.
     assert_ne!(msg_id_1, msg_id_2, "V2 Message IDs must be unique (random)");
 }
 

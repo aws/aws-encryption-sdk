@@ -66,9 +66,6 @@ pub(crate) fn write_v1_header_body(
     //# [Message ID](../data-format/message-header.md#message-id) specification.
     //# The process used to generate this identifier MUST use a good source of randomness
     //# to make the chance of duplicate identifiers negligible.
-    //= specification/data-format/message-header.md#message-id
-    //# implementations MUST use a good source of randomness when generating messages IDs in order to make
-    //# the chance of duplicate IDs negligible.
     write_message_id(w, &body.message_id)?;
     //= specification/client-apis/encrypt.md#v1-header
     //# - [AAD](../data-format/message-header.md#aad): MUST be serialized according to the

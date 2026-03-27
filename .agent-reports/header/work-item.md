@@ -1,66 +1,107 @@
-# Work Item: Add Missing Test Annotation for Encrypted Data Key Count Greater Than Zero
+# Work Item: Fix Duplicate Annotations and Fill Gaps in header.rs for message-header.md
 
 ## Specification
 - **File**: `aws-encryption-sdk-specification/data-format/message-header.md`
-- **Section**: `encrypted-data-key-count`
-- **Duvet Target**: `aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-count`
+- **Sections**: `#message-id`, `#structure`, `#algorithm-suite-data`, `#encrypted-data-key-count`
+- **Duvet Targets**:
+  - `aws-encryption-sdk-specification/data-format/message-header.md#message-id`
+  - `aws-encryption-sdk-specification/data-format/message-header.md#structure`
+  - `aws-encryption-sdk-specification/data-format/message-header.md#algorithm-suite-data`
+  - `aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-count`
 
 ## Type of Work
-ADD_TESTS
+FIX_ANNOTATION
 
 ## Requirements to Address
 
-### Requirement 1
+### Requirement 1 — DUPLICATE: message-id randomness (triplicated)
+- **Level**: MUST
+- **Exact Quote** (from TOML):
+  ```toml
+  While implementations cannot guarantee complete uniqueness,
+  implementations MUST use a good source of randomness when generating messages IDs in order to make
+  the chance of duplicate IDs negligible.
+  ```
+- **Current State**: duplicate — annotated in 3 places as `type=implementation`:
+  1. `header.rs` line 116 (generate_message_id) — **CORRECT location, keep this one**
+  2. `shared_header_functions.rs` line 51 (write_message_id) — **REMOVE**
+  3. `v1_header_body.rs` line 69 (write_message_id call) — **REMOVE**
+- **Additional fix**: Remove the explicit `//= type=implementation` line from header.rs (it's the default).
+
+### Requirement 2 — DUPLICATE: structure big-endian (duplicated)
+- **Level**: MUST
+- **Exact Quote** (from TOML):
+  ```toml
+  The message header is a sequence of bytes that MUST be in big-endian format.
+  ```
+- **Current State**: duplicate — annotated in 2 places as `type=implementation`:
+  1. `header.rs` line 29 (write_header_body) — **keep**
+  2. `serialize_functions.rs` line 86 (write_u16) — **REMOVE**
+- **Rationale**: `write_header_body` is the entry point for header serialization and the more appropriate location for this structural requirement. `write_u16` is a generic utility.
+
+### Requirement 3 — MISSING TEST: message-id randomness
+- **Level**: MUST
+- **Exact Quote** (from TOML):
+  ```toml
+  While implementations cannot guarantee complete uniqueness,
+  implementations MUST use a good source of randomness when generating messages IDs in order to make
+  the chance of duplicate IDs negligible.
+  ```
+- **Current State**: needs-test — implementation annotation exists in header.rs but no `type=test` annotation exists for this exact data-format spec quote. (Tests in test_v1_header_body.rs and test_v2_header_body.rs annotate the encrypt.md version of this requirement, not the data-format spec version.)
+
+### Requirement 4 — MISSING IMPL: algorithm-suite-data interpreted as bytes
+- **Level**: MUST
+- **Exact Quote** (from TOML):
+  ```toml
+  The algorithm suite data MUST be interpreted as bytes.
+  ```
+- **Current State**: missing — no annotation anywhere in the codebase. Natural placement is in `validate_suite_data` in header.rs where `suite_data` is compared as `&[u8]`.
+
+### Requirement 5 — MISSING TEST: algorithm-suite-data interpreted as bytes
+- **Level**: MUST
+- **Exact Quote** (from TOML):
+  ```toml
+  The algorithm suite data MUST be interpreted as bytes.
+  ```
+- **Current State**: needs-test — no test annotation exists.
+
+### Requirement 6 — STYLE FIX: encrypted-data-key-count explicit type=implementation
 - **Level**: MUST
 - **Exact Quote** (from TOML):
   ```toml
   This value MUST be greater than 0.
   ```
-- **Current State**: needs-test
-- **Notes**: Implementation annotation exists in `header.rs` at `validate_max_encrypted_data_keys`. No corresponding `type=test` annotation exists anywhere in the test suite for this specific requirement.
-
-### Requirement 2
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  The length of the suite data field MUST be equal to the [Algorithm Suite Data Length](../framework/algorithm-suites.md#algorithm-suite-data-length) value
-  of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-  ```
-- **Current State**: needs-test
-- **Notes**: Implementation annotation exists in `header.rs` at `validate_suite_data`. No corresponding `type=test` annotation exists.
-
-### Requirement 3
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  When the [content type](#content-type) is non-framed, the value of this field MUST be 0.
-  ```
-- **Current State**: needs-test
-- **Notes**: Implementation annotation exists in `body.rs` but the frame-length validation logic in `read_header_body` in `header.rs` enforces this. The `frame-length` section requirement needs a test annotation. The implementation is in `header.rs` lines 74-84 where `read_header_body` validates frame_length vs content_type.
+- **Current State**: incomplete — annotation at header.rs line 98 has explicit `//= type=implementation` which should be removed per duvet-patterns.md ("Do NOT include `//= type=implementation` — omit the type line entirely.")
 
 ## Existing Code Context
 
 ### Source File: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/header.rs`
+
+Duplicate annotation #1 (message-id randomness, keep but fix style):
+```rust
+//= specification/data-format/message-header.md#message-id
+//= type=implementation
+//# implementations MUST use a good source of randomness when generating messages IDs in order to make
+//# the chance of duplicate IDs negligible.
+pub(crate) fn generate_message_id(suite: &AlgorithmSuite) -> Result<MessageId, Error> {
+```
+
+Duplicate annotation #2 (structure big-endian, keep):
+```rust
+//= specification/data-format/message-header.md#structure
+//# The message header is a sequence of bytes that MUST be in big-endian format.
+pub(crate) fn write_header_body(w: &mut dyn SafeWrite, body: &HeaderBody) -> Result<(), Error> {
+```
+
+Style fix (encrypted-data-key-count, remove explicit type):
 ```rust
 //= specification/data-format/message-header.md#encrypted-data-key-count
 //= type=implementation
 //# This value MUST be greater than 0.
 pub(crate) fn validate_max_encrypted_data_keys(
-    max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
-    edks: &[aws_mpl_legacy::EncryptedDataKey],
-) -> Result<(), Error> {
-    if let Some(max) = max_encrypted_data_keys {
-        if edks.len() > max.get() {
-            return Err("Encrypted data keys exceed maxEncryptedDataKeys".into());
-        }
-        if edks.is_empty() {
-            return Err("Encrypted data keys is empty.".into());
-        }
-    }
-    Ok(())
-}
 ```
 
+Missing annotation location (algorithm-suite-data interpreted as bytes):
 ```rust
 pub(crate) fn validate_suite_data(
     suite: &AlgorithmSuite,
@@ -71,53 +112,106 @@ pub(crate) fn validate_suite_data(
         return Err("Commitment key does not match".into());
     }
     //= specification/data-format/message-header.md#algorithm-suite-data
-    //# The length of the suite data field MUST be equal to the [Algorithm Suite Data Length](../framework/algorithm-suites.md#algorithm-suite-data-length) value
-    //# of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-    if get_hkdf(&suite.commitment).output_key_length != expected_suite_data.len() as u32 {
-        return Err("Commitment key is invalid".into());
-    }
-    Ok(())
-}
+    //# The length of the suite data field MUST be equal to ...
+```
+
+### Source File: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/shared_header_functions.rs` (remove duplicate)
+```rust
+//= specification/data-format/message-header.md#message-id
+//# implementations MUST use a good source of randomness when generating messages IDs in order to make
+//# the chance of duplicate IDs negligible.
+pub(crate) fn write_message_id(w: &mut dyn SafeWrite, message_id: &MessageId) -> Result<(), Error> {
+```
+
+### Source File: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/v1_header_body.rs` (remove duplicate)
+```rust
+    //= specification/data-format/message-header.md#message-id
+    //# implementations MUST use a good source of randomness when generating messages IDs in order to make
+    //# the chance of duplicate IDs negligible.
+    write_message_id(w, &body.message_id)?;
+```
+
+### Source File: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/serialize_functions.rs` (remove duplicate)
+```rust
+//= specification/data-format/message-header.md#structure
+//# The message header is a sequence of bytes that MUST be in big-endian format.
+pub(crate) fn write_u16(w: &mut dyn SafeWrite, data: u16) -> Result<(), Error> {
 ```
 
 ### Test File: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_header_structure.rs`
 ```rust
-// Existing test file — new tests should follow the same pattern:
-// async round-trip tests using test_keyring() and encrypt/decrypt
+#[tokio::test(flavor = "multi_thread")]
+async fn test_suite_data_length_matches_algorithm_suite() {
+    //= specification/data-format/message-header.md#algorithm-suite-data
+    //= type=test
+    //# The length of the suite data field MUST be equal to the [Algorithm Suite Data Length]...
+    let pt = b"suite data length test";
+    let result = round_trip(pt).await;
+    assert_eq!(result, pt, "...");
+}
 ```
 
 ## Implementation Guidance
-- Add test annotations to a new or existing test file. The recommended file is `tests/test_header_structure.rs` since it already covers `message-header.md#structure` requirements.
-- Follow the existing test pattern: create a `test_keyring()`, encrypt plaintext, then verify the requirement via round-trip or byte inspection.
-- For Requirement 1 (EDK count > 0): A successful encrypt+decrypt round-trip proves the EDK count is > 0, since the encrypt path always produces at least one EDK. The test annotation should be placed before the assertion.
-- For Requirement 2 (suite data length): A successful V2 encrypt+decrypt round-trip proves the suite data length matches the algorithm suite, since `validate_suite_data` is called during decrypt and would fail if the length were wrong.
-- For Requirement 3 (frame length 0 when non-framed): This is enforced in `read_header_body`. Since the ESDK always encrypts as framed, testing the non-framed case requires constructing a ciphertext with non-framed content type. A simpler approach: annotate a round-trip test that proves the framed path works correctly (frame_length > 0 with framed content type), and note that the non-framed enforcement is tested implicitly. Alternatively, test by mutating ciphertext bytes to set content_type=NonFramed and frame_length!=0, then assert decrypt fails.
-- Reference `tests/test_header_types.rs` for the pattern of byte-level ciphertext inspection and mutation.
-- Reference `tests/test_v2_header_body.rs` for the `parse_v2_header_field_offsets` helper pattern.
+
+### Duplicate Removal
+1. **Remove** the `#message-id` randomness annotation from `shared_header_functions.rs` line 51-53 (2 comment lines before `write_message_id`).
+2. **Remove** the `#message-id` randomness annotation from `v1_header_body.rs` lines 69-71 (2 comment lines before `write_message_id(w, &body.message_id)?;`).
+3. **Remove** the `#structure` big-endian annotation from `serialize_functions.rs` lines 86-87 (2 comment lines before `write_u16`).
+
+### Style Fixes in header.rs
+4. **Remove** `//= type=implementation` from the `#message-id` annotation at line 117.
+5. **Remove** `//= type=implementation` from the `#encrypted-data-key-count` annotation at line 99.
+
+### Add Missing Annotation in header.rs
+6. **Add** `#algorithm-suite-data` "interpreted as bytes" annotation in `validate_suite_data`, before the byte comparison `header_body.suite_data() != expected_suite_data`:
+```rust
+pub(crate) fn validate_suite_data(
+    suite: &AlgorithmSuite,
+    header_body: &HeaderBody,
+    expected_suite_data: &[u8],
+) -> Result<(), Error> {
+    //= specification/data-format/message-header.md#algorithm-suite-data
+    //= type=implication
+    //= reason=suite_data is Vec<u8> and compared as byte slices; the type system enforces byte interpretation
+    //# The algorithm suite data MUST be interpreted as bytes.
+    if header_body.suite_data() != expected_suite_data {
+```
+
+### Add Missing Test Annotations in test_header_structure.rs
+7. **Add** test annotation for `#message-id` randomness in a new test or existing test that verifies message IDs are unique across encryptions. The test in `test_v1_header_body.rs::test_v1_header_message_id` already checks `assert_ne!(msg_id_1, msg_id_2)` — add the data-format annotation there.
+8. **Add** test annotation for `#algorithm-suite-data` "interpreted as bytes" in the existing `test_suite_data_length_matches_algorithm_suite` test (or a new test).
 
 ### Spec-Aligned Structure
-The spec describes these requirements:
-1. "This value MUST be greater than 0" → annotate at test that proves EDK count > 0 after encryption
-2. "The length of the suite data field MUST be equal to..." → annotate at test that proves V2 round-trip succeeds (validate_suite_data runs during decrypt)
-3. "When the content type is non-framed, the value of this field MUST be 0" → annotate at test that proves non-framed + non-zero frame length is rejected
+The changes are annotation-only (no logic changes):
+1. Remove duplicate `#message-id` randomness → at `shared_header_functions.rs` and `v1_header_body.rs`
+2. Remove duplicate `#structure` big-endian → at `serialize_functions.rs`
+3. Fix style `type=implementation` → at `header.rs` lines 99, 117
+4. Add `#algorithm-suite-data` "interpreted as bytes" → at `validate_suite_data` in `header.rs`
+5. Add test annotations → at test files
+
+### Patterns to Follow
+- See `shared_header_functions.rs` line 55-58 for an example of `type=implication` with `reason=` for "interpreted as bytes" annotations:
+  ```rust
+  //= aws-encryption-sdk-specification/data-format/message-header.md#message-id
+  //= type=implication
+  //= reason=MessageId is Vec<u8>; write_bytes treats it as raw bytes
+  //# The message ID MUST be interpreted as bytes.
+  ```
+- See `header_types.rs` line 183-193 for an example of `type=implication` for structural type constraints.
 
 ## Targeted Tests
-- `test_header_structure::test_header_big_endian_format` — existing test, pattern reference
-- `test_header_structure::test_header_serialization_order` — existing test, pattern reference
-- New: `test_encrypted_data_key_count_greater_than_zero` — verifies EDK count > 0
-- New: `test_suite_data_length_matches_algorithm_suite` — verifies suite data length validation
-- New: `test_nonframed_frame_length_must_be_zero` — verifies frame length = 0 when non-framed
+- `test_header_structure::test_suite_data_length_matches_algorithm_suite` — add `#algorithm-suite-data` "interpreted as bytes" test annotation
+- `test_v1_header_body::test_v1_header_message_id` — add `#message-id` randomness test annotation
+- `test_v2_header_body::test_v2_header_message_id` — add `#message-id` randomness test annotation
 
 ## Success Criteria
 ```bash
-cargo test test_encrypted_data_key_count_greater_than_zero
-cargo test test_suite_data_length_matches_algorithm_suite
-cargo test test_nonframed_frame_length_must_be_zero
+cargo test test_header_structure test_v1_header_body test_v2_header_body
 make duvet
 ```
 - [ ] Each test passes
-- [ ] duvet report shows no gaps for `#encrypted-data-key-count` "This value MUST be greater than 0"
-- [ ] duvet report shows no gaps for `#algorithm-suite-data` length requirement
-- [ ] duvet report shows no gaps for `#frame-length` non-framed requirement
-- [ ] All requirements have `type=implementation` (not `type=todo`)
-- [ ] All implementations have corresponding `type=test`
+- [ ] duvet report shows no duplicate annotations for `#message-id` randomness
+- [ ] duvet report shows no duplicate annotations for `#structure` big-endian
+- [ ] duvet report shows coverage for `#algorithm-suite-data` "interpreted as bytes" (impl + test)
+- [ ] duvet report shows test coverage for `#message-id` randomness
+- [ ] No annotations in header.rs use explicit `type=implementation`

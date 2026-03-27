@@ -48,9 +48,6 @@ pub(crate) fn write_esdk_suite_id(
     write_bytes(w, &suite.binary_id[..])
 }
 
-//= specification/data-format/message-header.md#message-id
-//# implementations MUST use a good source of randomness when generating messages IDs in order to make
-//# the chance of duplicate IDs negligible.
 pub(crate) fn write_message_id(w: &mut dyn SafeWrite, message_id: &MessageId) -> Result<(), Error> {
     //= aws-encryption-sdk-specification/data-format/message-header.md#message-id
     //= type=implication

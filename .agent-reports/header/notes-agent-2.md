@@ -1,38 +1,43 @@
-# Pre-Implementation Reasoning
+# Agent 2 Notes — header/ (Fix Duplicate Annotations and Fill Gaps)
 
-## 1. Logical steps
+## Pre-Implementation Reasoning
 
-This is a test-only work item (ADD_TESTS). Three requirements need `type=test` annotations:
+### 1. Logical steps
 
-1. `encrypted-data-key-count`: "This value MUST be greater than 0." — Encrypt produces ≥1 EDK; inspect ciphertext bytes to verify EDK count > 0.
-2. `algorithm-suite-data`: "The length of the suite data field MUST be equal to the Algorithm Suite Data Length..." — V2 round-trip succeeds, proving validate_suite_data passed.
-3. `frame-length`: "When the content type is non-framed, the value of this field MUST be 0." — Mutate ciphertext to set content_type=NonFramed + frame_length!=0, assert decrypt fails.
+1. Remove duplicate `#message-id` randomness annotation from `shared_header_functions.rs` (line 51-52)
+2. Remove duplicate `#message-id` randomness annotation from `v1_header_body.rs` (lines 69-71)
+3. Remove duplicate `#structure` big-endian annotation from `serialize_functions.rs` (lines 86-87)
+4. Remove explicit `//= type=implementation` from `header.rs` line 117 (message-id)
+5. Remove explicit `//= type=implementation` from `header.rs` line 99 (encrypted-data-key-count)
+6. Add `#algorithm-suite-data` "interpreted as bytes" annotation in `validate_suite_data` in `header.rs`
+7. Add test annotation for `#message-id` randomness in test files
+8. Add test annotation for `#algorithm-suite-data` "interpreted as bytes" in test file
 
-## 2. Point of fulfillment for each test
+### 2. Point of fulfillment for each requirement
 
-1. EDK count > 0: Assert at the byte-level inspection of the EDK count field in ciphertext (must be > 0).
-2. Suite data length: Assert at successful round-trip decrypt (validate_suite_data runs during decrypt and would fail if length mismatched).
-3. Non-framed frame length: Assert at decrypt failure when ciphertext is mutated to have non-framed content type with non-zero frame length.
+- Req 1 (message-id randomness): `generate_message_id` in header.rs — already annotated, just fix style
+- Req 2 (structure big-endian): `write_header_body` in header.rs — already annotated, just remove duplicate
+- Req 4 (algorithm-suite-data interpreted as bytes): `validate_suite_data` — the `!=` comparison on `&[u8]` slices
+- Req 6 (encrypted-data-key-count > 0): `validate_max_encrypted_data_keys` — already annotated, just fix style
 
-## 3. Sub-items
+### 3. Sub-items?
 
-No sub-items — each requirement is a single normative statement.
+No sub-items for these requirements.
 
-## 4. Structure
+### 4. Reviewer readability
 
-Three test functions in `test_header_structure.rs`, following the existing pattern:
-- `test_encrypted_data_key_count_greater_than_zero` — byte inspection
-- `test_suite_data_length_matches_algorithm_suite` — round-trip
-- `test_nonframed_frame_length_must_be_zero` — mutation + failure
+All changes are annotation-only (add/remove/fix). No code logic changes.
 
-## 5. Existing similar code
+### 5. Existing patterns
 
-- `test_header_types.rs` — byte-level ciphertext inspection with `content_type_offset()`
-- `test_v2_header_body.rs` — `parse_v2_header_field_offsets()` helper
-- `test_header_structure.rs` — existing round-trip pattern with `test_keyring()` and `round_trip()`
+- `shared_header_functions.rs` line 55-58 has a `type=implication` with `reason=` for "interpreted as bytes" — follow this pattern for algorithm-suite-data.
+- Test files use `specification/` prefix for annotations (confirmed by review round 2).
 
-## Annotation target path
+### Key observations
 
-Source uses `specification/` prefix (symlink to `aws-encryption-sdk-specification/`).
-Duvet config uses `specification/` as source prefix.
-All annotations must use `specification/data-format/message-header.md#...`.
+- The duvet config uses `specification/` prefix, which is a symlink to `aws-encryption-sdk-specification/`.
+- Annotations in source code MUST use `specification/` prefix.
+- Annotations in test files MUST also use `specification/` prefix (confirmed by review round 2).
+- The `aws-encryption-sdk-specification/` prefix is used in some annotations (e.g., shared_header_functions.rs lines 25, 33, 55) — these are for different requirements and use the full path. Need to check which prefix duvet expects.
+
+Actually, looking more carefully: the duvet config has `[[specification]] source = "specification/data-format/message-header.md"`. The TOML target is `aws-encryption-sdk-specification/data-format/message-header.md#message-id`. The annotations in shared_header_functions.rs use BOTH prefixes — `specification/` for the randomness one at line 51, and `aws-encryption-sdk-specification/` for the length ones at lines 25, 33. Both seem to work with duvet. I'll use `specification/` to match the existing annotations in header.rs.

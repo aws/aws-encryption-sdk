@@ -1,114 +1,118 @@
-# Agent 3 Notes — header (Round 3: EDK count, suite data, frame length tests)
+# Agent 3 Review Notes — header
 
 ## Step 2: Adversarial Pre-Review
 
 ### 1. Does each annotation's next line actually implement THAT requirement?
 
-**Test 1: `test_encrypted_data_key_count_greater_than_zero`**
-- Annotation: `//# This value MUST be greater than 0.`
-- Next executable line: `let ct = encrypt_default(b"edk count test").await;`
-- The annotation is at the top of the test function. The actual assertion proving the requirement is `assert!(edk_count > 0, ...)` several lines later.
-- For `type=test`, the convention is to place the annotation at the top of the test function, near the beginning. The test as a whole proves the requirement. The assertion at the end is the fulfillment point, but the annotation at the top is the established pattern in this codebase (see `test_header_big_endian_format`, `test_header_serialization_order`).
-- VERDICT: Acceptable — follows the established test annotation pattern.
+**header.rs line 133-137 (new annotation — "interpreted as bytes")**:
+- Annotation: `The algorithm suite data MUST be interpreted as bytes.`
+- Code line: `if header_body.suite_data() != expected_suite_data {`
+- Analysis: `suite_data()` returns `&[u8]` and `expected_suite_data` is `&[u8]`. The comparison IS a byte comparison. The `type=implication` with `reason=` is appropriate — the type system enforces byte interpretation. The code line semantically relates: it's comparing suite data as bytes.
+- Verdict: PASS. The annotation is at the point where byte interpretation is exercised.
 
-**Test 2: `test_suite_data_length_matches_algorithm_suite`**
-- Annotation: `//# The length of the suite data field MUST be equal to...`
-- Next executable line: `let pt = b"suite data length test";`
-- Same pattern — annotation at top of test, assertion at bottom.
-- The round-trip test proves the requirement because `validate_suite_data` runs during decrypt and would fail if the length were wrong.
-- VERDICT: Acceptable — indirect proof via round-trip, same pattern as existing tests.
+**header.rs line 98 (style fix — removed `type=implementation`)**:
+- Annotation: `This value MUST be greater than 0.`
+- Code line: `pub(crate) fn validate_max_encrypted_data_keys(`
+- Analysis: Pre-existing placement. The function validates EDK count. The annotation is at the function that enforces the requirement. Acceptable.
+- Verdict: PASS (pre-existing, only style change).
 
-**Test 3: `test_nonframed_frame_length_must_be_zero`**
-- Annotation: `//# When the [content type](#content-type) is non-framed, the value of this field MUST be 0.`
-- Next executable line: `let keyring = test_keyring().await;`
-- The test mutates ciphertext to set NonFramed content type + non-zero frame length, then asserts decrypt fails.
-- This is a negative test — it proves the validation rejects the invalid combination.
-- VERDICT: Acceptable — negative test pattern, annotation at top of test function.
+**header.rs line 115 (style fix — removed `type=implementation`)**:
+- Annotation: `implementations MUST use a good source of randomness...`
+- Code line: `pub(crate) fn generate_message_id(suite: &AlgorithmSuite) -> Result<MessageId, Error> {`
+- Analysis: Pre-existing placement. The function generates message IDs using randomness. Direct semantic match.
+- Verdict: PASS (pre-existing, only style change).
+
+**test_v1_header_body.rs line 119-123 (new test annotation)**:
+- Annotation: `While implementations cannot guarantee complete uniqueness, implementations MUST use a good source of randomness...`
+- Code line: `assert_ne!(msg_id_1, msg_id_2, "Message IDs must be unique (random)");`
+- Analysis: The test encrypts twice and asserts the message IDs differ. This is a probabilistic test for randomness. The annotation is immediately before the assertion. Direct semantic match.
+- Verdict: PASS.
+
+**test_v2_header_body.rs line 234-238 (new test annotation)**:
+- Annotation: Same as above.
+- Code line: `assert_ne!(msg_id_1, msg_id_2, "V2 Message IDs must be unique (random)");`
+- Analysis: Same pattern as V1 test. Direct semantic match.
+- Verdict: PASS.
+
+**test_header_structure.rs line 121-126 (new test)**:
+- Annotation: `The algorithm suite data MUST be interpreted as bytes.`
+- Code line: `let pt = b"suite data bytes test";` then `round_trip(pt).await` then `assert_eq!`
+- Analysis: The test does a round-trip which exercises `validate_suite_data` during decrypt. The round-trip succeeding proves the byte comparison worked. The annotation is at the top of the test function, before the test logic. This follows Pattern 3 (general behavior at method start).
+- Verdict: PASS.
 
 ### 2. Annotation stacking check
 
-No annotation stacking anywhere. Each test function has exactly one annotation block (target + type + quote). PASS.
+No annotation stacking found in any modified file. Each annotation block has at most 1 annotation before a code line in the areas modified by Agent 2.
+
+Pre-existing stacking in v1_header_body.rs (not modified by Agent 2 in those areas) — not blocking.
 
 ### 3. Per-block isolation evaluation
 
-**Block 1** (test_encrypted_data_key_count_greater_than_zero):
-- Annotation: `specification/data-format/message-header.md#encrypted-data-key-count` / `This value MUST be greater than 0.`
-- Code: encrypts, parses header, asserts edk_count > 0.
-- Is it obvious? YES — the test name says "greater than zero", the annotation says "greater than 0", the assertion checks `edk_count > 0`.
+**header.rs "interpreted as bytes" block**:
+- Annotation: `The algorithm suite data MUST be interpreted as bytes.`
+- Code: `if header_body.suite_data() != expected_suite_data {`
+- With context reset: I see "suite data MUST be interpreted as bytes" and a byte-slice comparison. The `type=implication` with `reason=` explains the connection. Immediately obvious.
+- PASS.
 
-**Block 2** (test_suite_data_length_matches_algorithm_suite):
-- Annotation: `specification/data-format/message-header.md#algorithm-suite-data` / `The length of the suite data field MUST be equal to...`
-- Code: round-trip encrypt/decrypt.
-- Is it obvious? SOMEWHAT — the connection is that `validate_suite_data` runs during decrypt. The assertion message explains this. The test name also makes it clear.
-- This is an indirect proof. The work item guidance explicitly says "A successful V2 encrypt+decrypt round-trip proves the suite data length matches the algorithm suite, since validate_suite_data is called during decrypt and would fail if the length were wrong."
-- VERDICT: Acceptable given the indirect proof pattern used throughout the codebase.
+**test_v1_header_body.rs randomness block**:
+- Annotation: `implementations MUST use a good source of randomness when generating messages IDs...`
+- Code: `assert_ne!(msg_id_1, msg_id_2, "Message IDs must be unique (random)");`
+- With context reset: I see a randomness requirement and an assertion that two IDs differ. Immediately obvious.
+- PASS.
 
-**Block 3** (test_nonframed_frame_length_must_be_zero):
-- Annotation: `specification/data-format/message-header.md#frame-length` / `When the [content type](#content-type) is non-framed, the value of this field MUST be 0.`
-- Code: encrypts, mutates ciphertext to set NonFramed + non-zero frame length, asserts decrypt fails.
-- Is it obvious? YES — the mutation clearly sets up the violation, and the assertion proves it's rejected.
+**test_v2_header_body.rs randomness block**:
+- Same pattern as V1. PASS.
+
+**test_header_structure.rs "interpreted as bytes" block**:
+- Annotation: `The algorithm suite data MUST be interpreted as bytes.`
+- Code: `let pt = b"suite data bytes test"; let result = round_trip(pt).await; assert_eq!(...)`
+- With context reset: The connection is that round_trip exercises validate_suite_data which does the byte comparison. This is indirect — the test doesn't directly test byte interpretation, it tests that a round-trip succeeds. However, this is the standard pattern used throughout the test suite for testing implication-type requirements. The assertion message explains the connection.
+- PASS (acceptable for implication test pattern).
 
 ### 4. Semantic relationship check
 
-All three annotations semantically match their test code. PASS.
+All annotations have direct semantic relationships to their code lines. No mismatches found.
 
 ### 5. Spec sub-items check
 
-The three requirements are standalone MUST statements, not lists or tables. No sub-item annotation needed. PASS.
+The requirements addressed are individual MUST statements, not lists or tables. No sub-item annotation needed.
 
 ### 6. Code structure mirrors spec
 
-The three tests correspond to three distinct spec sections (encrypted-data-key-count, algorithm-suite-data, frame-length). Each test is a separate function. PASS.
+The changes are annotation-only (removals, style fixes, one addition). The code structure was not changed and already mirrors the spec.
 
 ### 7. Linear readability
 
-The file reads top-to-bottom: helpers first, then tests in order. Each test is self-contained. PASS.
+Reading header.rs top-to-bottom, the annotations flow naturally:
+- `#structure` big-endian at `write_header_body`
+- `#encrypted-data-key-count` at `validate_max_encrypted_data_keys`
+- `#message-id` randomness at `generate_message_id`
+- `#algorithm-suite-data` "interpreted as bytes" at `validate_suite_data`
+- `#algorithm-suite-data` length at the length check in `validate_suite_data`
+
+No jumping required. PASS.
 
 ## Step 3: Anti-Rationalization Check
 
-Reviewing my Step 2 notes for "but" patterns:
+Reviewing my Step 2 notes for the pattern "This is [wrong] **but** [acceptable because]":
 
-- Block 2 (suite data): I noted "SOMEWHAT" obvious and said "Acceptable given the indirect proof pattern." This is a potential rationalization. However, the indirect proof pattern is genuinely the established pattern in this codebase (test_header_big_endian_format, test_header_serialization_order both use round-trip). The work item guidance explicitly endorses this approach. I'm not rationalizing — I'm applying the established standard.
+1. I noted the implementation annotation in header.rs uses a partial quote (missing "While implementations cannot guarantee complete uniqueness,"). However, this is pre-existing and the work item explicitly says to keep this annotation and only remove the `type=implementation` line. Agent 2 followed the work item guidance correctly. This is NOT a rationalization — it's a pre-existing issue outside scope.
 
-No other "but" patterns found.
+2. I noted the test for "interpreted as bytes" is indirect (round-trip). But this is the standard pattern for `type=implication` requirements throughout the test suite, and the work item guidance explicitly suggests this approach. Not a rationalization.
+
+No anti-rationalization issues found.
 
 ## Step 4: Pre-Review Gate
 
-- Test file modified: YES — `tests/test_header_structure.rs` has 3 new test functions with `type=test` annotations.
+**Test file modified**: YES — Agent 2 modified `test_header_structure.rs`, `test_v1_header_body.rs`, and `test_v2_header_body.rs` with `type=test` annotations.
 - PASS.
 
-## Quote Verification
+## Potential Spec Gaps
 
-### Requirement 1: encrypted-data-key-count
-- TOML: `This value MUST be greater than 0.`
-- Annotation: `//# This value MUST be greater than 0.`
-- MATCH ✅
+None identified. The changes are annotation-only.
 
-### Requirement 2: algorithm-suite-data
-- TOML: `The length of the suite data field MUST be equal to the [Algorithm Suite Data Length](../framework/algorithm-suites.md#algorithm-suite-data-length) value\nof the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.`
-- Annotation: `//# The length of the suite data field MUST be equal to the [Algorithm Suite Data Length](../framework/algorithm-suites.md#algorithm-suite-data-length) value\n//# of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.`
-- MATCH ✅
+## Pre-existing Issues (not blocking)
 
-### Requirement 3: frame-length
-- TOML: `When the [content type](#content-type) is non-framed, the value of this field MUST be 0.`
-- Annotation: `//# When the [content type](#content-type) is non-framed, the value of this field MUST be 0.`
-- MATCH ✅
-
-## Target Path Verification
-
-All three annotations use `specification/data-format/message-header.md#...` which matches the TOML target prefix. ✅
-
-## Code Reuse Assessment
-
-Agent 2 added `parse_header_offsets()` which is similar to `parse_v2_header_field_offsets()` in `test_v2_header_body.rs`. However:
-- The existing helper returns `Vec<(&str, usize, usize)>` with all fields and assertions
-- The new helper returns just `(usize, usize, usize)` for the three specific offsets needed
-- They serve different purposes and the new one is simpler
-- Moving to shared fixtures would require making it accessible across test files, which is a larger refactor
-- Non-blocking observation.
-
-## Pre-existing Issues Noted
-
-- `header.rs` line 99: `//= type=implementation` is unnecessary (default type). Pre-existing, non-blocking.
-- Clippy warnings (missing docs, unreachable patterns) are pre-existing and not in modified files.
-- `test_authentication_tag` tests fail due to expired AWS credentials — pre-existing, not related to this change.
+1. header.rs line 115: The implementation annotation for `#message-id` randomness uses a partial quote (missing first line). The TOML has the full 3-line quote. This predates Agent 2's changes.
+2. Clippy warnings in unrelated files (missing docs on `encrypt_stream`, collapsible `if` in `v1_header_body.rs`, unreachable patterns in `materials.rs`).
+3. `test_authentication_tag` tests fail due to invalid AWS credentials — pre-existing, unrelated.

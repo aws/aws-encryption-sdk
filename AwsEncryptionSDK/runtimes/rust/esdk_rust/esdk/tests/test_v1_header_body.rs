@@ -116,6 +116,11 @@ async fn test_v1_header_message_id() {
     // Message ID is 16 bytes at offset 4
     let msg_id_1 = &ct1[4..20];
     let msg_id_2 = &ct2[4..20];
+    //= specification/data-format/message-header.md#message-id
+    //= type=test
+    //# While implementations cannot guarantee complete uniqueness,
+    //# implementations MUST use a good source of randomness when generating messages IDs in order to make
+    //# the chance of duplicate IDs negligible.
     assert_ne!(msg_id_1, msg_id_2, "Message IDs must be unique (random)");
     //= aws-encryption-sdk-specification/data-format/message-header.md#message-id
     //= type=test

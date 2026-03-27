@@ -96,7 +96,6 @@ pub(crate) const fn header_version_supports_commitment(
 }
 
 //= specification/data-format/message-header.md#encrypted-data-key-count
-//= type=implementation
 //# This value MUST be greater than 0.
 pub(crate) fn validate_max_encrypted_data_keys(
     max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
@@ -114,7 +113,6 @@ pub(crate) fn validate_max_encrypted_data_keys(
 }
 
 //= specification/data-format/message-header.md#message-id
-//= type=implementation
 //# implementations MUST use a good source of randomness when generating messages IDs in order to make
 //# the chance of duplicate IDs negligible.
 pub(crate) fn generate_message_id(suite: &AlgorithmSuite) -> Result<MessageId, Error> {
@@ -133,6 +131,10 @@ pub(crate) fn validate_suite_data(
     header_body: &HeaderBody,
     expected_suite_data: &[u8],
 ) -> Result<(), Error> {
+    //= specification/data-format/message-header.md#algorithm-suite-data
+    //= type=implication
+    //= reason=suite_data is Vec<u8> and compared as byte slices; the type system enforces byte interpretation
+    //# The algorithm suite data MUST be interpreted as bytes.
     if header_body.suite_data() != expected_suite_data {
         return Err("Commitment key does not match".into());
     }
