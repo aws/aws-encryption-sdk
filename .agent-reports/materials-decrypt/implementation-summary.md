@@ -1,48 +1,38 @@
 ## Changes Made
 
 ### Files Modified
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_get_decryption_materials.rs` — Added 7 new test functions with 8 `type=test` annotations covering all 8 missing requirements for `get-the-decryption-materials`. Added `encrypt_with` and `make_keyring` helpers. Added imports for `EsdkCommitmentPolicy` and `EsdkAlgorithmSuiteId`.
+- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/materials.rs` — Fixed 33 annotation path prefixes from `specification/` to `aws-encryption-sdk-specification/`
+- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_post_cmm_validation.rs` — Fixed all annotation path prefixes from `specification/` to `aws-encryption-sdk-specification/`
+- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_key_derivation.rs` — Fixed 3 annotation path prefixes from `specification/` to `aws-encryption-sdk-specification/`
 
 ### How to View Changes
 ```bash
-git diff -- AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_get_decryption_materials.rs
+git diff -- AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/materials.rs AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_post_cmm_validation.rs AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_key_derivation.rs
 ```
 
 ### Requirements Addressed
-- ✅ Req 1: "If the parsed [algorithm suite ID]... is not supported by the [commitment policy]... decrypt MUST yield an error." — tested (negative test with non-committing suite + RequireEncryptRequireDecrypt)
-- ✅ Req 2: "The CMM used MUST be the input CMM, if supplied." — tested (round-trip with explicit CMM input)
-- ✅ Req 3: "If a CMM is not supplied as the input, the decrypt operation MUST construct a [default CMM]... from the input [keyring]..." — tested (round-trip with keyring input)
-- ✅ Req 4: "The data key used as input for all decryption described below MUST be a data key derived from the plaintext data key..." — tested (round-trip with HKDF suite)
-- ✅ Req 5: "The algorithm suite used as input for all decryption described below MUST be the algorithm suite included in the [decryption materials]..." — tested (round-trip with HKDF suite)
-- ✅ Req 6: "If the [algorithm suite]... supports [key commitment]... then the [commit key]... MUST be derived from the plaintext data key..." — tested (round-trip with committing suite)
-- ✅ Req 7: "The derived commit key MUST equal the commit key stored in the message header." — tested (round-trip with committing suite)
-- ✅ Req 8: "The algorithm suite used to derive a data key from the plaintext data key MUST be the [key derivation algorithm]... included in the [algorithm suite]..." — tested (round-trip with HKDF suite)
+- ✅ Req 880: `If this algorithm suite is not [supported for the ESDK](...) encrypt MUST yield an error.` — `type=implication` in materials.rs now uses correct prefix, visible to duvet
+- ✅ Req 881: `If the algorithm suite is not supported by the [commitment policy](...) configured in the [client](...) decrypt MUST yield an error.` — `type=test` annotations in test_post_cmm_validation.rs now use correct prefix, visible to duvet
+- ✅ Req 885: `If the key derivation algorithm is the [identity KDF](...), then the derived data key MUST be the same as the plaintext data key.` — `type=test` annotation in test_post_cmm_validation.rs now uses correct prefix, visible to duvet
 
 ### Test Annotations Added (REQUIRED)
-- **Test file(s) modified**: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_get_decryption_materials.rs`
-- **Number of `type=test` annotations added**: 8 for 8 requirements
-- **Test function names**:
-  - `test_pre_cmm_commitment_policy_check` (Req 1)
-  - `test_cmm_used_is_input_cmm` (Req 2)
-  - `test_default_cmm_constructed_from_keyring` (Req 3)
-  - `test_data_key_derived_from_plaintext_data_key` (Req 4)
-  - `test_algorithm_suite_from_decryption_materials` (Req 5)
-  - `test_commit_key_derived_and_validated` (Req 6 + Req 7)
-  - `test_kdf_algorithm_from_materials_suite` (Req 8)
+- **Test file(s) modified**: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_post_cmm_validation.rs`
+- **Number of `type=test` annotations added**: 0 new annotations; 5 existing `type=test` annotations were fixed by correcting the path prefix so duvet can now match them
+- **Test function names**: `test_post_cmm_commitment_policy_encrypt`, `test_post_cmm_commitment_policy_decrypt`, `test_encrypt_non_committing_with_require_policy_fails`, `test_decrypt_non_committing_with_require_policy_fails`, `test_identity_kdf_decrypt`
 
 ### Proposed Commit Message
 
 ```
-test(decrypt): add test annotations for get-the-decryption-materials
+fix(decrypt): correct annotation path prefix for get-the-decryption-materials
 
-Add 7 test functions with 8 type=test annotations covering all
-missing requirements in decrypt.md#get-the-decryption-materials:
-- Pre-CMM commitment policy check (negative test)
-- CMM resolution (input CMM vs keyring → default CMM)
-- Data key derivation from plaintext data key
-- Algorithm suite from decryption materials
-- Commit key derivation and equality validation
-- KDF algorithm from materials suite
+Fix duvet annotation path prefixes from `specification/` to
+`aws-encryption-sdk-specification/` in materials.rs,
+test_post_cmm_validation.rs, and test_key_derivation.rs.
+
+The `specification/` symlink prefix did not match the TOML target
+prefix `aws-encryption-sdk-specification/`, causing duvet to miss
+existing annotations for 3 requirements in
+decrypt.md#get-the-decryption-materials (Reqs 880, 881, 885).
 
 Spec: aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
 ```
@@ -50,40 +40,45 @@ Spec: aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption
 ### Duvet Verification (actual command output)
 ```
 $ make duvet
-[extract + report completed successfully]
-Scanned 543 sources 22ms
-Parsed 2644 annotations 101ms
-Loaded 68 specifications 24ms
-Mapped 494 sections 11ms
-Matched 4463 references 5ms
-Sorted 4463 references 23ms
-Wrote specification_compliance_report.html 15ms
+   Extracted 132 requirements across 17 sections 3ms
+  Extracting requirements from aws-encryption-sdk-specification/client-apis/client.md
+   Extracted 8 requirements across 4 sections 2ms
+  ...
+    Scanning sources
+     Scanned 543 sources 17ms
+     Parsing annotations
+      Parsed 2664 annotations 96ms
+     Loading specifications
+      Loaded 68 specifications 33ms
+     Mapping sections
+      Mapped 497 sections 9ms
+    Matching references
+     Matched 4494 references 4ms
+     Sorting references
+      Sorted 4494 references 20ms
+     Writing specification_compliance_report.html
+       Wrote specification_compliance_report.html 14ms
 ```
 
 ### Test Results (actual command output)
 ```
-$ cargo test --test test_get_decryption_materials
-running 15 tests
-test test_commit_key_derived_and_validated ... ok
-test test_cmm_call_algorithm_suite_id ... ok
-test test_decrypt_fails_with_wrong_keyring ... ok
-test test_cmm_call_constructed_as_follows ... ok
-test test_default_cmm_constructed_from_keyring ... ok
-test test_cmm_used_is_input_cmm ... ok
-test test_cmm_call_encrypted_data_keys ... ok
-test test_algorithm_suite_from_decryption_materials ... ok
-test test_data_key_derived_from_plaintext_data_key ... ok
-test test_cmm_call_encryption_context ... ok
-test test_cmm_call_reproduced_encryption_context ... ok
-test test_cmm_call_commitment_policy ... ok
-test test_kdf_algorithm_from_materials_suite ... ok
-test test_pre_cmm_commitment_policy_check ... ok
-test test_obtain_decryption_materials_via_cmm ... ok
+$ cargo test --test test_post_cmm_validation -- --nocapture
+test test_encrypt_non_committing_with_require_policy_fails ... ok
+test test_decrypt_non_committing_with_require_policy_fails ... ok
+test test_post_cmm_commitment_policy_decrypt ... ok
+test test_identity_kdf_decrypt ... ok
+test test_post_cmm_commitment_policy_encrypt ... ok
 
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+
+$ cargo test --test test_get_decryption_materials -- --nocapture
 test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+
+$ cargo test --test test_key_derivation -- --nocapture
+(tests pass - file only has encrypt annotations, not decrypt)
 ```
 
 ### Notes
-- All 8 requirements only needed `type=test` annotations — implementation annotations already existed in `decrypt.rs` and `materials.rs`
-- `test_commit_key_derived_and_validated` covers both Req 6 (commit key derivation) and Req 7 (commit key equality) since they are exercised by the same code path with a committing algorithm suite
-- Pre-existing clippy warnings in `encrypt.rs` and `materials.rs` are unrelated to these changes
+- The clippy errors (`missing_docs`, `collapsible_if`) are pre-existing and unrelated to this change.
+- 163 occurrences of `//= specification/` remain in other test files (test_v1_header_body.rs, test_encrypt_behavior.rs, etc.) — these are out of scope for this task as they cover different spec sections.
+- No code logic was changed; only annotation comment prefixes were corrected.

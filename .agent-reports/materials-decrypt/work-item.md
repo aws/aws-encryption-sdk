@@ -1,219 +1,120 @@
-# Work Item: Add Missing Test Annotations for decrypt.md#get-the-decryption-materials
+# Work Item: Fix 3 Remaining Gaps in decrypt.md#get-the-decryption-materials (materials.rs)
 
 ## Specification
 - **File**: `aws-encryption-sdk-specification/client-apis/decrypt.md`
 - **Section**: `get-the-decryption-materials`
-- **Duvet Target**: `specification/client-apis/decrypt.md#get-the-decryption-materials`
+- **Duvet Target**: `aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials`
 
 ## Type of Work
 ADD_TESTS
 
+## Context
+
+A previous cycle (commit 695713fd) added 8 new test annotations. After re-running duvet, 3 requirements remain incomplete. All 3 already have implementation annotations in `src/materials.rs`, but those annotations use the `specification/` symlink prefix. Duvet extracts requirements from `aws-encryption-sdk-specification/` and does NOT match annotations using the `specification/` prefix to those requirements. The implementation annotations are therefore invisible to duvet.
+
+The fix is to add `type=test` annotations in the test file using the `aws-encryption-sdk-specification/` prefix. The existing `type=implication` annotations in `materials.rs` also need their path prefix corrected, but since `implication` satisfies both implementation and test, adding test annotations alone will close the gaps.
+
 ## Requirements to Address
 
-### Requirement 1
+### Requirement 1 (ID 860)
 - **Level**: MUST
 - **Exact Quote** (from TOML):
   ```toml
-  If the parsed [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
-  is not supported by the [commitment policy](client.md#commitment-policy)
+  If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
+  encrypt MUST yield an error.
+  ```
+- **Current State**: incomplete (has `type=implication` in materials.rs at line 210 using wrong path prefix; no test annotation)
+
+### Requirement 2 (ID 861)
+- **Level**: MUST
+- **Exact Quote** (from TOML):
+  ```toml
+  If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
   configured in the [client](client.md) decrypt MUST yield an error.
   ```
-- **Current State**: needs-test
-- **Implementation Location**: `decrypt.rs:step_get_decryption_materials` — `validate_commitment_policy_on_decrypt()` call before CMM
+- **Current State**: incomplete (has `type=implication` in materials.rs at line 215 using wrong path prefix; test exists in test_post_cmm_validation.rs but uses `specification/` prefix)
 
-### Requirement 2
+### Requirement 3 (ID 865)
 - **Level**: MUST
 - **Exact Quote** (from TOML):
   ```toml
-  The CMM used MUST be the input CMM, if supplied.
+  If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
+  then the derived data key MUST be the same as the plaintext data key.
   ```
-- **Current State**: needs-test
-- **Implementation Location**: `decrypt.rs:step_get_decryption_materials` — annotation before `create_cmm_from_input()`
-
-### Requirement 3
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  If a CMM is not supplied as the input, the decrypt operation MUST construct a [default CMM](../framework/default-cmm.md)
-  from the input [keyring](../framework/keyring-interface.md).
-  ```
-- **Current State**: needs-test
-- **Implementation Location**: `decrypt.rs:step_get_decryption_materials` — annotation before `create_cmm_from_input()`
-
-### Requirement 4
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  The data key used as input for all decryption described below MUST be a data key derived from the plaintext data key
-  included in the [decryption materials](../framework/structures.md#decryption-materials).
-  ```
-- **Current State**: needs-test
-- **Implementation Location**: `decrypt.rs:step_get_decryption_materials` — `key_derivation::derive_keys()` call
-
-### Requirement 5
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  The algorithm suite used as input for all decryption described below MUST be the algorithm suite
-  included in the [decryption materials](../framework/structures.md#decryption-materials).
-  ```
-- **Current State**: needs-test
-- **Implementation Location**: `decrypt.rs:step_get_decryption_materials` — `let suite = &dec_mat.algorithm_suite`
-
-### Requirement 6
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  If the [algorithm suite](../framework/algorithm-suites.md#algorithm-suites-encryption-key-derivation-settings) supports [key commitment](../framework/algorithm-suites.md#key-commitment)
-  then the [commit key](../framework/algorithm-suites.md#commit-key) MUST be derived from the plaintext data key
-  using the [commit key derivation](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
-  ```
-- **Current State**: needs-test
-- **Implementation Location**: `decrypt.rs:step_get_decryption_materials` — `if v2_header_body::has_hkdf(&suite.commitment)` block
-
-### Requirement 7
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  The derived commit key MUST equal the commit key stored in the message header.
-  ```
-- **Current State**: needs-test
-- **Implementation Location**: `decrypt.rs:step_get_decryption_materials` — `header::validate_suite_data()` call
-
-### Requirement 8
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  The algorithm suite used to derive a data key from the plaintext data key MUST be
-  the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
-  [algorithm suite](../framework/algorithm-suites.md) associated with
-  the returned decryption materials.
-  ```
-- **Current State**: needs-test
-- **Implementation Location**: `decrypt.rs:step_get_decryption_materials` — `key_derivation::derive_keys()` uses `suite` from materials
+- **Current State**: incomplete (no annotation found for this requirement in the decrypt path; the encrypt path has annotations in key_derivation.rs but those target the encrypt spec section)
 
 ## Existing Code Context
 
-### Source File: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/decrypt.rs`
-```rust
-// Step 2: Get the decryption materials
-async fn step_get_decryption_materials(
-    ciphertext: &mut dyn SafeRead,
-    header_body: &header_types::HeaderBody,
-    raw_header: Vec<u8>,
-    input_source: Option<MaterialSource>,
-    encryption_context: &EncryptionContext,
-    commitment_policy: EsdkCommitmentPolicy,
-) -> Result<DecryptState, Error> {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
-    //# The CMM used MUST be the input CMM, if supplied.
-    //# If a CMM is not supplied as the input, the decrypt operation MUST construct a [default CMM](../framework/default-cmm.md)
-    //# from the input [keyring](../framework/keyring-interface.md).
-    let cmm = materials::create_cmm_from_input(input_source).await?;
-
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
-    //# If the parsed [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
-    //# is not supported by the [commitment policy](client.md#commitment-policy)
-    //# configured in the [client](client.md) decrypt MUST yield an error.
-    aws_mpl_legacy::commitment::validate_commitment_policy_on_decrypt(...)?;
-
-    let dec_mat = materials::get_decryption_materials(...).await?;
-
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
-    //# The algorithm suite used as input for all decryption described below MUST be the algorithm suite
-    //# included in the [decryption materials](../framework/structures.md#decryption-materials).
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
-    //# The algorithm suite used to derive a data key from the plaintext data key MUST be
-    //# the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
-    //# [algorithm suite](../framework/algorithm-suites.md) associated with
-    //# the returned decryption materials.
-    let suite = &dec_mat.algorithm_suite;
-
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
-    //# The data key used as input for all decryption described below MUST be a data key derived from the plaintext data key
-    //# included in the [decryption materials](../framework/structures.md#decryption-materials).
-    let derived_data_keys = key_derivation::derive_keys(...)?;
-
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
-    //# If the [algorithm suite]... supports [key commitment]...
-    //# then the [commit key]... MUST be derived from the plaintext data key...
-    if v2_header_body::has_hkdf(&suite.commitment) {
-        //= specification/client-apis/decrypt.md#get-the-decryption-materials
-        //# The derived commit key MUST equal the commit key stored in the message header.
-        header::validate_suite_data(...)?;
-    }
-    ...
-}
-```
-
 ### Source File: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/materials.rs`
 ```rust
-pub(crate) async fn get_modern_decryption_materials(
-    cmm: aws_mpl_legacy::cmm::CryptographicMaterialsManagerRef,
-    algorithm_suite_id: aws_mpl_legacy::suites::AlgorithmSuiteId,
-    header_body: &HeaderBody,
-    reproduced_encryption_context: &EncryptionContext,
-    commitment_policy: aws_mpl_legacy::commitment::EsdkCommitmentPolicy,
-) -> Result<DecryptionMaterials, Error> {
-    // ... builds DecryptMaterialsInput with all 5 fields annotated ...
-    let materials = cmm.decrypt_materials(&input).await?;
-    // ... post-CMM commitment validation ...
-}
+// Line 210-214: existing implication annotation for req 860
+//= specification/client-apis/decrypt.md#get-the-decryption-materials
+//= type=implication
+//= reason=The CMM resolves the algorithm suite from the header; unsupported ESDK suites fail during CMM processing
+//# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
+//# encrypt MUST yield an error.
+
+// Line 215-217: existing annotation for req 861
+//= specification/client-apis/decrypt.md#get-the-decryption-materials
+//# If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
+//# configured in the [client](client.md) decrypt MUST yield an error.
 ```
 
 ### Test File: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_get_decryption_materials.rs`
 ```rust
-// Existing tests cover: obtain materials via CMM, CMM call construction,
-// algorithm suite ID, commitment policy, encrypted data keys,
-// encryption context, reproduced encryption context, wrong keyring failure.
-// All are round-trip tests using test_keyring() -> encrypt -> decrypt.
+// Existing test annotations use aws-encryption-sdk-specification/ prefix
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+//= type=test
+//# ...
 ```
 
 ### Test File: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_post_cmm_validation.rs`
 ```rust
-// Existing tests cover: post-CMM commitment policy on decrypt (positive + negative),
-// identity KDF on decrypt. These already have type=test annotations.
+// Line 75: existing test for req 861 but uses wrong prefix
+//= specification/client-apis/decrypt.md#get-the-decryption-materials
+//= type=test
+//# If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
+//# configured in the [client](client.md) decrypt MUST yield an error.
 ```
 
 ## Implementation Guidance
-- All 8 missing requirements need `type=test` annotations only — the implementation annotations already exist
-- Follow the existing pattern in `test_get_decryption_materials.rs` and `test_post_cmm_validation.rs`: round-trip encrypt/decrypt tests with `test_keyring()`
-- **Annotation path convention**: The duvet config references specs via `specification/` (a symlink to `aws-encryption-sdk-specification/`). Existing test files use both `aws-encryption-sdk-specification/` and `specification/` prefixes — both resolve correctly. New test annotations SHOULD use `aws-encryption-sdk-specification/` to match the convention in `test_get_decryption_materials.rs`, which is the primary test file for this section.
-- Requirements 1-3 (pre-CMM commitment check, CMM resolution) can be tested with simple round-trip tests that exercise the decrypt path
-- Requirements 4-5 (data key derivation, algorithm suite from materials) are proven by successful round-trip decryption
-- Requirements 6-7 (key commitment derivation and equality) need a test using a committing algorithm suite (v2 header)
-- Requirement 8 (KDF algorithm from materials) is proven by successful round-trip with an HKDF suite
-- Group related requirements into minimal tests to avoid redundancy
+
+### For Requirements 860 and 861 (post-CMM validation)
+- The test `test_post_cmm_commitment_policy_decrypt` in `test_post_cmm_validation.rs` already tests requirement 861 but uses the `specification/` prefix. Change it to `aws-encryption-sdk-specification/`.
+- The test `test_post_cmm_esdk_suite_decrypt` in `test_post_cmm_validation.rs` already tests requirement 860 but uses the `specification/` prefix. Change it to `aws-encryption-sdk-specification/`.
+- Pattern: see existing test annotations in `test_get_decryption_materials.rs` which correctly use `aws-encryption-sdk-specification/`.
+
+### For Requirement 865 (identity KDF on decrypt)
+- The identity KDF requirement for decrypt is fulfilled in `src/key_derivation.rs` (the `derive_data_key` function handles identity KDF by returning the plaintext data key unchanged).
+- A test annotation needs to be added to an existing test that exercises the identity KDF path during decryption (e.g., a test using `ALG_AES_256_GCM_IV12_TAG16_NO_KDF`).
+- The test in `test_key_derivation.rs` already tests identity KDF but targets the encrypt spec section. Add a parallel test annotation for the decrypt section.
+- Pattern: follow `test_get_decryption_materials.rs` for the annotation format.
 
 ### Spec-Aligned Structure
 The spec describes this flow:
-1. Pre-CMM commitment policy check → annotate test at round-trip with non-committing suite + require policy
-2. CMM resolution (input CMM) → annotate test at round-trip using CMM input
-3. CMM resolution (keyring → default CMM) → annotate test at round-trip using keyring input
-4. Data key derivation from materials → annotate test at successful round-trip decrypt
-5. Algorithm suite from materials → annotate test at successful round-trip decrypt
-6. Key commitment derivation → annotate test at round-trip with committing suite
-7. Commit key equality → annotate test at round-trip with committing suite
-8. KDF algorithm from materials → annotate test at round-trip with HKDF suite
+1. Check commitment policy against parsed algorithm suite → annotate at commitment policy validation
+2. Obtain decryption materials from CMM → annotate at `cmm.decrypt_materials()` call
+3. Construct CMM input fields → annotate at each field assignment
+4. Post-CMM validation (ESDK support, commitment policy) → annotate at `validate_commitment_policy_on_decrypt`
+5. Derive data key (including identity KDF case) → annotate at `derive_data_key` call
 
-### Suggested Test Groupings
-- **Test A**: Round-trip with keyring input (covers Req 3: default CMM construction, Req 4: data key derivation, Req 5: algorithm suite from materials, Req 8: KDF algorithm)
-- **Test B**: Round-trip with CMM input (covers Req 2: input CMM used)
-- **Test C**: Pre-CMM commitment policy failure (covers Req 1: parsed suite vs commitment policy)
-- **Test D**: Round-trip with committing suite (covers Req 6: commit key derivation, Req 7: commit key equality)
+Sub-items to annotate individually:
+- Req 860 "algorithm suite not supported for ESDK" → at the post-CMM ESDK suite validation
+- Req 861 "algorithm suite not supported by commitment policy" → at `validate_commitment_policy_on_decrypt`
+- Req 865 "identity KDF returns plaintext data key unchanged" → at the identity KDF branch in `derive_data_key`
+
+### Most Likely Structural Mistake
+The implementer may be tempted to only fix the path prefix in `materials.rs` (changing `specification/` to `aws-encryption-sdk-specification/`). While that would fix the implementation annotations, the requirements also need `type=test` annotations. The simplest fix is to correct the path prefix in the existing test files (`test_post_cmm_validation.rs`) and add a new test annotation for requirement 865.
 
 ## Targeted Tests
-- `test_get_decryption_materials::test_obtain_decryption_materials_via_cmm` — existing, can be extended
-- `test_get_decryption_materials::test_decrypt_fails_with_wrong_keyring` — existing negative test
-- `test_post_cmm_validation::test_post_cmm_commitment_policy_decrypt` — existing, covers post-CMM commitment
-- `test_post_cmm_validation::test_decrypt_non_committing_with_require_policy_fails` — existing, covers post-CMM commitment failure
-- `test_post_cmm_validation::test_identity_kdf_decrypt` — existing, covers identity KDF
-- New tests needed for: pre-CMM commitment check, CMM vs keyring input, data key derivation, algorithm suite usage, key commitment derivation/equality, KDF algorithm
+- `test_post_cmm_esdk_suite_decrypt` — tests that unsupported ESDK suites fail on decrypt (req 860)
+- `test_post_cmm_commitment_policy_decrypt` — tests that commitment policy violations fail on decrypt (req 861)
+- `test_identity_kdf_decrypt` (NEW or existing test using NO_KDF suite) — tests identity KDF returns plaintext data key unchanged (req 865)
 
 ## Success Criteria
 ```bash
-cargo test test_get_decryption_materials
-cargo test test_post_cmm_validation
+cargo test test_post_cmm
+cargo test test_key_derivation
 make duvet
 ```
 - [ ] Each test passes

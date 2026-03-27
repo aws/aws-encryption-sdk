@@ -52,7 +52,7 @@ async fn decrypt_with(
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_post_cmm_commitment_policy_encrypt() {
-    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= aws-encryption-sdk-specification/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //# If this [algorithm suite](../framework/algorithm-suites.md) is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) encrypt MUST yield an error.
@@ -72,7 +72,7 @@ async fn test_post_cmm_commitment_policy_encrypt() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_post_cmm_commitment_policy_decrypt() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) decrypt MUST yield an error.
@@ -109,7 +109,7 @@ async fn test_encrypt_non_committing_with_require_policy_fails() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_non_committing_with_require_policy_fails() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) decrypt MUST yield an error.
@@ -133,7 +133,7 @@ async fn test_decrypt_non_committing_with_require_policy_fails() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_identity_kdf_decrypt() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
     //# then the derived data key MUST be the same as the plaintext data key.

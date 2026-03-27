@@ -1,64 +1,42 @@
-# Discovery Notes — materials-decrypt
+# Agent 1 Notes — materials-decrypt
 
-## Spec Section Logical Flow
+## Discovery Summary
 
-The `### Get the decryption materials` section describes this flow:
+After commit 695713fd (8 new test annotations), re-ran duvet and found 3 remaining gaps in `decrypt.md#get-the-decryption-materials`:
+- Requirement 860: ESDK suite support check (post-CMM)
+- Requirement 861: Commitment policy check (post-CMM)
+- Requirement 865: Identity KDF passthrough
 
-1. **Pre-CMM commitment policy check**: Validate parsed algorithm suite ID against commitment policy before calling CMM
-2. **CMM resolution**: Use input CMM if supplied, else construct default CMM from keyring
-3. **CMM call construction**: Build DecryptMaterialsInput with 5 fields (EC, suite ID, EDKs, reproduced EC, commitment policy)
-4. **Post-CMM data key derivation**: Derive data key from plaintext data key in materials
-5. **Post-CMM algorithm suite usage**: Use algorithm suite from materials for all decryption
-6. **Post-CMM ESDK support check**: Verify algorithm suite is ESDK-supported
-7. **Post-CMM commitment policy check**: Validate materials' algorithm suite against commitment policy
-8. **Key commitment verification**: If suite supports commitment, derive commit key and compare to header
-9. **KDF algorithm usage**: Use the KDF from the materials' algorithm suite
-10. **Identity KDF special case**: If identity KDF, derived key = plaintext key
+## Root Cause Analysis
 
-## Where Each Requirement Is Fulfilled
+The primary issue is a **path prefix mismatch**. Annotations in `src/materials.rs` and `tests/test_post_cmm_validation.rs` use the `specification/` symlink prefix, while duvet extracts requirements from `aws-encryption-sdk-specification/`. Duvet treats these as separate specification entries and does not cross-match annotations between them.
 
-| Requirement | Code Construct | File |
-|---|---|---|
-| Pre-CMM commitment check | `validate_commitment_policy_on_decrypt()` call | `decrypt.rs:step_get_decryption_materials` |
-| CMM resolution (input CMM / default CMM) | `create_cmm_from_input()` match arms | `materials.rs:create_cmm_from_input` |
-| CMM call construction | `DecryptMaterialsInput` field assignments | `materials.rs:get_modern_decryption_materials` and `get_legacy_decryption_materials` |
-| Data key derivation | `key_derivation::derive_keys()` call | `decrypt.rs:step_get_decryption_materials` |
-| Algorithm suite from materials | `let suite = &dec_mat.algorithm_suite` | `decrypt.rs:step_get_decryption_materials` |
-| ESDK support check | `type=implication` annotation (CMM enforces) | `materials.rs` |
-| Post-CMM commitment check | `validate_commitment_policy_on_decrypt()` | `materials.rs:get_modern_decryption_materials` |
-| Key commitment derivation | `v2_header_body::has_hkdf` + `validate_suite_data` | `decrypt.rs:step_get_decryption_materials` |
-| Commit key equality | `header::validate_suite_data()` | `decrypt.rs:step_get_decryption_materials` |
-| KDF algorithm usage | `derive_keys()` uses `suite.kdf` | `key_derivation.rs:derive_keys` |
-| Identity KDF | `DerivationAlgorithm::Identity` match arm | `key_derivation.rs:derive_key` |
+This means:
+- Implementation annotations using `specification/` prefix → matched to a spec entry with 0 requirements
+- Test annotations using `aws-encryption-sdk-specification/` prefix → matched to the actual requirements
 
-## Most Likely Structural Mistake
+The fix is straightforward: change the path prefix in the affected test annotations from `specification/` to `aws-encryption-sdk-specification/`, and add a new test annotation for requirement 865.
 
-The implementer may be tempted to add test annotations in `materials.rs` test code.
-However, many of the requirements that need tests are fulfilled in `decrypt.rs:step_get_decryption_materials`,
-not in `materials.rs`. The test annotations should reference the spec section
-`specification/client-apis/decrypt.md#get-the-decryption-materials` regardless of which code file
-implements the behavior.
+## Spec-Aligned Structure Analysis
 
-Also: the "CMM used MUST be the input CMM" and "construct a default CMM" requirements
-are annotated in `decrypt.rs` (line ~253-258) but the actual code is in `materials.rs:create_cmm_from_input`.
-The annotations are split across both files. Tests should cover the decrypt.rs orchestration.
+1. **Logical flow**: The "Get the decryption materials" section follows this order:
+   - Pre-CMM: Check parsed algorithm suite against commitment policy
+   - Obtain materials: Call CMM's Decrypt Materials with constructed input
+   - Post-CMM: Validate returned algorithm suite (ESDK support + commitment policy)
+   - Key derivation: Derive data key from plaintext data key (including identity KDF case)
+   - Key commitment: Verify commit key if applicable
+
+2. **Code construct mapping**:
+   - Req 860 → `validate_commitment_policy_on_decrypt` call (materials.rs line 218)
+   - Req 861 → same `validate_commitment_policy_on_decrypt` call
+   - Req 865 → `derive_data_key` function in key_derivation.rs (identity KDF branch)
+
+3. **Sub-items**: None — these are standalone requirements, not list items.
+
+4. **Most likely structural mistake**: Fixing only the `materials.rs` annotations without also fixing the test file annotations, or forgetting that requirement 865 needs a decrypt-specific test annotation (the encrypt-side annotation exists but doesn't cover the decrypt spec section).
 
 ## Potential Spec Gaps
 
-### 1. Algorithm suite mismatch between header and materials
-- **Code location**: `decrypt.rs:step_get_decryption_materials` lines checking `suite != header_body.algorithm_suite()`
-- **Behavior**: The code checks that the algorithm suite in the decryption materials matches the one parsed from the header, and returns an error if they differ.
-- **Why it matters**: Correctness — prevents using wrong algorithm suite for decryption
-- **Suggested spec requirement**: "The algorithm suite in the decryption materials MUST match the algorithm suite parsed from the message header."
+1. **Requirement 860 says "encrypt MUST yield an error"** in the decrypt section. This is clearly a spec typo — it should say "decrypt MUST yield an error". The code correctly errors on decrypt. This is a known spec issue and does not affect the annotation (the exact quote must be used regardless).
 
-### 2. Plaintext data key presence validation
-- **Code location**: `materials.rs:get_modern_decryption_materials` calls `decryption_materials_with_plaintext_data_key()`
-- **Behavior**: Validates that the decryption materials contain a plaintext data key before proceeding
-- **Why it matters**: Correctness — prevents null pointer / missing key errors during key derivation
-- **Suggested spec requirement**: "The decryption materials MUST contain a plaintext data key."
-
-### 3. Encryption context serializability check
-- **Code location**: `materials.rs:get_decryption_materials` checks `is_esdk_encryption_context()`
-- **Behavior**: Validates that the encryption context returned by the CMM is serializable for ESDK
-- **Why it matters**: Interop — ensures encryption context can be properly serialized in the message format
-- **Suggested spec requirement**: "The encryption context in the decryption materials MUST be serializable according to the ESDK message format."
+2. **No spec requirement for validating plaintext data key length on decrypt**. The code in `materials.rs` calls `decryption_materials_with_plaintext_data_key` which validates the key exists, but there's no explicit spec requirement for checking the key length matches the algorithm suite's key derivation input length on the decrypt path (unlike encrypt, which has explicit length checks). This is a potential spec gap — the code does enforce this through the CMM interface contract, but it's not explicitly stated in the decrypt section.

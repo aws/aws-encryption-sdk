@@ -45,7 +45,7 @@ async fn round_trip_with_suite(
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_key_derivation_uses_suite_kdf() {
-    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= aws-encryption-sdk-specification/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //# The algorithm used to derive a data key from the plaintext data key MUST be
     //# the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
@@ -62,7 +62,7 @@ async fn test_key_derivation_uses_suite_kdf() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_identity_kdf_derived_key_equals_plaintext_key() {
-    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= aws-encryption-sdk-specification/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //# - If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
     //# then the derived data key MUST be the same as the plaintext data key.
@@ -78,7 +78,7 @@ async fn test_identity_kdf_derived_key_equals_plaintext_key() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_hkdf_derivation_process() {
-    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= aws-encryption-sdk-specification/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //# - If the key derivation algorithm is [HKDF](../framework/algorithm-suites.md#hkdf),
     //# the derivation process used MUST be the process described in [HKDF Encryption Key](../transitive-requirements.md#hkdf-encryption-key).
