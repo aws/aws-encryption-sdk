@@ -97,7 +97,7 @@ pub(crate) const fn header_version_supports_commitment(
     }
 }
 
-//= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-count
+//= specification/data-format/message-header.md#encrypted-data-key-count
 //# This value MUST be greater than 0.
 pub(crate) fn validate_max_encrypted_data_keys(
     max_encrypted_data_keys: Option<std::num::NonZeroUsize>,

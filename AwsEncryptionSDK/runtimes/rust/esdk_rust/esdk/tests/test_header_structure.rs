@@ -96,7 +96,7 @@ async fn test_header_serialization_order() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypted_data_key_count_greater_than_zero() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-count
+    //= specification/data-format/message-header.md#encrypted-data-key-count
     //= type=test
     //# This value MUST be greater than 0.
     let ct = encrypt_default(b"edk count test").await;
