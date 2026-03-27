@@ -89,20 +89,8 @@ pub(crate) fn is_esdk_encryption_context(ec: &EncryptionContext) -> bool {
 }
 
 pub(crate) fn is_esdk_encrypted_data_key(edk: &EncryptedDataKey) -> bool {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-id-length
-    //= type=implication
-    //= reason=u16::try_from validates the key provider ID length is representable as UInt16 before serialization
-    //# The key provider ID length MUST be serialized as a UInt16.
     u16::try_from(edk.key_provider_id.len()).is_ok()
-        //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-information-length
-        //= type=implication
-        //= reason=u16::try_from validates the key provider information length is representable as UInt16 before serialization
-        //# The key provider information length MUST be serialized as a UInt16.
         && u16::try_from(edk.key_provider_info.len()).is_ok()
-        //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-length
-        //= type=implication
-        //= reason=u16::try_from validates the encrypted data key length is representable as UInt16 before serialization
-        //# The encrypted data key length MUST be serialized as a UInt16.
         && u16::try_from(edk.ciphertext.len()).is_ok()
 }
 

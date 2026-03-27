@@ -1,110 +1,78 @@
 ## Changes Made
 
 ### Files Modified
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/types.rs` — Added 2 `type=implication` annotations for SHOULD requirements on `source` fields of `EncryptInput` and `DecryptInput`
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_create_esdk_client.rs` — Added 8 new test functions with `type=test` annotations for encrypt.md#input and decrypt.md#input structural requirements
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_encrypt_decrypt.rs` — Added 2 `type=test` annotations to existing `test_bad_encrypt_input` for validate/fail requirements
+- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/types.rs` — Added 3 `type=implication` duvet annotations for Plaintext Length Bound requirements
 
 ### How to View Changes
 ```bash
-git diff -- AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/types.rs AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_create_esdk_client.rs AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_encrypt_decrypt.rs
+git diff -- AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/types.rs
 ```
 
 ### Requirements Addressed
-- ✅ `- The input to the Encrypt operation MUST accept a required [plaintext](#plaintext) argument.` — implication (existing) + test (new)
-- ✅ `- The input to the Encrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.` — implication (existing) + test (new)
-- ✅ `The keyring and CMM inputs SHOULD be optional.` (encrypt) — implication (new on EncryptInput.source)
-- ✅ `The Encrypt operation MUST validate that exactly one keyring or CMM was provided by the caller.` — implementation (existing) + test (new)
-- ✅ `If the caller does not provide exactly one of a keyring or CMM, the Encrypt operation MUST fail.` — implementation (existing) + test (new)
-- ✅ `- The input to the Encrypt operation MUST accept an optional [Algorithm Suite](#algorithm-suite) argument.` — implication (existing) + test (new)
-- ✅ `- The input to the Encrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.` — implication (existing) + test (new)
-- ✅ `- The input to the Encrypt operation MUST accept an optional [Frame Length](#frame-length) argument.` — implication (existing) + test (new)
-- ✅ `- The input to the Decrypt operation MUST accept a required [Encrypted Message](#encrypted-message) argument.` — implementation (existing) + test (new)
-- ✅ `- The input to the Decrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.` — implementation (existing) + test (new)
-- ✅ `The keyring and CMM inputs SHOULD be optional.` (decrypt) — implication (new on DecryptInput.source)
-- ✅ `- The input to the Decrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.` — implication (existing) + test (new)
+- ✅ `Implementations SHOULD ensure that a caller is not able to specify both a [plaintext](#plaintext) with known length and a [Plaintext Length Bound](#plaintext-length-bound) by construction.` — annotated as `type=implication` on `EncryptInput` struct
+- ✅ `If a caller is able to specify both an input [plaintext](#plaintext) with known length and a [Plaintext Length Bound](#plaintext-length-bound), the [Plaintext Length Bound](#plaintext-length-bound) MUST NOT be used during the Encrypt operation and MUST be ignored.` — annotated as `type=implication` on `EncryptInput` struct
+- ✅ `If the [plaintext](#plaintext) is of unknown length, the caller MAY also input a [Plaintext Length Bound](#plaintext-length-bound).` — annotated as `type=implication` on `EncryptStreamInput.data_size` field
 
 ### Test Annotations Added (REQUIRED)
-- **Test file(s) modified**: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_create_esdk_client.rs`, `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_encrypt_decrypt.rs`
-- **Number of `type=test` annotations added**: 10 for 10 requirements
-- **Test function names**:
-  - `test_encrypt_input_accepts_plaintext`
-  - `test_encrypt_input_accepts_cmm_and_keyring`
-  - `test_encrypt_input_accepts_optional_algorithm_suite`
-  - `test_encrypt_input_accepts_optional_encryption_context`
-  - `test_encrypt_input_accepts_optional_frame_length`
-  - `test_decrypt_input_accepts_encrypted_message`
-  - `test_decrypt_input_accepts_cmm_and_keyring`
-  - `test_decrypt_input_accepts_optional_encryption_context`
-  - `test_bad_encrypt_input` (2 annotations added to existing test)
+- **Test file(s) modified**: None — all three annotations use `type=implication`, which satisfies both implementation and test checks per duvet-patterns.md
+- **Number of `type=test` annotations added**: 0 (not needed for `type=implication`)
+- **Test function names**: N/A
 
 ### Proposed Commit Message
 
 ```
-test(types): add duvet annotations for encrypt.md#input and decrypt.md#input
+feat(encrypt): add duvet annotations for Plaintext Length Bound requirements
 
-Add type=implication annotations on EncryptInput and DecryptInput
-source fields for the SHOULD-optional requirement on CMM/keyring inputs.
+Add three missing type=implication annotations to types.rs for the
+Plaintext Length Bound requirements in encrypt.md#input:
 
-Add 10 type=test annotations across 9 test functions covering all
-MUST requirements in encrypt.md#input (8 requirements) and
-decrypt.md#input (5 requirements, 2 already had test annotations).
+- SHOULD ensure caller cannot specify both known-length plaintext and
+  Plaintext Length Bound (on EncryptInput struct)
+- MUST NOT use/MUST ignore Plaintext Length Bound when both specified
+  (on EncryptInput struct)
+- MAY input Plaintext Length Bound for unknown-length plaintext
+  (on EncryptStreamInput.data_size field)
 
-Spec sections:
-- specification/client-apis/encrypt.md#input
-- specification/client-apis/decrypt.md#input
+All three are satisfied by construction: EncryptInput has no
+plaintext_length_bound field, and EncryptStreamInput.data_size
+serves as the optional bound for streaming input.
+
+Spec: aws-encryption-sdk-specification/client-apis/encrypt.md#input
 ```
 
 ### Duvet Verification (actual command output)
 ```
 $ make duvet
-rm -rf .duvet/reports .duvet/requirements
-duvet report
-  Extracting requirements
-   Extracted requirements from 9 specifications 31ms
+rm -rf compliance
+duvet extract -o compliance -f MARKDOWN ...
+duvet report ...
     Scanning sources
-     Scanned 158 sources 9ms
+     Scanned 539 sources 27ms
      Parsing annotations
-      Parsed 1043 annotations 39ms
+      Parsed 2473 annotations 93ms
      Loading specifications
-      Loaded 14 specifications 19ms
+      Loaded 68 specifications 20ms
      Mapping sections
-      Mapped 138 sections 15ms
+      Mapped 485 sections 9ms
     Matching references
-     Matched 1909 references 2ms
+     Matched 4204 references 5ms
      Sorting references
-      Sorted 1909 references 13ms
-     Writing .duvet/reports/report.html
-       Wrote .duvet/reports/report.html 18ms
-     Writing .duvet/snapshot.txt
-       Wrote .duvet/snapshot.txt 1ms
+      Sorted 4204 references 19ms
+     Writing specification_compliance_report.html
+       Wrote specification_compliance_report.html 18ms
 ```
 
 ### Test Results (actual command output)
 ```
-$ cargo test --test test_create_esdk_client
-running 15 tests
-test test_decrypt_input_accepts_encrypted_message ... ok
-test test_decrypt_input_accepts_cmm_and_keyring ... ok
-test test_decrypt_input_accepts_optional_encryption_context ... ok
-test test_decrypt_input_default_commitment_policy ... ok
-test test_encrypt_input_accepts_cmm_and_keyring ... ok
-test test_decrypt_input_default_max_edks_is_none ... ok
-test test_encrypt_input_accepts_optional_algorithm_suite ... ok
-test test_encrypt_input_accepts_optional_encryption_context ... ok
-test test_encrypt_input_custom_commitment_policy ... ok
-test test_encrypt_input_accepts_plaintext ... ok
-test test_encrypt_input_accepts_optional_frame_length ... ok
-test test_encrypt_input_custom_max_edks ... ok
-test test_encrypt_input_default_commitment_policy ... ok
-test test_encrypt_input_default_max_edks_is_none ... ok
-test test_net_retry_flag ... ok
-
-test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+$ cargo check
+warning: `aws-esdk` (lib) generated 4 warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.83s
 ```
 
+Note: `cargo test` has 8 pre-existing failures in `test_authentication_tag` due to AWS credential issues (UnrecognizedClientException), unrelated to this change.
+
 ### Notes
-- The SHOULD requirements (3, 11) are annotated as `type=implication` with `reason=` because the optionality is structural (Option<MaterialSource>), not runtime-testable.
-- Pre-existing clippy warnings in encrypt.rs and materials.rs are unrelated to these changes.
-- The `test_bad_decrypt_input` test already had duvet annotations for decrypt validate/fail requirements — no changes needed there.
-- Duvet snapshot confirms all encrypt.md#input and decrypt.md#input requirements have appropriate coverage (implication+test or implementation+test for MUSTs, implication for SHOULDs).
+- All three requirements are `type=implication` because they are satisfied by the Rust type system / struct construction, not by runtime logic.
+- Each annotation includes a `reason=` line explaining how the struct design satisfies the requirement.
+- The annotation pattern follows existing `type=implication` + `reason=` usage on `EncryptInput.source` and `EncryptInput.max_encrypted_data_keys`.
+- No cross-references needed: the quoted text contains markdown links to `#plaintext` and `#plaintext-length-bound` which are anchors within the same `encrypt.md#input` section, not links to other spec files.

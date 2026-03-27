@@ -200,6 +200,18 @@ impl ::std::fmt::Display for NetV400RetryPolicy {
 //= specification/client-apis/encrypt.md#input
 //= type=implication
 //# - The input to the Encrypt operation MUST accept an optional [Frame Length](#frame-length) argument.
+//= specification/client-apis/encrypt.md#input
+//= type=implication
+//= reason=EncryptInput has plaintext: &[u8] (always known length) and no plaintext_length_bound field, so a caller cannot specify both
+//# Implementations SHOULD ensure that a caller is not able to specify both a [plaintext](#plaintext)
+//# with known length and a [Plaintext Length Bound](#plaintext-length-bound) by construction.
+//= specification/client-apis/encrypt.md#input
+//= type=implication
+//= reason=EncryptInput has plaintext: &[u8] (always known length) and no plaintext_length_bound field, making it impossible to specify both
+//# If a caller is able to specify both an input [plaintext](#plaintext) with known length and
+//# a [Plaintext Length Bound](#plaintext-length-bound),
+//# the [Plaintext Length Bound](#plaintext-length-bound) MUST NOT be used during the Encrypt operation
+//# and MUST be ignored.
 pub struct EncryptInput<'a> {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
     pub algorithm_suite_id: Option<EsdkAlgorithmSuiteId>,
@@ -324,6 +336,11 @@ pub struct EncryptStreamInput {
     pub source: Option<MaterialSource>,
     /// The expected size of the input data stream.
     /// This is only important if you cmm or keyring care about such things, which most don't.
+    //= specification/client-apis/encrypt.md#input
+    //= type=implication
+    //= reason=EncryptStreamInput accepts unknown-length plaintext via a stream; data_size serves as the optional Plaintext Length Bound
+    //# If the [plaintext](#plaintext) is of unknown length, the caller MAY also input a
+    //# [Plaintext Length Bound](#plaintext-length-bound).
     pub data_size: Option<usize>,
     /// default is no limit
     pub max_encrypted_data_keys: Option<NonZeroUsize>,

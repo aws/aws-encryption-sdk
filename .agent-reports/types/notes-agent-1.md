@@ -1,86 +1,80 @@
-# Discovery Notes — types.rs
+# Agent 1 Notes — types.rs Discovery
 
-## Spec-Aligned Structure Analysis (Step 6.8)
+## Discovery Process
 
-### 1. What is the spec section's logical flow?
+### Step 2: Coverage Validation
+- `make validate-all-tests` target does not exist in any Makefile. Skipped.
 
-**encrypt.md#input:**
-1. Define required arguments (plaintext, CMM/keyring)
-2. Define optional arguments (algorithm suite, encryption context, frame length)
-3. Validate exactly one CMM or keyring provided
-4. Handle Plaintext Length Bound (MAY/SHOULD)
+### Step 3: Infrastructure
+- `design/requirements/infrastructure.md` does not exist. No infrastructure gaps to address.
 
-**decrypt.md#input:**
-1. Define required arguments (encrypted message, CMM/keyring)
-2. Define optional arguments (encryption context)
-3. Validate exactly one CMM or keyring provided
+### Step 4: Full Duvet Checks
+- Unable to run `make duvet` due to shell restrictions. Analyzed existing duvet snapshot and compliance summary report instead.
 
-**client.md#initialization:**
-1. Option to provide commitment policy
-2. Option to provide max encrypted data keys
-3. Default commitment policy = REQUIRE_ENCRYPT_REQUIRE_DECRYPT
-4. Default max EDKs = no limit
-5. Commitment policy SHOULD be immutable
+### Step 5: Prioritization
 
-### 2. Where will each requirement be fulfilled in code?
+Analyzed all requirements from scoped specs (`encrypt.md#input`, `decrypt.md#input`, `client.md`) against annotations in `types.rs`.
 
-- "accept a required plaintext" → `pub plaintext: &'a [u8]` field on `EncryptInput`
-- "accept CMM and keyring" → `pub source: Option<MaterialSource>` field + `MaterialSource` enum
+**Summary of coverage for types.rs:**
+
+| Spec Section | Total Reqs | Covered | Gaps |
+|---|---|---|---|
+| `encrypt.md#input` | 11 | 8 | 3 (Plaintext Length Bound) |
+| `decrypt.md#input` | 6 | 6 | 0 |
+| `client.md#initialization` | 5 | 5 | 0 |
+| `client.md#commitment-policy` | 1 | 1 | 0 |
+| `client.md#encrypt` | 1 | 1 (in encrypt.rs) | 0 for types.rs |
+| `client.md#decrypt` | 1 | 1 (in decrypt.rs) | 0 for types.rs |
+
+The 3 missing annotations are all for Plaintext Length Bound requirements in `encrypt.md#input`.
+
+### Compliance Report Staleness Note
+The compliance summary report (`compliance_summary_report.html`) appears to be stale — it shows "no implementation found" for several `decrypt.md#input` requirements that DO have annotations in the current `types.rs`. The duvet snapshot (`.duvet/snapshot.txt`) is more reliable and shows these requirements as covered.
+
+## Spec-Aligned Structure Analysis
+
+### encrypt.md#input logical flow:
+1. Required arguments (plaintext, CMM/keyring) → struct fields
+2. Optional arguments (algorithm suite, encryption context, frame length) → struct fields
+3. Validation (exactly one CMM/keyring) → `validate()` method
+4. Plaintext Length Bound (streaming only) → `EncryptStreamInput.data_size`
+5. Construction constraints (can't specify both known-length and bound) → type system
+
+### Where each requirement is fulfilled:
+- "MUST accept a required plaintext" → `EncryptInput.plaintext: &'a [u8]`
+- "MUST accept CMM and keyring" → `EncryptInput.source: Option<MaterialSource>`
 - "SHOULD be optional" → `Option<MaterialSource>` type
-- "validate exactly one" → `EncryptInput::validate()` method
-- "MUST fail" → `Err(val_err(...))` return in validate
-- "accept optional Algorithm Suite" → `pub algorithm_suite_id: Option<EsdkAlgorithmSuiteId>` field
-- "accept optional Encryption Context" → `pub encryption_context: EncryptionContext` field
-- "accept optional Frame Length" → `pub frame_length: FrameLength` field
-
-### 3. Sub-items under normative requirements?
-
-The encrypt.md#input section has a list of required and optional arguments.
-Each list item is a separate `[[spec]]` entry in the TOML.
-They are already annotated individually at the struct definition.
-
-### 4. Most likely structural mistake?
-
-The `implication` annotations on the struct fields are correct for "accept" requirements
-(the struct field's existence IS the implementation).
-The most likely mistake would be:
-- Placing test annotations on the struct definition instead of on test code that exercises the struct
-- Forgetting that `implication` type annotations satisfy both implementation and test checks in duvet,
-  so these may already be passing
-
-**Key insight**: Looking at the snapshot more carefully, the `!MUST` prefix on
-`TEXT[!MUST,implication]` lines means the MUST-level check is NOT passing despite
-having an `implication` annotation. This is unexpected because `implication` should
-satisfy both implementation and test. This may indicate the duvet report was generated
-with `--require-citations true --require-tests true` flags that treat `implication`
-differently, OR the `!` simply indicates the requirement level.
-
-After re-reading the snapshot format: the `!` prefix on the level means the requirement
-is NOT fully satisfied. For `TEXT[!MUST,implication]`, the requirement has an implication
-annotation but the MUST check is still failing. This likely means the duvet configuration
-requires explicit `type=test` annotations even for `implication` types.
-
-However, looking at the duvet-patterns.md: "Infrastructure requirements use `type=implication`,
-which satisfies both the implementation and test checks (they are not runtime-testable)."
-
-This contradicts the snapshot showing `!MUST` for implication-annotated requirements.
-The most likely explanation is that the root Makefile's duvet_report does NOT use
-`--require-citations true --require-tests true` (they're commented out as TODO),
-so the `!MUST` in the snapshot may just be the requirement level indicator, not a failure flag.
-
-**Resolution**: Since I cannot run duvet to verify, I'll focus on the clear gaps:
-requirements that have `implementation` annotations but NO `test` annotations.
+- "MUST validate exactly one" → `EncryptInput::validate()` method
+- "MUST fail if not exactly one" → `Err(val_err(...))` in `validate()`
+- "MUST accept optional Algorithm Suite" → `EncryptInput.algorithm_suite_id: Option<...>`
+- "MUST accept optional Encryption Context" → `EncryptInput.encryption_context`
+- "MUST accept optional Frame Length" → `EncryptInput.frame_length`
+- "MAY input Plaintext Length Bound" → `EncryptStreamInput.data_size: Option<usize>`
+- "SHOULD ensure can't specify both" → `EncryptInput` has no `plaintext_length_bound` field
+- "MUST NOT use if both specified" → impossible by construction in `EncryptInput`
 
 ## Potential Spec Gaps
 
-### 1. MaterialSource enum allows both CMM and Keyring but not simultaneously
-- **Code location**: `MaterialSource` enum in types.rs
-- **Behavior**: The enum design makes it impossible to provide both a CMM and a keyring simultaneously (they're variants, not separate fields)
-- **Why it matters**: Correctness — the spec says "validate that exactly one keyring or CMM was provided" but the Rust type system already prevents providing both. The validate() method only checks for None (no source), not for "both provided".
-- **Suggested spec requirement**: "If the implementation uses a sum type (enum/union) for the CMM/keyring input, the type system MAY enforce the 'exactly one' constraint, and the validation MUST at minimum ensure a value is provided."
+### 1. EncryptStreamInput lacks spec annotations
+- **Code location**: `EncryptStreamInput` struct in `types.rs` (lines ~315-330)
+- **Behavior**: `EncryptStreamInput` mirrors `EncryptInput` but for streaming. It has the same fields (algorithm_suite_id, encryption_context, frame_length, source, max_encrypted_data_keys, commitment_policy) plus `data_size`.
+- **Why it matters**: The spec's `encrypt.md#input` requirements apply to both streaming and non-streaming encrypt operations, but `EncryptStreamInput` has NO duvet annotations at all. This means the streaming input struct is completely untraced to the spec.
+- **Suggested spec requirement**: The streaming encrypt input SHOULD have the same required and optional arguments as the non-streaming encrypt input, with the addition of an optional data size parameter.
 
-### 2. EncryptInput has no Plaintext Length Bound field
-- **Code location**: `EncryptInput` struct in types.rs
-- **Behavior**: The `EncryptInput` struct has no `plaintext_length_bound` field. The spec says callers MAY input one.
-- **Why it matters**: Interop — other implementations may support this feature
-- **Note**: The `EncryptStreamInput` has a `data_size` field which may serve a similar purpose but is not the same as Plaintext Length Bound.
+### 2. DecryptStreamInput lacks spec annotations
+- **Code location**: `DecryptStreamInput` struct in `types.rs` (lines ~420-435)
+- **Behavior**: `DecryptStreamInput` mirrors `DecryptInput` but for streaming. It has the same fields minus `ciphertext` (which comes from the stream), plus `i_accept_the_danger`.
+- **Why it matters**: Same as above — the streaming decrypt input is completely untraced to the spec.
+- **Suggested spec requirement**: The streaming decrypt input SHOULD have the same required and optional arguments as the non-streaming decrypt input.
+
+### 3. NetV400RetryPolicy not in spec
+- **Code location**: `NetV400RetryPolicy` enum and `DecryptInput.net_v4_retry_policy` field
+- **Behavior**: Allows retrying decryption with a workaround for ESDK .NET v4.0.0 header serialization bug.
+- **Why it matters (interop)**: This is an interoperability-relevant behavior — it handles a known bug in another ESDK implementation. The spec doesn't describe this retry mechanism.
+- **Suggested spec requirement**: The decrypt operation MAY accept a configuration option to retry header authentication with an alternate byte ordering to handle messages produced by ESDK .NET v4.0.0.
+
+### 4. EncryptOutput/DecryptOutput lack spec annotations
+- **Code location**: `EncryptOutput` and `DecryptOutput` structs in `types.rs`
+- **Behavior**: These define the output of encrypt/decrypt operations.
+- **Why it matters**: The spec's `encrypt.md#output` and `decrypt.md#output` sections describe required output fields, but the output structs have no duvet annotations.
+- **Note**: These are outside the scoped specs for this work item but should be addressed in a future work item.

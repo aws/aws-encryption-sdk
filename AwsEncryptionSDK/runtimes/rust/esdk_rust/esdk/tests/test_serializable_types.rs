@@ -47,7 +47,7 @@ const FIRST_EDK_OFFSET: usize = 24;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_edk_key_provider_id_length_is_2_bytes() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-id-length
+    //= specification/data-format/message-header.md#key-provider-id-length
     //= type=test
     //# The length of the serialized key provider ID length field MUST be 2 bytes.
     let ct = encrypt_v1(b"key provider id length test").await;
@@ -88,7 +88,7 @@ async fn test_edk_key_provider_id_length_is_2_bytes() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_edk_key_provider_id_length_serialized_as_uint16() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-id-length
+    //= specification/data-format/message-header.md#key-provider-id-length
     //= type=test
     //# The key provider ID length MUST be serialized as a UInt16.
     let ct = encrypt_v1(b"uint16 serialization test").await;
@@ -107,7 +107,7 @@ async fn test_edk_key_provider_id_length_serialized_as_uint16() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_edk_key_provider_information_length_serialized_as_uint16() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-information-length
+    //= specification/data-format/message-header.md#key-provider-information-length
     //= type=test
     //# The key provider information length MUST be serialized as a UInt16.
     let ct = encrypt_v1(b"key provider info length test").await;
@@ -138,7 +138,7 @@ async fn test_edk_key_provider_information_length_serialized_as_uint16() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_edk_encrypted_data_key_length_serialized_as_uint16() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-length
+    //= specification/data-format/message-header.md#encrypted-data-key-length
     //= type=test
     //# The encrypted data key length MUST be serialized as a UInt16.
     let ct = encrypt_v1(b"encrypted data key length test").await;

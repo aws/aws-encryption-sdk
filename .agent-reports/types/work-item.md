@@ -1,12 +1,12 @@
-# Work Item: Add Test Annotations for encrypt.md#input and decrypt.md#input in types.rs
+# Work Item: Add Missing Duvet Annotations for Plaintext Length Bound in types.rs
 
 ## Specification
-- **File**: `aws-encryption-sdk-specification/client-apis/encrypt.md` and `aws-encryption-sdk-specification/client-apis/decrypt.md`
+- **File**: `aws-encryption-sdk-specification/client-apis/encrypt.md`
 - **Section**: `input`
-- **Duvet Target**: `specification/client-apis/encrypt.md#input` and `specification/client-apis/decrypt.md#input`
+- **Duvet Target**: `specification/client-apis/encrypt.md#input`
 
 ## Type of Work
-ADD_TESTS
+FIX_ANNOTATION
 
 ## Requirements to Address
 
@@ -14,214 +14,111 @@ ADD_TESTS
 - **Level**: MUST
 - **Exact Quote** (from TOML):
   ```toml
-  - The input to the Encrypt operation MUST accept a required [plaintext](#plaintext) argument.
+  If a caller is able to specify both an input [plaintext](#plaintext) with known length and
+  a [Plaintext Length Bound](#plaintext-length-bound),
+  the [Plaintext Length Bound](#plaintext-length-bound) MUST NOT be used during the Encrypt operation
+  and MUST be ignored.
   ```
-- **Current State**: has `implication` annotation on `EncryptInput.plaintext` field, needs `test`
-- **Sub-items**: none
+- **Current State**: missing
+- **Placement**: On `EncryptInput` struct definition — this is satisfied by construction because `EncryptInput` has `plaintext: &'a [u8]` (always known length) and no `plaintext_length_bound` field, so a caller cannot specify both. Annotate as `type=implication` with a `reason=` explaining this.
 
 ### Requirement 2
-- **Level**: MUST
+- **Level**: SHOULD
 - **Exact Quote** (from TOML):
   ```toml
-  - The input to the Encrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
+  Implementations SHOULD ensure that a caller is not able to specify both a [plaintext](#plaintext)
+  with known length and a [Plaintext Length Bound](#plaintext-length-bound) by construction.
   ```
-- **Current State**: has `implication` annotation on `EncryptInput.source` field, needs `test`
-- **Sub-items**: none
+- **Current State**: missing
+- **Placement**: On `EncryptInput` struct definition — satisfied by construction because `EncryptInput` takes `plaintext: &[u8]` (known length) and has no `plaintext_length_bound` field. Annotate as `type=implication` with a `reason=`.
 
 ### Requirement 3
-- **Level**: SHOULD
+- **Level**: MAY
 - **Exact Quote** (from TOML):
   ```toml
-  The keyring and CMM inputs SHOULD be optional.
+  If the [plaintext](#plaintext) is of unknown length, the caller MAY also input a
+  [Plaintext Length Bound](#plaintext-length-bound).
   ```
-- **Current State**: missing — no annotation exists anywhere
-- **Sub-items**: none
-
-### Requirement 4
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  The Encrypt operation MUST validate that exactly one keyring or CMM was provided by the caller.
-  ```
-- **Current State**: has `implementation` annotation on `EncryptInput::validate()`, needs `test`
-- **Sub-items**: none
-
-### Requirement 5
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  If the caller does not provide exactly one of a keyring or CMM, the Encrypt operation MUST fail.
-  ```
-- **Current State**: has `implementation` annotation on `EncryptInput::validate()`, needs `test`
-- **Sub-items**: none
-
-### Requirement 6
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  - The input to the Encrypt operation MUST accept an optional [Algorithm Suite](#algorithm-suite) argument.
-  ```
-- **Current State**: has `implication` annotation on `EncryptInput.algorithm_suite_id` field, needs `test`
-- **Sub-items**: none
-
-### Requirement 7
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  - The input to the Encrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
-  ```
-- **Current State**: has `implication` annotation on `EncryptInput.encryption_context` field, needs `test`
-- **Sub-items**: none
-
-### Requirement 8
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  - The input to the Encrypt operation MUST accept an optional [Frame Length](#frame-length) argument.
-  ```
-- **Current State**: has `implication` annotation on `EncryptInput.frame_length` field, needs `test`
-- **Sub-items**: none
-
-### Requirement 9
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  - The input to the Decrypt operation MUST accept a required [Encrypted Message](#encrypted-message) argument.
-  ```
-- **Current State**: has `implementation` annotation on `DecryptInput.ciphertext` field, needs `test`
-- **Sub-items**: none
-
-### Requirement 10
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  - The input to the Decrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
-  ```
-- **Current State**: has `implementation` annotation on `DecryptInput.source` field, needs `test`
-- **Sub-items**: none
-
-### Requirement 11
-- **Level**: SHOULD
-- **Exact Quote** (from TOML):
-  ```toml
-  The keyring and CMM inputs SHOULD be optional.
-  ```
-- **Current State**: missing — no annotation exists for decrypt input's SHOULD
-- **Sub-items**: none
-
-### Requirement 12
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  - The input to the Decrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
-  ```
-- **Current State**: has `implication` annotation on `DecryptInput.encryption_context` field, needs `test`
-- **Sub-items**: none
+- **Current State**: missing
+- **Placement**: On `EncryptStreamInput.data_size` field — the streaming input accepts an optional `data_size` which serves as the plaintext length bound when plaintext length is unknown. Annotate as `type=implication` with a `reason=`.
 
 ## Existing Code Context
 
 ### Source File: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/types.rs`
-```rust
-// EncryptInput struct (lines 186-236) has implication annotations for:
-// - plaintext field
-// - source field (CMM/keyring)
-// - algorithm_suite_id field
-// - encryption_context field
-// - frame_length field
-// And implementation annotations on validate() method (lines 296-302)
 
-// DecryptInput struct (lines 383-410) has implementation annotations for:
-// - ciphertext field
-// - source field
-// - encryption_context field (implication)
-// And implementation annotations on validate() method (lines 455-461)
+Relevant snippet for `EncryptInput` (Requirements 1 and 2):
+```rust
+#[derive(Debug, PartialEq, Eq, Clone, Default)]
+#[non_exhaustive]
+/// Input for [`encrypt`](crate::encrypt).
+//= specification/client-apis/encrypt.md#input
+//= type=implication
+//# - The input to the Encrypt operation MUST accept a required [plaintext](#plaintext) argument.
+//= specification/client-apis/encrypt.md#input
+//= type=implication
+//# - The input to the Encrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
+//= specification/client-apis/encrypt.md#input
+//= type=implication
+//# - The input to the Encrypt operation MUST accept an optional [Algorithm Suite](#algorithm-suite) argument.
+//= specification/client-apis/encrypt.md#input
+//= type=implication
+//# - The input to the Encrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
+//= specification/client-apis/encrypt.md#input
+//= type=implication
+//# - The input to the Encrypt operation MUST accept an optional [Frame Length](#frame-length) argument.
+pub struct EncryptInput<'a> {
+```
+
+Relevant snippet for `EncryptStreamInput` (Requirement 3):
+```rust
+pub struct EncryptStreamInput {
+    /// Algorithm Suite.
+    pub algorithm_suite_id: Option<EsdkAlgorithmSuiteId>,
+    /// Key-Value pairs to associate with the encrypted data
+    pub encryption_context: EncryptionContext,
+    /// Bytes of plaintext data per frame. Default 4096.
+    pub frame_length: FrameLength,
+    /// The source of cryptographic materials
+    pub source: Option<MaterialSource>,
+    /// The expected size of the input data stream.
+    /// This is only important if you cmm or keyring care about such things, which most don't.
+    pub data_size: Option<usize>,
 ```
 
 ### Test File: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_create_esdk_client.rs`
-```rust
-// Already has tests for client.md#initialization (commitment policy, max EDKs)
-// This is the natural home for encrypt/decrypt input structure tests
-```
-
-### Test File: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_encrypt_decrypt.rs`
-```rust
-// test_bad_encrypt_input (line 172) — tests encrypt with source=None, but has NO duvet annotation
-// test_bad_decrypt_input (line 39) — tests decrypt with source=None, HAS duvet annotations
-```
+No existing tests for Plaintext Length Bound requirements.
 
 ## Implementation Guidance
 
-### For structural "accept" requirements (Requirements 1, 2, 6, 7, 8, 9, 10, 12):
-- These are `implication`-type requirements — the struct field's existence IS the implementation.
-- Add `type=test` annotations to unit tests that construct `EncryptInput`/`DecryptInput` and verify the fields exist and can be set.
-- Pattern to follow: see `test_encrypt_input_custom_commitment_policy` and `test_encrypt_input_custom_max_edks` in `test_create_esdk_client.rs` — these construct the input, set a field, and assert the value.
-- Add tests in `test_create_esdk_client.rs` alongside the existing client initialization tests.
-
-### For SHOULD requirements (Requirements 3, 11):
-- The `MaterialSource` is `Option<MaterialSource>`, making CMM/keyring optional by construction.
-- Add `implication` annotations on the `source: Option<MaterialSource>` field declarations in both `EncryptInput` and `DecryptInput`.
-- **Placement**: On the `pub source: Option<MaterialSource>` field in each struct.
-
-### For validate/fail requirements (Requirements 4, 5):
-- The existing `test_bad_encrypt_input` test in `test_encrypt_decrypt.rs` already tests this behavior.
-- Add duvet `type=test` annotations to that existing test, matching the pattern used in `test_bad_decrypt_input`.
+- Add three `type=implication` annotation blocks to `types.rs`.
+- Requirements 1 and 2 should be annotated on the `EncryptInput` struct definition, grouped with the existing `encrypt.md#input` annotations that are already on the struct.
+- Requirement 3 should be annotated on the `EncryptStreamInput.data_size` field.
+- All three use `type=implication` because they are satisfied by the type system / struct construction, not by runtime logic.
+- Each annotation MUST include a `reason=` line explaining WHY the struct construction satisfies the requirement.
+- Follow the existing annotation pattern in `types.rs` — see the `//= type=implication` + `//= reason=` pattern used on `EncryptInput.source` and `EncryptInput.max_encrypted_data_keys`.
+- Since `type=implication` satisfies both implementation and test checks, no separate test annotations are needed.
 
 ### Spec-Aligned Structure
-The spec describes this flow:
-1. Accept required plaintext → annotate test at assertion that `EncryptInput` has `plaintext` field
-2. Accept CMM/keyring → annotate test at assertion that `EncryptInput` has `source` field
-3. CMM/keyring SHOULD be optional → annotate `implication` at `source: Option<MaterialSource>` field
-4. Validate exactly one → annotate test at `test_bad_encrypt_input` assertion
-5. Fail if not exactly one → annotate test at `test_bad_encrypt_input` assertion
-6. Accept optional Algorithm Suite → annotate test at assertion that field is `Option`
-7. Accept optional Encryption Context → annotate test at assertion that field exists
-8. Accept optional Frame Length → annotate test at assertion that field exists
+The spec describes the Plaintext Length Bound as:
+1. MAY input a Plaintext Length Bound (when plaintext length unknown) → annotate at `EncryptStreamInput.data_size`
+2. SHOULD ensure caller can't specify both known-length plaintext and Plaintext Length Bound → annotate at `EncryptInput` struct (satisfied by construction: no `plaintext_length_bound` field)
+3. MUST NOT use Plaintext Length Bound if both specified → annotate at `EncryptInput` struct (satisfied by construction: impossible to specify both)
 
 Sub-items to annotate individually:
-- Each "accept" requirement → at a test that constructs the input and verifies the field
-- Each "validate/fail" requirement → at the test that sets source=None and asserts error
+- MAY quote → at `EncryptStreamInput.data_size` field
+- SHOULD quote → at `EncryptInput` struct definition, after existing `encrypt.md#input` annotations
+- MUST quote → at `EncryptInput` struct definition, after the SHOULD annotation
 
-### Key Pattern Reference
-Follow the pattern in `test_create_esdk_client.rs` lines 121-142:
-```rust
-#[test]
-fn test_encrypt_input_custom_commitment_policy() {
-    //= specification/client-apis/client.md#initialization
-    //= type=test
-    //# - On client initialization,
-    //# the caller MUST have the option to provide a [commitment policy](#commitment-policy).
-    let mut input = EncryptInput::default();
-    input.commitment_policy =
-        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    assert_eq!(
-        input.commitment_policy,
-        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt
-    );
-}
-```
+### Most Likely Structural Mistake
+The implementer might be tempted to annotate Requirements 1 and 2 on `EncryptStreamInput` instead of `EncryptInput`. But the SHOULD and MUST requirements specifically reference "a plaintext with known length" — which is `EncryptInput` (where `plaintext: &[u8]` has known length). `EncryptStreamInput` has unknown-length plaintext, so the SHOULD/MUST don't apply there.
 
 ## Targeted Tests
-- `test_bad_encrypt_input` — already exists in `test_encrypt_decrypt.rs`, needs duvet annotations added
-- `test_bad_decrypt_input` — already exists with duvet annotations (no changes needed)
-- NEW: `test_encrypt_input_accepts_plaintext` — verify EncryptInput accepts plaintext bytes
-- NEW: `test_encrypt_input_accepts_cmm_and_keyring` — verify EncryptInput accepts MaterialSource
-- NEW: `test_encrypt_input_accepts_optional_algorithm_suite` — verify field is Option
-- NEW: `test_encrypt_input_accepts_optional_encryption_context` — verify field exists
-- NEW: `test_encrypt_input_accepts_optional_frame_length` — verify field exists
-- NEW: `test_decrypt_input_accepts_encrypted_message` — verify DecryptInput accepts ciphertext bytes
-- NEW: `test_decrypt_input_accepts_cmm_and_keyring` — verify DecryptInput accepts MaterialSource
-- NEW: `test_decrypt_input_accepts_optional_encryption_context` — verify field exists
+No new tests needed — `type=implication` satisfies both implementation and test checks.
 
 ## Success Criteria
 ```bash
-cargo test test_encrypt_input_accepts
-cargo test test_decrypt_input_accepts
-cargo test test_bad_encrypt_input
 make duvet
 ```
-- [ ] Each test passes
-- [ ] duvet report shows no gaps for `encrypt.md#input` section
-- [ ] duvet report shows no gaps for `decrypt.md#input` section
-- [ ] All requirements have `type=implementation` or `type=implication` (not `type=todo`)
-- [ ] All implementations have corresponding `type=test`
-- [ ] SHOULD requirements (3, 11) have `type=implication` annotations on source fields
+- [ ] duvet report shows no gaps for `encrypt.md#input` Plaintext Length Bound requirements
+- [ ] All three requirements have `type=implication` annotations
+- [ ] No new test files needed (implication satisfies test check)
