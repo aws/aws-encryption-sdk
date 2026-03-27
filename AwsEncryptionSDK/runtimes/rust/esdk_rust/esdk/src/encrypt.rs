@@ -184,10 +184,6 @@ async fn internal_encrypt(
         //# including a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
         //# the Encrypt operation MUST perform this step.
         step_construct_signature(
-            //= specification/client-apis/encrypt.md#construct-the-signature
-            //= type=implication
-            //= reason=`header` is the message header; `ciphertext` is the message body
-            //# Note that the message header and message body MAY have already been input during previous steps.
             &header,
             &mat_result.materials,
             dw,
@@ -195,19 +191,11 @@ async fn internal_encrypt(
         )?;
     }
 
-    //= specification/client-apis/encrypt.md#construct-the-signature
-    //# Once the entire message footer has been serialized,
-    //# this operation MUST release any previously unreleased serialized bytes from previous steps
-    //# and MUST release the message footer.
-    /// This is released via the ciphertext variable
     let suite_id = get_esdk_id(header.suite.id)?;
     Ok(EncryptStreamOutput {
         encryption_context: header.encryption_context,
         algorithm_suite_id: suite_id,
     })
-
-    //= specification/client-apis/encrypt.md#behavior
-    //# If any of these steps fails, this operation MUST halt and indicate a failure to the caller.
 }
 
 /// Step 1: [Get the encryption materials](specification/client-apis/encrypt.md#get-the-encryption-materials)
@@ -325,22 +313,9 @@ fn step_construct_header(
         frame_length.0.get(),
         &mat_result.derived_data_keys,
     )?;
-    //= specification/client-apis/encrypt.md#authentication-tag
-    //= type=implication
-    //= reason=serialize_header writes the complete header to ciphertext, releasing it
-    //# If this operation is streaming the encrypted message and
-    //# the entire message header has been serialized,
-    //# the serialized message header MUST be released.
     header::serialize_header(
         &header,
         ciphertext,
-        //= specification/client-apis/encrypt.md#authentication-tag
-        //= type=implication
-        //= reason=dw (DigestWriter) feeds header bytes to the signature algorithm during serialization
-        //# If the algorithm suite contains a signature algorithm and
-        //# this operation is [streaming](streaming.md) the encrypted message output to the caller,
-        //# this operation MUST input the serialized header to the signature algorithm as soon as it is serialized,
-        //# such that the serialized header isn't required to remain in memory to [construct the signature](#construct-the-signature).
         dw,
     )?;
     //= specification/client-apis/encrypt.md#authentication-tag
