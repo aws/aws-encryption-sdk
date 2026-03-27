@@ -207,6 +207,14 @@ pub(crate) async fn get_modern_decryption_materials(
     //= specification/client-apis/decrypt.md#cryptographic-materials-manager
     //# This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
     let materials = cmm.decrypt_materials(&input).await?;
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=implication
+    //= reason=The CMM resolves the algorithm suite from the header; unsupported ESDK suites fail during CMM processing
+    //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
+    //# encrypt MUST yield an error.
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //# If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
+    //# configured in the [client](client.md) decrypt MUST yield an error.
     aws_mpl_legacy::commitment::validate_commitment_policy_on_decrypt(
         aws_mpl_legacy::commitment::ValidateCommitmentPolicyOnDecryptInput::new(
             materials.algorithm_suite.id,
@@ -513,6 +521,14 @@ pub(crate) async fn get_legacy_decryption_materials(
     let materials = output.decryption_materials.unwrap();
     let return_materials = materials.clone();
     let mpl = mpl();
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=implication
+    //= reason=The CMM resolves the algorithm suite from the header; unsupported ESDK suites fail during CMM processing
+    //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
+    //# encrypt MUST yield an error.
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //# If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
+    //# configured in the [client](client.md) decrypt MUST yield an error.
     mpl.validate_commitment_policy_on_decrypt()
         .algorithm(
             materials
@@ -562,6 +578,9 @@ pub(crate) async fn get_modern_encryption_materials(
     // input.required_encryption_context_keys = required_encryption_context_keys.clone();
     let materials = cmm.get_encryption_materials(&input).await?;
 
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //# If this [algorithm suite](../framework/algorithm-suites.md) is not supported by the [commitment policy](client.md#commitment-policy)
+    //# configured in the [client](client.md) encrypt MUST yield an error.
     aws_mpl_legacy::commitment::validate_commitment_policy_on_encrypt(
         &aws_mpl_legacy::commitment::ValidateCommitmentPolicyOnEncryptInput::new(
             materials.algorithm_suite.id,
@@ -596,6 +615,9 @@ pub(crate) async fn get_legacy_encryption_materials(
 
     let materials = output.encryption_materials.unwrap();
     let return_materials = materials.clone();
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //# If this [algorithm suite](../framework/algorithm-suites.md) is not supported by the [commitment policy](client.md#commitment-policy)
+    //# configured in the [client](client.md) encrypt MUST yield an error.
     mpl.validate_commitment_policy_on_encrypt()
         .algorithm(
             materials
