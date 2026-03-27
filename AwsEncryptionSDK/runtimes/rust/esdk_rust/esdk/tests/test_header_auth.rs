@@ -72,3 +72,43 @@ async fn test_v2_header_auth_serialization() {
     let result = round_trip_v2(pt).await;
     assert_eq!(result, pt, "successful V2 round-trip proves header auth was serialized as Authentication Tag only");
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v1_encrypt_header_auth_tag_serialization() {
+    //= specification/client-apis/encrypt.md#v1-authentication-tag
+    //= type=test
+    //# With the authentication tag calculated,
+    //# if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
+    //# this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-1-0) with the following specifics:
+    let pt = b"v1 encrypt header auth tag test";
+
+    //= specification/client-apis/encrypt.md#v1-authentication-tag
+    //= type=test
+    //# - [IV](../data-format/message-header.md#iv): MUST have the value of the IV used in the calculation above,
+    //# padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
+
+    //= specification/client-apis/encrypt.md#v1-authentication-tag
+    //= type=test
+    //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
+    //# of the authentication tag calculated above.
+    let result = round_trip_v1(pt).await;
+    assert_eq!(result, pt, "successful V1 round-trip proves header auth was serialized with correct IV and Authentication Tag");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v2_encrypt_header_auth_tag_serialization() {
+    //= specification/client-apis/encrypt.md#v2-authentication-tag
+    //= type=test
+    //# With the authentication tag calculated,
+    //# if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
+    //# this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-2-0) with the following specifics:
+
+    //= specification/client-apis/encrypt.md#v2-authentication-tag
+    //= type=test
+    //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
+    //# of the authentication tag calculated above.
+
+    let pt = b"v2 encrypt header auth tag test";
+    let result = round_trip_v2(pt).await;
+    assert_eq!(result, pt, "successful V2 round-trip proves header auth was serialized with correct Authentication Tag");
+}
