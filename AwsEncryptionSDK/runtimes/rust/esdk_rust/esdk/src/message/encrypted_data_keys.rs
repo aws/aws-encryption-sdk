@@ -20,6 +20,16 @@ pub(crate) fn write_edks(w: &mut dyn SafeWrite, edks: &[EncryptedDataKey]) -> Re
     //# The Encrypted Data Keys MUST be serialized as, in order,
     //# Encrypted Data Key Count,
     //# and Encrypted Data Key Entries.
+
+    //= specification/data-format/message-header.md#encrypted-data-key-count
+    //= type=implication
+    //= reason=write_u16 writes exactly 2 bytes (big-endian u16)
+    //# The length of the serialized encrypted data key count MUST be 2 bytes.
+
+    //= specification/data-format/message-header.md#encrypted-data-key-count
+    //= type=implication
+    //= reason=write_u16 serializes a u16 in big-endian format, which is UInt16
+    //# The encrypted data key count MUST be serialized as a UInt16.
     write_u16(w, edks.len() as u16)?;
     for edk in edks {
         write_edk(w, edk)?;
