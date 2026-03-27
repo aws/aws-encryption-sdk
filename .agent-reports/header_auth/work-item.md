@@ -1,194 +1,128 @@
-# Work Item: Add Missing IV and Authentication Tag Annotations + Fix Quote Mismatch in header_auth.rs
+# Work Item: Add Missing "authentication tag MUST be interpreted as bytes" Annotation
 
 ## Specification
-- **File**: `aws-encryption-sdk-specification/data-format/message-header.md` and `aws-encryption-sdk-specification/client-apis/encrypt.md`
-- **Section**: `iv`, `authentication-tag`, `v1-authentication-tag`
-- **Duvet Targets**:
-  - `aws-encryption-sdk-specification/data-format/message-header.md#iv`
-  - `aws-encryption-sdk-specification/data-format/message-header.md#authentication-tag`
-  - `aws-encryption-sdk-specification/client-apis/encrypt.md#v1-authentication-tag`
+- **File**: `aws-encryption-sdk-specification/data-format/message-header.md`
+- **Section**: `authentication-tag`
+- **Duvet Target**: `aws-encryption-sdk-specification/data-format/message-header.md#authentication-tag`
 
 ## Type of Work
-FIX_ANNOTATION + ADD_TESTS
+FIX_ANNOTATION
 
 ## Requirements to Address
 
-### Requirement 1 (FIX_ANNOTATION)
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  With the authentication tag calculated,
-  if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
-  this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-1-0) with the following specifics:
-  ```
-- **Current State**: The implementation annotation in `header_auth.rs` line 17-22 has "is 1.0," (with comma) but the TOML/spec has "is 1.0" (no comma). The quote must be corrected to match the TOML exactly.
-- **Duvet Target**: `aws-encryption-sdk-specification/client-apis/encrypt.md#v1-authentication-tag`
-
-### Requirement 2 (MISSING IMPLEMENTATION)
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  The length of the serialized IV MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-  ```
-- **Current State**: missing
-- **Duvet Target**: `aws-encryption-sdk-specification/data-format/message-header.md#iv`
-
-### Requirement 3 (MISSING IMPLEMENTATION)
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  The IV MUST be interpreted as bytes.
-  ```
-- **Current State**: missing
-- **Duvet Target**: `aws-encryption-sdk-specification/data-format/message-header.md#iv`
-
-### Requirement 4 (MISSING IMPLEMENTATION)
-- **Level**: MUST
-- **Exact Quote** (from TOML):
-  ```toml
-  The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-  ```
-- **Current State**: missing
-- **Duvet Target**: `aws-encryption-sdk-specification/data-format/message-header.md#authentication-tag`
-
-### Requirement 5 (ALREADY COVERED — NO ACTION NEEDED)
+### Requirement 1
 - **Level**: MUST
 - **Exact Quote** (from TOML):
   ```toml
   The authentication tag MUST be interpreted as bytes.
   ```
-- **Current State**: Already annotated in `encrypt.rs` line 481-483 with `type=implication`. No additional annotation needed in `header_auth.rs`.
-- **Duvet Target**: `aws-encryption-sdk-specification/data-format/message-header.md#authentication-tag`
+- **Current State**: missing — no annotation exists in `header_auth.rs` for this requirement. An annotation exists in `encrypt.rs` using the `specification/` prefix, but the `header_auth.rs` file uses `aws-encryption-sdk-specification/` prefix for `data-format/message-header.md` annotations and is the natural home for this data-format requirement.
+- **Sub-items**: none
 
 ## Existing Code Context
 
 ### Source File: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/header_auth.rs`
 
-Fix the v1 annotation quote (line 17-22) — remove the comma after "1.0":
-```rust
-        //= specification/client-apis/encrypt.md#v1-authentication-tag
-        //# With the authentication tag calculated, if the message format version associated
-        //# with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0, 
-        //# this operation MUST serialize the
-        //# [message header authentication](../data-format/message-header.md#header-authentication-version-1-0)
-        //# with the following specifics:
-```
+The IV section already has the "interpreted as bytes" annotation as a pattern to follow:
 
-Add IV length and "interpreted as bytes" annotations in `read_header_auth_tag_v1` at the `read_vec` call for IV (line ~86):
 ```rust
+pub(crate) fn read_header_auth_tag_v1(
+    r: &mut dyn SafeRead,
+    suite: &AlgorithmSuite,
+    raw: &mut dyn SafeWrite,
+) -> Result<HeaderAuth, Error> {
+    //= aws-encryption-sdk-specification/data-format/message-header.md#iv
+    //= type=implication
+    //= reason=read_vec reads exactly get_iv_length(suite) bytes, enforcing the IV length equals the algorithm suite's IV length
+    //# The length of the serialized IV MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
+    //= aws-encryption-sdk-specification/data-format/message-header.md#iv
+    //= type=implication
+    //= reason=the IV is stored as Vec<u8> and handled as raw bytes throughout
+    //# The IV MUST be interpreted as bytes.
     let header_iv = read_vec(r, get_iv_length(suite) as usize, raw)?;
+    //= aws-encryption-sdk-specification/data-format/message-header.md#authentication-tag
+    //= type=implication
+    //= reason=read_vec reads exactly get_tag_length(suite) bytes, enforcing the tag length equals the algorithm suite's authentication tag length
+    //# The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
+    let header_auth_tag = read_vec(r, get_tag_length(suite) as usize, raw)?;
+    Ok(HeaderAuth::AESMac {
+        header_iv,
+        header_auth_tag,
+    })
+}
 ```
 
-Add authentication tag length annotation in `read_header_auth_tag_v1` and `read_header_auth_tag_v2` at the `read_vec` call for tag:
+The `read_header_auth_tag_v2` function has the same pattern — length annotation present, "interpreted as bytes" missing:
+
 ```rust
+pub(crate) fn read_header_auth_tag_v2(
+    r: &mut dyn SafeRead,
+    suite: &AlgorithmSuite,
+    raw: &mut dyn SafeWrite,
+) -> Result<HeaderAuth, Error> {
+    //= aws-encryption-sdk-specification/data-format/message-header.md#authentication-tag
+    //= type=implication
+    //= reason=read_vec reads exactly get_tag_length(suite) bytes, enforcing the tag length equals the algorithm suite's authentication tag length
+    //# The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
     let header_auth_tag = read_vec(r, get_tag_length(suite) as usize, raw)?;
+    let header_iv = vec![0u8; get_iv_length(suite) as usize];
+    Ok(HeaderAuth::AESMac {
+        header_iv,
+        header_auth_tag,
+    })
+}
 ```
 
 ### Test File: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_header_auth.rs`
 
-Existing tests that exercise these requirements through round-trip:
+The IV "interpreted as bytes" test annotation exists as a pattern:
+
 ```rust
 #[tokio::test(flavor = "multi_thread")]
-async fn test_v1_header_auth_serialization_order() { ... }
+async fn test_v1_header_auth_iv_length_and_bytes() {
+    //= aws-encryption-sdk-specification/data-format/message-header.md#iv
+    //= type=test
+    //# The length of the serialized IV MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
+    let pt = b"v1 iv length test";
 
-#[tokio::test(flavor = "multi_thread")]
-async fn test_v2_header_auth_serialization() { ... }
+    //= aws-encryption-sdk-specification/data-format/message-header.md#iv
+    //= type=test
+    //# The IV MUST be interpreted as bytes.
+    let result = round_trip_v1(pt).await;
+    assert_eq!(result, pt, "successful V1 round-trip proves IV was serialized with correct length and interpreted as bytes");
+}
 ```
+
+No corresponding test exists for the authentication tag "interpreted as bytes" requirement.
 
 ## Implementation Guidance
 
-### Fix Requirement 1 (Quote Mismatch)
-In `header_auth.rs`, fix the v1 annotation at line 17-22. Replace:
-```
-//# With the authentication tag calculated, if the message format version associated
-//# with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0, 
-```
-With (remove comma after 1.0, match TOML exactly):
-```
-//# With the authentication tag calculated,
-//# if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
-//# this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-1-0) with the following specifics:
-```
-
-### Add Requirements 2-4 (Missing Annotations)
-Follow the pattern from `body.rs` lines 88-98 which annotates identical structural requirements:
-
-```rust
-//= specification/data-format/message-body.md#regular-frame-iv
-//= type=implication
-//# The IV length MUST be equal to the IV length of the algorithm suite...
-let mut iv = vec![0u8; get_iv_length(&header.suite) as usize];
-```
-
-For `read_header_auth_tag_v1`, annotate the `read_vec` for IV:
-```rust
-//= aws-encryption-sdk-specification/data-format/message-header.md#iv
-//= type=implication
-//= reason=read_vec reads exactly get_iv_length(suite) bytes, enforcing the IV length equals the algorithm suite's IV length
-//# The length of the serialized IV MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-//= aws-encryption-sdk-specification/data-format/message-header.md#iv
-//= type=implication
-//= reason=the IV is stored as Vec<u8> and handled as raw bytes throughout
-//# The IV MUST be interpreted as bytes.
-let header_iv = read_vec(r, get_iv_length(suite) as usize, raw)?;
-```
-
-For `read_header_auth_tag_v1` and `read_header_auth_tag_v2`, annotate the `read_vec` for tag:
-```rust
-//= aws-encryption-sdk-specification/data-format/message-header.md#authentication-tag
-//= type=implication
-//= reason=read_vec reads exactly get_tag_length(suite) bytes, enforcing the tag length equals the algorithm suite's authentication tag length
-//# The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-let header_auth_tag = read_vec(r, get_tag_length(suite) as usize, raw)?;
-```
-
-### Add Test Annotations
-Add `type=test` annotations to the existing round-trip tests in `test_header_auth.rs`. The `test_v1_header_auth_serialization_order` test already exercises IV length and byte interpretation through successful round-trip. Add annotations to it:
-
-```rust
-//= aws-encryption-sdk-specification/data-format/message-header.md#iv
-//= type=test
-//# The length of the serialized IV MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-
-//= aws-encryption-sdk-specification/data-format/message-header.md#iv
-//= type=test
-//# The IV MUST be interpreted as bytes.
-
-//= aws-encryption-sdk-specification/data-format/message-header.md#authentication-tag
-//= type=test
-//# The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-```
+- Add `type=implication` annotation with `reason=` to `read_header_auth_tag_v1` immediately after the existing length annotation and before `let header_auth_tag = read_vec(...)`. Follow the exact pattern used for the IV "interpreted as bytes" annotation.
+- Add the same annotation to `read_header_auth_tag_v2` in the same position.
+- Add a `type=test` annotation in `test_header_auth.rs`. The existing `test_v1_header_auth_tag_length` and `test_v2_header_auth_tag_length` tests are the natural place — add the test annotation to one or both of these tests.
+- Use `aws-encryption-sdk-specification/` prefix (not `specification/`) to match the existing convention in this file for `data-format/message-header.md` annotations.
+- Reference pattern: the IV annotations in `read_header_auth_tag_v1` (lines 96-99 of `header_auth.rs`).
 
 ### Spec-Aligned Structure
-The spec describes this flow:
-1. Header Authentication Version 1.0: IV then Authentication Tag → annotate at `write_header_auth_tag_v1` (already done) and `read_header_auth_tag_v1` (add IV/tag length annotations)
-2. Header Authentication Version 2.0: Authentication Tag only → annotate at `write_header_auth_tag_v2` (already done) and `read_header_auth_tag_v2` (add tag length annotation)
-3. IV section: length constraint + byte interpretation → annotate at `read_vec` for IV in `read_header_auth_tag_v1`
-4. Authentication Tag section: length constraint → annotate at `read_vec` for tag in both `read_header_auth_tag_v1` and `read_header_auth_tag_v2`
+The spec describes two properties of the authentication tag:
+1. Length constraint → annotate at `read_vec(r, get_tag_length(suite)...)` (already done)
+2. Byte interpretation → annotate at the same `let header_auth_tag = read_vec(...)` line
 
-Sub-items to annotate individually:
-- IV length MUST be equal → at `read_vec(r, get_iv_length(suite) as usize, raw)` in `read_header_auth_tag_v1`
-- IV MUST be interpreted as bytes → at same `read_vec` call
-- Auth tag length MUST be equal → at `read_vec(r, get_tag_length(suite) as usize, raw)` in both v1 and v2 read functions
-
-### Pattern References
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/body.rs` lines 88-98 — identical pattern for IV/tag length implication annotations
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/encrypt.rs` lines 481-483 — pattern for "interpreted as bytes" implication annotation
+Annotations to add:
+- `The authentication tag MUST be interpreted as bytes.` → at `let header_auth_tag = read_vec(...)` in both `read_header_auth_tag_v1` and `read_header_auth_tag_v2`
+- Same quote with `type=test` → in existing test functions `test_v1_header_auth_tag_length` and/or `test_v2_header_auth_tag_length`
 
 ## Targeted Tests
-- `test_v1_header_auth_serialization_order` — V1 round-trip proves IV and tag are correctly serialized/deserialized with correct lengths
-- `test_v2_header_auth_serialization` — V2 round-trip proves tag is correctly serialized/deserialized with correct length
-- `test_v1_encrypt_header_auth_tag_serialization` — V1 encrypt-specific round-trip
+- `test_v1_header_auth_tag_length` — existing test that proves V1 auth tag round-trips correctly; add test annotation here
+- `test_v2_header_auth_tag_length` — existing test that proves V2 auth tag round-trips correctly; add test annotation here
 
 ## Success Criteria
 ```bash
-cargo test --manifest-path AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/Cargo.toml test_header_auth
-make duvet
+cargo test -p aws-esdk --test test_header_auth
+duvet report  # from AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/
+make duvet    # from repo root
 ```
 - [ ] Each test passes
-- [ ] duvet report shows no gaps for `data-format/message-header.md#iv`
 - [ ] duvet report shows no gaps for `data-format/message-header.md#authentication-tag`
-- [ ] duvet report shows no gaps for `client-apis/encrypt.md#v1-authentication-tag`
-- [ ] The v1 annotation quote mismatch is fixed (comma removed after "1.0")
-- [ ] All requirements have `type=implication` (not `type=todo`) for structural properties
-- [ ] All implementations have corresponding `type=test`
+- [ ] The "interpreted as bytes" requirement has `type=implication` annotations in both `read_header_auth_tag_v1` and `read_header_auth_tag_v2`
+- [ ] The "interpreted as bytes" requirement has corresponding `type=test` annotations

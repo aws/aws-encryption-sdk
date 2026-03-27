@@ -1,53 +1,50 @@
-# Agent 1 Notes — header_auth.rs
+# Agent 1 Notes — header_auth
+
+## Spec-Aligned Structure Analysis
+
+### Q1: What is the spec section's logical flow?
+
+The `data-format/message-header.md#authentication-tag` section describes:
+1. The authentication tag is the authentication value for the header
+2. Its length MUST equal the algorithm suite's authentication tag length
+3. It MUST be interpreted as bytes
+4. The algorithm suite determines how it's calculated (links to encrypt.md)
+5. It's used to authenticate header contents during decryption (links to decrypt.md)
+
+### Q2: Where will each requirement be fulfilled in code?
+
+- Length requirement → `read_vec(r, get_tag_length(suite) as usize, raw)?` — the `get_tag_length(suite)` enforces the length constraint
+- "Interpreted as bytes" → `Vec<u8>` type of `header_auth_tag` field in `HeaderAuth::AESMac` — structural property
+
+### Q3: Does the spec contain sub-items?
+
+No sub-items for the `#authentication-tag` section. It's two independent MUST requirements.
+
+### Q4: What is the most likely structural mistake?
+
+The implementer might be tempted to add the "interpreted as bytes" annotation at the `read_vec` call.
+But the correct placement is at the same `read_vec` line (or the `let header_auth_tag = ...` line)
+since that's where the bytes are materialized as `Vec<u8>`.
+The existing IV "interpreted as bytes" annotation is placed at the `let header_iv = read_vec(...)` line,
+so the auth tag one should follow the same pattern.
 
 ## Potential Spec Gaps
 
-### 1. V2 read creates a zero IV not mentioned in spec
-- **Code location**: `read_header_auth_tag_v2()` line ~100 — `let header_iv = vec![0u8; get_iv_length(suite) as usize];`
-- **Behavior**: When reading a V2 header auth, the code synthesizes a zero IV even though V2 doesn't serialize one. This is needed internally for the AES-GCM verification but the spec only says "The V2 Header Authentication MUST be serialized as the Authentication Tag only."
-- **Why it matters**: Interoperability — other implementations must also use a zero IV when verifying V2 header auth tags. The spec doesn't explicitly state this for the deserialization path.
-- **Suggested spec requirement**: "When deserializing a V2 Header Authentication, the IV used for verification MUST be a zero-valued byte sequence of length equal to the IV length of the algorithm suite."
+No meaningful behaviors found in `header_auth.rs` that lack spec coverage.
+The code is straightforward serialization/deserialization with no extra constraints beyond what the spec describes.
 
-### 2. No validation of IV/tag lengths during deserialization
-- **Code location**: `read_header_auth_tag_v1()` and `read_header_auth_tag_v2()` — they use `get_iv_length(suite)` and `get_tag_length(suite)` to determine read lengths but don't validate the read data matches expected lengths.
-- **Why it matters**: Correctness — if the stream is truncated, the error comes from the read layer, not from a length validation. This is probably fine since `read_vec` will fail on short reads, but the spec says "The length of the serialized IV MUST be equal to..." which implies validation.
-- **Suggested spec requirement**: N/A — the existing spec requirement covers this implicitly through the serialization format.
+## Annotation Prefix Inconsistency (Advisory)
 
-## Spec Structure Analysis
+The `header_auth.rs` file uses TWO different spec path prefixes:
+- `specification/` for `client-apis/encrypt.md` references
+- `aws-encryption-sdk-specification/` for `data-format/message-header.md` references
 
-### 1. Spec Section Logical Flow
+The local duvet config (`.duvet/config.toml`) uses `specification/` as the spec path prefix.
+The root `make duvet` compliance TOML uses `aws-encryption-sdk-specification/`.
 
-The header-authentication section describes:
-1. **V1 serialization order**: IV then Authentication Tag
-2. **V2 serialization**: Authentication Tag only
-3. **IV sub-section**: length constraint + byte interpretation
-4. **Authentication Tag sub-section**: length constraint + byte interpretation
+This means:
+- `specification/` annotations match the LOCAL duvet report
+- `aws-encryption-sdk-specification/` annotations match the ROOT `make duvet` report
 
-The encrypt.md v1/v2 authentication tag sections describe:
-1. **V1**: Serialize header auth with IV (padded to IV length with 0) and Authentication Tag
-2. **V2**: Serialize header auth with Authentication Tag only
-
-### 2. Where Each Requirement Is Fulfilled in Code
-
-| Requirement | Code Construct |
-|---|---|
-| V1 serialization order | `write_header_auth_tag_v1()` match arm writing IV then tag |
-| V2 serialization | `write_header_auth_tag_v2()` match arm writing tag only |
-| IV length constraint | `read_header_auth_tag_v1()` — `read_vec(r, get_iv_length(suite) as usize, raw)` |
-| IV interpreted as bytes | `read_header_auth_tag_v1()` — `read_vec` returns `Vec<u8>` |
-| Auth tag length constraint | `read_header_auth_tag_v1/v2()` — `read_vec(r, get_tag_length(suite) as usize, raw)` |
-| Auth tag interpreted as bytes | Already annotated in `encrypt.rs` |
-
-### 3. Sub-items
-
-The IV and Authentication Tag sections don't have sub-items — they each have two flat MUST requirements.
-
-### 4. Most Likely Structural Mistake
-
-The implementer might be tempted to annotate the IV/tag length requirements at the `get_iv_length`/`get_tag_length` function definitions in `serializable_types.rs` rather than at the point of use in `header_auth.rs`. The annotation should be at the `read_vec` call where the length is actually enforced for this specific context (header auth), not at the generic helper.
-
-Also: the "interpreted as bytes" annotations should use `type=implication` with a `reason=` since the byte interpretation is structural (Rust's `Vec<u8>` type), not runtime-testable. This matches the pattern used in `body.rs`.
-
-## Quote Mismatch Found
-
-The v1 authentication tag implementation annotation in `header_auth.rs` (line 17-22) has "is 1.0," (with comma) but the TOML quote has "is 1.0" (no comma). This needs to be fixed. The test file has the correct quote.
+The existing annotations in `header_auth.rs` for `data-format/message-header.md` use `aws-encryption-sdk-specification/` prefix,
+so the new annotation should use the same prefix for consistency within this file.
