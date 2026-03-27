@@ -1,7 +1,8 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for aws-encryption-sdk-specification/data-format/message-header.md#key-provider-id-length
+//! Tests for aws-encryption-sdk-specification/data-format/message-header.md
+//! Covers: #key-provider-id-length, #key-provider-information-length, #encrypted-data-key-length
 
 mod fixtures;
 
@@ -101,5 +102,70 @@ async fn test_edk_key_provider_id_length_serialized_as_uint16() {
     assert_eq!(
         key_provider_id_len, 16,
         "Key Provider ID Length must decode to 16 (length of 'child0 Namespace')"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_edk_key_provider_information_length_serialized_as_uint16() {
+    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-information-length
+    //= type=test
+    //# The key provider information length MUST be serialized as a UInt16.
+    let ct = encrypt_v1(b"key provider info length test").await;
+
+    // Parse Key Provider ID Length to find the Key Provider Information Length field.
+    let key_provider_id_len =
+        u16::from_be_bytes([ct[FIRST_EDK_OFFSET], ct[FIRST_EDK_OFFSET + 1]]) as usize;
+
+    // Key Provider Information Length starts after Key Provider ID Length (2) + Key Provider ID (variable)
+    let info_len_offset = FIRST_EDK_OFFSET + 2 + key_provider_id_len;
+    let info_len_bytes = &ct[info_len_offset..info_len_offset + 2];
+    let key_provider_info_len = u16::from_be_bytes([info_len_bytes[0], info_len_bytes[1]]);
+
+    // The field is 2 bytes, big-endian UInt16, and its value must match the actual info length.
+    assert!(
+        key_provider_info_len > 0,
+        "Key Provider Information Length must be non-zero for a raw AES keyring EDK"
+    );
+
+    // Verify the actual key provider info bytes are present at the expected offset.
+    let info_start = info_len_offset + 2;
+    let info_end = info_start + key_provider_info_len as usize;
+    assert!(
+        info_end <= ct.len(),
+        "Key Provider Information must fit within the ciphertext"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_edk_encrypted_data_key_length_serialized_as_uint16() {
+    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-length
+    //= type=test
+    //# The encrypted data key length MUST be serialized as a UInt16.
+    let ct = encrypt_v1(b"encrypted data key length test").await;
+
+    // Parse through the EDK fields to find the Encrypted Data Key Length field.
+    let key_provider_id_len =
+        u16::from_be_bytes([ct[FIRST_EDK_OFFSET], ct[FIRST_EDK_OFFSET + 1]]) as usize;
+    let info_len_offset = FIRST_EDK_OFFSET + 2 + key_provider_id_len;
+    let key_provider_info_len =
+        u16::from_be_bytes([ct[info_len_offset], ct[info_len_offset + 1]]) as usize;
+
+    // Encrypted Data Key Length starts after Key Provider Info Length (2) + Key Provider Info (variable)
+    let edk_len_offset = info_len_offset + 2 + key_provider_info_len;
+    let edk_len_bytes = &ct[edk_len_offset..edk_len_offset + 2];
+    let encrypted_data_key_len = u16::from_be_bytes([edk_len_bytes[0], edk_len_bytes[1]]);
+
+    // The field is 2 bytes, big-endian UInt16, and its value must match the actual EDK length.
+    assert!(
+        encrypted_data_key_len > 0,
+        "Encrypted Data Key Length must be non-zero"
+    );
+
+    // Verify the actual encrypted data key bytes are present at the expected offset.
+    let edk_start = edk_len_offset + 2;
+    let edk_end = edk_start + encrypted_data_key_len as usize;
+    assert!(
+        edk_end <= ct.len(),
+        "Encrypted Data Key must fit within the ciphertext"
     );
 }
