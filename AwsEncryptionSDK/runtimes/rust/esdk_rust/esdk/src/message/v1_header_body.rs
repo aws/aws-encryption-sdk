@@ -104,6 +104,16 @@ pub(crate) fn write_v1_header_body(
     //# - [Frame Length](../data-format/message-header.md#frame-length): MUST be serialized according to the
     //# [Frame Length](../data-format/message-header.md#frame-length) specification.
     //# The value MUST be the value of the frame size determined above.
+
+    //= specification/data-format/message-header.md#frame-length
+    //= type=implication
+    //= reason=write_u32 writes exactly 4 bytes (big-endian u32)
+    //# The length of the serialized frame length field MUST be 4 bytes.
+
+    //= specification/data-format/message-header.md#frame-length
+    //= type=implication
+    //= reason=write_u32 serializes a u32 in big-endian format, which is UInt32
+    //# The frame length MUST be serialized as a UInt32.
     write_u32(w, body.frame_length)
 }
 
@@ -157,6 +167,15 @@ pub(crate) fn read_v1_header_body(
     let content_type = read_content_type(r, raw)?;
     read_v1_reserved_bytes(r, raw)?;
     let header_iv_length = read_v1_header_iv_length(r, algorithm_suite, raw)?;
+    //= specification/data-format/message-header.md#frame-length
+    //= type=implication
+    //= reason=read_u32 reads exactly 4 bytes (big-endian u32)
+    //# The length of the serialized frame length field MUST be 4 bytes.
+
+    //= specification/data-format/message-header.md#frame-length
+    //= type=implication
+    //= reason=read_u32 deserializes a big-endian u32, which is UInt32
+    //# The frame length MUST be serialized as a UInt32.
     let frame_length = read_u32(r, raw)?;
 
     Ok(V1HeaderBody {

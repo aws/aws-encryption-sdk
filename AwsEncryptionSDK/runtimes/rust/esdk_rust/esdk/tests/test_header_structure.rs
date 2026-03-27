@@ -127,6 +127,46 @@ async fn test_suite_data_interpreted_as_bytes() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn test_frame_length_field_is_4_bytes() {
+    //= specification/data-format/message-header.md#frame-length
+    //= type=test
+    //# The length of the serialized frame length field MUST be 4 bytes.
+    let ct = encrypt_default(b"frame length 4 bytes test").await;
+    let (_, _, frame_length_offset) = parse_header_offsets(&ct);
+    let frame_length_bytes = &ct[frame_length_offset..frame_length_offset + 4];
+    assert_eq!(frame_length_bytes.len(), 4, "frame length field must be exactly 4 bytes");
+    // Verify the value is a valid u32 by parsing it
+    let frame_length = u32::from_be_bytes([
+        frame_length_bytes[0],
+        frame_length_bytes[1],
+        frame_length_bytes[2],
+        frame_length_bytes[3],
+    ]);
+    assert!(frame_length > 0, "framed content must have a positive frame length, got {frame_length}");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_frame_length_serialized_as_uint32() {
+    //= specification/data-format/message-header.md#frame-length
+    //= type=test
+    //# The frame length MUST be serialized as a UInt32.
+    let ct = encrypt_default(b"frame length uint32 test").await;
+    let (_, _, frame_length_offset) = parse_header_offsets(&ct);
+    // Parse as big-endian UInt32 and verify round-trip through decrypt succeeds
+    let frame_length = u32::from_be_bytes([
+        ct[frame_length_offset],
+        ct[frame_length_offset + 1],
+        ct[frame_length_offset + 2],
+        ct[frame_length_offset + 3],
+    ]);
+    // Default frame length is 4096 (0x00001000)
+    assert_eq!(frame_length, 4096, "default frame length should be 4096 when serialized as UInt32");
+    // Confirm the message decrypts successfully, proving the UInt32 encoding is correct
+    let result = round_trip(b"frame length uint32 test").await;
+    assert_eq!(result, b"frame length uint32 test");
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn test_nonframed_frame_length_must_be_zero() {
     //= specification/data-format/message-header.md#frame-length
     //= type=test

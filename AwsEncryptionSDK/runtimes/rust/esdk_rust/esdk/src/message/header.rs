@@ -74,6 +74,8 @@ pub(crate) fn read_header_body(
             }
         }
         ContentType::NonFramed => {
+            //= specification/data-format/message-header.md#frame-length
+            //# When the [content type](#content-type) is non-framed, the value of this field MUST be 0.
             if result.frame_length() != 0 {
                 return ser_err("Frame length must be zero if content is non-framed");
             }
