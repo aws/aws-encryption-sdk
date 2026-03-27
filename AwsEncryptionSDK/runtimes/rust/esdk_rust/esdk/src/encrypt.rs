@@ -163,6 +163,9 @@ async fn internal_encrypt(
     //= specification/client-apis/encrypt.md#construct-the-body
     //# The encrypted message output by the Encrypt operation MUST have a message body equal
     //# to the message body calculated in this step.
+    //= specification/client-apis/encrypt.md#construct-the-body
+    //= type=implication
+    //= reason=The body is written directly to the output buffer by encrypt_and_serialize_body, making inequality structurally impossible
     //# If the message bodies are not equal, the Encrypt operation MUST fail.
     step_construct_body(
         plaintext,

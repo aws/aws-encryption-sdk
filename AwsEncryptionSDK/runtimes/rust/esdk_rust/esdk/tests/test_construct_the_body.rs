@@ -61,10 +61,8 @@ fn find_body_start(ct: &[u8], frame_length: u32) -> Option<usize> {
         }
         // Check if this is the start of a regular frame (seq=1)
         // Validate by checking that walking through regular frames leads to ENDFRAME
-        if ct[i..i + 4] == seq_one {
-            if validate_frame_walk(ct, i, frame_length) {
-                return Some(i);
-            }
+        if ct[i..i + 4] == seq_one && validate_frame_walk(ct, i, frame_length) {
+            return Some(i);
         }
     }
     None
@@ -139,8 +137,6 @@ fn final_frame_content_length(ct: &[u8]) -> Option<u32> {
     None
 }
 
-// ─── Req 1: Regular frame serialization ─────────────────────────────────────
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_serialization_conforms_to_spec() {
     //= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-the-body
@@ -158,11 +154,13 @@ async fn test_regular_frame_serialization_conforms_to_spec() {
     //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame
     //= type=test
     //# The final frame MUST be the last frame.
+    //= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-the-body
+    //= type=test
+    //# The encrypted message output by the Encrypt operation MUST have a message body equal
+    //# to the message body calculated in this step.
     let result = round_trip(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves regular frames conform to spec");
+    assert_eq!(result, pt, "round-trip proves body in output equals calculated body");
 }
-
-// ─── Req 2: Process consumable bytes as regular frames ──────────────────────
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_process_consumable_bytes_as_regular_frames() {
@@ -180,8 +178,6 @@ async fn test_process_consumable_bytes_as_regular_frames() {
     let result = round_trip(&pt, 10).await;
     assert_eq!(result, pt, "all consumable bytes processed as regular frames before final");
 }
-
-// ─── Req 3: When end of input indicated ─────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_end_of_input_processing() {
@@ -205,8 +201,6 @@ async fn test_end_of_input_processing() {
     let result = round_trip(&pt, 10).await;
     assert_eq!(result, pt, "end-of-input processing produces correct output");
 }
-
-// ─── Req 4: Exactly enough bytes for one regular frame ──────────────────────
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_exact_frame_length_constructs_final_or_regular() {
@@ -234,8 +228,6 @@ async fn test_exact_frame_length_constructs_final_or_regular() {
     assert_eq!(result, pt, "exact frame-length plaintext handled correctly");
 }
 
-// ─── Req 5: Enough bytes for regular frame, more remaining ──────────────────
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_enough_bytes_constructs_regular_frame() {
     //= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-the-body
@@ -256,31 +248,30 @@ async fn test_enough_bytes_constructs_regular_frame() {
     assert_eq!(result, pt, "regular frames constructed when more bytes remain");
 }
 
-// ─── Req 6: Not enough bytes for regular frame ─────────────────────────────
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_not_enough_bytes_constructs_final_frame() {
     //= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-the-body
     //= type=test
     //# - If there are not enough input consumable plaintext bytes to create a new regular frame,
     //# then this operation MUST [construct a final frame](#construct-a-frame)
-    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame
-    //= type=test
-    //# - When the length of the Plaintext is less than the Frame Length,
-    //# the body MUST contain exactly one frame and that frame MUST be a Final Frame.
     // 7 bytes with frame_length=10 → single final frame (7 bytes < frame_length)
     let pt = vec![0xFFu8; 7];
     let ct = encrypt_with_frame_length(&pt, 10).await;
     let (regular, final_count) = count_frames(&ct, 10);
+    //= aws-encryption-sdk-specification/data-format/message-body.md#final-frame
+    //= type=test
+    //# - When the length of the Plaintext is less than the Frame Length,
+    //# the body MUST contain exactly one frame and that frame MUST be a Final Frame.
     assert_eq!(regular, 0, "7 bytes < frame_length → no regular frames");
     assert_eq!(final_count, 1, "must have exactly 1 final frame");
     let content_len = final_frame_content_length(&ct).unwrap();
     assert_eq!(content_len, 7, "final frame content length must be 7");
+    //= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-the-body
+    //= type=test
+    //# Final frame serialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
     let result = round_trip(&pt, 10).await;
-    assert_eq!(result, pt, "short plaintext produces final frame");
+    assert_eq!(result, pt, "short plaintext produces final frame with correct serialization");
 }
-
-// ─── Req 7: Empty final frame ───────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_empty_plaintext_constructs_empty_final_frame() {
@@ -322,3 +313,5 @@ async fn test_empty_plaintext_constructs_empty_final_frame() {
     //# and Encrypted Content Length.
     assert_eq!(content_len, 0, "empty final frame has Encrypted Content Length field (value 0)");
 }
+
+
