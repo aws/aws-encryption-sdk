@@ -1,22 +1,9 @@
-# Test Handoff — header_types
+### Test Handoff
 
-**Spec**: `specification/data-format/message-header.md#supported-content-types`
-**Spec**: `specification/data-format/message-header.md#content-type`
+**Spec**: `aws-encryption-sdk-specification/data-format/message-header.md#supported-versions`, `aws-encryption-sdk-specification/data-format/message-header.md#supported-types`, `aws-encryption-sdk-specification/data-format/message-header.md#version`, `aws-encryption-sdk-specification/data-format/message-header.md#type`, `aws-encryption-sdk-specification/data-format/message-header.md#content-type`
 
 **Files Modified**:
 - `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/header_types.rs`
 - `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_header_types.rs`
 
-**Commit Message**:
-```
-fix(message-header): fix duplicate content-type annotation and add supported-content-types coverage
-
-Replace duplicate content-type annotation on ContentType enum with
-correct supported-content-types annotation using type=implication.
-Add fine-grained sub-item annotations at each enum variant.
-Add tests verifying Framed=0x02, NonFramed=0x01 acceptance,
-and invalid content type rejection.
-
-Spec: specification/data-format/message-header.md#supported-content-types
-Spec: specification/data-format/message-header.md#content-type
-```
+**Commit Message**: `feat(message-header): add duvet annotations for version, type, and content-type definitions`
