@@ -108,11 +108,11 @@ async fn test_encrypted_data_keys_serialization_order() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypted_data_key_count_is_2_bytes_uint16() {
-    //= specification/data-format/message-header.md#encrypted-data-key-count
+    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-count
     //= type=test
     //# The length of the serialized encrypted data key count MUST be 2 bytes.
 
-    //= specification/data-format/message-header.md#encrypted-data-key-count
+    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-count
     //= type=test
     //# The encrypted data key count MUST be serialized as a UInt16.
     let keyring = test_keyring().await;
@@ -133,7 +133,7 @@ async fn test_encrypted_data_key_count_is_2_bytes_uint16() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypted_data_key_count_must_be_greater_than_zero() {
-    //= specification/data-format/message-header.md#encrypted-data-key-count
+    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-count
     //= type=test
     //# This value MUST be greater than 0.
     let keyring = test_keyring().await;

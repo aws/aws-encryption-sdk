@@ -26,10 +26,18 @@ async fn test_encrypt_decrypt() {
     let asdf = "asdf";
     let ec = EncryptionContext::new();
     let encrypt_input = EncryptInput::with_legacy_keyring(asdf.as_bytes(), ec, kms_keyring);
+    //= specification/client-apis/client.md#encrypt
+    //= type=test
+    //# The AWS Encryption SDK Client MUST provide an [encrypt](./encrypt.md#input) function
+    //# that adheres to [encrypt](./encrypt.md).
     let encrypt_output = encrypt(&encrypt_input).await.unwrap();
     let esdk_ciphertext = encrypt_output.ciphertext;
 
     let decrypt_input = DecryptInput::from_encrypt(&esdk_ciphertext, &encrypt_input);
+    //= specification/client-apis/client.md#decrypt
+    //= type=test
+    //# The AWS Encryption SDK Client MUST provide an [decrypt](./decrypt.md#input) function
+    //# that adheres to [decrypt](./decrypt.md).
     let decrypt_output = decrypt(&decrypt_input).await.unwrap();
 
     assert_eq!(decrypt_output.plaintext, asdf.as_bytes());

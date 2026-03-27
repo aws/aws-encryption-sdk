@@ -1,80 +1,60 @@
-# Agent 1 Notes — types.rs Discovery
+# Agent 1 Discovery Notes — types.rs
 
-## Discovery Process
+## Spec Structure Analysis (Step 6.8)
 
-### Step 2: Coverage Validation
-- `make validate-all-tests` target does not exist in any Makefile. Skipped.
+### 1. Spec Section Logical Flow
 
-### Step 3: Infrastructure
-- `design/requirements/infrastructure.md` does not exist. No infrastructure gaps to address.
+**`client-apis/client.md`**:
+- `#initialization` — defines what options the caller MUST have on client init (commitment policy, max EDKs) and their defaults
+- `#commitment-policy` — defines which commitment policies to use (from MPL)
+- `#encrypt` — the client MUST provide an encrypt function
+- `#decrypt` — the client MUST provide a decrypt function
 
-### Step 4: Full Duvet Checks
-- Unable to run `make duvet` due to shell restrictions. Analyzed existing duvet snapshot and compliance summary report instead.
+**`client-apis/encrypt.md#input`**:
+- Required arguments: plaintext, CMM/keyring
+- Optional arguments: algorithm suite, encryption context, frame length
+- Plaintext Length Bound (for unknown-length plaintext)
+- Validation: exactly one CMM or keyring
 
-### Step 5: Prioritization
+**`client-apis/decrypt.md#input`**:
+- Required arguments: encrypted message, CMM/keyring
+- Optional arguments: encryption context
+- Validation: exactly one CMM or keyring
 
-Analyzed all requirements from scoped specs (`encrypt.md#input`, `decrypt.md#input`, `client.md`) against annotations in `types.rs`.
+### 2. Where Each Requirement Is Fulfilled
 
-**Summary of coverage for types.rs:**
+All `encrypt.md#input` and `decrypt.md#input` requirements are fulfilled in `types.rs` via:
+- Struct field definitions (`EncryptInput`, `DecryptInput`) → `type=implication`
+- `validate()` methods → `type=implementation`
 
-| Spec Section | Total Reqs | Covered | Gaps |
-|---|---|---|---|
-| `encrypt.md#input` | 11 | 8 | 3 (Plaintext Length Bound) |
-| `decrypt.md#input` | 6 | 6 | 0 |
-| `client.md#initialization` | 5 | 5 | 0 |
-| `client.md#commitment-policy` | 1 | 1 | 0 |
-| `client.md#encrypt` | 1 | 1 (in encrypt.rs) | 0 for types.rs |
-| `client.md#decrypt` | 1 | 1 (in decrypt.rs) | 0 for types.rs |
+`client.md#encrypt` and `client.md#decrypt` are fulfilled in `encrypt.rs` and `decrypt.rs` via the public `encrypt()` and `decrypt()` functions.
 
-The 3 missing annotations are all for Plaintext Length Bound requirements in `encrypt.md#input`.
+### 3. Sub-items
 
-### Compliance Report Staleness Note
-The compliance summary report (`compliance_summary_report.html`) appears to be stale — it shows "no implementation found" for several `decrypt.md#input` requirements that DO have annotations in the current `types.rs`. The duvet snapshot (`.duvet/snapshot.txt`) is more reliable and shows these requirements as covered.
+No sub-items requiring individual annotation within the scoped specs for `types.rs`.
 
-## Spec-Aligned Structure Analysis
+### 4. Most Likely Structural Mistake
 
-### encrypt.md#input logical flow:
-1. Required arguments (plaintext, CMM/keyring) → struct fields
-2. Optional arguments (algorithm suite, encryption context, frame length) → struct fields
-3. Validation (exactly one CMM/keyring) → `validate()` method
-4. Plaintext Length Bound (streaming only) → `EncryptStreamInput.data_size`
-5. Construction constraints (can't specify both known-length and bound) → type system
+The `client.md#encrypt` and `client.md#decrypt` test annotations should go in a test file that exercises the public `encrypt()` and `decrypt()` functions — NOT in `types.rs`. The implementer might be tempted to put them in `test_create_esdk_client.rs` but they should go wherever the encrypt/decrypt integration tests live (e.g., `test_encrypt_decrypt.rs`).
 
-### Where each requirement is fulfilled:
-- "MUST accept a required plaintext" → `EncryptInput.plaintext: &'a [u8]`
-- "MUST accept CMM and keyring" → `EncryptInput.source: Option<MaterialSource>`
-- "SHOULD be optional" → `Option<MaterialSource>` type
-- "MUST validate exactly one" → `EncryptInput::validate()` method
-- "MUST fail if not exactly one" → `Err(val_err(...))` in `validate()`
-- "MUST accept optional Algorithm Suite" → `EncryptInput.algorithm_suite_id: Option<...>`
-- "MUST accept optional Encryption Context" → `EncryptInput.encryption_context`
-- "MUST accept optional Frame Length" → `EncryptInput.frame_length`
-- "MAY input Plaintext Length Bound" → `EncryptStreamInput.data_size: Option<usize>`
-- "SHOULD ensure can't specify both" → `EncryptInput` has no `plaintext_length_bound` field
-- "MUST NOT use if both specified" → impossible by construction in `EncryptInput`
+## Coverage Analysis
+
+### Fully Covered in types.rs (scoped specs)
+
+All `encrypt.md#input` requirements: ✓ (implication + test, or implementation + test)
+All `decrypt.md#input` requirements: ✓ (implementation/implication + test)
+All `client.md#initialization` requirements: ✓ (implication + test)
+`client.md#commitment-policy`: ✓ (implication — satisfies both checks)
+
+### Gaps Found
+
+1. `client.md#encrypt` — has `implementation` in `encrypt.rs` but NO `type=test` annotation anywhere
+2. `client.md#decrypt` — has `implementation` in `decrypt.rs` but NO `type=test` annotation anywhere
+
+These are the only gaps in the scoped specs. The test annotations would naturally go in a test file (e.g., `test_encrypt_decrypt.rs`) since they test the existence and behavior of the public encrypt/decrypt functions.
 
 ## Potential Spec Gaps
 
-### 1. EncryptStreamInput lacks spec annotations
-- **Code location**: `EncryptStreamInput` struct in `types.rs` (lines ~315-330)
-- **Behavior**: `EncryptStreamInput` mirrors `EncryptInput` but for streaming. It has the same fields (algorithm_suite_id, encryption_context, frame_length, source, max_encrypted_data_keys, commitment_policy) plus `data_size`.
-- **Why it matters**: The spec's `encrypt.md#input` requirements apply to both streaming and non-streaming encrypt operations, but `EncryptStreamInput` has NO duvet annotations at all. This means the streaming input struct is completely untraced to the spec.
-- **Suggested spec requirement**: The streaming encrypt input SHOULD have the same required and optional arguments as the non-streaming encrypt input, with the addition of an optional data size parameter.
+No significant spec gaps identified for the `types.rs` code area. The struct definitions and validation logic align well with the spec requirements.
 
-### 2. DecryptStreamInput lacks spec annotations
-- **Code location**: `DecryptStreamInput` struct in `types.rs` (lines ~420-435)
-- **Behavior**: `DecryptStreamInput` mirrors `DecryptInput` but for streaming. It has the same fields minus `ciphertext` (which comes from the stream), plus `i_accept_the_danger`.
-- **Why it matters**: Same as above — the streaming decrypt input is completely untraced to the spec.
-- **Suggested spec requirement**: The streaming decrypt input SHOULD have the same required and optional arguments as the non-streaming decrypt input.
-
-### 3. NetV400RetryPolicy not in spec
-- **Code location**: `NetV400RetryPolicy` enum and `DecryptInput.net_v4_retry_policy` field
-- **Behavior**: Allows retrying decryption with a workaround for ESDK .NET v4.0.0 header serialization bug.
-- **Why it matters (interop)**: This is an interoperability-relevant behavior — it handles a known bug in another ESDK implementation. The spec doesn't describe this retry mechanism.
-- **Suggested spec requirement**: The decrypt operation MAY accept a configuration option to retry header authentication with an alternate byte ordering to handle messages produced by ESDK .NET v4.0.0.
-
-### 4. EncryptOutput/DecryptOutput lack spec annotations
-- **Code location**: `EncryptOutput` and `DecryptOutput` structs in `types.rs`
-- **Behavior**: These define the output of encrypt/decrypt operations.
-- **Why it matters**: The spec's `encrypt.md#output` and `decrypt.md#output` sections describe required output fields, but the output structs have no duvet annotations.
-- **Note**: These are outside the scoped specs for this work item but should be addressed in a future work item.
+One minor observation: `DecryptInput` has a `net_v4_retry_policy` field and `DecryptStreamInput` has an `i_accept_the_danger` field that are not described in the spec. These are implementation-specific features for handling .NET v4.0.0 compatibility and streaming safety, respectively. They don't contradict the spec but represent behaviors the spec doesn't describe.

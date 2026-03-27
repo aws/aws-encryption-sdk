@@ -101,12 +101,12 @@ pub(crate) fn write_edks(w: &mut dyn SafeWrite, edks: &[EncryptedDataKey]) -> Re
     //# Encrypted Data Key Count,
     //# and Encrypted Data Key Entries.
 
-    //= specification/data-format/message-header.md#encrypted-data-key-count
+    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-count
     //= type=implication
     //= reason=write_u16 writes exactly 2 bytes (big-endian u16)
     //# The length of the serialized encrypted data key count MUST be 2 bytes.
 
-    //= specification/data-format/message-header.md#encrypted-data-key-count
+    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-count
     //= type=implication
     //= reason=write_u16 serializes a u16 in big-endian format, which is UInt16
     //# The encrypted data key count MUST be serialized as a UInt16.
@@ -133,7 +133,7 @@ pub(crate) fn read_edks(
     raw: &mut dyn SafeWrite,
 ) -> Result<Vec<EncryptedDataKey>, Error> {
     let count = read_u16(r, raw)?;
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
     //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
     //# deserialized from the [message header](../data-format/message-header.md)
     //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
