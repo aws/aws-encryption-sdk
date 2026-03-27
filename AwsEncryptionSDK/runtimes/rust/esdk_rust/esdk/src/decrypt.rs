@@ -52,20 +52,41 @@ pub async fn decrypt_stream(
 ) -> Result<DecryptStreamOutput, Error> {
     input.validate()?;
 
-    internal_decrypt(
+    //= specification/client-apis/decrypt.md#security-considerations
+    //= type=implication
+    //= reason=streaming path holds back final frame until signature verification completes; ProtectionNeeded prevents multi-frame signed messages from releasing data early
+    //# If this operation is [streaming](streaming.md) output to the caller
+    //# and is decrypting messages created with an algorithm suite including a signature algorithm,
+    //# any released plaintext MUST NOT be considered signed data until this operation finishes
+    //# successfully.
+    //= specification/client-apis/decrypt.md#behavior
+    //# - The ESDK MUST provide a configuration option that causes the decryption operation
+    //# to fail immediately after parsing the header if a signed algorithm suite is used.
+    let safety = ProtectionNeeded::needs_protection(input.i_accept_the_danger);
+
+    let result = internal_decrypt(
         ciphertext,
         plaintext,
         input.source.clone(),
         &input.encryption_context,
         input.net_v4_retry_policy,
-        //= specification/client-apis/decrypt.md#behavior
-        //# - The ESDK MUST provide a configuration option that causes the decryption operation
-        //# to fail immediately after parsing the header if a signed algorithm suite is used.
-        ProtectionNeeded::needs_protection(input.i_accept_the_danger),
+        safety,
         input.max_encrypted_data_keys,
         input.commitment_policy,
     )
-    .await
+    .await;
+
+    //= specification/client-apis/decrypt.md#security-considerations
+    //= type=implication
+    //= reason=decrypt_stream returns Result so callers can detect completion vs failure; no output is final until Ok is returned
+    //# This means that callers that process such released plaintext MUST NOT consider any processing successful
+    //# until this operation completes successfully.
+    //= specification/client-apis/decrypt.md#security-considerations
+    //= type=implication
+    //= reason=on failure decrypt_stream returns Err; callers are responsible for discarding any streamed output received before the error
+    //# Additionally, if this operation fails, callers MUST discard the released plaintext and encryption context
+    //# and MUST rollback any processing done due to the released plaintext or encryption context.
+    result
 }
 
 //= specification/client-apis/client.md#decrypt
@@ -185,6 +206,10 @@ async fn internal_decrypt(
     step_verify_signature(ciphertext, &state)?;
 
     // now that we have verified the signature, we can write the last frame of data
+    //= specification/client-apis/decrypt.md#authenticated-data
+    //= type=implication
+    //= reason=all plaintext is decrypted via AES-GCM with authentication tags; encryption context is authenticated via header verification; nothing is released until authentication succeeds
+    //# This operation MUST NOT release any unauthenticated plaintext or unauthenticated associated data.
     serialize_functions::write_bytes(plaintext, &last_frame)?;
 
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
@@ -196,6 +221,10 @@ async fn internal_decrypt(
     ec.extend(state.header.encryption_context);
     Ok(DecryptStreamOutput {
         encryption_context: ec,
+        //= specification/client-apis/decrypt.md#algorithm-suite
+        //= type=implication
+        //= reason=get_esdk_id validates the suite is ESDK-supported; unsupported suites cause an error before output is constructed
+        //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
         algorithm_suite_id: get_esdk_id(state.header.suite.id)?,
     })
 }
