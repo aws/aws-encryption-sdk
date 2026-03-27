@@ -1,42 +1,53 @@
-# Agent 2 Notes — client.md#initialization annotations
+# Agent 2 Notes — encrypt.md#input and decrypt.md#input annotations
 
 ## Pre-Implementation Reasoning
 
-### 1. Logical steps in this spec section
+### 1. Logical steps
 
-1. Caller MUST have option to provide commitment policy → field exists on input structs
-2. Caller MUST have option to provide max EDKs → field exists on input structs
-3. Default commitment policy MUST be REQUIRE_ENCRYPT_REQUIRE_DECRYPT → `#[default]` on enum variant
-4. Default max EDKs MUST be no limit → `Option<NonZeroUsize>` defaults to `None`
-5. Commitment policy SHOULD be immutable → Rust ownership model (structural)
+1. Add `type=implication` annotations for SHOULD requirements (3, 11) on `source` fields
+2. Add `type=test` annotations for structural "accept" requirements (1, 2, 6, 7, 8, 9, 10, 12) in test file
+3. Add `type=test` annotations for validate/fail requirements (4, 5) on existing `test_bad_encrypt_input`
 
-### 2. Point of fulfillment for each requirement
+### 2. Point of fulfillment
 
-- Req 1 ("option to provide commitment policy"): `pub commitment_policy: EsdkCommitmentPolicy` field on `EncryptInput`
-- Req 2 ("option to provide max EDKs"): `pub max_encrypted_data_keys: Option<NonZeroUsize>` field on `EncryptInput`
-- Req 3 ("default no limit"): Same field — `Option<NonZeroUsize>` defaults to `None` via `#[derive(Default)]`
-- Req 4 ("default REQUIRE_ENCRYPT_REQUIRE_DECRYPT"): Already annotated in `decrypt.rs` at the `use` statement. Needs `type=test` only.
+- Req 1 (plaintext): `pub plaintext: &'a [u8]` field — already has implication annotation
+- Req 2 (CMM/keyring): `pub source: Option<MaterialSource>` field — already has implication annotation
+- Req 3 (SHOULD optional): `pub source: Option<MaterialSource>` on EncryptInput — MISSING, needs implication
+- Req 4 (validate exactly one): `validate()` method — already has implementation annotation
+- Req 5 (fail if not exactly one): `validate()` method — already has implementation annotation
+- Req 6 (algorithm suite): `pub algorithm_suite_id: Option<...>` — already has implication annotation
+- Req 7 (encryption context): `pub encryption_context: EncryptionContext` — already has implication annotation
+- Req 8 (frame length): `pub frame_length: FrameLength` — already has implication annotation
+- Req 9 (encrypted message): `pub ciphertext: &'a [u8]` — already has implementation annotation
+- Req 10 (CMM/keyring decrypt): `pub source: Option<MaterialSource>` — already has implementation annotation
+- Req 11 (SHOULD optional decrypt): `pub source: Option<MaterialSource>` on DecryptInput — MISSING, needs implication
+- Req 12 (encryption context decrypt): `pub encryption_context: EncryptionContext` — already has implication annotation
 
 ### 3. Sub-items?
 
-No sub-items. Each requirement is a standalone statement.
+No sub-items. Each requirement is standalone.
 
 ### 4. Reviewer readability
 
-Annotations go directly on the struct fields in `types.rs`. Tests go in `test_create_esdk_client.rs`. Straightforward.
+- Source changes: Add 2 implication annotations on `source` fields in types.rs
+- Test changes: Add new test functions in test_create_esdk_client.rs (structural tests) and annotations on test_bad_encrypt_input in test_encrypt_decrypt.rs
 
 ### 5. Existing similar code
 
-- `decrypt.rs` lines 15-21 already have `client.md#initialization` annotations with `type=implication` for Req 4 and the SHOULD.
-- `types.rs` has `encrypt.md#input` annotations with `type=implication` on `EncryptInput` struct fields — same pattern.
+- `test_create_esdk_client.rs` has `test_encrypt_input_custom_commitment_policy` — same pattern for structural field tests
+- `test_encrypt_decrypt.rs` has `test_bad_decrypt_input` with duvet annotations — same pattern for validate/fail tests
 
 ### Cross-reference analysis
 
-- Req 1 quote contains `[commitment policy](#commitment-policy)` — self-referential anchor within client.md, no cross-ref needed.
-- Req 2 quote contains `[maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys)` — self-referential, no cross-ref needed.
-- Req 3 quote contains `[maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys)` and `[message format](../format/message-header.md)` — the message-header link could warrant a cross-ref, but there's no specific requirement in message-header about "no limit" that maps to this code. The annotation is about the *default* being no limit, not about the message format limit itself. No cross-ref needed.
-- Req 4 quote contains `[commitment policy](#commitment-policy)` and `[REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt)` — the algorithm-suites link is to the MPL spec, not tracked by this project's duvet config. No cross-ref needed.
-
-### Decision: annotate on EncryptInput only
-
-The work item says to annotate on `EncryptInput`. The spec says "client initialization" which maps to constructing the input struct. Annotating on `EncryptInput` is sufficient — the same fields exist on all input structs, and `EncryptInput` is the primary one.
+- Req 1 contains `[plaintext](#plaintext)` — self-referential anchor, no cross-ref needed
+- Req 2 contains `[cryptographic Materials Manager (CMM)](../framework/cmm-interface.md)` and `[keyring](../framework/keyring-interface.md)` — these link to framework specs not tracked in this project's duvet config for this code. No cross-ref needed.
+- Req 3 — no links
+- Req 4 — no links
+- Req 5 — no links
+- Req 6 contains `[Algorithm Suite](#algorithm-suite)` — self-referential, no cross-ref needed
+- Req 7 contains `[Encryption Context](#encryption-context)` — self-referential, no cross-ref needed
+- Req 8 contains `[Frame Length](#frame-length)` — self-referential, no cross-ref needed
+- Req 9 contains `[Encrypted Message](#encrypted-message)` — self-referential, no cross-ref needed
+- Req 10 same as Req 2
+- Req 11 — no links
+- Req 12 contains `[Encryption Context](#encryption-context)` — self-referential, no cross-ref needed

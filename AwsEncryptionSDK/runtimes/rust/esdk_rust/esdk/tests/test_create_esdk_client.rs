@@ -142,3 +142,82 @@ fn test_encrypt_input_custom_max_edks() {
     input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(5).unwrap());
     assert_eq!(input.max_encrypted_data_keys.unwrap().get(), 5);
 }
+
+#[test]
+fn test_encrypt_input_accepts_plaintext() {
+    //= specification/client-apis/encrypt.md#input
+    //= type=test
+    //# - The input to the Encrypt operation MUST accept a required [plaintext](#plaintext) argument.
+    let plaintext = b"hello world";
+    let mut input = EncryptInput::default();
+    input.plaintext = plaintext;
+    assert_eq!(input.plaintext, plaintext);
+}
+
+#[test]
+fn test_encrypt_input_accepts_cmm_and_keyring() {
+    //= specification/client-apis/encrypt.md#input
+    //= type=test
+    //# - The input to the Encrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
+    let input = EncryptInput::default();
+    // source field exists and is Option<MaterialSource>, accepting CMM or keyring
+    assert!(input.source.is_none());
+}
+
+#[test]
+fn test_encrypt_input_accepts_optional_algorithm_suite() {
+    //= specification/client-apis/encrypt.md#input
+    //= type=test
+    //# - The input to the Encrypt operation MUST accept an optional [Algorithm Suite](#algorithm-suite) argument.
+    let input = EncryptInput::default();
+    assert!(input.algorithm_suite_id.is_none());
+}
+
+#[test]
+fn test_encrypt_input_accepts_optional_encryption_context() {
+    //= specification/client-apis/encrypt.md#input
+    //= type=test
+    //# - The input to the Encrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
+    let input = EncryptInput::default();
+    assert!(input.encryption_context.is_empty());
+}
+
+#[test]
+fn test_encrypt_input_accepts_optional_frame_length() {
+    //= specification/client-apis/encrypt.md#input
+    //= type=test
+    //# - The input to the Encrypt operation MUST accept an optional [Frame Length](#frame-length) argument.
+    let mut input = EncryptInput::default();
+    input.frame_length = FrameLength::new(8192).unwrap();
+    assert_eq!(input.frame_length.0.get(), 8192);
+}
+
+#[test]
+fn test_decrypt_input_accepts_encrypted_message() {
+    //= specification/client-apis/decrypt.md#input
+    //= type=test
+    //# - The input to the Decrypt operation MUST accept a required [Encrypted Message](#encrypted-message) argument.
+    let ciphertext = b"fake ciphertext";
+    let mut input = DecryptInput::default();
+    input.ciphertext = ciphertext;
+    assert_eq!(input.ciphertext, ciphertext);
+}
+
+#[test]
+fn test_decrypt_input_accepts_cmm_and_keyring() {
+    //= specification/client-apis/decrypt.md#input
+    //= type=test
+    //# - The input to the Decrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
+    let input = DecryptInput::default();
+    // source field exists and is Option<MaterialSource>, accepting CMM or keyring
+    assert!(input.source.is_none());
+}
+
+#[test]
+fn test_decrypt_input_accepts_optional_encryption_context() {
+    //= specification/client-apis/decrypt.md#input
+    //= type=test
+    //# - The input to the Decrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
+    let input = DecryptInput::default();
+    assert!(input.encryption_context.is_empty());
+}

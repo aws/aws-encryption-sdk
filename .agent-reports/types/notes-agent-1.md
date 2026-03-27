@@ -1,64 +1,86 @@
 # Discovery Notes — types.rs
 
-## Spec-Aligned Structure Analysis
+## Spec-Aligned Structure Analysis (Step 6.8)
 
 ### 1. What is the spec section's logical flow?
 
-`client.md#initialization` describes the ESDK client initialization:
-1. Caller MAY provide a commitment policy → maps to `commitment_policy` field on input structs
-2. Caller MAY provide a maximum number of encrypted data keys → maps to `max_encrypted_data_keys` field
-3. If no commitment policy provided, default to REQUIRE_ENCRYPT_REQUIRE_DECRYPT → maps to `Default` impl
-4. If no max EDKs provided, default to no limit → maps to `Default` impl (`Option<NonZeroUsize>` = `None`)
-5. Commitment policy SHOULD be immutable once set → structural (non-exhaustive enum, no setter)
+**encrypt.md#input:**
+1. Define required arguments (plaintext, CMM/keyring)
+2. Define optional arguments (algorithm suite, encryption context, frame length)
+3. Validate exactly one CMM or keyring provided
+4. Handle Plaintext Length Bound (MAY/SHOULD)
+
+**decrypt.md#input:**
+1. Define required arguments (encrypted message, CMM/keyring)
+2. Define optional arguments (encryption context)
+3. Validate exactly one CMM or keyring provided
+
+**client.md#initialization:**
+1. Option to provide commitment policy
+2. Option to provide max encrypted data keys
+3. Default commitment policy = REQUIRE_ENCRYPT_REQUIRE_DECRYPT
+4. Default max EDKs = no limit
+5. Commitment policy SHOULD be immutable
 
 ### 2. Where will each requirement be fulfilled in code?
 
-- "provide a commitment policy" → `pub commitment_policy: EsdkCommitmentPolicy` field on `EncryptInput` / `DecryptInput`
-- "provide a maximum number of encrypted data keys" → `pub max_encrypted_data_keys: Option<NonZeroUsize>` field
-- "default MUST be REQUIRE_ENCRYPT_REQUIRE_DECRYPT" → `#[derive(Default)]` on `EncryptInput` which uses `EsdkCommitmentPolicy::default()` = `RequireEncryptRequireDecrypt`
-- "default MUST result in no limit" → `Option<NonZeroUsize>` defaults to `None` via `#[derive(Default)]`
+- "accept a required plaintext" → `pub plaintext: &'a [u8]` field on `EncryptInput`
+- "accept CMM and keyring" → `pub source: Option<MaterialSource>` field + `MaterialSource` enum
+- "SHOULD be optional" → `Option<MaterialSource>` type
+- "validate exactly one" → `EncryptInput::validate()` method
+- "MUST fail" → `Err(val_err(...))` return in validate
+- "accept optional Algorithm Suite" → `pub algorithm_suite_id: Option<EsdkAlgorithmSuiteId>` field
+- "accept optional Encryption Context" → `pub encryption_context: EncryptionContext` field
+- "accept optional Frame Length" → `pub frame_length: FrameLength` field
 
-### 3. Sub-items?
+### 3. Sub-items under normative requirements?
 
-No sub-items — each requirement is a standalone statement.
+The encrypt.md#input section has a list of required and optional arguments.
+Each list item is a separate `[[spec]]` entry in the TOML.
+They are already annotated individually at the struct definition.
 
 ### 4. Most likely structural mistake?
 
-The implementer might be tempted to annotate at the struct definition level (above `pub struct EncryptInput`).
-But the correct placement is:
-- For "provide option" requirements → at the specific field declaration
-- For "default" requirements → at the `Default` impl or derive
+The `implication` annotations on the struct fields are correct for "accept" requirements
+(the struct field's existence IS the implementation).
+The most likely mistake would be:
+- Placing test annotations on the struct definition instead of on test code that exercises the struct
+- Forgetting that `implication` type annotations satisfy both implementation and test checks in duvet,
+  so these may already be passing
 
-The `Default` for `EncryptInput` is derived, not manually implemented.
-The annotation for the default commitment policy should go on the `#[derive(Default)]` line
-or on the `commitment_policy` field with a reason explaining the derive chain.
+**Key insight**: Looking at the snapshot more carefully, the `!MUST` prefix on
+`TEXT[!MUST,implication]` lines means the MUST-level check is NOT passing despite
+having an `implication` annotation. This is unexpected because `implication` should
+satisfy both implementation and test. This may indicate the duvet report was generated
+with `--require-citations true --require-tests true` flags that treat `implication`
+differently, OR the `!` simply indicates the requirement level.
 
-The annotation for "default no limit" should go on the `max_encrypted_data_keys` field
-since `Option<NonZeroUsize>` defaults to `None` via derive.
+After re-reading the snapshot format: the `!` prefix on the level means the requirement
+is NOT fully satisfied. For `TEXT[!MUST,implication]`, the requirement has an implication
+annotation but the MUST check is still failing. This likely means the duvet configuration
+requires explicit `type=test` annotations even for `implication` types.
 
-Note: `decrypt.rs` already has `implication` annotations for the commitment policy default
-and immutability. The gap is that `types.rs` has NO annotations for the "provide option" requirements
-and the "no limit default" requirement.
+However, looking at the duvet-patterns.md: "Infrastructure requirements use `type=implication`,
+which satisfies both the implementation and test checks (they are not runtime-testable)."
+
+This contradicts the snapshot showing `!MUST` for implication-annotated requirements.
+The most likely explanation is that the root Makefile's duvet_report does NOT use
+`--require-citations true --require-tests true` (they're commented out as TODO),
+so the `!MUST` in the snapshot may just be the requirement level indicator, not a failure flag.
+
+**Resolution**: Since I cannot run duvet to verify, I'll focus on the clear gaps:
+requirements that have `implementation` annotations but NO `test` annotations.
 
 ## Potential Spec Gaps
 
-### 1. `EncryptInput` has `commitment_policy` as a direct field, not via a "client" object
+### 1. MaterialSource enum allows both CMM and Keyring but not simultaneously
+- **Code location**: `MaterialSource` enum in types.rs
+- **Behavior**: The enum design makes it impossible to provide both a CMM and a keyring simultaneously (they're variants, not separate fields)
+- **Why it matters**: Correctness — the spec says "validate that exactly one keyring or CMM was provided" but the Rust type system already prevents providing both. The validate() method only checks for None (no source), not for "both provided".
+- **Suggested spec requirement**: "If the implementation uses a sum type (enum/union) for the CMM/keyring input, the type system MAY enforce the 'exactly one' constraint, and the validation MUST at minimum ensure a value is provided."
 
-The spec says "On client initialization" but the Rust ESDK doesn't have a separate client object
-with initialization. Instead, commitment policy and max EDKs are fields on each input struct.
-This is a design choice that differs from the spec's model but achieves the same result.
-
-- **Code location**: `EncryptInput.commitment_policy`, `DecryptInput.commitment_policy`
-- **Why it matters**: Interop — other SDKs may have a client object
-- **Suggested spec wording**: "Implementations MAY provide commitment policy and max encrypted data keys
-  as per-operation input parameters rather than client-level configuration."
-
-### 2. `NetV400RetryPolicy` has no spec requirement
-
-`DecryptInput` has a `net_v4_retry_policy` field that controls retry behavior for
-incorrectly serialized .NET v4.0.0 messages. This is not mentioned in the spec.
-
-- **Code location**: `DecryptInput.net_v4_retry_policy`, `DecryptStreamInput.net_v4_retry_policy`
-- **Why it matters**: Interop — this is a compatibility feature for a known bug
-- **Suggested spec wording**: "Implementations SHOULD provide an option to retry decryption
-  of messages produced by ESDK .NET v4.0.0 which incorrectly serialized the message header."
+### 2. EncryptInput has no Plaintext Length Bound field
+- **Code location**: `EncryptInput` struct in types.rs
+- **Behavior**: The `EncryptInput` struct has no `plaintext_length_bound` field. The spec says callers MAY input one.
+- **Why it matters**: Interop — other implementations may support this feature
+- **Note**: The `EncryptStreamInput` has a `data_size` field which may serve a similar purpose but is not the same as Plaintext Length Bound.

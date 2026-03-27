@@ -1,47 +1,47 @@
-## Round 1
-
 ## Review: APPROVED AND COMMITTED ✅
 
 ### Summary
-Clean annotation-only change that adds three missing duvet annotations for `decrypt.md#input` requirements. Annotations use exact TOML quotes, are correctly placed at the point of fulfillment, and follow established codebase patterns (mirroring `EncryptInput`). Test annotations are correctly placed in the integration test file.
+Clean implementation of 3 new `type=implication` annotations on `EncryptInput` fields and 6 `type=test` annotations covering all 4 MUST requirements in `client.md#initialization`. Quotes match TOML exactly, placement follows Pattern 2/3 correctly, no stacking violations, and all tests pass.
 
 ### What Was Verified
-- ✅ Duvet annotations use exact quotes from TOML files (verified character-for-character against `input.toml`)
-- ✅ Annotation placement follows correct patterns (field-level implication for EC, method-level for validate, assertion-level for tests)
-- ✅ Implementation matches specification requirements (all 3 requirements from work item are annotated)
-- ✅ Tests cover all implementation annotations (2 `type=test` for validate/fail, `type=implication` for EC which satisfies both impl+test)
-- ✅ Code quality is acceptable (no code changes, only annotation additions)
+- ✅ Duvet annotations use exact quotes from TOML files (verified character-by-character against initialization.toml)
+- ✅ Annotation placement follows correct patterns — implication annotations on struct fields (Pattern 3), no stacking violations (max 2 blocks per field)
+- ✅ Implementation matches specification requirements — all 4 MUST requirements covered
+- ✅ Tests cover all implementation annotations — 6 type=test annotations across 6 test functions
+- ✅ Code quality is acceptable — minimal changes, idiomatic Rust, follows existing patterns in types.rs
 - ✅ Commit message follows Conventional Commits format
-- ✅ No annotation stacking violations (max 2 annotations per code line, under the 3-stack hard limit)
-- ✅ Cross-reference check: `[Encryption Context](#encryption-context)` link in EC annotation points to `decrypt.md#encryption-context` which only has a MAY about output — no cross-ref annotation needed
-- ✅ `type=implication` correctly used for structural field existence (not runtime-testable)
 
 ### Test Results (from manual validation)
-- Check 1 (Tests): PASS (with pre-existing KMS credential failures in `test_authentication_tag.rs` — unrelated to this change)
-- Check 2 (Coverage): PASS (duvet snapshot confirms all 3 requirements covered: `implementation,test` for validate/fail, `implication` for EC)
-- Check 3 (Duvet Report): PASS (`make duvet` succeeds)
-- Check 4 (Snapshot): EXPECTED CHANGE (new annotations added to snapshot)
-- Check 5 (Linter): PASS with pre-existing warnings (`missing_docs` on `encrypt_stream` — unrelated to this change)
+- Check 1 (Tests): PASS — 7/7 tests pass in test_create_esdk_client
+- Check 2 (Coverage): N/A — pre-spawn hook logs not available; duvet snapshot confirms implication+test coverage for all 4 MUST requirements
+- Check 3 (Duvet Report): PASS — duvet report generates successfully, all 4 MUST requirements show `implication,test`
+- Check 4 (Snapshot): N/A — pre-spawn hook logs not available
+- Check 5 (Linter): PASS — cargo clippy passes (pre-existing warnings only in unmodified files)
+
+### Pre-Existing Failures
+- 8 tests in test_authentication_tag.rs fail due to invalid AWS security tokens — unrelated to this change
 
 ### Commit
-`621e4ce3 feat(decrypt): add missing duvet annotations for DecryptInput validation and encryption context`
+`04dc75bd feat(client): add duvet annotations for client.md#initialization requirements`
 
 ### Test Handoff
-**Spec**: `aws-encryption-sdk-specification/client-apis/decrypt.md#input`
+**Spec**: `specification/client-apis/client.md#initialization`
 
 **Files Modified**:
 - `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/types.rs`
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_encrypt_decrypt.rs`
+- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_create_esdk_client.rs`
 
 **Commit Message**:
 ```
-feat(decrypt): add missing duvet annotations for DecryptInput validation and encryption context
+feat(client): add duvet annotations for client.md#initialization requirements
 
-Add duvet annotations for three decrypt.md#input requirements:
-- DecryptInput::validate() annotated for keyring/CMM validation requirement
-- DecryptInput::validate() annotated for failure requirement
-- DecryptInput.encryption_context field annotated as implication for optional EC acceptance
-- test_bad_decrypt_input annotated with type=test for validation/failure requirements
+Add type=implication annotations on EncryptInput fields for three
+client initialization requirements: commitment policy option,
+maximum encrypted data keys option, and max EDKs default behavior.
 
-Spec section: specification/client-apis/decrypt.md#input
+Add six type=test annotations in test_create_esdk_client.rs covering
+all four MUST requirements in the initialization section, including
+the pre-existing commitment policy default requirement.
+
+Spec section: specification/client-apis/client.md#initialization
 ```

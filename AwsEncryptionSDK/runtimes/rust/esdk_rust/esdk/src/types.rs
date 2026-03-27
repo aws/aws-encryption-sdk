@@ -208,6 +208,10 @@ pub struct EncryptInput<'a> {
     /// Bytes of plaintext data per frame. Default 4096.
     pub frame_length: FrameLength,
     /// The source of cryptographic materials
+    //= specification/client-apis/encrypt.md#input
+    //= type=implication
+    //= reason=source is Option<MaterialSource>, making CMM/keyring optional by construction
+    //# The keyring and CMM inputs SHOULD be optional.
     pub source: Option<MaterialSource>,
     /// data to be encrypted
     //= specification/client-apis/encrypt.md#plaintext
@@ -401,6 +405,10 @@ pub struct DecryptInput<'a> {
     /// The source of cryptographic materials
     //= specification/client-apis/decrypt.md#input
     //# - The input to the Decrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
+    //= specification/client-apis/decrypt.md#input
+    //= type=implication
+    //= reason=source is Option<MaterialSource>, making CMM/keyring optional by construction
+    //# The keyring and CMM inputs SHOULD be optional.
     pub source: Option<MaterialSource>,
     /// default is `NetV400RetryPolicy::AllowRetry`
     pub net_v4_retry_policy: NetV400RetryPolicy,

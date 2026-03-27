@@ -191,6 +191,12 @@ async fn test_bad_encrypt_input() {
     let mut encrypt_input = EncryptInput::with_legacy_keyring(asdf, ec, kms_keyring.clone());
     encrypt_input.source = None;
     let encrypt_output = encrypt(&encrypt_input).await;
+    //= specification/client-apis/encrypt.md#input
+    //= type=test
+    //# The Encrypt operation MUST validate that exactly one keyring or CMM was provided by the caller.
+    //= specification/client-apis/encrypt.md#input
+    //= type=test
+    //# If the caller does not provide exactly one of a keyring or CMM, the Encrypt operation MUST fail.
     assert!(encrypt_output.is_err());
 }
 
