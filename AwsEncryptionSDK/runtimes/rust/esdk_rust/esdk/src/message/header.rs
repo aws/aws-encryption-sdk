@@ -113,6 +113,7 @@ pub(crate) fn validate_max_encrypted_data_keys(
 }
 
 //= specification/data-format/message-header.md#message-id
+//# While implementations cannot guarantee complete uniqueness,
 //# implementations MUST use a good source of randomness when generating messages IDs in order to make
 //# the chance of duplicate IDs negligible.
 pub(crate) fn generate_message_id(suite: &AlgorithmSuite) -> Result<MessageId, Error> {

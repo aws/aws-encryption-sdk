@@ -1,48 +1,35 @@
 ## Changes Made
 
 ### Files Modified
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/header.rs` — Removed explicit `//= type=implementation` from `#message-id` and `#encrypted-data-key-count` annotations; added `#algorithm-suite-data` "interpreted as bytes" annotation with `type=implication` in `validate_suite_data`
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/shared_header_functions.rs` — Removed duplicate `#message-id` randomness annotation from `write_message_id`
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/v1_header_body.rs` — Removed duplicate `#message-id` randomness annotation from `write_message_id` call site
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/serialize_functions.rs` — Removed duplicate `#structure` big-endian annotation from `write_u16`
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_header_structure.rs` — Added `test_suite_data_interpreted_as_bytes` test with `type=test` annotation
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_v1_header_body.rs` — Added `#message-id` randomness `type=test` annotation in `test_v1_header_message_id`
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_v2_header_body.rs` — Added `#message-id` randomness `type=test` annotation in `test_v2_header_message_id`
+- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/header.rs` — Added missing first line of the `#message-id` randomness annotation quote ("While implementations cannot guarantee complete uniqueness,")
 
 ### How to View Changes
 ```bash
-git diff -- AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/header.rs AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/shared_header_functions.rs AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/v1_header_body.rs AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/serialize_functions.rs AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_header_structure.rs AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_v1_header_body.rs AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_v2_header_body.rs
+git diff -- AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/header.rs
 ```
 
 ### Requirements Addressed
-- ✅ Req 1 — Duplicate `#message-id` randomness removed from `shared_header_functions.rs` and `v1_header_body.rs`; kept in `header.rs` with `type=implementation` line removed
-- ✅ Req 2 — Duplicate `#structure` big-endian removed from `serialize_functions.rs`; kept in `header.rs`
-- ✅ Req 3 — Test annotation for `#message-id` randomness added in `test_v1_header_body.rs` and `test_v2_header_body.rs`
-- ✅ Req 4 — Implementation annotation for `#algorithm-suite-data` "interpreted as bytes" added in `header.rs` `validate_suite_data`
-- ✅ Req 5 — Test annotation for `#algorithm-suite-data` "interpreted as bytes" added in `test_header_structure.rs`
-- ✅ Req 6 — Explicit `//= type=implementation` removed from `#encrypted-data-key-count` annotation in `header.rs`
+- ✅ "While implementations cannot guarantee complete uniqueness, implementations MUST use a good source of randomness when generating messages IDs in order to make the chance of duplicate IDs negligible." — implementation annotation now uses exact full TOML quote; tests already existed
 
 ### Test Annotations Added (REQUIRED)
-- **Test file(s) modified**: `tests/test_header_structure.rs`, `tests/test_v1_header_body.rs`, `tests/test_v2_header_body.rs`
-- **Number of `type=test` annotations added**: 3 for 3 requirements (message-id randomness in v1 test, message-id randomness in v2 test, algorithm-suite-data interpreted as bytes)
-- **Test function names**: `test_v1_header_message_id`, `test_v2_header_message_id`, `test_suite_data_interpreted_as_bytes`
+- **Test file(s) modified**: None — `type=test` annotations already exist in both test files
+- **Number of `type=test` annotations added**: 0 (2 already present: 1 in `test_v1_header_body.rs`, 1 in `test_v2_header_body.rs`)
+- **Test function names**: `test_v1_header_message_id`, `test_v2_header_message_id` (pre-existing, already contain the full 3-line quote with `type=test`)
 
 ### Proposed Commit Message
 
 ```
-fix(message-header): remove duplicate annotations and fill coverage gaps
+fix(message-header): complete message-id randomness annotation quote
 
-Remove duplicate #message-id randomness annotations from
-shared_header_functions.rs and v1_header_body.rs (kept in header.rs).
-Remove duplicate #structure big-endian annotation from
-serialize_functions.rs (kept in header.rs). Remove explicit
-type=implementation lines from header.rs annotations. Add missing
-#algorithm-suite-data "interpreted as bytes" implication annotation
-in validate_suite_data. Add corresponding type=test annotations for
-message-id randomness and algorithm-suite-data byte interpretation.
+Add missing first line "While implementations cannot guarantee complete
+uniqueness," to the implementation annotation on generate_message_id()
+in header.rs. The annotation now matches the exact TOML quote from
+specification/data-format/message-header.md#message-id.
 
-Spec: aws-encryption-sdk-specification/data-format/message-header.md
-Sections: #message-id, #structure, #algorithm-suite-data, #encrypted-data-key-count
+Test annotations in test_v1_header_body.rs and test_v2_header_body.rs
+already included the full quote.
+
+Spec: specification/data-format/message-header.md#message-id
 ```
 
 ### Duvet Verification (actual command output)
@@ -51,69 +38,45 @@ $ make duvet
 rm -rf .duvet/reports .duvet/requirements
 duvet report
   Extracting requirements
-   Extracted requirements from 9 specifications 22ms
+   Extracted requirements from 9 specifications 24ms
     Scanning sources
-     Scanned 156 sources 2ms
+     Scanned 159 sources 2ms
      Parsing annotations
-      Parsed 953 annotations 27ms
+      Parsed 1058 annotations 28ms
      Loading specifications
-      Loaded 14 specifications 16ms
+      Loaded 14 specifications 19ms
      Mapping sections
-      Mapped 123 sections 13ms
+      Mapped 140 sections 18ms
     Matching references
-     Matched 1780 references 4ms
+     Matched 1937 references 3ms
      Sorting references
-      Sorted 1780 references 11ms
+      Sorted 1937 references 13ms
      Writing .duvet/reports/report.html
-       Wrote .duvet/reports/report.html 17ms
+       Wrote .duvet/reports/report.html 16ms
      Writing .duvet/snapshot.txt
-       Wrote .duvet/snapshot.txt 911µs
+       Wrote .duvet/snapshot.txt 981µs
+```
+
+Snapshot confirms full coverage:
+```
+  SECTION: [Message ID](#message-id)
+    TEXT[!MUST,implementation,test]: While implementations cannot guarantee complete uniqueness,
+    TEXT[!MUST,implementation,test]: implementations MUST use a good source of randomness when generating messages IDs in order to make
+    TEXT[!MUST,implementation,test]: the chance of duplicate IDs negligible.
 ```
 
 ### Test Results (actual command output)
 ```
-$ cargo test --test test_header_structure -- --nocapture
-running 6 tests
-test test_encrypted_data_key_count_greater_than_zero ... ok
-test test_nonframed_frame_length_must_be_zero ... ok
-test test_suite_data_length_matches_algorithm_suite ... ok
-test test_header_serialization_order ... ok
-test test_header_big_endian_format ... ok
-test test_suite_data_interpreted_as_bytes ... ok
-test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
-
-$ cargo test --test test_v1_header_body -- --nocapture
-running 12 tests
-test test_v1_header_type ... ok
-test test_v1_header_version ... ok
-test test_v1_header_serialized ... ok
+$ cargo test message_id
+running 1 test
 test test_v1_header_message_id ... ok
-test test_v1_header_iv_length ... ok
-test test_v1_header_algorithm_suite_id ... ok
-test test_v1_header_reserved ... ok
-test test_v1_header_frame_length ... ok
-test test_v1_header_encrypted_data_keys ... ok
-test test_v1_header_serialization_order ... ok
-test test_v1_header_aad ... ok
-test test_v1_header_content_type ... ok
-test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.03s
 
-$ cargo test --test test_v2_header_body -- --nocapture
-running 10 tests
-test test_v2_header_serialized ... ok
-test test_v2_header_version ... ok
-test test_v2_header_algorithm_suite_id ... ok
-test test_v2_header_algorithm_suite_data ... ok
+running 1 test
 test test_v2_header_message_id ... ok
-test test_v2_header_content_type ... ok
-test test_v2_header_aad ... ok
-test test_v2_header_encrypted_data_keys ... ok
-test test_v2_header_body_serialization_order ... ok
-test test_v2_header_frame_length ... ok
-test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.03s
 ```
 
 ### Notes
-- All clippy warnings are pre-existing (missing docs on `encrypt_stream`, unreachable patterns in `materials.rs`, collapsible `if` in `v1_header_body.rs`). None are related to this work item.
-- The duvet snapshot confirms all 4 target sections have proper coverage: `#message-id` randomness has `[implementation,test]`, `#structure` big-endian has `[implementation,test]`, `#algorithm-suite-data` "interpreted as bytes" has `[implication,test]`, `#encrypted-data-key-count` "greater than 0" has `[implementation,test]`.
-- No duplicate annotations remain for any of the addressed requirements.
+- This is an annotation-only fix — no logic changes. The `generate_message_id` function was already correct; only the annotation quote was incomplete.
+- Pre-existing clippy warnings exist in unrelated files (`encrypt.rs` missing docs, `v1_header_body.rs` collapsible if) — not introduced by this change.
