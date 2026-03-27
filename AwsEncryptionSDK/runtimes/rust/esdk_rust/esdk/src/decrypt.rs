@@ -58,6 +58,9 @@ pub async fn decrypt_stream(
         input.source.clone(),
         &input.encryption_context,
         input.net_v4_retry_policy,
+        //= specification/client-apis/decrypt.md#behavior
+        //# - The ESDK MUST provide a configuration option that causes the decryption operation
+        //# to fail immediately after parsing the header if a signed algorithm suite is used.
         ProtectionNeeded::needs_protection(input.i_accept_the_danger),
         input.max_encrypted_data_keys,
         input.commitment_policy,
@@ -73,6 +76,11 @@ pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
     input.validate()?;
     let mut cursor: std::io::Cursor<&[u8]> = std::io::Cursor::new(input.ciphertext);
     let mut plaintext: Vec<u8> = Vec::with_capacity(input.ciphertext.len());
+    //= specification/client-apis/decrypt.md#behavior
+    //= type=implication
+    //= reason=decrypt() collects all output into a Vec<u8> and only returns it after all 5 steps complete; partial output is impossible by construction
+    //# If the input encrypted message is not being [streamed](streaming.md) to this operation,
+    //# all output MUST NOT be released until after these steps complete successfully.
     let out = internal_decrypt(
         &mut cursor,
         &mut plaintext,
@@ -131,7 +139,17 @@ async fn internal_decrypt(
     commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<DecryptStreamOutput, Error> {
     //= specification/client-apis/decrypt.md#behavior
+    //= type=implication
+    //= reason=streaming path holds back final frame until after signature verification; regular frames written only after per-frame tag verification succeeds
+    //# - Output MUST NOT be released until otherwise indicated.
+    //= specification/client-apis/decrypt.md#behavior
     //# - Decrypt operation Step 1 MUST be [Parse the header](#parse-the-header)
+    //= specification/client-apis/decrypt.md#behavior
+    //= type=implication
+    //= reason=each step uses ? to propagate errors immediately, halting the operation on any failure
+    //# - If all bytes have been provided and this operation
+    //# is unable to complete the above steps with the consumable encrypted message bytes,
+    //# this operation MUST halt and indicate a failure to the caller.
     let (header_body, raw_header) = step_parse_header(ciphertext, max_encrypted_data_keys)?;
 
     //= specification/client-apis/decrypt.md#behavior
