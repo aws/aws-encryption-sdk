@@ -107,6 +107,11 @@ async fn internal_encrypt(
     max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
     commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<EncryptStreamOutput, Error> {
+    //= specification/client-apis/encrypt.md#behavior
+    //= type=implication
+    //= reason=every step below uses the ? operator, which halts and returns the error to the caller
+    //# If any of these steps fails, this operation MUST halt and indicate a failure to the caller.
+
     //= specification/client-apis/encrypt.md#encryption-context
     //# If the input encryption context contains any entries with a key beginning with `aws-crypto-`,
     //# the encryption operation MUST fail.
@@ -150,6 +155,15 @@ async fn internal_encrypt(
         &mat_result.materials.encryption_context,
         &mat_result.materials.required_encryption_context_keys,
         &mat_result.materials.encrypted_data_keys,
+        //= specification/client-apis/encrypt.md#get-the-encryption-materials
+        //= type=implication
+        //= reason=frame_length is passed through from the caller's input; FrameLength::default() provides 4096 when not supplied
+        //# The frame length used in the procedures described below MUST be the input [frame length](#frame-length),
+        //# if supplied.
+        //= specification/client-apis/encrypt.md#get-the-encryption-materials
+        //= type=implication
+        //= reason=FrameLength implements Default with value 4096; EncryptInput defaults frame_length via derive(Default)
+        //# If no input frame length is supplied, the default frame length MUST be used.
         frame_length,
         ciphertext,
         &mut dw,
@@ -195,6 +209,11 @@ async fn internal_encrypt(
     }
 
     let suite_id = get_esdk_id(header.suite.id)?;
+    //= specification/client-apis/encrypt.md#behavior
+    //= type=implication
+    //= reason=only header, body, and (conditionally) footer are written to the output buffer above; no other data is added
+    //# Any data that is not specified within the [message format](../data-format/message.md)
+    //# MUST NOT be added to the output message.
     Ok(EncryptStreamOutput {
         encryption_context: header.encryption_context,
         algorithm_suite_id: suite_id,
@@ -272,6 +291,8 @@ async fn step_get_encryption_materials(
     let algorithm_suite = &materials.algorithm_suite;
 
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=implication
+    //= reason=All EsdkAlgorithmSuiteId variants are ESDK-supported; the check guards against non-ESDK AlgorithmSuiteId variants returned by the CMM
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
     //# encrypt MUST yield an error.
     let message_id = header::generate_message_id(&materials.algorithm_suite)?;
@@ -427,10 +448,6 @@ pub(crate) fn get_esdk_id(
 
 const RESERVED_ENCRYPTION_CONTEXT: &str = "aws-crypto-";
 
-//= specification/client-apis/encrypt.md#encryption-context
-//= type=implementation
-//# If the input encryption context contains any entries with a key beginning with `aws-crypto-`,
-//# the encryption operation MUST fail.
 fn validate_encryption_context(ec: &EncryptionContext) -> Result<(), Error> {
     for key in ec.keys() {
         if key.starts_with(RESERVED_ENCRYPTION_CONTEXT) {
@@ -511,6 +528,10 @@ fn build_header_body(
     frame_length: u32,
     suite_data: Option<Vec<u8>>,
 ) -> Result<HeaderBody, Error> {
+    //= specification/client-apis/encrypt.md#construct-the-header
+    //= type=implication
+    //= reason=Hkdf commitment produces V2Body (version 2.0), all others produce V1Body (version 1.0), matching the algorithm suite's associated version
+    //# The [message format version](../data-format/message-header.md#supported-versions) MUST be the value associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites).
     match suite.commitment {
         aws_mpl_legacy::suites::DerivationAlgorithm::Hkdf(h) => {
             if suite_data.is_none()

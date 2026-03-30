@@ -1,0 +1,12 @@
+// Only relevant for streaming (unknown plaintext length), which this implementation does not support
+//= specification/client-apis/encrypt.md#get-the-encryption-materials
+//= type=exception
+//= reason=This implementation always has known plaintext length; streaming (unknown length) is not supported
+//# If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
+//# was provided, this MUST be the [Plaintext Length Bound](#plaintext-length-bound).
+
+// Only relevant for streaming (unknown plaintext length), which this implementation does not support
+//= specification/client-apis/encrypt.md#get-the-encryption-materials
+//= type=exception
+//= reason=This implementation always has known plaintext length; streaming (unknown length) is not supported
+//# If no Plaintext Length Bound is provided, this field MUST NOT be included.

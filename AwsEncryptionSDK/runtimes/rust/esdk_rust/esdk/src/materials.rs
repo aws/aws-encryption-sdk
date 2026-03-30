@@ -78,18 +78,18 @@ pub(crate) async fn create_cmm_from_input(
         }
         MaterialSource::Cmm(cmm) => Ok(Cmm::Modern(cmm)),
         MaterialSource::Keyring(keyring) => {
-            //= aws-encryption-sdk-specification/client-apis/encrypt.md#get-the-encryption-materials
+            //= specification/client-apis/encrypt.md#get-the-encryption-materials
             //# If instead the caller supplied a [keyring](../framework/keyring-interface.md),
             //# this behavior MUST use a [default CMM](../framework/default-cmm.md)
             //# constructed using the caller-supplied keyring as input.
             //= aws-encryption-sdk-specification/client-apis/decrypt.md#keyring
             //# If the Keyring is provided as the input, the client MUST construct a [default CMM](../framework/default-cmm.md) that uses this keyring,
             //# to obtain the [decryption materials](../framework/structures.md#decryption-materials) that is required for decryption.
-            let cmm = aws_mpl_legacy::cmm::create_default_cryptographic_materials_manager(keyring)?;
             //= aws-encryption-sdk-specification/client-apis/decrypt.md#keyring
             //= type=implication
             //= reason=The default CMM constructed above will obtain decryption materials when decrypt_materials is called on it
             //# This default CMM MUST obtain the decryption materials required for decryption.
+            let cmm = aws_mpl_legacy::cmm::create_default_cryptographic_materials_manager(keyring)?;
             Ok(Cmm::Modern(cmm))
         }
     }
@@ -208,8 +208,6 @@ pub(crate) async fn get_modern_decryption_materials(
     //# This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
     let materials = cmm.decrypt_materials(&input).await?;
     //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=implication
-    //= reason=The CMM resolves the algorithm suite from the header; unsupported ESDK suites fail during CMM processing
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
     //# encrypt MUST yield an error.
     //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
@@ -522,8 +520,6 @@ pub(crate) async fn get_legacy_decryption_materials(
     let return_materials = materials.clone();
     let mpl = mpl();
     //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=implication
-    //= reason=The CMM resolves the algorithm suite from the header; unsupported ESDK suites fail during CMM processing
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
     //# encrypt MUST yield an error.
     //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
@@ -571,31 +567,31 @@ pub(crate) async fn get_modern_encryption_materials(
     commitment_policy: aws_mpl_legacy::commitment::EsdkCommitmentPolicy,
 ) -> Result<EncryptionMaterials, Error> {
     let mut input = GetEncryptionMaterialsInput::default();
-    //= aws-encryption-sdk-specification/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=implication
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
     //= reason=algorithm_suite_id is Option; None means the field is not set on the input
     //# If no Algorithm Suite is provided, this field MUST NOT be included.
     input.algorithm_suite_id = algorithm_suite_id;
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //# - Commitment Policy: This MUST be the [commitment policy](client.md#commitment-policy)
+    //# configured in the [client](client.md) exposing this encrypt function.
     input.commitment_policy = aws_mpl_legacy::commitment::CommitmentPolicy::Esdk(commitment_policy);
-    //= aws-encryption-sdk-specification/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=implication
-    //= reason=The caller passes an empty EncryptionContext when none is provided as input
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //# - Encryption Context: If provided, this MUST be the [input encryption context](#encryption-context).
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= reason=Encryption context is empty by default
     //# Otherwise, this MUST be an empty encryption context.
     input.encryption_context = encryption_context;
-    //= aws-encryption-sdk-specification/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=implication
-    //= reason=The caller resolves known length vs Plaintext Length Bound before calling; this receives the resolved value
-    //# If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
-    //# was provided, this MUST be the [Plaintext Length Bound](#plaintext-length-bound).
-    //= aws-encryption-sdk-specification/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=implication
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //# - Max Plaintext Length: If the [input plaintext](#plaintext) has known length,
+    //# this length MUST be used.
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
     //= reason=max_plaintext_length is Option; None means the field is not set on the input
     //# If no Plaintext Length Bound is provided, this field MUST NOT be included.
     input.max_plaintext_length = max_plaintext_length;
     // input.required_encryption_context_keys = required_encryption_context_keys.clone();
     let materials = cmm.get_encryption_materials(&input).await?;
 
-    //= aws-encryption-sdk-specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
     //# If this [algorithm suite](../framework/algorithm-suites.md) is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) encrypt MUST yield an error.
     aws_mpl_legacy::commitment::validate_commitment_policy_on_encrypt(
@@ -623,23 +619,23 @@ pub(crate) async fn get_legacy_encryption_materials(
     )]
     let output = cmm
         .get_encryption_materials()
-        //= aws-encryption-sdk-specification/client-apis/encrypt.md#get-the-encryption-materials
+        //= specification/client-apis/encrypt.md#get-the-encryption-materials
         //= type=implication
         //= reason=The caller passes an empty EncryptionContext when none is provided as input
         //# Otherwise, this MUST be an empty encryption context.
         .encryption_context(encryption_context)
         .commitment_policy(convert_commit(commitment_policy))
-        //= aws-encryption-sdk-specification/client-apis/encrypt.md#get-the-encryption-materials
+        //= specification/client-apis/encrypt.md#get-the-encryption-materials
         //= type=implication
         //= reason=algorithm_suite_id is Option; .set_ with None means the field is not set
         //# If no Algorithm Suite is provided, this field MUST NOT be included.
         .set_algorithm_suite_id(algorithm_suite_id.map(convert_alg))
-        //= aws-encryption-sdk-specification/client-apis/encrypt.md#get-the-encryption-materials
+        //= specification/client-apis/encrypt.md#get-the-encryption-materials
         //= type=implication
         //= reason=The caller resolves known length vs Plaintext Length Bound before calling; this receives the resolved value
         //# If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
         //# was provided, this MUST be the [Plaintext Length Bound](#plaintext-length-bound).
-        //= aws-encryption-sdk-specification/client-apis/encrypt.md#get-the-encryption-materials
+        //= specification/client-apis/encrypt.md#get-the-encryption-materials
         //= type=implication
         //= reason=max_plaintext_length is Option; .set_ with None means the field is not set
         //# If no Plaintext Length Bound is provided, this field MUST NOT be included.
@@ -649,7 +645,7 @@ pub(crate) async fn get_legacy_encryption_materials(
 
     let materials = output.encryption_materials.unwrap();
     let return_materials = materials.clone();
-    //= aws-encryption-sdk-specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
     //# If this [algorithm suite](../framework/algorithm-suites.md) is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) encrypt MUST yield an error.
     mpl.validate_commitment_policy_on_encrypt()

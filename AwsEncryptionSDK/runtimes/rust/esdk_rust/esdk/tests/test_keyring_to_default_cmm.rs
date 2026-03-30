@@ -61,7 +61,7 @@ async fn test_default_cmm_obtains_decryption_materials() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_keyring_constructs_default_cmm_for_encrypt() {
-    //= aws-encryption-sdk-specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //# If instead the caller supplied a [keyring](../framework/keyring-interface.md),
     //# this behavior MUST use a [default CMM](../framework/default-cmm.md)
