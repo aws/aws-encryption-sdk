@@ -486,3 +486,29 @@ async fn test_decrypt_final_frame_content_length_uses_encrypted_content_length()
     let result = round_trip(&pt, 4096).await;
     assert_eq!(result, pt, "final-frame-only decrypt proves content length uses encrypted content length");
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_decrypt_final_frame_held_until_signature_verification() {
+    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //# Any plaintext decrypted from [unframed data](../data-format/message-body.md#un-framed-data) or
+    //# a final frame in a streamed Decrypt operation MUST NOT be released until [signature verification](#verify-the-signature)
+    //# successfully completes.
+    // Encrypt with a signing algorithm suite, then tamper with the signature.
+    // Decrypt must fail, proving the final frame plaintext was held back
+    // pending signature verification and never released.
+    let keyring = test_keyring().await;
+    let pt = vec![0xABu8; 16];
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(&pt, EncryptionContext::new(), keyring.clone());
+    enc_input.frame_length = FrameLength::new(4096).unwrap();
+    enc_input.algorithm_suite_id =
+        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
+    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    // Tamper with the last byte of the signature to cause verification failure
+    let last = ct.len() - 1;
+    ct[last] ^= 0xFF;
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let result = decrypt(&dec_input).await;
+    assert!(result.is_err(), "tampered signature must cause decrypt failure, proving final frame was held back");
+}
