@@ -28,6 +28,7 @@ phases:
       - export PATH="$PWD/dafny:$PATH"
       # Switch back to the main directory
       - cd aws-encryption-sdk/AwsEncryptionSDK
+      - make mvn_local_deploy_polymorph_dependencies
   pre_build:
     commands:
       # UNIQUE_ID should be passed in as an environment variable. It is used to tie
@@ -44,6 +45,6 @@ phases:
     commands:
       - mkdir build
       - export VERSION=`grep '<Version>' runtimes/net/ESDK.csproj | sed 's/.*<Version>\(.*\)<\/Version>/\1/'`
-      - dotnet pack runtimes/net/ESDK.csproj --no-build /p:Configuration=Release,Version=$VERSION --output build
+      - dotnet pack runtimes/net/ESDK.csproj --no-build /p:Configuration=Release --output build
       - export API_ACCESS_KEY=$(python $BASE/retrieve_api_access_key.py)
       - dotnet nuget push build/AWS.Cryptography.EncryptionSDK.$VERSION.nupkg --api-key "$API_ACCESS_KEY" --source https://api.nuget.org/v3/index.json
