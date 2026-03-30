@@ -471,6 +471,11 @@ async fn test_output_includes_encrypted_message() {
     //= type=test
     //# - The output of the Encrypt operation MUST include an [encrypted message](#encrypted-message) value.
 
+    //= specification/client-apis/encrypt.md#encrypted-message
+    //= type=test
+    //# This MUST be a sequence of bytes
+    //# and conform to the [message format specification](../data-format/message.md).
+
     let output = encrypt_default(b"output encrypted message test").await;
     assert!(!output.ciphertext.is_empty(), "output must include non-empty encrypted message");
 }
@@ -496,6 +501,10 @@ async fn test_output_includes_algorithm_suite() {
     //= specification/client-apis/encrypt.md#output
     //= type=test
     //# - The output of the Encrypt operation MUST include an [algorithm suite](#algorithm-suite) value.
+
+    //= specification/client-apis/encrypt.md#algorithm-suite-1
+    //= type=test
+    //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
 
     let keyring = test_keyring().await;
     let mut enc_input =
