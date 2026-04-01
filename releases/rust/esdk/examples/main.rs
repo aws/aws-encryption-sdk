@@ -4,6 +4,7 @@
 #![deny(warnings, unconditional_panic)]
 #![deny(nonstandard_style)]
 #![deny(clippy::all)]
+#![allow(clippy::result_large_err)]
 
 pub mod client_supplier;
 pub mod cryptographic_materials_manager;
