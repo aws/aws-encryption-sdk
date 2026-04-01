@@ -51,7 +51,7 @@ jobs:
       - name: Setup Rust Toolchain for GitHub CI
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          components: rustfmt
+          components: rustfmt, clippy
 
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
@@ -93,6 +93,13 @@ jobs:
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
           make transpile_rust CORES=$CORES
+
+      - name: Run clippy
+        working-directory: ${{ matrix.library }}/runtimes/rust
+        shell: bash
+        run: |
+          cargo clippy
+          cargo clippy --example main
 
       - name: Test Rust
         working-directory: ${{ matrix.library }}
