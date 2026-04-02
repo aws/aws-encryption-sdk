@@ -45,7 +45,15 @@ impl ProtectionNeeded {
 
 /// Decrypt dyn Read into dyn Write
 pub async fn decrypt_stream(
+    //= specification/client-apis/decrypt.md#encrypted-message
+    //= type=implication
+    //= reason=SafeRead accepts incremental reads, so callers can stream the encrypted message without buffering it entirely in memory
+    //# This input MAY be [streamed](streaming.md) to this operation.
     ciphertext: &mut dyn SafeRead,
+    //= specification/client-apis/decrypt.md#plaintext
+    //= type=implication
+    //= reason=SafeWrite accepts incremental writes, so each decrypted frame is flushed to the output as it's produced without buffering the full plaintext
+    //# This operation MAY [stream](streaming.md) the plaintext as output.
     plaintext: &mut dyn SafeWrite,
     input: &DecryptStreamInput,
 ) -> Result<DecryptStreamOutput, Error> {
@@ -56,6 +64,10 @@ pub async fn decrypt_stream(
     //# and is decrypting messages created with an algorithm suite including a signature algorithm,
     //# any released plaintext MUST NOT be considered signed data until this operation finishes
     //# successfully.
+    //= specification/client-apis/decrypt.md#verify-the-header
+    //# However, if the streamed Decrypt operation is using an algorithm suite with a signature algorithm
+    //# all released output MUST NOT be considered signed data until
+    //# this operation successfully completes.
     //= specification/client-apis/decrypt.md#behavior
     //# - The ESDK MUST provide a configuration option that causes the decryption operation
     //# to fail immediately after parsing the header if a signed algorithm suite is used.

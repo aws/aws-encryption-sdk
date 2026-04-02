@@ -145,7 +145,9 @@ pub struct DecryptOutput {
     pub algorithm_suite_id: EsdkAlgorithmSuiteId,
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
-    /// decrypted data
+    //= specification/client-apis/decrypt.md#plaintext
+    //= type=implication
+    //# This MUST be a sequence of bytes.
     pub plaintext: Vec<u8>,
 }
 

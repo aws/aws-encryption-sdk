@@ -35,7 +35,7 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
   SECTION: [Encrypted Message](#encrypted-message)
     TEXT[!MUST,implementation,test]: The input encrypted message MUST be a sequence of bytes in the
     TEXT[!MUST,implementation,test]: [message format](../data-format/message.md) specified by the AWS Encryption SDK.
-    TEXT[!MAY]: This input MAY be [streamed](streaming.md) to this operation.
+    TEXT[!MAY,implication]: This input MAY be [streamed](streaming.md) to this operation.
     TEXT[!SHOULD,exception]: If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
     TEXT[!SHOULD,exception]: that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
 
@@ -59,8 +59,8 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
     TEXT[!SHOULD,exception]: - The output of the Decrypt operation SHOULD include a [Parsed Header](#parsed-header) value.
 
   SECTION: [Plaintext](#plaintext)
-    TEXT[!MUST]: This MUST be a sequence of bytes.
-    TEXT[!MAY]: This operation MAY [stream](streaming.md) the plaintext as output.
+    TEXT[!MUST,implication]: This MUST be a sequence of bytes.
+    TEXT[!MAY,implication]: This operation MAY [stream](streaming.md) the plaintext as output.
     TEXT[!SHOULD,exception]: If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
     TEXT[!SHOULD,exception]: that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
 
@@ -200,13 +200,13 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
     TEXT[!MUST,implementation,test]: - the tag MUST be the value serialized in the message header's
     TEXT[!MUST,implementation,test]:   [authentication tag field](../data-format/message-header.md#authentication-tag)
     TEXT[!MUST,implementation,test]: If this tag verification fails, this operation MUST immediately halt and fail.
-    TEXT[!SHOULD]: - A streamed Decrypt operation SHOULD release the parsed [encryption context](#encryption-context),
-    TEXT[!SHOULD]:   [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id),
-    TEXT[!SHOULD]:   and [other header information](#parsed-header)
-    TEXT[!SHOULD]:   as soon as tag verification succeeds.
-    TEXT[!MUST]:   However, if the streamed Decrypt operation is using an algorithm suite with a signature algorithm
-    TEXT[!MUST]:   all released output MUST NOT be considered signed data until
-    TEXT[!MUST]:   this operation successfully completes.
+    TEXT[!SHOULD,exception]: - A streamed Decrypt operation SHOULD release the parsed [encryption context](#encryption-context),
+    TEXT[!SHOULD,exception]:   [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id),
+    TEXT[!SHOULD,exception]:   and [other header information](#parsed-header)
+    TEXT[!SHOULD,exception]:   as soon as tag verification succeeds.
+    TEXT[!MUST,implementation]:   However, if the streamed Decrypt operation is using an algorithm suite with a signature algorithm
+    TEXT[!MUST,implementation]:   all released output MUST NOT be considered signed data until
+    TEXT[!MUST,implementation]:   this operation successfully completes.
     TEXT[!SHOULD]: - The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
     TEXT[!SHOULD]:   such that the serialized frame isn't required to remain in memory to [verify the signature](#verify-the-signature).
 
