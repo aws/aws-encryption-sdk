@@ -16,7 +16,6 @@ use aws_mpl_legacy::primitives::*;
 //= type=implication
 //# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
 //= specification/client-apis/client.md#initialization
-//= type=implication
 //# If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
 //= specification/client-apis/client.md#initialization
 //= type=implication
@@ -53,8 +52,6 @@ pub async fn decrypt_stream(
     input.validate()?;
 
     //= specification/client-apis/decrypt.md#security-considerations
-    //= type=implication
-    //= reason=streaming path holds back final frame until signature verification completes; ProtectionNeeded prevents multi-frame signed messages from releasing data early
     //# If this operation is [streaming](streaming.md) output to the caller
     //# and is decrypting messages created with an algorithm suite including a signature algorithm,
     //# any released plaintext MUST NOT be considered signed data until this operation finishes
@@ -77,13 +74,9 @@ pub async fn decrypt_stream(
     .await;
 
     //= specification/client-apis/decrypt.md#security-considerations
-    //= type=implication
-    //= reason=decrypt_stream returns Result so callers can detect completion vs failure; no output is final until Ok is returned
     //# This means that callers that process such released plaintext MUST NOT consider any processing successful
     //# until this operation completes successfully.
     //= specification/client-apis/decrypt.md#security-considerations
-    //= type=implication
-    //= reason=on failure decrypt_stream returns Err; callers are responsible for discarding any streamed output received before the error
     //# Additionally, if this operation fails, callers MUST discard the released plaintext and encryption context
     //# and MUST rollback any processing done due to the released plaintext or encryption context.
     result
@@ -98,8 +91,6 @@ pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
     let mut cursor: std::io::Cursor<&[u8]> = std::io::Cursor::new(input.ciphertext);
     let mut plaintext: Vec<u8> = Vec::with_capacity(input.ciphertext.len());
     //= specification/client-apis/decrypt.md#behavior
-    //= type=implication
-    //= reason=decrypt() collects all output into a Vec<u8> and only returns it after all 5 steps complete; partial output is impossible by construction
     //# If the input encrypted message is not being [streamed](streaming.md) to this operation,
     //# all output MUST NOT be released until after these steps complete successfully.
     let out = internal_decrypt(
@@ -160,14 +151,10 @@ async fn internal_decrypt(
     commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<DecryptStreamOutput, Error> {
     //= specification/client-apis/decrypt.md#behavior
-    //= type=implication
-    //= reason=streaming path holds back final frame until after signature verification; regular frames written only after per-frame tag verification succeeds
     //# - Output MUST NOT be released until otherwise indicated.
     //= specification/client-apis/decrypt.md#behavior
     //# - Decrypt operation Step 1 MUST be [Parse the header](#parse-the-header)
     //= specification/client-apis/decrypt.md#behavior
-    //= type=implication
-    //= reason=each step uses ? to propagate errors immediately, halting the operation on any failure
     //# - If all bytes have been provided and this operation
     //# is unable to complete the above steps with the consumable encrypted message bytes,
     //# this operation MUST halt and indicate a failure to the caller.
@@ -207,8 +194,6 @@ async fn internal_decrypt(
 
     // now that we have verified the signature, we can write the last frame of data
     //= specification/client-apis/decrypt.md#authenticated-data
-    //= type=implication
-    //= reason=all plaintext is decrypted via AES-GCM with authentication tags; encryption context is authenticated via header verification; nothing is released until authentication succeeds
     //# This operation MUST NOT release any unauthenticated plaintext or unauthenticated associated data.
     serialize_functions::write_bytes(plaintext, &last_frame)?;
 
@@ -222,8 +207,6 @@ async fn internal_decrypt(
     Ok(DecryptStreamOutput {
         encryption_context: ec,
         //= specification/client-apis/decrypt.md#algorithm-suite
-        //= type=implication
-        //= reason=get_esdk_id validates the suite is ESDK-supported; unsupported suites cause an error before output is constructed
         //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
         algorithm_suite_id: get_esdk_id(state.header.suite.id)?,
     })

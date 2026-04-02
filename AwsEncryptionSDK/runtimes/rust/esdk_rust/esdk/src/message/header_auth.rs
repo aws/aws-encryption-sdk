@@ -38,7 +38,7 @@ pub(crate) fn write_header_auth_tag_v1(
             header_iv,
             header_auth_tag,
         } => {
-            //= aws-encryption-sdk-specification/data-format/message-header.md#header-authentication-version-1-0
+            //= specification/data-format/message-header.md#header-authentication-version-1-0
             //# The V1 Header Authentication MUST be serialized as, in order,
             //# IV,
             //# and Authentication Tag.
@@ -62,7 +62,7 @@ pub(crate) fn write_header_auth_tag_v2(
         HeaderAuth::AESMac {
             header_auth_tag, ..
         } => {
-            //= aws-encryption-sdk-specification/data-format/message-header.md#header-authentication-version-2-0
+            //= specification/data-format/message-header.md#header-authentication-version-2-0
             //# The V2 Header Authentication MUST be serialized as the Authentication Tag only.
 
             //= specification/client-apis/encrypt.md#v2-authentication-tag
@@ -89,22 +89,14 @@ pub(crate) fn read_header_auth_tag_v1(
     suite: &AlgorithmSuite,
     raw: &mut dyn SafeWrite,
 ) -> Result<HeaderAuth, Error> {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#iv
-    //= type=implication
-    //= reason=read_vec reads exactly get_iv_length(suite) bytes, enforcing the IV length equals the algorithm suite's IV length
+    //= specification/data-format/message-header.md#iv
     //# The length of the serialized IV MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-    //= aws-encryption-sdk-specification/data-format/message-header.md#iv
-    //= type=implication
-    //= reason=the IV is stored as Vec<u8> and handled as raw bytes throughout
+    //= specification/data-format/message-header.md#iv
     //# The IV MUST be interpreted as bytes.
     let header_iv = read_vec(r, get_iv_length(suite) as usize, raw)?;
-    //= aws-encryption-sdk-specification/data-format/message-header.md#authentication-tag
-    //= type=implication
-    //= reason=read_vec reads exactly get_tag_length(suite) bytes, enforcing the tag length equals the algorithm suite's authentication tag length
+    //= specification/data-format/message-header.md#authentication-tag
     //# The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-    //= aws-encryption-sdk-specification/data-format/message-header.md#authentication-tag
-    //= type=implication
-    //= reason=the authentication tag is stored as Vec<u8> and handled as raw bytes throughout
+    //= specification/data-format/message-header.md#authentication-tag
     //# The authentication tag MUST be interpreted as bytes.
     let header_auth_tag = read_vec(r, get_tag_length(suite) as usize, raw)?;
     Ok(HeaderAuth::AESMac {
@@ -117,13 +109,9 @@ pub(crate) fn read_header_auth_tag_v2(
     suite: &AlgorithmSuite,
     raw: &mut dyn SafeWrite,
 ) -> Result<HeaderAuth, Error> {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#authentication-tag
-    //= type=implication
-    //= reason=read_vec reads exactly get_tag_length(suite) bytes, enforcing the tag length equals the algorithm suite's authentication tag length
+    //= specification/data-format/message-header.md#authentication-tag
     //# The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-    //= aws-encryption-sdk-specification/data-format/message-header.md#authentication-tag
-    //= type=implication
-    //= reason=the authentication tag is stored as Vec<u8> and handled as raw bytes throughout
+    //= specification/data-format/message-header.md#authentication-tag
     //# The authentication tag MUST be interpreted as bytes.
     let header_auth_tag = read_vec(r, get_tag_length(suite) as usize, raw)?;
     let header_iv = vec![0u8; get_iv_length(suite) as usize];

@@ -69,10 +69,10 @@ fn content_type_offset_v2(ct: &[u8]) -> usize {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_version_v2_value() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#supported-versions
+    //= specification/data-format/message-header.md#supported-versions
     //= type=test
     //# The supported versions MUST be:
-    //= aws-encryption-sdk-specification/data-format/message-header.md#supported-versions
+    //= specification/data-format/message-header.md#supported-versions
     //= type=test
     //# - `02` MUST be version 2.0
     let ct = encrypt_v2(b"v2 version test").await;
@@ -81,7 +81,7 @@ async fn test_version_v2_value() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_version_v1_value() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#supported-versions
+    //= specification/data-format/message-header.md#supported-versions
     //= type=test
     //# - `01` MUST be version 1.0
     let ct = encrypt_v1(b"v1 version test").await;
@@ -90,10 +90,10 @@ async fn test_version_v1_value() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_type_customer_aed_value() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#supported-types
+    //= specification/data-format/message-header.md#supported-types
     //= type=test
     //# The supported types MUST be:
-    //= aws-encryption-sdk-specification/data-format/message-header.md#supported-types
+    //= specification/data-format/message-header.md#supported-types
     //= type=test
     //# - `80` MUST be Customer Authenticated Encrypted Data
     let ct = encrypt_v1(b"type test").await;
@@ -103,7 +103,7 @@ async fn test_type_customer_aed_value() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_type_invalid_value_rejected() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#type
+    //= specification/data-format/message-header.md#type
     //= type=test
     //# The type (hex) of this field MUST be a value that exists in the following table:
     let keyring = test_keyring().await;
@@ -118,10 +118,10 @@ async fn test_type_invalid_value_rejected() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_content_type_framed_value() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#supported-content-types
+    //= specification/data-format/message-header.md#supported-content-types
     //= type=test
     //# The supported content types MUST be:
-    //= aws-encryption-sdk-specification/data-format/message-header.md#supported-content-types
+    //= specification/data-format/message-header.md#supported-content-types
     //= type=test
     //# - `02` for [Framed](message-body.md#framed-data)
     let ct = encrypt_v2(b"test").await;
@@ -131,7 +131,7 @@ async fn test_content_type_framed_value() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_content_type_nonframed_value() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#supported-content-types
+    //= specification/data-format/message-header.md#supported-content-types
     //= type=test
     //# - `01` for [Non-Framed](message-body.md#non-framed-data)
     let keyring = test_keyring().await;
@@ -154,7 +154,7 @@ async fn test_content_type_nonframed_value() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_content_type_invalid_value_rejected() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#content-type
+    //= specification/data-format/message-header.md#content-type
     //= type=test
     //# The value (hex) of this field MUST be a value that exists in the following table:
     let keyring = test_keyring().await;

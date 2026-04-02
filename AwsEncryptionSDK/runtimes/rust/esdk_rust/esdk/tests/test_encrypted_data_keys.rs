@@ -1,7 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-keys
+//! Tests for specification/data-format/message-header.md#encrypted-data-keys
 
 mod fixtures;
 
@@ -93,7 +93,7 @@ fn parse_first_edk(ct: &[u8]) -> (u16, &[u8], u16, &[u8], u16, &[u8]) {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypted_data_keys_serialization_order() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-keys
+    //= specification/data-format/message-header.md#encrypted-data-keys
     //= type=test
     //# The Encrypted Data Keys MUST be serialized as, in order,
     //# Encrypted Data Key Count,
@@ -108,11 +108,11 @@ async fn test_encrypted_data_keys_serialization_order() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypted_data_key_count_is_2_bytes_uint16() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-count
+    //= specification/data-format/message-header.md#encrypted-data-key-count
     //= type=test
     //# The length of the serialized encrypted data key count MUST be 2 bytes.
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-count
+    //= specification/data-format/message-header.md#encrypted-data-key-count
     //= type=test
     //# The encrypted data key count MUST be serialized as a UInt16.
     let keyring = test_keyring().await;
@@ -133,7 +133,7 @@ async fn test_encrypted_data_key_count_is_2_bytes_uint16() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypted_data_key_count_must_be_greater_than_zero() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-count
+    //= specification/data-format/message-header.md#encrypted-data-key-count
     //= type=test
     //# This value MUST be greater than 0.
     let keyring = test_keyring().await;
@@ -155,7 +155,7 @@ async fn test_encrypted_data_key_count_must_be_greater_than_zero() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_edk_entry_serialization_order() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-entries
+    //= specification/data-format/message-header.md#encrypted-data-key-entries
     //= type=test
     //# Each Encrypted Data Key Entry MUST be serialized as, in order,
     //# Key Provider ID Length,
@@ -180,7 +180,7 @@ async fn test_edk_entry_serialization_order() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_key_provider_id_length_matches_data() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-id
+    //= specification/data-format/message-header.md#key-provider-id
     //= type=test
     //# The length of the serialized key provider ID MUST be equal to the value of the [Key Provider ID Length](#key-provider-id-length) field.
     let ct = encrypt_v1(b"key provider id length test").await;
@@ -195,7 +195,7 @@ async fn test_key_provider_id_length_matches_data() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_key_provider_id_is_utf8() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-id
+    //= specification/data-format/message-header.md#key-provider-id
     //= type=test
     //# The key provider ID MUST be interpreted as UTF-8 encoded bytes.
     let ct = encrypt_v1(b"key provider id utf8 test").await;
@@ -209,11 +209,11 @@ async fn test_key_provider_id_is_utf8() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_key_provider_information_length_field_is_2_bytes_uint16() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-information-length
+    //= specification/data-format/message-header.md#key-provider-information-length
     //= type=test
     //# The length of the serialized key provider information length field MUST be 2 bytes.
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-information-length
+    //= specification/data-format/message-header.md#key-provider-information-length
     //= type=test
     //# The key provider information length MUST be serialized as a UInt16.
     let ct = encrypt_v1(b"key provider info length test").await;
@@ -237,7 +237,7 @@ async fn test_key_provider_information_length_field_is_2_bytes_uint16() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_key_provider_information_length_matches_data() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-information
+    //= specification/data-format/message-header.md#key-provider-information
     //= type=test
     //# The length of the serialized key provider information MUST be equal to the value of the [Key Provider Information Length](#key-provider-information-length) field.
     let ct = encrypt_v1(b"key provider info data test").await;
@@ -252,7 +252,7 @@ async fn test_key_provider_information_length_matches_data() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_key_provider_information_is_bytes() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-information
+    //= specification/data-format/message-header.md#key-provider-information
     //= type=test
     //# The key provider information MUST be interpreted as bytes.
     let ct = encrypt_v1(b"key provider info bytes test").await;
@@ -269,11 +269,11 @@ async fn test_key_provider_information_is_bytes() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypted_data_key_length_field_is_2_bytes_uint16() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-length
+    //= specification/data-format/message-header.md#encrypted-data-key-length
     //= type=test
     //# The length of the serialized encrypted data key length field MUST be 2 bytes.
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-length
+    //= specification/data-format/message-header.md#encrypted-data-key-length
     //= type=test
     //# The encrypted data key length MUST be serialized as a UInt16.
     let ct = encrypt_v1(b"edk length field test").await;
@@ -299,7 +299,7 @@ async fn test_encrypted_data_key_length_field_is_2_bytes_uint16() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypted_data_key_length_matches_data() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key
+    //= specification/data-format/message-header.md#encrypted-data-key
     //= type=test
     //# The length of the serialized encrypted data key MUST be equal to the value of the [Encrypted Data Key Length](#encrypted-data-key-length) field.
     let ct = encrypt_v1(b"edk data length test").await;
@@ -314,7 +314,7 @@ async fn test_encrypted_data_key_length_matches_data() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypted_data_key_is_bytes() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key
+    //= specification/data-format/message-header.md#encrypted-data-key
     //= type=test
     //# The encrypted data key MUST be interpreted as bytes.
     let ct = encrypt_v1(b"edk bytes test").await;

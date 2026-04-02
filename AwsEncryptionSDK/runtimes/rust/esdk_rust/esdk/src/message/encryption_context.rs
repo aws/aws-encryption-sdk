@@ -62,12 +62,8 @@ pub(crate) fn write_aad_section(
     }
     let bytes = get_length(data);
     //= specification/data-format/message-header.md#key-value-pairs-length
-    //= type=implication
-    //= reason=write_u16 always writes exactly 2 bytes as a big-endian UInt16
     //# The length of the serialized key value pairs length field MUST be 2 bytes.
     //= specification/data-format/message-header.md#key-value-pairs-length
-    //= type=implication
-    //= reason=write_u16 serializes the value as a big-endian UInt16
     //# The key value pairs length MUST be serialized as a UInt16.
     write_u16(w, bytes as u16)?;
     write_aad(w, data)

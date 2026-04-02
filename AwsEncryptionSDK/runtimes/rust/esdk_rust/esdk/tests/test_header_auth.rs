@@ -1,7 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for aws-encryption-sdk-specification/data-format/message-header.md
+//! Tests for specification/data-format/message-header.md
 //! header-authentication-version-1-0 and header-authentication-version-2-0
 
 mod fixtures;
@@ -53,7 +53,7 @@ async fn round_trip_v2(plaintext: &[u8]) -> Vec<u8> {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_auth_serialization_order() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#header-authentication-version-1-0
+    //= specification/data-format/message-header.md#header-authentication-version-1-0
     //= type=test
     //# The V1 Header Authentication MUST be serialized as, in order,
     //# IV,
@@ -65,7 +65,7 @@ async fn test_v1_header_auth_serialization_order() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v2_header_auth_serialization() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#header-authentication-version-2-0
+    //= specification/data-format/message-header.md#header-authentication-version-2-0
     //= type=test
     //# The V2 Header Authentication MUST be serialized as the Authentication Tag only.
     let pt = b"v2 header auth serialization test";
@@ -115,12 +115,12 @@ async fn test_v2_encrypt_header_auth_tag_serialization() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_auth_iv_length_and_bytes() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#iv
+    //= specification/data-format/message-header.md#iv
     //= type=test
     //# The length of the serialized IV MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
     let pt = b"v1 iv length test";
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#iv
+    //= specification/data-format/message-header.md#iv
     //= type=test
     //# The IV MUST be interpreted as bytes.
     let result = round_trip_v1(pt).await;
@@ -129,12 +129,12 @@ async fn test_v1_header_auth_iv_length_and_bytes() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_auth_tag_length_and_bytes() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#authentication-tag
+    //= specification/data-format/message-header.md#authentication-tag
     //= type=test
     //# The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
     let pt = b"v1 auth tag length test";
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#authentication-tag
+    //= specification/data-format/message-header.md#authentication-tag
     //= type=test
     //# The authentication tag MUST be interpreted as bytes.
     let result = round_trip_v1(pt).await;
@@ -143,12 +143,12 @@ async fn test_v1_header_auth_tag_length_and_bytes() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v2_header_auth_tag_length_and_bytes() {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#authentication-tag
+    //= specification/data-format/message-header.md#authentication-tag
     //= type=test
     //# The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
     let pt = b"v2 auth tag length test";
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#authentication-tag
+    //= specification/data-format/message-header.md#authentication-tag
     //= type=test
     //# The authentication tag MUST be interpreted as bytes.
     let result = round_trip_v2(pt).await;

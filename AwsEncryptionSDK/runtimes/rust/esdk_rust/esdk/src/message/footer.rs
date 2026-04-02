@@ -9,7 +9,6 @@ use super::*;
 use crate::types::{SafeRead, SafeWrite};
 
 //= specification/data-format/message-footer.md#overview
-//= type=implication
 //# When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
 //# the [message](message.md) MUST contain a footer.
 
@@ -37,12 +36,8 @@ pub(crate) fn write_footer(
     let len = u16::try_from(signature.len())
         .map_err(|_| Error::from("Sequence length too long for 16 bits"))?;
     //= specification/data-format/message-footer.md#signature-length
-    //= type=implication
-    //= reason=write_u16 writes exactly 2 bytes as a big-endian u16
     //# This length of the signature length field MUST be 2 bytes.
     //= specification/data-format/message-footer.md#signature-length
-    //= type=implication
-    //= reason=write_u16 serializes the value as a big-endian UInt16
     //# The signature length field MUST be interpreted as a UInt16.
     write_u16(w, len)?;
     //= specification/client-apis/encrypt.md#construct-the-signature
@@ -61,12 +56,8 @@ pub(crate) fn read_footer(
     raw: &mut dyn SafeWrite,
 ) -> Result<Vec<u8>, Error> {
     //= specification/data-format/message-footer.md#signature-length
-    //= type=implication
-    //= reason=read_seq_u16 calls read_u16 which reads exactly 2 bytes
     //# This length of the signature length field MUST be 2 bytes.
     //= specification/data-format/message-footer.md#signature-length
-    //= type=implication
-    //= reason=read_seq_u16 calls read_u16 which interprets 2 bytes as a big-endian UInt16
     //# The signature length field MUST be interpreted as a UInt16.
     read_seq_u16(r, raw)
 }

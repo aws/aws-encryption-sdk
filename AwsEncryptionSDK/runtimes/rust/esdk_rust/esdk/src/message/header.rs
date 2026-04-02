@@ -135,8 +135,6 @@ pub(crate) fn validate_suite_data(
     expected_suite_data: &[u8],
 ) -> Result<(), Error> {
     //= specification/data-format/message-header.md#algorithm-suite-data
-    //= type=implication
-    //= reason=suite_data is Vec<u8> and compared as byte slices; the type system enforces byte interpretation
     //# The algorithm suite data MUST be interpreted as bytes.
     if header_body.suite_data() != expected_suite_data {
         return Err("Commitment key does not match".into());

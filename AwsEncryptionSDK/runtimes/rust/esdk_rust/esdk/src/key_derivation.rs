@@ -75,6 +75,9 @@ pub(crate) fn derive_key(
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
         //# - If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
         //# then the derived data key MUST be the same as the plaintext data key.
+        //= specification/client-apis/decrypt.md#get-the-decryption-materials
+        //# If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
+        //# then the derived data key MUST be the same as the plaintext data key.
         DerivationAlgorithm::Identity => Ok(ExpandedKeyMaterial {
             data_key: plaintext_data_key.to_vec(),
             commitment_key: None,

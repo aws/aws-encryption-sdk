@@ -1,7 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+//! Tests for specification/client-apis/decrypt.md#decrypt-the-message-body
 
 mod fixtures;
 
@@ -81,7 +81,7 @@ fn validate_frame_walk(ct: &[u8], offset: usize, frame_length: u32) -> bool {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_regular_frame_deserialization() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# Regular frame deserialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
     // Multi-frame message: 30 bytes with frame_length=10 → 2 regular frames + 1 final frame.
@@ -93,7 +93,7 @@ async fn test_decrypt_regular_frame_deserialization() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_final_frame_deserialization() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# Final frame deserialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
     // Single-frame message: 5 bytes with frame_length=10 → 1 final frame only.
@@ -104,7 +104,7 @@ async fn test_decrypt_final_frame_deserialization() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_uses_first_4_bytes_to_determine_frame_type() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# If deserializing [framed data](../data-format/message-body.md#framed-data),
     //# the Decrypt operation MUST use the first 4 bytes of a frame to determine
@@ -118,7 +118,7 @@ async fn test_decrypt_uses_first_4_bytes_to_determine_frame_type() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_final_frame_detected_by_endframe_marker() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# If the first 4 bytes have a value of 0xFFFF,
     //# then the Decrypt operation MUST deserialize the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
@@ -130,7 +130,7 @@ async fn test_decrypt_final_frame_detected_by_endframe_marker() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_regular_frame_detected_without_endframe() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# Otherwise, the Decrypt operation MUST deserialize the bytes according to the [regular frame spec](../data-format/message-body.md#regular-frame).
     // Multi-frame: first frame starts with sequence number 1 (not 0xFFFFFFFF), so it's a regular frame.
@@ -141,7 +141,7 @@ async fn test_decrypt_regular_frame_detected_without_endframe() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_final_frame_content_length_validation() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# If deserializing a [final frame](../data-format/message-body.md#final-frame),
     //# the Decrypt operation MUST ensure that the length of the encrypted content field is
@@ -167,7 +167,7 @@ async fn test_decrypt_final_frame_content_length_validation() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_authenticates_each_frame() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# Once at least a single frame is deserialized (or the entire body in the un-framed case),
     //# the Decrypt operation MUST decrypt and authenticate the frame (or body) using the
@@ -181,7 +181,7 @@ async fn test_decrypt_authenticates_each_frame() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_first_frame_sequence_number_is_one() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# If this is framed data and the first frame sequentially, this value MUST be 1.
     // Single-frame decrypt: the only frame has sequence number 1.
@@ -193,7 +193,7 @@ async fn test_decrypt_first_frame_sequence_number_is_one() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_sequence_numbers_increment() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# Otherwise, this value MUST be 1 greater than the value of the sequence number
     //# of the previous frame.
@@ -206,7 +206,7 @@ async fn test_decrypt_sequence_numbers_increment() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_content_length_in_aad() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
     //# equal to the length of the plaintext that was encrypted.
@@ -219,7 +219,7 @@ async fn test_decrypt_content_length_in_aad() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_fails_on_tampered_auth_tag() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# If this decryption fails, this operation MUST immediately halt and fail.
     // Tamper with the authentication tag of the first frame. Decrypt must fail.
@@ -238,7 +238,7 @@ async fn test_decrypt_fails_on_tampered_auth_tag() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_no_unauthenticated_plaintext_released() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# This operation MUST NOT release any unauthenticated plaintext.
     // Tamper with encrypted content in the first frame. Decrypt must fail
@@ -257,7 +257,7 @@ async fn test_decrypt_no_unauthenticated_plaintext_released() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_streaming_releases_regular_frames() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - If the streamed Decrypt operation is using an algorithm suite with a signature algorithm,
     //# all plaintext decrypted from regular frames SHOULD be released as soon as the above calculation,
@@ -280,7 +280,7 @@ async fn test_decrypt_streaming_releases_regular_frames() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_body_deserialized_after_header() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# Once the message header is successfully parsed, the next sequential bytes
     //# MUST be deserialized according to the [message body spec](../data-format/message-body.md).
@@ -292,7 +292,7 @@ async fn test_decrypt_body_deserialized_after_header() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_content_type_determines_framed_or_nonframed() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# The Decrypt operation MUST use the [content type](../data-format/message-header.md#content-type) field parsed from the
     //# message header to determine whether the operation will deserialize the message bytes as
@@ -306,27 +306,27 @@ async fn test_decrypt_content_type_determines_framed_or_nonframed() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_frame_fields_deserialized_correctly() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The [Sequence Number End](../data-format/message-body.md#sequence-number-end): MUST be deserialized according to the
     //# [Sequence Number End](../data-format/message-body.md#sequence-number-end) specification.
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number): MUST be deserialized according to the
     //# [Regular Frame Sequence Number](../data-format/message-body.md#regular-frame-sequence-number) specification.
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - [IV](../data-format/message-body.md#regular-frame-iv): MUST be deserialized according to the
     //# [Regular Frame IV](../data-format/message-body.md#regular-frame-iv) specification.
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length): MUST be deserialized according to the
     //# [Final Frame Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length) specification.
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content): MUST be deserialized according to the
     //# [Regular Frame Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content) specification.
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag): MUST be deserialized according to the
     //# [Regular Frame Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag) specification.
@@ -340,20 +340,20 @@ async fn test_decrypt_frame_fields_deserialized_correctly() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_aad_constructed_correctly() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
     //# constructed as follows:
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The [message ID](../data-format/message-body-aad.md#message-id) MUST be the same as the
     //# [message ID](../data-frame/message-header.md#message-id) deserialized from the header of this message.
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be constructed
     //# according to [Message Body AAD](../data-format/message-body-aad.md) depending on
     //# whether the bytes being decrypted are a regular frame, final frame, or un-framed data.
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be the sequence
     //# number deserialized from the frame being decrypted.
@@ -366,7 +366,7 @@ async fn test_decrypt_aad_constructed_correctly() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_unframed_sequence_number_is_one() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# If this is un-framed data, this value MUST be 1.
     // We cannot encrypt non-framed data with this ESDK (it only encrypts framed),
@@ -380,18 +380,18 @@ async fn test_decrypt_unframed_sequence_number_is_one() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_aes_inputs_correct() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The IV MUST be the [sequence number](../data-format/message-body-aad.md#sequence-number)
     //# used in the message body AAD above,
     //# padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The cipherkey MUST be the derived data key
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The ciphertext MUST be the [encrypted content](../data-format/message-body.md#encrypted-content).
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The tag MUST be the value serialized in the
     //# [authentication tag field](../data-format/message-body.md#authentication-tag)
@@ -405,7 +405,7 @@ async fn test_decrypt_aes_inputs_correct() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_wait_for_bytes() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# If there could still be message body left to deserialize and decrypt,
     //# this operation MUST either wait for more of the encrypted message bytes to become consumable,
@@ -420,7 +420,7 @@ async fn test_decrypt_wait_for_bytes() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_streaming_without_signature_releases() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - If the streamed Decrypt operation is using an algorithm suite without a signature algorithm,
     //# plaintext SHOULD be released as soon as the above calculation, including tag verification,
@@ -441,7 +441,7 @@ async fn test_decrypt_streaming_without_signature_releases() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_streaming_feeds_signature_algorithm() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The streamed Decrypt operation SHOULD input the serialized frame to the signature algorithm as soon as it is deserialized,
     //# such that the serialized frame isn't required to remain in memory to complete
@@ -463,7 +463,7 @@ async fn test_decrypt_streaming_feeds_signature_algorithm() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_regular_frame_content_length_uses_frame_length() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# If this is a regular frame, this SHOULD be determined by using the [frame length](../data-format/message-header.md#frame-length)
     //# deserialized from the message header.
@@ -476,7 +476,7 @@ async fn test_decrypt_regular_frame_content_length_uses_frame_length() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_final_frame_content_length_uses_encrypted_content_length() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# If this is not a regular frame, this SHOULD be determined by using the the [encrypted content length](../data-format/message-body.md#encrypted-content-length).
     // Single final frame with plaintext shorter than frame length.
@@ -489,7 +489,7 @@ async fn test_decrypt_final_frame_content_length_uses_encrypted_content_length()
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_final_frame_held_until_signature_verification() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# Any plaintext decrypted from [unframed data](../data-format/message-body.md#un-framed-data) or
     //# a final frame in a streamed Decrypt operation MUST NOT be released until [signature verification](#verify-the-signature)

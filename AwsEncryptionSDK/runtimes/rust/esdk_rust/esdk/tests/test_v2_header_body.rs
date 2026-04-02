@@ -206,17 +206,17 @@ async fn test_v2_header_algorithm_suite_id() {
     //= type=test
     //# The value MUST correspond to the [algorithm suite](../framework/algorithm-suites.md) used in this behavior.
     let ct = encrypt_default(b"suite test").await;
-    //= aws-encryption-sdk-specification/data-format/message-header.md#algorithm-suite-id
+    //= specification/data-format/message-header.md#algorithm-suite-id
     //= type=test
     //# The length of the serialized algorithm suite ID field MUST be 2 bytes.
     let suite_id_bytes = &ct[1..3];
     assert_eq!(suite_id_bytes.len(), 2, "Algorithm Suite ID must be 2 bytes");
     // Default V2 suite AlgAes256GcmHkdfSha512CommitKeyEcdsaP384 = 0x0578
-    //= aws-encryption-sdk-specification/data-format/message-header.md#algorithm-suite-id
+    //= specification/data-format/message-header.md#algorithm-suite-id
     //= type=test
     //# The value (hex) of this field MUST be a value that exists in the
     //# [Supported Algorithm Suites](../framework/algorithm-suites.md#supported-algorithm-suites) table.
-    //= aws-encryption-sdk-specification/data-format/message-header.md#algorithm-suite-id
+    //= specification/data-format/message-header.md#algorithm-suite-id
     //= type=test
     //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
     let suite_id = u16::from_be_bytes([ct[1], ct[2]]);
@@ -233,12 +233,15 @@ async fn test_v2_header_message_id() {
     //= type=test
     //# The process used to generate this identifier MUST use a good source of randomness
     //# to make the chance of duplicate identifiers negligible.
-    //= aws-encryption-sdk-specification/data-format/message-header.md#message-id
+    //= specification/data-format/message-header.md#message-id
     //= type=test
     //# The length of the serialized message ID MUST be 32 bytes for [version 2.0](#header-body-version-20) headers.
     let ct1 = encrypt_default(b"msg id v2 test").await;
     let ct2 = encrypt_default(b"msg id v2 test").await;
     // V2 header: [0] = version (0x02), [1..3] = algorithm suite ID, [3..35] = message ID (32 bytes)
+    //= specification/data-format/message-header.md#message-id
+    //= type=test
+    //# The message ID MUST be interpreted as bytes.
     let msg_id_1 = &ct1[3..35];
     let msg_id_2 = &ct2[3..35];
     assert_eq!(msg_id_1.len(), 32, "V2 Message ID must be 32 bytes");

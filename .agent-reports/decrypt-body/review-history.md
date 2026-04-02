@@ -68,3 +68,46 @@ Agent 2 correctly addressed both critical issues from Round 1. The redundant cip
 **Files Modified**:
 - `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/body.rs`
 - `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_decrypt_the_message_body.rs`
+
+## Cycle 2, Round 1
+
+## Review: APPROVED AND COMMITTED ✅
+
+### Summary
+Agent 2 added a single, well-crafted test function that directly exercises the final frame hold-back requirement — the last remaining gap (33/33 now covered). The annotation quote matches the TOML character-for-character, placement is correct (inside the test function, close to the assertion), and the test logic is sound.
+
+### What Was Verified
+- ✅ Duvet annotations use exact quotes from TOML files
+- ✅ Annotation placement follows correct patterns (single `type=test` block inside test function)
+- ✅ Implementation matches specification requirements (implementation annotations already existed at decrypt.rs lines 215 and 452)
+- ✅ Tests cover all implementation annotations (25 tests, 33/33 requirements now have `type=test`)
+- ✅ Code quality is acceptable
+- ✅ Commit message follows Conventional Commits format
+
+### Test Results (from manual validation)
+- Check 1 (Tests): PASS — 25/25 decrypt body tests pass
+- Check 2 (Coverage): PASS — duvet report generates successfully with 1322 annotations
+- Check 3 (Duvet Report): PASS — snapshot shows new `TEXT[test]` line for this requirement
+- Check 4 (Snapshot): PASS — snapshot changes are additions only
+- Check 5 (Linter): PASS — only pre-existing clippy warnings in unrelated files
+
+### Commit
+`ff3bc056 test(decrypt): add type=test annotation for final frame hold-back requirement`
+
+### Test Handoff
+**Spec**: `aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body`
+
+**Files Modified**:
+- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_decrypt_the_message_body.rs`
+
+**Commit Message**:
+```
+test(decrypt): add type=test annotation for final frame hold-back requirement
+
+Add test verifying that final frame plaintext is not released until
+signature verification completes. The test encrypts with ECDSA P384,
+tampers with the signature, and asserts decrypt fails — proving the
+final frame was held back pending signature verification.
+
+Spec: aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
+```

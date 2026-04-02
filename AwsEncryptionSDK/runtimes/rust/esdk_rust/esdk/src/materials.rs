@@ -82,13 +82,13 @@ pub(crate) async fn create_cmm_from_input(
             //# If instead the caller supplied a [keyring](../framework/keyring-interface.md),
             //# this behavior MUST use a [default CMM](../framework/default-cmm.md)
             //# constructed using the caller-supplied keyring as input.
-            //= aws-encryption-sdk-specification/client-apis/decrypt.md#keyring
+            //= specification/client-apis/decrypt.md#keyring
             //# If the Keyring is provided as the input, the client MUST construct a [default CMM](../framework/default-cmm.md) that uses this keyring,
             //# to obtain the [decryption materials](../framework/structures.md#decryption-materials) that is required for decryption.
-            //= aws-encryption-sdk-specification/client-apis/decrypt.md#keyring
+            //= specification/client-apis/decrypt.md#keyring
             //= type=implication
             //= reason=The default CMM constructed above will obtain decryption materials when decrypt_materials is called on it
-            //# This default CMM MUST obtain the decryption materials required for decryption.
+            //# This default CMM constructed from the keyring MUST obtain the decryption materials required for decryption.
             let cmm = aws_mpl_legacy::cmm::create_default_cryptographic_materials_manager(keyring)?;
             Ok(Cmm::Modern(cmm))
         }
@@ -177,40 +177,40 @@ pub(crate) async fn get_modern_decryption_materials(
 ) -> Result<DecryptionMaterials, Error> {
     let encryption_context = from_canonical_pairs(header_body.encryption_context().clone());
     let mut input = DecryptMaterialsInput::default();
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# The call to the CMM's [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) operation
     //# MUST be constructed as follows:
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# - Algorithm Suite ID: This MUST be the parsed
     //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
     //# from the message header.
     input.algorithm_suite_id = algorithm_suite_id;
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# - Commitment Policy: This MUST be the commitment policy configured on the client.
     input.commitment_policy = aws_mpl_legacy::commitment::CommitmentPolicy::Esdk(commitment_policy);
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header#encrypted-data-keys)
     //# from the message header.
     input.encrypted_data_keys = header_body.encrypted_data_keys().into();
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# - Encryption Context: This MUST be the parsed [encryption context](../data-format/message-header.md#aad)
     //# from the message header.
     input.encryption_context = encryption_context;
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
     input
         .reproduced_encryption_context
         .clone_from(reproduced_encryption_context);
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
     //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#cryptographic-materials-manager
+    //= specification/client-apis/decrypt.md#cryptographic-materials-manager
     //# This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
     let materials = cmm.decrypt_materials(&input).await?;
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
     //# encrypt MUST yield an error.
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) decrypt MUST yield an error.
     aws_mpl_legacy::commitment::validate_commitment_policy_on_decrypt(
@@ -484,33 +484,33 @@ pub(crate) async fn get_legacy_decryption_materials(
 ) -> Result<DecryptionMaterials, Error> {
     let encryption_context = from_canonical_pairs(header_body.encryption_context().clone());
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
     //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#cryptographic-materials-manager
+    //= specification/client-apis/decrypt.md#cryptographic-materials-manager
     //# This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# The call to the CMM's [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) operation
     //# MUST be constructed as follows:
     let output = cmm
         .decrypt_materials()
-        //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+        //= specification/client-apis/decrypt.md#get-the-decryption-materials
         //# - Algorithm Suite ID: This MUST be the parsed
         //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
         //# from the message header.
         .algorithm_suite_id(convert_alg(algorithm_suite_id))
-        //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+        //= specification/client-apis/decrypt.md#get-the-decryption-materials
         //# - Commitment Policy: This MUST be the commitment policy configured on the client.
         .commitment_policy(convert_commit(commitment_policy))
-        //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+        //= specification/client-apis/decrypt.md#get-the-decryption-materials
         //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header#encrypted-data-keys)
         //# from the message header.
         .encrypted_data_keys(convert_edks(header_body.encrypted_data_keys()))
-        //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+        //= specification/client-apis/decrypt.md#get-the-decryption-materials
         //# - Encryption Context: This MUST be the parsed [encryption context](../data-format/message-header.md#aad)
         //# from the message header.
         .encryption_context(encryption_context)
-        //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+        //= specification/client-apis/decrypt.md#get-the-decryption-materials
         //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
         .reproduced_encryption_context(reproduced_encryption_context.clone())
         .send()
@@ -519,10 +519,10 @@ pub(crate) async fn get_legacy_decryption_materials(
     let materials = output.decryption_materials.unwrap();
     let return_materials = materials.clone();
     let mpl = mpl();
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
     //# encrypt MUST yield an error.
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) decrypt MUST yield an error.
     mpl.validate_commitment_policy_on_decrypt()
@@ -620,14 +620,10 @@ pub(crate) async fn get_legacy_encryption_materials(
     let output = cmm
         .get_encryption_materials()
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
-        //= type=implication
-        //= reason=The caller passes an empty EncryptionContext when none is provided as input
         //# Otherwise, this MUST be an empty encryption context.
         .encryption_context(encryption_context)
         .commitment_policy(convert_commit(commitment_policy))
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
-        //= type=implication
-        //= reason=algorithm_suite_id is Option; .set_ with None means the field is not set
         //# If no Algorithm Suite is provided, this field MUST NOT be included.
         .set_algorithm_suite_id(algorithm_suite_id.map(convert_alg))
         //= specification/client-apis/encrypt.md#get-the-encryption-materials

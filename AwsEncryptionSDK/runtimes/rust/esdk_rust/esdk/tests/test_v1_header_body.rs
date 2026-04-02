@@ -95,17 +95,17 @@ async fn test_v1_header_algorithm_suite_id() {
     //= type=test
     //# The value MUST correspond to the [algorithm suite](../framework/algorithm-suites.md) used in this behavior.
     let ct = encrypt_v1(b"suite test", EncryptionContext::new()).await;
-    //= aws-encryption-sdk-specification/data-format/message-header.md#algorithm-suite-id
+    //= specification/data-format/message-header.md#algorithm-suite-id
     //= type=test
     //# The length of the serialized algorithm suite ID field MUST be 2 bytes.
     let suite_id_bytes = &ct[2..4];
     assert_eq!(suite_id_bytes.len(), 2, "Algorithm Suite ID must be 2 bytes");
     // AlgAes256GcmIv12Tag16HkdfSha256 = 0x0178
-    //= aws-encryption-sdk-specification/data-format/message-header.md#algorithm-suite-id
+    //= specification/data-format/message-header.md#algorithm-suite-id
     //= type=test
     //# The value (hex) of this field MUST be a value that exists in the
     //# [Supported Algorithm Suites](../framework/algorithm-suites.md#supported-algorithm-suites) table.
-    //= aws-encryption-sdk-specification/data-format/message-header.md#algorithm-suite-id
+    //= specification/data-format/message-header.md#algorithm-suite-id
     //= type=test
     //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
     let suite_id = u16::from_be_bytes([ct[2], ct[3]]);
@@ -303,7 +303,7 @@ async fn test_v1_version_field_is_1_byte() {
     //= specification/data-format/message-header.md#version
     //= type=test
     //# The length of the serialized version field MUST be 1 byte.
-    //= aws-encryption-sdk-specification/data-format/message-header.md#version
+    //= specification/data-format/message-header.md#version
     //= type=test
     //# The length of the serialized version field MUST be 1 byte.
     let ct = encrypt_v1(b"version 1 byte test", EncryptionContext::new()).await;
@@ -317,7 +317,7 @@ async fn test_v1_type_field_is_1_byte() {
     //= specification/data-format/message-header.md#type
     //= type=test
     //# The length of the serialized type field MUST be 1 byte.
-    //= aws-encryption-sdk-specification/data-format/message-header.md#type
+    //= specification/data-format/message-header.md#type
     //= type=test
     //# The length of the serialized type field MUST be 1 byte.
     let ct = encrypt_v1(b"type 1 byte test", EncryptionContext::new()).await;
@@ -332,7 +332,7 @@ async fn test_v1_content_type_field_is_1_byte() {
     //= specification/data-format/message-header.md#content-type
     //= type=test
     //# The length of the serialized content type field MUST be 1 byte.
-    //= aws-encryption-sdk-specification/data-format/message-header.md#content-type
+    //= specification/data-format/message-header.md#content-type
     //= type=test
     //# The length of the serialized content type field MUST be 1 byte.
     let ct = encrypt_v1(b"content type 1 byte test", EncryptionContext::new()).await;

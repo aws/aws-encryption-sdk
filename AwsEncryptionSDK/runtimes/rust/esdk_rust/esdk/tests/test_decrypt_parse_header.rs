@@ -1,8 +1,8 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
-//! and aws-encryption-sdk-specification/client-apis/decrypt.md#behavior
+//! Tests for specification/client-apis/decrypt.md#parse-the-header
+//! and specification/client-apis/decrypt.md#behavior
 
 mod fixtures;
 
@@ -26,60 +26,60 @@ async fn test_keyring() -> aws_mpl_legacy::dafny::types::keyring::KeyringRef {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v2_header_fields_deserialized() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# The header deserialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10)
     //# or [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification,
     //# depending on the [Version](../data-format/message-header.md#version) field.
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# Each header field MUST be deserialized according to its specification in the [message header](../data-format/message-header.md):
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# - [Version](../data-format/message-header.md#version): MUST be deserialized according to the
     //# [Version](../data-format/message-header.md#version) specification.
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST be deserialized according to the
     //# [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id) specification.
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# - [Message ID](../data-format/message-header.md#message-id): MUST be deserialized according to the
     //# [Message ID](../data-format/message-header.md#message-id) specification.
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# - [AAD](../data-format/message-header.md#aad): MUST be deserialized according to the
     //# [AAD](../data-format/message-header.md#aad) specification.
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be deserialized according to the
     //# [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# - [Content Type](../data-format/message-header.md#content-type): MUST be deserialized according to the
     //# [Content Type](../data-format/message-header.md#content-type) specification.
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# - [Frame Length](../data-format/message-header.md#frame-length): MUST be deserialized according to the
     //# [Frame Length](../data-format/message-header.md#frame-length) specification.
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# - [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data) (V2 only): MUST be deserialized according to the
     //# [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data) specification.
@@ -103,21 +103,21 @@ async fn test_v2_header_fields_deserialized() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_fields_deserialized() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# - [Type](../data-format/message-header.md#type) (V1 only): MUST be deserialized according to the
     //# [Type](../data-format/message-header.md#type) specification.
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# The value MUST be a [supported type](../data-format/message-header.md#supported-types).
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# - [Reserved](../data-format/message-header.md#reserved) (V1 only): MUST be deserialized according to the
     //# [Reserved](../data-format/message-header.md#reserved) specification.
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# - [IV Length](../data-format/message-header.md#iv-length) (V1 only): MUST be deserialized according to the
     //# [IV Length](../data-format/message-header.md#iv-length) specification.
@@ -143,7 +143,7 @@ async fn test_v1_header_fields_deserialized() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unsupported_version_rejected() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
 
@@ -167,7 +167,7 @@ async fn test_unsupported_version_rejected() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unsupported_content_type_rejected() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
 
@@ -223,7 +223,7 @@ async fn test_unsupported_content_type_rejected() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unsupported_type_rejected() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# The value MUST be a [supported type](../data-format/message-header.md#supported-types).
 
@@ -251,7 +251,7 @@ async fn test_unsupported_type_rejected() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_trailing_bytes_after_message_rejected() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#behavior
+    //= specification/client-apis/decrypt.md#behavior
     //= type=test
     //# - If this operation successfully completes the above steps
     //# but there are consumable bytes which are intended to be decrypted,
@@ -277,23 +277,23 @@ async fn test_trailing_bytes_after_message_rejected() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_steps_in_order() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#behavior
+    //= specification/client-apis/decrypt.md#behavior
     //= type=test
     //# - Decrypt operation Step 1 MUST be [Parse the header](#parse-the-header)
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#behavior
+    //= specification/client-apis/decrypt.md#behavior
     //= type=test
     //# - Decrypt operation Step 2 MUST be [Get the decryption materials](#get-the-decryption-materials)
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#behavior
+    //= specification/client-apis/decrypt.md#behavior
     //= type=test
     //# - Decrypt operation Step 3 MUST be [Verify the header](#verify-the-header)
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#behavior
+    //= specification/client-apis/decrypt.md#behavior
     //= type=test
     //# - Decrypt operation Step 4 MUST be [Decrypt the message body](#decrypt-the-message-body)
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#behavior
+    //= specification/client-apis/decrypt.md#behavior
     //= type=test
     //# - Decrypt operation Step 5 MUST be [Verify the signature](#verify-the-signature)
 
@@ -318,7 +318,7 @@ async fn test_decrypt_steps_in_order() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_parse_header_sequential_processing() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# Given encrypted message bytes, this operation MUST process those bytes sequentially,
     //# deserializing those bytes according to the [message format](../data-format/message.md).

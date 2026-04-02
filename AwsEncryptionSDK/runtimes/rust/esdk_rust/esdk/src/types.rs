@@ -50,14 +50,12 @@ impl Eq for MaterialSource {}
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// The length of one frame, must be non-zero, defaults to 4096.
 //= specification/data-format/message-body.md#framed-data
-//= type=implication
 //# - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
 #[expect(clippy::exhaustive_structs)]
 pub struct FrameLength(pub std::num::NonZeroU32);
 
 impl Default for FrameLength {
     //= specification/client-apis/encrypt.md#frame-length
-    //= type=implication
     //# This value MUST default to 4096 bytes.
     fn default() -> Self {
         Self(std::num::NonZeroU32::new(4096).unwrap())
@@ -67,7 +65,6 @@ impl Default for FrameLength {
 impl FrameLength {
     /// return new `FrameLength`.
     //= specification/client-apis/encrypt.md#frame-length
-    //= type=implication
     //# This value MUST be greater than 0 and MUST NOT exceed the value 2^32 - 1.
     pub fn new(val: u32) -> Result<Self, Error> {
         Ok(Self(
@@ -186,19 +183,14 @@ impl ::std::fmt::Display for NetV400RetryPolicy {
 #[non_exhaustive]
 /// Input for [`encrypt`](crate::encrypt).
 //= specification/client-apis/encrypt.md#input
-//= type=implication
 //# - The input to the Encrypt operation MUST accept a required [plaintext](#plaintext) argument.
 //= specification/client-apis/encrypt.md#input
-//= type=implication
 //# - The input to the Encrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
 //= specification/client-apis/encrypt.md#input
-//= type=implication
 //# - The input to the Encrypt operation MUST accept an optional [Algorithm Suite](#algorithm-suite) argument.
 //= specification/client-apis/encrypt.md#input
-//= type=implication
 //# - The input to the Encrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
 //= specification/client-apis/encrypt.md#input
-//= type=implication
 //# - The input to the Encrypt operation MUST accept an optional [Frame Length](#frame-length) argument.
 //= specification/client-apis/encrypt.md#input
 //= type=implication
@@ -233,19 +225,14 @@ pub struct EncryptInput<'a> {
     pub plaintext: &'a [u8],
     /// Default is no limit
     //= specification/client-apis/client.md#initialization
-    //= type=implication
     //# - On client initialization,
     //# the caller MUST have the option to provide a [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys).
     //= specification/client-apis/client.md#initialization
-    //= type=implication
-    //= reason=Option<NonZeroUsize> defaults to None via derive(Default), which means no limit
     //# If no [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys) is provided
     //# the default MUST result in no limit on the number of encrypted data keys (aside from the limit imposed by the [message format](../format/message-header.md)).
     pub max_encrypted_data_keys: Option<NonZeroUsize>,
     /// Default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
     //= specification/client-apis/client.md#initialization
-    //= type=implication
-    //= reason=EsdkCommitmentPolicy derives Default with RequireEncryptRequireDecrypt as the default variant
     //# - On client initialization,
     //# the caller MUST have the option to provide a [commitment policy](#commitment-policy).
     pub commitment_policy: EsdkCommitmentPolicy,
@@ -416,7 +403,6 @@ pub struct DecryptInput<'a> {
     pub ciphertext: &'a [u8],
     /// Key-Value pairs to associate with the encrypted data
     //= specification/client-apis/decrypt.md#input
-    //= type=implication
     //# - The input to the Decrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
     pub encryption_context: EncryptionContext,
     /// The source of cryptographic materials

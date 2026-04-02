@@ -1,7 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for aws-encryption-sdk-specification/client-apis/decrypt.md#verify-the-header
+//! Tests for specification/client-apis/decrypt.md#verify-the-header
 
 mod fixtures;
 
@@ -25,32 +25,32 @@ async fn test_keyring() -> aws_mpl_legacy::dafny::types::keyring::KeyringRef {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_verify_header_v2_round_trip() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#verify-the-header
+    //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# Once a valid message header is deserialized and decryption materials are available,
     //# this operation MUST validate the [message header body](../data-format/message-header.md#header-body)
     //# by using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# to decrypt with the following inputs:
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#verify-the-header
+    //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - The AAD MUST be the concatenation of the serialized [message header body](../data-format/message-header.md#header-body)
     //# and the serialization of encryption context to only authenticate.
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#verify-the-header
+    //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# For message format version [2.0](../data-format/message-header.md#supported-versions)
     //# the IV MUST be 0.
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#verify-the-header
+    //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - the cipherkey MUST be the derived data key
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#verify-the-header
+    //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - the ciphertext MUST be an empty byte array
 
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#verify-the-header
+    //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - the tag MUST be the value serialized in the message header's
     //# [authentication tag field](../data-format/message-header.md#authentication-tag)
@@ -71,7 +71,7 @@ async fn test_verify_header_v2_round_trip() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_verify_header_v1_round_trip() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#verify-the-header
+    //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - For message format version [1.0](../data-format/message-header.md#supported-versions)
     //# the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header#iv).
@@ -94,7 +94,7 @@ async fn test_verify_header_v1_round_trip() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_verify_header_fails_on_tampered_header() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#verify-the-header
+    //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# If this tag verification fails, this operation MUST immediately halt and fail.
 
@@ -115,7 +115,7 @@ async fn test_verify_header_fails_on_tampered_header() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_verify_header_encryption_context_to_only_authenticate() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#verify-the-header
+    //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# The encryption context to only authenticate MUST be the [encryption context](../framework/structures.md#encryption-context)
     //# in the [decryption materials](../framework/structures.md#decryption-materials)

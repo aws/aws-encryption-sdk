@@ -25,7 +25,7 @@ async fn test_keyring() -> aws_mpl_legacy::dafny::types::keyring::KeyringRef {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_output_includes_plaintext() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#output
+    //= specification/client-apis/decrypt.md#output
     //= type=test
     //# - The output of the Decrypt operation MUST include a [Plaintext](#plaintext) value.
 
@@ -42,7 +42,7 @@ async fn test_decrypt_output_includes_plaintext() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_output_includes_encryption_context() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#output
+    //= specification/client-apis/decrypt.md#output
     //= type=test
     //# - The output of the Decrypt operation MUST include an [encryption context](#encryption-context) value.
 
@@ -60,7 +60,7 @@ async fn test_decrypt_output_includes_encryption_context() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_output_includes_algorithm_suite() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#output
+    //= specification/client-apis/decrypt.md#output
     //= type=test
     //# - The output of the Decrypt operation MUST include an [algorithm suite](#algorithm-suite) value.
 
@@ -78,7 +78,7 @@ async fn test_decrypt_output_includes_algorithm_suite() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_output_algorithm_suite_is_esdk_supported() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#algorithm-suite
+    //= specification/client-apis/decrypt.md#algorithm-suite
     //= type=test
     //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
 
@@ -97,7 +97,7 @@ async fn test_decrypt_output_algorithm_suite_is_esdk_supported() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_no_unauthenticated_data_released() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#authenticated-data
+    //= specification/client-apis/decrypt.md#authenticated-data
     //= type=test
     //# This operation MUST NOT release any unauthenticated plaintext or unauthenticated associated data.
 
@@ -121,7 +121,7 @@ async fn test_decrypt_no_unauthenticated_data_released() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_signed_plaintext_not_signed_until_complete() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#security-considerations
+    //= specification/client-apis/decrypt.md#security-considerations
     //= type=test
     //# If this operation is [streaming](streaming.md) output to the caller
     //# and is decrypting messages created with an algorithm suite including a signature algorithm,
@@ -151,7 +151,7 @@ async fn test_streaming_signed_plaintext_not_signed_until_complete() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_callers_must_not_consider_successful_until_complete() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#security-considerations
+    //= specification/client-apis/decrypt.md#security-considerations
     //= type=test
     //# This means that callers that process such released plaintext MUST NOT consider any processing successful
     //# until this operation completes successfully.
@@ -181,7 +181,7 @@ async fn test_streaming_callers_must_not_consider_successful_until_complete() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_callers_must_discard_on_failure() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#security-considerations
+    //= specification/client-apis/decrypt.md#security-considerations
     //= type=test
     //# Additionally, if this operation fails, callers MUST discard the released plaintext and encryption context
     //# and MUST rollback any processing done due to the released plaintext or encryption context.

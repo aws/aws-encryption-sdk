@@ -118,7 +118,6 @@ async fn internal_encrypt(
     validate_encryption_context(encryption_context)?;
 
     //= specification/client-apis/encrypt.md#behavior
-    //= type=implication
     //# - Encrypt operation Step 1 MUST be [Get the encryption materials](#get-the-encryption-materials)
     let mat_result = step_get_encryption_materials(
         plaintext_len,
@@ -131,19 +130,14 @@ async fn internal_encrypt(
     .await?;
 
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=implication
-    //= reason=The next steps use the encryption materials (mat_result) obtained in step 1
     //# To construct the [encrypted message](#encrypted-message),
     //# some fields MUST be constructed using information obtained
     //# from a set of valid [encryption materials](../framework/structures.md#encryption-materials).
 
     //= specification/client-apis/encrypt.md#behavior
-    //= type=implication
     //# - Encrypt operation step 2 MUST be [Construct the header](#construct-the-header)
 
     //= specification/client-apis/encrypt.md#construct-the-header
-    //= type=implication
-    //= reason=Step 2 (serialize header) comes before step 3 (encrypt body)
     //# Before encrypting input plaintext,
     //# this operation MUST serialize the [message header body](../data-format/message-header.md).
 
@@ -156,13 +150,9 @@ async fn internal_encrypt(
         &mat_result.materials.required_encryption_context_keys,
         &mat_result.materials.encrypted_data_keys,
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
-        //= type=implication
-        //= reason=frame_length is passed through from the caller's input; FrameLength::default() provides 4096 when not supplied
         //# The frame length used in the procedures described below MUST be the input [frame length](#frame-length),
         //# if supplied.
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
-        //= type=implication
-        //= reason=FrameLength implements Default with value 4096; EncryptInput defaults frame_length via derive(Default)
         //# If no input frame length is supplied, the default frame length MUST be used.
         frame_length,
         ciphertext,
@@ -170,7 +160,6 @@ async fn internal_encrypt(
     )?;
 
     //= specification/client-apis/encrypt.md#behavior
-    //= type=implication
     //# - Encrypt operation step 3 MUST be [Construct the body](#construct-the-body)
     //= specification/data-format/message.md#structure
     //# - The [Message Body](message-body.md) MUST follow the Message Header
@@ -190,7 +179,6 @@ async fn internal_encrypt(
     )?;
 
     //= specification/client-apis/encrypt.md#behavior
-    //= type=implication
     //# - Encrypt operation step 4 MUST be [Construct the signature](#construct-the-signature)
     //= specification/client-apis/encrypt.md#behavior
     //# - If the materials do not have an algorithm suite including a signature algorithm,
@@ -210,8 +198,6 @@ async fn internal_encrypt(
 
     let suite_id = get_esdk_id(header.suite.id)?;
     //= specification/client-apis/encrypt.md#behavior
-    //= type=implication
-    //= reason=only header, body, and (conditionally) footer are written to the output buffer above; no other data is added
     //# Any data that is not specified within the [message format](../data-format/message.md)
     //# MUST NOT be added to the output message.
     Ok(EncryptStreamOutput {
@@ -343,13 +329,9 @@ fn step_construct_header(
         dw,
     )?;
     //= specification/client-apis/encrypt.md#authentication-tag
-    //= type=implication
-    //= reason=single code path: the header built here is serialized directly to output
     //# The encrypted message output by the Encrypt operation MUST have a message header equal
     //# to the message header calculated in this step.
     //= specification/client-apis/encrypt.md#authentication-tag
-    //= type=implication
-    //= reason=single code path means header inequality is impossible by construction
     //# If the message headers are not equal, the Encrypt operation MUST fail.
     Ok(header)
 }
@@ -505,8 +487,6 @@ fn build_header_for_encrypt(
     //# this operation MUST calculate an [authentication tag](../data-format/message-header.md#authentication-tag)
     //# over the message header body.
     //= specification/data-format/message-header.md#authentication-tag
-    //= type=implication
-    //= reason=the authentication tag is computed by build_header_auth_tag and stored in HeaderAuth
     //# The authentication tag MUST be interpreted as bytes.
     let header_auth = build_header_auth_tag(
         suite, &derived_data_keys.data_key,
@@ -529,8 +509,6 @@ fn build_header_body(
     suite_data: Option<Vec<u8>>,
 ) -> Result<HeaderBody, Error> {
     //= specification/client-apis/encrypt.md#construct-the-header
-    //= type=implication
-    //= reason=Hkdf commitment produces V2Body (version 2.0), all others produce V1Body (version 1.0), matching the algorithm suite's associated version
     //# The [message format version](../data-format/message-header.md#supported-versions) MUST be the value associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites).
     match suite.commitment {
         aws_mpl_legacy::suites::DerivationAlgorithm::Hkdf(h) => {

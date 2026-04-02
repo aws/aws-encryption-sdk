@@ -32,7 +32,7 @@ async fn test_keyring() -> aws_mpl_legacy::dafny::types::keyring::KeyringRef {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_keyring_constructs_default_cmm_for_decrypt() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#keyring
+    //= specification/client-apis/decrypt.md#keyring
     //= type=test
     //# If the Keyring is provided as the input, the client MUST construct a [default CMM](../framework/default-cmm.md) that uses this keyring,
     //# to obtain the [decryption materials](../framework/structures.md#decryption-materials) that is required for decryption.
@@ -47,9 +47,9 @@ async fn test_keyring_constructs_default_cmm_for_decrypt() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_default_cmm_obtains_decryption_materials() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#keyring
+    //= specification/client-apis/decrypt.md#keyring
     //= type=test
-    //# This default CMM MUST obtain the decryption materials required for decryption.
+    //# This default CMM constructed from the keyring MUST obtain the decryption materials required for decryption.
     let keyring = test_keyring().await;
     let pt = b"test default cmm obtains decryption materials";
     let enc_input = EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring.clone());
@@ -75,7 +75,7 @@ async fn test_keyring_constructs_default_cmm_for_encrypt() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_fails_with_wrong_keyring() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#keyring
+    //= specification/client-apis/decrypt.md#keyring
     //= type=test
     //# If the Keyring is provided as the input, the client MUST construct a [default CMM](../framework/default-cmm.md) that uses this keyring,
     //# to obtain the [decryption materials](../framework/structures.md#decryption-materials) that is required for decryption.

@@ -1,7 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for aws-encryption-sdk-specification/data-format/message-header.md#aad,
+//! Tests for specification/data-format/message-header.md#aad,
 //! #key-value-pairs-length, and #key-value-pairs
 
 mod fixtures;

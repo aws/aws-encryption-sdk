@@ -7,7 +7,7 @@ use crate::types::{SafeRead, SafeWrite};
 use aws_mpl_legacy::EncryptedDataKey;
 
 pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result<(), Error> {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-entries
+    //= specification/data-format/message-header.md#encrypted-data-key-entries
     //# Each Encrypted Data Key Entry MUST be serialized as, in order,
     //# Key Provider ID Length,
     //# Key Provider ID,
@@ -21,25 +21,17 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
         return ser_err("Key provider ID length too long for 16 bits");
     };
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-id-length
-    //= type=implication
-    //= reason=write_u16 writes exactly 2 bytes (big-endian u16)
+    //= specification/data-format/message-header.md#key-provider-id-length
     //# The length of the serialized key provider ID length field MUST be 2 bytes.
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-id-length
-    //= type=implication
-    //= reason=write_u16 serializes a u16 in big-endian format (UInt16)
+    //= specification/data-format/message-header.md#key-provider-id-length
     //# The key provider ID length MUST be serialized as a UInt16.
     write_u16(w, kp_id_len)?;
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-id
-    //= type=implication
-    //= reason=write_bytes writes exactly kp_id_bytes.len() bytes, matching the u16 length just written
+    //= specification/data-format/message-header.md#key-provider-id
     //# The length of the serialized key provider ID MUST be equal to the value of the [Key Provider ID Length](#key-provider-id-length) field.
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-id
-    //= type=implication
-    //= reason=kp_id_bytes comes from String::as_bytes(), and Rust String is guaranteed UTF-8
+    //= specification/data-format/message-header.md#key-provider-id
     //# The key provider ID MUST be interpreted as UTF-8 encoded bytes.
     write_bytes(w, kp_id_bytes)?;
 
@@ -47,25 +39,17 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
         return ser_err("Key provider info length too long for 16 bits");
     };
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-information-length
-    //= type=implication
-    //= reason=write_u16 writes exactly 2 bytes (big-endian u16)
+    //= specification/data-format/message-header.md#key-provider-information-length
     //# The length of the serialized key provider information length field MUST be 2 bytes.
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-information-length
-    //= type=implication
-    //= reason=write_u16 serializes a u16 in big-endian format (UInt16)
+    //= specification/data-format/message-header.md#key-provider-information-length
     //# The key provider information length MUST be serialized as a UInt16.
     write_u16(w, kp_info_len)?;
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-information
-    //= type=implication
-    //= reason=write_bytes writes exactly key_provider_info.len() bytes, matching the u16 length just written
+    //= specification/data-format/message-header.md#key-provider-information
     //# The length of the serialized key provider information MUST be equal to the value of the [Key Provider Information Length](#key-provider-information-length) field.
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#key-provider-information
-    //= type=implication
-    //= reason=key_provider_info is Vec<u8>, written as raw bytes by write_bytes
+    //= specification/data-format/message-header.md#key-provider-information
     //# The key provider information MUST be interpreted as bytes.
     write_bytes(w, &edk.key_provider_info)?;
 
@@ -73,42 +57,30 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
         return ser_err("Encrypted data key length too long for 16 bits");
     };
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-length
-    //= type=implication
-    //= reason=write_u16 writes exactly 2 bytes (big-endian u16)
+    //= specification/data-format/message-header.md#encrypted-data-key-length
     //# The length of the serialized encrypted data key length field MUST be 2 bytes.
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-length
-    //= type=implication
-    //= reason=write_u16 serializes a u16 in big-endian format (UInt16)
+    //= specification/data-format/message-header.md#encrypted-data-key-length
     //# The encrypted data key length MUST be serialized as a UInt16.
     write_u16(w, edk_len)?;
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key
-    //= type=implication
-    //= reason=write_bytes writes exactly ciphertext.len() bytes, matching the u16 length just written
+    //= specification/data-format/message-header.md#encrypted-data-key
     //# The length of the serialized encrypted data key MUST be equal to the value of the [Encrypted Data Key Length](#encrypted-data-key-length) field.
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key
-    //= type=implication
-    //= reason=ciphertext is Vec<u8>, written as raw bytes by write_bytes
+    //= specification/data-format/message-header.md#encrypted-data-key
     //# The encrypted data key MUST be interpreted as bytes.
     write_bytes(w, &edk.ciphertext)
 }
 pub(crate) fn write_edks(w: &mut dyn SafeWrite, edks: &[EncryptedDataKey]) -> Result<(), Error> {
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-keys
+    //= specification/data-format/message-header.md#encrypted-data-keys
     //# The Encrypted Data Keys MUST be serialized as, in order,
     //# Encrypted Data Key Count,
     //# and Encrypted Data Key Entries.
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-count
-    //= type=implication
-    //= reason=write_u16 writes exactly 2 bytes (big-endian u16)
+    //= specification/data-format/message-header.md#encrypted-data-key-count
     //# The length of the serialized encrypted data key count MUST be 2 bytes.
 
-    //= aws-encryption-sdk-specification/data-format/message-header.md#encrypted-data-key-count
-    //= type=implication
-    //= reason=write_u16 serializes a u16 in big-endian format, which is UInt16
+    //= specification/data-format/message-header.md#encrypted-data-key-count
     //# The encrypted data key count MUST be serialized as a UInt16.
     write_u16(w, edks.len() as u16)?;
     for edk in edks {
@@ -133,7 +105,7 @@ pub(crate) fn read_edks(
     raw: &mut dyn SafeWrite,
 ) -> Result<Vec<EncryptedDataKey>, Error> {
     let count = read_u16(r, raw)?;
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#parse-the-header
     //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
     //# deserialized from the [message header](../data-format/message-header.md)
     //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),

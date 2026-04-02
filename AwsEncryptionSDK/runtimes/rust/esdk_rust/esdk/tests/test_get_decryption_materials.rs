@@ -35,11 +35,11 @@ async fn round_trip(plaintext: &[u8], ec: EncryptionContext) -> DecryptOutput {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_obtain_decryption_materials_via_cmm() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
     //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#cryptographic-materials-manager
+    //= specification/client-apis/decrypt.md#cryptographic-materials-manager
     //= type=test
     //# This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
     let pt = b"test obtain decryption materials";
@@ -49,7 +49,7 @@ async fn test_obtain_decryption_materials_via_cmm() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_call_constructed_as_follows() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# The call to the CMM's [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) operation
     //# MUST be constructed as follows:
@@ -60,7 +60,7 @@ async fn test_cmm_call_constructed_as_follows() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_call_algorithm_suite_id() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# - Algorithm Suite ID: This MUST be the parsed
     //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
@@ -72,7 +72,7 @@ async fn test_cmm_call_algorithm_suite_id() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_call_commitment_policy() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# - Commitment Policy: This MUST be the commitment policy configured on the client.
     let pt = b"test commitment policy";
@@ -82,7 +82,7 @@ async fn test_cmm_call_commitment_policy() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_call_encrypted_data_keys() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header#encrypted-data-keys)
     //# from the message header.
@@ -93,7 +93,7 @@ async fn test_cmm_call_encrypted_data_keys() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_call_encryption_context() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# - Encryption Context: This MUST be the parsed [encryption context](../data-format/message-header.md#aad)
     //# from the message header.
@@ -105,7 +105,7 @@ async fn test_cmm_call_encryption_context() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_call_reproduced_encryption_context() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
     let pt = b"test reproduced encryption context";
@@ -115,7 +115,7 @@ async fn test_cmm_call_reproduced_encryption_context() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_fails_with_wrong_keyring() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
     //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
@@ -170,7 +170,7 @@ async fn encrypt_with(
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_pre_cmm_commitment_policy_check() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# If the parsed [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
     //# is not supported by the [commitment policy](client.md#commitment-policy)
@@ -195,7 +195,7 @@ async fn test_pre_cmm_commitment_policy_check() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_used_is_input_cmm() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# The CMM used MUST be the input CMM, if supplied.
     let keyring = make_keyring(0).await;
@@ -215,7 +215,7 @@ async fn test_cmm_used_is_input_cmm() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_default_cmm_constructed_from_keyring() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# If a CMM is not supplied as the input, the decrypt operation MUST construct a [default CMM](../framework/default-cmm.md)
     //# from the input [keyring](../framework/keyring-interface.md).
@@ -231,7 +231,7 @@ async fn test_default_cmm_constructed_from_keyring() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_data_key_derived_from_plaintext_data_key() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# The data key used as input for all decryption described below MUST be a data key derived from the plaintext data key
     //# included in the [decryption materials](../framework/structures.md#decryption-materials).
@@ -254,7 +254,7 @@ async fn test_data_key_derived_from_plaintext_data_key() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_algorithm_suite_from_decryption_materials() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# The algorithm suite used as input for all decryption described below MUST be the algorithm suite
     //# included in the [decryption materials](../framework/structures.md#decryption-materials).
@@ -276,12 +276,12 @@ async fn test_algorithm_suite_from_decryption_materials() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_commit_key_derived_and_validated() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# If the [algorithm suite](../framework/algorithm-suites.md#algorithm-suites-encryption-key-derivation-settings) supports [key commitment](../framework/algorithm-suites.md#key-commitment)
     //# then the [commit key](../framework/algorithm-suites.md#commit-key) MUST be derived from the plaintext data key
     //# using the [commit key derivation](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# The derived commit key MUST equal the commit key stored in the message header.
     let keyring = make_keyring(0).await;
@@ -302,7 +302,7 @@ async fn test_commit_key_derived_and_validated() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_kdf_algorithm_from_materials_suite() {
-    //= aws-encryption-sdk-specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# The algorithm suite used to derive a data key from the plaintext data key MUST be
     //# the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the

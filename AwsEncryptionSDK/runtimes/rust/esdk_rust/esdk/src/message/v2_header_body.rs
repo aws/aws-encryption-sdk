@@ -19,13 +19,9 @@ pub(crate) fn write_v2_header_body(
     //# then the [message header body](../data-format/message-header.md#header-body-version-2-0) MUST be serialized with the following specifics:
 
     //= specification/client-apis/encrypt.md#v2-header
-    //= type=implication
-    //= reason=The sequential write calls in this function body enforce the serialization order structurally.
     //# The serialization order MUST follow the [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification.
 
     //= specification/data-format/message-header.md#header-body-version-2-0
-    //= type=implication
-    //= reason=The sequential write calls below serialize each field in the specified order.
     //# The V2 Header Body MUST be serialized as, in order,
     //# Version,
     //# Algorithm Suite ID,
@@ -80,13 +76,9 @@ pub(crate) fn write_v2_header_body(
     //# The value MUST be the value of the frame size determined above.
 
     //= specification/data-format/message-header.md#frame-length
-    //= type=implication
-    //= reason=write_u32 writes exactly 4 bytes (big-endian u32)
     //# The length of the serialized frame length field MUST be 4 bytes.
 
     //= specification/data-format/message-header.md#frame-length
-    //= type=implication
-    //= reason=write_u32 serializes a u32 in big-endian format, which is UInt32
     //# The frame length MUST be serialized as a UInt32.
     write_u32(w, body.frame_length)?;
     //= specification/client-apis/encrypt.md#v2-header
@@ -133,13 +125,9 @@ pub(crate) fn read_v2_header_body(
     }
     let content_type = read_content_type(r, raw)?;
     //= specification/data-format/message-header.md#frame-length
-    //= type=implication
-    //= reason=read_u32 reads exactly 4 bytes (big-endian u32)
     //# The length of the serialized frame length field MUST be 4 bytes.
 
     //= specification/data-format/message-header.md#frame-length
-    //= type=implication
-    //= reason=read_u32 deserializes a big-endian u32, which is UInt32
     //# The frame length MUST be serialized as a UInt32.
     let frame_length = read_u32(r, raw)?;
     let len = get_hkdf(&algorithm_suite.commitment).output_key_length;
