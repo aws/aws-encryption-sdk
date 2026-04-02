@@ -74,7 +74,15 @@ pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
 }
 
 pub async fn encrypt_stream(
+    //= specification/client-apis/encrypt.md#plaintext
+    //= type=implication
+    //= reason=SafeRead accepts incremental reads, so callers can stream the encrypted message without buffering it entirely in memory
+    //# This input MAY be [streamed](streaming.md) to this operation.
     plaintext: &mut dyn SafeRead,
+    //= specification/client-apis/encrypt.md#encrypted-message
+    //= type=implication
+    //= reason=SafeWrite accepts incremental writes, so each decrypted frame is flushed to the output as it's produced without buffering the full ciphertext
+    //# This operation MAY [stream](streaming.md) the encrypted message.
     ciphertext: &mut dyn SafeWrite,
     input: &EncryptStreamInput,
 ) -> Result<EncryptStreamOutput, Error> {
@@ -176,6 +184,7 @@ async fn internal_encrypt(
         &mat_result.derived_data_keys.data_key,
         ciphertext,
         &mut dw,
+        plaintext_len,
     )?;
 
     //= specification/client-apis/encrypt.md#behavior
@@ -191,6 +200,10 @@ async fn internal_encrypt(
         step_construct_signature(
             &header,
             &mat_result.materials,
+            //= specification/client-apis/encrypt.md#construct-the-signature
+            //= type=implication
+            //= reason=dw (DigestWriter) was fed the header bytes in step 2 (serialize_header) and the body bytes in step 3 (encrypt_and_serialize_body)
+            //# Note that the message header and message body MAY have already been input during previous steps.
             dw,
             ciphertext,
         )?;
@@ -224,6 +237,7 @@ async fn step_get_encryption_materials(
 
     //= specification/client-apis/encrypt.md#algorithm-suite
     //# The [algorithm suite](../framework/algorithm-suites.md) that MUST be used for encryption.
+    //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
     let algorithm_suite_id = algorithm_suite_id.map(aws_mpl_legacy::suites::AlgorithmSuiteId::Esdk);
     if let Some(id) = algorithm_suite_id {
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
@@ -274,6 +288,9 @@ async fn step_get_encryption_materials(
     //# The [algorithm suite](../framework/algorithm-suites.md) used in all aspects of this operation
     //# MUST be the algorithm suite in the [encryption materials](../framework/structures.md#encryption-materials)
     //# returned from the [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) call.
+    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //# Note that the algorithm suite in the retrieved encryption materials MAY be different
+    //# from the [input algorithm suite](#algorithm-suite).
     let algorithm_suite = &materials.algorithm_suite;
 
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
@@ -323,6 +340,12 @@ fn step_construct_header(
         frame_length.0.get(),
         &mat_result.derived_data_keys,
     )?;
+    //= specification/client-apis/encrypt.md#authentication-tag
+    //= type=implication
+    //= reason=serialize_header writes the complete header (body + auth tag) to ciphertext via SafeWrite, which flushes immediately before body serialization begins
+    //# If this operation is streaming the encrypted message and
+    //# the entire message header has been serialized,
+    //# the serialized message header MUST be released.
     header::serialize_header(
         &header,
         ciphertext,
@@ -343,6 +366,7 @@ fn step_construct_body(
     data_key: &[u8],
     ciphertext: &mut dyn SafeWrite,
     dw: &mut DigestWriter,
+    max_plaintext_length: Option<usize>,
 ) -> Result<(), Error> {
     body::encrypt_and_serialize_body(
         plaintext,
@@ -350,6 +374,7 @@ fn step_construct_body(
         data_key,
         ciphertext,
         dw,
+        max_plaintext_length,
     )
 }
 

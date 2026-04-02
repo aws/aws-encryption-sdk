@@ -698,13 +698,8 @@ pub(crate) fn encrypt_and_serialize_body(
     key: &[u8],
     out: &mut dyn SafeWrite,
     dw: &mut DigestWriter,
+    max_plaintext_length: Option<usize>,
 ) -> Result<(), Error> {
-    //= specification/client-apis/encrypt.md#construct-the-body
-    //= type=todo
-    //# If [Plaintext Length Bound](#plaintext-length-bound) was specified on input
-    //# and this operation determines at any time that the plaintext being encrypted
-    //# has a length greater than this value,
-    //# this operation MUST immediately fail.
     let mut total_data_size: usize = 0;
     //= specification/data-format/message-body.md#framed-data
     //# - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
@@ -775,6 +770,19 @@ pub(crate) fn encrypt_and_serialize_body(
         if total_data_size > MAX_DATA {
             return Err("Plain text too large".into());
         }
+        if let Some(max_plaintext_len) = max_plaintext_length {
+            //= specification/client-apis/encrypt.md#plaintext-length-bound
+            //# If this input is provided, this operation MUST NOT encrypt a plaintext with length
+            //# greater than this value.
+            //= specification/client-apis/encrypt.md#construct-the-body
+            //# If [Plaintext Length Bound](#plaintext-length-bound) was specified on input
+            //# and this operation determines at any time that the plaintext being encrypted
+            //# has a length greater than this value,
+            //# this operation MUST immediately fail.
+            if total_data_size > max_plaintext_len {
+                return Err("Plaintext length exceeds specified Plaintext Length Bound".into());
+            }
+        }
 
         //= specification/client-apis/encrypt.md#construct-the-body
         //# Regular frame serialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
@@ -822,6 +830,11 @@ pub(crate) fn encrypt_and_serialize_body(
     total_data_size += in_size;
     if total_data_size > MAX_DATA {
         return Err("Plain text too large".into());
+    }
+    if let Some(max_len) = max_plaintext_length {
+        if total_data_size > max_len {
+            return Err("Plaintext length exceeds specified Plaintext Length Bound".into());
+        }
     }
 
     //= specification/data-format/message-body.md#final-frame

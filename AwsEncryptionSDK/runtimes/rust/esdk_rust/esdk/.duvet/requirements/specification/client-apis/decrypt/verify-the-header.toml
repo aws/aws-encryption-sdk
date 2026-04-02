@@ -37,7 +37,7 @@ target = "specification/client-apis/decrypt.md#verify-the-header"
 #   this operation successfully completes.
 #   See [security considerations](#security-considerations) below.
 # - The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
-#   such that the serialized frame isn't required to remain in memory to [verify the signature](#verify-the-signature).
+#   such that the serialized header isn't required to remain in memory to [verify the signature](#verify-the-signature).
 
 [[spec]]
 level = "MUST"
@@ -126,6 +126,6 @@ this operation successfully completes.
 level = "SHOULD"
 quote = '''
 - The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
-such that the serialized frame isn't required to remain in memory to [verify the signature](#verify-the-signature).
+such that the serialized header isn't required to remain in memory to [verify the signature](#verify-the-signature).
 '''
 

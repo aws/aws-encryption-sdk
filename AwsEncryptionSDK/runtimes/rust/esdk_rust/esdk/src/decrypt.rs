@@ -170,7 +170,7 @@ async fn internal_decrypt(
     //# - If all bytes have been provided and this operation
     //# is unable to complete the above steps with the consumable encrypted message bytes,
     //# this operation MUST halt and indicate a failure to the caller.
-    let (header_body, raw_header) = step_parse_header(ciphertext, max_encrypted_data_keys)?;
+    let (header_body, raw_header, dw) = step_parse_header(ciphertext, max_encrypted_data_keys)?;
 
     //= specification/client-apis/decrypt.md#behavior
     //# - Decrypt operation Step 2 MUST be [Get the decryption materials](#get-the-decryption-materials)
@@ -181,6 +181,7 @@ async fn internal_decrypt(
         input_source,
         encryption_context,
         commitment_policy,
+        dw,
     )
     .await?;
 
@@ -228,12 +229,20 @@ async fn internal_decrypt(
 fn step_parse_header(
     ciphertext: &mut dyn SafeRead,
     max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
-) -> Result<(header_types::HeaderBody, Vec<u8>), Error> {
+) -> Result<(header_types::HeaderBody, Vec<u8>, DigestWriter), Error> {
     let mut raw_header = Vec::new();
     let header_body =
         header::read_header_body(ciphertext, max_encrypted_data_keys, &mut raw_header)?;
 
-    Ok((header_body, raw_header))
+    //= specification/client-apis/decrypt.md#verify-the-header
+    //= type=implication
+    //= reason=dw holds signature; this is done as soon
+    //# - The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
+    //# such that the serialized header isn't required to remain in memory to [verify the signature](#verify-the-signature).
+    let mut dw = DigestWriter::from_old_ecdsa(header_body.algorithm_suite().signature)?;
+    serialize_functions::write_bytes(&mut dw, &raw_header)?;
+
+    Ok((header_body, raw_header, dw))
 }
 
 // Step 2: Get the decryption materials
@@ -244,6 +253,7 @@ async fn step_get_decryption_materials(
     input_source: Option<MaterialSource>,
     encryption_context: &EncryptionContext,
     commitment_policy: EsdkCommitmentPolicy,
+    mut dw: DigestWriter,
 ) -> Result<DecryptState, Error> {
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# The CMM used MUST be the input CMM, if supplied.
@@ -286,9 +296,6 @@ async fn step_get_decryption_materials(
             "Stored header algorithm suite does not match decryption algorithm suite.".into(),
         );
     }
-    let mut dw = DigestWriter::from_old_ecdsa(suite.signature)?;
-    serialize_functions::write_bytes(&mut dw, &raw_header)?;
-
     let header_auth = header_auth::read_header_auth_tag(ciphertext, suite, &mut dw)?;
 
     //= specification/client-apis/decrypt.md#get-the-decryption-materials

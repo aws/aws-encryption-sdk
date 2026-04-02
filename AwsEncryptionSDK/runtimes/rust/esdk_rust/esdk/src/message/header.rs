@@ -162,6 +162,12 @@ pub(crate) fn serialize_header(
     serialize_functions::write_bytes(&mut w, &header.raw_header)?;
     header_auth::write_header_auth_tag(&mut w, &header.header_auth, &header.suite)?;
     serialize_functions::write_bytes(out, &w)?;
+    //= specification/client-apis/encrypt.md#authentication-tag
+    //= type=implication
+    //# If the algorithm suite contains a signature algorithm and
+    //# this operation is [streaming](streaming.md) the encrypted message output to the caller,
+    //# this operation MUST input the serialized header to the signature algorithm as soon as it is serialized,
+    //# such that the serialized header isn't required to remain in memory to [construct the signature](#construct-the-signature).
     serialize_functions::write_bytes(dw, &w)?;
     Ok(())
 }

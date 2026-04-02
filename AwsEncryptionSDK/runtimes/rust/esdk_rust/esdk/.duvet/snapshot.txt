@@ -207,8 +207,8 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
     TEXT[!MUST,implementation]:   However, if the streamed Decrypt operation is using an algorithm suite with a signature algorithm
     TEXT[!MUST,implementation]:   all released output MUST NOT be considered signed data until
     TEXT[!MUST,implementation]:   this operation successfully completes.
-    TEXT[!SHOULD]: - The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
-    TEXT[!SHOULD]:   such that the serialized frame isn't required to remain in memory to [verify the signature](#verify-the-signature).
+    TEXT[!SHOULD,implication]: - The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
+    TEXT[!SHOULD,implication]:   such that the serialized header isn't required to remain in memory to [verify the signature](#verify-the-signature).
 
   SECTION: [Decrypt the message body](#decrypt-the-message-body)
     TEXT[!MUST,implementation,test]: Regular frame deserialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
@@ -341,7 +341,7 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
   SECTION: [Plaintext](#plaintext)
     TEXT[implication]: The plaintext to encrypt.
     TEXT[!MUST,implication,test]: This MUST be a sequence of bytes.
-    TEXT[!MAY]: This input MAY be [streamed](streaming.md) to this operation.
+    TEXT[!MAY,implication]: This input MAY be [streamed](streaming.md) to this operation.
     TEXT[!SHOULD,exception]: If an implementation requires holding the input entire plaintext in memory in order to perform this operation,
     TEXT[!SHOULD,exception]: that implementation SHOULD NOT provide an API that allows this input to be streamed.
 
@@ -351,15 +351,15 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
 
   SECTION: [Algorithm Suite](#algorithm-suite)
     TEXT[!MUST,implementation]: The [algorithm suite](../framework/algorithm-suites.md) that MUST be used for encryption.
-    TEXT[!MUST]: This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
+    TEXT[!MUST,implementation]: This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
 
   SECTION: [Frame Length](#frame-length)
     TEXT[!MUST,implementation,test]: This value MUST be greater than 0 and MUST NOT exceed the value 2^32 - 1.
     TEXT[!MUST,implementation,test]: This value MUST default to 4096 bytes.
 
   SECTION: [Plaintext Length Bound](#plaintext-length-bound)
-    TEXT[!MUST]: If this input is provided, this operation MUST NOT encrypt a plaintext with length
-    TEXT[!MUST]: greater than this value.
+    TEXT[!MUST,implementation]: If this input is provided, this operation MUST NOT encrypt a plaintext with length
+    TEXT[!MUST,implementation]: greater than this value.
 
   SECTION: [Output](#output)
     TEXT[!MUST,implementation,test]: - The output of the Encrypt operation MUST include an [encrypted message](#encrypted-message) value.
@@ -370,7 +370,7 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
   SECTION: [Encrypted Message](#encrypted-message)
     TEXT[!MUST,implementation,test]: This MUST be a sequence of bytes
     TEXT[!MUST,implementation,test]: and conform to the [message format specification](../data-format/message.md).
-    TEXT[!MAY]: This operation MAY [stream](streaming.md) the encrypted message.
+    TEXT[!MAY,implication]: This operation MAY [stream](streaming.md) the encrypted message.
 
   SECTION: [Encryption Context](#encryption-context-1)
     TEXT[!MAY,exception]: This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.
@@ -421,8 +421,8 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
     TEXT[!MUST,implementation,test]: The [algorithm suite](../framework/algorithm-suites.md) used in all aspects of this operation
     TEXT[!MUST,implementation,test]: MUST be the algorithm suite in the [encryption materials](../framework/structures.md#encryption-materials)
     TEXT[!MUST,implementation,test]: returned from the [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) call.
-    TEXT[!MAY]: Note that the algorithm suite in the retrieved encryption materials MAY be different
-    TEXT[!MAY]: from the [input algorithm suite](#algorithm-suite).
+    TEXT[!MAY,implementation]: Note that the algorithm suite in the retrieved encryption materials MAY be different
+    TEXT[!MAY,implementation]: from the [input algorithm suite](#algorithm-suite).
     TEXT[!MUST,implication]: If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
     TEXT[!MUST,implication]: encrypt MUST yield an error.
     TEXT[!MUST,implementation,test]: If this [algorithm suite](../framework/algorithm-suites.md) is not supported by the [commitment policy](client.md#commitment-policy)
@@ -542,16 +542,16 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
     TEXT[!MUST,implementation,test]: - The cipherkey MUST be the derived data key
     TEXT[!MUST,implementation,test]: - The plaintext MUST be an empty byte array
     TEXT[!MUST,implication]: The serialized bytes MUST NOT be released until the entire message header has been serialized.
-    TEXT[!MUST]: If this operation is streaming the encrypted message and
-    TEXT[!MUST]: the entire message header has been serialized,
-    TEXT[!MUST]: the serialized message header MUST be released.
+    TEXT[!MUST,implication]: If this operation is streaming the encrypted message and
+    TEXT[!MUST,implication]: the entire message header has been serialized,
+    TEXT[!MUST,implication]: the serialized message header MUST be released.
     TEXT[!MUST,implementation,test]: The encrypted message output by the Encrypt operation MUST have a message header equal
     TEXT[!MUST,implementation,test]: to the message header calculated in this step.
     TEXT[!MUST,implementation,test]: If the message headers are not equal, the Encrypt operation MUST fail.
-    TEXT[!MUST]: If the algorithm suite contains a signature algorithm and
-    TEXT[!MUST]: this operation is [streaming](streaming.md) the encrypted message output to the caller,
-    TEXT[!MUST]: this operation MUST input the serialized header to the signature algorithm as soon as it is serialized,
-    TEXT[!MUST]: such that the serialized header isn't required to remain in memory to [construct the signature](#construct-the-signature).
+    TEXT[!MUST,implication]: If the algorithm suite contains a signature algorithm and
+    TEXT[!MUST,implication]: this operation is [streaming](streaming.md) the encrypted message output to the caller,
+    TEXT[!MUST,implication]: this operation MUST input the serialized header to the signature algorithm as soon as it is serialized,
+    TEXT[!MUST,implication]: such that the serialized header isn't required to remain in memory to [construct the signature](#construct-the-signature).
 
   SECTION: [V2 Authentication Tag](#v2-authentication-tag)
     TEXT[!MUST,implementation,test]: With the authentication tag calculated,
@@ -575,10 +575,10 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
     TEXT[!MUST,implementation,test]: The encrypted message output by the Encrypt operation MUST have a message body equal
     TEXT[!MUST,implementation,test]: to the message body calculated in this step.
     TEXT[!MUST,implication]: If the message bodies are not equal, the Encrypt operation MUST fail.
-    TEXT[!MUST,todo]: If [Plaintext Length Bound](#plaintext-length-bound) was specified on input
-    TEXT[!MUST,todo]: and this operation determines at any time that the plaintext being encrypted
-    TEXT[!MUST,todo]: has a length greater than this value,
-    TEXT[!MUST,todo]: this operation MUST immediately fail.
+    TEXT[!MUST,implementation]: If [Plaintext Length Bound](#plaintext-length-bound) was specified on input
+    TEXT[!MUST,implementation]: and this operation determines at any time that the plaintext being encrypted
+    TEXT[!MUST,implementation]: has a length greater than this value,
+    TEXT[!MUST,implementation]: this operation MUST immediately fail.
     TEXT[!MUST,implementation,test]: Before the end of the input is indicated,
     TEXT[!MUST,implementation,test]: this operation MUST process as much of the consumable bytes as possible
     TEXT[!MUST,implementation,test]: by [constructing regular frames](#construct-a-frame).
@@ -667,7 +667,7 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
     TEXT[!MUST,implementation,test]: specified by the [algorithm suite](../framework/algorithm-suites.md), with the following input:
     TEXT[!MUST,implementation,test]: - the signature key MUST be the [signing key](../framework/structures.md#signing-key) in the [encryption materials](../framework/structures.md#encryption-materials)
     TEXT[!MUST,implementation,test]: - the input to sign MUST be the concatenation of the serialization of the [message header](../data-format/message-header.md) and [message body](../data-format/message-body.md)
-    TEXT[!MAY]: Note that the message header and message body MAY have already been input during previous steps.
+    TEXT[!MAY,implication]: Note that the message header and message body MAY have already been input during previous steps.
     TEXT[!MUST,implementation,test]: This operation MUST then serialize a message footer with the following specifics:
     TEXT[!MUST,implementation,test]: - [Signature Length](../data-format/message-footer.md#signature-length): MUST be the length of the
     TEXT[!MUST,implementation,test]:   output of the calculation above.
