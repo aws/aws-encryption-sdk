@@ -49,6 +49,8 @@ pub(crate) fn read_msg_format_version(
     match version {
         val if val == MessageFormatVersion::V1 as u8 => Ok(MessageFormatVersion::V1),
         val if val == MessageFormatVersion::V2 as u8 => Ok(MessageFormatVersion::V2),
+        //= specification/client-apis/decrypt.md#parse-the-header
+        //# The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
         _ => ser_err("Unsupported Version."),
     }
 }
@@ -61,6 +63,8 @@ pub(crate) fn read_msg_type(
     let msg_type = read_u8(r, raw)?;
     match msg_type {
         val if val == MessageType::TypeCustomerAed as u8 => Ok(MessageType::TypeCustomerAed),
+        //= specification/client-apis/decrypt.md#parse-the-header
+        //# The value MUST be a [supported type](../data-format/message-header.md#supported-types).
         _ => ser_err("Unsupported Message Type."),
     }
 }
@@ -74,6 +78,8 @@ pub(crate) fn read_content_type(
     match content_type {
         val if val == ContentType::NonFramed as u8 => Ok(ContentType::NonFramed),
         val if val == ContentType::Framed as u8 => Ok(ContentType::Framed),
+        //= specification/client-apis/decrypt.md#parse-the-header
+        //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
         _ => ser_err("Unsupported Content Type."),
     }
 }

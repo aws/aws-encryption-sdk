@@ -147,7 +147,7 @@ struct DecryptState {
     header: header::HeaderInfo,
     dec_mat: aws_mpl_legacy::DecryptionMaterials,
     derived_data_keys: key_derivation::ExpandedKeyMaterial,
-    dw: DigestWriter,
+    sig_digest: DigestWriter,
     encryption_context_to_only_authenticate: EncryptionContext,
 }
 
@@ -170,7 +170,7 @@ async fn internal_decrypt(
     //# - If all bytes have been provided and this operation
     //# is unable to complete the above steps with the consumable encrypted message bytes,
     //# this operation MUST halt and indicate a failure to the caller.
-    let (header_body, raw_header, dw) = step_parse_header(ciphertext, max_encrypted_data_keys)?;
+    let (header_body, raw_header, sig_digest) = step_parse_header(ciphertext, max_encrypted_data_keys)?;
 
     //= specification/client-apis/decrypt.md#behavior
     //# - Decrypt operation Step 2 MUST be [Get the decryption materials](#get-the-decryption-materials)
@@ -181,7 +181,7 @@ async fn internal_decrypt(
         input_source,
         encryption_context,
         commitment_policy,
-        dw,
+        sig_digest,
     )
     .await?;
 
@@ -236,13 +236,13 @@ fn step_parse_header(
 
     //= specification/client-apis/decrypt.md#verify-the-header
     //= type=implication
-    //= reason=dw holds signature; this is done as soon
+    //= reason=sig_digest holds signature; this is done as soon
     //# - The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
     //# such that the serialized header isn't required to remain in memory to [verify the signature](#verify-the-signature).
-    let mut dw = DigestWriter::from_old_ecdsa(header_body.algorithm_suite().signature)?;
-    serialize_functions::write_bytes(&mut dw, &raw_header)?;
+    let mut sig_digest = DigestWriter::from_old_ecdsa(header_body.algorithm_suite().signature)?;
+    serialize_functions::write_bytes(&mut sig_digest, &raw_header)?;
 
-    Ok((header_body, raw_header, dw))
+    Ok((header_body, raw_header, sig_digest))
 }
 
 // Step 2: Get the decryption materials
@@ -253,7 +253,7 @@ async fn step_get_decryption_materials(
     input_source: Option<MaterialSource>,
     encryption_context: &EncryptionContext,
     commitment_policy: EsdkCommitmentPolicy,
-    mut dw: DigestWriter,
+    mut sig_digest: DigestWriter,
 ) -> Result<DecryptState, Error> {
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# The CMM used MUST be the input CMM, if supplied.
@@ -296,7 +296,7 @@ async fn step_get_decryption_materials(
             "Stored header algorithm suite does not match decryption algorithm suite.".into(),
         );
     }
-    let header_auth = header_auth::read_header_auth_tag(ciphertext, suite, &mut dw)?;
+    let header_auth = header_auth::read_header_auth_tag(ciphertext, suite, &mut sig_digest)?;
 
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# The data key used as input for all decryption described below MUST be a data key derived from the plaintext data key
@@ -341,7 +341,7 @@ async fn step_get_decryption_materials(
         header,
         dec_mat,
         derived_data_keys,
-        dw,
+        sig_digest,
         encryption_context_to_only_authenticate,
     })
 }
@@ -447,7 +447,7 @@ fn step_decrypt_body(
     let key = state.derived_data_keys.data_key.clone();
     let last_frame = match state.header.body.content_type() {
         ContentType::NonFramed => body::read_and_decrypt_non_framed_message_body(
-            ciphertext, &state.header, &key, &mut state.dw,
+            ciphertext, &state.header, &key, &mut state.sig_digest,
         )?,
         ContentType::Framed => {
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
@@ -460,7 +460,7 @@ fn step_decrypt_body(
                 plaintext,
                 &state.header,
                 &key,
-                &mut state.dw,
+                &mut state.sig_digest,
                 fail_if_multi_frame,
             )?
         }
@@ -496,7 +496,7 @@ fn step_verify_signature(
         //# If this verification is not successful, this operation MUST immediately halt and fail.
         verify_signature(
             ciphertext,
-            state.dw.context.clone().unwrap(),
+            state.sig_digest.context.clone().unwrap(),
             state.dec_mat.clone(),
             &mut noop,
         )?;
@@ -538,7 +538,7 @@ fn verify_signature(
     r: &mut dyn SafeRead,
     context: DigestContext,
     dec_mat: aws_mpl_legacy::DecryptionMaterials,
-    raw: &mut dyn SafeWrite,
+    sig_digest: &mut dyn SafeWrite,
 ) -> Result<(), Error> {
     if dec_mat.verification_key.is_none() {
         return Ok(());
@@ -551,7 +551,7 @@ fn verify_signature(
     //# the caller has not yet indicated an end to the encrypted message,
     //# the Decrypt operation MUST wait for enough bytes to become consumable or for the caller
     //# to indicate an end to the encrypted message.
-    let signature = footer::read_footer(r, raw)?;
+    let signature = footer::read_footer(r, sig_digest)?;
     let ecdsa_params = get_ecdsa_alg(dec_mat.algorithm_suite.signature)?;
     //= specification/client-apis/decrypt.md#verify-the-signature
     //# If this verification is not successful, this operation MUST immediately halt and fail.

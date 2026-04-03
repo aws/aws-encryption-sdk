@@ -47,22 +47,33 @@ pub(crate) fn read_header_body(
     //# This operation MUST wait if it doesn't have enough consumable encrypted message bytes
     //# to deserialize the next field of the message header until enough input bytes become consumable
     //# or the caller indicates an end to the encrypted message.
-    r: &mut dyn SafeRead,
+    ciphertext: &mut dyn SafeRead,
     max_edks: Option<std::num::NonZeroUsize>,
-    raw: &mut dyn SafeWrite,
+    raw_header: &mut dyn SafeWrite,
 ) -> Result<HeaderBody, Error> {
     //= specification/client-apis/decrypt.md#parse-the-header
     //# Given encrypted message bytes, this operation MUST process those bytes sequentially,
     //# deserializing those bytes according to the [message format](../data-format/message.md).
-    let version = read_msg_format_version(r, raw)?;
 
+    //= specification/client-apis/decrypt.md#parse-the-header
+    //# Each header field MUST be deserialized according to its specification in the [message header](../data-format/message-header.md):
+
+    //= specification/client-apis/decrypt.md#parse-the-header
+    //# - [Version](../data-format/message-header.md#version): MUST be deserialized according to the
+    //# [Version](../data-format/message-header.md#version) specification.
+    let version = read_msg_format_version(ciphertext, raw_header)?;
+
+    //= specification/client-apis/decrypt.md#parse-the-header
+    //# The header deserialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10)
+    //# or [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification,
+    //# depending on the [Version](../data-format/message-header.md#version) field.
     let result = match version {
         MessageFormatVersion::V1 => {
-            let body = read_v1_header_body(r, max_edks, raw)?;
+            let body = read_v1_header_body(ciphertext, max_edks, raw_header)?;
             HeaderBody::V1Body(body)
         }
         MessageFormatVersion::V2 => {
-            let body = read_v2_header_body(r, max_edks, raw)?;
+            let body = read_v2_header_body(ciphertext, max_edks, raw_header)?;
             HeaderBody::V2Body(body)
         }
     };
@@ -151,23 +162,25 @@ pub(crate) fn validate_suite_data(
 /// Serialize the message header (body + auth tag) to the output stream.
 pub(crate) fn serialize_header(
     header: &HeaderInfo,
-    out: &mut dyn SafeWrite,
-    dw: &mut DigestWriter,
+    ciphertext: &mut dyn SafeWrite,
+    sig_digest: &mut DigestWriter,
 ) -> Result<(), Error> {
     //= specification/data-format/message-header.md#structure
     //# The header MUST be serialized as, in order,
     //# Header Body,
     //# and Header Authentication.
-    let mut w = Vec::new();
-    serialize_functions::write_bytes(&mut w, &header.raw_header)?;
-    header_auth::write_header_auth_tag(&mut w, &header.header_auth, &header.suite)?;
-    serialize_functions::write_bytes(out, &w)?;
+    let mut header_buf = Vec::new();
+    // Header body
+    serialize_functions::write_bytes(&mut header_buf, &header.raw_header)?;
+    // Header Authentication
+    header_auth::write_header_auth_tag(&mut header_buf, &header.header_auth, &header.suite)?;
+    serialize_functions::write_bytes(ciphertext, &header_buf)?;
     //= specification/client-apis/encrypt.md#authentication-tag
     //= type=implication
     //# If the algorithm suite contains a signature algorithm and
     //# this operation is [streaming](streaming.md) the encrypted message output to the caller,
     //# this operation MUST input the serialized header to the signature algorithm as soon as it is serialized,
     //# such that the serialized header isn't required to remain in memory to [construct the signature](#construct-the-signature).
-    serialize_functions::write_bytes(dw, &w)?;
+    serialize_functions::write_bytes(sig_digest, &header_buf)?;
     Ok(())
 }

@@ -104,13 +104,25 @@ pub(crate) fn read_v2_header_body(
     max_edks: Option<std::num::NonZeroUsize>,
     raw: &mut dyn SafeWrite,
 ) -> Result<V2HeaderBody, Error> {
+    //= specification/client-apis/decrypt.md#parse-the-header
+    //# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST be deserialized according to the
+    //# [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id) specification.
     let algorithm_suite = read_esdk_suite_id(r, raw)?;
     if !has_hkdf(&algorithm_suite.commitment) {
         return ser_err("Algorithm suite must support commitment.");
     }
 
+    //= specification/client-apis/decrypt.md#parse-the-header
+    //# - [Message ID](../data-format/message-header.md#message-id): MUST be deserialized according to the
+    //# [Message ID](../data-format/message-header.md#message-id) specification.
     let message_id = read_message_id_v2(r, raw)?;
+    //= specification/client-apis/decrypt.md#parse-the-header
+    //# - [AAD](../data-format/message-header.md#aad): MUST be deserialized according to the
+    //# [AAD](../data-format/message-header.md#aad) specification.
     let encryption_context: Vec<(String, String)> = read_canonical_ec(r, raw)?;
+    //= specification/client-apis/decrypt.md#parse-the-header
+    //# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be deserialized according to the
+    //# [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
     let encrypted_data_keys = read_edks(r, max_edks, raw)?;
     //= specification/client-apis/decrypt.md#parse-the-header
     //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
@@ -123,7 +135,13 @@ pub(crate) fn read_v2_header_body(
             return ser_err("Number of encrypted data keys exceeds the maximum allowed.");
         }
     }
+    //= specification/client-apis/decrypt.md#parse-the-header
+    //# - [Content Type](../data-format/message-header.md#content-type): MUST be deserialized according to the
+    //# [Content Type](../data-format/message-header.md#content-type) specification.
     let content_type = read_content_type(r, raw)?;
+    //= specification/client-apis/decrypt.md#parse-the-header
+    //# - [Frame Length](../data-format/message-header.md#frame-length): MUST be deserialized according to the
+    //# [Frame Length](../data-format/message-header.md#frame-length) specification.
     //= specification/data-format/message-header.md#frame-length
     //# The length of the serialized frame length field MUST be 4 bytes.
 
@@ -131,6 +149,9 @@ pub(crate) fn read_v2_header_body(
     //# The frame length MUST be serialized as a UInt32.
     let frame_length = read_u32(r, raw)?;
     let len = get_hkdf(&algorithm_suite.commitment).output_key_length;
+    //= specification/client-apis/decrypt.md#parse-the-header
+    //# - [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data) (V2 only): MUST be deserialized according to the
+    //# [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data) specification.
     let suite_data = read_vec(r, len as usize, raw)?;
 
     Ok(V2HeaderBody {

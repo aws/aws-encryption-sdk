@@ -151,7 +151,7 @@ async fn internal_encrypt(
 
     //= specification/data-format/message.md#structure
     //# - The message MUST begin with [Message Header](message-header.md)
-    let mut dw = DigestWriter::from_old_ecdsa(mat_result.materials.algorithm_suite.signature)?;
+    let mut sig_digest = DigestWriter::from_old_ecdsa(mat_result.materials.algorithm_suite.signature)?;
     let header = step_construct_header(
         &mat_result,
         &mat_result.materials.encryption_context,
@@ -164,7 +164,7 @@ async fn internal_encrypt(
         //# If no input frame length is supplied, the default frame length MUST be used.
         frame_length,
         ciphertext,
-        &mut dw,
+        &mut sig_digest,
     )?;
 
     //= specification/client-apis/encrypt.md#behavior
@@ -183,7 +183,7 @@ async fn internal_encrypt(
         &header,
         &mat_result.derived_data_keys.data_key,
         ciphertext,
-        &mut dw,
+        &mut sig_digest,
         plaintext_len,
     )?;
 
@@ -202,9 +202,9 @@ async fn internal_encrypt(
             &mat_result.materials,
             //= specification/client-apis/encrypt.md#construct-the-signature
             //= type=implication
-            //= reason=dw (DigestWriter) was fed the header bytes in step 2 (serialize_header) and the body bytes in step 3 (encrypt_and_serialize_body)
+            //= reason=sig_digest (DigestWriter) was fed the header bytes in step 2 (serialize_header) and the body bytes in step 3 (encrypt_and_serialize_body)
             //# Note that the message header and message body MAY have already been input during previous steps.
-            dw,
+            sig_digest,
             ciphertext,
         )?;
     }
@@ -325,7 +325,7 @@ fn step_construct_header(
     encrypted_data_keys: &[EncryptedDataKey],
     frame_length: FrameLength,
     ciphertext: &mut dyn SafeWrite,
-    dw: &mut DigestWriter,
+    sig_digest: &mut DigestWriter,
 ) -> Result<header::HeaderInfo, Error> {
     //= specification/client-apis/encrypt.md#authentication-tag
     //= type=implication
@@ -349,7 +349,7 @@ fn step_construct_header(
     header::serialize_header(
         &header,
         ciphertext,
-        dw,
+        sig_digest,
     )?;
     //= specification/client-apis/encrypt.md#authentication-tag
     //# The encrypted message output by the Encrypt operation MUST have a message header equal
@@ -365,7 +365,7 @@ fn step_construct_body(
     header: &header::HeaderInfo,
     data_key: &[u8],
     ciphertext: &mut dyn SafeWrite,
-    dw: &mut DigestWriter,
+    sig_digest: &mut DigestWriter,
     max_plaintext_length: Option<usize>,
 ) -> Result<(), Error> {
     body::encrypt_and_serialize_body(
@@ -373,7 +373,7 @@ fn step_construct_body(
         header,
         data_key,
         ciphertext,
-        dw,
+        sig_digest,
         max_plaintext_length,
     )
 }
@@ -382,7 +382,7 @@ fn step_construct_body(
 fn step_construct_signature(
     header: &header::HeaderInfo,
     materials: &aws_mpl_legacy::EncryptionMaterials,
-    dw: DigestWriter,
+    sig_digest: DigestWriter,
     ciphertext: &mut dyn SafeWrite,
 ) -> Result<(), Error> {
     //= specification/client-apis/encrypt.md#construct-the-signature
@@ -408,7 +408,7 @@ fn step_construct_signature(
                 //= specification/client-apis/encrypt.md#construct-the-signature
                 //# - the input to sign MUST be the concatenation of the serialization of the [message header](../data-format/message-header.md)
                 //# and [message body](../data-format/message-body.md)
-                dw.context.unwrap(),
+                sig_digest.context.unwrap(),
             )?;
             //= specification/client-apis/encrypt.md#construct-the-signature
             //# The encrypted message output by this operation MUST have a message footer equal
