@@ -56,6 +56,7 @@ pub(crate) fn read_msg_format_version(
         _ => ser_err("Unsupported Version."),
     }
 }
+
 //= specification/data-format/message-header.md#type
 //# The type (hex) of this field MUST be a value that exists in the following table:
 pub(crate) fn read_msg_type(

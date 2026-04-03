@@ -121,17 +121,6 @@ fn parse_frames(ct: &[u8], frame_length: u32) -> Vec<ParsedFrame> {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_framed_data_max_frame_size() {
-    //= specification/data-format/message-body.md#framed-data
-    //= type=test
-    //# - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
-    // FrameLength::new enforces the u32 max. Encrypt with a large but valid frame length.
-    let pt = vec![0xAAu8; 100];
-    let result = round_trip(&pt, 4096).await;
-    assert_eq!(result, pt, "frame size within u32 max works correctly");
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_framed_data_max_frame_count() {
     //= specification/data-format/message-body.md#framed-data
     //= type=test

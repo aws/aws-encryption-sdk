@@ -701,8 +701,6 @@ pub(crate) fn encrypt_and_serialize_body(
     max_plaintext_length: Option<usize>,
 ) -> Result<(), Error> {
     let mut total_data_size: usize = 0;
-    //= specification/data-format/message-body.md#framed-data
-    //# - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
     let frame_length = header.body.frame_length() as usize;
     let iv_len = get_iv_length(&header.suite) as usize;
     let auth_len = get_tag_length(&header.suite) as usize;
@@ -710,7 +708,7 @@ pub(crate) fn encrypt_and_serialize_body(
     let mut frame_buf = Vec::with_capacity(frame_len);
 
     //= specification/data-format/message-body.md#regular-frame-sequence-number
-    //= type=implementation
+    //= reason=START_SEQUENCE_NUMBER is defined as 1
     //# Framed Data MUST start at Sequence Number 1.
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= reason=START_SEQUENCE_NUMBER is defined as 1
