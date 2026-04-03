@@ -315,3 +315,41 @@ async fn test_empty_plaintext_constructs_empty_final_frame() {
 }
 
 
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_plaintext_length_bound_must_not_encrypt_longer() {
+    //= specification/client-apis/encrypt.md#plaintext-length-bound
+    //= type=test
+    //# If this input is provided, this operation MUST NOT encrypt a plaintext with length
+    //# greater than this value.
+    let keyring = test_keyring().await;
+    let mut stream_input = EncryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
+    // Set data_size (plaintext length bound) to 5 bytes
+    stream_input.data_size = Some(5);
+    // Provide 20 bytes of plaintext, exceeding the bound
+    let plaintext = vec![0xAAu8; 20];
+    let mut reader = std::io::Cursor::new(&plaintext);
+    let mut output = Vec::new();
+    let result = encrypt_stream(&mut reader, &mut output, &stream_input).await;
+    assert!(result.is_err(), "encrypt_stream must fail when plaintext exceeds plaintext length bound");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_construct_body_plaintext_length_bound_runtime_enforcement() {
+    //= specification/client-apis/encrypt.md#construct-the-body
+    //= type=test
+    //# If [Plaintext Length Bound](#plaintext-length-bound) was specified on input
+    //# and this operation determines at any time that the plaintext being encrypted
+    //# has a length greater than this value,
+    //# this operation MUST immediately fail.
+    let keyring = test_keyring().await;
+    let mut stream_input = EncryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
+    // Set data_size to 10 bytes but provide 50 bytes
+    stream_input.data_size = Some(10);
+    stream_input.frame_length = FrameLength::new(10).unwrap();
+    let plaintext = vec![0xBBu8; 50];
+    let mut reader = std::io::Cursor::new(&plaintext);
+    let mut output = Vec::new();
+    let result = encrypt_stream(&mut reader, &mut output, &stream_input).await;
+    assert!(result.is_err(), "encrypt_stream must immediately fail when plaintext exceeds bound during body construction");
+}

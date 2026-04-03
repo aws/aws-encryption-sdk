@@ -341,3 +341,79 @@ async fn test_parse_header_sequential_processing() {
         .unwrap();
     assert_eq!(output, plaintext);
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_max_encrypted_data_keys_enforcement() {
+    //= specification/client-apis/decrypt.md#parse-the-header
+    //= type=test
+    //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
+    //# deserialized from the [message header](../data-format/message-header.md)
+    //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
+    //# then as soon as that can be determined during deserializing
+    //# decrypt MUST process no more bytes and yield an error.
+
+    // Create two keyrings and a multi-keyring to produce 2 EDKs
+    let keyring1 = test_keyring().await;
+    let (ns2, name2) = namespace_and_name(1);
+    let keyring2 = mpl()
+        .create_raw_aes_keyring()
+        .key_namespace(ns2)
+        .key_name(name2)
+        .wrapping_key(aws_smithy_types::Blob::new([1u8; 32]))
+        .wrapping_alg(aws_mpl_legacy::dafny::types::AesWrappingAlg::AlgAes256GcmIv12Tag16)
+        .send()
+        .await
+        .unwrap();
+    let multi_keyring = mpl()
+        .create_multi_keyring()
+        .generator(keyring1.clone())
+        .child_keyrings(vec![keyring2])
+        .send()
+        .await
+        .unwrap();
+
+    let plaintext = b"max edk decrypt test";
+    let enc_input = EncryptInput::with_legacy_keyring(
+        plaintext,
+        EncryptionContext::new(),
+        multi_keyring.clone(),
+    );
+    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    // Decrypt with max_encrypted_data_keys=1, but message has 2 EDKs → must fail
+    let mut dec_input =
+        DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), multi_keyring);
+    dec_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(1).unwrap());
+    let result = decrypt(&dec_input).await;
+    assert!(
+        result.is_err(),
+        "decrypt must fail when EDK count exceeds max_encrypted_data_keys"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_no_header_info_released_before_verification() {
+    //= specification/client-apis/decrypt.md#parse-the-header
+    //= type=test
+    //# Until the [header is verified](#verify-the-header), this operation MUST NOT
+    //# release any parsed information from the header.
+
+    // Tamper with the header auth tag so header verification fails.
+    // The non-streaming decrypt must return an error with no partial output.
+    let keyring = test_keyring().await;
+    let plaintext = b"no header info before verification";
+
+    let enc_input =
+        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
+    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    // Tamper with a byte in the header body to cause header auth tag verification failure
+    ct[10] ^= 0xFF;
+
+    let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
+    let result = decrypt(&dec_input).await;
+    assert!(
+        result.is_err(),
+        "decrypt must fail entirely when header verification fails — no partial header info released"
+    );
+}

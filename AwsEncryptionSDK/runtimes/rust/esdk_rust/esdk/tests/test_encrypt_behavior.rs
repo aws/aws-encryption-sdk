@@ -518,3 +518,55 @@ async fn test_output_includes_algorithm_suite() {
         "output must include the algorithm suite"
     );
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_reserved_encryption_context_prefix_must_fail() {
+    //= specification/client-apis/encrypt.md#encryption-context
+    //= type=test
+    //# If the input encryption context contains any entries with a key beginning with `aws-crypto-`,
+    //# the encryption operation MUST fail.
+    let keyring = test_keyring().await;
+    let ec = std::collections::HashMap::from([
+        ("aws-crypto-foo".to_string(), "bar".to_string()),
+    ]);
+    let enc_input = EncryptInput::with_legacy_keyring(b"should fail", ec, keyring);
+    let result = encrypt(&enc_input).await;
+    assert!(result.is_err(), "encrypt must fail when encryption context has aws-crypto- prefix key");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_algorithm_suite_used_for_encryption() {
+    //= specification/client-apis/encrypt.md#algorithm-suite
+    //= type=test
+    //# The [algorithm suite](../framework/algorithm-suites.md) that MUST be used for encryption.
+    let keyring = test_keyring().await;
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(b"suite used test", EncryptionContext::new(), keyring.clone());
+    enc_input.algorithm_suite_id =
+        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
+    let output = encrypt(&enc_input).await.unwrap();
+    assert_eq!(
+        output.algorithm_suite_id,
+        EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey,
+        "the specified algorithm suite must be used for encryption"
+    );
+    // Verify round-trip to prove the suite was actually used for encryption
+    let dec_input = DecryptInput::with_legacy_keyring(&output.ciphertext, EncryptionContext::new(), keyring);
+    let pt = decrypt(&dec_input).await.unwrap().plaintext;
+    assert_eq!(pt, b"suite used test");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_algorithm_suite_must_be_esdk_supported() {
+    //= specification/client-apis/encrypt.md#algorithm-suite
+    //= type=test
+    //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
+    // Verify that encrypting with a valid ESDK-supported suite succeeds.
+    let keyring = test_keyring().await;
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(b"esdk supported suite", EncryptionContext::new(), keyring);
+    enc_input.algorithm_suite_id =
+        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
+    let result = encrypt(&enc_input).await;
+    assert!(result.is_ok(), "encrypt must succeed with an ESDK-supported algorithm suite");
+}

@@ -44,6 +44,8 @@ pub(crate) fn read_header_body(
     //# until it has successfully deserialized a valid [message header](../data-format/message-header.md).
     //= specification/client-apis/decrypt.md#parse-the-header
     //= type=implication
+    //= reason=SafeRead (std::io::Read) only supports sequential consumption with no skip/seek,
+    //= reason=so reading from it inherently processes all consumable bytes until a valid header is formed.
     //# This operation MUST wait if it doesn't have enough consumable encrypted message bytes
     //# to deserialize the next field of the message header until enough input bytes become consumable
     //# or the caller indicates an end to the encrypted message.
@@ -52,6 +54,8 @@ pub(crate) fn read_header_body(
     raw_header: &mut dyn SafeWrite,
 ) -> Result<HeaderBody, Error> {
     //= specification/client-apis/decrypt.md#parse-the-header
+    //= type=implication
+    //= reason=Every read method reads the next available bytes and does not jump out of sequence
     //# Given encrypted message bytes, this operation MUST process those bytes sequentially,
     //# deserializing those bytes according to the [message format](../data-format/message.md).
 
@@ -108,8 +112,6 @@ pub(crate) const fn header_version_supports_commitment(
     }
 }
 
-//= specification/data-format/message-header.md#encrypted-data-key-count
-//# This value MUST be greater than 0.
 pub(crate) fn validate_max_encrypted_data_keys(
     max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
     edks: &[aws_mpl_legacy::EncryptedDataKey],
@@ -118,6 +120,8 @@ pub(crate) fn validate_max_encrypted_data_keys(
         if edks.len() > max.get() {
             return Err("Encrypted data keys exceed maxEncryptedDataKeys".into());
         }
+        //= specification/data-format/message-header.md#encrypted-data-key-count
+        //# This value MUST be greater than 0.
         if edks.is_empty() {
             return Err("Encrypted data keys is empty.".into());
         }
@@ -146,6 +150,7 @@ pub(crate) fn validate_suite_data(
     expected_suite_data: &[u8],
 ) -> Result<(), Error> {
     //= specification/data-format/message-header.md#algorithm-suite-data
+    //= reason=Check against expected_suite_data (a &[u8] type) implies interpreting as bytes
     //# The algorithm suite data MUST be interpreted as bytes.
     if header_body.suite_data() != expected_suite_data {
         return Err("Commitment key does not match".into());

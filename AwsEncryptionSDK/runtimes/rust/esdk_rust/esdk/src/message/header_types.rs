@@ -22,22 +22,24 @@ pub(crate) enum MessageFormatVersion {
     V2 = 2,
 }
 
-//= specification/data-format/message-header.md#version
-//# The length of the serialized version field MUST be 1 byte.
 pub(crate) fn write_msg_format_version(
     w: &mut dyn SafeWrite,
     data: MessageFormatVersion,
 ) -> Result<(), Error> {
+    //= specification/data-format/message-header.md#version
+    //# The length of the serialized version field MUST be 1 byte.
     write_u8(w, data as u8)
 }
-//= specification/data-format/message-header.md#type
-//# The length of the serialized type field MUST be 1 byte.
+
 pub(crate) fn write_msg_type(w: &mut dyn SafeWrite, data: MessageType) -> Result<(), Error> {
+    //= specification/data-format/message-header.md#type
+    //# The length of the serialized type field MUST be 1 byte.
     write_u8(w, data as u8)
 }
-//= specification/data-format/message-header.md#content-type
-//# The length of the serialized content type field MUST be 1 byte.
+
 pub(crate) fn write_content_type(w: &mut dyn SafeWrite, data: ContentType) -> Result<(), Error> {
+    //= specification/data-format/message-header.md#content-type
+    //# The length of the serialized content type field MUST be 1 byte.
     write_u8(w, data as u8)
 }
 

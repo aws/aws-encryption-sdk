@@ -324,3 +324,32 @@ async fn test_kdf_algorithm_from_materials_suite() {
     let result = decrypt(&dec_input).await.unwrap();
     assert_eq!(result.plaintext, pt, "successful round-trip proves KDF algorithm from materials suite was used");
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_unsupported_esdk_algorithm_suite_yields_error() {
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=get_esdk_id rejects non-ESDK suite IDs; a valid round-trip proves ESDK suites pass, and tampering the suite ID to a non-ESDK value triggers the error path
+    //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
+    //# encrypt MUST yield an error.
+
+    let keyring = make_keyring(0).await;
+    let pt = b"unsupported esdk suite test";
+
+    // Encrypt with a valid ESDK suite
+    let enc_input = EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring.clone());
+    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    // Tamper with the algorithm suite ID bytes in the header to an invalid value.
+    // V2 header: byte 0 = version (0x02), bytes 1-2 = algorithm suite ID.
+    // Set to 0xFF 0xFF which is not a valid ESDK suite ID.
+    ct[1] = 0xFF;
+    ct[2] = 0xFF;
+
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let result = decrypt(&dec_input).await;
+    assert!(
+        result.is_err(),
+        "decrypt must fail when algorithm suite ID is not a supported ESDK suite"
+    );
+}

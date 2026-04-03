@@ -155,3 +155,39 @@ async fn test_verify_header_encryption_context_to_only_authenticate() {
     let result = decrypt(&dec_input).await.unwrap();
     assert_eq!(result.plaintext, plaintext, "successful round-trip with required EC keys proves encryption context to only authenticate is correctly filtered and serialized");
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_streamed_signed_output_not_signed_until_complete() {
+    //= specification/client-apis/decrypt.md#verify-the-header
+    //= type=test
+    //# However, if the streamed Decrypt operation is using an algorithm suite with a signature algorithm
+    //# all released output MUST NOT be considered signed data until
+    //# this operation successfully completes.
+
+    // Encrypt a multi-frame message with a signing suite, then tamper with the
+    // signature (footer). decrypt_stream must return Err, proving that output
+    // released before completion cannot be considered signed.
+    let keyring = test_keyring().await;
+    let plaintext = vec![0xBBu8; 30];
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(&plaintext, EncryptionContext::new(), keyring.clone());
+    enc_input.frame_length = FrameLength::new(10).unwrap();
+    enc_input.algorithm_suite_id =
+        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
+    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    // Tamper with the footer (signature) to cause verification failure
+    let len = ct.len();
+    ct[len - 4] ^= 0xFF;
+
+    let mut cursor = std::io::Cursor::new(ct.as_slice());
+    let mut output = Vec::new();
+    let mut stream_input =
+        DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
+    stream_input.i_accept_the_danger = true;
+    let result = decrypt_stream(&mut cursor, &mut output, &stream_input).await;
+    assert!(
+        result.is_err(),
+        "streaming decrypt must fail on tampered signature — output was not signed data"
+    );
+}

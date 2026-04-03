@@ -217,6 +217,11 @@ async fn internal_decrypt(
 
     let mut ec = state.encryption_context_to_only_authenticate;
     ec.extend(state.header.encryption_context);
+
+    //= specification/client-apis/streaming.md#outputs
+    //= type=implication
+    //= reason=All bytes have been written to the SafeWrite before Ok is returned; success is only indicated after output is complete
+    //# Operations MUST NOT indicate completion or success until an end to the output has been indicated.
     Ok(DecryptStreamOutput {
         encryption_context: ec,
         //= specification/client-apis/decrypt.md#algorithm-suite

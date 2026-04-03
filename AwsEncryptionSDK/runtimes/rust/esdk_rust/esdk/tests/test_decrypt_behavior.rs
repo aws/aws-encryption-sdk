@@ -165,3 +165,34 @@ async fn test_streaming_fails_for_multi_frame_signed_without_override() {
     );
     assert_eq!(output2, plaintext);
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_signing_suite_must_perform_signature_step() {
+    //= specification/client-apis/decrypt.md#behavior
+    //= type=test
+    //# - If the message header contains an algorithm suite including a
+    //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
+    //# the Decrypt operation MUST perform this step.
+
+    let keyring = test_keyring().await;
+    let plaintext = b"signing suite signature step test";
+
+    // Encrypt with a signing algorithm suite (ECDSA P384)
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
+    enc_input.algorithm_suite_id =
+        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
+    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    // Tamper with the footer (signature area) to prove the signature step runs.
+    // If the step were skipped, tampering the footer would not cause failure.
+    let len = ct.len();
+    ct[len - 3] ^= 0xFF;
+
+    let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
+    let result = decrypt(&dec_input).await;
+    assert!(
+        result.is_err(),
+        "decrypt must fail when signature is tampered — proves signature step was performed"
+    );
+}

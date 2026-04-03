@@ -91,10 +91,32 @@ pub fn mpl() -> aws_mpl_legacy::dafny::client::Client {
 }
 
 /// Output Stream
+//= specification/client-apis/streaming.md#outputs
+//= type=implication
+//# In order to support streaming, the operation MUST produce some output within a streaming framework.
+//= specification/client-apis/streaming.md#outputs
+//= type=implication
+//= reason=SafeWrite wraps std::io::Write; write() pushes bytes to the consumer immediately
+//# - There MUST be a mechanism for output bytes to be released.
+//= specification/client-apis/streaming.md#outputs
+//= type=implication
+//= reason=SafeWrite wraps std::io::Write; the operation returning Ok(()) signals that all output has been written
+//# - There MUST be a mechanism to indicate that the entire output has been released.
 pub trait SafeWrite: std::io::Write + Send + Sync + std::fmt::Debug {}
 impl<T: std::io::Write + Send + Sync + std::fmt::Debug> SafeWrite for T {}
 
 /// Input Stream
+//= specification/client-apis/streaming.md#inputs
+//= type=implication
+//# In order to support streaming, the operation MUST accept some input within a streaming framework.
+//= specification/client-apis/streaming.md#inputs
+//= type=implication
+//= reason=SafeRead wraps std::io::Read; read() returns bytes as they become available
+//# - There MUST be a mechanism for input bytes to become consumable.
+//= specification/client-apis/streaming.md#inputs
+//= type=implication
+//= reason=SafeRead wraps std::io::Read; read() returning Ok(0) signals EOF
+//# - There MUST be a mechanism to indicate that there are no more input bytes.
 pub trait SafeRead: std::io::Read + Send + Sync + std::fmt::Debug {}
 impl<T: std::io::Read + Send + Sync + std::fmt::Debug> SafeRead for T {}
 
