@@ -689,16 +689,12 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
 
 SPECIFICATION: [Streaming](specification/client-apis/streaming.md)
   SECTION: [Overview](#overview)
-    TEXT[!MAY]: The AWS Encryption SDK MAY provide APIs that enable streamed [encryption](encrypt.md)
-    TEXT[!MAY]: and [decryption](decrypt.md).
-    TEXT[!SHOULD]: If an implementation requires holding the entire input in memory in order to perform the operation,
-    TEXT[!SHOULD]: that implementation SHOULD NOT provide an API that allows the caller to stream the operation.
-    TEXT[!SHOULD]: APIs that support streaming of the encrypt or decrypt operation SHOULD allow customers
-    TEXT[!SHOULD]: to be able to process arbitrarily large inputs with a finite amount of working memory.
-
-  SECTION: [Release](#release)
-    TEXT[!MUST]: The decrypt and encrypt operations specify when output bytes MUST NOT be released
-    TEXT[!MUST]: and when they SHOULD be released.
+    TEXT[!MAY,implication]: The AWS Encryption SDK MAY provide APIs that enable streamed [encryption](encrypt.md)
+    TEXT[!MAY,implication]: and [decryption](decrypt.md).
+    TEXT[!SHOULD,exception]: If an implementation requires holding the entire input in memory in order to perform the operation,
+    TEXT[!SHOULD,exception]: that implementation SHOULD NOT provide an API that allows the caller to stream the operation.
+    TEXT[!SHOULD,implication]: APIs that support streaming of the encrypt or decrypt operation SHOULD allow customers
+    TEXT[!SHOULD,implication]: to be able to process arbitrarily large inputs with a finite amount of working memory.
 
   SECTION: [Inputs](#inputs)
     TEXT[!MUST]: In order to support streaming, the operation MUST accept some input within a streaming framework.
