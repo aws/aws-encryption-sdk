@@ -496,6 +496,9 @@ fn step_verify_signature(
     //= specification/client-apis/decrypt.md#verify-the-signature
     //# If the algorithm suite has a signature algorithm,
     //# the Decrypt operation MUST verify the message footer using the specified signature algorithm.
+    //= specification/data-format/message-footer.md#overview
+    //# When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
+    //# the [message](message.md) MUST contain a footer.
     //= specification/client-apis/decrypt.md#verify-the-signature
     //# After deserializing the body, the Decrypt operation MUST deserialize the next encrypted message bytes
     //# as the [message footer](../data-format/message-footer.md).

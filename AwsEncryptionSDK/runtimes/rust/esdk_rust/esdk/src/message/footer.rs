@@ -8,10 +8,6 @@ use super::serialize_functions::{read_seq_u16, write_bytes, write_u16};
 use super::*;
 use crate::types::{SafeRead, SafeWrite};
 
-//= specification/data-format/message-footer.md#overview
-//# When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
-//# the [message](message.md) MUST contain a footer.
-
 /// Write a message footer (signature length + signature bytes).
 ///
 /// The caller is responsible for ensuring this is only called when the algorithm suite
@@ -55,9 +51,12 @@ pub(crate) fn read_footer(
     r: &mut dyn SafeRead,
     raw: &mut dyn SafeWrite,
 ) -> Result<Vec<u8>, Error> {
-    //= specification/data-format/message-footer.md#signature-length
-    //# This length of the signature length field MUST be 2 bytes.
-    //= specification/data-format/message-footer.md#signature-length
-    //# The signature length field MUST be interpreted as a UInt16.
+    //= specification/client-apis/decrypt.md#verify-the-signature
+    //# The order for message footer deserialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
+    //= specification/data-format/message-footer.md#structure
+    //= reason=read_seq_u16 reads a u16 length (Signature Length) followed by that many bytes (Signature), matching the required order
+    //# The message footer MUST consist of, in order,
+    //# Signature Length,
+    //# and Signature.
     read_seq_u16(r, raw)
 }
