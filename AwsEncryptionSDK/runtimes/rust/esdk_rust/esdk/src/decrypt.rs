@@ -454,9 +454,21 @@ fn step_decrypt_body(
     //# [un-framed data](../data-format/message-body.md#non-framed-data).
     let key = state.derived_data_keys.data_key.clone();
     let last_frame = match state.header.body.content_type() {
-        ContentType::NonFramed => body::read_and_decrypt_non_framed_message_body(
-            ciphertext, &state.header, &key, &mut state.sig_digest,
-        )?,
+        ContentType::NonFramed => {
+            //= specification/client-apis/decrypt.md#decrypt-the-message-body
+            //# Non-framed data deserialization MUST conform to the [Non-Framed Data](../data-format/message-body.md#non-framed-data) specification.
+            //= specification/data-format/message-body.md#non-framed-data
+            //= type=implication
+            //= reason=read_and_decrypt_non_framed_message_body reads IV, content length, content, and auth tag in order
+            //# Non-framed data MUST consist of, in order,
+            //# IV,
+            //# Encrypted Content Length,
+            //# Encrypted Content,
+            //# and Authentication Tag.
+            body::read_and_decrypt_non_framed_message_body(
+                ciphertext, &state.header, &key, &mut state.sig_digest,
+            )?
+        }
         ContentType::Framed => {
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //# Any plaintext decrypted from [unframed data](../data-format/message-body.md#un-framed-data) or

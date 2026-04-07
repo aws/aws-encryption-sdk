@@ -9,6 +9,112 @@ use aws_esdk::*;
 use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
 
+/// Build a complete non-framed encrypted message from scratch.
+///
+/// Uses AlgAes256GcmHkdfSha512CommitKey (0x0478), V2 header, NonFramed content type.
+/// The wrapping key is `[0u8; 32]` matching the test_keyring() configuration.
+fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
+    use aws_lc_rs::aead::{Aad, LessSafeKey, Nonce, UnboundKey, AES_256_GCM};
+    use aws_lc_rs::hkdf::{Salt, HKDF_SHA512};
+
+    let wrapping_key = [0u8; 32];
+    let plaintext_data_key = [0x42u8; 32];
+    let message_id = [0xAAu8; 32];
+    let edk_iv: [u8; 12] = [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C];
+    let alg_suite_id: [u8; 2] = [0x04, 0x78];
+
+    // --- Wrap the data key (raw AES keyring format) ---
+    // EDK AAD = serialized encryption context (empty → [])
+    let key = UnboundKey::new(&AES_256_GCM, &wrapping_key).unwrap();
+    let key = LessSafeKey::new(key);
+    let nonce = Nonce::try_assume_unique_for_key(&edk_iv).unwrap();
+    let mut edk_ct = plaintext_data_key.to_vec();
+    let edk_tag = key.seal_in_place_separate_tag(nonce, Aad::from(&[] as &[u8]), &mut edk_ct).unwrap();
+    let mut edk_ciphertext = edk_ct;
+    edk_ciphertext.extend_from_slice(edk_tag.as_ref());
+
+    // EDK key_provider_info = key_name + tag_len_bits(u32be) + iv_len_bytes(u32be) + iv
+    let key_name = b"child0 Name";
+    let key_namespace = b"child0 Namespace";
+    let mut provider_info = Vec::new();
+    provider_info.extend_from_slice(key_name);
+    provider_info.extend_from_slice(&128u32.to_be_bytes()); // tag length in bits
+    provider_info.extend_from_slice(&12u32.to_be_bytes());  // IV length in bytes
+    provider_info.extend_from_slice(&edk_iv);
+
+    // --- Derive keys (V2 HKDF-SHA512 with commitment) ---
+    let salt = Salt::new(HKDF_SHA512, &message_id);
+    let prk = salt.extract(&plaintext_data_key);
+    let mut data_key = [0u8; 32];
+    let info_key: &[&[u8]] = &[&alg_suite_id, b"DERIVEKEY"];
+    let okm = prk.expand(info_key, &AES_256_GCM).unwrap();
+    okm.fill(&mut data_key).unwrap();
+    let mut commit_key = [0u8; 32];
+    let info_commit: &[&[u8]] = &[b"COMMITKEY"];
+    let okm2 = prk.expand(info_commit, &AES_256_GCM).unwrap();
+    okm2.fill(&mut commit_key).unwrap();
+
+    // --- Build V2 header body ---
+    let mut header_body = Vec::new();
+    header_body.push(0x02); // Version 2.0
+    header_body.extend_from_slice(&alg_suite_id); // Algorithm Suite ID
+    header_body.extend_from_slice(&message_id); // Message ID (32 bytes for V2)
+    header_body.extend_from_slice(&0u16.to_be_bytes()); // AAD: empty EC → key_value_pairs_length = 0
+    // EDKs: count(2) + 1 EDK
+    header_body.extend_from_slice(&1u16.to_be_bytes()); // EDK count = 1
+    // EDK entry: provider_id_len(2) + provider_id + provider_info_len(2) + provider_info + edk_len(2) + edk
+    header_body.extend_from_slice(&(key_namespace.len() as u16).to_be_bytes());
+    header_body.extend_from_slice(key_namespace);
+    header_body.extend_from_slice(&(provider_info.len() as u16).to_be_bytes());
+    header_body.extend_from_slice(&provider_info);
+    header_body.extend_from_slice(&(edk_ciphertext.len() as u16).to_be_bytes());
+    header_body.extend_from_slice(&edk_ciphertext);
+    header_body.push(0x01); // Content Type: NonFramed
+    header_body.extend_from_slice(&0u32.to_be_bytes()); // Frame Length: 0 for non-framed
+    header_body.extend_from_slice(&commit_key); // Algorithm Suite Data (commitment key)
+
+    // --- Compute header auth (V2: IV=zeros, AAD=header_body, empty ciphertext) ---
+    let header_auth_iv = [0u8; 12];
+    let key = UnboundKey::new(&AES_256_GCM, &data_key).unwrap();
+    let key = LessSafeKey::new(key);
+    let nonce = Nonce::try_assume_unique_for_key(&header_auth_iv).unwrap();
+    let mut empty = Vec::new();
+    let header_auth_tag = key.seal_in_place_separate_tag(nonce, Aad::from(&header_body[..]), &mut empty).unwrap();
+
+    // --- Build non-framed body ---
+    // Body AAD: message_id + "AWSKMSEncryptionClient Single Block" + seq_num(4, be) + content_len(8, be)
+    let mut body_aad = Vec::new();
+    body_aad.extend_from_slice(&message_id);
+    body_aad.extend_from_slice(b"AWSKMSEncryptionClient Single Block");
+    body_aad.extend_from_slice(&1u32.to_be_bytes()); // sequence number = 1
+    body_aad.extend_from_slice(&(plaintext.len() as u64).to_be_bytes()); // content length
+
+    // Body IV: sequence number padded to 12 bytes with zeros
+    let mut body_iv = [0u8; 12];
+    body_iv[8..].copy_from_slice(&1u32.to_be_bytes());
+
+    // Encrypt the plaintext
+    let key = UnboundKey::new(&AES_256_GCM, &data_key).unwrap();
+    let key = LessSafeKey::new(key);
+    let nonce = Nonce::try_assume_unique_for_key(&body_iv).unwrap();
+    let mut body_ct = plaintext.to_vec();
+    let body_tag = key.seal_in_place_separate_tag(nonce, Aad::from(&body_aad[..]), &mut body_ct).unwrap();
+
+    // --- Assemble the full message ---
+    let mut message = Vec::new();
+    // Header body
+    message.extend_from_slice(&header_body);
+    // Header auth (V2: tag only, no IV)
+    message.extend_from_slice(header_auth_tag.as_ref());
+    // Non-framed body: IV(12) + content_length(8) + encrypted_content(N) + auth_tag(16)
+    message.extend_from_slice(&body_iv);
+    message.extend_from_slice(&(body_ct.len() as u64).to_be_bytes());
+    message.extend_from_slice(&body_ct);
+    message.extend_from_slice(body_tag.as_ref());
+
+    message
+}
+
 const IV_LEN: usize = 12;
 const TAG_LEN: usize = 16;
 const ENDFRAME_MARKER: [u8; 4] = 0xFFFF_FFFFu32.to_be_bytes();
@@ -343,7 +449,7 @@ async fn test_decrypt_aad_constructed_correctly() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
-    //# constructed as follows:
+    //# constructed according to the [Message Body AAD](../data-format/message-body-aad.md) specification, as follows:
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The [message ID](../data-format/message-body-aad.md#message-id) MUST be the same as the
@@ -511,4 +617,19 @@ async fn test_decrypt_final_frame_held_until_signature_verification() {
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
     assert!(result.is_err(), "tampered signature must cause decrypt failure, proving final frame was held back");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_decrypt_nonframed_deserialization_conforms_to_spec() {
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //# Non-framed data deserialization MUST conform to the [Non-Framed Data](../data-format/message-body.md#non-framed-data) specification.
+    // Construct a non-framed message from scratch and decrypt it.
+    // Successful decryption proves the non-framed deserialization conforms to the spec.
+    let pt = b"non-framed conformance test";
+    let ct = build_nonframed_message(pt);
+    let keyring = test_keyring().await;
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let result = decrypt(&dec_input).await.unwrap();
+    assert_eq!(result.plaintext, pt.to_vec(), "non-framed round-trip proves deserialization conforms to Non-Framed Data spec");
 }
