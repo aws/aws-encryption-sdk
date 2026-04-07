@@ -84,6 +84,11 @@ async fn test_v2_header_fields_deserialized() {
     //# - [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data) (V2 only): MUST be deserialized according to the
     //# [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data) specification.
 
+    //= specification/client-apis/decrypt.md#parse-the-header
+    //= type=test
+    //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST be deserialized according to the
+    //# [Authentication Tag](../data-format/message-header.md#authentication-tag) specification.
+
     let keyring = test_keyring().await;
     let plaintext = b"v2 parse header round-trip";
 

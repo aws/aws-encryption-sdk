@@ -301,6 +301,9 @@ async fn step_get_decryption_materials(
             "Stored header algorithm suite does not match decryption algorithm suite.".into(),
         );
     }
+    //= specification/client-apis/decrypt.md#parse-the-header
+    //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST be deserialized according to the
+    //# [Authentication Tag](../data-format/message-header.md#authentication-tag) specification.
     let header_auth = header_auth::read_header_auth_tag(ciphertext, suite, &mut sig_digest)?;
 
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
