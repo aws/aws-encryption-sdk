@@ -51,6 +51,10 @@ async fn test_verify_signature_round_trip_signing_suite() {
     //= type=test
     //# The order for message footer deserialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
 
+    //= specification/client-apis/encrypt.md#construct-the-signature
+    //= type=test
+    //# The order for message footer serialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
+
     //= specification/client-apis/decrypt.md#verify-the-signature
     //= type=test
     //# Once the message footer is deserialized, the Decrypt operation MUST use the

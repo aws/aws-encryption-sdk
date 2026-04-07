@@ -20,6 +20,8 @@ target = "specification/client-apis/encrypt.md#construct-the-signature"
 #   output of the calculation above.
 # - [Signature](../data-format/message-footer.md#signature): MUST be the output of the calculation above.
 # 
+# The order for message footer serialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
+# 
 # The above serialized bytes MUST NOT be released until the entire message footer has been serialized.
 # Once the entire message footer has been serialized,
 # this operation MUST release any previously unreleased serialized bytes from previous steps
@@ -78,6 +80,12 @@ output of the calculation above.
 level = "MUST"
 quote = '''
 - [Signature](../data-format/message-footer.md#signature): MUST be the output of the calculation above.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The order for message footer serialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
 '''
 
 [[spec]]

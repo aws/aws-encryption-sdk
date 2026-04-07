@@ -9,6 +9,8 @@ target = "specification/data-format/message-body-aad.md#body-aad-content"
 # - [Non-framed data](message-body.md#non-framed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
 # - The [regular frames](message-body.md#regular-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Frame`.
 # - The [final frame](message-body.md#final-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Final Frame`.
+# 
+# The body AAD content value MUST be encoded as UTF-8 bytes.
 
 [[spec]]
 level = "MUST"
@@ -26,5 +28,11 @@ quote = '''
 level = "MUST"
 quote = '''
 - The [final frame](message-body.md#final-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Final Frame`.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The body AAD content value MUST be encoded as UTF-8 bytes.
 '''
 

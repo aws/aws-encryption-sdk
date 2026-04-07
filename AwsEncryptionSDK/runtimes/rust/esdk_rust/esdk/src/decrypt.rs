@@ -457,6 +457,11 @@ fn step_decrypt_body(
         ContentType::NonFramed => {
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //# Non-framed data deserialization MUST conform to the [Non-Framed Data](../data-format/message-body.md#non-framed-data) specification.
+            //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+            //= reason=read_and_decrypt_non_framed_message_body deserializes and decrypts per the non-framed data specification
+            //# If a message has the [non-framed](../data-format/message-body.md#non-framed-data) content type,
+            //# the Decrypt operation MUST deserialize the message body according to the
+            //# [non-framed data specification](../data-format/message-body.md#non-framed-data)
             //= specification/data-format/message-body.md#non-framed-data
             //= type=implication
             //= reason=read_and_decrypt_non_framed_message_body reads IV, content length, content, and auth tag in order

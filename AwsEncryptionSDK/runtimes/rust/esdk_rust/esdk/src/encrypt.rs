@@ -389,6 +389,9 @@ fn step_construct_signature(
     //# If the [algorithm suite](../framework/algorithm-suites.md) contains a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
     //# this operation MUST calculate a signature over the message,
     //# and the output [encrypted message](#encrypted-message) MUST contain a [message footer](../data-format/message-footer.md).
+    //= specification/data-format/message-footer.md#overview
+    //# When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
+    //# the [message](message.md) MUST contain a footer.
     //= specification/data-format/message.md#structure
     //# If the [message header](message-header.md) contains an [algorithm suite](../framework/algorithm-suites.md) in the
     //# [algorithm suite ID](message-header.md#algorithm-suite-id) field that contains a

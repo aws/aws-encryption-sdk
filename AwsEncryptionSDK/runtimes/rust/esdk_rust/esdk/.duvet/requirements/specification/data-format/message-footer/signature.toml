@@ -8,11 +8,18 @@ target = "specification/data-format/message-footer.md#signature"
 # The [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](../framework/algorithm-suites.md#algorithm-suite-id) field
 # [determines how the value of this field is calculated](../client-apis/encrypt.md),
 # and uses this value to [authenticate the contents of the header and body during decryption](../client-apis/decrypt.md).
+# The signature MUST be interpreted as bytes.
 
 [[spec]]
 level = "MUST"
 quote = '''
 This signature MUST be calculated over both the [message header](message-header.md) and the [message body](message-body.md),
 in the order of serialization.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The signature MUST be interpreted as bytes.
 '''
 

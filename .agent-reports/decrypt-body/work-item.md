@@ -1,38 +1,45 @@
-# No Gaps Found — decrypt-the-message-body
+# Work Item: Add Non-Framed Data Deserialization Conformance Annotation
 
 ## Specification
 - **File**: `aws-encryption-sdk-specification/client-apis/decrypt.md`
-- **Section**: `### Decrypt the message body`
-- **Duvet Target**: `aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body`
+- **Section**: `decrypt-the-message-body`
+- **Duvet Target**: `specification/client-apis/decrypt.md#decrypt-the-message-body`
 
-## Coverage Summary
+## Type of Work
+FIX_ANNOTATION
 
-All **36** `[[spec]]` requirements in the `decrypt-the-message-body` TOML are covered:
+## Requirements to Address
 
-| Category | Count | Status |
-|----------|-------|--------|
-| MUST requirements | 28 | ✅ All have implementation + test annotations |
-| SHOULD requirements | 8 | ✅ All have implementation/implication + test annotations |
-| type=todo remaining | 0 | ✅ None |
-| type=exception | 0 | N/A |
+### Requirement 1
+- **Level**: MUST
+- **Exact Quote** (from TOML):
+  ```toml
+  Non-framed data deserialization MUST conform to the [Non-Framed Data](../data-format/message-body.md#non-framed-data) specification.
+  ```
+- **Current State**: missing (no implementation annotation, no test annotation)
 
-## Annotation Locations
+## Existing Code Context
 
-### Implementation annotations (42 total across 2 files)
-- `src/message/body.rs`: 38 annotations (framed + non-framed decrypt paths)
-- `src/decrypt.rs`: 4 annotations (step_decrypt_body + internal_decrypt)
+### Source File: `src/message/body.rs`
 
-### Test annotations (36 total in 1 file)
-- `tests/test_decrypt_the_message_body.rs`: 36 type=test annotations across 22 test functions
+The non-framed data deserialization is implemented in `read_and_decrypt_non_framed_message_body`. This function already has annotations for `specification/data-format/message-body.md#non-framed-data` but is missing the `client-apis/decrypt.md#decrypt-the-message-body` annotation for this new conformance requirement.
 
-## Verification Method
+### Source File: `src/decrypt.rs`
 
-Each of the 36 TOML `[[spec]]` entries was individually verified:
-1. Exact quote text found in at least one source file (`src/message/body.rs` or `src/decrypt.rs`) with implementation or implication type
-2. Exact quote text found in `tests/test_decrypt_the_message_body.rs` with `type=test`
-3. No `type=todo` annotations remain for this section
-4. No duplicate annotations detected (some requirements are annotated in multiple code paths, which is correct for requirements that apply to both regular and final frame handling)
+The call to `read_and_decrypt_non_framed_message_body` happens in `step_decrypt_body` around the content type match. This is where the annotation should go — at the call site that dispatches to non-framed deserialization.
 
-## Conclusion
+### Test File: `tests/test_decrypt_the_message_body.rs`
 
-No work is needed for this spec section. All requirements are fully annotated with both implementation and test coverage.
+Existing tests exercise non-framed decryption. One of these should receive the `type=test` annotation.
+
+## Implementation Guidance
+
+1. Add an implementation annotation at the call site in `src/decrypt.rs` where `read_and_decrypt_non_framed_message_body` is called, or in `src/message/body.rs` at the function entry.
+
+2. Add a `type=test` annotation to an existing test that exercises non-framed decryption.
+
+## Success Criteria
+- [ ] `make duvet` passes with no errors
+- [ ] The requirement has `type=implementation` (or default) in source
+- [ ] The requirement has `type=test` in test file
+- [ ] Duvet snapshot shows the requirement as covered

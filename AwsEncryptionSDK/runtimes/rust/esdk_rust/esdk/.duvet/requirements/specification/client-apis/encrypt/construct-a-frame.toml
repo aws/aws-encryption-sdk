@@ -9,7 +9,7 @@ target = "specification/client-apis/encrypt.md#construct-a-frame"
 # with the following inputs:
 # 
 # - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
-#   constructed as follows:
+#   constructed according to the [Message Body AAD](../data-format/message-body-aad.md) specification, as follows:
 #   - The [message ID](../data-format/message-body-aad.md#message-id) MUST be the same as the
 #     [message ID](../data-frame/message-header.md#message-id) serialized in the header of this message.
 #   - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be the structure defined in
@@ -82,7 +82,7 @@ with the following inputs:
 level = "MUST"
 quote = '''
 - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
-constructed as follows:
+constructed according to the [Message Body AAD](../data-format/message-body-aad.md) specification, as follows:
 '''
 
 [[spec]]

@@ -3,44 +3,10 @@ target = "specification/client-apis/encrypt.md#un-framed-message-body-encryption
 # Un-Framed Message Body Encryption
 #
 # Implementations of the AWS Encryption SDK MUST NOT encrypt using the Non-Framed content type.
-# However, this behavior was supported in the past.
-# 
-# If a message has the [non-framed](../data-format/message-body.md#non-framed-data) content type,
-# the [message body](../data-format/message-body.md) was serialized with the following specifics:
-# 
-# - [IV](../data-format/message-body.md#iv): MUST be the [sequence number](../data-format/message-body-aad.md#sequence-number)
-#   used in the [message body AAD](../data-format/message-body-aad.md).
-# - [Encrypted Content](../data-format/message-body.md#encrypted-content): MUST be the output of the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
-#   specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
-#   - The AAD is the serialized [message body AAD](../data-format/message-body-aad.md)
-#   - The IV is the [IV](../data-format/message-body.md#iv) specified above.
-#   - The cipherkey is the derived data key
-#   - The plaintext is the input [plaintext](#plaintext)
-# - [Authentication Tag](../data-format/message-body.md#authentication-tag): MUST be the authentication tag returned by the above encryption.
 
 [[spec]]
 level = "MUST"
 quote = '''
 Implementations of the AWS Encryption SDK MUST NOT encrypt using the Non-Framed content type.
-'''
-
-[[spec]]
-level = "MUST"
-quote = '''
-- [IV](../data-format/message-body.md#iv): MUST be the [sequence number](../data-format/message-body-aad.md#sequence-number)
-used in the [message body AAD](../data-format/message-body-aad.md).
-'''
-
-[[spec]]
-level = "MUST"
-quote = '''
-- [Encrypted Content](../data-format/message-body.md#encrypted-content): MUST be the output of the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
-specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
-'''
-
-[[spec]]
-level = "MUST"
-quote = '''
-- [Authentication Tag](../data-format/message-body.md#authentication-tag): MUST be the authentication tag returned by the above encryption.
 '''
 

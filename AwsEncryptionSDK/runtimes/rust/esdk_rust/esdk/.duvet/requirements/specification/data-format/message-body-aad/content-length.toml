@@ -4,6 +4,9 @@ target = "specification/data-format/message-body-aad.md#content-length"
 #
 # The length, in bytes, of the plaintext data being encrypted that this message body AAD is associated with.
 # 
+# The length of the content length field MUST be 8 bytes.
+# The content length field MUST be interpreted as a UInt64.
+# 
 # More specifically, depending on the [content type](message-header.md#content-type) of the [message](message.md):
 # 
 # - For [non-framed data](message-body.md#non-framed-data), this value MUST equal the length, in bytes,
@@ -15,6 +18,18 @@ target = "specification/data-format/message-body-aad.md#content-length"
 #   - For the [final frame](message-body.md#final-frame), this value MUST be greater than or equal to
 #     0 and less than or equal to the value of the [frame length](message-header.md#frame-length)
 #     field in the message header.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the content length field MUST be 8 bytes.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The content length field MUST be interpreted as a UInt64.
+'''
 
 [[spec]]
 level = "MUST"

@@ -31,6 +31,12 @@ pub(crate) fn write_footer(
     //# output of the calculation above.
     let len = u16::try_from(signature.len())
         .map_err(|_| Error::from("Sequence length too long for 16 bits"))?;
+    //= specification/client-apis/encrypt.md#construct-the-signature
+    //# The order for message footer serialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
+    //= specification/data-format/message-footer.md#structure
+    //# The message footer MUST consist of, in order,
+    //# Signature Length,
+    //# and Signature.
     //= specification/data-format/message-footer.md#signature-length
     //# This length of the signature length field MUST be 2 bytes.
     //= specification/data-format/message-footer.md#signature-length
@@ -38,6 +44,9 @@ pub(crate) fn write_footer(
     write_u16(w, len)?;
     //= specification/client-apis/encrypt.md#construct-the-signature
     //# - [Signature](../data-format/message-footer.md#signature): MUST be the output of the calculation above.
+    //= specification/data-format/message-footer.md#signature
+    //= type=implication
+    //# The signature MUST be interpreted as bytes.
     write_bytes(w, signature)?;
     Ok(())
 
@@ -58,5 +67,8 @@ pub(crate) fn read_footer(
     //# The message footer MUST consist of, in order,
     //# Signature Length,
     //# and Signature.
+    //= specification/data-format/message-footer.md#signature
+    //= type=implication
+    //# The signature MUST be interpreted as bytes.
     read_seq_u16(r, raw)
 }

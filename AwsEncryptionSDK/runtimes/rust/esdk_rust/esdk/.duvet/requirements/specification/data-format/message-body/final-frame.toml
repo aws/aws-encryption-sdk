@@ -35,7 +35,7 @@ target = "specification/data-format/message-body.md#final-frame"
 # | [Encrypted Content](#encrypted-content)                 | Variable                                                                                                     | Bytes          |
 # | [Authentication Tag](#authentication-tag)               | Algorithm suite ID's [Authentication Tag Length](../framework/algorithm-suites.md#authentication-tag-length) | Bytes          |
 # 
-# A final frame MUST be serialized as, in order,
+# A final frame MUST consist of, in order,
 # Sequence Number End,
 # Sequence Number,
 # IV,
@@ -43,7 +43,7 @@ target = "specification/data-format/message-body.md#final-frame"
 # Encrypted Content,
 # and Authentication Tag.
 # 
-# This means a final frame MUST be a regular frame with the addition of the serialized
+# A final frame MUST only differ from a regular frame by the addition of the
 # Sequence Number End
 # and Encrypted Content Length.
 
@@ -84,7 +84,7 @@ the body MUST contain exactly one frame and that frame MUST be a Final Frame.
 [[spec]]
 level = "MUST"
 quote = '''
-A final frame MUST be serialized as, in order,
+A final frame MUST consist of, in order,
 Sequence Number End,
 Sequence Number,
 IV,
@@ -96,7 +96,7 @@ and Authentication Tag.
 [[spec]]
 level = "MUST"
 quote = '''
-This means a final frame MUST be a regular frame with the addition of the serialized
+A final frame MUST only differ from a regular frame by the addition of the
 Sequence Number End
 and Encrypted Content Length.
 '''

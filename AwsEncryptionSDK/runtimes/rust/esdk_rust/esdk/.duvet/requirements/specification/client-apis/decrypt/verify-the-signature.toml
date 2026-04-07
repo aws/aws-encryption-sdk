@@ -8,6 +8,8 @@ target = "specification/client-apis/decrypt.md#verify-the-signature"
 # After deserializing the body, the Decrypt operation MUST deserialize the next encrypted message bytes
 # as the [message footer](../data-format/message-footer.md).
 # 
+# The order for message footer deserialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
+# 
 # If there are not enough consumable bytes to deserialize the message footer and
 # the caller has not yet indicated an end to the encrypted message,
 # the Decrypt operation MUST wait for enough bytes to become consumable or for the caller
@@ -39,6 +41,12 @@ level = "MUST"
 quote = '''
 After deserializing the body, the Decrypt operation MUST deserialize the next encrypted message bytes
 as the [message footer](../data-format/message-footer.md).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The order for message footer deserialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
 '''
 
 [[spec]]

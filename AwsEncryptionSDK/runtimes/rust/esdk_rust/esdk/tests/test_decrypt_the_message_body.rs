@@ -633,3 +633,156 @@ async fn test_decrypt_nonframed_deserialization_conforms_to_spec() {
     let result = decrypt(&dec_input).await.unwrap();
     assert_eq!(result.plaintext, pt.to_vec(), "non-framed round-trip proves deserialization conforms to Non-Framed Data spec");
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_unframed_decrypt_deserializes_and_decrypts() {
+    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= type=test
+    //# If a message has the [non-framed](../data-format/message-body.md#non-framed-data) content type,
+    //# the Decrypt operation MUST deserialize the message body according to the
+    //# [non-framed data specification](../data-format/message-body.md#non-framed-data)
+    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= type=test
+    //# and decrypt it using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
+    //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
+    let pt = b"un-framed appendix test";
+    let ct = build_nonframed_message(pt);
+    let keyring = test_keyring().await;
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let result = decrypt(&dec_input).await.unwrap();
+    assert_eq!(result.plaintext, pt.to_vec());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_unframed_decrypt_iv_from_body() {
+    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= type=test
+    //# - The IV MUST be the [IV](../data-format/message-body.md#iv) deserialized from the message body.
+    // Successful authenticated decryption of a non-framed message proves the IV
+    // was correctly deserialized from the body and used for decryption.
+    let pt = b"iv test payload";
+    let ct = build_nonframed_message(pt);
+    let keyring = test_keyring().await;
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let result = decrypt(&dec_input).await.unwrap();
+    assert_eq!(result.plaintext, pt.to_vec());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_unframed_decrypt_ciphertext_from_body() {
+    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= type=test
+    //# - The ciphertext MUST be the [Encrypted Content](../data-format/message-body.md#encrypted-content) deserialized from the message body.
+    let pt = b"ciphertext input test";
+    let ct = build_nonframed_message(pt);
+    let keyring = test_keyring().await;
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let result = decrypt(&dec_input).await.unwrap();
+    assert_eq!(result.plaintext, pt.to_vec());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_unframed_decrypt_cipherkey_is_derived_data_key() {
+    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= type=test
+    //# - The cipherkey MUST be the derived data key.
+    // Successful decryption proves the derived data key was used as the cipherkey.
+    let pt = b"cipherkey test";
+    let ct = build_nonframed_message(pt);
+    let keyring = test_keyring().await;
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let result = decrypt(&dec_input).await.unwrap();
+    assert_eq!(result.plaintext, pt.to_vec());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_unframed_decrypt_tag_from_body() {
+    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= type=test
+    //# - The tag MUST be the [Authentication Tag](../data-format/message-body.md#authentication-tag) deserialized from the message body.
+    let pt = b"auth tag test";
+    let ct = build_nonframed_message(pt);
+    let keyring = test_keyring().await;
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let result = decrypt(&dec_input).await.unwrap();
+    assert_eq!(result.plaintext, pt.to_vec());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_unframed_decrypt_aad_body_aad_content() {
+    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= type=test
+    //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST use the value for
+    //# [non-framed data](../data-format/message-body-aad.md#body-aad-content).
+    // The non-framed message was constructed with "AWSKMSEncryptionClient Single Block".
+    // If the wrong AAD content string were used, authenticated decryption would fail.
+    let pt = b"aad content test";
+    let ct = build_nonframed_message(pt);
+    let keyring = test_keyring().await;
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let result = decrypt(&dec_input).await.unwrap();
+    assert_eq!(result.plaintext, pt.to_vec());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_unframed_decrypt_aad_sequence_number_is_one() {
+    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= type=test
+    //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be `1`.
+    // The non-framed message was constructed with sequence number 1 in the AAD.
+    // If a different sequence number were used, authenticated decryption would fail.
+    let pt = b"seq num one test";
+    let ct = build_nonframed_message(pt);
+    let keyring = test_keyring().await;
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let result = decrypt(&dec_input).await.unwrap();
+    assert_eq!(result.plaintext, pt.to_vec());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_unframed_decrypt_aad_content_length_equals_encrypted_content_length() {
+    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= type=test
+    //# - The [content length](../data-format/message-body-aad.md#content-length) MUST equal the length of the encrypted content.
+    // The non-framed message was constructed with content_length = plaintext.len() in the AAD.
+    // If the wrong content length were used, authenticated decryption would fail.
+    let pt = b"content length test payload";
+    let ct = build_nonframed_message(pt);
+    let keyring = test_keyring().await;
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let result = decrypt(&dec_input).await.unwrap();
+    assert_eq!(result.plaintext, pt.to_vec());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_unframed_decrypt_fails_on_tampered_auth_tag() {
+    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= type=test
+    //# If this decryption fails, this operation MUST immediately halt and fail.
+    // Tamper with the authentication tag in a non-framed message. Decrypt must fail.
+    let pt = b"tamper test";
+    let mut ct = build_nonframed_message(pt);
+    // The auth tag is the last 16 bytes of the message
+    let last = ct.len() - 1;
+    ct[last] ^= 0xFF;
+    let keyring = test_keyring().await;
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let result = decrypt(&dec_input).await;
+    assert!(result.is_err(), "tampered non-framed auth tag must cause immediate decryption failure");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_unframed_decrypt_aad_constructed_correctly() {
+    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= type=test
+    //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
+    //# constructed with:
+    // Successful authenticated decryption of a non-framed message proves the AAD
+    // was constructed correctly per the message-body-aad spec.
+    let pt = b"aad construction test";
+    let ct = build_nonframed_message(pt);
+    let keyring = test_keyring().await;
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let result = decrypt(&dec_input).await.unwrap();
+    assert_eq!(result.plaintext, pt.to_vec());
+}

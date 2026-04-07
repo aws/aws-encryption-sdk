@@ -138,7 +138,7 @@ async fn test_framed_data_max_frame_count() {
 async fn test_regular_frame_serialization_order() {
     //= specification/data-format/message-body.md#regular-frame
     //= type=test
-    //# A regular frame MUST be serialized as, in order,
+    //# A regular frame MUST consist of, in order,
     //# Sequence Number,
     //# IV,
     //# Encrypted Content,
@@ -187,7 +187,7 @@ async fn test_regular_frame_sequence_number_increments() {
 async fn test_regular_frame_sequence_number_4_bytes() {
     //= specification/data-format/message-body.md#regular-frame-sequence-number
     //= type=test
-    //# When serializing the sequence number to a message, the length of the serialized sequence number MUST be 4 bytes.
+    //# The length of the serialized sequence number field MUST be 4 bytes.
     let pt = vec![0xFFu8; 20];
     let ct = encrypt_with_frame_length(&pt, 10).await;
     let body_start = find_body_start(&ct, 10).expect("must find body");
@@ -201,7 +201,7 @@ async fn test_regular_frame_sequence_number_4_bytes() {
 async fn test_regular_frame_sequence_number_uint32() {
     //= specification/data-format/message-body.md#regular-frame-sequence-number
     //= type=test
-    //# The sequence number MUST be serialized as a UInt32.
+    //# The sequence number MUST be interpreted as a UInt32.
     let pt = vec![0xAAu8; 30];
     let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
     // All sequence numbers are valid u32 values parsed from big-endian bytes
@@ -214,7 +214,7 @@ async fn test_regular_frame_sequence_number_uint32() {
 async fn test_regular_frame_sequence_number_read_as_uint32() {
     //= specification/data-format/message-body.md#regular-frame-sequence-number
     //= type=test
-    //# When reading the sequence number from a message, the sequence number MUST be interpreted as a UInt32.
+    //# The sequence number MUST be interpreted as a UInt32.
     // Successful round-trip proves the decrypt path reads sequence numbers as UInt32
     let pt = vec![0xBBu8; 30];
     let result = round_trip(&pt, 10).await;
@@ -315,7 +315,7 @@ async fn test_regular_frame_auth_tag_interpreted_as_bytes() {
 async fn test_final_frame_serialization_order() {
     //= specification/data-format/message-body.md#final-frame
     //= type=test
-    //# A final frame MUST be serialized as, in order,
+    //# A final frame MUST consist of, in order,
     //# Sequence Number End,
     //# Sequence Number,
     //# IV,
@@ -338,7 +338,7 @@ async fn test_final_frame_serialization_order() {
 async fn test_final_frame_is_regular_frame_plus_additions() {
     //= specification/data-format/message-body.md#final-frame
     //= type=test
-    //# This means a final frame MUST be a regular frame with the addition of the serialized
+    //# A final frame MUST only differ from a regular frame by the addition of the
     //# Sequence Number End
     //# and Encrypted Content Length.
     let pt = vec![0xBBu8; 5];
@@ -371,7 +371,7 @@ async fn test_sequence_number_end_value() {
 async fn test_sequence_number_end_4_bytes() {
     //= specification/data-format/message-body.md#sequence-number-end
     //= type=test
-    //# The length of the serialized sequence number end MUST be 4 bytes.
+    //# The length of the sequence number end field MUST be 4 bytes.
     let pt = b"test";
     let ct = encrypt_with_frame_length(pt, 4096).await;
     // The ENDFRAME marker is exactly 4 bytes: FF FF FF FF
@@ -407,7 +407,7 @@ async fn test_final_frame_sequence_number_equals_total_frames() {
 async fn test_final_frame_sequence_number_serialized_same_as_regular() {
     //= specification/data-format/message-body.md#final-frame-sequence-number
     //= type=test
-    //# The Final Frame Sequence Number MUST be serialized to a message the same way as the
+    //# The length of the Final Frame Sequence number field  MUST be the same as the
     //# [Regular Frame Sequence Number](#regular-frame-sequence-number).
     let pt = vec![0xBBu8; 20];
     let ct = encrypt_with_frame_length(&pt, 10).await;
@@ -423,7 +423,7 @@ async fn test_final_frame_sequence_number_serialized_same_as_regular() {
 async fn test_final_frame_sequence_number_interpreted_same_as_regular() {
     //= specification/data-format/message-body.md#final-frame-sequence-number
     //= type=test
-    //# The Final Frame Sequence Number MUST be interpreted from a message the same way as the
+    //# The Final Frame Sequence Number MUST be interpreted as the same type as the
     //# [Regular Frame Sequence Number](#regular-frame-sequence-number).
     // Multi-frame round-trip: decrypt reads final frame seq num as UInt32 (same as regular)
     let pt = vec![0xCCu8; 30];
@@ -435,7 +435,7 @@ async fn test_final_frame_sequence_number_interpreted_same_as_regular() {
 async fn test_final_frame_iv_unique() {
     //= specification/data-format/message-body.md#final-frame-iv
     //= type=test
-    //# The IV MUST be a unique IV within the message.
+    //# A generated IV MUST be a unique IV within the message.
     let pt = vec![0xDDu8; 30];
     let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
     let final_iv = &frames.last().expect("must have final frame").1;
@@ -450,7 +450,7 @@ async fn test_final_frame_iv_unique() {
 async fn test_final_frame_iv_length_matches_algorithm() {
     //= specification/data-format/message-body.md#final-frame-iv
     //= type=test
-    //# The IV length MUST be equal to the IV length of the [algorithm suite](../framework/algorithm-suites.md) that generated the message.
+    //# The length of the IV field MUST be equal to the IV length of the [algorithm suite](../framework/algorithm-suites.md) that generated the message.
     let pt = vec![0xEEu8; 5];
     let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
     let final_frame = frames.last().expect("must have final frame");
@@ -472,7 +472,7 @@ async fn test_final_frame_iv_interpreted_as_bytes() {
 async fn test_final_frame_encrypted_content_length_4_bytes() {
     //= specification/data-format/message-body.md#final-frame-encrypted-content-length
     //= type=test
-    //# When serializing the encrypted content length to a message, the length of the serialized encrypted content length field MUST be 4 bytes.
+    //# The length of the serialized encrypted content length field MUST be 4 bytes.
     let pt = vec![0xAAu8; 7];
     let ct = encrypt_with_frame_length(&pt, 10).await;
     let pos = ct.windows(4).position(|w| w == ENDFRAME_MARKER).expect("must find ENDFRAME");
@@ -485,7 +485,7 @@ async fn test_final_frame_encrypted_content_length_4_bytes() {
 async fn test_final_frame_encrypted_content_length_uint32() {
     //= specification/data-format/message-body.md#final-frame-encrypted-content-length
     //= type=test
-    //# The encrypted content length MUST be serialized as a UInt32.
+    //# The encrypted content length MUST be a UInt32.
     let pt = vec![0xBBu8; 7];
     let ct = encrypt_with_frame_length(&pt, 10).await;
     let pos = ct.windows(4).position(|w| w == ENDFRAME_MARKER).expect("must find ENDFRAME");
@@ -497,7 +497,7 @@ async fn test_final_frame_encrypted_content_length_uint32() {
 async fn test_final_frame_encrypted_content_length_read_as_uint32() {
     //= specification/data-format/message-body.md#final-frame-encrypted-content-length
     //= type=test
-    //# When reading the encrypted content length from a message, the encrypted content length MUST be interpreted as a UInt32.
+    //# The encrypted content length MUST be a UInt32.
     // Successful round-trip proves decrypt reads the content length as UInt32
     let pt = vec![0xCCu8; 7];
     let result = round_trip(&pt, 10).await;
@@ -508,7 +508,7 @@ async fn test_final_frame_encrypted_content_length_read_as_uint32() {
 async fn test_final_frame_encrypted_content_length_matches() {
     //= specification/data-format/message-body.md#final-frame-encrypted-content
     //= type=test
-    //# The length of the serialized encrypted content MUST be equal to the value of the [Encrypted Content Length](#encrypted-content-length-1) field.
+    //# The length of the serialized encrypted content field MUST be equal to the value of the [Encrypted Content Length](#encrypted-content-length-1) field.
     let pt = vec![0xDDu8; 7];
     let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
     let final_frame = frames.last().expect("must have final frame");
@@ -549,4 +549,35 @@ async fn test_final_frame_auth_tag_interpreted_as_bytes() {
     let pt = vec![0xAAu8; 5];
     let result = round_trip(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves final frame auth tag is interpreted as bytes");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_final_frame_auth_tag_authenticates_final_frame() {
+    //= specification/data-format/message-body.md#final-frame-authentication-tag
+    //= type=test
+    //# It MUST be used to authenticate the final frame.
+    // Successful decrypt proves the auth tag authenticated the final frame.
+    let pt = vec![0xBBu8; 5];
+    assert_eq!(round_trip(&pt, 10).await, pt);
+
+    // Tampering with the final frame's auth tag must cause decryption failure.
+    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let frames = parse_frames(&ct, 10);
+    let final_frame = frames.last().unwrap();
+    assert!(final_frame.4, "must be final frame");
+
+    let body_start = find_body_start(&ct, 10).unwrap();
+    // Walk to the final frame's auth tag position
+    let mut pos = body_start;
+    for f in &frames[..frames.len() - 1] {
+        pos += 4 + IV_LEN + f.2.len() + TAG_LEN; // regular frame
+    }
+    // Final frame: ENDFRAME(4) + SeqNum(4) + IV(12) + ContentLen(4) + Content(N) + Tag(16)
+    let tag_offset = pos + 4 + 4 + IV_LEN + 4 + final_frame.2.len();
+    let mut tampered = ct.clone();
+    tampered[tag_offset] ^= 0xFF;
+
+    let keyring = test_keyring().await;
+    let dec_input = DecryptInput::with_legacy_keyring(&tampered, EncryptionContext::new(), keyring);
+    assert!(decrypt(&dec_input).await.is_err(), "tampered final frame auth tag must cause decryption failure");
 }

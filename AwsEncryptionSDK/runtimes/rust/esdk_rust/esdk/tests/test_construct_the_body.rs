@@ -298,7 +298,7 @@ async fn test_empty_plaintext_constructs_empty_final_frame() {
     }
     //= specification/data-format/message-body.md#final-frame
     //= type=test
-    //# A final frame MUST be serialized as, in order,
+    //# A final frame MUST consist of, in order,
     //# Sequence Number End,
     //# Sequence Number,
     //# IV,
@@ -308,7 +308,7 @@ async fn test_empty_plaintext_constructs_empty_final_frame() {
     assert!(found_structure, "final frame must have Sequence Number End followed by Sequence Number");
     //= specification/data-format/message-body.md#final-frame
     //= type=test
-    //# This means a final frame MUST be a regular frame with the addition of the serialized
+    //# A final frame MUST only differ from a regular frame by the addition of the
     //# Sequence Number End
     //# and Encrypted Content Length.
     assert_eq!(content_len, 0, "empty final frame has Encrypted Content Length field (value 0)");
