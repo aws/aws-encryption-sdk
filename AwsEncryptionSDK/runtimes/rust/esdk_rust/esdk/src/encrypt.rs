@@ -289,6 +289,8 @@ async fn step_get_encryption_materials(
     //# MUST be the algorithm suite in the [encryption materials](../framework/structures.md#encryption-materials)
     //# returned from the [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) call.
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=implication
+    //= reason=The code uses materials.algorithm_suite regardless of what was requested; the CMM may return a different suite
     //# Note that the algorithm suite in the retrieved encryption materials MAY be different
     //# from the [input algorithm suite](#algorithm-suite).
     let algorithm_suite = &materials.algorithm_suite;
