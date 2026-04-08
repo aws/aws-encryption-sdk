@@ -202,7 +202,27 @@ async fn test_decrypt_final_frame_deserialization() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# Final frame deserialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //# For a final frame, each field MUST be deserialized according to its specification:
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //# - [Sequence Number](../data-format/message-body.md#final-frame-sequence-number): MUST be deserialized according to the
+    //# [Final Frame Sequence Number](../data-format/message-body.md#final-frame-sequence-number) specification.
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //# - [IV](../data-format/message-body.md#final-frame-iv): MUST be deserialized according to the
+    //# [Final Frame IV](../data-format/message-body.md#final-frame-iv) specification.
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //# - [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content): MUST be deserialized according to the
+    //# [Final Frame Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content) specification.
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //# - [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag): MUST be deserialized according to the
+    //# [Final Frame Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag) specification.
     // Single-frame message: 5 bytes with frame_length=10 → 1 final frame only.
+    // Successful authenticated decryption proves all final frame fields were deserialized correctly.
     let pt = vec![0xBBu8; 5];
     let result = round_trip(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves final frame deserialization conforms to spec");
@@ -249,8 +269,7 @@ async fn test_decrypt_regular_frame_detected_without_endframe() {
 async fn test_decrypt_final_frame_content_length_validation() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# If deserializing a [final frame](../data-format/message-body.md#final-frame),
-    //# the Decrypt operation MUST ensure that the length of the encrypted content field is
+    //# The Decrypt operation MUST ensure that the length of the encrypted content field is
     //# less than or equal to the frame length deserialized in the message header.
     // Encrypt a message, then tamper with the final frame's content length field
     // to exceed the frame length. Decrypt must fail.
@@ -412,6 +431,9 @@ async fn test_decrypt_content_type_determines_framed_or_nonframed() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_frame_fields_deserialized_correctly() {
+    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //# For a regular frame, each field MUST be deserialized according to its specification:
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The [Sequence Number End](../data-format/message-body.md#sequence-number-end): MUST be deserialized according to the

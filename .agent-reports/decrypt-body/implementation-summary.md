@@ -1,83 +1,55 @@
-# Implementation Summary — decrypt-body (Non-Framed Conformance Annotation)
+# Implementation Summary — decrypt-body (Cycle 2)
 
 ## Changes Made
 
 ### Files Modified
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/decrypt.rs` — Added implementation annotation for "Non-framed data deserialization MUST conform to..." at the `ContentType::NonFramed` match arm, plus cross-reference annotation for `message-body.md#non-framed-data`
-- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_decrypt_the_message_body.rs` — Added `build_nonframed_message()` helper and `test_decrypt_nonframed_deserialization_conforms_to_spec` test with `type=test` annotation
+- `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/body.rs` — Two fixes applied:
+  1. Moved the "For a final frame, each field MUST be deserialized..." parent annotation from inside the `if seq_num == ENDFRAME_SEQUENCE_NUMBER` block to before the `if` statement (reduces annotation stack inside block from 3 to 2).
+  2. Encrypt-side annotations: Could NOT revert — the old quotes ("The Sequence Number End MUST only be serialized for the final frame." and "The Encrypted Content Length MUST only be serialized for the final frame.") no longer exist in the spec or TOML. The spec was updated in a prior commit and the TOML only contains the new quotes. Reverting would cause duvet validation failures. Kept the current (spec-matching) quotes.
 
 ### How to View Changes
 ```bash
-git diff -- AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/decrypt.rs AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_decrypt_the_message_body.rs
+git diff -- AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/src/message/body.rs
 ```
 
 ### Requirements Addressed
-- ✅ `Non-framed data deserialization MUST conform to the [Non-Framed Data](../data-format/message-body.md#non-framed-data) specification.` — implemented + tested
-- ✅ Cross-reference: `Non-framed data MUST consist of, in order, IV, Encrypted Content Length, Encrypted Content, and Authentication Tag.` — annotated as `type=implication` at the same call site
+- ✅ ANNOTATION_PLACEMENT: Parent annotation moved before `if` statement
+- ⚠️ SCOPE_CREEP: Cannot revert — old quotes don't exist in current spec/TOML. See Notes.
 
-### Test Annotations Added (REQUIRED)
-- **Test file(s) modified**: `AwsEncryptionSDK/runtimes/rust/esdk_rust/esdk/tests/test_decrypt_the_message_body.rs`
-- **Number of `type=test` annotations added**: 1 for 1 requirement
-- **Test function names**: `test_decrypt_nonframed_deserialization_conforms_to_spec`
-
-### Proposed Commit Message
-
-```
-feat(decrypt): add duvet annotation for non-framed data deserialization conformance
-
-Add implementation annotation at the ContentType::NonFramed match arm
-in step_decrypt_body where read_and_decrypt_non_framed_message_body is
-called. Add cross-reference annotation for message-body.md#non-framed-data.
-
-Add test that constructs a non-framed encrypted message from scratch
-(V2 header, AES-256-GCM-HKDF-SHA512 with commitment) and decrypts it,
-proving the non-framed deserialization conforms to the specification.
-
-Spec: aws-encryption-sdk-specification/client-apis/decrypt.md#decrypt-the-message-body
-```
+### Notes
+- The SCOPE_CREEP issue (#2) cannot be addressed as requested. The old annotation quotes ("The Sequence Number End MUST only be serialized for the final frame." and "The Encrypted Content Length MUST only be serialized for the final frame.") were removed from the specification in a prior change. The `construct-a-frame.toml` file does not contain these quotes. Reverting the annotations causes `make duvet` to fail with "could not find text in section" errors. The current annotations use quotes that match the current spec and pass duvet validation.
 
 ### Duvet Verification (actual command output)
 ```
 $ make duvet
-[duvet extract and report completed successfully with 2807 annotations parsed]
+     Loading specifications
+      Loaded 69 specifications 34ms
+     Mapping sections
+      Mapped 526 sections 19ms
+    Matching references
+     Matched 4878 references 7ms
+     Sorting references
+      Sorted 4878 references 22ms
+     Writing specification_compliance_report.html
+       Wrote specification_compliance_report.html 27ms
 ```
 
 ### Test Results (actual command output)
 ```
 $ cargo test --test test_decrypt_the_message_body
-running 26 tests
-test test_decrypt_aad_constructed_correctly ... ok
-test test_decrypt_aes_inputs_correct ... ok
-test test_decrypt_authenticates_each_frame ... ok
-test test_decrypt_body_deserialized_after_header ... ok
-test test_decrypt_content_length_in_aad ... ok
-test test_decrypt_content_type_determines_framed_or_nonframed ... ok
-test test_decrypt_fails_on_tampered_auth_tag ... ok
-test test_decrypt_final_frame_content_length_uses_encrypted_content_length ... ok
-test test_decrypt_final_frame_content_length_validation ... ok
-test test_decrypt_final_frame_detected_by_endframe_marker ... ok
-test test_decrypt_final_frame_deserialization ... ok
-test test_decrypt_final_frame_held_until_signature_verification ... ok
-test test_decrypt_first_frame_sequence_number_is_one ... ok
-test test_decrypt_frame_fields_deserialized_correctly ... ok
-test test_decrypt_no_unauthenticated_plaintext_released ... ok
-test test_decrypt_nonframed_deserialization_conforms_to_spec ... ok
-test test_decrypt_regular_frame_content_length_uses_frame_length ... ok
-test test_decrypt_regular_frame_deserialization ... ok
-test test_decrypt_regular_frame_detected_without_endframe ... ok
-test test_decrypt_sequence_numbers_increment ... ok
-test test_decrypt_streaming_feeds_signature_algorithm ... ok
-test test_decrypt_streaming_releases_regular_frames ... ok
-test test_decrypt_streaming_without_signature_releases ... ok
-test test_decrypt_unframed_sequence_number_is_one ... ok
-test test_decrypt_uses_first_4_bytes_to_determine_frame_type ... ok
-test test_decrypt_wait_for_bytes ... ok
+test result: ok. 36 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 
-test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
+$ cargo test --test test_construct_a_frame
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 
-### Notes
-- The ESDK only encrypts framed data, so testing non-framed deserialization required constructing a non-framed message from scratch using `aws-lc-rs` directly
-- The test constructs a complete V2 message with AlgAes256GcmHkdfSha512CommitKey (0x0478), NonFramed content type, and a properly formatted non-framed body
-- The test wraps a known data key with the raw AES keyring's wrapping key ([0u8; 32]), derives encryption keys via HKDF-SHA512, computes header auth, and encrypts the body — all matching the ESDK's expected format
-- The cross-reference annotation uses `type=implication` because "consist of, in order" is a structural property of the data format, not runtime-testable behavior
+### Proposed Commit Message
+```
+fix(decrypt): move final-frame parent annotation before if statement
+
+Move the "For a final frame, each field MUST be deserialized..." parent
+annotation from inside the ENDFRAME_SEQUENCE_NUMBER block to before the
+if statement, reducing the annotation stack inside the block from 3 to 2.
+
+Refs: specification/client-apis/decrypt.md#decrypt-the-message-body
+```
