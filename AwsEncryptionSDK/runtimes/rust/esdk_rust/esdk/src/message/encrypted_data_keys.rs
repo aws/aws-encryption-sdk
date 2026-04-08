@@ -8,7 +8,7 @@ use aws_mpl_legacy::EncryptedDataKey;
 
 pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result<(), Error> {
     //= specification/data-format/message-header.md#encrypted-data-key-entries
-    //# Each Encrypted Data Key Entry MUST be serialized as, in order,
+    //# Each Encrypted Data Key Entry MUST consist of, in order,
     //# Key Provider ID Length,
     //# Key Provider ID,
     //# Key Provider Information Length,
@@ -25,7 +25,7 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
     //# The length of the serialized key provider ID length field MUST be 2 bytes.
 
     //= specification/data-format/message-header.md#key-provider-id-length
-    //# The key provider ID length MUST be serialized as a UInt16.
+    //# The key provider ID length MUST be interpreted as a UInt16.
     write_u16(w, kp_id_len)?;
 
     //= specification/data-format/message-header.md#key-provider-id
@@ -43,7 +43,7 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
     //# The length of the serialized key provider information length field MUST be 2 bytes.
 
     //= specification/data-format/message-header.md#key-provider-information-length
-    //# The key provider information length MUST be serialized as a UInt16.
+    //# The key provider information length MUST be interpreted as a UInt16.
     write_u16(w, kp_info_len)?;
 
     //= specification/data-format/message-header.md#key-provider-information
@@ -61,7 +61,7 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
     //# The length of the serialized encrypted data key length field MUST be 2 bytes.
 
     //= specification/data-format/message-header.md#encrypted-data-key-length
-    //# The encrypted data key length MUST be serialized as a UInt16.
+    //# The encrypted data key length MUST be interpreted as a UInt16.
     write_u16(w, edk_len)?;
 
     //= specification/data-format/message-header.md#encrypted-data-key
@@ -73,7 +73,7 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
 }
 pub(crate) fn write_edks(w: &mut dyn SafeWrite, edks: &[EncryptedDataKey]) -> Result<(), Error> {
     //= specification/data-format/message-header.md#encrypted-data-keys
-    //# The Encrypted Data Keys MUST be serialized as, in order,
+    //# The Encrypted Data Keys MUST consist of, in order,
     //# Encrypted Data Key Count,
     //# and Encrypted Data Key Entries.
 
@@ -81,7 +81,7 @@ pub(crate) fn write_edks(w: &mut dyn SafeWrite, edks: &[EncryptedDataKey]) -> Re
     //# The length of the serialized encrypted data key count MUST be 2 bytes.
 
     //= specification/data-format/message-header.md#encrypted-data-key-count
-    //# The encrypted data key count MUST be serialized as a UInt16.
+    //# The encrypted data key count MUST be interpreted as a UInt16.
     write_u16(w, edks.len() as u16)?;
     for edk in edks {
         write_edk(w, edk)?;

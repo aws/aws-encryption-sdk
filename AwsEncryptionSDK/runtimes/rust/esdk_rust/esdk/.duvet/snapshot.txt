@@ -157,7 +157,7 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
     TEXT[!MUST,implementation,test]: - Algorithm Suite ID: This MUST be the parsed
     TEXT[!MUST,implementation,test]:   [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
     TEXT[!MUST,implementation,test]:   from the message header.
-    TEXT[!MUST,implementation,test]: - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header#encrypted-data-keys)
+    TEXT[!MUST,implementation,test]: - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header.md#encrypted-data-keys)
     TEXT[!MUST,implementation,test]:   from the message header.
     TEXT[!MUST,implementation,test]: - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
     TEXT[!MUST,implementation,test]: - Commitment Policy: This MUST be the commitment policy configured on the client.
@@ -194,7 +194,7 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
     TEXT[!MUST,implementation,test]:   [required encryption context keys](../framework/structures.md#required-encryption-context-keys-1)
     TEXT[!MUST,implementation,test]:   serialized according to the [encryption context serialization specification](../framework/structures.md#serialization).
     TEXT[!MUST,implementation,test]: - For message format version [1.0](../data-format/message-header.md#supported-versions)
-    TEXT[!MUST,implementation,test]:   the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header#iv).
+    TEXT[!MUST,implementation,test]:   the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header.md#iv).
     TEXT[!MUST,implementation,test]:   For message format version [2.0](../data-format/message-header.md#supported-versions)
     TEXT[!MUST,implementation,test]:   the IV MUST be 0.
     TEXT[!MUST,implementation,test]: - the cipherkey MUST be the derived data key
@@ -232,7 +232,7 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
     TEXT[!MUST,implementation,test]: or [regular frame](../data-format/message-body.md#regular-frame).
     TEXT[!MUST,implementation,test]: - The [Sequence Number End](../data-format/message-body.md#sequence-number-end): MUST be deserialized according to the
     TEXT[!MUST,implementation,test]:   [Sequence Number End](../data-format/message-body.md#sequence-number-end) specification.
-    TEXT[!MUST,implementation,test]:   If the first 4 bytes have a value of 0xFFFF,
+    TEXT[!MUST,implementation,test]:   If the first 4 bytes have a value of 0xFFFFFFFF,
     TEXT[!MUST,implementation,test]:   then the Decrypt operation MUST deserialize the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
     TEXT[!MUST,implementation,test]:   Otherwise, the Decrypt operation MUST deserialize the bytes according to the [regular frame spec](../data-format/message-body.md#regular-frame).
     TEXT[!MUST,implementation,test]: - [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number): MUST be deserialized according to the
@@ -255,7 +255,7 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
     TEXT[!MUST,implementation,test]: - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
     TEXT[!MUST,implementation,test]:   constructed according to the [Message Body AAD](../data-format/message-body-aad.md) specification, as follows:
     TEXT[!MUST,implementation,test]:   - The [message ID](../data-format/message-body-aad.md#message-id) MUST be the same as the
-    TEXT[!MUST,implementation,test]:     [message ID](../data-frame/message-header.md#message-id) deserialized from the header of this message.
+    TEXT[!MUST,implementation,test]:     [message ID](../data-format/message-header.md#message-id) deserialized from the header of this message.
     TEXT[!MUST,implementation,test]:   - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be constructed
     TEXT[!MUST,implementation,test]:     according to [Message Body AAD](../data-format/message-body-aad.md) depending on
     TEXT[!MUST,implementation,test]:     whether the bytes being decrypted are a regular frame, final frame, or un-framed data.
@@ -269,14 +269,14 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
     TEXT[!MUST,implementation,test]:     equal to the length of the plaintext that was encrypted.
     TEXT[!SHOULD,implementation,test]:     If this is a regular frame, this SHOULD be determined by using the [frame length](../data-format/message-header.md#frame-length)
     TEXT[!SHOULD,implementation,test]:     deserialized from the message header.
-    TEXT[!SHOULD,implementation,test]:     If this is not a regular frame, this SHOULD be determined by using the the [encrypted content length](../data-format/message-body.md#encrypted-content-length).
+    TEXT[!SHOULD,implementation,test]:     If this is not a regular frame, this SHOULD be determined by using the the [encrypted content length](../data-format/message-body.md#final-frame-encrypted-content-length).
     TEXT[!MUST,implementation,test]: - The IV MUST be the [sequence number](../data-format/message-body-aad.md#sequence-number)
     TEXT[!MUST,implementation,test]:   used in the message body AAD above,
     TEXT[!MUST,implementation,test]:   padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
     TEXT[!MUST,implementation,test]: - The cipherkey MUST be the derived data key
-    TEXT[!MUST,implementation,test]: - The ciphertext MUST be the [encrypted content](../data-format/message-body.md#encrypted-content).
+    TEXT[!MUST,implementation,test]: - The ciphertext MUST be the [encrypted content](../data-format/message-body.md#regular-frame-encrypted-content).
     TEXT[!MUST,implementation,test]: - The tag MUST be the value serialized in the
-    TEXT[!MUST,implementation,test]:   [authentication tag field](../data-format/message-body.md#authentication-tag)
+    TEXT[!MUST,implementation,test]:   [authentication tag field](../data-format/message-body.md#regular-frame-authentication-tag)
     TEXT[!MUST,implementation,test]:   in the message body or frame.
     TEXT[!MUST,implementation,test]: If this decryption fails, this operation MUST immediately halt and fail.
     TEXT[!MUST,implementation,test]: This operation MUST NOT release any unauthenticated plaintext.
@@ -329,10 +329,10 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
     TEXT[!MUST,implementation,test]: [non-framed data specification](../data-format/message-body.md#non-framed-data)
     TEXT[!MUST,implementation,test]: and decrypt it using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     TEXT[!MUST,implementation,test]: specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
-    TEXT[!MUST,implementation,test]: - The IV MUST be the [IV](../data-format/message-body.md#iv) deserialized from the message body.
-    TEXT[!MUST,implementation,test]: - The ciphertext MUST be the [Encrypted Content](../data-format/message-body.md#encrypted-content) deserialized from the message body.
+    TEXT[!MUST,implementation,test]: - The IV MUST be the [IV](../data-format/message-body.md#non-framed-data-iv) deserialized from the message body.
+    TEXT[!MUST,implementation,test]: - The ciphertext MUST be the [Encrypted Content](../data-format/message-body.md#non-framed-data-encrypted-content) deserialized from the message body.
     TEXT[!MUST,implementation,test]: - The cipherkey MUST be the derived data key.
-    TEXT[!MUST,implementation,test]: - The tag MUST be the [Authentication Tag](../data-format/message-body.md#authentication-tag) deserialized from the message body.
+    TEXT[!MUST,implementation,test]: - The tag MUST be the [Authentication Tag](../data-format/message-body.md#non-framed-data-authentication-tag) deserialized from the message body.
     TEXT[!MUST,implementation,test]: - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
     TEXT[!MUST,implementation,test]:   constructed with:
     TEXT[!MUST,implementation,test]:   - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST use the value for
@@ -629,7 +629,7 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
     TEXT[!MUST,implementation,test]: - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
     TEXT[!MUST,implementation,test]:   constructed according to the [Message Body AAD](../data-format/message-body-aad.md) specification, as follows:
     TEXT[!MUST,implementation,test]:   - The [message ID](../data-format/message-body-aad.md#message-id) MUST be the same as the
-    TEXT[!MUST,implementation,test]:     [message ID](../data-frame/message-header.md#message-id) serialized in the header of this message.
+    TEXT[!MUST,implementation,test]:     [message ID](../data-format/message-header.md#message-id) serialized in the header of this message.
     TEXT[!MUST,implementation,test]:   - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be the structure defined in
     TEXT[!MUST,implementation,test]:     [Message Body AAD](../data-format/message-body-aad.md).
     TEXT[!MUST,implementation,test]:   - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be the sequence
@@ -744,7 +744,7 @@ SPECIFICATION: [Message Body AAD](specification/data-format/message-body-aad.md)
     TEXT[!MUST,implication,test]: The body AAD content value MUST be encoded as UTF-8 bytes.
 
   SECTION: [Sequence Number](#sequence-number)
-    TEXT[!MUST,implication,test]: For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#sequence-number).
+    TEXT[!MUST,implication,test]: For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
     TEXT[!MUST,implication]: For [non-framed data](message-body.md#non-framed-data), the value of this field MUST be `1`.
     TEXT[!MUST,implication,test]: The length of the sequence number field MUST be 4 bytes.
     TEXT[!MUST,implication,test]: The sequence number field MUST be interpreted as a UInt32.
@@ -782,7 +782,7 @@ SPECIFICATION: [Message Body](specification/data-format/message-body.md)
     TEXT[!MUST,implication]: The length of the encrypted content field MUST be 8 bytes.
 
   SECTION: [Non-Framed Data Encrypted Content](#non-framed-data-encrypted-content)
-    TEXT[!MUST,implication]: The length of the serialized encrypted content field MUST be equal to the value of the [Encrypted Content Length](#encrypted-content-length) field.
+    TEXT[!MUST,implication]: The length of the serialized encrypted content field MUST be equal to the value of the [Encrypted Content Length](#non-framed-data-encrypted-content-length) field.
     TEXT[!MUST,implication]: The encrypted content value MUST be interpreted as bytes.
 
   SECTION: [Non-Framed Data Authentication Tag](#non-framed-data-authentication-tag)
@@ -848,7 +848,7 @@ SPECIFICATION: [Message Body](specification/data-format/message-body.md)
 
   SECTION: [Final Frame Sequence Number](#final-frame-sequence-number)
     TEXT[!MUST,implementation,test]: The Final Frame Sequence number MUST be equal to the total number of frames in the Framed Data.
-    TEXT[!MUST,implementation,test]: The length of the Final Frame Sequence number field  MUST be the same as the
+    TEXT[!MUST,implementation,test]: The length of the Final Frame Sequence number field MUST be the same as the
     TEXT[!MUST,implementation,test]: [Regular Frame Sequence Number](#regular-frame-sequence-number).
     TEXT[!MUST,implementation,test]: The Final Frame Sequence Number MUST be interpreted as the same type as the
     TEXT[!MUST,implementation,test]: [Regular Frame Sequence Number](#regular-frame-sequence-number).
@@ -883,8 +883,8 @@ SPECIFICATION: [Footer Structure](specification/data-format/message-footer.md)
     TEXT[!MUST,implementation,test]: and Signature.
 
   SECTION: [Signature Length](#signature-length)
-    TEXT[!MUST,implementation,test]: This length of the signature length field MUST be 2 bytes.
-    TEXT[!MUST,implementation,test]: The signature length field MUST be interpreted as a UInt16.
+    TEXT[!MUST,implementation,test]: The length of the signature length field MUST be 2 bytes.
+    TEXT[!MUST,implementation,test]: The signature length value MUST be a UInt16.
 
   SECTION: [Signature](#signature)
     TEXT[!MUST,implementation,test]: This signature MUST be calculated over both the [message header](message-header.md) and the [message body](message-body.md),
@@ -894,13 +894,13 @@ SPECIFICATION: [Footer Structure](specification/data-format/message-footer.md)
 SPECIFICATION: [Message Header](specification/data-format/message-header.md)
   SECTION: [Structure](#structure)
     TEXT[!MUST,implementation,test]: The message header is a sequence of bytes that MUST be in big-endian format.
-    TEXT[!MUST,implementation,test]: The header MUST be serialized as, in order,
+    TEXT[!MUST,implementation,test]: The header MUST consist of, in order,
     TEXT[!MUST,implementation,test]: Header Body,
     TEXT[!MUST,implementation,test]: and Header Authentication.
 
   SECTION: [Header Body Version 1.0](#header-body-version-1-0)
     TEXT[!MUST,implementation,test]: The value of the `Version` field MUST be `01` in the Version 1.0 header body.
-    TEXT[!MUST,implementation,test]: The V1 Header Body MUST be serialized as, in order,
+    TEXT[!MUST,implementation,test]: The V1 Header Body MUST consist of, in order,
     TEXT[!MUST,implementation,test]: Version,
     TEXT[!MUST,implementation,test]: Type,
     TEXT[!MUST,implementation,test]: Algorithm Suite ID,
@@ -914,7 +914,7 @@ SPECIFICATION: [Message Header](specification/data-format/message-header.md)
 
   SECTION: [Header Body Version 2.0](#header-body-version-2-0)
     TEXT[!MUST,implementation,test]: The value of the `Version` field MUST be `02` in the Version 2.0 header body.
-    TEXT[!MUST,implementation,test]: The V2 Header Body MUST be serialized as, in order,
+    TEXT[!MUST,implementation,test]: The V2 Header Body MUST consist of, in order,
     TEXT[!MUST,implementation,test]: Version,
     TEXT[!MUST,implementation,test]: Algorithm Suite ID,
     TEXT[!MUST,implementation,test]: Message ID,
@@ -929,12 +929,14 @@ SPECIFICATION: [Message Header](specification/data-format/message-header.md)
 
   SECTION: [Supported Versions](#supported-versions)
     TEXT[!MUST,implementation,test]: The supported versions MUST be:
-    TEXT[!MUST,implementation,test]: - `01` MUST be version 1.0
-    TEXT[!MUST,implementation,test]: - `02` MUST be version 2.0
+    TEXT[!MUST,implementation]: - Hex valu
+    TEXT[!MUST,implementation,test]: e `01` MUST be version 1.0
+    TEXT[!MUST,implementation]: - Hex valu
+    TEXT[!MUST,implementation,test]: e `02` MUST be version 2.0
 
   SECTION: [Type](#type)
     TEXT[!MUST,implementation,test]: The length of the serialized type field MUST be 1 byte.
-    TEXT[!MUST,implementation,test]: The type (hex) of this field MUST be a value that exists in the following table:
+    TEXT[!MUST,test]: The type (hex) of this field MUST be a value that exists in the following table:
 
   SECTION: [Supported Types](#supported-types)
     TEXT[!MUST,implementation,test]: The supported types MUST be:
@@ -955,13 +957,13 @@ SPECIFICATION: [Message Header](specification/data-format/message-header.md)
     TEXT[!MUST,implementation,test]: The message ID MUST be interpreted as bytes.
 
   SECTION: [AAD](#aad)
-    TEXT[!MUST,implementation,test]: The AAD MUST be serialized as, in order,
+    TEXT[!MUST,implementation,test]: The AAD MUST consist of, in order,
     TEXT[!MUST,implementation,test]: Key Value Pairs Length,
     TEXT[!MUST,implementation,test]: and Key Value Pairs.
 
   SECTION: [Key Value Pairs Length](#key-value-pairs-length)
     TEXT[!MUST,implementation,test]: The length of the serialized key value pairs length field MUST be 2 bytes.
-    TEXT[!MUST,implementation,test]: The key value pairs length MUST be serialized as a UInt16.
+    TEXT[!MUST,implementation,test]: The key value pairs length MUST be interpreted as a UInt16.
     TEXT[!MUST,implementation,test]: When the [encryption context](../framework/structures.md#encryption-context) is empty, the value of this field MUST be 0.
 
   SECTION: [Key Value Pairs](#key-value-pairs)
@@ -970,17 +972,17 @@ SPECIFICATION: [Message Header](specification/data-format/message-header.md)
     TEXT[!MUST,implementation,test]: this field MUST NOT be included in the [AAD](#aad).
 
   SECTION: [Encrypted Data Keys](#encrypted-data-keys)
-    TEXT[!MUST,implementation,test]: The Encrypted Data Keys MUST be serialized as, in order,
+    TEXT[!MUST,implementation,test]: The Encrypted Data Keys MUST consist of, in order,
     TEXT[!MUST,implementation,test]: Encrypted Data Key Count,
     TEXT[!MUST,implementation,test]: and Encrypted Data Key Entries.
 
   SECTION: [Encrypted Data Key Count](#encrypted-data-key-count)
     TEXT[!MUST,implementation,test]: The length of the serialized encrypted data key count MUST be 2 bytes.
-    TEXT[!MUST,implementation,test]: The encrypted data key count MUST be serialized as a UInt16.
+    TEXT[!MUST,implementation,test]: The encrypted data key count MUST be interpreted as a UInt16.
     TEXT[!MUST,implementation,test]: This value MUST be greater than 0.
 
   SECTION: [Encrypted Data Key Entries](#encrypted-data-key-entries)
-    TEXT[!MUST,implementation,test]: Each Encrypted Data Key Entry MUST be serialized as, in order,
+    TEXT[!MUST,implementation,test]: Each Encrypted Data Key Entry MUST consist of, in order,
     TEXT[!MUST,implementation,test]: Key Provider ID Length,
     TEXT[!MUST,implementation,test]: Key Provider ID,
     TEXT[!MUST,implementation,test]: Key Provider Information Length,
@@ -990,7 +992,7 @@ SPECIFICATION: [Message Header](specification/data-format/message-header.md)
 
   SECTION: [Key Provider ID Length](#key-provider-id-length)
     TEXT[!MUST,implementation,test]: The length of the serialized key provider ID length field MUST be 2 bytes.
-    TEXT[!MUST,implementation,test]: The key provider ID length MUST be serialized as a UInt16.
+    TEXT[!MUST,implementation,test]: The key provider ID length MUST be interpreted as a UInt16.
 
   SECTION: [Key Provider ID](#key-provider-id)
     TEXT[!MUST,implementation,test]: The length of the serialized key provider ID MUST be equal to the value of the [Key Provider ID Length](#key-provider-id-length) field.
@@ -998,7 +1000,7 @@ SPECIFICATION: [Message Header](specification/data-format/message-header.md)
 
   SECTION: [Key Provider Information Length](#key-provider-information-length)
     TEXT[!MUST,implementation,test]: The length of the serialized key provider information length field MUST be 2 bytes.
-    TEXT[!MUST,implementation,test]: The key provider information length MUST be serialized as a UInt16.
+    TEXT[!MUST,implementation,test]: The key provider information length MUST be interpreted as a UInt16.
 
   SECTION: [Key Provider Information](#key-provider-information)
     TEXT[!MUST,implementation,test]: The length of the serialized key provider information MUST be equal to the value of the [Key Provider Information Length](#key-provider-information-length) field.
@@ -1006,7 +1008,7 @@ SPECIFICATION: [Message Header](specification/data-format/message-header.md)
 
   SECTION: [Encrypted Data Key Length](#encrypted-data-key-length)
     TEXT[!MUST,implementation,test]: The length of the serialized encrypted data key length field MUST be 2 bytes.
-    TEXT[!MUST,implementation,test]: The encrypted data key length MUST be serialized as a UInt16.
+    TEXT[!MUST,implementation,test]: The encrypted data key length MUST be interpreted as a UInt16.
 
   SECTION: [Encrypted Data Key](#encrypted-data-key)
     TEXT[!MUST,implementation,test]: The length of the serialized encrypted data key MUST be equal to the value of the [Encrypted Data Key Length](#encrypted-data-key-length) field.
@@ -1033,22 +1035,22 @@ SPECIFICATION: [Message Header](specification/data-format/message-header.md)
 
   SECTION: [IV Length](#iv-length)
     TEXT[!MUST,implementation,test]: The length of the serialized IV length field MUST be 1 byte.
-    TEXT[!MUST,implementation,test]: The IV length MUST be serialized as a UInt8.
+    TEXT[!MUST,implementation,test]: The IV length MUST be interpreted as a UInt8.
     TEXT[!MUST,implementation,test]: This value MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the
     TEXT[!MUST,implementation,test]: [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
 
   SECTION: [Frame Length](#frame-length)
     TEXT[!MUST,implementation,test]: The length of the serialized frame length field MUST be 4 bytes.
-    TEXT[!MUST,implementation,test]: The frame length MUST be serialized as a UInt32.
+    TEXT[!MUST,implementation,test]: The frame length MUST be interpreted as a UInt32.
     TEXT[!MUST,implementation,test]: When the [content type](#content-type) is non-framed, the value of this field MUST be 0.
 
   SECTION: [Header Authentication Version 1.0](#header-authentication-version-1-0)
-    TEXT[!MUST,implementation,test]: The V1 Header Authentication MUST be serialized as, in order,
+    TEXT[!MUST,implementation,test]: The V1 Header Authentication MUST consist of, in order,
     TEXT[!MUST,implementation,test]: IV,
     TEXT[!MUST,implementation,test]: and Authentication Tag.
 
   SECTION: [Header Authentication Version 2.0](#header-authentication-version-2-0)
-    TEXT[!MUST,implementation,test]: The V2 Header Authentication MUST be serialized as the Authentication Tag only.
+    TEXT[!MUST,implementation,test]: The V2 Header Authentication MUST consist of the Authentication Tag only.
 
   SECTION: [IV](#iv)
     TEXT[!MUST,implementation,test]: The length of the serialized IV MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.

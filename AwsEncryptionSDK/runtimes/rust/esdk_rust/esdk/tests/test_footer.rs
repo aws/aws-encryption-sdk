@@ -107,7 +107,7 @@ fn find_footer_offset(ct: &[u8]) -> (usize, u16) {
 async fn test_footer_signature_length_is_two_bytes() {
     //= specification/data-format/message-footer.md#signature-length
     //= type=test
-    //# This length of the signature length field MUST be 2 bytes.
+    //# The length of the signature length field MUST be 2 bytes.
 
     let ct = encrypt_with_signing_suite(b"sig length 2 bytes test").await;
     let (offset, sig_len) = find_footer_offset(&ct);
@@ -125,7 +125,7 @@ async fn test_footer_signature_length_is_two_bytes() {
 async fn test_footer_signature_length_is_uint16() {
     //= specification/data-format/message-footer.md#signature-length
     //= type=test
-    //# The signature length field MUST be interpreted as a UInt16.
+    //# The signature length value MUST be a UInt16.
 
     let ct = encrypt_with_signing_suite(b"sig length uint16 test").await;
     let (offset, sig_len) = find_footer_offset(&ct);

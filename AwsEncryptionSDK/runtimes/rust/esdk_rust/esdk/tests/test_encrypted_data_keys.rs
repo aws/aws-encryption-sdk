@@ -95,7 +95,7 @@ fn parse_first_edk(ct: &[u8]) -> (u16, &[u8], u16, &[u8], u16, &[u8]) {
 async fn test_encrypted_data_keys_serialization_order() {
     //= specification/data-format/message-header.md#encrypted-data-keys
     //= type=test
-    //# The Encrypted Data Keys MUST be serialized as, in order,
+    //# The Encrypted Data Keys MUST consist of, in order,
     //# Encrypted Data Key Count,
     //# and Encrypted Data Key Entries.
     let pt = b"encrypted data keys serialization order test";
@@ -114,7 +114,7 @@ async fn test_encrypted_data_key_count_is_2_bytes_uint16() {
 
     //= specification/data-format/message-header.md#encrypted-data-key-count
     //= type=test
-    //# The encrypted data key count MUST be serialized as a UInt16.
+    //# The encrypted data key count MUST be interpreted as a UInt16.
     let keyring = test_keyring().await;
     let enc_input =
         EncryptInput::with_legacy_keyring(b"test edk count", EncryptionContext::new(), keyring.clone());
@@ -157,7 +157,7 @@ async fn test_encrypted_data_key_count_must_be_greater_than_zero() {
 async fn test_edk_entry_serialization_order() {
     //= specification/data-format/message-header.md#encrypted-data-key-entries
     //= type=test
-    //# Each Encrypted Data Key Entry MUST be serialized as, in order,
+    //# Each Encrypted Data Key Entry MUST consist of, in order,
     //# Key Provider ID Length,
     //# Key Provider ID,
     //# Key Provider Information Length,
@@ -215,7 +215,7 @@ async fn test_key_provider_information_length_field_is_2_bytes_uint16() {
 
     //= specification/data-format/message-header.md#key-provider-information-length
     //= type=test
-    //# The key provider information length MUST be serialized as a UInt16.
+    //# The key provider information length MUST be interpreted as a UInt16.
     let ct = encrypt_v1(b"key provider info length test").await;
 
     // The Key Provider Info Length field starts after Key Provider ID Length (2) + Key Provider ID (variable)
@@ -275,7 +275,7 @@ async fn test_encrypted_data_key_length_field_is_2_bytes_uint16() {
 
     //= specification/data-format/message-header.md#encrypted-data-key-length
     //= type=test
-    //# The encrypted data key length MUST be serialized as a UInt16.
+    //# The encrypted data key length MUST be interpreted as a UInt16.
     let ct = encrypt_v1(b"edk length field test").await;
 
     // Navigate to the EDK Length field: skip Key Provider ID Length (2) + ID + Info Length (2) + Info

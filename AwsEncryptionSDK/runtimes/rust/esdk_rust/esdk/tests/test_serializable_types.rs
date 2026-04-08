@@ -90,7 +90,7 @@ async fn test_edk_key_provider_id_length_is_2_bytes() {
 async fn test_edk_key_provider_id_length_serialized_as_uint16() {
     //= specification/data-format/message-header.md#key-provider-id-length
     //= type=test
-    //# The key provider ID length MUST be serialized as a UInt16.
+    //# The key provider ID length MUST be interpreted as a UInt16.
     let ct = encrypt_v1(b"uint16 serialization test").await;
 
     // The Key Provider ID Length is at FIRST_EDK_OFFSET, serialized as big-endian UInt16.
@@ -109,7 +109,7 @@ async fn test_edk_key_provider_id_length_serialized_as_uint16() {
 async fn test_edk_key_provider_information_length_serialized_as_uint16() {
     //= specification/data-format/message-header.md#key-provider-information-length
     //= type=test
-    //# The key provider information length MUST be serialized as a UInt16.
+    //# The key provider information length MUST be interpreted as a UInt16.
     let ct = encrypt_v1(b"key provider info length test").await;
 
     // Parse Key Provider ID Length to find the Key Provider Information Length field.
@@ -140,7 +140,7 @@ async fn test_edk_key_provider_information_length_serialized_as_uint16() {
 async fn test_edk_encrypted_data_key_length_serialized_as_uint16() {
     //= specification/data-format/message-header.md#encrypted-data-key-length
     //= type=test
-    //# The encrypted data key length MUST be serialized as a UInt16.
+    //# The encrypted data key length MUST be interpreted as a UInt16.
     let ct = encrypt_v1(b"encrypted data key length test").await;
 
     // Parse through the EDK fields to find the Encrypted Data Key Length field.

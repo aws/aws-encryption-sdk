@@ -24,7 +24,7 @@ target = "specification/client-apis/decrypt.md#get-the-decryption-materials"
 # - Algorithm Suite ID: This MUST be the parsed
 #   [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
 #   from the message header.
-# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header#encrypted-data-keys)
+# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header.md#encrypted-data-keys)
 #   from the message header.
 # - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
 # - Commitment Policy: This MUST be the commitment policy configured on the client.
@@ -102,7 +102,7 @@ from the message header.
 [[spec]]
 level = "MUST"
 quote = '''
-- Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header#encrypted-data-keys)
+- Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header.md#encrypted-data-keys)
 from the message header.
 '''
 

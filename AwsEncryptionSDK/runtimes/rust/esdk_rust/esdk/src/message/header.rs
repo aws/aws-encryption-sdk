@@ -117,6 +117,10 @@ pub(crate) fn validate_max_encrypted_data_keys(
     edks: &[aws_mpl_legacy::EncryptedDataKey],
 ) -> Result<(), Error> {
     if let Some(max) = max_encrypted_data_keys {
+        //= specification/data-format/message-header.md#encrypted-data-key-count
+        //# This value MUST be less than or equal to the
+        //# [maximum number of encrypted data keys](../client-apis/client.md#maximum-number-of-encrypted-data-keys)
+        //# if the maximum number is configured.
         if edks.len() > max.get() {
             return Err("Encrypted data keys exceed maxEncryptedDataKeys".into());
         }
@@ -171,7 +175,7 @@ pub(crate) fn serialize_header(
     sig_digest: &mut DigestWriter,
 ) -> Result<(), Error> {
     //= specification/data-format/message-header.md#structure
-    //# The header MUST be serialized as, in order,
+    //# The header MUST consist of, in order,
     //# Header Body,
     //# and Header Authentication.
     let mut header_buf = Vec::new();

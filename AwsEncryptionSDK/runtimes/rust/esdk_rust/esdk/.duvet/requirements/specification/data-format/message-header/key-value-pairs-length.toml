@@ -4,7 +4,7 @@ target = "specification/data-format/message-header.md#key-value-pairs-length"
 #
 # The length of the [Key Value Pairs](#key-value-pairs) field in bytes.
 # The length of the serialized key value pairs length field MUST be 2 bytes.
-# The key value pairs length MUST be serialized as a UInt16.
+# The key value pairs length MUST be interpreted as a UInt16.
 # 
 # When the [encryption context](../framework/structures.md#encryption-context) is empty, the value of this field MUST be 0.
 
@@ -17,7 +17,7 @@ The length of the serialized key value pairs length field MUST be 2 bytes.
 [[spec]]
 level = "MUST"
 quote = '''
-The key value pairs length MUST be serialized as a UInt16.
+The key value pairs length MUST be interpreted as a UInt16.
 '''
 
 [[spec]]

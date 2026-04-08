@@ -38,7 +38,7 @@ async fn round_trip_with_ec(plaintext: &[u8], ec: EncryptionContext) -> Vec<u8> 
 async fn test_aad_serialization_order() {
     //= specification/data-format/message-header.md#aad
     //= type=test
-    //# The AAD MUST be serialized as, in order,
+    //# The AAD MUST consist of, in order,
     //# Key Value Pairs Length,
     //# and Key Value Pairs.
     let ec = small_encryption_context(SmallEncryptionContextVariation::AB);
@@ -62,7 +62,7 @@ async fn test_aad_key_value_pairs_length_field_size() {
 async fn test_aad_key_value_pairs_length_uint16() {
     //= specification/data-format/message-header.md#key-value-pairs-length
     //= type=test
-    //# The key value pairs length MUST be serialized as a UInt16.
+    //# The key value pairs length MUST be interpreted as a UInt16.
     let ec = small_encryption_context(SmallEncryptionContextVariation::A);
     let pt = b"kvp length uint16";
     let result = round_trip_with_ec(pt, ec).await;

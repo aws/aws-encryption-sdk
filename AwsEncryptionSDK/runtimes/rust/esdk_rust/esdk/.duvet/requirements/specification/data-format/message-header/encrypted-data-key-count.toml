@@ -4,7 +4,7 @@ target = "specification/data-format/message-header.md#encrypted-data-key-count"
 #
 # The number of encrypted data keys.
 # The length of the serialized encrypted data key count MUST be 2 bytes.
-# The encrypted data key count MUST be serialized as a UInt16.
+# The encrypted data key count MUST be interpreted as a UInt16.
 # This value MUST be greater than 0.
 
 [[spec]]
@@ -16,7 +16,7 @@ The length of the serialized encrypted data key count MUST be 2 bytes.
 [[spec]]
 level = "MUST"
 quote = '''
-The encrypted data key count MUST be serialized as a UInt16.
+The encrypted data key count MUST be interpreted as a UInt16.
 '''
 
 [[spec]]

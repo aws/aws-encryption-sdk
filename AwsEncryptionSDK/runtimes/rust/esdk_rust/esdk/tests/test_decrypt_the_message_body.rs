@@ -226,7 +226,7 @@ async fn test_decrypt_uses_first_4_bytes_to_determine_frame_type() {
 async fn test_decrypt_final_frame_detected_by_endframe_marker() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# If the first 4 bytes have a value of 0xFFFF,
+    //# If the first 4 bytes have a value of 0xFFFFFFFF,
     //# then the Decrypt operation MUST deserialize the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
     // Single final frame: the first 4 bytes of the body are 0xFFFFFFFF.
     let pt = b"final frame test";
@@ -453,7 +453,7 @@ async fn test_decrypt_aad_constructed_correctly() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The [message ID](../data-format/message-body-aad.md#message-id) MUST be the same as the
-    //# [message ID](../data-frame/message-header.md#message-id) deserialized from the header of this message.
+    //# [message ID](../data-format/message-header.md#message-id) deserialized from the header of this message.
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be constructed
@@ -496,11 +496,11 @@ async fn test_decrypt_aes_inputs_correct() {
     //# - The cipherkey MUST be the derived data key
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# - The ciphertext MUST be the [encrypted content](../data-format/message-body.md#encrypted-content).
+    //# - The ciphertext MUST be the [encrypted content](../data-format/message-body.md#regular-frame-encrypted-content).
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The tag MUST be the value serialized in the
-    //# [authentication tag field](../data-format/message-body.md#authentication-tag)
+    //# [authentication tag field](../data-format/message-body.md#regular-frame-authentication-tag)
     //# in the message body or frame.
     // Round-trip: if any AES-GCM input (IV, cipherkey, ciphertext, tag) were wrong,
     // authenticated decryption would fail.
@@ -584,7 +584,7 @@ async fn test_decrypt_regular_frame_content_length_uses_frame_length() {
 async fn test_decrypt_final_frame_content_length_uses_encrypted_content_length() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# If this is not a regular frame, this SHOULD be determined by using the the [encrypted content length](../data-format/message-body.md#encrypted-content-length).
+    //# If this is not a regular frame, this SHOULD be determined by using the the [encrypted content length](../data-format/message-body.md#final-frame-encrypted-content-length).
     // Single final frame with plaintext shorter than frame length.
     // The final frame's content length in AAD must use the actual encrypted content length (5),
     // not the frame length (4096). If wrong, authenticated decryption would fail.
@@ -657,7 +657,7 @@ async fn test_unframed_decrypt_deserializes_and_decrypts() {
 async fn test_unframed_decrypt_iv_from_body() {
     //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
     //= type=test
-    //# - The IV MUST be the [IV](../data-format/message-body.md#iv) deserialized from the message body.
+    //# - The IV MUST be the [IV](../data-format/message-body.md#non-framed-data-iv) deserialized from the message body.
     // Successful authenticated decryption of a non-framed message proves the IV
     // was correctly deserialized from the body and used for decryption.
     let pt = b"iv test payload";
@@ -672,7 +672,7 @@ async fn test_unframed_decrypt_iv_from_body() {
 async fn test_unframed_decrypt_ciphertext_from_body() {
     //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
     //= type=test
-    //# - The ciphertext MUST be the [Encrypted Content](../data-format/message-body.md#encrypted-content) deserialized from the message body.
+    //# - The ciphertext MUST be the [Encrypted Content](../data-format/message-body.md#non-framed-data-encrypted-content) deserialized from the message body.
     let pt = b"ciphertext input test";
     let ct = build_nonframed_message(pt);
     let keyring = test_keyring().await;
@@ -699,7 +699,7 @@ async fn test_unframed_decrypt_cipherkey_is_derived_data_key() {
 async fn test_unframed_decrypt_tag_from_body() {
     //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
     //= type=test
-    //# - The tag MUST be the [Authentication Tag](../data-format/message-body.md#authentication-tag) deserialized from the message body.
+    //# - The tag MUST be the [Authentication Tag](../data-format/message-body.md#non-framed-data-authentication-tag) deserialized from the message body.
     let pt = b"auth tag test";
     let ct = build_nonframed_message(pt);
     let keyring = test_keyring().await;

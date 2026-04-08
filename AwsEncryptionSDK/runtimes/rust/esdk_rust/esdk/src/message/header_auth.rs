@@ -39,7 +39,7 @@ pub(crate) fn write_header_auth_tag_v1(
             header_auth_tag,
         } => {
             //= specification/data-format/message-header.md#header-authentication-version-1-0
-            //# The V1 Header Authentication MUST be serialized as, in order,
+            //# The V1 Header Authentication MUST consist of, in order,
             //# IV,
             //# and Authentication Tag.
 
@@ -63,7 +63,7 @@ pub(crate) fn write_header_auth_tag_v2(
             header_auth_tag, ..
         } => {
             //= specification/data-format/message-header.md#header-authentication-version-2-0
-            //# The V2 Header Authentication MUST be serialized as the Authentication Tag only.
+            //# The V2 Header Authentication MUST consist of the Authentication Tag only.
 
             //= specification/client-apis/encrypt.md#v2-authentication-tag
             //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value

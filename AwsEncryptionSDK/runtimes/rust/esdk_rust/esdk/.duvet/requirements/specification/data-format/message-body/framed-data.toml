@@ -3,7 +3,7 @@ target = "specification/data-format/message-body.md#framed-data"
 # Framed Data
 #
 # Framed data is a sequence of bytes divided into equal-length parts called frames.  
-# Each frame is encrypted separately with a unique [IV](#iv) and body [authentication tag](#authentication-tag).
+# Each frame is encrypted separately with a unique [IV](#regular-frame-iv) and body [authentication tag](#regular-frame-authentication-tag).
 # There are two kinds of frames:
 # 
 # - [Regular Frame](#regular-frame)

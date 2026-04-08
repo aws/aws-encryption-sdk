@@ -19,7 +19,7 @@ target = "specification/data-format/message-header.md#header-body-version-1-0"
 # | [IV Length](#iv-length)                     | 1                                                                                 | UInt8                                                                                         |
 # | [Frame Length](#frame-length)               | 4                                                                                 | UInt32                                                                                        |
 # 
-# The V1 Header Body MUST be serialized as, in order,
+# The V1 Header Body MUST consist of, in order,
 # Version,
 # Type,
 # Algorithm Suite ID,
@@ -40,7 +40,7 @@ The value of the `Version` field MUST be `01` in the Version 1.0 header body.
 [[spec]]
 level = "MUST"
 quote = '''
-The V1 Header Body MUST be serialized as, in order,
+The V1 Header Body MUST consist of, in order,
 Version,
 Type,
 Algorithm Suite ID,

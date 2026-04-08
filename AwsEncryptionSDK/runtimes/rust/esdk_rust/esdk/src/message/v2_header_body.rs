@@ -22,7 +22,7 @@ pub(crate) fn write_v2_header_body(
     //# The serialization order MUST follow the [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification.
 
     //= specification/data-format/message-header.md#header-body-version-2-0
-    //# The V2 Header Body MUST be serialized as, in order,
+    //# The V2 Header Body MUST consist of, in order,
     //# Version,
     //# Algorithm Suite ID,
     //# Message ID,
@@ -79,7 +79,7 @@ pub(crate) fn write_v2_header_body(
     //# The length of the serialized frame length field MUST be 4 bytes.
 
     //= specification/data-format/message-header.md#frame-length
-    //# The frame length MUST be serialized as a UInt32.
+    //# The frame length MUST be interpreted as a UInt32.
     write_u32(w, body.frame_length)?;
     //= specification/client-apis/encrypt.md#v2-header
     //# - [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data): MUST be serialized according to the
@@ -146,7 +146,7 @@ pub(crate) fn read_v2_header_body(
     //# The length of the serialized frame length field MUST be 4 bytes.
 
     //= specification/data-format/message-header.md#frame-length
-    //# The frame length MUST be serialized as a UInt32.
+    //# The frame length MUST be interpreted as a UInt32.
     let frame_length = read_u32(r, raw)?;
     let len = get_hkdf(&algorithm_suite.commitment).output_key_length;
     //= specification/client-apis/decrypt.md#parse-the-header

@@ -84,7 +84,7 @@ async fn test_cmm_call_commitment_policy() {
 async fn test_cmm_call_encrypted_data_keys() {
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
-    //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header#encrypted-data-keys)
+    //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header.md#encrypted-data-keys)
     //# from the message header.
     let pt = b"test encrypted data keys";
     let result = round_trip(pt, EncryptionContext::new()).await;

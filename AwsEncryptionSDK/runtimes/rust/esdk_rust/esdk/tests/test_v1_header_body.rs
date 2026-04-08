@@ -237,7 +237,7 @@ async fn test_v1_header_serialization_order() {
     //# The serialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification.
     //= specification/data-format/message-header.md#header-body-version-1-0
     //= type=test
-    //# The V1 Header Body MUST be serialized as, in order,
+    //# The V1 Header Body MUST consist of, in order,
     //# Version,
     //# Type,
     //# Algorithm Suite ID,
@@ -381,7 +381,7 @@ async fn test_v1_iv_length_field_is_1_byte() {
 async fn test_v1_iv_length_serialized_as_uint8() {
     //= specification/data-format/message-header.md#iv-length
     //= type=test
-    //# The IV length MUST be serialized as a UInt8.
+    //# The IV length MUST be interpreted as a UInt8.
     let ct = encrypt_v1(b"iv length uint8 test", EncryptionContext::new()).await;
     let (_, _, iv_length_offset, _) = parse_v1_trailing_offsets(&ct);
     // AlgAes256GcmIv12Tag16HkdfSha256 has IV length 12
@@ -424,7 +424,7 @@ async fn test_v1_frame_length_field_is_4_bytes() {
 async fn test_v1_frame_length_serialized_as_uint32() {
     //= specification/data-format/message-header.md#frame-length
     //= type=test
-    //# The frame length MUST be serialized as a UInt32.
+    //# The frame length MUST be interpreted as a UInt32.
     let ct = encrypt_v1(b"frame length uint32 v1 test", EncryptionContext::new()).await;
     let (_, _, _, frame_length_offset) = parse_v1_trailing_offsets(&ct);
     // Parse as big-endian UInt32

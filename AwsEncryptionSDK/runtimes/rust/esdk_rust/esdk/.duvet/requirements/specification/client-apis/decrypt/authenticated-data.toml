@@ -3,7 +3,7 @@ target = "specification/client-apis/decrypt.md#authenticated-data"
 # Authenticated Data
 #
 # Plaintext or associated data is considered authenticated if the associated
-# [authentication tag](../data-format/message-body.md#authentication-tag) is successfully checked
+# [authentication tag](../data-format/message-body.md#regular-frame-authentication-tag) is successfully checked
 # as defined by the algorithm suite indicated in the message header.
 # 
 # This operation MUST NOT release any unauthenticated plaintext or unauthenticated associated data.

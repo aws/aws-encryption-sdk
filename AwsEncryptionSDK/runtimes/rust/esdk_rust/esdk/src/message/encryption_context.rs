@@ -47,7 +47,7 @@ fn get_length(data: &ESDKCanonicalEncryptionContext) -> usize {
 }
 
 //= specification/data-format/message-header.md#aad
-//# The AAD MUST be serialized as, in order,
+//# The AAD MUST consist of, in order,
 //# Key Value Pairs Length,
 //# and Key Value Pairs.
 pub(crate) fn write_aad_section(
@@ -64,7 +64,7 @@ pub(crate) fn write_aad_section(
     //= specification/data-format/message-header.md#key-value-pairs-length
     //# The length of the serialized key value pairs length field MUST be 2 bytes.
     //= specification/data-format/message-header.md#key-value-pairs-length
-    //# The key value pairs length MUST be serialized as a UInt16.
+    //# The key value pairs length MUST be interpreted as a UInt16.
     write_u16(w, bytes as u16)?;
     write_aad(w, data)
 }

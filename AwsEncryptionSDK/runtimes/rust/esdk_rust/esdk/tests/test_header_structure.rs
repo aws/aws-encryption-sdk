@@ -86,7 +86,7 @@ async fn test_header_big_endian_format() {
 async fn test_header_serialization_order() {
     //= specification/data-format/message-header.md#structure
     //= type=test
-    //# The header MUST be serialized as, in order,
+    //# The header MUST consist of, in order,
     //# Header Body,
     //# and Header Authentication.
     let pt = b"header serialization order test";
@@ -149,7 +149,7 @@ async fn test_frame_length_field_is_4_bytes() {
 async fn test_frame_length_serialized_as_uint32() {
     //= specification/data-format/message-header.md#frame-length
     //= type=test
-    //# The frame length MUST be serialized as a UInt32.
+    //# The frame length MUST be interpreted as a UInt32.
     let ct = encrypt_default(b"frame length uint32 test").await;
     let (_, _, frame_length_offset) = parse_header_offsets(&ct);
     // Parse as big-endian UInt32 and verify round-trip through decrypt succeeds

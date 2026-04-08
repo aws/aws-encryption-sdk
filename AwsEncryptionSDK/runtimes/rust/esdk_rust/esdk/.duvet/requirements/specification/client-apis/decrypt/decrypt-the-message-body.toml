@@ -26,7 +26,7 @@ target = "specification/client-apis/decrypt.md#decrypt-the-message-body"
 # 
 # - The [Sequence Number End](../data-format/message-body.md#sequence-number-end): MUST be deserialized according to the
 #   [Sequence Number End](../data-format/message-body.md#sequence-number-end) specification.
-#   If the first 4 bytes have a value of 0xFFFF,
+#   If the first 4 bytes have a value of 0xFFFFFFFF,
 #   then the Decrypt operation MUST deserialize the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
 #   Otherwise, the Decrypt operation MUST deserialize the bytes according to the [regular frame spec](../data-format/message-body.md#regular-frame).
 # - [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number): MUST be deserialized according to the
@@ -51,7 +51,7 @@ target = "specification/client-apis/decrypt.md#decrypt-the-message-body"
 # - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
 #   constructed according to the [Message Body AAD](../data-format/message-body-aad.md) specification, as follows:
 #   - The [message ID](../data-format/message-body-aad.md#message-id) MUST be the same as the
-#     [message ID](../data-frame/message-header.md#message-id) deserialized from the header of this message.
+#     [message ID](../data-format/message-header.md#message-id) deserialized from the header of this message.
 #   - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be constructed
 #     according to [Message Body AAD](../data-format/message-body-aad.md) depending on
 #     whether the bytes being decrypted are a regular frame, final frame, or un-framed data.
@@ -65,14 +65,14 @@ target = "specification/client-apis/decrypt.md#decrypt-the-message-body"
 #     equal to the length of the plaintext that was encrypted.
 #     If this is a regular frame, this SHOULD be determined by using the [frame length](../data-format/message-header.md#frame-length)
 #     deserialized from the message header.
-#     If this is not a regular frame, this SHOULD be determined by using the the [encrypted content length](../data-format/message-body.md#encrypted-content-length).
+#     If this is not a regular frame, this SHOULD be determined by using the the [encrypted content length](../data-format/message-body.md#final-frame-encrypted-content-length).
 # - The IV MUST be the [sequence number](../data-format/message-body-aad.md#sequence-number)
 #   used in the message body AAD above,
 #   padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
 # - The cipherkey MUST be the derived data key
-# - The ciphertext MUST be the [encrypted content](../data-format/message-body.md#encrypted-content).
+# - The ciphertext MUST be the [encrypted content](../data-format/message-body.md#regular-frame-encrypted-content).
 # - The tag MUST be the value serialized in the
-#   [authentication tag field](../data-format/message-body.md#authentication-tag)
+#   [authentication tag field](../data-format/message-body.md#regular-frame-authentication-tag)
 #   in the message body or frame.
 # 
 # If this decryption fails, this operation MUST immediately halt and fail.
@@ -155,7 +155,7 @@ quote = '''
 [[spec]]
 level = "MUST"
 quote = '''
-If the first 4 bytes have a value of 0xFFFF,
+If the first 4 bytes have a value of 0xFFFFFFFF,
 then the Decrypt operation MUST deserialize the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
 '''
 
@@ -228,7 +228,7 @@ constructed according to the [Message Body AAD](../data-format/message-body-aad.
 level = "MUST"
 quote = '''
 - The [message ID](../data-format/message-body-aad.md#message-id) MUST be the same as the
-[message ID](../data-frame/message-header.md#message-id) deserialized from the header of this message.
+[message ID](../data-format/message-header.md#message-id) deserialized from the header of this message.
 '''
 
 [[spec]]
@@ -282,7 +282,7 @@ deserialized from the message header.
 [[spec]]
 level = "SHOULD"
 quote = '''
-If this is not a regular frame, this SHOULD be determined by using the the [encrypted content length](../data-format/message-body.md#encrypted-content-length).
+If this is not a regular frame, this SHOULD be determined by using the the [encrypted content length](../data-format/message-body.md#final-frame-encrypted-content-length).
 '''
 
 [[spec]]
@@ -302,14 +302,14 @@ quote = '''
 [[spec]]
 level = "MUST"
 quote = '''
-- The ciphertext MUST be the [encrypted content](../data-format/message-body.md#encrypted-content).
+- The ciphertext MUST be the [encrypted content](../data-format/message-body.md#regular-frame-encrypted-content).
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
 - The tag MUST be the value serialized in the
-[authentication tag field](../data-format/message-body.md#authentication-tag)
+[authentication tag field](../data-format/message-body.md#regular-frame-authentication-tag)
 in the message body or frame.
 '''
 

@@ -74,7 +74,7 @@ async fn test_verify_header_v1_round_trip() {
     //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - For message format version [1.0](../data-format/message-header.md#supported-versions)
-    //# the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header#iv).
+    //# the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header.md#iv).
 
     let keyring = test_keyring().await;
     let plaintext = b"v1 header verification test";

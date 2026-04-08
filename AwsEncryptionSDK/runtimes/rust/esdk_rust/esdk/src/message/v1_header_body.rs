@@ -31,7 +31,7 @@ pub(crate) fn write_v1_header_body(
     //# The serialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification.
 
     //= specification/data-format/message-header.md#header-body-version-1-0
-    //# The V1 Header Body MUST be serialized as, in order,
+    //# The V1 Header Body MUST consist of, in order,
     //# Version,
     //# Type,
     //# Algorithm Suite ID,
@@ -102,7 +102,7 @@ pub(crate) fn write_v1_header_body(
     //= specification/data-format/message-header.md#iv-length
     //# The length of the serialized IV length field MUST be 1 byte.
     //= specification/data-format/message-header.md#iv-length
-    //# The IV length MUST be serialized as a UInt8.
+    //# The IV length MUST be interpreted as a UInt8.
     write_u8(w, iv_length)?;
     //= specification/client-apis/encrypt.md#v1-header
     //# - [Frame Length](../data-format/message-header.md#frame-length): MUST be serialized according to the
@@ -112,7 +112,7 @@ pub(crate) fn write_v1_header_body(
     //= specification/data-format/message-header.md#frame-length
     //# The length of the serialized frame length field MUST be 4 bytes.
     //= specification/data-format/message-header.md#frame-length
-    //# The frame length MUST be serialized as a UInt32.
+    //# The frame length MUST be interpreted as a UInt32.
     write_u32(w, frame_len)
 }
 
@@ -138,7 +138,7 @@ pub(crate) fn read_v1_header_iv_length(
     //# The length of the serialized IV length field MUST be 1 byte.
 
     //= specification/data-format/message-header.md#iv-length
-    //# The IV length MUST be serialized as a UInt8.
+    //# The IV length MUST be interpreted as a UInt8.
     let raw = read_u8(r, raw)?;
     //= specification/data-format/message-header.md#iv-length
     //# This value MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the
@@ -205,7 +205,7 @@ pub(crate) fn read_v1_header_body(
     //# The length of the serialized frame length field MUST be 4 bytes.
 
     //= specification/data-format/message-header.md#frame-length
-    //# The frame length MUST be serialized as a UInt32.
+    //# The frame length MUST be interpreted as a UInt32.
     let frame_length = read_u32(r, raw)?;
 
     Ok(V1HeaderBody {

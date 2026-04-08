@@ -391,7 +391,7 @@ fn step_verify_header(
     //# [authentication tag field](../data-format/message-header.md#authentication-tag)
     //= specification/client-apis/decrypt.md#verify-the-header
     //# - For message format version [1.0](../data-format/message-header.md#supported-versions)
-    //# the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header#iv).
+    //# the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header.md#iv).
     //= specification/client-apis/decrypt.md#verify-the-header
     //# For message format version [2.0](../data-format/message-header.md#supported-versions)
     //# the IV MUST be 0.

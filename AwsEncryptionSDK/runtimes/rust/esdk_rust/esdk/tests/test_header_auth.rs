@@ -55,7 +55,7 @@ async fn round_trip_v2(plaintext: &[u8]) -> Vec<u8> {
 async fn test_v1_header_auth_serialization_order() {
     //= specification/data-format/message-header.md#header-authentication-version-1-0
     //= type=test
-    //# The V1 Header Authentication MUST be serialized as, in order,
+    //# The V1 Header Authentication MUST consist of, in order,
     //# IV,
     //# and Authentication Tag.
     let pt = b"v1 header auth serialization test";
@@ -67,7 +67,7 @@ async fn test_v1_header_auth_serialization_order() {
 async fn test_v2_header_auth_serialization() {
     //= specification/data-format/message-header.md#header-authentication-version-2-0
     //= type=test
-    //# The V2 Header Authentication MUST be serialized as the Authentication Tag only.
+    //# The V2 Header Authentication MUST consist of the Authentication Tag only.
     let pt = b"v2 header auth serialization test";
     let result = round_trip_v2(pt).await;
     assert_eq!(result, pt, "successful V2 round-trip proves header auth was serialized as Authentication Tag only");

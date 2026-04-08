@@ -17,7 +17,7 @@ target = "specification/data-format/message-header.md#header-body-version-2-0"
 # | [Frame Length](#frame-length)                 | 4                                                                                 | UInt32                                                                                        |
 # | [Algorithm Suite Data](#algorithm-suite-data) | Variable. Determined by the Algorithm Suite ID                                    | See [Algorithm Suite Data](../framework/algorithm-suites.md#algorithm-suite-data)             |
 # 
-# The V2 Header Body MUST be serialized as, in order,
+# The V2 Header Body MUST consist of, in order,
 # Version,
 # Algorithm Suite ID,
 # Message ID,
@@ -36,7 +36,7 @@ The value of the `Version` field MUST be `02` in the Version 2.0 header body.
 [[spec]]
 level = "MUST"
 quote = '''
-The V2 Header Body MUST be serialized as, in order,
+The V2 Header Body MUST consist of, in order,
 Version,
 Algorithm Suite ID,
 Message ID,

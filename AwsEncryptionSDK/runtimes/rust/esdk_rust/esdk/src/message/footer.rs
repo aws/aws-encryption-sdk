@@ -38,9 +38,9 @@ pub(crate) fn write_footer(
     //# Signature Length,
     //# and Signature.
     //= specification/data-format/message-footer.md#signature-length
-    //# This length of the signature length field MUST be 2 bytes.
+    //# The length of the signature length field MUST be 2 bytes.
     //= specification/data-format/message-footer.md#signature-length
-    //# The signature length field MUST be interpreted as a UInt16.
+    //# The signature length value MUST be a UInt16.
     write_u16(w, len)?;
     //= specification/client-apis/encrypt.md#construct-the-signature
     //# - [Signature](../data-format/message-footer.md#signature): MUST be the output of the calculation above.

@@ -6,13 +6,12 @@ target = "specification/data-format/message-header.md#structure"
 # 
 # The following table is a non-normative representation of the normative requirements in this section.
 # 
-# 
 # | Field                                           | Length (bytes) | Interpreted as                                  |
 # | ----------------------------------------------- | -------------- | ----------------------------------------------- |
 # | [Header Body](#header-body)                     | Variable       | [Header Body](#header-body)                     |
 # | [Header Authentication](#header-authentication) | Variable       | [Header Authentication](#header-authentication) |
 # 
-# The header MUST be serialized as, in order,
+# The header MUST consist of, in order,
 # Header Body,
 # and Header Authentication.
 
@@ -25,7 +24,7 @@ The message header is a sequence of bytes that MUST be in big-endian format.
 [[spec]]
 level = "MUST"
 quote = '''
-The header MUST be serialized as, in order,
+The header MUST consist of, in order,
 Header Body,
 and Header Authentication.
 '''

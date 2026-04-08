@@ -114,7 +114,7 @@ async fn test_v2_header_body_serialization_order() {
 
     //= specification/data-format/message-header.md#header-body-version-2-0
     //= type=test
-    //# The V2 Header Body MUST be serialized as, in order,
+    //# The V2 Header Body MUST consist of, in order,
     //# Version,
     //# Algorithm Suite ID,
     //# Message ID,

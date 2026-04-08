@@ -189,7 +189,7 @@ pub(crate) async fn get_modern_decryption_materials(
     //# - Commitment Policy: This MUST be the commitment policy configured on the client.
     input.commitment_policy = aws_mpl_legacy::commitment::CommitmentPolicy::Esdk(commitment_policy);
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
-    //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header#encrypted-data-keys)
+    //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header.md#encrypted-data-keys)
     //# from the message header.
     input.encrypted_data_keys = header_body.encrypted_data_keys().into();
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
@@ -503,7 +503,7 @@ pub(crate) async fn get_legacy_decryption_materials(
         //# - Commitment Policy: This MUST be the commitment policy configured on the client.
         .commitment_policy(convert_commit(commitment_policy))
         //= specification/client-apis/decrypt.md#get-the-decryption-materials
-        //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header#encrypted-data-keys)
+        //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header.md#encrypted-data-keys)
         //# from the message header.
         .encrypted_data_keys(convert_edks(header_body.encrypted_data_keys()))
         //= specification/client-apis/decrypt.md#get-the-decryption-materials

@@ -15,10 +15,10 @@ pub(crate) type MessageId = Vec<u8>;
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub(crate) enum MessageFormatVersion {
     //= specification/data-format/message-header.md#supported-versions
-    //# - `01` MUST be version 1.0
+    //# - Hex value `01` MUST be version 1.0
     V1 = 1,
     //= specification/data-format/message-header.md#supported-versions
-    //# - `02` MUST be version 2.0
+    //# - Hex value `02` MUST be version 2.0
     V2 = 2,
 }
 
@@ -31,22 +31,12 @@ pub(crate) fn write_msg_format_version(
     write_u8(w, data as u8)
 }
 
-pub(crate) fn write_msg_type(w: &mut dyn SafeWrite, data: MessageType) -> Result<(), Error> {
-    //= specification/data-format/message-header.md#type
-    //# The length of the serialized type field MUST be 1 byte.
-    write_u8(w, data as u8)
-}
-
-pub(crate) fn write_content_type(w: &mut dyn SafeWrite, data: ContentType) -> Result<(), Error> {
-    //= specification/data-format/message-header.md#content-type
-    //# The length of the serialized content type field MUST be 1 byte.
-    write_u8(w, data as u8)
-}
-
 pub(crate) fn read_msg_format_version(
     r: &mut dyn SafeRead,
     raw: &mut dyn SafeWrite,
 ) -> Result<MessageFormatVersion, Error> {
+    //= specification/data-format/message-header.md#version
+    //# The length of the serialized version field MUST be 1 byte.
     let version = read_u8(r, raw)?;
     match version {
         val if val == MessageFormatVersion::V1 as u8 => Ok(MessageFormatVersion::V1),
@@ -57,12 +47,28 @@ pub(crate) fn read_msg_format_version(
     }
 }
 
-//= specification/data-format/message-header.md#type
-//# The type (hex) of this field MUST be a value that exists in the following table:
+//= specification/data-format/message-header.md#supported-types
+//# The supported types MUST be:
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
+pub(crate) enum MessageType {
+    //= specification/data-format/message-header.md#supported-types
+    //# - `80` MUST be Customer Authenticated Encrypted Data
+    #[default]
+    TypeCustomerAed = 0x80,
+}
+
+pub(crate) fn write_msg_type(w: &mut dyn SafeWrite, data: MessageType) -> Result<(), Error> {
+    //= specification/data-format/message-header.md#type
+    //# The length of the serialized type field MUST be 1 byte.
+    write_u8(w, data as u8)
+}
+
 pub(crate) fn read_msg_type(
     r: &mut dyn SafeRead,
     raw: &mut dyn SafeWrite,
 ) -> Result<MessageType, Error> {
+    //= specification/data-format/message-header.md#type
+    //# The length of the serialized type field MUST be 1 byte.
     let msg_type = read_u8(r, raw)?;
     match msg_type {
         val if val == MessageType::TypeCustomerAed as u8 => Ok(MessageType::TypeCustomerAed),
@@ -71,12 +77,32 @@ pub(crate) fn read_msg_type(
         _ => ser_err("Unsupported Message Type."),
     }
 }
-//= specification/data-format/message-header.md#content-type
-//# The value (hex) of this field MUST be a value that exists in the following table:
+
+//= specification/data-format/message-header.md#supported-content-types
+//# The supported content types MUST be:
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
+pub(crate) enum ContentType {
+    //= specification/data-format/message-header.md#supported-content-types
+    //# - `01` for [Non-Framed](message-body.md#non-framed-data)
+    NonFramed = 1,
+    //= specification/data-format/message-header.md#supported-content-types
+    //# - `02` for [Framed](message-body.md#framed-data)
+    #[default]
+    Framed = 2,
+}
+
+pub(crate) fn write_content_type(w: &mut dyn SafeWrite, data: ContentType) -> Result<(), Error> {
+    //= specification/data-format/message-header.md#content-type
+    //# The length of the serialized content type field MUST be 1 byte.
+    write_u8(w, data as u8)
+}
+
 pub(crate) fn read_content_type(
     r: &mut dyn SafeRead,
     raw: &mut dyn SafeWrite,
 ) -> Result<ContentType, Error> {
+    //= specification/data-format/message-header.md#content-type
+    //# The length of the serialized content type field MUST be 1 byte.
     let content_type = read_u8(r, raw)?;
     match content_type {
         val if val == ContentType::NonFramed as u8 => Ok(ContentType::NonFramed),
@@ -196,28 +222,6 @@ impl HeaderAuth {
             } => header_auth_tag,
         }
     }
-}
-//= specification/data-format/message-header.md#supported-types
-//# The supported types MUST be:
-#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
-pub(crate) enum MessageType {
-    //= specification/data-format/message-header.md#supported-types
-    //# - `80` MUST be Customer Authenticated Encrypted Data
-    #[default]
-    TypeCustomerAed = 0x80,
-}
-
-//= specification/data-format/message-header.md#supported-content-types
-//# The supported content types MUST be:
-#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
-pub(crate) enum ContentType {
-    //= specification/data-format/message-header.md#supported-content-types
-    //# - `01` for [Non-Framed](message-body.md#non-framed-data)
-    NonFramed = 1,
-    //= specification/data-format/message-header.md#supported-content-types
-    //# - `02` for [Framed](message-body.md#framed-data)
-    #[default]
-    Framed = 2,
 }
 
 pub(crate) const MESSAGE_ID_LEN_V1: u32 = 16;

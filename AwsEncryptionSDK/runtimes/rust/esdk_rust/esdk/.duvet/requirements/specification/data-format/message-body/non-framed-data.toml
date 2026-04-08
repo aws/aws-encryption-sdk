@@ -2,18 +2,18 @@ target = "specification/data-format/message-body.md#non-framed-data"
 
 # Non-Framed Data
 #
-# Non-framed data is a sequence of encrypted bytes along with the [initialization vector (IV)](#iv)
-# and body [authentication tag](#authentication-tag).
+# Non-framed data is a sequence of encrypted bytes along with the [initialization vector (IV)](#non-framed-data-iv)
+# and body [authentication tag](#non-framed-data-authentication-tag).
 # 
-# The following table is a non-normative representation of the normative requirements in this secion.
+# The following table is a non-normative representation of the normative requirements in this section.
 # The bytes are appended in the order shown.
 # 
-# | Field                                                 | Length (bytes)                           | Interpreted as |
-# | ----------------------------------------------------- | ---------------------------------------- | -------------- |
-# | [IV](#iv)                                             | [IV Length](message-header.md#iv-length) | Bytes          |
-# | [Encrypted Content Length](#encrypted-content-length) | 8                                        | Uint64         |
-# | [Encrypted Content](#encrypted-content)               | Variable                                 | Bytes          |
-# | [Authentication Tag](#authentication-tag)             | Variable                                 | Bytes          |
+# | Field                                                                 | Length (bytes)                           | Interpreted as |
+# | --------------------------------------------------------------------- | ---------------------------------------- | -------------- |
+# | [IV](#non-framed-data-iv)                                             | [IV Length](message-header.md#iv-length) | Bytes          |
+# | [Encrypted Content Length](#non-framed-data-encrypted-content-length) | 8                                        | Uint64         |
+# | [Encrypted Content](#non-framed-data-encrypted-content)               | Variable                                 | Bytes          |
+# | [Authentication Tag](#non-framed-data-authentication-tag)             | Variable                                 | Bytes          |
 # 
 # Non-framed data MUST consist of, in order,
 # IV,
