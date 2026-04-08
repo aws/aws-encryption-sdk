@@ -682,6 +682,11 @@ pub(crate) fn construct_frame(
     //# - [Sequence Number End](../data-format/message-body.md#sequence-number-end): MUST be serialized according to the
     //# [Sequence Number End](../data-format/message-body.md#sequence-number-end) specification.
     if input.is_final {
+        //= specification/client-apis/encrypt.md#construct-a-frame
+        //= type=implication
+        //= reason=The following lines serialize SeqNumEnd, SeqNum, IV, EncContentLen, EncContent, and AuthTag in order per the Final Frame spec
+        //# For a final frame, each field MUST be serialized according to its specification:
+
         //= specification/data-format/message-body.md#final-frame
         //# A final frame MUST consist of, in order,
         //# Sequence Number End,
@@ -700,24 +705,44 @@ pub(crate) fn construct_frame(
     }
 
     //= specification/client-apis/encrypt.md#construct-a-frame
+    //= type=implication
+    //= reason=The following lines serialize SeqNum, IV, EncContent, and AuthTag in order per the Regular Frame spec
+    //# For a regular frame, each field MUST be serialized according to its specification:
+    let _regular_frame_serialization = ();
+
+    //= specification/client-apis/encrypt.md#construct-a-frame
     //# - [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number): MUST be serialized according to the
     //# [Regular Frame Sequence Number](../data-format/message-body.md#regular-frame-sequence-number) specification.
     //# The value MUST be the sequence number of this frame.
     //= specification/data-format/message-body.md#regular-frame-sequence-number
     //# The sequence number MUST be interpreted as a UInt32.
     write_u32(frame_buf, input.sequence_number)?;
+    //= specification/client-apis/encrypt.md#construct-a-frame
+    //= reason=write_u32 above serializes the sequence number for both regular and final frames in this shared code path
+    //# - [Sequence Number](../data-format/message-body.md#final-frame-sequence-number): MUST be serialized according to the
+    //# [Final Frame Sequence Number](../data-format/message-body.md#final-frame-sequence-number) specification.
     //= specification/data-format/message-body.md#final-frame-sequence-number
-    //# The length of the Final Frame Sequence number field  MUST be the same as the
+    //= type=implication
+    //= reason=write_u32 serializes the sequence number as a UInt32, same type as the regular frame sequence number
+    //# The Final Frame Sequence Number MUST be interpreted as the same type as the
     //# [Regular Frame Sequence Number](#regular-frame-sequence-number).
     let _seq_num_written = &input.sequence_number;
 
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# - [IV](../data-format/message-body.md#regular-frame-iv): MUST be serialized according to the
     //# [Regular Frame IV](../data-format/message-body.md#regular-frame-iv) specification.
-
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# The value MUST be the IV used when calculating the encrypted content for this frame.
     write_bytes(frame_buf, iv)?;
+    //= specification/client-apis/encrypt.md#construct-a-frame
+    //= reason=write_bytes above serializes the IV for both regular and final frames in this shared code path
+    //# - [IV](../data-format/message-body.md#final-frame-iv): MUST be serialized according to the
+    //# [Final Frame IV](../data-format/message-body.md#final-frame-iv) specification.
+    //= specification/data-format/message-body.md#final-frame-iv
+    //= type=implication
+    //= reason=iv is &[u8], interpreted as raw bytes
+    //# The IV MUST be interpreted as bytes.
+    let _iv_written = &iv;
 
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# - [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length): MUST be serialized according to the
@@ -765,11 +790,29 @@ pub(crate) fn construct_frame(
     //# The value MUST be the encrypted content calculated for this frame.
     let _encrypted_content_written = ();
     //= specification/client-apis/encrypt.md#construct-a-frame
+    //= reason=aes_encrypt writes encrypted content to frame_buf for both regular and final frames in this shared code path
+    //# - [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content): MUST be serialized according to the
+    //# [Final Frame Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content) specification.
+    //= specification/data-format/message-body.md#final-frame-encrypted-content
+    //= type=implication
+    //= reason=aes_encrypt output bytes are written directly to frame_buf, interpreted as raw bytes
+    //# The encrypted content MUST be interpreted as bytes.
+    let _final_encrypted_content_written = ();
+    //= specification/client-apis/encrypt.md#construct-a-frame
     //# - [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag): MUST be serialized according to the
     //# [Regular Frame Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag) specification.
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# The value MUST be the authentication tag output when calculating the encrypted content for this frame.
     let _authentication_tag_written = ();
+    //= specification/client-apis/encrypt.md#construct-a-frame
+    //= reason=aes_encrypt writes the authentication tag to frame_buf for both regular and final frames in this shared code path
+    //# - [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag): MUST be serialized according to the
+    //# [Final Frame Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag) specification.
+    //= specification/data-format/message-body.md#final-frame-authentication-tag
+    //= type=implication
+    //= reason=aes_encrypt output tag bytes are written directly to frame_buf, interpreted as raw bytes
+    //# The authentication tag MUST be interpreted as bytes.
+    let _final_authentication_tag_written = ();
 
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= reason=Frame is fully serialized into frame_buf before being written to ciphertext; frame_buf.clear() at function start and write_bytes(ciphertext, frame_buf) here ensure atomic release
