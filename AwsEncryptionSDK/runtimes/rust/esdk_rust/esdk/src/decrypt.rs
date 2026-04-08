@@ -187,7 +187,7 @@ async fn internal_decrypt(
 
     //= specification/client-apis/decrypt.md#behavior
     //# - Decrypt operation Step 3 MUST be [Verify the header](#verify-the-header)
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
     //# Until the [header is verified](#verify-the-header), this operation MUST NOT
     //# release any parsed information from the header.
     let mut state = step_verify_header(state, net_v4_retry_policy)?;
@@ -301,7 +301,10 @@ async fn step_get_decryption_materials(
             "Stored header algorithm suite does not match decryption algorithm suite.".into(),
         );
     }
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
+    //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST be deserialized according to the
+    //# [Authentication Tag](../data-format/message-header.md#authentication-tag) specification.
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
     //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST be deserialized according to the
     //# [Authentication Tag](../data-format/message-header.md#authentication-tag) specification.
     let header_auth = header_auth::read_header_auth_tag(ciphertext, suite, &mut sig_digest)?;

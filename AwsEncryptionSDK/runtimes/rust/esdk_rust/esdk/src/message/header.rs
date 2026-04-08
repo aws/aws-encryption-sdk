@@ -79,6 +79,10 @@ pub(crate) fn read_header_body(
             let body = read_v1_header_body(ciphertext, max_edks, raw_header)?;
             HeaderBody::V1Body(body)
         }
+        //= specification/client-apis/decrypt.md#v2-header-deserialization
+        //# If the version is [2.0](../data-format/message-header.md#supported-versions),
+        //# the remaining header fields MUST be deserialized according to the
+        //# [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
         MessageFormatVersion::V2 => {
             let body = read_v2_header_body(ciphertext, max_edks, raw_header)?;
             HeaderBody::V2Body(body)

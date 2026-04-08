@@ -26,6 +26,12 @@ async fn test_keyring() -> aws_mpl_legacy::dafny::types::keyring::KeyringRef {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v2_header_fields_deserialized() {
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
+    //= type=test
+    //# If the version is [2.0](../data-format/message-header.md#supported-versions),
+    //# the remaining header fields MUST be deserialized according to the
+    //# [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
+
     //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# The header deserialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10)
@@ -212,6 +218,10 @@ async fn test_unsupported_version_rejected() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unsupported_content_type_rejected() {
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
+    //= type=test
+    //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
+
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
