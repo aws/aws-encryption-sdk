@@ -42,7 +42,7 @@ pub(crate) fn read_header_body(
     //= reason=so reading from it inherently processes all consumable bytes until a valid header is formed.
     //# This operation MUST attempt to deserialize all consumable encrypted message bytes
     //# until it has successfully deserialized a valid [message header](../data-format/message-header.md).
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=implication
     //= reason=SafeRead (std::io::Read) only supports sequential consumption with no skip/seek,
     //= reason=so reading from it inherently processes all consumable bytes until a valid header is formed.
@@ -63,8 +63,7 @@ pub(crate) fn read_header_body(
     //# Each header field MUST be deserialized according to its specification in the [message header](../data-format/message-header.md):
 
     //= specification/client-apis/decrypt.md#parse-the-header
-    //# - [Version](../data-format/message-header.md#version): MUST be deserialized according to the
-    //# [Version](../data-format/message-header.md#version) specification.
+    //# The [Version](../data-format/message-header.md#version) field MUST be deserialized first.
     let version = read_msg_format_version(ciphertext, raw_header)?;
 
     //= specification/client-apis/decrypt.md#parse-the-header
@@ -72,6 +71,10 @@ pub(crate) fn read_header_body(
     //# or [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification,
     //# depending on the [Version](../data-format/message-header.md#version) field.
     let result = match version {
+        //= specification/client-apis/decrypt.md#v1-header-deserialization
+        //# If the version is [1.0](../data-format/message-header.md#supported-versions),
+        //# the remaining header fields MUST be deserialized according to the
+        //# [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
         MessageFormatVersion::V1 => {
             let body = read_v1_header_body(ciphertext, max_edks, raw_header)?;
             HeaderBody::V1Body(body)

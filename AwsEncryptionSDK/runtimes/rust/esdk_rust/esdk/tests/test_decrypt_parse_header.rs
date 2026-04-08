@@ -38,53 +38,52 @@ async fn test_v2_header_fields_deserialized() {
 
     //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
-    //# - [Version](../data-format/message-header.md#version): MUST be deserialized according to the
-    //# [Version](../data-format/message-header.md#version) specification.
+    //# The [Version](../data-format/message-header.md#version) field MUST be deserialized first.
 
     //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
 
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST be deserialized according to the
     //# [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id) specification.
 
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# - [Message ID](../data-format/message-header.md#message-id): MUST be deserialized according to the
     //# [Message ID](../data-format/message-header.md#message-id) specification.
 
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# - [AAD](../data-format/message-header.md#aad): MUST be deserialized according to the
     //# [AAD](../data-format/message-header.md#aad) specification.
 
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be deserialized according to the
     //# [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
 
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# - [Content Type](../data-format/message-header.md#content-type): MUST be deserialized according to the
     //# [Content Type](../data-format/message-header.md#content-type) specification.
 
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
 
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# - [Frame Length](../data-format/message-header.md#frame-length): MUST be deserialized according to the
     //# [Frame Length](../data-format/message-header.md#frame-length) specification.
 
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
-    //# - [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data) (V2 only): MUST be deserialized according to the
+    //# - [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data): MUST be deserialized according to the
     //# [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data) specification.
 
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST be deserialized according to the
     //# [Authentication Tag](../data-format/message-header.md#authentication-tag) specification.
@@ -108,24 +107,65 @@ async fn test_v2_header_fields_deserialized() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_fields_deserialized() {
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //# - [Type](../data-format/message-header.md#type) (V1 only): MUST be deserialized according to the
+    //# If the version is [1.0](../data-format/message-header.md#supported-versions),
+    //# the remaining header fields MUST be deserialized according to the
+    //# [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
+
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //# - [Type](../data-format/message-header.md#type): MUST be deserialized according to the
     //# [Type](../data-format/message-header.md#type) specification.
 
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //# The value MUST be a [supported type](../data-format/message-header.md#supported-types).
 
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //# - [Reserved](../data-format/message-header.md#reserved) (V1 only): MUST be deserialized according to the
+    //# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST be deserialized according to the
+    //# [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id) specification.
+
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //# - [Message ID](../data-format/message-header.md#message-id): MUST be deserialized according to the
+    //# [Message ID](../data-format/message-header.md#message-id) specification.
+
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //# - [AAD](../data-format/message-header.md#aad): MUST be deserialized according to the
+    //# [AAD](../data-format/message-header.md#aad) specification.
+
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be deserialized according to the
+    //# [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
+
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //# - [Content Type](../data-format/message-header.md#content-type): MUST be deserialized according to the
+    //# [Content Type](../data-format/message-header.md#content-type) specification.
+
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //# - [Reserved](../data-format/message-header.md#reserved): MUST be deserialized according to the
     //# [Reserved](../data-format/message-header.md#reserved) specification.
 
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //# - [IV Length](../data-format/message-header.md#iv-length) (V1 only): MUST be deserialized according to the
+    //# - [IV Length](../data-format/message-header.md#iv-length): MUST be deserialized according to the
     //# [IV Length](../data-format/message-header.md#iv-length) specification.
+
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //# - [Frame Length](../data-format/message-header.md#frame-length): MUST be deserialized according to the
+    //# [Frame Length](../data-format/message-header.md#frame-length) specification.
+
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST be deserialized according to the
+    //# [Authentication Tag](../data-format/message-header.md#authentication-tag) specification.
 
     let keyring = test_keyring().await;
     let plaintext = b"v1 parse header round-trip";
@@ -172,7 +212,7 @@ async fn test_unsupported_version_rejected() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unsupported_content_type_rejected() {
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
 
@@ -228,7 +268,7 @@ async fn test_unsupported_content_type_rejected() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unsupported_type_rejected() {
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //# The value MUST be a [supported type](../data-format/message-header.md#supported-types).
 
@@ -349,7 +389,7 @@ async fn test_parse_header_sequential_processing() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_max_encrypted_data_keys_enforcement() {
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
     //# deserialized from the [message header](../data-format/message-header.md)
@@ -398,7 +438,7 @@ async fn test_max_encrypted_data_keys_enforcement() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_no_header_info_released_before_verification() {
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# Until the [header is verified](#verify-the-header), this operation MUST NOT
     //# release any parsed information from the header.
