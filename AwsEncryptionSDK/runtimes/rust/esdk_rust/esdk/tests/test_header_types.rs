@@ -74,7 +74,7 @@ async fn test_version_v2_value() {
     //# The supported versions MUST be:
     //= specification/data-format/message-header.md#supported-versions
     //= type=test
-    //# - `02` MUST be version 2.0
+    //# - Hex value `02` MUST be version 2.0
     let ct = encrypt_v2(b"v2 version test").await;
     assert_eq!(ct[0], 0x02, "V2 ciphertext must start with version byte 0x02");
 }
@@ -83,7 +83,7 @@ async fn test_version_v2_value() {
 async fn test_version_v1_value() {
     //= specification/data-format/message-header.md#supported-versions
     //= type=test
-    //# - `01` MUST be version 1.0
+    //# - Hex value `01` MUST be version 1.0
     let ct = encrypt_v1(b"v1 version test").await;
     assert_eq!(ct[0], 0x01, "V1 ciphertext must start with version byte 0x01");
 }
@@ -120,9 +120,6 @@ async fn test_type_invalid_value_rejected() {
 async fn test_content_type_framed_value() {
     //= specification/data-format/message-header.md#supported-content-types
     //= type=test
-    //# The supported content types MUST be:
-    //= specification/data-format/message-header.md#supported-content-types
-    //= type=test
     //# - `02` for [Framed](message-body.md#framed-data)
     let ct = encrypt_v2(b"test").await;
     let offset = content_type_offset_v2(&ct);
@@ -154,9 +151,9 @@ async fn test_content_type_nonframed_value() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_content_type_invalid_value_rejected() {
-    //= specification/data-format/message-header.md#content-type
+    //= specification/data-format/message-header.md#supported-content-types
     //= type=test
-    //# The value (hex) of this field MUST be a value that exists in the following table:
+    //# The supported content types MUST be:
     let keyring = test_keyring().await;
     let mut ct = encrypt_v2(b"test").await;
 

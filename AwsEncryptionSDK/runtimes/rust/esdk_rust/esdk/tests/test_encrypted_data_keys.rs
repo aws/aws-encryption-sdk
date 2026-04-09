@@ -154,6 +154,63 @@ async fn test_encrypted_data_key_count_must_be_greater_than_zero() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn test_encrypted_data_key_count_must_not_exceed_max() {
+    //= specification/data-format/message-header.md#encrypted-data-key-count
+    //= type=test
+    //# This value MUST be less than or equal to the
+    //# [maximum number of encrypted data keys](../client-apis/client.md#maximum-number-of-encrypted-data-keys)
+    //# if the maximum number is configured.
+
+    // Create two keyrings and a multi-keyring to produce 2 EDKs
+    let keyring1 = test_keyring().await;
+    let (ns2, name2) = namespace_and_name(1);
+    let keyring2 = mpl()
+        .create_raw_aes_keyring()
+        .key_namespace(ns2)
+        .key_name(name2)
+        .wrapping_key(aws_smithy_types::Blob::new([1u8; 32]))
+        .wrapping_alg(aws_mpl_legacy::dafny::types::AesWrappingAlg::AlgAes256GcmIv12Tag16)
+        .send()
+        .await
+        .unwrap();
+    let multi_keyring = mpl()
+        .create_multi_keyring()
+        .generator(keyring1.clone())
+        .child_keyrings(vec![keyring2])
+        .send()
+        .await
+        .unwrap();
+
+    let plaintext = b"max edk count test";
+
+    // Encrypt with 2 EDKs, max_encrypted_data_keys=1 → must fail
+    let mut enc_input = EncryptInput::with_legacy_keyring(
+        plaintext,
+        EncryptionContext::new(),
+        multi_keyring.clone(),
+    );
+    enc_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(1).unwrap());
+    assert!(
+        encrypt(&enc_input).await.is_err(),
+        "encrypt must fail when EDK count exceeds max_encrypted_data_keys"
+    );
+
+    // Encrypt with 2 EDKs, max_encrypted_data_keys=2 → must succeed
+    enc_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(2).unwrap());
+    assert!(
+        encrypt(&enc_input).await.is_ok(),
+        "encrypt must succeed when EDK count equals max_encrypted_data_keys"
+    );
+
+    // Encrypt with 2 EDKs, no max → must succeed
+    enc_input.max_encrypted_data_keys = None;
+    assert!(
+        encrypt(&enc_input).await.is_ok(),
+        "encrypt must succeed when max_encrypted_data_keys is not configured"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn test_edk_entry_serialization_order() {
     //= specification/data-format/message-header.md#encrypted-data-key-entries
     //= type=test

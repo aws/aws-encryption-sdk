@@ -24,8 +24,9 @@ pub(crate) fn write_v1_header_body(
     body: &V1HeaderBody,
 ) -> Result<(), Error> {
     //= specification/client-apis/encrypt.md#v1-header
-    //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
-    //# then the [message header body](../data-format/message-header.md#header-body-version-10) MUST be serialized with the following specifics:
+    //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0,
+    //# the remaining header fields MUST be serialized according to the
+    //# [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
 
     //= specification/client-apis/encrypt.md#v1-header
     //# The serialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification.
@@ -155,27 +156,27 @@ pub(crate) fn read_v1_header_body(
     max_edks: Option<std::num::NonZeroUsize>,
     raw: &mut dyn SafeWrite,
 ) -> Result<V1HeaderBody, Error> {
-    //= specification/client-apis/decrypt.md#parse-the-header
-    //# - [Type](../data-format/message-header.md#type) (V1 only): MUST be deserialized according to the
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
+    //# - [Type](../data-format/message-header.md#type): MUST be deserialized according to the
     //# [Type](../data-format/message-header.md#type) specification.
     let message_type = read_msg_type(r, raw)?;
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
     //# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST be deserialized according to the
     //# [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id) specification.
     let algorithm_suite = read_esdk_suite_id(r, raw)?;
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
     //# - [Message ID](../data-format/message-header.md#message-id): MUST be deserialized according to the
     //# [Message ID](../data-format/message-header.md#message-id) specification.
     let message_id = read_message_id_v1(r, raw)?;
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
     //# - [AAD](../data-format/message-header.md#aad): MUST be deserialized according to the
     //# [AAD](../data-format/message-header.md#aad) specification.
     let encryption_context: Vec<(String, String)> = read_canonical_ec(r, raw)?;
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
     //# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be deserialized according to the
     //# [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
     let encrypted_data_keys = read_edks(r, max_edks, raw)?;
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
     //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
     //# deserialized from the [message header](../data-format/message-header.md)
     //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
@@ -186,19 +187,19 @@ pub(crate) fn read_v1_header_body(
             return ser_err("Number of encrypted data keys exceeds the maximum allowed.");
         }
     }
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
     //# - [Content Type](../data-format/message-header.md#content-type): MUST be deserialized according to the
     //# [Content Type](../data-format/message-header.md#content-type) specification.
     let content_type = read_content_type(r, raw)?;
-    //= specification/client-apis/decrypt.md#parse-the-header
-    //# - [Reserved](../data-format/message-header.md#reserved) (V1 only): MUST be deserialized according to the
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
+    //# - [Reserved](../data-format/message-header.md#reserved): MUST be deserialized according to the
     //# [Reserved](../data-format/message-header.md#reserved) specification.
     read_v1_reserved_bytes(r, raw)?;
-    //= specification/client-apis/decrypt.md#parse-the-header
-    //# - [IV Length](../data-format/message-header.md#iv-length) (V1 only): MUST be deserialized according to the
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
+    //# - [IV Length](../data-format/message-header.md#iv-length): MUST be deserialized according to the
     //# [IV Length](../data-format/message-header.md#iv-length) specification.
     let header_iv_length = read_v1_header_iv_length(r, algorithm_suite, raw)?;
-    //= specification/client-apis/decrypt.md#parse-the-header
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
     //# - [Frame Length](../data-format/message-header.md#frame-length): MUST be deserialized according to the
     //# [Frame Length](../data-format/message-header.md#frame-length) specification.
     //= specification/data-format/message-header.md#frame-length

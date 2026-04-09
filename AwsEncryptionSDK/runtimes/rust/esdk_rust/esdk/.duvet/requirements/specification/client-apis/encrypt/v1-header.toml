@@ -2,8 +2,9 @@ target = "specification/client-apis/encrypt.md#v1-header"
 
 # V1 Header
 #
-# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
-# then the [message header body](../data-format/message-header.md#header-body-version-10) MUST be serialized with the following specifics:
+# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0,
+# the remaining header fields MUST be serialized according to the
+# [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
 # 
 # - [Version](../data-format/message-header.md#version): MUST be serialized according to the
 #   [Version](../data-format/message-header.md#version) specification.
@@ -47,8 +48,9 @@ target = "specification/client-apis/encrypt.md#v1-header"
 [[spec]]
 level = "MUST"
 quote = '''
-If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
-then the [message header body](../data-format/message-header.md#header-body-version-10) MUST be serialized with the following specifics:
+If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0,
+the remaining header fields MUST be serialized according to the
+[Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
 '''
 
 [[spec]]

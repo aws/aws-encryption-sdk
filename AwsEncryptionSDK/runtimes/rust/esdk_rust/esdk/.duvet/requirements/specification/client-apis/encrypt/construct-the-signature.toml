@@ -14,13 +14,12 @@ target = "specification/client-apis/encrypt.md#construct-the-signature"
 # 
 # Note that the message header and message body MAY have already been input during previous steps.
 # 
-# This operation MUST then serialize a message footer with the following specifics:
-# 
-# - [Signature Length](../data-format/message-footer.md#signature-length): MUST be the length of the
-#   output of the calculation above.
-# - [Signature](../data-format/message-footer.md#signature): MUST be the output of the calculation above.
-# 
+# This operation MUST then serialize a message footer.
 # The order for message footer serialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
+# 
+# - [Signature Length](../data-format/message-footer.md#signature-length): The value MUST be the length of the
+#   output of the signature calculation above.
+# - [Signature](../data-format/message-footer.md#signature): The value MUST be the output of the signature calculation above.
 # 
 # The above serialized bytes MUST NOT be released until the entire message footer has been serialized.
 # Once the entire message footer has been serialized,
@@ -66,26 +65,26 @@ Note that the message header and message body MAY have already been input during
 [[spec]]
 level = "MUST"
 quote = '''
-This operation MUST then serialize a message footer with the following specifics:
-'''
-
-[[spec]]
-level = "MUST"
-quote = '''
-- [Signature Length](../data-format/message-footer.md#signature-length): MUST be the length of the
-output of the calculation above.
-'''
-
-[[spec]]
-level = "MUST"
-quote = '''
-- [Signature](../data-format/message-footer.md#signature): MUST be the output of the calculation above.
+This operation MUST then serialize a message footer.
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
 The order for message footer serialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Signature Length](../data-format/message-footer.md#signature-length): The value MUST be the length of the
+output of the signature calculation above.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Signature](../data-format/message-footer.md#signature): The value MUST be the output of the signature calculation above.
 '''
 
 [[spec]]

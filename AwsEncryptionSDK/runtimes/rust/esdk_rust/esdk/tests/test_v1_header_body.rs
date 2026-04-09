@@ -47,8 +47,9 @@ async fn round_trip_v1(plaintext: &[u8], ec: EncryptionContext) -> Vec<u8> {
 async fn test_v1_header_serialized() {
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
-    //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
-    //# then the [message header body](../data-format/message-header.md#header-body-version-10) MUST be serialized with the following specifics:
+    //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0,
+    //# the remaining header fields MUST be serialized according to the
+    //# [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
     let pt = b"test v1 header";
     let ct = encrypt_v1(pt, EncryptionContext::new()).await;
     // V1 header starts with version byte 0x01

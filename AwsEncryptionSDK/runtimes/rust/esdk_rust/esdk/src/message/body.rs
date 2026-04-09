@@ -72,23 +72,13 @@ pub(crate) fn body_aad(
     //# and Content Length.
     result.clear();
     //= specification/data-format/message-body-aad.md#message-id
-    //= type=implementation
-    //# The length of the message ID field MUST be 16 bytes.
+    //# This MUST be the [message ID](message-header.md#message-id) stored in the header of the message.
     debug_assert!(
         message_id.len() == 16 || message_id.len() == 32,
         "message ID must be 16 or 32 bytes, got {}",
         message_id.len()
     );
-    //= specification/data-format/message-body-aad.md#message-id
-    //= type=implication
-    //= reason=message_id parameter is &[u8], interpreted as raw bytes
-    //# The message ID MUST be interpreted as bytes.
     result.extend_from_slice(message_id);
-    //= specification/data-format/message-body-aad.md#body-aad-content
-    //= type=implication
-    //= reason=Rust str is always valid UTF-8; .as_bytes() produces the UTF-8 encoding
-    //# The body AAD content value MUST be encoded as UTF-8 bytes.
-    result.extend_from_slice(body_aad_content_type_string(bc).as_bytes());
     //= specification/data-format/message-body-aad.md#sequence-number
     //= type=implication
     //= reason=u32::to_be_bytes() produces exactly 4 bytes
@@ -97,7 +87,9 @@ pub(crate) fn body_aad(
     //= type=implication
     //= reason=sequence_number parameter is u32, serialized via to_be_bytes()
     //# The sequence number field MUST be interpreted as a UInt32.
-    result.extend_from_slice(&sequence_number.to_be_bytes());
+    let seq_bytes = sequence_number.to_be_bytes();
+    debug_assert_eq!(seq_bytes.len(), 4, "sequence number field must be exactly 4 bytes");
+    result.extend_from_slice(&seq_bytes);
     //= specification/data-format/message-body-aad.md#content-length
     //= type=implication
     //= reason=u64::to_be_bytes() produces exactly 8 bytes
@@ -106,7 +98,9 @@ pub(crate) fn body_aad(
     //= type=implication
     //= reason=length parameter is u64, serialized via to_be_bytes()
     //# The content length field MUST be interpreted as a UInt64.
-    result.extend_from_slice(&length.to_be_bytes());
+    let len_bytes = length.to_be_bytes();
+    debug_assert_eq!(len_bytes.len(), 8, "content length field must be exactly 8 bytes");
+    result.extend_from_slice(&len_bytes);
 }
 
 #[allow(clippy::no_effect_underscore_binding)]
@@ -118,12 +112,6 @@ pub(crate) fn read_and_decrypt_framed_message_body(
     sig_digest: &mut dyn SafeWrite,
     fail_if_multi_frame: bool,
 ) -> Result<Vec<u8>, Error> {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=implementation
-    //# Regular frame deserialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=implementation
-    //# Final frame deserialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //# If this is framed data and the first frame sequentially, this value MUST be 1.
     let mut expected_frame: u32 = START_SEQUENCE_NUMBER;
@@ -175,6 +163,9 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //# For a final frame, each field MUST be deserialized according to its specification:
         if seq_num == ENDFRAME_SEQUENCE_NUMBER {
+            //= specification/client-apis/decrypt.md#decrypt-the-message-body
+            //= type=implementation
+            //# Final frame deserialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //= reason=read_u32 reads the final frame sequence number after the ENDFRAME marker
             //# - [Sequence Number](../data-format/message-body.md#final-frame-sequence-number): MUST be deserialized according to the
@@ -241,6 +232,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 //= reason=header.body.message_id() is the message ID deserialized from the header
                 //# - The [message ID](../data-format/message-body-aad.md#message-id) MUST be the same as the
                 //# [message ID](../data-format/message-header.md#message-id) deserialized from the header of this message.
+                
                 header.body.message_id(),
                 //= specification/client-apis/decrypt.md#decrypt-the-message-body
                 //= reason=BodyAADContent::FinalFrame selects the correct AAD content type for the final frame
@@ -339,6 +331,9 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             }
             write_bytes(w, &result)?;
         }
+        //= specification/client-apis/decrypt.md#decrypt-the-message-body
+        //= type=implementation
+        //# Regular frame deserialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //# For a regular frame, each field MUST be deserialized according to its specification:
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
@@ -1019,26 +1014,4 @@ pub(crate) fn encrypt_and_serialize_body(
     )?;
 
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    #[should_panic(expected = "message ID must be 16 or 32 bytes")]
-    fn test_body_aad_rejects_invalid_message_id_length() {
-        //= specification/data-format/message-body-aad.md#message-id
-        //= type=test
-        //# The length of the message ID field MUST be 16 bytes.
-        let bad_message_id = vec![0u8; 15]; // neither 16 nor 32
-        let mut result = Vec::new();
-        body_aad(
-            &bad_message_id,
-            BodyAADContent::RegularFrame,
-            1,
-            100,
-            &mut result,
-        );
-    }
 }

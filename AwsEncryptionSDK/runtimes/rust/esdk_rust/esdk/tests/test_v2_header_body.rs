@@ -174,8 +174,9 @@ async fn test_v2_header_body_serialization_order() {
 async fn test_v2_header_serialized() {
     //= specification/client-apis/encrypt.md#v2-header
     //= type=test
-    //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0
-    //# then the [message header body](../data-format/message-header.md#header-body-version-2-0) MUST be serialized with the following specifics:
+    //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
+    //# the remaining header fields MUST be serialized according to the
+    //# [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
     let ct = encrypt_default(b"test v2 header").await;
     assert_eq!(ct[0], 0x02, "first byte must be V2 version 0x02");
 }

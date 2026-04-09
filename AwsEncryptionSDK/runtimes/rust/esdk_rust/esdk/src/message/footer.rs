@@ -25,10 +25,10 @@ pub(crate) fn write_footer(
         return ser_err("Length of signature bytes is larger than the uint16 limit.");
     }
     //= specification/client-apis/encrypt.md#construct-the-signature
-    //# This operation MUST then serialize a message footer with the following specifics:
+    //# This operation MUST then serialize a message footer.
     //= specification/client-apis/encrypt.md#construct-the-signature
-    //# - [Signature Length](../data-format/message-footer.md#signature-length): MUST be the length of the
-    //# output of the calculation above.
+    //# - [Signature Length](../data-format/message-footer.md#signature-length): The value MUST be the length of the
+    //# output of the signature calculation above.
     let len = u16::try_from(signature.len())
         .map_err(|_| Error::from("Sequence length too long for 16 bits"))?;
     //= specification/client-apis/encrypt.md#construct-the-signature
@@ -43,7 +43,7 @@ pub(crate) fn write_footer(
     //# The signature length value MUST be a UInt16.
     write_u16(w, len)?;
     //= specification/client-apis/encrypt.md#construct-the-signature
-    //# - [Signature](../data-format/message-footer.md#signature): MUST be the output of the calculation above.
+    //# - [Signature](../data-format/message-footer.md#signature): The value MUST be the output of the signature calculation above.
     //= specification/data-format/message-footer.md#signature
     //= type=implication
     //# The signature MUST be interpreted as bytes.

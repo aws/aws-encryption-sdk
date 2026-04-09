@@ -29,19 +29,32 @@ target = "specification/client-apis/decrypt.md#decrypt-the-message-body"
 #   If the first 4 bytes have a value of 0xFFFFFFFF,
 #   then the Decrypt operation MUST deserialize the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
 #   Otherwise, the Decrypt operation MUST deserialize the bytes according to the [regular frame spec](../data-format/message-body.md#regular-frame).
+# 
+# For a regular frame, each field MUST be deserialized according to its specification:
+# 
 # - [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number): MUST be deserialized according to the
 #   [Regular Frame Sequence Number](../data-format/message-body.md#regular-frame-sequence-number) specification.
 # - [IV](../data-format/message-body.md#regular-frame-iv): MUST be deserialized according to the
 #   [Regular Frame IV](../data-format/message-body.md#regular-frame-iv) specification.
-# - [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length): MUST be deserialized according to the
-#   [Final Frame Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length) specification.
-#   If deserializing a [final frame](../data-format/message-body.md#final-frame),
-#   the Decrypt operation MUST ensure that the length of the encrypted content field is
-#   less than or equal to the frame length deserialized in the message header.
 # - [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content): MUST be deserialized according to the
 #   [Regular Frame Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content) specification.
 # - [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag): MUST be deserialized according to the
 #   [Regular Frame Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag) specification.
+# 
+# For a final frame, each field MUST be deserialized according to its specification:
+# 
+# - [Sequence Number](../data-format/message-body.md#final-frame-sequence-number): MUST be deserialized according to the
+#   [Final Frame Sequence Number](../data-format/message-body.md#final-frame-sequence-number) specification.
+# - [IV](../data-format/message-body.md#final-frame-iv): MUST be deserialized according to the
+#   [Final Frame IV](../data-format/message-body.md#final-frame-iv) specification.
+# - [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length): MUST be deserialized according to the
+#   [Final Frame Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length) specification.
+#   The Decrypt operation MUST ensure that the length of the encrypted content field is
+#   less than or equal to the frame length deserialized in the message header.
+# - [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content): MUST be deserialized according to the
+#   [Final Frame Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content) specification.
+# - [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag): MUST be deserialized according to the
+#   [Final Frame Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag) specification.
 # 
 # Once at least a single frame is deserialized (or the entire body in the un-framed case),
 # the Decrypt operation MUST decrypt and authenticate the frame (or body) using the
@@ -168,6 +181,12 @@ Otherwise, the Decrypt operation MUST deserialize the bytes according to the [re
 [[spec]]
 level = "MUST"
 quote = '''
+For a regular frame, each field MUST be deserialized according to its specification:
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
 - [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number): MUST be deserialized according to the
 [Regular Frame Sequence Number](../data-format/message-body.md#regular-frame-sequence-number) specification.
 '''
@@ -182,21 +201,6 @@ quote = '''
 [[spec]]
 level = "MUST"
 quote = '''
-- [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length): MUST be deserialized according to the
-[Final Frame Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length) specification.
-'''
-
-[[spec]]
-level = "MUST"
-quote = '''
-If deserializing a [final frame](../data-format/message-body.md#final-frame),
-the Decrypt operation MUST ensure that the length of the encrypted content field is
-less than or equal to the frame length deserialized in the message header.
-'''
-
-[[spec]]
-level = "MUST"
-quote = '''
 - [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content): MUST be deserialized according to the
 [Regular Frame Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content) specification.
 '''
@@ -206,6 +210,54 @@ level = "MUST"
 quote = '''
 - [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag): MUST be deserialized according to the
 [Regular Frame Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+For a final frame, each field MUST be deserialized according to its specification:
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Sequence Number](../data-format/message-body.md#final-frame-sequence-number): MUST be deserialized according to the
+[Final Frame Sequence Number](../data-format/message-body.md#final-frame-sequence-number) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [IV](../data-format/message-body.md#final-frame-iv): MUST be deserialized according to the
+[Final Frame IV](../data-format/message-body.md#final-frame-iv) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length): MUST be deserialized according to the
+[Final Frame Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The Decrypt operation MUST ensure that the length of the encrypted content field is
+less than or equal to the frame length deserialized in the message header.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content): MUST be deserialized according to the
+[Final Frame Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content) specification.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag): MUST be deserialized according to the
+[Final Frame Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag) specification.
 '''
 
 [[spec]]

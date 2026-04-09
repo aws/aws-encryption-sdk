@@ -140,10 +140,6 @@ pub(crate) fn validate_max_encrypted_data_keys(
     Ok(())
 }
 
-//= specification/data-format/message-header.md#message-id
-//# While implementations cannot guarantee complete uniqueness,
-//# implementations MUST use a good source of randomness when generating messages IDs in order to make
-//# the chance of duplicate IDs negligible.
 pub(crate) fn generate_message_id(suite: &AlgorithmSuite) -> Result<MessageId, Error> {
     let length = if suite.message_version == 1 {
         MESSAGE_ID_LEN_V1
@@ -151,6 +147,12 @@ pub(crate) fn generate_message_id(suite: &AlgorithmSuite) -> Result<MessageId, E
         MESSAGE_ID_LEN_V2
     };
     let mut rand_bytes: Vec<u8> = vec![0; length as usize];
+    //= specification/data-format/message-header.md#message-id
+    //= type=implication
+    //= reason=Assuming the MPL uses a good source of randomness
+    //# While implementations cannot guarantee complete uniqueness,
+    //# implementations MUST use a good source of randomness when generating messages IDs in order to make
+    //# the chance of duplicate IDs negligible.
     aws_mpl_legacy::primitives::generate_random_bytes(&mut rand_bytes)?;
     Ok(rand_bytes)
 }
