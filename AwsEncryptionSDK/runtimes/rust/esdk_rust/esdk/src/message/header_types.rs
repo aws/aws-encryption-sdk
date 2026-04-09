@@ -41,6 +41,11 @@ pub(crate) fn read_msg_format_version(
     match version {
         val if val == MessageFormatVersion::V1 as u8 => Ok(MessageFormatVersion::V1),
         val if val == MessageFormatVersion::V2 as u8 => Ok(MessageFormatVersion::V2),
+        //= specification/client-apis/decrypt.md#encrypted-message-format
+        //# To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version-1)
+        //# and [types](../data-format/message-header.md#type)
+        //# and fail with a more specific error message.
+        0x41 => ser_err("Input appears to be Base64-encoded. The ESDK expects raw binary message format, not Base64."),
         //= specification/client-apis/decrypt.md#parse-the-header
         //# The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
         _ => ser_err("Unsupported Version."),

@@ -49,11 +49,21 @@ pub async fn decrypt_stream(
     //= type=implication
     //= reason=SafeRead accepts incremental reads, so callers can stream the encrypted message without buffering it entirely in memory
     //# This input MAY be [streamed](streaming.md) to this operation.
+    //= specification/client-apis/decrypt.md#encrypted-message
+    //= type=implication
+    //= reason=The implementation does not require holding the entire encrypted message in memory; it processes bytes incrementally via SafeRead
+    //# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
+    //# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
     ciphertext: &mut dyn SafeRead,
     //= specification/client-apis/decrypt.md#plaintext
     //= type=implication
     //= reason=SafeWrite accepts incremental writes, so each decrypted frame is flushed to the output as it's produced without buffering the full plaintext
     //# This operation MAY [stream](streaming.md) the plaintext as output.
+    //= specification/client-apis/decrypt.md#plaintext
+    //= type=implication
+    //= reason=The implementation streams plaintext output incrementally via SafeWrite, so it does not require buffering the full plaintext in memory
+    //# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
+    //# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
     plaintext: &mut dyn SafeWrite,
     input: &DecryptStreamInput,
 ) -> Result<DecryptStreamOutput, Error> {
@@ -131,9 +141,17 @@ pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
         plaintext,
         //= specification/client-apis/decrypt.md#output
         //# - The output of the Decrypt operation MUST include an [encryption context](#encryption-context) value.
+        //= specification/client-apis/decrypt.md#encryption-context
+        //= type=exception
+        //= reason=The encryption context is returned directly as a field, not via a parsed header struct
+        //# This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.
         encryption_context: out.encryption_context,
         //= specification/client-apis/decrypt.md#output
         //# - The output of the Decrypt operation MUST include an [algorithm suite](#algorithm-suite) value.
+        //= specification/client-apis/decrypt.md#algorithm-suite
+        //= type=exception
+        //= reason=The algorithm suite is returned directly as a field, not via a parsed header struct
+        //# This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.
         algorithm_suite_id: out.algorithm_suite_id,
         //= specification/client-apis/decrypt.md#output
         //= type=exception
