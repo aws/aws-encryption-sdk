@@ -1,3 +1,21 @@
+SPECIFICATION: [Decrypt](/Users/lucmcdon/workplace/aws-encryption-sdk/aws-encryption-sdk-specification/client-apis/decrypt.md)
+  SECTION: [V1 Header Deserialization](#v1-header-deserialization)
+    TEXT[implication]: - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be deserialized according to the
+    TEXT[implication]:   [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
+
+  SECTION: [V2 Header Deserialization](#v2-header-deserialization)
+    TEXT[implication]: - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be deserialized according to the
+    TEXT[implication]:   [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
+
+SPECIFICATION: [Encrypt](/Users/lucmcdon/workplace/aws-encryption-sdk/aws-encryption-sdk-specification/client-apis/encrypt.md)
+  SECTION: [V2 Header](#v2-header)
+    TEXT[implication]: - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be serialized according to the
+    TEXT[implication]:   [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
+
+  SECTION: [V1 Header](#v1-header)
+    TEXT[implication]: - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be serialized according to the
+    TEXT[implication]:   [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
+
 SPECIFICATION: [Client](specification/client-apis/client.md)
   SECTION: [Initialization](#initialization)
     TEXT[!MUST,implementation,test]: - On client initialization,
@@ -770,23 +788,20 @@ SPECIFICATION: [Streaming](specification/client-apis/streaming.md)
 
 SPECIFICATION: [Message Body AAD](specification/data-format/message-body-aad.md)
   SECTION: [Structure](#structure)
-    TEXT[!MUST,implication,test]: The message body AAD MUST consist of, in order,
-    TEXT[!MUST,implication,test]: Message ID,
-    TEXT[!MUST,implication,test]: Body AAD Content,
-    TEXT[!MUST,implication,test]: Sequence Number,
-    TEXT[!MUST,implication,test]: and Content Length.
+    TEXT[!MUST,implementation,test]: The message body AAD MUST consist of, in order,
+    TEXT[!MUST,implementation,test]: Message ID,
+    TEXT[!MUST,implementation,test]: Body AAD Content,
+    TEXT[!MUST,implementation,test]: Sequence Number,
+    TEXT[!MUST,implementation,test]: and Content Length.
 
   SECTION: [Message ID](#message-id)
-    TEXT[!MUST,implementation,test]: The length of the message ID field MUST be 16 bytes
-    TEXT[!MUST]:  for v1 messages.
-    TEXT[!MUST]: The length of the message ID field MUST be 32 bytes for v2 messages.
-    TEXT[!MUST,implication,test]: The message ID MUST be interpreted as bytes.
+    TEXT[!MUST,implementation,test]: This MUST be the [message ID](message-header.md#message-id) stored in the header of the message.
 
   SECTION: [Body AAD Content](#body-aad-content)
     TEXT[!MUST,implication]: - [Non-framed data](message-body.md#non-framed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
     TEXT[!MUST,implementation,implication,test]: - The [regular frames](message-body.md#regular-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Frame`.
     TEXT[!MUST,implementation,implication,test]: - The [final frame](message-body.md#final-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Final Frame`.
-    TEXT[!MUST,implication,test]: The body AAD content value MUST be encoded as UTF-8 bytes.
+    TEXT[!MUST,test]: The body AAD content value MUST be encoded as UTF-8 bytes.
 
   SECTION: [Sequence Number](#sequence-number)
     TEXT[!MUST,implication,test]: For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
@@ -992,9 +1007,9 @@ SPECIFICATION: [Message Header](specification/data-format/message-header.md)
     TEXT[!MUST,implementation,test]: This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
 
   SECTION: [Message ID](#message-id)
-    TEXT[!MUST,implementation,test]: While implementations cannot guarantee complete uniqueness,
-    TEXT[!MUST,implementation,test]: implementations MUST use a good source of randomness when generating messages IDs in order to make
-    TEXT[!MUST,implementation,test]: the chance of duplicate IDs negligible.
+    TEXT[!MUST,implication,test]: While implementations cannot guarantee complete uniqueness,
+    TEXT[!MUST,implication,test]: implementations MUST use a good source of randomness when generating messages IDs in order to make
+    TEXT[!MUST,implication,test]: the chance of duplicate IDs negligible.
     TEXT[!MUST,implementation,test]: The length of the serialized message ID MUST be 16 bytes for [version 1.0](#header-body-version-10) headers.
     TEXT[!MUST,implementation,test]: The length of the serialized message ID MUST be 32 bytes for [version 2.0](#header-body-version-20) headers.
     TEXT[!MUST,implementation,test]: The message ID MUST be interpreted as bytes.

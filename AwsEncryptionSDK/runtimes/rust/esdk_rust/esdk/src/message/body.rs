@@ -58,46 +58,53 @@ pub(crate) fn get_encrypt(info: &AlgorithmSuite) -> AesGcm {
 pub(crate) fn body_aad(
     message_id: &[u8],
     bc: BodyAADContent,
+    //= specification/data-format/message-body-aad.md#sequence-number
+    //= type=implication
+    //= reason=sequence_number parameter is u32, serialized via to_be_bytes()
+    //# The sequence number field MUST be interpreted as a UInt32.
     sequence_number: u32,
+    //= specification/data-format/message-body-aad.md#content-length
+    //= type=implication
+    //= reason=length parameter is u64, serialized via to_be_bytes()
+    //# The content length field MUST be interpreted as a UInt64.
     length: u64,
     result: &mut Vec<u8>,
 ) {
+    result.clear();
     //= specification/data-format/message-body-aad.md#structure
-    //= type=implication
-    //= reason=The four extend_from_slice calls append fields in the required order: message_id, body_aad_content, sequence_number, content_length
     //# The message body AAD MUST consist of, in order,
     //# Message ID,
     //# Body AAD Content,
     //# Sequence Number,
     //# and Content Length.
-    result.clear();
-    //= specification/data-format/message-body-aad.md#message-id
-    //# This MUST be the [message ID](message-header.md#message-id) stored in the header of the message.
+
+    // Message ID
     debug_assert!(
         message_id.len() == 16 || message_id.len() == 32,
         "message ID must be 16 or 32 bytes, got {}",
         message_id.len()
     );
+    //= specification/data-format/message-body-aad.md#message-id
+    //# This MUST be the [message ID](message-header.md#message-id) stored in the header of the message.
     result.extend_from_slice(message_id);
+
+    // Body AAD Content
+    result.extend_from_slice(body_aad_content_type_string(bc).as_bytes());
+
+    // Sequence Number
     //= specification/data-format/message-body-aad.md#sequence-number
     //= type=implication
     //= reason=u32::to_be_bytes() produces exactly 4 bytes
     //# The length of the sequence number field MUST be 4 bytes.
-    //= specification/data-format/message-body-aad.md#sequence-number
-    //= type=implication
-    //= reason=sequence_number parameter is u32, serialized via to_be_bytes()
-    //# The sequence number field MUST be interpreted as a UInt32.
     let seq_bytes = sequence_number.to_be_bytes();
     debug_assert_eq!(seq_bytes.len(), 4, "sequence number field must be exactly 4 bytes");
     result.extend_from_slice(&seq_bytes);
+
+    // Content Length
     //= specification/data-format/message-body-aad.md#content-length
     //= type=implication
     //= reason=u64::to_be_bytes() produces exactly 8 bytes
     //# The length of the content length field MUST be 8 bytes.
-    //= specification/data-format/message-body-aad.md#content-length
-    //= type=implication
-    //= reason=length parameter is u64, serialized via to_be_bytes()
-    //# The content length field MUST be interpreted as a UInt64.
     let len_bytes = length.to_be_bytes();
     debug_assert_eq!(len_bytes.len(), 8, "content length field must be exactly 8 bytes");
     result.extend_from_slice(&len_bytes);
@@ -130,16 +137,17 @@ pub(crate) fn read_and_decrypt_framed_message_body(
     let mut aad = Vec::new();
 
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= reason=The loop continuously reads and decrypts frames from the ciphertext stream, processing each frame as its bytes become available, until the final frame is encountered
     //# If there could still be message body left to deserialize and decrypt,
     //# this operation MUST either wait for more of the encrypted message bytes to become consumable,
     //# wait for the end to the encrypted message to be indicated,
     //# or deserialize and/or decrypt the consumable bytes.
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
-    //# If deserializing [framed data](../data-format/message-body.md#framed-data),
-    //# the Decrypt operation MUST use the first 4 bytes of a frame to determine
-    //# whether the operation will deserialize the frame as a [final frame](../data-format/message-body.md#final-frame)
-    //# or [regular frame](../data-format/message-body.md#regular-frame).
     loop {
+        //= specification/client-apis/decrypt.md#decrypt-the-message-body
+        //# If deserializing [framed data](../data-format/message-body.md#framed-data),
+        //# the Decrypt operation MUST use the first 4 bytes of a frame to determine
+        //# whether the operation will deserialize the frame as a [final frame](../data-format/message-body.md#final-frame)
+        //# or [regular frame](../data-format/message-body.md#regular-frame).
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //= reason=read_u32 reads the first 4 bytes which serve as both the Sequence Number End check and the Sequence Number for regular frames
         //# - The [Sequence Number End](../data-format/message-body.md#sequence-number-end): MUST be deserialized according to the
@@ -154,18 +162,17 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //# The sequence number MUST be interpreted as a UInt32.
         //= specification/data-format/message-body.md#sequence-number-end
         //# The length of the sequence number end field MUST be 4 bytes.
-        //= specification/data-format/message-body.md#sequence-number-end
-        //# The sequence number end MUST be interpreted as bytes.
         let seq_num = read_u32(ciphertext, sig_digest)?;
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //# If the first 4 bytes have a value of 0xFFFFFFFF,
         //# then the Decrypt operation MUST deserialize the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
-        //= specification/client-apis/decrypt.md#decrypt-the-message-body
-        //# For a final frame, each field MUST be deserialized according to its specification:
+        //= specification/data-format/message-body.md#sequence-number-end
+        //# The sequence number end MUST be interpreted as bytes.
         if seq_num == ENDFRAME_SEQUENCE_NUMBER {
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
-            //= type=implementation
             //# Final frame deserialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
+            //= specification/client-apis/decrypt.md#decrypt-the-message-body
+            //# For a final frame, each field MUST be deserialized according to its specification:
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //= reason=read_u32 reads the final frame sequence number after the ENDFRAME marker
             //# - [Sequence Number](../data-format/message-body.md#final-frame-sequence-number): MUST be deserialized according to the
@@ -173,6 +180,10 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             //= specification/data-format/message-body.md#final-frame-sequence-number
             //# The Final Frame Sequence Number MUST be interpreted as the same type as the
             //# [Regular Frame Sequence Number](#regular-frame-sequence-number).
+            //= specification/data-format/message-body.md#regular-frame-sequence-number
+            //# The length of the serialized sequence number field MUST be 4 bytes.
+            //= specification/data-format/message-body.md#regular-frame-sequence-number
+            //# The sequence number MUST be interpreted as a UInt32.
             let seq_num: u32 = read_u32(ciphertext, sig_digest)?;
             if seq_num != expected_frame {
                 return Err("Final sequence number out of order.".into());
