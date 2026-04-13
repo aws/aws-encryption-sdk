@@ -35,33 +35,30 @@ pub(crate) fn write_header_body(w: &mut dyn SafeWrite, body: &HeaderBody) -> Res
     }
 }
 
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+//= type=implication
+//= reason=SafeRead (std::io::Read) only supports sequential consumption with no skip/seek,
+//= reason=so reading from it inherently processes all consumable bytes until a valid header is formed.
+//# This operation MUST attempt to deserialize all consumable encrypted message bytes
+//# until it has successfully deserialized a valid [message header](../data-format/message-header.md).
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#v2-header-deserialization
+//= type=implication
+//= reason=SafeRead (std::io::Read) only supports sequential consumption with no skip/seek,
+//= reason=so reading from it inherently processes all consumable bytes until a valid header is formed.
+//# This operation MUST wait if it doesn't have enough consumable encrypted message bytes
+//# to deserialize the next field of the message header until enough input bytes become consumable
+//# or the caller indicates an end to the encrypted message.
 pub(crate) fn read_header_body(
-    //= specification/client-apis/decrypt.md#parse-the-header
-    //= type=implication
-    //= reason=SafeRead (std::io::Read) only supports sequential consumption with no skip/seek,
-    //= reason=so reading from it inherently processes all consumable bytes until a valid header is formed.
-    //# This operation MUST attempt to deserialize all consumable encrypted message bytes
-    //# until it has successfully deserialized a valid [message header](../data-format/message-header.md).
-    //= specification/client-apis/decrypt.md#v2-header-deserialization
-    //= type=implication
-    //= reason=SafeRead (std::io::Read) only supports sequential consumption with no skip/seek,
-    //= reason=so reading from it inherently processes all consumable bytes until a valid header is formed.
-    //# This operation MUST wait if it doesn't have enough consumable encrypted message bytes
-    //# to deserialize the next field of the message header until enough input bytes become consumable
-    //# or the caller indicates an end to the encrypted message.
     ciphertext: &mut dyn SafeRead,
     max_edks: Option<std::num::NonZeroUsize>,
     raw_header: &mut dyn SafeWrite,
 ) -> Result<HeaderBody, Error> {
     //= specification/client-apis/decrypt.md#parse-the-header
-    //= type=implication
     //= reason=Every read method reads the next available bytes and does not jump out of sequence
     //# Given encrypted message bytes, this operation MUST process those bytes sequentially,
     //# deserializing those bytes according to the [message format](../data-format/message.md).
-
     //= specification/client-apis/decrypt.md#parse-the-header
     //# Each header field MUST be deserialized according to its specification in the [message header](../data-format/message-header.md):
-
     //= specification/client-apis/decrypt.md#parse-the-header
     //# The [Version](../data-format/message-header.md#version) field MUST be deserialized first.
     let version = read_msg_format_version(ciphertext, raw_header)?;
@@ -148,7 +145,6 @@ pub(crate) fn generate_message_id(suite: &AlgorithmSuite) -> Result<MessageId, E
     };
     let mut rand_bytes: Vec<u8> = vec![0; length as usize];
     //= specification/data-format/message-header.md#message-id
-    //= type=implication
     //= reason=Assuming the MPL uses a good source of randomness
     //# While implementations cannot guarantee complete uniqueness,
     //# implementations MUST use a good source of randomness when generating messages IDs in order to make
@@ -194,7 +190,6 @@ pub(crate) fn serialize_header(
     header_auth::write_header_auth_tag(&mut header_buf, &header.header_auth, &header.suite)?;
     serialize_functions::write_bytes(ciphertext, &header_buf)?;
     //= specification/client-apis/encrypt.md#authentication-tag
-    //= type=implication
     //# If the algorithm suite contains a signature algorithm and
     //# this operation is [streaming](streaming.md) the encrypted message output to the caller,
     //# this operation MUST input the serialized header to the signature algorithm as soon as it is serialized,
