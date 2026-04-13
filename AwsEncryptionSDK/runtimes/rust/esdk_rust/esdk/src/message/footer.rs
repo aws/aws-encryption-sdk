@@ -4,7 +4,7 @@
 //! Message footer serialization/deserialization.
 //! Maps to data-format/message-footer.md
 
-use super::serialize_functions::{read_seq_u16, write_bytes, write_u16};
+use super::serialize_functions::{read_u16, read_vec, write_bytes, write_u16};
 use super::*;
 use crate::types::{SafeRead, SafeWrite};
 
@@ -12,7 +12,8 @@ use crate::types::{SafeRead, SafeWrite};
 ///
 /// The caller is responsible for ensuring this is only called when the algorithm suite
 /// includes a signature algorithm.
-//= specification/data-format/message.md#structure
+//= aws-encryption-sdk-specification/data-format/message.md#structure
+//= type=implication
 //# If the [message header](message-header.md) contains an [algorithm suite](../framework/algorithm-suites.md) in the
 //# [algorithm suite ID](message-header.md#algorithm-suite-id) field that contains a
 //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm), the message MUST also contain a
@@ -45,14 +46,12 @@ pub(crate) fn write_footer(
     //= specification/client-apis/encrypt.md#construct-the-signature
     //# - [Signature](../data-format/message-footer.md#signature): The value MUST be the output of the signature calculation above.
     //= specification/data-format/message-footer.md#signature
-    //= type=implication
     //# The signature MUST be interpreted as bytes.
     write_bytes(w, signature)?;
-    Ok(())
-
     //= specification/client-apis/encrypt.md#construct-the-signature
-    //= type=implication
+    //= reason=write_footer writes length then signature sequentially; Ok(()) is only reached after all writes complete
     //# The above serialized bytes MUST NOT be released until the entire message footer has been serialized.
+    Ok(())
 }
 
 /// Read a message footer, returning the signature bytes.
@@ -63,12 +62,22 @@ pub(crate) fn read_footer(
     //= specification/client-apis/decrypt.md#verify-the-signature
     //# The order for message footer deserialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
     //= specification/data-format/message-footer.md#structure
-    //= reason=read_seq_u16 reads a u16 length (Signature Length) followed by that many bytes (Signature), matching the required order
+    //= reason=read_u16 reads Signature Length, then read_vec reads Signature, matching the required order
     //# The message footer MUST consist of, in order,
     //# Signature Length,
     //# and Signature.
+
+    // Signature Length
+    //= specification/data-format/message-footer.md#signature-length
+    //= reason=read_u16 reads exactly 2 bytes
+    //# The length of the signature length field MUST be 2 bytes.
+    //= specification/data-format/message-footer.md#signature-length
+    //= reason=read_u16 interprets 2 bytes as a big-endian UInt16
+    //# The signature length value MUST be a UInt16.
+    let len = read_u16(r, raw)?;
+
+    // Signature
     //= specification/data-format/message-footer.md#signature
-    //= type=implication
     //# The signature MUST be interpreted as bytes.
-    read_seq_u16(r, raw)
+    read_vec(r, len as usize, raw)
 }

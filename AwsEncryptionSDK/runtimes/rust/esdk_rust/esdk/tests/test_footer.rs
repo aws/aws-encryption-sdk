@@ -233,6 +233,20 @@ async fn test_footer_consists_of_signature_length_then_signature() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn test_footer_signature_interpreted_as_bytes() {
+    //= specification/data-format/message-footer.md#signature
+    //= type=test
+    //= reason=successful round-trip decrypt with signing suite proves signature bytes are correctly written and read back
+    //# The signature MUST be interpreted as bytes.
+    let pt = b"signature bytes interpretation test";
+    let result = round_trip_signing(pt).await;
+    assert_eq!(
+        result, pt,
+        "successful round-trip proves signature is correctly interpreted as bytes"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn test_unrecognized_algorithm_suite_errors() {
     //= specification/data-format/message.md#structure
     //= type=implication
