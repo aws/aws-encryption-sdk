@@ -24,14 +24,14 @@ pub(crate) fn read_canonical_ec(
     Ok(result)
 }
 
-//= specification/data-format/message-header.md#key-value-pairs
-//# When the [encryption context](../framework/structures.md#encryption-context) is empty,
-//# this field MUST NOT be included in the [AAD](#aad).
 pub(crate) fn write_empty_ec_or_write_aad(
     w: &mut dyn SafeWrite,
     data: &ESDKCanonicalEncryptionContext,
 ) -> Result<(), Error> {
     if data.is_empty() {
+        //= specification/data-format/message-header.md#key-value-pairs
+        //# When the [encryption context](../framework/structures.md#encryption-context) is empty,
+        //# this field MUST NOT be included in the [AAD](#aad).
         Ok(())
     } else {
         write_aad(w, data)
@@ -46,14 +46,14 @@ fn get_length(data: &ESDKCanonicalEncryptionContext) -> usize {
     length
 }
 
-//= specification/data-format/message-header.md#aad
-//# The AAD MUST consist of, in order,
-//# Key Value Pairs Length,
-//# and Key Value Pairs.
 pub(crate) fn write_aad_section(
     w: &mut dyn SafeWrite,
     data: &ESDKCanonicalEncryptionContext,
 ) -> Result<(), Error> {
+    //= specification/data-format/message-header.md#aad
+    //# The AAD MUST consist of, in order,
+    //# Key Value Pairs Length,
+    //# and Key Value Pairs.
     if data.is_empty() {
         //= specification/data-format/message-header.md#key-value-pairs-length
         //# When the [encryption context](../framework/structures.md#encryption-context) is empty, the value of this field MUST be 0.
