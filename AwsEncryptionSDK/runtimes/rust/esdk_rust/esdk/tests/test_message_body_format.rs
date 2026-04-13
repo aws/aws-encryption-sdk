@@ -10,22 +10,6 @@ use aws_esdk::*;
 use fixtures::*;
 use test_helpers::*;
 
-async fn encrypt_with_frame_length(plaintext: &[u8], frame_length: u32) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut input = EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    input.frame_length = FrameLength::new(frame_length).unwrap();
-    encrypt(&input).await.unwrap().ciphertext
-}
-
-async fn round_trip(plaintext: &[u8], frame_length: u32) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    enc_input.frame_length = FrameLength::new(frame_length).unwrap();
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    decrypt(&dec_input).await.unwrap().plaintext
-}
 
 // The ESDK always uses framed encryption, so non-framed deserialization
 // is tested by the decrypt path.
@@ -115,7 +99,7 @@ async fn test_framed_data_max_frame_count() {
     let pt = vec![0xBBu8; 20];
     let frames = parse_frames(&encrypt_with_frame_length(&pt, 4).await, 4);
     assert_eq!(frames.len(), 5, "20 bytes / 4-byte frames = 4 regular + 1 final = 5 frames");
-    let result = round_trip(&pt, 4).await;
+    let result = round_trip_framed(&pt, 4).await;
     assert_eq!(result, pt);
 }
 
@@ -136,7 +120,7 @@ async fn test_regular_frame_serialization_order() {
     assert_eq!(seq, 1, "first field is sequence number");
     // IV follows at body_start+4, content at body_start+16, tag at body_start+26
     // Verify by successful round-trip (wrong order would fail decryption)
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves regular frame serialization order is correct");
 }
 
@@ -202,7 +186,7 @@ async fn test_regular_frame_sequence_number_read_as_uint32() {
     //# The sequence number MUST be interpreted as a UInt32.
     // Successful round-trip proves the decrypt path reads sequence numbers as UInt32
     let pt = vec![0xBBu8; 30];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves sequence numbers are read as UInt32");
 }
 
@@ -240,7 +224,7 @@ async fn test_regular_frame_iv_interpreted_as_bytes() {
     //# The IV MUST be interpreted as bytes.
     // Round-trip proves the IV bytes are correctly interpreted during decrypt
     let pt = vec![0xEEu8; 20];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves IV is correctly interpreted as bytes");
 }
 
@@ -269,7 +253,7 @@ async fn test_regular_frame_encrypted_content_interpreted_as_bytes() {
     //= type=test
     //# The encrypted content MUST be interpreted as bytes.
     let pt = vec![0xAAu8; 20];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves encrypted content is interpreted as bytes");
 }
 
@@ -292,7 +276,7 @@ async fn test_regular_frame_auth_tag_interpreted_as_bytes() {
     //= type=test
     //# The authentication tag MUST be interpreted as bytes.
     let pt = vec![0xCCu8; 20];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves auth tag is interpreted as bytes");
 }
 
@@ -315,7 +299,7 @@ async fn test_final_frame_serialization_order() {
     let expected_total = 4 + 4 + IV_LEN + 4 + 7 + TAG_LEN;
     assert!(pos + expected_total <= ct.len(), "final frame must have all fields in order");
     // Verify round-trip to confirm correct serialization
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt);
 }
 
@@ -334,7 +318,7 @@ async fn test_final_frame_is_regular_frame_plus_additions() {
     // Then SeqNum(4) + IV(12) + ContentLen(4, extra vs regular) + Content + Tag
     let content_len = u32::from_be_bytes([ct[pos + 20], ct[pos + 21], ct[pos + 22], ct[pos + 23]]);
     assert!(content_len <= 10, "final frame has Encrypted Content Length field");
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt);
 }
 
@@ -371,7 +355,7 @@ async fn test_sequence_number_end_interpreted_as_bytes() {
     //# The sequence number end MUST be interpreted as bytes.
     // Successful round-trip proves the decrypt path correctly interprets the ENDFRAME marker bytes
     let pt = b"test seq end";
-    let result = round_trip(pt, 4096).await;
+    let result = round_trip_framed(pt, 4096).await;
     assert_eq!(result, pt, "round-trip proves sequence number end is interpreted as bytes");
 }
 
@@ -400,7 +384,7 @@ async fn test_final_frame_sequence_number_serialized_same_as_regular() {
     // Final frame seq num is at pos+4, serialized as 4-byte big-endian UInt32 (same as regular)
     let final_seq = u32::from_be_bytes([ct[pos + 4], ct[pos + 5], ct[pos + 6], ct[pos + 7]]);
     assert!(final_seq > 0, "final frame sequence number is a valid UInt32");
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves final frame seq num serialized same as regular");
 }
 
@@ -412,7 +396,7 @@ async fn test_final_frame_sequence_number_interpreted_same_as_regular() {
     //# [Regular Frame Sequence Number](#regular-frame-sequence-number).
     // Multi-frame round-trip: decrypt reads final frame seq num as UInt32 (same as regular)
     let pt = vec![0xCCu8; 30];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves final frame seq num is interpreted same as regular");
 }
 
@@ -449,7 +433,7 @@ async fn test_final_frame_iv_interpreted_as_bytes() {
     //= type=test
     //# The IV MUST be interpreted as bytes.
     let pt = vec![0xFFu8; 5];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves final frame IV is interpreted as bytes");
 }
 
@@ -485,7 +469,7 @@ async fn test_final_frame_encrypted_content_length_read_as_uint32() {
     //# The encrypted content length MUST be a UInt32.
     // Successful round-trip proves decrypt reads the content length as UInt32
     let pt = vec![0xCCu8; 7];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves encrypted content length is read as UInt32");
 }
 
@@ -509,7 +493,7 @@ async fn test_final_frame_encrypted_content_interpreted_as_bytes() {
     //= type=test
     //# The encrypted content MUST be interpreted as bytes.
     let pt = vec![0xEEu8; 5];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves final frame encrypted content is interpreted as bytes");
 }
 
@@ -532,7 +516,7 @@ async fn test_final_frame_auth_tag_interpreted_as_bytes() {
     //= type=test
     //# The authentication tag MUST be interpreted as bytes.
     let pt = vec![0xAAu8; 5];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves final frame auth tag is interpreted as bytes");
 }
 
@@ -543,7 +527,7 @@ async fn test_final_frame_auth_tag_authenticates_final_frame() {
     //# It MUST be used to authenticate the final frame.
     // Successful decrypt proves the auth tag authenticated the final frame.
     let pt = vec![0xBBu8; 5];
-    assert_eq!(round_trip(&pt, 10).await, pt);
+    assert_eq!(round_trip_framed(&pt, 10).await, pt);
 
     // Tampering with the final frame's auth tag must cause decryption failure.
     let ct = encrypt_with_frame_length(&pt, 10).await;

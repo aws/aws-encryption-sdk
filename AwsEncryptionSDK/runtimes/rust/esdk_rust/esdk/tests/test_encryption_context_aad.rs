@@ -11,17 +11,6 @@ use aws_esdk::*;
 use fixtures::*;
 use test_helpers::*;
 
-/// Encrypt then decrypt with a given encryption context, returning decrypted plaintext.
-async fn round_trip_with_ec(plaintext: &[u8], ec: EncryptionContext) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, ec, keyring.clone());
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input =
-        DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    decrypt(&dec_input).await.unwrap().plaintext
-}
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_aad_serialization_order() {
     //= specification/data-format/message-header.md#aad
@@ -32,7 +21,7 @@ async fn test_aad_serialization_order() {
     let ec = small_encryption_context(SmallEncryptionContextVariation::AB);
     let pt = b"aad serialization order";
     let result = round_trip_with_ec(pt, ec).await;
-    assert_eq!(result, pt, "successful decrypt proves AAD was serialized as Key Value Pairs Length then Key Value Pairs");
+    assert_eq!(result.plaintext, pt, "successful decrypt proves AAD was serialized as Key Value Pairs Length then Key Value Pairs");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -43,7 +32,7 @@ async fn test_aad_key_value_pairs_length_field_size() {
     let ec = small_encryption_context(SmallEncryptionContextVariation::A);
     let pt = b"kvp length field size";
     let result = round_trip_with_ec(pt, ec).await;
-    assert_eq!(result, pt, "successful decrypt proves key value pairs length field is 2 bytes");
+    assert_eq!(result.plaintext, pt, "successful decrypt proves key value pairs length field is 2 bytes");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -54,7 +43,7 @@ async fn test_aad_key_value_pairs_length_uint16() {
     let ec = small_encryption_context(SmallEncryptionContextVariation::A);
     let pt = b"kvp length uint16";
     let result = round_trip_with_ec(pt, ec).await;
-    assert_eq!(result, pt, "successful decrypt proves key value pairs length is serialized as UInt16");
+    assert_eq!(result.plaintext, pt, "successful decrypt proves key value pairs length is serialized as UInt16");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -65,7 +54,7 @@ async fn test_aad_empty_encryption_context_length_zero() {
     let ec = small_encryption_context(SmallEncryptionContextVariation::Empty);
     let pt = b"empty ec length zero";
     let result = round_trip_with_ec(pt, ec).await;
-    assert_eq!(result, pt, "successful decrypt proves empty encryption context produces length 0");
+    assert_eq!(result.plaintext, pt, "successful decrypt proves empty encryption context produces length 0");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -76,7 +65,7 @@ async fn test_aad_key_value_pairs_serialization() {
     let ec = small_encryption_context(SmallEncryptionContextVariation::AB);
     let pt = b"kvp serialization";
     let result = round_trip_with_ec(pt, ec).await;
-    assert_eq!(result, pt, "successful decrypt proves key-value pairs are serialized per spec");
+    assert_eq!(result.plaintext, pt, "successful decrypt proves key-value pairs are serialized per spec");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -88,5 +77,5 @@ async fn test_aad_empty_encryption_context_no_kvp_field() {
     let ec = small_encryption_context(SmallEncryptionContextVariation::Empty);
     let pt = b"empty ec no kvp";
     let result = round_trip_with_ec(pt, ec).await;
-    assert_eq!(result, pt, "successful decrypt proves Key Value Pairs field is excluded when encryption context is empty");
+    assert_eq!(result.plaintext, pt, "successful decrypt proves Key Value Pairs field is excluded when encryption context is empty");
 }

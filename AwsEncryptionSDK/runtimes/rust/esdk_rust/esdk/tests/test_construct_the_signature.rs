@@ -11,28 +11,6 @@ use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
 use test_helpers::*;
 
-/// Encrypt with a signing algorithm suite, return ciphertext bytes.
-async fn encrypt_with_signing_suite(plaintext: &[u8]) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    encrypt(&input).await.unwrap().ciphertext
-}
-
-/// Encrypt then decrypt round-trip with a signing suite.
-async fn round_trip_signing(plaintext: &[u8]) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    enc_input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    decrypt(&dec_input).await.unwrap().plaintext
-}
-
 /// Read the signature length from the end of a signing-suite ciphertext.
 /// The footer is: [sig_len: 2 bytes] [signature: sig_len bytes] at the end.
 /// For ECDSA P384, the DER-encoded signature is typically 102-104 bytes.

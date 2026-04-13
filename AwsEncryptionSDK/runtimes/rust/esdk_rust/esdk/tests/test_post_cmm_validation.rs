@@ -12,32 +12,6 @@ use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
 use test_helpers::*;
 
-/// Encrypt with a specific suite and policy, return ciphertext.
-async fn encrypt_with(
-    plaintext: &[u8],
-    suite: EsdkAlgorithmSuiteId,
-    policy: EsdkCommitmentPolicy,
-    keyring: &aws_mpl_legacy::dafny::types::keyring::KeyringRef,
-) -> Vec<u8> {
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    enc_input.algorithm_suite_id = Some(suite);
-    enc_input.commitment_policy = policy;
-    encrypt(&enc_input).await.unwrap().ciphertext
-}
-
-/// Decrypt with a specific policy, return plaintext.
-async fn decrypt_with(
-    ciphertext: &[u8],
-    policy: EsdkCommitmentPolicy,
-    keyring: &aws_mpl_legacy::dafny::types::keyring::KeyringRef,
-) -> Vec<u8> {
-    let mut dec_input =
-        DecryptInput::with_legacy_keyring(ciphertext, EncryptionContext::new(), keyring.clone());
-    dec_input.commitment_policy = policy;
-    decrypt(&dec_input).await.unwrap().plaintext
-}
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_post_cmm_commitment_policy_encrypt() {
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
@@ -47,7 +21,7 @@ async fn test_post_cmm_commitment_policy_encrypt() {
     let keyring = test_keyring().await;
     let pt = b"test post-cmm commitment policy on encrypt";
     // Committing suite with RequireEncryptRequireDecrypt: post-CMM validation passes
-    let ct = encrypt_with(
+    let ct = encrypt_with_suite(
         pt,
         EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey,
         EsdkCommitmentPolicy::RequireEncryptRequireDecrypt,
@@ -55,7 +29,7 @@ async fn test_post_cmm_commitment_policy_encrypt() {
     )
     .await;
     let result = decrypt_with(&ct, EsdkCommitmentPolicy::RequireEncryptRequireDecrypt, &keyring).await;
-    assert_eq!(result, pt, "round-trip proves post-CMM commitment policy validation passed on encrypt");
+    assert_eq!(result.plaintext, pt, "round-trip proves post-CMM commitment policy validation passed on encrypt");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -67,7 +41,7 @@ async fn test_post_cmm_commitment_policy_decrypt() {
     let keyring = test_keyring().await;
     let pt = b"test post-cmm commitment policy on decrypt";
     // Committing suite with RequireEncryptRequireDecrypt: post-CMM validation passes
-    let ct = encrypt_with(
+    let ct = encrypt_with_suite(
         pt,
         EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey,
         EsdkCommitmentPolicy::RequireEncryptRequireDecrypt,
@@ -75,7 +49,7 @@ async fn test_post_cmm_commitment_policy_decrypt() {
     )
     .await;
     let result = decrypt_with(&ct, EsdkCommitmentPolicy::RequireEncryptRequireDecrypt, &keyring).await;
-    assert_eq!(result, pt, "round-trip proves post-CMM commitment policy validation passed on decrypt");
+    assert_eq!(result.plaintext, pt, "round-trip proves post-CMM commitment policy validation passed on decrypt");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -104,7 +78,7 @@ async fn test_decrypt_non_committing_with_require_policy_fails() {
     let keyring = test_keyring().await;
     let pt = b"test decrypt non-committing fails";
     // Encrypt with non-committing suite using ForbidEncryptAllowDecrypt
-    let ct = encrypt_with(
+    let ct = encrypt_with_suite(
         pt,
         EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256,
         EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
@@ -128,7 +102,7 @@ async fn test_identity_kdf_decrypt() {
     let keyring = test_keyring().await;
     let pt = b"test identity kdf on decrypt path";
     // AlgAes256GcmIv12Tag16NoKdf uses identity KDF
-    let ct = encrypt_with(
+    let ct = encrypt_with_suite(
         pt,
         EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16NoKdf,
         EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
@@ -136,5 +110,5 @@ async fn test_identity_kdf_decrypt() {
     )
     .await;
     let result = decrypt_with(&ct, EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt, &keyring).await;
-    assert_eq!(result, pt, "round-trip with identity KDF proves derived key equals plaintext key on decrypt");
+    assert_eq!(result.plaintext, pt, "round-trip with identity KDF proves derived key equals plaintext key on decrypt");
 }

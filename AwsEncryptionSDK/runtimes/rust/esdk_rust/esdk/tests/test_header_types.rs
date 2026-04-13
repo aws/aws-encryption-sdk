@@ -8,25 +8,8 @@ mod test_helpers;
 
 use aws_esdk::*;
 use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
-use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
 use test_helpers::*;
-
-/// Encrypt with default (V2) algorithm suite.
-async fn encrypt_v2(plaintext: &[u8]) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let input = EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    encrypt(&input).await.unwrap().ciphertext
-}
-
-/// Encrypt with a V1 (non-committing) algorithm suite.
-async fn encrypt_v1(plaintext: &[u8]) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut input = EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
-    input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    encrypt(&input).await.unwrap().ciphertext
-}
 
 /// Find the content type byte offset in a V2 ciphertext.
 /// V2 header: Version(1) + AlgSuiteID(2) + MessageID(32) + AAD(variable) + EDKs(variable) + ContentType(1).

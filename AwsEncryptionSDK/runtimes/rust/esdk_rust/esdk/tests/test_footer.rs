@@ -11,38 +11,6 @@ use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
 use test_helpers::*;
 
-/// Encrypt with a signing algorithm suite, return ciphertext bytes.
-async fn encrypt_with_signing_suite(plaintext: &[u8]) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    encrypt(&input).await.unwrap().ciphertext
-}
-
-/// Encrypt then decrypt with a signing algorithm suite.
-async fn round_trip_signing(plaintext: &[u8]) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    enc_input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    decrypt(&dec_input).await.unwrap().plaintext
-}
-
-/// Encrypt with a non-signing algorithm suite, return ciphertext bytes.
-async fn encrypt_without_signing_suite(plaintext: &[u8]) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
-    encrypt(&input).await.unwrap().ciphertext
-}
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_footer_present_with_signing_suite() {
     //= specification/data-format/message-footer.md#overview

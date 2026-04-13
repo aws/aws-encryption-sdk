@@ -13,23 +13,6 @@ use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
 use test_helpers::*;
 
-/// Encrypt with defaults, return output.
-async fn encrypt_default(plaintext: &[u8]) -> EncryptOutput {
-    let keyring = test_keyring().await;
-    let input = EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    encrypt(&input).await.unwrap()
-}
-
-/// Encrypt then decrypt round-trip, return decrypted plaintext.
-async fn round_trip(plaintext: &[u8]) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    decrypt(&dec_input).await.unwrap().plaintext
-}
-
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_step_1_get_encryption_materials() {

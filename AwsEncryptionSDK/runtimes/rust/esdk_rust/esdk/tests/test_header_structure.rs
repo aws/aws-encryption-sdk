@@ -10,22 +10,6 @@ use aws_esdk::*;
 use fixtures::*;
 use test_helpers::*;
 
-/// Encrypt plaintext with default settings, return ciphertext bytes.
-async fn encrypt_default(plaintext: &[u8]) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let input = EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    encrypt(&input).await.unwrap().ciphertext
-}
-
-/// Encrypt then decrypt, returning decrypted plaintext.
-async fn round_trip(plaintext: &[u8]) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    decrypt(&dec_input).await.unwrap().plaintext
-}
 
 /// Parse a V2 ciphertext header and return (edk_count_offset, content_type_offset, frame_length_offset).
 /// V2 header layout: Version(1) + AlgSuiteID(2) + MessageID(32) + AAD(variable) + EDKs(variable) + ContentType(1) + FrameLength(4) + SuiteData(32).
@@ -87,7 +71,7 @@ async fn test_encrypted_data_key_count_greater_than_zero() {
     //= specification/data-format/message-header.md#encrypted-data-key-count
     //= type=test
     //# This value MUST be greater than 0.
-    let ct = encrypt_default(b"edk count test").await;
+    let ct = encrypt_default(b"edk count test").await.ciphertext;
     let (edk_count_offset, _, _) = parse_header_offsets(&ct);
     let edk_count = u16::from_be_bytes([ct[edk_count_offset], ct[edk_count_offset + 1]]);
     assert!(edk_count > 0, "encrypted data key count must be greater than 0, got {edk_count}");
@@ -119,7 +103,7 @@ async fn test_frame_length_field_is_4_bytes() {
     //= specification/data-format/message-header.md#frame-length
     //= type=test
     //# The length of the serialized frame length field MUST be 4 bytes.
-    let ct = encrypt_default(b"frame length 4 bytes test").await;
+    let ct = encrypt_default(b"frame length 4 bytes test").await.ciphertext;
     let (_, _, frame_length_offset) = parse_header_offsets(&ct);
     let frame_length_bytes = &ct[frame_length_offset..frame_length_offset + 4];
     assert_eq!(frame_length_bytes.len(), 4, "frame length field must be exactly 4 bytes");
@@ -138,7 +122,7 @@ async fn test_frame_length_serialized_as_uint32() {
     //= specification/data-format/message-header.md#frame-length
     //= type=test
     //# The frame length MUST be interpreted as a UInt32.
-    let ct = encrypt_default(b"frame length uint32 test").await;
+    let ct = encrypt_default(b"frame length uint32 test").await.ciphertext;
     let (_, _, frame_length_offset) = parse_header_offsets(&ct);
     // Parse as big-endian UInt32 and verify round-trip through decrypt succeeds
     let frame_length = u32::from_be_bytes([

@@ -8,37 +8,8 @@ mod fixtures;
 mod test_helpers;
 
 use aws_esdk::*;
-use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
-use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
 use test_helpers::*;
-
-async fn encrypt_v1(plaintext: &[u8]) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
-    input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    encrypt(&input).await.unwrap().ciphertext
-}
-
-async fn round_trip_v1(plaintext: &[u8]) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let ct = encrypt_v1(plaintext).await;
-    let mut dec_input =
-        DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    decrypt(&dec_input).await.unwrap().plaintext
-}
-
-async fn round_trip_v2(plaintext: &[u8]) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    decrypt(&dec_input).await.unwrap().plaintext
-}
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_auth_serialization_order() {
@@ -48,7 +19,7 @@ async fn test_v1_header_auth_serialization_order() {
     //# IV,
     //# and Authentication Tag.
     let pt = b"v1 header auth serialization test";
-    let result = round_trip_v1(pt).await;
+    let result = round_trip_v1(pt, EncryptionContext::new()).await;
     assert_eq!(result, pt, "successful V1 round-trip proves header auth was serialized as IV then Authentication Tag");
 }
 
@@ -58,7 +29,7 @@ async fn test_v2_header_auth_serialization() {
     //= type=test
     //# The V2 Header Authentication MUST consist of the Authentication Tag only.
     let pt = b"v2 header auth serialization test";
-    let result = round_trip_v2(pt).await;
+    let result = round_trip_v2(pt, EncryptionContext::new()).await;
     assert_eq!(result, pt, "successful V2 round-trip proves header auth was serialized as Authentication Tag only");
 }
 
@@ -79,7 +50,7 @@ async fn test_v1_encrypt_header_auth_tag_serialization() {
     //= type=test
     //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
     //# of the authentication tag calculated above.
-    let result = round_trip_v1(pt).await;
+    let result = round_trip_v1(pt, EncryptionContext::new()).await;
     assert_eq!(result, pt, "successful V1 round-trip proves header auth was serialized with correct IV and Authentication Tag");
 }
 
@@ -95,7 +66,7 @@ async fn test_v2_encrypt_header_auth_tag_serialization() {
     //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
     //# of the authentication tag calculated above.
     let pt = b"v2 encrypt header auth tag test";
-    let result = round_trip_v2(pt).await;
+    let result = round_trip_v2(pt, EncryptionContext::new()).await;
     assert_eq!(result, pt, "successful V2 round-trip proves header auth was serialized with correct Authentication Tag");
 }
 
@@ -109,7 +80,7 @@ async fn test_v1_header_auth_iv_length_and_bytes() {
     //= specification/data-format/message-header.md#iv
     //= type=test
     //# The IV MUST be interpreted as bytes.
-    let result = round_trip_v1(pt).await;
+    let result = round_trip_v1(pt, EncryptionContext::new()).await;
     assert_eq!(result, pt, "successful V1 round-trip proves IV was serialized with correct length and interpreted as bytes");
 }
 
@@ -123,7 +94,7 @@ async fn test_v1_header_auth_tag_length_and_bytes() {
     //= specification/data-format/message-header.md#authentication-tag
     //= type=test
     //# The authentication tag MUST be interpreted as bytes.
-    let result = round_trip_v1(pt).await;
+    let result = round_trip_v1(pt, EncryptionContext::new()).await;
     assert_eq!(result, pt, "successful V1 round-trip proves authentication tag was serialized with correct length and interpreted as bytes");
 }
 
@@ -137,6 +108,6 @@ async fn test_v2_header_auth_tag_length_and_bytes() {
     //= specification/data-format/message-header.md#authentication-tag
     //= type=test
     //# The authentication tag MUST be interpreted as bytes.
-    let result = round_trip_v2(pt).await;
+    let result = round_trip_v2(pt, EncryptionContext::new()).await;
     assert_eq!(result, pt, "successful V2 round-trip proves authentication tag was serialized with correct length and interpreted as bytes");
 }

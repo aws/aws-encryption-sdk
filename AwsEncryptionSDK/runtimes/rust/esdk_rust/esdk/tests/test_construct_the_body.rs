@@ -10,24 +10,6 @@ use aws_esdk::*;
 use fixtures::*;
 use test_helpers::*;
 
-/// Encrypt plaintext with a given frame length, return ciphertext bytes.
-async fn encrypt_with_frame_length(plaintext: &[u8], frame_length: u32) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut input = EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    input.frame_length = FrameLength::new(frame_length).unwrap();
-    encrypt(&input).await.unwrap().ciphertext
-}
-
-/// Encrypt then decrypt, returning decrypted plaintext.
-async fn round_trip(plaintext: &[u8], frame_length: u32) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    enc_input.frame_length = FrameLength::new(frame_length).unwrap();
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    decrypt(&dec_input).await.unwrap().plaintext
-}
 
 /// Find the start of the message body by scanning for the first frame.
 /// Returns the byte offset where the first frame begins.
@@ -142,7 +124,7 @@ async fn test_regular_frame_serialization_conforms_to_spec() {
     //= type=test
     //# The encrypted message output by the Encrypt operation MUST have a message body equal
     //# to the message body calculated in this step.
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves body in output equals calculated body");
 }
 
@@ -159,7 +141,7 @@ async fn test_process_consumable_bytes_as_regular_frames() {
     let (regular, final_count) = count_frames(&ct, 10);
     assert_eq!(regular, 4, "50 bytes / 10-byte frames → 4 regular frames");
     assert_eq!(final_count, 1, "must have exactly 1 final frame");
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "all consumable bytes processed as regular frames before final");
 }
 
@@ -182,7 +164,7 @@ async fn test_end_of_input_processing() {
     let content_len = final_frame_content_length(&ct).unwrap();
     assert_eq!(content_len, 5, "final frame content length must be 5 (remaining bytes)");
     assert!(content_len <= 10, "final frame content length must be <= frame length");
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "end-of-input processing produces correct output");
 }
 
@@ -208,7 +190,7 @@ async fn test_exact_frame_length_constructs_final_or_regular() {
     assert_eq!(final_count, 1, "exact-match case: exactly 1 final frame");
     let content_len = final_frame_content_length(&ct).unwrap();
     assert_eq!(content_len, 10, "final frame content length must equal frame length");
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "exact frame-length plaintext handled correctly");
 }
 
@@ -228,7 +210,7 @@ async fn test_enough_bytes_constructs_regular_frame() {
     assert_eq!(final_count, 1, "must have exactly 1 final frame");
     let content_len = final_frame_content_length(&ct).unwrap();
     assert_eq!(content_len, 5, "final frame content length must be 5");
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "regular frames constructed when more bytes remain");
 }
 
@@ -253,7 +235,7 @@ async fn test_not_enough_bytes_constructs_final_frame() {
     //= specification/client-apis/encrypt.md#construct-the-body
     //= type=test
     //# Final frame serialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "short plaintext produces final frame with correct serialization");
 }
 

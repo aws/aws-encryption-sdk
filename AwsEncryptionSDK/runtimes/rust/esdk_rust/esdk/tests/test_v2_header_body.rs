@@ -10,22 +10,6 @@ use aws_esdk::*;
 use fixtures::*;
 use test_helpers::*;
 
-/// Encrypt plaintext with default settings (V2 algorithm suite), return ciphertext bytes.
-async fn encrypt_default(plaintext: &[u8]) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let input = EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    encrypt(&input).await.unwrap().ciphertext
-}
-
-/// Encrypt V2 then decrypt, returning decrypted plaintext.
-async fn round_trip_v2(plaintext: &[u8], ec: EncryptionContext) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let input = EncryptInput::with_legacy_keyring(plaintext, ec, keyring.clone());
-    let ct = encrypt(&input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    decrypt(&dec_input).await.unwrap().plaintext
-}
-
 /// Parse the V2 header body fields from ciphertext bytes, returning the byte offset
 /// after each field boundary in order. Panics if the header is not well-formed.
 /// Returns a Vec of (field_name, start_offset, end_offset) tuples.
@@ -109,7 +93,7 @@ async fn test_v2_header_body_serialization_order() {
     //# Frame Length,
     //# and Algorithm Suite Data.
 
-    let ct = encrypt_default(b"test plaintext").await;
+    let ct = encrypt_default(b"test plaintext").await.ciphertext;
     let fields = parse_v2_header_field_offsets(&ct);
 
     let expected_order = [
@@ -163,7 +147,7 @@ async fn test_v2_header_serialized() {
     //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
     //# the remaining header fields MUST be serialized according to the
     //# [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
-    let ct = encrypt_default(b"test v2 header").await;
+    let ct = encrypt_default(b"test v2 header").await.ciphertext;
     assert_eq!(ct[0], 0x02, "first byte must be V2 version 0x02");
 }
 
@@ -173,7 +157,7 @@ async fn test_v2_header_version() {
     //= type=test
     //= reason=verifies the Version field byte is 0x02 in the serialized V2 header
     //# The value of the `Version` field MUST be `02` in the Version 2.0 header body.
-    let ct = encrypt_default(b"version test").await;
+    let ct = encrypt_default(b"version test").await.ciphertext;
     assert_eq!(ct[0], 0x02, "Version field must be 0x02 for V2");
 }
 
@@ -183,7 +167,7 @@ async fn test_v2_header_algorithm_suite_id() {
     //= type=test
     //= reason=verifies the Algorithm Suite ID field is exactly 2 bytes at offset 1
     //# The length of the serialized algorithm suite ID field MUST be 2 bytes.
-    let ct = encrypt_default(b"suite test").await;
+    let ct = encrypt_default(b"suite test").await.ciphertext;
     let suite_id_bytes = &ct[1..3];
     assert_eq!(suite_id_bytes.len(), 2, "Algorithm Suite ID must be 2 bytes");
 
@@ -203,8 +187,8 @@ async fn test_v2_header_message_id() {
     //= type=test
     //= reason=verifies the Message ID field is exactly 32 bytes at the expected V2 offset
     //# The length of the serialized message ID MUST be 32 bytes for [version 2.0](#header-body-version-20) headers.
-    let ct1 = encrypt_default(b"msg id v2 test").await;
-    let ct2 = encrypt_default(b"msg id v2 test").await;
+    let ct1 = encrypt_default(b"msg id v2 test").await.ciphertext;
+    let ct2 = encrypt_default(b"msg id v2 test").await.ciphertext;
     // V2 header: [0] = version (0x02), [1..3] = algorithm suite ID, [3..35] = message ID (32 bytes)
     let msg_id_1 = &ct1[3..35];
     let msg_id_2 = &ct2[3..35];
@@ -264,7 +248,7 @@ async fn test_v2_header_frame_length() {
     //= type=test
     //= reason=parses the raw 4-byte frame length field from the V2 header and verifies it is a valid UInt32
     //# The frame length MUST be interpreted as a UInt32.
-    let ct = encrypt_default(b"frame length test").await;
+    let ct = encrypt_default(b"frame length test").await.ciphertext;
     let fields = parse_v2_header_field_offsets(&ct);
     let (name, start, end) = fields.iter().find(|(n, _, _)| *n == "Frame Length").unwrap();
     assert_eq!(*name, "Frame Length");

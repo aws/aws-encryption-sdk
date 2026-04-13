@@ -8,19 +8,8 @@ mod fixtures;
 mod test_helpers;
 
 use aws_esdk::*;
-use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
-use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
 use test_helpers::*;
-
-/// Encrypt with a V1 (non-committing) algorithm suite, return ciphertext bytes.
-async fn encrypt_v1(plaintext: &[u8]) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut input = EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
-    input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    encrypt(&input).await.unwrap().ciphertext
-}
 
 /// Find the offset of the first EDK entry in a V1 ciphertext with empty encryption context.
 /// V1 header layout (empty EC):

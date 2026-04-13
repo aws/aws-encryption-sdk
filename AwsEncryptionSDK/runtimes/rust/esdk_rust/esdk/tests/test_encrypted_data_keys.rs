@@ -12,20 +12,6 @@ use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
 use test_helpers::*;
 
-/// Encrypt plaintext with the given version, returning ciphertext bytes.
-async fn encrypt_with(
-    plaintext: &[u8],
-    version: Version,
-    keyring: aws_mpl_legacy::dafny::types::keyring::KeyringRef,
-) -> Vec<u8> {
-    let mut input = EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    if let Version::V1 = version {
-        input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
-        input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    }
-    encrypt(&input).await.unwrap().ciphertext
-}
-
 /// Find the byte offset of the EDK count field in a ciphertext header.
 /// V1: Version(1) + Type(1) + AlgSuiteID(2) + MessageID(16) + AAD(2 for empty) = 22
 /// V2: Version(1) + AlgSuiteID(2) + MessageID(32) + AAD(variable)
@@ -129,7 +115,7 @@ async fn test_encrypted_data_keys_serialization_order() {
         .unwrap();
 
     for version in VERSIONS {
-        let ct = encrypt_with(b"edk serialization order", version, multi_keyring.clone()).await;
+        let ct = encrypt_with_version(b"edk serialization order", version, multi_keyring.clone()).await;
         let count_offset = edk_count_offset(&ct, version);
         let edk_count = u16::from_be_bytes([ct[count_offset], ct[count_offset + 1]]);
         assert_eq!(edk_count, 2, "{version:?}: multi-keyring must produce EDK count of 2");
@@ -148,7 +134,7 @@ async fn test_encrypted_data_key_count_is_2_bytes_uint16() {
     let keyring = test_keyring().await;
 
     for version in VERSIONS {
-        let ct = encrypt_with(b"test edk count", version, keyring.clone()).await;
+        let ct = encrypt_with_version(b"test edk count", version, keyring.clone()).await;
         let offset = edk_count_offset(&ct, version);
         //= specification/data-format/message-header.md#encrypted-data-key-count
         //= type=test
@@ -174,7 +160,7 @@ async fn test_encrypted_data_key_count_must_be_greater_than_zero() {
     let keyring = test_keyring().await;
 
     for version in VERSIONS {
-        let mut ct = encrypt_with(b"test zero edks", version, keyring.clone()).await;
+        let mut ct = encrypt_with_version(b"test zero edks", version, keyring.clone()).await;
         let offset = edk_count_offset(&ct, version);
         // Tampering test; set to 0 on message to create failure condition
         //= specification/data-format/message-header.md#encrypted-data-key-count
@@ -259,7 +245,7 @@ async fn test_edk_entry_serialization_order() {
     let keyring = test_keyring().await;
 
     for version in VERSIONS {
-        let ct = encrypt_with(b"edk entry order test", version, keyring.clone()).await;
+        let ct = encrypt_with_version(b"edk entry order test", version, keyring.clone()).await;
         let count_offset = edk_count_offset(&ct, version);
         let first_edk_offset = count_offset + 2;
 
@@ -287,7 +273,7 @@ async fn test_key_provider_id_length_matches_data() {
     let keyring = test_keyring().await;
 
     for version in VERSIONS {
-        let ct = encrypt_with(b"kp id length test", version, keyring.clone()).await;
+        let ct = encrypt_with_version(b"kp id length test", version, keyring.clone()).await;
         let first_edk_offset = edk_count_offset(&ct, version) + 2;
         //= specification/data-format/message-header.md#key-provider-id-length
         //= type=test
@@ -308,7 +294,7 @@ async fn test_key_provider_id_is_utf8() {
     let keyring = test_keyring().await;
 
     for version in VERSIONS {
-        let ct = encrypt_with(b"kp id utf8 test", version, keyring.clone()).await;
+        let ct = encrypt_with_version(b"kp id utf8 test", version, keyring.clone()).await;
         let first_edk_offset = edk_count_offset(&ct, version) + 2;
         let (_, kp_id, _, _, _, _) = parse_edk_raw_at(&ct, first_edk_offset);
         //= specification/data-format/message-header.md#key-provider-id
@@ -324,7 +310,7 @@ async fn test_key_provider_information_length_field_is_2_bytes_uint16() {
     let keyring = test_keyring().await;
 
     for version in VERSIONS {
-        let ct = encrypt_with(b"kp info length test", version, keyring.clone()).await;
+        let ct = encrypt_with_version(b"kp info length test", version, keyring.clone()).await;
         let first_edk_offset = edk_count_offset(&ct, version) + 2;
         let (kp_id_len, _, kp_info_len, kp_info, _, _) = parse_edk_raw_at(&ct, first_edk_offset);
 
@@ -347,7 +333,7 @@ async fn test_key_provider_information_length_matches_data() {
     let keyring = test_keyring().await;
 
     for version in VERSIONS {
-        let ct = encrypt_with(b"kp info data test", version, keyring.clone()).await;
+        let ct = encrypt_with_version(b"kp info data test", version, keyring.clone()).await;
         let first_edk_offset = edk_count_offset(&ct, version) + 2;
         let (_, _, kp_info_len, kp_info, _, _) = parse_edk_raw_at(&ct, first_edk_offset);
         //= specification/data-format/message-header.md#key-provider-information
@@ -362,7 +348,7 @@ async fn test_key_provider_information_is_bytes() {
     let keyring = test_keyring().await;
 
     for version in VERSIONS {
-        let ct = encrypt_with(b"kp info bytes test", version, keyring.clone()).await;
+        let ct = encrypt_with_version(b"kp info bytes test", version, keyring.clone()).await;
         let first_edk_offset = edk_count_offset(&ct, version) + 2;
         let (_, _, kp_info_len, kp_info, _, _) = parse_edk_raw_at(&ct, first_edk_offset);
         // Raw AES keyring provider info format:
@@ -389,7 +375,7 @@ async fn test_encrypted_data_key_length_field_is_2_bytes_uint16() {
     let keyring = test_keyring().await;
 
     for version in VERSIONS {
-        let ct = encrypt_with(b"edk length field test", version, keyring.clone()).await;
+        let ct = encrypt_with_version(b"edk length field test", version, keyring.clone()).await;
         let first_edk_offset = edk_count_offset(&ct, version) + 2;
         let (kp_id_len, _, kp_info_len, _, edk_len, edk_data) = parse_edk_raw_at(&ct, first_edk_offset);
 
@@ -412,7 +398,7 @@ async fn test_encrypted_data_key_length_matches_data() {
     let keyring = test_keyring().await;
 
     for version in VERSIONS {
-        let ct = encrypt_with(b"edk data length test", version, keyring.clone()).await;
+        let ct = encrypt_with_version(b"edk data length test", version, keyring.clone()).await;
         let first_edk_offset = edk_count_offset(&ct, version) + 2;
         let (_, _, _, _, edk_len, edk_data) = parse_edk_raw_at(&ct, first_edk_offset);
         //= specification/data-format/message-header.md#encrypted-data-key
@@ -427,7 +413,7 @@ async fn test_encrypted_data_key_is_bytes() {
     let keyring = test_keyring().await;
 
     for version in VERSIONS {
-        let ct = encrypt_with(b"edk bytes test", version, keyring.clone()).await;
+        let ct = encrypt_with_version(b"edk bytes test", version, keyring.clone()).await;
         let first_edk_offset = edk_count_offset(&ct, version) + 2;
         //= specification/data-format/message-header.md#encrypted-data-key
         //= type=test

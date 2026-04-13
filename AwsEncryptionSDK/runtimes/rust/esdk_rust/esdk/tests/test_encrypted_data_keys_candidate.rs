@@ -4,53 +4,12 @@
 //! Tests for the Encrypted Data Keys sections of specification/data-format/message-header.md
 
 mod fixtures;
+mod test_helpers;
 
 use aws_esdk::*;
 use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
-use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
-
-async fn aes_keyring(n: u8) -> aws_mpl_legacy::dafny::types::keyring::KeyringRef {
-    let (ns, name) = namespace_and_name(n);
-    mpl()
-        .create_raw_aes_keyring()
-        .key_namespace(ns)
-        .key_name(name)
-        .wrapping_key(aws_smithy_types::Blob::new([n; 32]))
-        .wrapping_alg(aws_mpl_legacy::dafny::types::AesWrappingAlg::AlgAes256GcmIv12Tag16)
-        .send()
-        .await
-        .unwrap()
-}
-
-async fn multi_keyring(
-    generator_kr: aws_mpl_legacy::dafny::types::keyring::KeyringRef,
-    children: Vec<aws_mpl_legacy::dafny::types::keyring::KeyringRef>,
-) -> aws_mpl_legacy::dafny::types::keyring::KeyringRef {
-    mpl()
-        .create_multi_keyring()
-        .generator(generator_kr)
-        .child_keyrings(children)
-        .send()
-        .await
-        .unwrap()
-}
-
-#[derive(Clone, Copy)]
-enum Version { V1, V2 }
-
-async fn encrypt_with_version(
-    plaintext: &[u8],
-    keyring: aws_mpl_legacy::dafny::types::keyring::KeyringRef,
-    version: Version,
-) -> Vec<u8> {
-    let mut input = EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    if let Version::V1 = version {
-        input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
-        input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    }
-    encrypt(&input).await.unwrap().ciphertext
-}
+use test_helpers::*;
 
 /// Parsed EDK entry from raw ciphertext bytes.
 struct ParsedEdk {
@@ -127,7 +86,7 @@ async fn test_encrypted_data_keys_ordering() {
     //# and Encrypted Data Key Entries.
     for version in [Version::V1, Version::V2] {
         let kr = aes_keyring(0).await;
-        let ct = encrypt_with_version(b"ordering test", kr, version).await;
+        let ct = encrypt_with_version(b"ordering test", version, kr).await;
         let parsed = parse_edk_section(&ct, version);
         // Count field comes first, then entries follow immediately
         assert_eq!(parsed.edk_count, 1);
@@ -148,7 +107,7 @@ async fn test_edk_count_field_is_2_bytes() {
     //# The length of the serialized encrypted data key count MUST be 2 bytes.
     for version in [Version::V1, Version::V2] {
         let kr = aes_keyring(0).await;
-        let ct = encrypt_with_version(b"count 2 bytes", kr, version).await;
+        let ct = encrypt_with_version(b"count 2 bytes", version, kr).await;
         let offset = skip_to_edk_section(&ct, version);
         // The count occupies exactly bytes [offset] and [offset+1]
         let count = u16::from_be_bytes([ct[offset], ct[offset + 1]]);
@@ -165,7 +124,7 @@ async fn test_edk_count_interpreted_as_uint16() {
         let generator = aes_keyring(0).await;
         let child = aes_keyring(1).await;
         let mk = multi_keyring(generator, vec![child]).await;
-        let ct = encrypt_with_version(b"uint16 count", mk, version).await;
+        let ct = encrypt_with_version(b"uint16 count", version, mk).await;
         let offset = skip_to_edk_section(&ct, version);
         // Big-endian UInt16: high byte should be 0, low byte should be 2
         assert_eq!(ct[offset], 0x00, "high byte of UInt16 count must be 0 for small counts");
@@ -180,7 +139,7 @@ async fn test_edk_count_greater_than_zero() {
     //# This value MUST be greater than 0.
     for version in [Version::V1, Version::V2] {
         let kr = aes_keyring(0).await;
-        let ct = encrypt_with_version(b"count > 0", kr, version).await;
+        let ct = encrypt_with_version(b"count > 0", version, kr).await;
         let parsed = parse_edk_section(&ct, version);
         assert!(parsed.edk_count > 0, "EDK count must be greater than 0");
     }
@@ -194,7 +153,7 @@ async fn test_edk_count_zero_rejected_on_decrypt() {
     //# This value MUST be greater than 0.
     for version in [Version::V1, Version::V2] {
         let kr = aes_keyring(0).await;
-        let mut ct = encrypt_with_version(b"zero count", kr.clone(), version).await;
+        let mut ct = encrypt_with_version(b"zero count", version, kr.clone()).await;
         let offset = skip_to_edk_section(&ct, version);
         // Tamper: set count to 0
         ct[offset] = 0x00;
@@ -230,7 +189,7 @@ async fn test_edk_count_max_enforcement_decrypt() {
     let generator = aes_keyring(0).await;
     let child = aes_keyring(1).await;
     let mk = multi_keyring(generator, vec![child]).await;
-    let ct = encrypt_with_version(b"max edk decrypt", mk.clone(), Version::V2).await;
+    let ct = encrypt_with_version(b"max edk decrypt", Version::V2, mk.clone()).await;
     let mut dec = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), mk);
     dec.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(1).unwrap());
     assert!(decrypt(&dec).await.is_err(), "decrypt must fail when EDK count exceeds max");
@@ -263,7 +222,7 @@ async fn test_edk_entry_field_order() {
     //# and Encrypted Data Key.
     for version in [Version::V1, Version::V2] {
         let kr = aes_keyring(0).await;
-        let ct = encrypt_with_version(b"entry order", kr, version).await;
+        let ct = encrypt_with_version(b"entry order", version, kr).await;
         let edk_start = skip_to_edk_section(&ct, version) + 2; // skip count
         let mut pos = edk_start;
 
@@ -319,7 +278,7 @@ async fn test_edk_count_matches_entries() {
         let c1 = aes_keyring(1).await;
         let c2 = aes_keyring(2).await;
         let mk = multi_keyring(generator, vec![c1, c2]).await;
-        let ct = encrypt_with_version(b"3 edks", mk, version).await;
+        let ct = encrypt_with_version(b"3 edks", version, mk).await;
         let parsed = parse_edk_section(&ct, version);
         assert_eq!(parsed.edk_count, 3, "multi-keyring with 3 keyrings must produce 3 EDKs");
         assert_eq!(parsed.edks.len(), 3, "parsed entries must match count");
@@ -343,7 +302,7 @@ async fn test_edk_entries_preserve_keyring_order() {
         let c1 = aes_keyring(1).await;
         let c2 = aes_keyring(2).await;
         let mk = multi_keyring(generator, vec![c1, c2]).await;
-        let ct = encrypt_with_version(b"order check", mk, version).await;
+        let ct = encrypt_with_version(b"order check", version, mk).await;
         let parsed = parse_edk_section(&ct, version);
         for (i, edk) in parsed.edks.iter().enumerate() {
             let pid_str = std::str::from_utf8(&edk.provider_id).unwrap();
@@ -361,7 +320,7 @@ async fn test_key_provider_id_length_is_2_bytes() {
     //# The length of the serialized key provider ID length field MUST be 2 bytes.
     for version in [Version::V1, Version::V2] {
         let kr = aes_keyring(0).await;
-        let ct = encrypt_with_version(b"pid len 2 bytes", kr, version).await;
+        let ct = encrypt_with_version(b"pid len 2 bytes", version, kr).await;
         let edk_start = skip_to_edk_section(&ct, version) + 2;
         // The first 2 bytes of the entry are the provider ID length field
         let pid_len_bytes = &ct[edk_start..edk_start + 2];
@@ -380,7 +339,7 @@ async fn test_key_provider_id_length_interpreted_as_uint16() {
     //# The key provider ID length MUST be interpreted as a UInt16.
     for version in [Version::V1, Version::V2] {
         let kr = aes_keyring(0).await;
-        let ct = encrypt_with_version(b"pid len uint16", kr, version).await;
+        let ct = encrypt_with_version(b"pid len uint16", version, kr).await;
         let edk_start = skip_to_edk_section(&ct, version) + 2;
         let (expected_ns, _) = namespace_and_name(0);
         let expected_len = expected_ns.len() as u16;
@@ -399,7 +358,7 @@ async fn test_key_provider_id_length_matches_field() {
     //# The length of the serialized key provider ID MUST be equal to the value of the [Key Provider ID Length](#key-provider-id-length) field.
     for version in [Version::V1, Version::V2] {
         let kr = aes_keyring(0).await;
-        let ct = encrypt_with_version(b"pid len match", kr, version).await;
+        let ct = encrypt_with_version(b"pid len match", version, kr).await;
         let parsed = parse_edk_section(&ct, version);
         for edk in &parsed.edks {
             assert_eq!(edk.provider_id.len(), edk.provider_id_len as usize,
@@ -417,7 +376,7 @@ async fn test_key_provider_id_is_utf8() {
         let generator = aes_keyring(0).await;
         let child = aes_keyring(1).await;
         let mk = multi_keyring(generator, vec![child]).await;
-        let ct = encrypt_with_version(b"pid utf8", mk, version).await;
+        let ct = encrypt_with_version(b"pid utf8", version, mk).await;
         let parsed = parse_edk_section(&ct, version);
         for (i, edk) in parsed.edks.iter().enumerate() {
             let pid_str = std::str::from_utf8(&edk.provider_id)
@@ -436,7 +395,7 @@ async fn test_key_provider_info_length_is_2_bytes() {
     //# The length of the serialized key provider information length field MUST be 2 bytes.
     for version in [Version::V1, Version::V2] {
         let kr = aes_keyring(0).await;
-        let ct = encrypt_with_version(b"pinfo len 2 bytes", kr, version).await;
+        let ct = encrypt_with_version(b"pinfo len 2 bytes", version, kr).await;
         let parsed = parse_edk_section(&ct, version);
         // The provider info length was parsed as 2 bytes by our parser.
         // Verify it's consistent by checking the raw bytes at the expected offset.
@@ -456,7 +415,7 @@ async fn test_key_provider_info_length_interpreted_as_uint16() {
     //# The key provider information length MUST be interpreted as a UInt16.
     for version in [Version::V1, Version::V2] {
         let kr = aes_keyring(0).await;
-        let ct = encrypt_with_version(b"pinfo len uint16", kr, version).await;
+        let ct = encrypt_with_version(b"pinfo len uint16", version, kr).await;
         let parsed = parse_edk_section(&ct, version);
         let edk = &parsed.edks[0];
         // For a raw AES keyring, provider info is the key name.
@@ -475,7 +434,7 @@ async fn test_key_provider_info_length_matches_field() {
         let generator = aes_keyring(0).await;
         let child = aes_keyring(1).await;
         let mk = multi_keyring(generator, vec![child]).await;
-        let ct = encrypt_with_version(b"pinfo len match", mk, version).await;
+        let ct = encrypt_with_version(b"pinfo len match", version, mk).await;
         let parsed = parse_edk_section(&ct, version);
         for edk in &parsed.edks {
             assert_eq!(edk.provider_info.len(), edk.provider_info_len as usize,
@@ -491,7 +450,7 @@ async fn test_key_provider_info_interpreted_as_bytes() {
     //# The key provider information MUST be interpreted as bytes.
     for version in [Version::V1, Version::V2] {
         let kr = aes_keyring(0).await;
-        let ct = encrypt_with_version(b"pinfo bytes", kr.clone(), version).await;
+        let ct = encrypt_with_version(b"pinfo bytes", version, kr.clone()).await;
         let parsed = parse_edk_section(&ct, version);
         let edk = &parsed.edks[0];
         // Provider info is opaque bytes; for raw AES keyring it contains the key name
@@ -515,7 +474,7 @@ async fn test_edk_length_field_is_2_bytes() {
     //# The length of the serialized encrypted data key length field MUST be 2 bytes.
     for version in [Version::V1, Version::V2] {
         let kr = aes_keyring(0).await;
-        let ct = encrypt_with_version(b"edk len 2 bytes", kr, version).await;
+        let ct = encrypt_with_version(b"edk len 2 bytes", version, kr).await;
         let parsed = parse_edk_section(&ct, version);
         let edk = &parsed.edks[0];
         // Walk to the EDK length field offset manually
@@ -536,7 +495,7 @@ async fn test_edk_length_interpreted_as_uint16() {
     //# The encrypted data key length MUST be interpreted as a UInt16.
     for version in [Version::V1, Version::V2] {
         let kr = aes_keyring(0).await;
-        let ct = encrypt_with_version(b"edk len uint16", kr, version).await;
+        let ct = encrypt_with_version(b"edk len uint16", version, kr).await;
         let parsed = parse_edk_section(&ct, version);
         let edk = &parsed.edks[0];
         // The UInt16 value must match the actual encrypted data key byte length
@@ -556,7 +515,7 @@ async fn test_edk_length_matches_field() {
         let generator = aes_keyring(0).await;
         let child = aes_keyring(1).await;
         let mk = multi_keyring(generator, vec![child]).await;
-        let ct = encrypt_with_version(b"edk len match", mk, version).await;
+        let ct = encrypt_with_version(b"edk len match", version, mk).await;
         let parsed = parse_edk_section(&ct, version);
         for (i, edk) in parsed.edks.iter().enumerate() {
             assert_eq!(edk.edk.len(), edk.edk_len as usize,
@@ -572,7 +531,7 @@ async fn test_edk_interpreted_as_bytes() {
     //# The encrypted data key MUST be interpreted as bytes.
     for version in [Version::V1, Version::V2] {
         let kr = aes_keyring(0).await;
-        let ct = encrypt_with_version(b"edk as bytes", kr.clone(), version).await;
+        let ct = encrypt_with_version(b"edk as bytes", version, kr.clone()).await;
         let mut dec = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), kr);
         if let Version::V1 = version {
             dec.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
@@ -591,7 +550,7 @@ async fn test_edk_bytes_are_nonempty_ciphertext() {
     //# The encrypted data key MUST be interpreted as bytes.
     for version in [Version::V1, Version::V2] {
         let kr = aes_keyring(0).await;
-        let ct = encrypt_with_version(b"edk nonempty", kr, version).await;
+        let ct = encrypt_with_version(b"edk nonempty", version, kr).await;
         let parsed = parse_edk_section(&ct, version);
         let edk = &parsed.edks[0];
         assert!(!edk.edk.is_empty(), "encrypted data key must not be empty");
@@ -614,7 +573,7 @@ async fn test_multi_keyring_round_trip_each_child() {
         let c1 = aes_keyring(1).await;
         let c2 = aes_keyring(2).await;
         let mk = multi_keyring(generator.clone(), vec![c1.clone(), c2.clone()]).await;
-        let ct = encrypt_with_version(b"multi rt", mk, version).await;
+        let ct = encrypt_with_version(b"multi rt", version, mk).await;
         // Each individual keyring should be able to decrypt
         for kr in [generator.clone(), c1.clone(), c2.clone()] {
             let mut dec = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), kr);

@@ -10,28 +10,6 @@ use aws_esdk::*;
 use fixtures::*;
 use test_helpers::*;
 
-/// Encrypt plaintext with a given frame length, return ciphertext bytes.
-async fn encrypt_with_frame_length(
-    plaintext: &[u8],
-    frame_length: u32,
-) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut input = EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    input.frame_length = FrameLength::new(frame_length).unwrap();
-    encrypt(&input).await.unwrap().ciphertext
-}
-
-/// Encrypt then decrypt, returning decrypted plaintext.
-async fn round_trip(plaintext: &[u8], frame_length: u32) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    enc_input.frame_length = FrameLength::new(frame_length).unwrap();
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input =
-        DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    decrypt(&dec_input).await.unwrap().plaintext
-}
 
 // ─── Encryption calculation tests ───────────────────────────────────────────
 
@@ -44,7 +22,7 @@ async fn test_construct_frame_cipherkey_and_plaintext() {
     //= type=test
     //# - The plaintext MUST be the next subsequence of consumable plaintext bytes that have not yet been encrypted.
     let pt = b"hello world construct frame";
-    let result = round_trip(pt, 4096).await;
+    let result = round_trip_framed(pt, 4096).await;
     assert_eq!(result, pt);
 }
 
@@ -67,7 +45,7 @@ async fn test_construct_frame_aad_and_iv() {
     //# used in the message body AAD for this frame,
     //# padded to the [IV length](../data-format/message-header.md#iv-length).
     let pt = b"test aad and iv";
-    let result = round_trip(pt, 4096).await;
+    let result = round_trip_framed(pt, 4096).await;
     assert_eq!(result, pt, "round-trip proves AAD and IV were correct");
 }
 
@@ -78,7 +56,7 @@ async fn test_construct_frame_message_id_in_aad() {
     //# - The [message ID](../data-format/message-body-aad.md#message-id) MUST be the same as the
     //# [message ID](../data-format/message-header.md#message-id) serialized in the header of this message.
     let pt = b"message id in aad";
-    let result = round_trip(pt, 4096).await;
+    let result = round_trip_framed(pt, 4096).await;
     assert_eq!(result, pt, "decryption success proves message ID in AAD matches header");
 }
 
@@ -89,7 +67,7 @@ async fn test_construct_frame_body_aad_content() {
     //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be the structure defined in
     //# [Message Body AAD](../data-format/message-body-aad.md).
     let pt = b"body aad content test";
-    let result = round_trip(pt, 4096).await;
+    let result = round_trip_framed(pt, 4096).await;
     assert_eq!(result, pt, "decryption success proves body AAD content type is correct");
 }
 
@@ -101,7 +79,7 @@ async fn test_construct_frame_sequence_number_in_aad() {
     //# number of the frame being encrypted.
     // Multi-frame: each frame's AAD must have the correct sequence number
     let pt = vec![0xABu8; 100];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "multi-frame round-trip proves per-frame sequence numbers in AAD are correct");
 }
 
@@ -112,7 +90,7 @@ async fn test_construct_frame_content_length_in_aad() {
     //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
     //# equal to the length of the plaintext being encrypted.
     let pt = vec![0xCDu8; 50];
-    let result = round_trip(&pt, 20).await;
+    let result = round_trip_framed(&pt, 20).await;
     assert_eq!(result, pt, "round-trip proves content length in AAD is correct for each frame");
 }
 
@@ -156,7 +134,7 @@ async fn test_construct_frame_sequence_number_increments() {
     let seq3 = 3u32.to_be_bytes();
     let ct_str = ct.iter().map(|b| format!("{b:02x}")).collect::<String>();
     // Verify round-trip to confirm correctness
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "multi-frame round-trip must succeed, proving sequence numbers increment correctly");
     // Also verify the raw bytes contain the expected sequence numbers
     let has_seq1 = ct.windows(4).any(|w| w == seq1);
@@ -179,7 +157,7 @@ async fn test_construct_frame_regular_frame_plaintext_equals_frame_length() {
     //# - For a regular frame the length of this plaintext subsequence MUST equal the frame length.
     // 20 bytes with frame_length=10 → 1 regular frame (10 bytes) + 1 final frame (10 bytes)
     let pt = vec![0xBBu8; 20];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "regular frame must encrypt exactly frame_length bytes");
 }
 
@@ -196,7 +174,7 @@ async fn test_construct_frame_final_frame_remaining_plaintext() {
     //# whose length MUST be equal to or less than the frame length.
     // 15 bytes with frame_length=10 → 1 regular (10) + 1 final (5, which is < frame_length)
     let pt = vec![0xCCu8; 15];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "final frame must encrypt remaining bytes (less than frame length)");
 }
 
@@ -207,7 +185,7 @@ async fn test_construct_frame_regular_frame_plaintext_subsequence() {
     //# - The plaintext MUST be the next subsequence of consumable plaintext bytes that have not yet been encrypted.
     // Verify that multi-frame encryption preserves the full plaintext in order
     let pt: Vec<u8> = (0..=255).collect();
-    let result = round_trip(&pt, 50).await;
+    let result = round_trip_framed(&pt, 50).await;
     assert_eq!(result, pt, "each frame must encrypt the next unconsumed subsequence");
 }
 
@@ -232,7 +210,7 @@ async fn test_construct_frame_serialization_regular_and_final() {
     //# For a final frame, each field MUST be serialized according to its specification:
     // Multi-frame message: proves both regular and final frame serialization
     let pt = vec![0xDDu8; 25];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "successful decrypt proves both regular and final frames are correctly serialized");
 }
 
@@ -250,7 +228,7 @@ async fn test_construct_frame_sequence_number_serialized() {
     //# - [Sequence Number](../data-format/message-body.md#final-frame-sequence-number): MUST be serialized according to the
     //# [Final Frame Sequence Number](../data-format/message-body.md#final-frame-sequence-number) specification.
     let pt = vec![0xEEu8; 30];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "decrypt success proves sequence numbers are correctly serialized");
 }
 
@@ -268,7 +246,7 @@ async fn test_construct_frame_iv_serialized() {
     //# - [IV](../data-format/message-body.md#final-frame-iv): MUST be serialized according to the
     //# [Final Frame IV](../data-format/message-body.md#final-frame-iv) specification.
     let pt = b"iv serialization test";
-    let result = round_trip(pt, 4096).await;
+    let result = round_trip_framed(pt, 4096).await;
     assert_eq!(result, pt.to_vec(), "decrypt success proves IV is correctly serialized");
 }
 
@@ -344,7 +322,7 @@ async fn test_construct_frame_auth_tag_serialized() {
     //# - [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag): MUST be serialized according to the
     //# [Final Frame Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag) specification.
     let pt = b"encrypted content and auth tag test";
-    let result = round_trip(pt, 4096).await;
+    let result = round_trip_framed(pt, 4096).await;
     assert_eq!(result, pt.to_vec(), "decrypt success proves encrypted content and auth tag are correctly serialized");
 }
 
@@ -359,7 +337,7 @@ async fn test_construct_frame_bytes_not_released_until_complete() {
     // because the auth tag wouldn't be present. A successful round-trip proves
     // the entire frame was serialized before release.
     let pt = vec![0xFFu8; 100];
-    let result = round_trip(&pt, 20).await;
+    let result = round_trip_framed(&pt, 20).await;
     assert_eq!(result, pt, "successful multi-frame decrypt proves frames are fully serialized before release");
 }
 
@@ -387,7 +365,7 @@ async fn test_construct_frame_single_final_frame() {
     //# For a final frame, the serialization MUST follow the [Final Frame](../data-format/message-body.md#final-frame) specification.
     // Plaintext smaller than frame length → single final frame only
     let pt = b"short";
-    let result = round_trip(pt, 4096).await;
+    let result = round_trip_framed(pt, 4096).await;
     assert_eq!(result, pt.to_vec(), "single final frame must correctly encrypt short plaintext");
 }
 
@@ -413,7 +391,7 @@ async fn test_construct_frame_final_frame_content_length_less_than_frame_length(
     }
     assert!(found, "final frame content length must be 3 (remaining bytes after regular frame)");
     // Also verify round-trip
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt);
 }
 

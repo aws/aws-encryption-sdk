@@ -117,24 +117,6 @@ fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
     message
 }
 
-/// Encrypt plaintext with a given frame length, return ciphertext bytes.
-async fn encrypt_with_frame_length(plaintext: &[u8], frame_length: u32) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut input = EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    input.frame_length = FrameLength::new(frame_length).unwrap();
-    encrypt(&input).await.unwrap().ciphertext
-}
-
-/// Encrypt then decrypt, returning decrypted plaintext.
-async fn round_trip(plaintext: &[u8], frame_length: u32) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    enc_input.frame_length = FrameLength::new(frame_length).unwrap();
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    decrypt(&dec_input).await.unwrap().plaintext
-}
 
 /// Find the start of the message body by scanning for the first frame.
 fn find_body_start(ct: &[u8], frame_length: u32) -> Option<usize> {
@@ -177,7 +159,7 @@ async fn test_decrypt_regular_frame_deserialization() {
     // Multi-frame message: 30 bytes with frame_length=10 → 2 regular frames + 1 final frame.
     // Successful decrypt proves regular frames were deserialized correctly.
     let pt = vec![0xAAu8; 30];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves regular frame deserialization conforms to spec");
 }
 
@@ -208,7 +190,7 @@ async fn test_decrypt_final_frame_deserialization() {
     // Single-frame message: 5 bytes with frame_length=10 → 1 final frame only.
     // Successful authenticated decryption proves all final frame fields were deserialized correctly.
     let pt = vec![0xBBu8; 5];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves final frame deserialization conforms to spec");
 }
 
@@ -222,7 +204,7 @@ async fn test_decrypt_uses_first_4_bytes_to_determine_frame_type() {
     //# or [regular frame](../data-format/message-body.md#regular-frame).
     // Multi-frame: decrypt must correctly distinguish regular from final frames.
     let pt = vec![0xCCu8; 25];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "multi-frame decrypt proves frame type detection from first 4 bytes");
 }
 
@@ -234,7 +216,7 @@ async fn test_decrypt_final_frame_detected_by_endframe_marker() {
     //# then the Decrypt operation MUST deserialize the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
     // Single final frame: the first 4 bytes of the body are 0xFFFFFFFF.
     let pt = b"final frame test";
-    let result = round_trip(pt, 4096).await;
+    let result = round_trip_framed(pt, 4096).await;
     assert_eq!(result, pt.to_vec(), "single-frame decrypt proves 0xFFFFFFFF triggers final frame deserialization");
 }
 
@@ -245,7 +227,7 @@ async fn test_decrypt_regular_frame_detected_without_endframe() {
     //# Otherwise, the Decrypt operation MUST deserialize the bytes according to the [regular frame spec](../data-format/message-body.md#regular-frame).
     // Multi-frame: first frame starts with sequence number 1 (not 0xFFFFFFFF), so it's a regular frame.
     let pt = vec![0xDDu8; 30];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "multi-frame decrypt proves non-ENDFRAME bytes trigger regular frame deserialization");
 }
 
@@ -284,7 +266,7 @@ async fn test_decrypt_authenticates_each_frame() {
     //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
     // Multi-frame round-trip: each frame is decrypted and authenticated.
     let pt = vec![0xFFu8; 50];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "multi-frame round-trip proves each frame is decrypted and authenticated");
 }
 
@@ -296,7 +278,7 @@ async fn test_decrypt_first_frame_sequence_number_is_one() {
     // Single-frame decrypt: the only frame has sequence number 1.
     // Successful decrypt proves the AAD used sequence number 1.
     let pt = b"seq one test";
-    let result = round_trip(pt, 4096).await;
+    let result = round_trip_framed(pt, 4096).await;
     assert_eq!(result, pt.to_vec(), "single-frame decrypt proves first frame sequence number is 1");
 }
 
@@ -309,7 +291,7 @@ async fn test_decrypt_sequence_numbers_increment() {
     // Multi-frame: 40 bytes / 10-byte frames → 3 regular + 1 final.
     // Successful decrypt proves each frame's AAD had the correct incrementing sequence number.
     let pt = vec![0xABu8; 40];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "multi-frame decrypt proves sequence numbers increment correctly");
 }
 
@@ -322,7 +304,7 @@ async fn test_decrypt_content_length_in_aad() {
     // Round-trip with mixed frame sizes: regular frames use frame_length, final frame uses actual content length.
     // If content length in AAD were wrong, authenticated decryption would fail.
     let pt = vec![0xCDu8; 35];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves content length in AAD equals plaintext length for each frame");
 }
 
@@ -395,7 +377,7 @@ async fn test_decrypt_body_deserialized_after_header() {
     //# MUST be deserialized according to the [message body spec](../data-format/message-body.md).
     // Successful round-trip proves body bytes are deserialized after header parsing.
     let pt = b"body after header test";
-    let result = round_trip(pt, 4096).await;
+    let result = round_trip_framed(pt, 4096).await;
     assert_eq!(result, pt.to_vec(), "round-trip proves body is deserialized after header");
 }
 
@@ -409,7 +391,7 @@ async fn test_decrypt_content_type_determines_framed_or_nonframed() {
     //# [un-framed data](../data-format/message-body.md#non-framed-data).
     // Framed round-trip: content type is Framed, body is deserialized as framed data.
     let pt = vec![0xAAu8; 20];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "framed round-trip proves content type determines framed deserialization");
 }
 
@@ -446,7 +428,7 @@ async fn test_decrypt_frame_fields_deserialized_correctly() {
     // Successful authenticated decryption proves all frame fields were deserialized correctly:
     // sequence number end, sequence number, IV, encrypted content length, encrypted content, auth tag.
     let pt = vec![0xBBu8; 25];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "multi-frame round-trip proves all frame fields deserialized correctly");
 }
 
@@ -472,7 +454,7 @@ async fn test_decrypt_aad_constructed_correctly() {
     // Multi-frame round-trip: if any AAD component (message ID, body AAD content, sequence number)
     // were wrong, authenticated decryption would fail.
     let pt = vec![0xCCu8; 35];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves AAD is constructed correctly with message ID, body AAD content, and sequence number");
 }
 
@@ -486,7 +468,7 @@ async fn test_decrypt_unframed_sequence_number_is_one() {
     // which exercises the same code path for AAD construction.
     // A single-frame message has only a final frame with sequence number 1.
     let pt = b"unframed seq test";
-    let result = round_trip(pt, 4096).await;
+    let result = round_trip_framed(pt, 4096).await;
     assert_eq!(result, pt.to_vec(), "single-frame decrypt proves sequence number 1 is used");
 }
 
@@ -511,7 +493,7 @@ async fn test_decrypt_aes_inputs_correct() {
     // Round-trip: if any AES-GCM input (IV, cipherkey, ciphertext, tag) were wrong,
     // authenticated decryption would fail.
     let pt = vec![0xDDu8; 40];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves all AES-GCM inputs (IV, key, ciphertext, tag) are correct");
 }
 
@@ -526,7 +508,7 @@ async fn test_decrypt_wait_for_bytes() {
     // Multi-frame round-trip: the loop in read_and_decrypt_framed_message_body
     // continues reading frames until the final frame is encountered.
     let pt = vec![0xEEu8; 50];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "multi-frame decrypt proves operation waits for and processes all body bytes");
 }
 
@@ -582,7 +564,7 @@ async fn test_decrypt_regular_frame_content_length_uses_frame_length() {
     // Multi-frame: regular frames use frame_length as content length in AAD.
     // If the wrong content length were used, authenticated decryption would fail.
     let pt = vec![0xCCu8; 30];
-    let result = round_trip(&pt, 10).await;
+    let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "multi-frame decrypt proves regular frame content length uses frame length from header");
 }
 
@@ -595,7 +577,7 @@ async fn test_decrypt_final_frame_content_length_uses_encrypted_content_length()
     // The final frame's content length in AAD must use the actual encrypted content length (5),
     // not the frame length (4096). If wrong, authenticated decryption would fail.
     let pt = vec![0xDDu8; 5];
-    let result = round_trip(&pt, 4096).await;
+    let result = round_trip_framed(&pt, 4096).await;
     assert_eq!(result, pt, "final-frame-only decrypt proves content length uses encrypted content length");
 }
 
