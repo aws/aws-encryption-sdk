@@ -429,11 +429,11 @@ fn step_construct_signature(
         }
 
         //= specification/data-format/message.md#structure
-        //# If the algorithm suite does not contain a signature algorithm, the message MUST NOT  contain a message footer.
+        //# If the algorithm suite does not contain a signature algorithm, the message MUST NOT contain a message footer.
         aws_mpl_legacy::suites::SignatureAlgorithm::None => {}
     
         //= specification/data-format/message.md#structure
-        //# If the algorithm suite contain an unrecognized signature algorithm, the operation MUST raise an error.
+        //# If the algorithm suite contains an unrecognized signature algorithm, the operation MUST raise an error.
         _ => {
             return Err("Unrecognized signature algorithm in algorithm suite".into());
         }

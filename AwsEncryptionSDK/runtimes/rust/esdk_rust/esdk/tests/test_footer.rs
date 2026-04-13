@@ -249,7 +249,7 @@ async fn test_footer_signature_interpreted_as_bytes() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unrecognized_algorithm_suite_errors() {
     //= specification/data-format/message.md#structure
-    //= type=implication
+    //= type=test
     //= reason=All valid algorithm suite IDs map to known signature algorithms; an unrecognized suite ID is rejected at header parsing before the signature algorithm is ever inspected
     //# If the algorithm suite contains an unrecognized signature algorithm, the operation MUST raise an error.
     let mut ct = encrypt_with_signing_suite(b"bad suite test").await;
