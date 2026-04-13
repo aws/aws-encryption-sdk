@@ -426,11 +426,13 @@ fn step_construct_signature(
                 ecdsa_params,
                 //= specification/client-apis/encrypt.md#construct-the-signature
                 //# - the signature key MUST be the [signing key](../framework/structures.md#signing-key) in the [encryption materials](../framework/structures.md#encryption-materials)
-                &materials.signing_key.as_ref().unwrap().0,
+                &materials.signing_key.as_ref()
+                    .ok_or_else(|| val_err("Encryption materials must contain a signing key for signature algorithm"))?.0,
                 //= specification/client-apis/encrypt.md#construct-the-signature
                 //# - the input to sign MUST be the concatenation of the serialization of the [message header](../data-format/message-header.md)
                 //# and [message body](../data-format/message-body.md)
-                sig_digest.context.unwrap(),
+                sig_digest.context
+                    .ok_or_else(|| val_err("Signature digest context must be present for signing"))?,
             )?;
             //= specification/client-apis/encrypt.md#construct-the-signature
             //# The encrypted message output by this operation MUST have a message footer equal
@@ -507,8 +509,9 @@ fn build_header_for_encrypt(
     let mut required_encryption_context_map: EncryptionContext = EncryptionContext::new();
     for key in required_encryption_context_keys {
         if stored_encryption_context.contains_key(key) {
-            required_encryption_context_map
-                .insert(key.clone(), stored_encryption_context.remove(key).unwrap());
+            if let Some(val) = stored_encryption_context.remove(key) {
+                required_encryption_context_map.insert(key.clone(), val);
+            }
         }
     }
     let canonical_stored_encryption_context = to_canonical_pairs(stored_encryption_context);
@@ -558,8 +561,9 @@ fn build_header_body(
     //# The [message format version](../data-format/message-header.md#supported-versions) MUST be the value associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites).
     match suite.commitment {
         aws_mpl_legacy::suites::DerivationAlgorithm::Hkdf(h) => {
-            if suite_data.is_none()
-                || suite_data.as_ref().unwrap().len() != h.output_key_length as usize
+            let sd = suite_data
+                .ok_or_else(|| val_err("Suite data must be present for HKDF commitment"))?;
+            if sd.len() != h.output_key_length as usize
             {
                 return Err(val_err("Suite data length must match the commitment key output length for HKDF commitment"));
             }
@@ -572,7 +576,7 @@ fn build_header_body(
                 //# Implementations of the AWS Encryption SDK MUST NOT encrypt using the Non-Framed content type.
                 content_type: ContentType::Framed,
                 frame_length,
-                suite_data: suite_data.unwrap(),
+                suite_data: sd,
             }))
         }
         aws_mpl_legacy::suites::DerivationAlgorithm::Identity => Err(val_err("Identity key derivation is not supported for V2 message format")),
@@ -608,7 +612,7 @@ fn build_header_auth_tag(
     //# The value of this MUST be the output of the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
     aes_encrypt(
-        body::get_encrypt(suite),
+        body::get_encrypt(suite)?,
         &iv,
         //= specification/client-apis/encrypt.md#authentication-tag
         //# - The cipherkey MUST be the derived data key

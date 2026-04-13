@@ -168,7 +168,7 @@ pub(crate) fn validate_suite_data(
     //= specification/data-format/message-header.md#algorithm-suite-data
     //# The length of the suite data field MUST be equal to the [Algorithm Suite Data Length](../framework/algorithm-suites.md#algorithm-suite-data-length) value
     //# of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-    if get_hkdf(&suite.commitment).output_key_length != u32::try_from(expected_suite_data.len()).map_err(|_| val_err("header too large"))? {
+    if get_hkdf(&suite.commitment)?.output_key_length != u32::try_from(expected_suite_data.len()).map_err(|_| val_err("header too large"))? {
         return Err(val_err("Commitment key is invalid"));
     }
     Ok(())

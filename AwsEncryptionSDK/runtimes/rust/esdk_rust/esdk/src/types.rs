@@ -55,7 +55,8 @@ impl Default for FrameLength {
     fn default() -> Self {
         //= specification/client-apis/encrypt.md#frame-length
         //# This value MUST default to 4096 bytes.
-        Self(std::num::NonZeroU32::new(4096).unwrap())
+        // Safety: 4096 is a non-zero literal
+        Self(std::num::NonZeroU32::new(4096).expect("4096 is non-zero"))
     }
 }
 

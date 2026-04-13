@@ -340,7 +340,9 @@ async fn step_get_decryption_materials(
     //# included in the [decryption materials](../framework/structures.md#decryption-materials).
     let derived_data_keys = key_derivation::derive_keys(
         header_body.message_id(),
-        dec_mat.plaintext_data_key.as_ref().unwrap().as_bytes(),
+        dec_mat.plaintext_data_key.as_ref()
+            .ok_or_else(|| val_err("Decryption materials must contain a plaintext data key"))?
+            .as_bytes(),
         suite,
         false,
     )?;
@@ -358,7 +360,8 @@ async fn step_get_decryption_materials(
         header::validate_suite_data(
             suite,
             header_body,
-            derived_data_keys.commitment_key.as_ref().unwrap(),
+            derived_data_keys.commitment_key.as_ref()
+                .ok_or_else(|| val_err("Derived key material must contain a commitment key for HKDF commitment"))?,
         )?;
     }
 
@@ -425,7 +428,7 @@ fn step_verify_header(
     //# For message format version [2.0](../data-format/message-header.md#supported-versions)
     //# the IV MUST be 0.
     let mut maybe_header_auth = aes_decrypt(
-        body::get_encrypt(&state.header.suite),
+        body::get_encrypt(&state.header.suite)?,
         &state.derived_data_keys.data_key,
         &[],
         state.header.header_auth.header_auth_tag(),
@@ -439,7 +442,9 @@ fn step_verify_header(
     if maybe_header_auth.is_err() && net_v4_retry_policy == NetV400RetryPolicy::AllowRetry {
         let derived_data_keys = key_derivation::derive_keys(
             state.header.body.message_id(),
-            state.dec_mat.plaintext_data_key.as_ref().unwrap().as_bytes(),
+            state.dec_mat.plaintext_data_key.as_ref()
+                .ok_or_else(|| val_err("Decryption materials must contain a plaintext data key"))?
+                .as_bytes(),
             &state.header.suite,
             true,
         )?;
@@ -450,7 +455,7 @@ fn step_verify_header(
             &canonical_req_encryption_context,
         )?;
         maybe_header_auth = aes_decrypt(
-            body::get_encrypt(&state.header.suite),
+            body::get_encrypt(&state.header.suite)?,
             &state.derived_data_keys.data_key,
             &[],
             state.header.header_auth.header_auth_tag(),
@@ -552,7 +557,8 @@ fn step_verify_signature(
         //# If this verification is not successful, this operation MUST immediately halt and fail.
         verify_signature(
             ciphertext,
-            state.sig_digest.context.clone().unwrap(),
+            state.sig_digest.context.clone()
+                .ok_or_else(|| val_err("Signature digest context must be present for signature verification"))?,
             state.dec_mat.clone(),
             &mut noop,
         )?;
@@ -612,7 +618,9 @@ fn verify_signature(
     //# If this verification is not successful, this operation MUST immediately halt and fail.
     let valid = ecdsa_verify_context(
         ecdsa_params,
-        &dec_mat.verification_key.unwrap().0,
+        &dec_mat.verification_key
+            .ok_or_else(|| val_err("Decryption materials must contain a verification key for signature verification"))?
+            .0,
         context,
         &signature,
     )?;

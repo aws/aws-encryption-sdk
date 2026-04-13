@@ -11,10 +11,11 @@ pub(crate) use body_encrypt::*;
 
 use aws_mpl_legacy::primitives::AesGcm;
 use aws_mpl_legacy::suites::AlgorithmSuite;
+use crate::error::{Error, val_err};
 
-pub(crate) fn get_encrypt(info: &AlgorithmSuite) -> AesGcm {
+pub(crate) fn get_encrypt(info: &AlgorithmSuite) -> Result<AesGcm, Error> {
     match &info.encrypt {
-        aws_mpl_legacy::suites::Encrypt::AesGcm(aes_gcm) => *aes_gcm,
-        _ => panic!("not an aes gcm"),
+        aws_mpl_legacy::suites::Encrypt::AesGcm(aes_gcm) => Ok(*aes_gcm),
+        _ => Err(val_err("Algorithm suite encrypt must be AES-GCM")),
     }
 }

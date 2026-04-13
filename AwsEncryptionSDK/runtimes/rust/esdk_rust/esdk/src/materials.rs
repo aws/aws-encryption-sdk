@@ -19,7 +19,7 @@ pub(crate) enum Cmm {
 pub(crate) async fn create_cmm_from_input(
     input_source: Option<MaterialSource>,
 ) -> Result<Cmm, Error> {
-    match input_source.unwrap() {
+    match input_source.ok_or_else(|| val_err("A Materials Source must be provided"))? {
         MaterialSource::LegacyCmm(cmm) => Ok(Cmm::Legacy(cmm)),
         MaterialSource::LegacyKeyring(keyring) => {
             let mpl = mpl();
@@ -200,14 +200,14 @@ pub(crate) async fn get_legacy_decryption_materials(
         //# - Algorithm Suite ID: This MUST be the parsed
         //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
         //# from the message header.
-        .algorithm_suite_id(convert_alg(algorithm_suite_id))
+        .algorithm_suite_id(convert_alg(algorithm_suite_id)?)
         //= specification/client-apis/decrypt.md#get-the-decryption-materials
         //# - Commitment Policy: This MUST be the commitment policy configured on the client.
-        .commitment_policy(convert_commit(commitment_policy))
+        .commitment_policy(convert_commit(commitment_policy)?)
         //= specification/client-apis/decrypt.md#get-the-decryption-materials
         //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header.md#encrypted-data-keys)
         //# from the message header.
-        .encrypted_data_keys(convert_edks(header_body.encrypted_data_keys()))
+        .encrypted_data_keys(convert_edks(header_body.encrypted_data_keys())?)
         //= specification/client-apis/decrypt.md#get-the-decryption-materials
         //# - Encryption Context: This MUST be the parsed [encryption context](../data-format/message-header.md#aad)
         //# from the message header.
@@ -218,7 +218,8 @@ pub(crate) async fn get_legacy_decryption_materials(
         .send()
         .await?;
 
-    let materials = output.decryption_materials.unwrap();
+    let materials = output.decryption_materials
+        .ok_or_else(|| val_err("Legacy CMM did not return decryption materials"))?;
     let return_materials = materials.clone();
     let mpl = mpl();
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
@@ -232,13 +233,13 @@ pub(crate) async fn get_legacy_decryption_materials(
             materials
                 .algorithm_suite
                 .as_ref()
-                .unwrap()
+                .ok_or_else(|| val_err("Legacy decryption materials missing algorithm suite"))?
                 .id()
                 .as_ref()
-                .unwrap()
+                .ok_or_else(|| val_err("Legacy decryption materials algorithm suite missing id"))?
                 .clone(),
         )
-        .commitment_policy(convert_commit(commitment_policy))
+        .commitment_policy(convert_commit(commitment_policy)?)
         .send()
         .await?;
 
@@ -316,10 +317,10 @@ pub(crate) async fn get_legacy_encryption_materials(
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
         //# Otherwise, this MUST be an empty encryption context.
         .encryption_context(encryption_context)
-        .commitment_policy(convert_commit(commitment_policy))
+        .commitment_policy(convert_commit(commitment_policy)?)
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
         //# If no Algorithm Suite is provided, this field MUST NOT be included.
-        .set_algorithm_suite_id(algorithm_suite_id.map(convert_alg))
+        .set_algorithm_suite_id(algorithm_suite_id.map(convert_alg).transpose()?)
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
         //= reason=The caller resolves known length vs Plaintext Length Bound before calling; this receives the resolved value
         //# If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
@@ -331,7 +332,8 @@ pub(crate) async fn get_legacy_encryption_materials(
         .send()
         .await?;
 
-    let materials = output.encryption_materials.unwrap();
+    let materials = output.encryption_materials
+        .ok_or_else(|| val_err("Legacy CMM did not return encryption materials"))?;
     let return_materials = materials.clone();
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
     //# If this [algorithm suite](../framework/algorithm-suites.md) is not supported by the [commitment policy](client.md#commitment-policy)
@@ -341,13 +343,13 @@ pub(crate) async fn get_legacy_encryption_materials(
             materials
                 .algorithm_suite
                 .as_ref()
-                .unwrap()
+                .ok_or_else(|| val_err("Legacy encryption materials missing algorithm suite"))?
                 .id
                 .as_ref()
-                .unwrap()
+                .ok_or_else(|| val_err("Legacy encryption materials algorithm suite missing id"))?
                 .clone(),
         )
-        .commitment_policy(convert_commit(commitment_policy))
+        .commitment_policy(convert_commit(commitment_policy)?)
         .send()
         .await?;
 

@@ -29,7 +29,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
     //# The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
     //# specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
     let mut auth_tag = vec![0u8; get_tag_length(&header.suite) as usize];
-    let alg = get_encrypt(&header.suite);
+    let alg = get_encrypt(&header.suite)?;
     let frame_length_u64 = u64::from(header.body.frame_length());
     let frame_length_usize = header.body.frame_length() as usize;
     let mut enc_content = vec![0u8; frame_length_usize];
@@ -478,7 +478,7 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     //= reason=The ? operator propagates the decryption error, halting the operation immediately
     //# If this decryption fails, this operation MUST immediately halt and fail.
     aes_decrypt(
-        get_encrypt(&header.suite),
+        get_encrypt(&header.suite)?,
         key,
         &enc_content,
         &auth_tag,

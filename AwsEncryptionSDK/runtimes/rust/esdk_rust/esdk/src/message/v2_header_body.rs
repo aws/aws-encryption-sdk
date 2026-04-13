@@ -127,11 +127,11 @@ pub(crate) fn write_v2_header_body(
     write_bytes(w, &body.suite_data)
 }
 
-pub(crate) const fn get_hkdf(x: &DerivationAlgorithm) -> &aws_mpl_legacy::suites::Hkdf {
+pub(crate) fn get_hkdf(x: &DerivationAlgorithm) -> Result<&aws_mpl_legacy::suites::Hkdf, Error> {
     if let DerivationAlgorithm::Hkdf(x) = x {
-        x
+        Ok(x)
     } else {
-        panic!()
+        ser_err("DerivationAlgorithm must be HKDF")
     }
 }
 pub(crate) const fn has_hkdf(x: &DerivationAlgorithm) -> bool {
@@ -185,7 +185,7 @@ pub(crate) fn read_v2_header_body(
     //= specification/data-format/message-header.md#frame-length
     //# The frame length MUST be interpreted as a UInt32.
     let frame_length = read_u32(r, raw)?;
-    let len = get_hkdf(&algorithm_suite.commitment).output_key_length;
+    let len = get_hkdf(&algorithm_suite.commitment)?.output_key_length;
     let suite_data = read_vec(r, len as usize, raw)?;
 
     Ok(V2HeaderBody {

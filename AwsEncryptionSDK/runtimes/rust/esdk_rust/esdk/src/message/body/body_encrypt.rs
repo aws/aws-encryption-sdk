@@ -249,7 +249,7 @@ pub(crate) fn encrypt_and_serialize_body(
     //= reason=START_SEQUENCE_NUMBER is defined as 1
     //# If this is the first frame sequentially, the sequence number value MUST be 1.
     let mut sequence_number = START_SEQUENCE_NUMBER;
-    let alg = get_encrypt(&header.suite);
+    let alg = get_encrypt(&header.suite)?;
 
     let mut iv = vec![0; iv_len];
     let mut plaintext_frame = vec![0; frame_length];
