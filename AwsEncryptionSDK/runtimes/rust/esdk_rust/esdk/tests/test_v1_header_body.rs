@@ -304,9 +304,6 @@ async fn test_v1_version_field_is_1_byte() {
     //= specification/data-format/message-header.md#version
     //= type=test
     //# The length of the serialized version field MUST be 1 byte.
-    //= specification/data-format/message-header.md#version
-    //= type=test
-    //# The length of the serialized version field MUST be 1 byte.
     let ct = encrypt_v1(b"version 1 byte test", EncryptionContext::new()).await;
     // Version is at offset 0, Type is at offset 1 — proving version is exactly 1 byte
     assert_eq!(ct[0], 0x01, "version byte must be 0x01");
@@ -315,9 +312,6 @@ async fn test_v1_version_field_is_1_byte() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_type_field_is_1_byte() {
-    //= specification/data-format/message-header.md#type
-    //= type=test
-    //# The length of the serialized type field MUST be 1 byte.
     //= specification/data-format/message-header.md#type
     //= type=test
     //# The length of the serialized type field MUST be 1 byte.
@@ -330,9 +324,6 @@ async fn test_v1_type_field_is_1_byte() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_content_type_field_is_1_byte() {
-    //= specification/data-format/message-header.md#content-type
-    //= type=test
-    //# The length of the serialized content type field MUST be 1 byte.
     //= specification/data-format/message-header.md#content-type
     //= type=test
     //# The length of the serialized content type field MUST be 1 byte.

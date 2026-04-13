@@ -44,77 +44,114 @@ pub(crate) fn write_v1_header_body(
     //# IV Length,
     //# and Frame Length.
 
+    // Version
     //= specification/client-apis/encrypt.md#v1-header
     //# - [Version](../data-format/message-header.md#version): MUST be serialized according to the
     //# [Version](../data-format/message-header.md#version) specification.
+    //= specification/client-apis/encrypt.md#v1-header
     //# The value MUST correspond to [1.0](../data-format/message-header.md#supported-versions).
-    //= specification/data-format/message-header.md#header-body-version-1-0
-    //# The value of the `Version` field MUST be `01` in the Version 1.0 header body.
-    write_msg_format_version(w, MessageFormatVersion::V1)?;
+    write_msg_format_version(
+        w,
+        //= specification/data-format/message-header.md#header-body-version-1-0
+        //# The value of the `Version` field MUST be `01` in the Version 1.0 header body.
+        MessageFormatVersion::V1,
+    )?;
+
+    // Type
     //= specification/client-apis/encrypt.md#v1-header
     //# - [Type](../data-format/message-header.md#type): MUST be serialized according to the
     //# [Type](../data-format/message-header.md#type) specification.
+    //= specification/client-apis/encrypt.md#v1-header
     //# The value MUST correspond to [Customer Authenticated Encrypted Data](../data-format/message-header.md#supported-types).
     write_msg_type(w, body.message_type)?;
+
+    // Algorithm Suite ID
     //= specification/client-apis/encrypt.md#v1-header
     //# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST be serialized according to the
     //# [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id) specification.
+    //= specification/client-apis/encrypt.md#v1-header
     //# The value MUST correspond to the [algorithm suite](../framework/algorithm-suites.md) used in this behavior.
     write_esdk_suite_id(w, &body.algorithm_suite)?;
+
+    // Message ID
     //= specification/client-apis/encrypt.md#v1-header
     //# - [Message ID](../data-format/message-header.md#message-id): MUST be serialized according to the
     //# [Message ID](../data-format/message-header.md#message-id) specification.
+    //= specification/client-apis/encrypt.md#v1-header
     //# The process used to generate this identifier MUST use a good source of randomness
     //# to make the chance of duplicate identifiers negligible.
     write_message_id(w, &body.message_id)?;
+
+    // AAD
     //= specification/client-apis/encrypt.md#v1-header
     //# - [AAD](../data-format/message-header.md#aad): MUST be serialized according to the
     //# [AAD](../data-format/message-header.md#aad) specification.
+    //= specification/client-apis/encrypt.md#v1-header
     //# The value MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
     //# in the [encryption materials](../framework/structures.md#encryption-materials),
     //# and this serialization MUST NOT contain any key value pairs listed in
     //# the [encryption material's](../framework/structures.md#encryption-materials)
     //# [required encryption context keys](../framework/structures.md#required-encryption-context-keys).
     write_aad_section(w, &body.encryption_context)?;
+
+    // Encrypted Data Keys
     //= specification/client-apis/encrypt.md#v1-header
     //# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be serialized according to the
     //# [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
+    //= specification/client-apis/encrypt.md#v1-header
     //# The value MUST be the serialization of the
     //# [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials).
     write_edks(w, &body.encrypted_data_keys)?;
+
+    // Content Type
     //= specification/client-apis/encrypt.md#v1-header
     //# - [Content Type](../data-format/message-header.md#content-type): MUST be serialized according to the
     //# [Content Type](../data-format/message-header.md#content-type) specification.
+    //= specification/client-apis/encrypt.md#v1-header
     //# The value MUST be [02](../data-format/message-header.md#supported-content-types).
     write_content_type(w, body.content_type)?;
+
+    // Reserved
     //= specification/client-apis/encrypt.md#v1-header
     //# - [Reserved](../data-format/message-header.md#reserved): MUST be serialized according to the
     //# [Reserved](../data-format/message-header.md#reserved) specification.
     write_bytes(w, &RESERVED_BYTES)?;
+
+    // IV Length
     //= specification/client-apis/encrypt.md#v1-header
     //# - [IV Length](../data-format/message-header.md#iv-length): MUST be serialized according to the
     //# [IV Length](../data-format/message-header.md#iv-length) specification.
+    //= specification/client-apis/encrypt.md#v1-header
     //# The value MUST match the [IV length](../framework/algorithm-suites.md#iv-length)
     //# specified by the [algorithm suite](../framework/algorithm-suites.md).
+    let iv_length = get_iv_length(&body.algorithm_suite);
     //= specification/data-format/message-header.md#iv-length
     //# This value MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the
     //# [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-    let iv_length = get_iv_length(&body.algorithm_suite);
     //= specification/data-format/message-header.md#iv-length
     //# The length of the serialized IV length field MUST be 1 byte.
-    //= specification/data-format/message-header.md#iv-length
-    //# The IV length MUST be interpreted as a UInt8.
-    write_u8(w, iv_length)?;
+    write_u8(
+        w,
+        //= specification/data-format/message-header.md#iv-length
+        //# The IV length MUST be interpreted as a UInt8.
+        iv_length,
+    )?;
+
+    // Frame Length
     //= specification/client-apis/encrypt.md#v1-header
     //# - [Frame Length](../data-format/message-header.md#frame-length): MUST be serialized according to the
     //# [Frame Length](../data-format/message-header.md#frame-length) specification.
+    //= specification/client-apis/encrypt.md#v1-header
     //# The value MUST be the value of the frame size determined above.
     let frame_len = body.frame_length;
     //= specification/data-format/message-header.md#frame-length
     //# The length of the serialized frame length field MUST be 4 bytes.
-    //= specification/data-format/message-header.md#frame-length
-    //# The frame length MUST be interpreted as a UInt32.
-    write_u32(w, frame_len)
+    write_u32(
+        w,
+        //= specification/data-format/message-header.md#frame-length
+        //# The frame length MUST be interpreted as a UInt32.
+        frame_len,
+    )
 }
 
 pub(crate) fn read_v1_reserved_bytes(
@@ -137,7 +174,6 @@ pub(crate) fn read_v1_header_iv_length(
 ) -> Result<u8, Error> {
     //= specification/data-format/message-header.md#iv-length
     //# The length of the serialized IV length field MUST be 1 byte.
-
     //= specification/data-format/message-header.md#iv-length
     //# The IV length MUST be interpreted as a UInt8.
     let raw = read_u8(r, raw)?;
@@ -204,10 +240,10 @@ pub(crate) fn read_v1_header_body(
     //# [Frame Length](../data-format/message-header.md#frame-length) specification.
     //= specification/data-format/message-header.md#frame-length
     //# The length of the serialized frame length field MUST be 4 bytes.
-
+    let frame_length_raw = read_u32(r, raw)?;
     //= specification/data-format/message-header.md#frame-length
     //# The frame length MUST be interpreted as a UInt32.
-    let frame_length = read_u32(r, raw)?;
+    let frame_length = frame_length_raw;
 
     Ok(V1HeaderBody {
         message_type,
