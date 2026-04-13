@@ -29,7 +29,6 @@ async fn test_decrypt_skips_signature_step_for_non_signing_algorithm() {
     //= type=test
     //# - If the message header does not contain an algorithm suite including a signature algorithm,
     //# the Decrypt operation MUST NOT perform this step.
-
     let keyring = test_keyring().await;
     let plaintext = b"test non-signing decrypt";
     let ec = EncryptionContext::new();
@@ -52,7 +51,6 @@ async fn test_non_streaming_decrypt_holds_output_until_completion() {
     //= type=test
     //# If the input encrypted message is not being [streamed](streaming.md) to this operation,
     //# all output MUST NOT be released until after these steps complete successfully.
-
     // A successful round-trip through the non-streaming decrypt() proves that
     // all output is returned only after all 5 steps complete.
     let keyring = test_keyring().await;
@@ -71,7 +69,6 @@ async fn test_streaming_output_not_released_until_indicated() {
     //= specification/client-apis/decrypt.md#behavior
     //= type=test
     //# - Output MUST NOT be released until otherwise indicated.
-
     // Streaming decrypt with a signing suite: output is held back until
     // per-frame tag verification and final signature verification succeed.
     // A successful round-trip proves output was only released after verification.
@@ -101,7 +98,6 @@ async fn test_streaming_halts_on_incomplete_message() {
     //# - If all bytes have been provided and this operation
     //# is unable to complete the above steps with the consumable encrypted message bytes,
     //# this operation MUST halt and indicate a failure to the caller.
-
     // Encrypt a valid message, then truncate it so the body is incomplete.
     let keyring = test_keyring().await;
     let plaintext = b"truncation test data";
@@ -126,7 +122,6 @@ async fn test_streaming_fails_for_multi_frame_signed_without_override() {
     //= type=test
     //# - The ESDK MUST provide a configuration option that causes the decryption operation
     //# to fail immediately after parsing the header if a signed algorithm suite is used.
-
     // Encrypt a multi-frame message with a signing algorithm suite.
     let keyring = test_keyring().await;
     // 30 bytes with frame_length=10 → 3 frames (2 regular + 1 final)
@@ -173,7 +168,6 @@ async fn test_signing_suite_must_perform_signature_step() {
     //# - If the message header contains an algorithm suite including a
     //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
     //# the Decrypt operation MUST perform this step.
-
     let keyring = test_keyring().await;
     let plaintext = b"signing suite signature step test";
 

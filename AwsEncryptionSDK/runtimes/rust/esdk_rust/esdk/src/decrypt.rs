@@ -12,12 +12,13 @@ use crate::message::serializable_types::{from_canonical_pairs, to_canonical_pair
 use crate::message::*;
 use crate::types::*;
 use aws_mpl_legacy::primitives::*;
-//= specification/client-apis/client.md#commitment-policy
+//= aws-encryption-sdk-specification/client-apis/client.md#commitment-policy
 //= type=implication
 //# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
-//= specification/client-apis/client.md#initialization
+//= aws-encryption-sdk-specification/client-apis/client.md#initialization
+//= type=implication
 //# If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
-//= specification/client-apis/client.md#initialization
+//= aws-encryption-sdk-specification/client-apis/client.md#initialization
 //= type=implication
 //# Once a [commitment policy](#commitment-policy) has been set it SHOULD be immutable.
 use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
@@ -43,27 +44,27 @@ impl ProtectionNeeded {
     }
 }
 
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#encrypted-message
+//= type=implication
+//= reason=SafeRead accepts incremental reads, so callers can stream the encrypted message without buffering it entirely in memory
+//# This input MAY be [streamed](streaming.md) to this operation.
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#encrypted-message
+//= type=implication
+//= reason=The implementation does not require holding the entire encrypted message in memory; it processes bytes incrementally via SafeRead
+//# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
+//# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#plaintext
+//= type=implication
+//= reason=SafeWrite accepts incremental writes, so each decrypted frame is flushed to the output as it's produced without buffering the full plaintext
+//# This operation MAY [stream](streaming.md) the plaintext as output.
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#plaintext
+//= type=implication
+//= reason=The implementation streams plaintext output incrementally via SafeWrite, so it does not require buffering the full plaintext in memory
+//# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
+//# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
 /// Decrypt dyn Read into dyn Write
 pub async fn decrypt_stream(
-    //= specification/client-apis/decrypt.md#encrypted-message
-    //= type=implication
-    //= reason=SafeRead accepts incremental reads, so callers can stream the encrypted message without buffering it entirely in memory
-    //# This input MAY be [streamed](streaming.md) to this operation.
-    //= specification/client-apis/decrypt.md#encrypted-message
-    //= type=implication
-    //= reason=The implementation does not require holding the entire encrypted message in memory; it processes bytes incrementally via SafeRead
-    //# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
-    //# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
     ciphertext: &mut dyn SafeRead,
-    //= specification/client-apis/decrypt.md#plaintext
-    //= type=implication
-    //= reason=SafeWrite accepts incremental writes, so each decrypted frame is flushed to the output as it's produced without buffering the full plaintext
-    //# This operation MAY [stream](streaming.md) the plaintext as output.
-    //= specification/client-apis/decrypt.md#plaintext
-    //= type=implication
-    //= reason=The implementation streams plaintext output incrementally via SafeWrite, so it does not require buffering the full plaintext in memory
-    //# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
-    //# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
     plaintext: &mut dyn SafeWrite,
     input: &DecryptStreamInput,
 ) -> Result<DecryptStreamOutput, Error> {
@@ -104,7 +105,8 @@ pub async fn decrypt_stream(
     result
 }
 
-//= specification/client-apis/client.md#decrypt
+//= aws-encryption-sdk-specification/client-apis/client.md#decrypt
+//= type=implication
 //# The AWS Encryption SDK Client MUST provide an [decrypt](./decrypt.md#input) function
 //# that adheres to [decrypt](./decrypt.md).
 /// Decrypt slice into Vec
@@ -232,12 +234,10 @@ async fn internal_decrypt(
     //# Any plaintext decrypted from [unframed data](../data-format/message-body.md#un-framed-data) or
     //# a final frame in a streamed Decrypt operation MUST NOT be released until [signature verification](#verify-the-signature)
     //# successfully completes.
-
     let mut ec = state.encryption_context_to_only_authenticate;
     ec.extend(state.header.encryption_context);
 
     //= specification/client-apis/streaming.md#outputs
-    //= type=implication
     //= reason=All bytes have been written to the SafeWrite before Ok is returned; success is only indicated after output is complete
     //# Operations MUST NOT indicate completion or success until an end to the output has been indicated.
     Ok(DecryptStreamOutput {
@@ -258,7 +258,6 @@ fn step_parse_header(
         header::read_header_body(ciphertext, max_encrypted_data_keys, &mut raw_header)?;
 
     //= specification/client-apis/decrypt.md#verify-the-header
-    //= type=implication
     //= reason=sig_digest holds signature; this is done as soon
     //# - The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
     //# such that the serialized header isn't required to remain in memory to [verify the signature](#verify-the-signature).
@@ -484,7 +483,6 @@ fn step_decrypt_body(
             //# the Decrypt operation MUST deserialize the message body according to the
             //# [non-framed data specification](../data-format/message-body.md#non-framed-data)
             //= specification/data-format/message-body.md#non-framed-data
-            //= type=implication
             //= reason=read_and_decrypt_non_framed_message_body reads IV, content length, content, and auth tag in order
             //# Non-framed data MUST consist of, in order,
             //# IV,
@@ -594,7 +592,6 @@ fn verify_signature(
     }
 
     //= specification/client-apis/decrypt.md#verify-the-signature
-    //= type=implication
     //= reason=blocking read on the input stream implicitly waits for enough bytes
     //# If there are not enough consumable bytes to deserialize the message footer and
     //# the caller has not yet indicated an end to the encrypted message,

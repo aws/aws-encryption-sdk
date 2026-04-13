@@ -31,30 +31,24 @@ async fn test_verify_header_v2_round_trip() {
     //# this operation MUST validate the [message header body](../data-format/message-header.md#header-body)
     //# by using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# to decrypt with the following inputs:
-
     //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - The AAD MUST be the concatenation of the serialized [message header body](../data-format/message-header.md#header-body)
     //# and the serialization of encryption context to only authenticate.
-
     //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# For message format version [2.0](../data-format/message-header.md#supported-versions)
     //# the IV MUST be 0.
-
     //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - the cipherkey MUST be the derived data key
-
     //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - the ciphertext MUST be an empty byte array
-
     //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - the tag MUST be the value serialized in the message header's
     //# [authentication tag field](../data-format/message-header.md#authentication-tag)
-
     let keyring = test_keyring().await;
     let plaintext = b"v2 header verification test";
 
@@ -75,7 +69,6 @@ async fn test_verify_header_v1_round_trip() {
     //= type=test
     //# - For message format version [1.0](../data-format/message-header.md#supported-versions)
     //# the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header.md#iv).
-
     let keyring = test_keyring().await;
     let plaintext = b"v1 header verification test";
 
@@ -97,7 +90,6 @@ async fn test_verify_header_fails_on_tampered_header() {
     //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# If this tag verification fails, this operation MUST immediately halt and fail.
-
     let keyring = test_keyring().await;
     let plaintext = b"tamper header test";
 
@@ -123,7 +115,6 @@ async fn test_verify_header_encryption_context_to_only_authenticate() {
     //# the [decryption material's](../framework/structures.md#decryption-materials)
     //# [required encryption context keys](../framework/structures.md#required-encryption-context-keys-1)
     //# serialized according to the [encryption context serialization specification](../framework/structures.md#serialization).
-
     let keyring = test_keyring().await;
     let plaintext = b"required ec test";
 
@@ -163,7 +154,6 @@ async fn test_streamed_signed_output_not_signed_until_complete() {
     //# However, if the streamed Decrypt operation is using an algorithm suite with a signature algorithm
     //# all released output MUST NOT be considered signed data until
     //# this operation successfully completes.
-
     // Encrypt a multi-frame message with a signing suite, then tamper with the
     // signature (footer). decrypt_stream must return Err, proving that output
     // released before completion cannot be considered signed.

@@ -28,7 +28,6 @@ async fn test_decrypt_output_includes_plaintext() {
     //= specification/client-apis/decrypt.md#output
     //= type=test
     //# - The output of the Decrypt operation MUST include a [Plaintext](#plaintext) value.
-
     let keyring = test_keyring().await;
     let plaintext = b"test plaintext for output check";
     let enc_input =
@@ -45,7 +44,6 @@ async fn test_decrypt_output_includes_encryption_context() {
     //= specification/client-apis/decrypt.md#output
     //= type=test
     //# - The output of the Decrypt operation MUST include an [encryption context](#encryption-context) value.
-
     let keyring = test_keyring().await;
     let ec = small_encryption_context(SmallEncryptionContextVariation::AB);
     let enc_input = EncryptInput::with_legacy_keyring(b"ec test", ec.clone(), keyring.clone());
@@ -63,7 +61,6 @@ async fn test_decrypt_output_includes_algorithm_suite() {
     //= specification/client-apis/decrypt.md#output
     //= type=test
     //# - The output of the Decrypt operation MUST include an [algorithm suite](#algorithm-suite) value.
-
     let keyring = test_keyring().await;
     let suite = EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey;
     let mut enc_input =
@@ -81,7 +78,6 @@ async fn test_decrypt_output_algorithm_suite_is_esdk_supported() {
     //= specification/client-apis/decrypt.md#algorithm-suite
     //= type=test
     //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
-
     let keyring = test_keyring().await;
     let enc_input =
         EncryptInput::with_legacy_keyring(b"esdk suite", EncryptionContext::new(), keyring.clone());
@@ -100,7 +96,6 @@ async fn test_decrypt_no_unauthenticated_data_released() {
     //= specification/client-apis/decrypt.md#authenticated-data
     //= type=test
     //# This operation MUST NOT release any unauthenticated plaintext or unauthenticated associated data.
-
     let keyring = test_keyring().await;
     let plaintext = b"tamper test data";
     let enc_input =
@@ -127,7 +122,6 @@ async fn test_streaming_signed_plaintext_not_signed_until_complete() {
     //# and is decrypting messages created with an algorithm suite including a signature algorithm,
     //# any released plaintext MUST NOT be considered signed data until this operation finishes
     //# successfully.
-
     // A successful streaming decrypt with a signing suite proves the contract:
     // output is only fully released after signature verification completes.
     let keyring = test_keyring().await;
@@ -155,7 +149,6 @@ async fn test_streaming_callers_must_not_consider_successful_until_complete() {
     //= type=test
     //# This means that callers that process such released plaintext MUST NOT consider any processing successful
     //# until this operation completes successfully.
-
     // decrypt_stream returns Result — callers can only consider processing successful
     // when Ok is returned. A successful round-trip proves the contract.
     let keyring = test_keyring().await;
@@ -185,7 +178,6 @@ async fn test_streaming_callers_must_discard_on_failure() {
     //= type=test
     //# Additionally, if this operation fails, callers MUST discard the released plaintext and encryption context
     //# and MUST rollback any processing done due to the released plaintext or encryption context.
-
     // Encrypt with a signing suite, then tamper with the footer area to cause
     // signature verification failure. decrypt_stream must return Err,
     // signaling callers to discard any released output.
