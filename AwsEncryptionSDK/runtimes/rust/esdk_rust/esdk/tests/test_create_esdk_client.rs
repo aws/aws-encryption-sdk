@@ -148,7 +148,6 @@ fn test_encrypt_input_accepts_plaintext() {
     //= specification/client-apis/encrypt.md#input
     //= type=test
     //# - The input to the Encrypt operation MUST accept a required [plaintext](#plaintext) argument.
-
     //= specification/client-apis/encrypt.md#plaintext
     //= type=test
     //# This MUST be a sequence of bytes.
@@ -201,7 +200,6 @@ fn test_decrypt_input_accepts_encrypted_message() {
     //= specification/client-apis/decrypt.md#input
     //= type=test
     //# - The input to the Decrypt operation MUST accept a required [Encrypted Message](#encrypted-message) argument.
-
     //= specification/client-apis/decrypt.md#encrypted-message
     //= type=test
     //# The input encrypted message MUST be a sequence of bytes in the
