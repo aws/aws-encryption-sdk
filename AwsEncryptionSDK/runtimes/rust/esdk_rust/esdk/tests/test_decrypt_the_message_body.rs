@@ -4,10 +4,12 @@
 //! Tests for specification/client-apis/decrypt.md#decrypt-the-message-body
 
 mod fixtures;
+mod test_helpers;
 
 use aws_esdk::*;
 use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
+use test_helpers::*;
 
 /// Build a complete non-framed encrypted message from scratch.
 ///
@@ -113,24 +115,6 @@ fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
     message.extend_from_slice(body_tag.as_ref());
 
     message
-}
-
-const IV_LEN: usize = 12;
-const TAG_LEN: usize = 16;
-const ENDFRAME_MARKER: [u8; 4] = 0xFFFF_FFFFu32.to_be_bytes();
-
-/// Create a raw AES keyring for testing (no KMS needed).
-async fn test_keyring() -> aws_mpl_legacy::dafny::types::keyring::KeyringRef {
-    let (ns, name) = namespace_and_name(0);
-    mpl()
-        .create_raw_aes_keyring()
-        .key_namespace(ns)
-        .key_name(name)
-        .wrapping_key(aws_smithy_types::Blob::new([0u8; 32]))
-        .wrapping_alg(aws_mpl_legacy::dafny::types::AesWrappingAlg::AlgAes256GcmIv12Tag16)
-        .send()
-        .await
-        .unwrap()
 }
 
 /// Encrypt plaintext with a given frame length, return ciphertext bytes.

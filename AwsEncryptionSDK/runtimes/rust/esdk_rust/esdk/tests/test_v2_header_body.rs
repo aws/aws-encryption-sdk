@@ -4,23 +4,11 @@
 //! Tests for V2 header body serialization (specification/client-apis/encrypt.md#v2-header)
 
 mod fixtures;
+mod test_helpers;
 
 use aws_esdk::*;
 use fixtures::*;
-
-/// Create a raw AES keyring for testing (no KMS needed).
-async fn test_keyring() -> aws_mpl_legacy::dafny::types::keyring::KeyringRef {
-    let (ns, name) = namespace_and_name(0);
-    mpl()
-        .create_raw_aes_keyring()
-        .key_namespace(ns)
-        .key_name(name)
-        .wrapping_key(aws_smithy_types::Blob::new([0u8; 32]))
-        .wrapping_alg(aws_mpl_legacy::dafny::types::AesWrappingAlg::AlgAes256GcmIv12Tag16)
-        .send()
-        .await
-        .unwrap()
-}
+use test_helpers::*;
 
 /// Encrypt plaintext with default settings (V2 algorithm suite), return ciphertext bytes.
 async fn encrypt_default(plaintext: &[u8]) -> Vec<u8> {

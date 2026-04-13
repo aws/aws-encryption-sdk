@@ -5,24 +5,13 @@
 //! header-authentication-version-1-0 and header-authentication-version-2-0
 
 mod fixtures;
+mod test_helpers;
 
 use aws_esdk::*;
 use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
 use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
-
-async fn test_keyring() -> aws_mpl_legacy::dafny::types::keyring::KeyringRef {
-    let (ns, name) = namespace_and_name(0);
-    mpl()
-        .create_raw_aes_keyring()
-        .key_namespace(ns)
-        .key_name(name)
-        .wrapping_key(aws_smithy_types::Blob::new([0u8; 32]))
-        .wrapping_alg(aws_mpl_legacy::dafny::types::AesWrappingAlg::AlgAes256GcmIv12Tag16)
-        .send()
-        .await
-        .unwrap()
-}
+use test_helpers::*;
 
 async fn encrypt_v1(plaintext: &[u8]) -> Vec<u8> {
     let keyring = test_keyring().await;
