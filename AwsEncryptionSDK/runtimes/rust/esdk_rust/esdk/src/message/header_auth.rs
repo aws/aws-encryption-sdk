@@ -20,11 +20,9 @@ pub(crate) fn write_header_auth_tag(
         //# this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-1-0) with the following specifics:
         1 => write_header_auth_tag_v1(w, header_auth),
         //= specification/client-apis/encrypt.md#v2-authentication-tag
-        //# With the authentication tag calculated, if the message format version associated
-        //# with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0, 
-        //# this operation MUST serialize the
-        //# [message header authentication](../data-format/message-header.md#header-authentication-version-2-0)
-        //# with the following specifics:
+        //# With the authentication tag calculated,
+        //# if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
+        //# this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-2-0) with the following specifics:
         2 => write_header_auth_tag_v2(w, header_auth),
         _ => ser_err("Unexpected message version"),
     }
@@ -42,7 +40,6 @@ pub(crate) fn write_header_auth_tag_v1(
             //# The V1 Header Authentication MUST consist of, in order,
             //# IV,
             //# and Authentication Tag.
-
             //= specification/client-apis/encrypt.md#v1-authentication-tag
             //# - [IV](../data-format/message-header.md#iv): MUST have the value of the IV used in the calculation above,
             //# padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
@@ -64,7 +61,6 @@ pub(crate) fn write_header_auth_tag_v2(
         } => {
             //= specification/data-format/message-header.md#header-authentication-version-2-0
             //# The V2 Header Authentication MUST consist of the Authentication Tag only.
-
             //= specification/client-apis/encrypt.md#v2-authentication-tag
             //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
             //# of the authentication tag calculated above.
