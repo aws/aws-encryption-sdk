@@ -1,7 +1,9 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-// Encrypt operation — maps to client-apis/encrypt.md
+//! Encrypt operation — obtains encryption materials from a keyring/CMM,
+//! derives a data key, encrypts the plaintext (framed or non-framed),
+//! and serializes the result into an encrypted message.
 
 use crate::error::Error;
 use crate::key_derivation;

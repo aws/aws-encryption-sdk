@@ -1,7 +1,9 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-// Decrypt operation — maps to client-apis/decrypt.md
+//! Decrypt operation — deserializes the encrypted message header and body,
+//! obtains decryption materials from a keyring/CMM, derives the data key,
+//! and decrypts the plaintext (handling both framed and non-framed formats).
 
 use crate::encrypt::get_esdk_id;
 use crate::error::Error;

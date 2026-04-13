@@ -1,4 +1,16 @@
-//! This is an awesome crate
+//! # AWS Encryption SDK for Rust
+//!
+//! A native Rust implementation of the AWS Encryption SDK, providing
+//! client-side encryption using envelope encryption. Data is encrypted
+//! with a unique data key, which is itself encrypted by one or more
+//! wrapping keys (key providers / keyrings).
+//!
+//! The two primary operations are:
+//! - [`encrypt::encrypt()`] — encrypts plaintext and serializes an encrypted message
+//! - [`decrypt::decrypt()`] — deserializes an encrypted message and decrypts the plaintext
+//!
+//! The SDK supports both **framed** and **non-framed** message body formats,
+//! as well as **V1** and **V2** message format versions (V2 adds key commitment).
 //!
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(
