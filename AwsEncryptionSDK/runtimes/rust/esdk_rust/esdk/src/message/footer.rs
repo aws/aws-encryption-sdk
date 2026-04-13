@@ -5,7 +5,7 @@
 //! Maps to data-format/message-footer.md
 
 use super::serialize_functions::{read_u16, read_vec, write_bytes, write_u16};
-use super::*;
+use super::{Error, ser_err};
 use crate::types::{SafeRead, SafeWrite};
 
 /// Write a message footer (signature length + signature bytes).

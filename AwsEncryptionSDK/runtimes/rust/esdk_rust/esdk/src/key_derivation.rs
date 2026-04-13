@@ -1,9 +1,9 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use super::*;
-use crate::message::header_types::*;
-use crate::message::serializable_types::*;
+use super::{Error, val_err};
+use crate::message::header_types::MessageId;
+use crate::message::serializable_types::get_encrypt_key_length;
 use aws_mpl_legacy::suites::AlgorithmSuite;
 use aws_mpl_legacy::suites::DerivationAlgorithm;
 
@@ -140,7 +140,7 @@ pub(crate) fn expand_key_material(
     if message_id.is_empty() {
         return Err(val_err("Message ID must not be empty"));
     }
-    if plaintext_key.len() as u32 != get_kdf_inlen(suite)? {
+    if plaintext_key.len() != get_kdf_inlen(suite)? as usize {
         return Err(val_err("Plaintext key length must match KDF input key length"));
     }
 

@@ -11,11 +11,9 @@ pub(crate) mod shared_header_functions;
 pub(crate) mod v1_header_body;
 pub(crate) mod v2_header_body;
 use aws_mpl_legacy::primitives::DigestContext;
-use std::backtrace::Backtrace;
 
 pub(crate) use super::error::Error;
 pub(crate) use super::error::ser_err;
-use super::error::ErrorKind;
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub(crate) struct NoopWriter;

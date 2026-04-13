@@ -1,8 +1,8 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use super::serialize_functions::*;
-use super::*;
+use super::serialize_functions::{read_seq_u16, read_str_u16, read_u16, write_bytes, write_u16};
+use super::{Error, ser_err};
 use crate::types::{SafeRead, SafeWrite};
 use aws_mpl_legacy::EncryptedDataKey;
 
@@ -24,11 +24,14 @@ pub(crate) fn write_edks(w: &mut dyn SafeWrite, edks: &[EncryptedDataKey]) -> Re
 
     //= specification/data-format/message-header.md#encrypted-data-key-count
     //# The length of the serialized encrypted data key count MUST be 2 bytes.
+    let Ok(edk_count) = u16::try_from(edks.len()) else {
+        return ser_err("Count too large for UInt16");
+    };
     write_u16(
         w,
         //= specification/data-format/message-header.md#encrypted-data-key-count
         //# The encrypted data key count MUST be interpreted as a UInt16.
-        edks.len() as u16
+        edk_count
     )?;
 
     // Encrypted Data Key Entries

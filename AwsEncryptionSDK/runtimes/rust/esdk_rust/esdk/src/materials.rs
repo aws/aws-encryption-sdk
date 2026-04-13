@@ -1,8 +1,9 @@
 // use crate::message::header::*;
-use crate::legacy_compat::*;
-use crate::message::header_types::*;
-use crate::message::serializable_types::*;
-use crate::*;
+use crate::legacy_compat::{convert_alg, convert_commit, convert_edks, from_legacy_dm, from_legacy_em};
+use crate::message::header_types::HeaderBody;
+use crate::message::serializable_types::{from_canonical_pairs, is_esdk_encrypted_data_keys, is_esdk_encryption_context};
+use crate::error::{Error, val_err};
+use crate::types::{EncryptionContext, MaterialSource, mpl};
 use aws_mpl_legacy::DecryptionMaterials;
 use aws_mpl_legacy::EncryptionMaterials;
 use aws_mpl_legacy::cmm::DecryptMaterialsInput;

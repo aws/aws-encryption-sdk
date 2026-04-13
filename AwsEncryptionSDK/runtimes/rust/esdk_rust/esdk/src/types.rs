@@ -66,6 +66,9 @@ impl Default for FrameLength {
 
 impl FrameLength {
     /// return new `FrameLength`.
+    ///
+    /// # Errors
+    /// Returns an error if `val` is zero.
     pub fn new(val: u32) -> Result<Self, Error> {
         //= specification/client-apis/encrypt.md#frame-length
         //# This value MUST be greater than 0 and MUST NOT exceed the value 2^32 - 1.
@@ -75,6 +78,9 @@ impl FrameLength {
         ))
     }
     /// return new `FrameLength`. Panic if val is zero.
+    ///
+    /// # Panics
+    /// Panics if `val` is zero.
     #[must_use]
     pub const fn new_unchecked(val: u32) -> Self {
         Self(std::num::NonZeroU32::new(val).unwrap())
@@ -82,6 +88,9 @@ impl FrameLength {
 }
 
 /// Convenience function to return a `MaterialProviders` Client.
+///
+/// # Panics
+/// Panics if the `MaterialProviders` client cannot be constructed.
 #[must_use]
 pub fn mpl() -> aws_mpl_legacy::dafny::client::Client {
     aws_mpl_legacy::dafny::client::Client::from_conf(

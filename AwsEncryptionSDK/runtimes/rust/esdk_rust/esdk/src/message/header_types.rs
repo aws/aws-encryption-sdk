@@ -1,9 +1,9 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use super::serializable_types::*;
-use super::serialize_functions::*;
-use super::*;
+use super::serializable_types::ESDKCanonicalEncryptionContext;
+use super::serialize_functions::{read_u8, write_u8};
+use super::{Error, ser_err};
 use crate::types::{SafeRead, SafeWrite};
 use aws_mpl_legacy::EncryptedDataKey;
 use aws_mpl_legacy::suites::AlgorithmSuite;

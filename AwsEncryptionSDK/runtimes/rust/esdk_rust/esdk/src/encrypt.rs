@@ -10,12 +10,12 @@ use crate::error::val_err;
 use crate::key_derivation;
 use crate::materials;
 use crate::message::encryption_context::write_empty_ec_or_write_aad;
-use crate::message::header_types::*;
-use crate::message::serializable_types::*;
-use crate::message::*;
-use crate::types::*;
+use crate::message::header_types::{MessageId, HeaderBody, V2HeaderBody, ContentType, V1HeaderBody, MessageType, HeaderAuth};
+use crate::message::serializable_types::{to_canonical_pairs, ESDKCanonicalEncryptionContext, get_iv_length, get_encrypt_key_length};
+use crate::message::{DigestWriter, header, body, footer};
+use crate::types::{EncryptInput, EncryptOutput, SafeRead, SafeWrite, EncryptStreamInput, EncryptStreamOutput, MaterialSource, EncryptionContext, FrameLength};
 use aws_mpl_legacy::EncryptedDataKey;
-use aws_mpl_legacy::primitives::*;
+use aws_mpl_legacy::primitives::{ecdsa_sign_digest, aes_encrypt};
 use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
 use aws_mpl_legacy::suites::AlgorithmSuite;
 
@@ -27,6 +27,16 @@ struct EncryptionMaterialsResult {
 }
 
 /// This is the public-facing entry point for the ESDK encrypt method.
+///
+/// # Errors
+///
+/// Returns an error if:
+/// - No keyring or CMM is provided (input validation fails)
+/// - The encryption context contains keys with the reserved `aws-crypto-` prefix
+/// - The algorithm suite is incompatible with the commitment policy
+/// - Encryption materials cannot be obtained from the CMM
+/// - The number of encrypted data keys exceeds the configured maximum
+/// - Key derivation, header construction, body encryption, or signature generation fails
 //= specification/client-apis/client.md#encrypt
 //# The AWS Encryption SDK Client MUST provide an [encrypt](./encrypt.md#input) function
 //# that adheres to [encrypt](./encrypt.md).
@@ -84,6 +94,17 @@ pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
 //= type=implication
 //= reason=SafeWrite accepts incremental writes, so each decrypted frame is flushed to the output as it's produced without buffering the full ciphertext
 //# This operation MAY [stream](streaming.md) the encrypted message.
+/// Encrypt a plaintext stream into a ciphertext stream.
+///
+/// # Errors
+///
+/// Returns an error if:
+/// - No keyring or CMM is provided (input validation fails)
+/// - The encryption context contains keys with the reserved `aws-crypto-` prefix
+/// - The algorithm suite is incompatible with the commitment policy
+/// - Encryption materials cannot be obtained from the CMM
+/// - The number of encrypted data keys exceeds the configured maximum
+/// - Key derivation, header construction, body encryption, or signature generation fails
 pub async fn encrypt_stream(
     plaintext: &mut dyn SafeRead,
     ciphertext: &mut dyn SafeWrite,

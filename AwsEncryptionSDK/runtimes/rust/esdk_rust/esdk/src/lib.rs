@@ -76,17 +76,9 @@
 #![allow(clippy::wildcard_enum_match_arm)]
 #![allow(clippy::multiple_crate_versions)] // nothing to be done
 #![allow(clippy::option_if_let_else)] // disagree
-#![allow(clippy::cast_possible_truncation)] // REMOVE
-#![allow(clippy::missing_panics_doc)] // REMOVE
-#![allow(clippy::cast_sign_loss)] // REMOVE
 #![allow(clippy::redundant_pub_crate)] // broken, conflicts with unreachable_pub
-#![allow(clippy::wildcard_imports)] // REMOVE
-#![allow(clippy::missing_errors_doc)] // REMOVE
 #![allow(clippy::too_many_lines)] // disagree
 #![allow(unused_crate_dependencies)] // broken
-
-// #[allow(lint_name, reason = "Your explanation here")]
-// #[warn(clippy::allow_attributes_without_reason)] // REMOVE
 
 mod error;
 pub use error::*;

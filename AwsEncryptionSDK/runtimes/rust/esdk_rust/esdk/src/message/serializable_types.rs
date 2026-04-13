@@ -1,7 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::types::*;
+use crate::types::EncryptionContext;
 use aws_mpl_legacy::EncryptedDataKey;
 use aws_mpl_legacy::suites::AlgorithmSuite;
 

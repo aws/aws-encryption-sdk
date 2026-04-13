@@ -1,8 +1,10 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use super::*;
+use super::{Error, ser_err};
+use crate::error::ErrorKind;
 use crate::types::{SafeRead, SafeWrite};
+use std::backtrace::Backtrace;
 use std::sync::Arc;
 
 #[track_caller]
@@ -190,7 +192,10 @@ pub(crate) fn read_seq_u64_bounded(
     if len > bound {
         return ser_err(msg);
     }
-    read_vec(r, len as usize, raw)
+    let Ok(len_usize) = usize::try_from(len) else {
+        return ser_err("length too large for platform");
+    };
+    read_vec(r, len_usize, raw)
 }
 
 pub(crate) fn read_str_u16(r: &mut dyn SafeRead, raw: &mut dyn SafeWrite) -> Result<String, Error> {

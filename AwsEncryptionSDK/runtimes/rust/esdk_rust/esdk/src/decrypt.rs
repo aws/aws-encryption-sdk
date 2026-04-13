@@ -12,9 +12,9 @@ use crate::key_derivation;
 use crate::materials;
 use crate::message::header_types::ContentType;
 use crate::message::serializable_types::{from_canonical_pairs, to_canonical_pairs};
-use crate::message::*;
-use crate::types::*;
-use aws_mpl_legacy::primitives::*;
+use crate::message::{header, DigestWriter, serialize_functions, header_types, header_auth, v2_header_body, encryption_context, body, NoopWriter, footer};
+use crate::types::{SafeRead, SafeWrite, DecryptStreamInput, DecryptStreamOutput, DecryptInput, DecryptOutput, EncryptionContext, MaterialSource, NetV400RetryPolicy};
+use aws_mpl_legacy::primitives::{aes_decrypt, EcdsaSignatureAlgorithm, DigestContext, ecdsa_verify_context};
 //= aws-encryption-sdk-specification/client-apis/client.md#commitment-policy
 //= type=implication
 //# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
@@ -66,6 +66,9 @@ impl ProtectionNeeded {
 //# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
 //# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
 /// Decrypt dyn Read into dyn Write
+///
+/// # Errors
+/// Returns an error if input validation, header parsing, decryption, or signature verification fails.
 pub async fn decrypt_stream(
     ciphertext: &mut dyn SafeRead,
     plaintext: &mut dyn SafeWrite,
@@ -113,6 +116,9 @@ pub async fn decrypt_stream(
 //# The AWS Encryption SDK Client MUST provide an [decrypt](./decrypt.md#input) function
 //# that adheres to [decrypt](./decrypt.md).
 /// Decrypt slice into Vec
+///
+/// # Errors
+/// Returns an error if input validation, header parsing, decryption, or signature verification fails.
 pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
     input.validate()?;
     let mut cursor: std::io::Cursor<&[u8]> = std::io::Cursor::new(input.ciphertext);

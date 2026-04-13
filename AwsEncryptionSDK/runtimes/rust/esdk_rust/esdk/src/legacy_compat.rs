@@ -1,6 +1,6 @@
 //! Legacy type conversion layer between aws_mpl_legacy::dafny::types and aws_mpl_legacy::suites.
 
-use crate::*;
+use crate::{Error, val_err};
 use aws_mpl_legacy::DecryptionMaterials;
 use aws_mpl_legacy::EncryptionMaterials;
 use aws_mpl_legacy::Secret;
@@ -169,24 +169,24 @@ pub(crate) const fn from_legacy_hmac(
     }
 }
 
-pub(crate) fn from_legacy_hkdf(x: &aws_mpl_legacy::dafny::types::Hkdf) -> aws_mpl_legacy::suites::Hkdf {
+pub(crate) fn from_legacy_hkdf(x: &aws_mpl_legacy::dafny::types::Hkdf) -> Result<aws_mpl_legacy::suites::Hkdf, Error> {
     let mut n = aws_mpl_legacy::suites::Hkdf::default();
     n.hmac = from_legacy_hmac(x.hmac.unwrap());
-    n.salt_length = x.salt_length.unwrap() as u32;
-    n.input_key_length = x.input_key_length.unwrap() as u32;
-    n.output_key_length = x.output_key_length.unwrap() as u32;
-    n
+    n.salt_length = u32::try_from(x.salt_length.unwrap()).map_err(|_| val_err("negative value from MPL"))?;
+    n.input_key_length = u32::try_from(x.input_key_length.unwrap()).map_err(|_| val_err("negative value from MPL"))?;
+    n.output_key_length = u32::try_from(x.output_key_length.unwrap()).map_err(|_| val_err("negative value from MPL"))?;
+    Ok(n)
 }
 
 pub(crate) fn from_legacy_da(
     x: aws_mpl_legacy::dafny::types::DerivationAlgorithm,
-) -> aws_mpl_legacy::suites::DerivationAlgorithm {
+) -> Result<aws_mpl_legacy::suites::DerivationAlgorithm, Error> {
     use aws_mpl_legacy::dafny::types::DerivationAlgorithm as Old;
     use aws_mpl_legacy::suites::DerivationAlgorithm as New;
     match x {
-        Old::Hkdf(x) => New::Hkdf(from_legacy_hkdf(&x)),
-        Old::Identity(_x) => New::Identity,
-        Old::None(_x) => New::None,
+        Old::Hkdf(x) => Ok(New::Hkdf(from_legacy_hkdf(&x)?)),
+        Old::Identity(_x) => Ok(New::Identity),
+        Old::None(_x) => Ok(New::None),
         _ => panic!(),
     }
 }
@@ -228,23 +228,23 @@ pub(crate) fn from_legacy_ssig(
 
 pub(crate) fn from_legacy_inter_wrap(
     x: aws_mpl_legacy::dafny::types::IntermediateKeyWrapping,
-) -> aws_mpl_legacy::suites::IntermediateKeyWrapping {
+) -> Result<aws_mpl_legacy::suites::IntermediateKeyWrapping, Error> {
     let mut r = aws_mpl_legacy::suites::IntermediateKeyWrapping::default();
-    r.key_encryption_key_kdf = from_legacy_da(x.key_encryption_key_kdf.unwrap());
-    r.mac_key_kdf = from_legacy_da(x.mac_key_kdf.unwrap());
+    r.key_encryption_key_kdf = from_legacy_da(x.key_encryption_key_kdf.unwrap())?;
+    r.mac_key_kdf = from_legacy_da(x.mac_key_kdf.unwrap())?;
     r.pdk_encrypt_algorithm =
         aws_mpl_legacy::suites::Encrypt::AesGcm(from_legacy_encrypt(x.pdk_encrypt_algorithm.unwrap()));
-    r
+    Ok(r)
 }
 
 pub(crate) fn from_legacy_wrap(
     x: aws_mpl_legacy::dafny::types::EdkWrappingAlgorithm,
-) -> aws_mpl_legacy::suites::EdkWrappingAlgorithm {
+) -> Result<aws_mpl_legacy::suites::EdkWrappingAlgorithm, Error> {
     use aws_mpl_legacy::dafny::types::EdkWrappingAlgorithm as Old;
     use aws_mpl_legacy::suites::EdkWrappingAlgorithm as New;
     match x {
-        Old::DirectKeyWrapping(_x) => New::DirectKeyWrapping,
-        Old::IntermediateKeyWrapping(x) => New::IntermediateKeyWrapping(from_legacy_inter_wrap(x)),
+        Old::DirectKeyWrapping(_x) => Ok(New::DirectKeyWrapping),
+        Old::IntermediateKeyWrapping(x) => Ok(New::IntermediateKeyWrapping(from_legacy_inter_wrap(x)?)),
         _ => panic!(),
     }
 }
@@ -253,13 +253,13 @@ pub(crate) fn from_legacy_as(x: aws_mpl_legacy::dafny::types::AlgorithmSuiteInfo
     let mut s = AlgorithmSuite::default();
     s.id = from_dafny_suite_id(&x.id.unwrap())?;
     s.binary_id = x.binary_id.unwrap().as_ref()[0..2].try_into().unwrap();
-    s.message_version = x.message_version.unwrap() as u32;
+    s.message_version = u32::try_from(x.message_version.unwrap()).map_err(|_| val_err("negative value from MPL"))?;
     s.encrypt = aws_mpl_legacy::suites::Encrypt::AesGcm(from_legacy_encrypt(x.encrypt.unwrap()));
-    s.kdf = from_legacy_da(x.kdf.unwrap());
-    s.commitment = from_legacy_da(x.commitment.unwrap());
+    s.kdf = from_legacy_da(x.kdf.unwrap())?;
+    s.commitment = from_legacy_da(x.commitment.unwrap())?;
     s.signature = from_legacy_sig(x.signature.as_ref().unwrap().clone());
     s.symmetric_signature = from_legacy_ssig(x.symmetric_signature.unwrap());
-    s.edk_wrapping = from_legacy_wrap(x.edk_wrapping.unwrap());
+    s.edk_wrapping = from_legacy_wrap(x.edk_wrapping.unwrap())?;
     Ok(s)
 }
 

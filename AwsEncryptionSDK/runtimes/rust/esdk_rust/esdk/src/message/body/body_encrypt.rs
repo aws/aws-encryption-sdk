@@ -4,9 +4,9 @@
 use super::{body_aad, get_encrypt, iv_seq, BodyAADContent};
 use crate::error::val_err;
 use crate::message::header::{ENDFRAME_SEQUENCE_NUMBER, HeaderInfo, START_SEQUENCE_NUMBER};
-use crate::message::serializable_types::*;
+use crate::message::serializable_types::{get_iv_length, get_tag_length};
 use crate::message::serialize_functions::{read_opt_u8, read_up_to_peek, write_bytes, write_u32};
-use crate::message::*;
+use crate::message::{DigestWriter, Error};
 use crate::types::{SafeRead, SafeWrite};
 use aws_mpl_legacy::primitives::{AesGcm, aes_encrypt};
 
@@ -155,7 +155,7 @@ pub(crate) fn construct_frame(
         //# The length of the serialized encrypted content length field MUST be 4 bytes.
         //= specification/data-format/message-body.md#final-frame-encrypted-content-length
         //# The encrypted content length MUST be a UInt32.
-        write_u32(frame_buf, input.plaintext.len() as u32)?;
+        write_u32(frame_buf, u32::try_from(input.plaintext.len()).map_err(|_| val_err("plaintext length exceeds u32"))?)?;
     }
 
     //= specification/client-apis/encrypt.md#construct-a-frame

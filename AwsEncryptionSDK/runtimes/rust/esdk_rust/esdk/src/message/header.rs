@@ -1,11 +1,11 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use super::header_types::*;
-use super::serializable_types::*;
-use super::v1_header_body::*;
-use super::v2_header_body::*;
-use super::*;
+use super::header_types::{ContentType, HeaderAuth, HeaderBody, MESSAGE_ID_LEN_V1, MESSAGE_ID_LEN_V2, MessageFormatVersion, MessageId, read_msg_format_version};
+use super::serializable_types::ESDKEncryptionContext;
+use super::v1_header_body::{read_v1_header_body, write_v1_header_body};
+use super::v2_header_body::{get_hkdf, read_v2_header_body, write_v2_header_body};
+use super::{DigestWriter, Error, header_auth, ser_err, serialize_functions};
 use crate::error::val_err;
 use crate::types::{SafeRead, SafeWrite};
 
@@ -168,7 +168,7 @@ pub(crate) fn validate_suite_data(
     //= specification/data-format/message-header.md#algorithm-suite-data
     //# The length of the suite data field MUST be equal to the [Algorithm Suite Data Length](../framework/algorithm-suites.md#algorithm-suite-data-length) value
     //# of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-    if get_hkdf(&suite.commitment).output_key_length != expected_suite_data.len() as u32 {
+    if get_hkdf(&suite.commitment).output_key_length != u32::try_from(expected_suite_data.len()).map_err(|_| val_err("header too large"))? {
         return Err(val_err("Commitment key is invalid"));
     }
     Ok(())

@@ -3,7 +3,7 @@
 
 use super::serializable_types::ESDKCanonicalEncryptionContext;
 use super::serialize_functions::{read_str_u16, read_u16, write_bytes, write_u16};
-use super::*;
+use super::{Error, ser_err};
 use crate::types::{SafeRead, SafeWrite};
 
 pub(crate) fn read_canonical_ec(
@@ -65,7 +65,10 @@ pub(crate) fn write_aad_section(
     //# The length of the serialized key value pairs length field MUST be 2 bytes.
     //= specification/data-format/message-header.md#key-value-pairs-length
     //# The key value pairs length MUST be interpreted as a UInt16.
-    write_u16(w, bytes as u16)?;
+    let Ok(bytes_u16) = u16::try_from(bytes) else {
+        return ser_err("value too large for u16");
+    };
+    write_u16(w, bytes_u16)?;
     write_aad(w, data)
 }
 
@@ -73,13 +76,22 @@ pub(crate) fn write_aad(
     w: &mut dyn SafeWrite,
     data: &ESDKCanonicalEncryptionContext,
 ) -> Result<(), Error> {
-    write_u16(w, data.len() as u16)?;
+    let Ok(data_len) = u16::try_from(data.len()) else {
+        return ser_err("value too large for u16");
+    };
+    write_u16(w, data_len)?;
     for pair in data {
         //= specification/data-format/message-header.md#key-value-pairs
         //# The encryption context key-value pairs MUST be serialized according to its [specification for serialization](../framework/structures.md#serialization).
-        write_u16(w, pair.0.len() as u16)?;
+        let Ok(key_len) = u16::try_from(pair.0.len()) else {
+            return ser_err("value too large for u16");
+        };
+        write_u16(w, key_len)?;
         write_bytes(w, pair.0.as_bytes())?;
-        write_u16(w, pair.1.len() as u16)?;
+        let Ok(val_len) = u16::try_from(pair.1.len()) else {
+            return ser_err("value too large for u16");
+        };
+        write_u16(w, val_len)?;
         write_bytes(w, pair.1.as_bytes())?;
     }
     Ok(())
