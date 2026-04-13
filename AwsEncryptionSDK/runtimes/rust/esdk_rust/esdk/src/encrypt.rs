@@ -6,6 +6,7 @@
 //! and serializes the result into an encrypted message.
 
 use crate::error::Error;
+use crate::error::val_err;
 use crate::key_derivation;
 use crate::materials;
 use crate::message::encryption_context::write_empty_ec_or_write_aad;
@@ -297,7 +298,7 @@ async fn step_get_encryption_materials(
         //# The data key used as input for all encryption described below MUST be a data key derived from the plaintext data key
         //# included in the [encryption materials](../framework/structures.md#encryption-materials).
         &materials.plaintext_data_key.as_ref()
-            .ok_or::<Error>("Encryption materials must contain a plaintext data key".into())?
+            .ok_or::<Error>(val_err("Encryption materials must contain a plaintext data key"))?
             .0,
         algorithm_suite,
         false,
@@ -430,7 +431,7 @@ fn step_construct_signature(
         //= specification/data-format/message.md#structure
         //# If the algorithm suite contains an unrecognized signature algorithm, the operation MUST raise an error.
         _ => {
-            return Err("Unrecognized signature algorithm in algorithm suite".into());
+            return Err(val_err("Unrecognized signature algorithm in algorithm suite"));
         }
     }
     //= specification/client-apis/encrypt.md#construct-the-signature
@@ -448,7 +449,7 @@ pub(crate) fn get_esdk_id(
 ) -> Result<aws_mpl_legacy::suites::EsdkAlgorithmSuiteId, Error> {
     match id {
         aws_mpl_legacy::suites::AlgorithmSuiteId::Esdk(x) => Ok(x),
-        _ => Err("Unsupported algorithm suite".into()),
+        _ => Err(val_err("Unsupported algorithm suite")),
     }
 }
 
@@ -458,7 +459,7 @@ fn validate_encryption_context(ec: &EncryptionContext) -> Result<(), Error> {
     for key in ec.keys() {
         if key.starts_with(RESERVED_ENCRYPTION_CONTEXT) {
             return Err(
-                "Encryption context keys cannot contain reserved prefix 'aws-crypto-'".into(),
+                val_err("Encryption context keys cannot contain reserved prefix 'aws-crypto-'"),
             );
         }
     }
@@ -539,7 +540,7 @@ fn build_header_body(
             if suite_data.is_none()
                 || suite_data.as_ref().unwrap().len() != h.output_key_length as usize
             {
-                return Err("Validation Error 1".into());
+                return Err(val_err("Suite data length must match the commitment key output length for HKDF commitment"));
             }
             Ok(HeaderBody::V2Body(V2HeaderBody {
                 algorithm_suite: suite.clone(),
@@ -553,7 +554,7 @@ fn build_header_body(
                 suite_data: suite_data.unwrap(),
             }))
         }
-        aws_mpl_legacy::suites::DerivationAlgorithm::Identity => Err("Validation Error 2".into()),
+        aws_mpl_legacy::suites::DerivationAlgorithm::Identity => Err(val_err("Identity key derivation is not supported for V2 message format")),
         _ => Ok(HeaderBody::V1Body(V1HeaderBody {
             message_type: MessageType::TypeCustomerAed,
             algorithm_suite: suite.clone(),
@@ -575,7 +576,7 @@ fn build_header_auth_tag(
 ) -> Result<HeaderAuth, Error> {
     let key_length = get_encrypt_key_length(suite);
     if data_key.len() != key_length as usize {
-        return Err("Incorrect data key length".into());
+        return Err(val_err("Incorrect data key length"));
     }
 
     //= specification/client-apis/encrypt.md#authentication-tag

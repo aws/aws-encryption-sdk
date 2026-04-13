@@ -6,6 +6,7 @@ use super::serializable_types::*;
 use super::v1_header_body::*;
 use super::v2_header_body::*;
 use super::*;
+use crate::error::val_err;
 use crate::types::{SafeRead, SafeWrite};
 
 pub(crate) const START_SEQUENCE_NUMBER: u32 = 1;
@@ -126,12 +127,12 @@ pub(crate) fn validate_max_encrypted_data_keys(
         //# [maximum number of encrypted data keys](../client-apis/client.md#maximum-number-of-encrypted-data-keys)
         //# if the maximum number is configured.
         if edks.len() > max.get() {
-            return Err("Encrypted data keys exceed maxEncryptedDataKeys".into());
+            return Err(val_err("Encrypted data keys exceed maxEncryptedDataKeys"));
         }
         //= specification/data-format/message-header.md#encrypted-data-key-count
         //# This value MUST be greater than 0.
         if edks.is_empty() {
-            return Err("Encrypted data keys is empty.".into());
+            return Err(val_err("Encrypted data keys is empty."));
         }
     }
     Ok(())
@@ -162,13 +163,13 @@ pub(crate) fn validate_suite_data(
     //= reason=Check against expected_suite_data (a &[u8] type) implies interpreting as bytes
     //# The algorithm suite data MUST be interpreted as bytes.
     if header_body.suite_data() != expected_suite_data {
-        return Err("Commitment key does not match".into());
+        return Err(val_err("Commitment key does not match"));
     }
     //= specification/data-format/message-header.md#algorithm-suite-data
     //# The length of the suite data field MUST be equal to the [Algorithm Suite Data Length](../framework/algorithm-suites.md#algorithm-suite-data-length) value
     //# of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
     if get_hkdf(&suite.commitment).output_key_length != expected_suite_data.len() as u32 {
-        return Err("Commitment key is invalid".into());
+        return Err(val_err("Commitment key is invalid"));
     }
     Ok(())
 }

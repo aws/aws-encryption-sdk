@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use super::{body_aad, get_encrypt, iv_seq, BodyAADContent};
+use crate::error::val_err;
 use crate::message::header::{ENDFRAME_SEQUENCE_NUMBER, HeaderInfo, START_SEQUENCE_NUMBER};
 use crate::message::serializable_types::*;
 use crate::message::serialize_functions::{read_opt_u8, read_up_to_peek, write_bytes, write_u32};
@@ -294,12 +295,12 @@ pub(crate) fn encrypt_and_serialize_body(
         //= specification/data-format/message-body.md#framed-data
         //# - The number of frames in a single message MUST be less than or equal to `2^32 - 1`.
         if sequence_number == ENDFRAME_SEQUENCE_NUMBER {
-            return Err("too many frames".into());
+            return Err(val_err("too many frames"));
         }
 
         total_data_size += frame_length;
         if total_data_size > MAX_DATA {
-            return Err("Plain text too large".into());
+            return Err(val_err("Plain text too large"));
         }
         if let Some(max_plaintext_len) = max_plaintext_length {
             //= specification/client-apis/encrypt.md#plaintext-length-bound
@@ -311,7 +312,7 @@ pub(crate) fn encrypt_and_serialize_body(
             //# has a length greater than this value,
             //# this operation MUST immediately fail.
             if total_data_size > max_plaintext_len {
-                return Err("Plaintext length exceeds specified Plaintext Length Bound".into());
+                return Err(val_err("Plaintext length exceeds specified Plaintext Length Bound"));
             }
         }
 
@@ -359,11 +360,11 @@ pub(crate) fn encrypt_and_serialize_body(
     // Final frame
     total_data_size += in_size;
     if total_data_size > MAX_DATA {
-        return Err("Plain text too large".into());
+        return Err(val_err("Plain text too large"));
     }
     if let Some(max_len) = max_plaintext_length {
         if total_data_size > max_len {
-            return Err("Plaintext length exceeds specified Plaintext Length Bound".into());
+            return Err(val_err("Plaintext length exceeds specified Plaintext Length Bound"));
         }
     }
 

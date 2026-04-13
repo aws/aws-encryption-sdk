@@ -71,6 +71,25 @@ pub(crate) fn val_err(msg: impl Into<String>) -> Error {
     }
 }
 
+pub(crate) fn esdk_err(msg: impl Into<String>) -> Error {
+    Error {
+        kind: ErrorKind::Esdk,
+        message: msg.into(),
+        backtrace: Arc::new(Backtrace::capture()),
+        cause: None,
+    }
+}
+
+#[track_caller]
+pub(crate) fn ser_err<T>(msg: &str) -> Result<T, Error> {
+    Err(Error {
+        kind: ErrorKind::SerializationError,
+        message: msg.into(),
+        backtrace: Arc::new(Backtrace::capture()),
+        cause: None,
+    })
+}
+
 impl From<aws_mpl_legacy::dafny::types::error::Error> for Error {
     #[track_caller]
     fn from(item: aws_mpl_legacy::dafny::types::error::Error) -> Self {

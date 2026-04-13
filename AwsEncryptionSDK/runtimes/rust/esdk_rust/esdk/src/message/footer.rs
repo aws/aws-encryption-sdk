@@ -33,8 +33,9 @@ pub(crate) fn write_footer(
     //= specification/client-apis/encrypt.md#construct-the-signature
     //# - [Signature Length](../data-format/message-footer.md#signature-length): The value MUST be the length of the
     //# output of the signature calculation above.
-    let len = u16::try_from(signature.len())
-        .map_err(|_| Error::from("Sequence length too long for 16 bits"))?;
+    let Ok(len) = u16::try_from(signature.len()) else {
+        return ser_err("Sequence length too long for 16 bits");
+    };
     //= specification/data-format/message-footer.md#structure
     //# The message footer MUST consist of, in order,
     //# Signature Length,

@@ -174,7 +174,7 @@ pub(crate) fn read_seq_u32_bounded(
 ) -> Result<(), Error> {
     let len = read_u32(r, raw)?;
     if len > bound {
-        return Err(msg.into());
+        return ser_err(msg);
     }
     data.resize(len as usize, 0);
     read_bytes(r, &mut data[..], raw)
@@ -188,7 +188,7 @@ pub(crate) fn read_seq_u64_bounded(
 ) -> Result<Vec<u8>, Error> {
     let len = read_u64(r, raw)?;
     if len > bound {
-        return Err(msg.into());
+        return ser_err(msg);
     }
     read_vec(r, len as usize, raw)
 }

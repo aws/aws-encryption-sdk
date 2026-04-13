@@ -14,17 +14,8 @@ use aws_mpl_legacy::primitives::DigestContext;
 use std::backtrace::Backtrace;
 
 pub(crate) use super::error::Error;
+pub(crate) use super::error::ser_err;
 use super::error::ErrorKind;
-
-#[track_caller]
-pub(crate) fn ser_err<T>(msg: &str) -> Result<T, Error> {
-    Err(Error {
-        kind: ErrorKind::SerializationError,
-        message: msg.into(),
-        backtrace: std::sync::Arc::new(Backtrace::capture()),
-        cause: None,
-    })
-}
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub(crate) struct NoopWriter;

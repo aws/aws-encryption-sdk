@@ -7,6 +7,7 @@
 
 use crate::encrypt::get_esdk_id;
 use crate::error::Error;
+use crate::error::{esdk_err, val_err};
 use crate::key_derivation;
 use crate::materials;
 use crate::message::header_types::ContentType;
@@ -136,7 +137,7 @@ pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
     //# but there are consumable bytes which are intended to be decrypted,
     //# this operation MUST fail.
     if cursor.position() != input.ciphertext.len() as u64 {
-        return Err("Data after message footer.".into());
+        return Err(esdk_err("Data after message footer."));
     }
 
     Ok(DecryptOutput {
@@ -317,7 +318,7 @@ async fn step_get_decryption_materials(
 
     if suite != header_body.algorithm_suite() {
         return Err(
-            "Stored header algorithm suite does not match decryption algorithm suite.".into(),
+            val_err("Stored header algorithm suite does not match decryption algorithm suite."),
         );
     }
     //= specification/client-apis/decrypt.md#v2-header-deserialization
@@ -339,7 +340,7 @@ async fn step_get_decryption_materials(
     )?;
 
     if !header::header_version_supports_commitment(suite, header_body) {
-        return Err("Invalid commitment values found in header body.".into());
+        return Err(val_err("Invalid commitment values found in header body."));
     }
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# If the [algorithm suite](../framework/algorithm-suites.md#algorithm-suites-encryption-key-derivation-settings) supports [key commitment](../framework/algorithm-suites.md#key-commitment)
@@ -579,7 +580,7 @@ pub(crate) fn get_ecdsa_alg(
 ) -> Result<EcdsaSignatureAlgorithm, Error> {
     match alg {
         aws_mpl_legacy::suites::SignatureAlgorithm::Ecdsa(x) => Ok(x),
-        _ => Err("UnsupportedAlgorithm".into()),
+        _ => Err(val_err("Unsupported signature algorithm")),
     }
 }
 
@@ -611,7 +612,7 @@ fn verify_signature(
     )?;
 
     if !valid {
-        return Err("InvalidSignature".into());
+        return Err(esdk_err("InvalidSignature"));
     }
     Ok(())
 }

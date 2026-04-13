@@ -78,7 +78,7 @@ pub(crate) async fn get_decryption_materials(
         }
     };
     if !is_esdk_encryption_context(&materials.encryption_context) {
-        return Err("CMM failed to return serializable encryption materials.".into());
+        return Err(val_err("CMM failed to return serializable encryption materials."));
     }
     Ok(materials)
 }
@@ -113,10 +113,10 @@ pub(crate) async fn get_encryption_materials(
         }
     };
     if !is_esdk_encryption_context(&materials.encryption_context) {
-        return Err("CMM failed to return serializable encryption materials.".into());
+        return Err(val_err("CMM failed to return serializable encryption materials."));
     }
     if !is_esdk_encrypted_data_keys(&materials.encrypted_data_keys) {
-        return Err("CMM failed to return serializable encrypted data keys.".into());
+        return Err(val_err("CMM failed to return serializable encrypted data keys."));
     }
     Ok(materials)
 }

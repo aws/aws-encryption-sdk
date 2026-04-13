@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use super::{body_aad, get_encrypt, BodyAADContent};
+use crate::error::esdk_err;
 use crate::message::header::{ENDFRAME_SEQUENCE_NUMBER, HeaderInfo, START_SEQUENCE_NUMBER};
 use crate::message::serializable_types::*;
 use crate::message::serialize_functions::{read_bytes, read_seq_u32_bounded, read_u32, write_bytes};
@@ -85,7 +86,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             //# The sequence number MUST be interpreted as a UInt32.
             let seq_num: u32 = read_u32(ciphertext, sig_digest)?;
             if seq_num != expected_frame {
-                return Err("Final sequence number out of order.".into());
+                return ser_err("Final sequence number out of order.");
             }
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //= reason=read_bytes reads IV bytes from the final frame
@@ -197,7 +198,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 // write previous frame's data, now that we know we have another frame.
                 if expected_frame != START_SEQUENCE_NUMBER {
                     if fail_if_multi_frame {
-                        return Err("Streaming Interface can return data before signature has been validated. Set `allow_unsafe_unverified_signature` in the DecryptStreamInput struct if this is ok.".into());
+                        return Err(esdk_err("Streaming Interface can return data before signature has been validated. Set `allow_unsafe_unverified_signature` in the DecryptStreamInput struct if this is ok."));
                     }
                     write_bytes(w, &result)?;
                 }
@@ -219,7 +220,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             return Ok(result);
         }
         if seq_num != expected_frame {
-            return Err("Sequence number out of order.".into());
+            return ser_err("Sequence number out of order.");
         }
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //# - If the streamed Decrypt operation is using an algorithm suite with a signature algorithm,
@@ -232,7 +233,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         // write previous frame's data, now that we know we have another frame.
         if expected_frame != START_SEQUENCE_NUMBER {
             if fail_if_multi_frame {
-                return Err("Streaming Interface can return data before signature has been validated. Set `allow_unsafe_unverified_signature` in the DecryptStreamInput struct if this is ok.".into());
+                return Err(esdk_err("Streaming Interface can return data before signature has been validated. Set `allow_unsafe_unverified_signature` in the DecryptStreamInput struct if this is ok."));
             }
             write_bytes(w, &result)?;
         }
@@ -364,7 +365,7 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     //= specification/data-format/message-header.md#frame-length
     //# When the [content type](#content-type) is non-framed, the value of this field MUST be 0.
     if header.body.frame_length() != 0 {
-        return Err("Non-framed message contains non-zero frame length.".into());
+        return ser_err("Non-framed message contains non-zero frame length.");
     }
 
     //= specification/data-format/message-body.md#non-framed-data
