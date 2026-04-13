@@ -11,20 +11,6 @@ use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
 use test_helpers::*;
 
-/// Read the signature length from the end of a signing-suite ciphertext.
-/// The footer is: [sig_len: 2 bytes] [signature: sig_len bytes] at the end.
-/// For ECDSA P384, the DER-encoded signature is typically 102-104 bytes.
-fn find_footer_offset(ct: &[u8]) -> (usize, u16) {
-    for candidate_len in 90..=110 {
-        let offset = ct.len() - 2 - candidate_len;
-        let sig_len = u16::from_be_bytes([ct[offset], ct[offset + 1]]);
-        if sig_len as usize == candidate_len {
-            return (offset, sig_len);
-        }
-    }
-    panic!("Could not find footer in ciphertext");
-}
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_signing_suite_produces_footer() {
     //= specification/client-apis/encrypt.md#construct-the-signature

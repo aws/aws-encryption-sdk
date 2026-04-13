@@ -42,23 +42,6 @@ async fn test_footer_present_with_signing_suite() {
     assert!(sig_len > 0, "footer signature length must be non-zero for signing suite");
 }
 
-/// Read the signature length from the end of a signing-suite ciphertext.
-/// The footer is: [sig_len: 2 bytes] [signature: sig_len bytes] at the end.
-/// We need to find where the footer starts. Since we don't know sig_len yet,
-/// we try reading the 2-byte length at various offsets.
-/// For ECDSA P384, the DER-encoded signature is typically 102-104 bytes.
-fn find_footer_offset(ct: &[u8]) -> (usize, u16) {
-    // Try signature lengths in the expected range for ECDSA P384 DER signatures
-    for candidate_len in 90..=110 {
-        let offset = ct.len() - 2 - candidate_len;
-        let sig_len = u16::from_be_bytes([ct[offset], ct[offset + 1]]);
-        if sig_len as usize == candidate_len {
-            return (offset, sig_len);
-        }
-    }
-    panic!("Could not find footer in ciphertext");
-}
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_footer_signature_length_is_two_bytes() {
     //= specification/data-format/message-footer.md#signature-length

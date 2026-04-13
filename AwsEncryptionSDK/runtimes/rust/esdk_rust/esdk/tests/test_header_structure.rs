@@ -10,40 +10,6 @@ use aws_esdk::*;
 use fixtures::*;
 use test_helpers::*;
 
-
-/// Parse a V2 ciphertext header and return (edk_count_offset, content_type_offset, frame_length_offset).
-/// V2 header layout: Version(1) + AlgSuiteID(2) + MessageID(32) + AAD(variable) + EDKs(variable) + ContentType(1) + FrameLength(4) + SuiteData(32).
-fn parse_header_offsets(ct: &[u8]) -> (usize, usize, usize) {
-    let mut pos: usize = 1 + 2 + 32; // skip Version, AlgSuiteID, MessageID
-
-    // AAD: 2-byte length, then if non-zero: 2-byte kv_count + aad_byte_len bytes
-    let aad_byte_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
-    pos += 2;
-    if aad_byte_len > 0 {
-        pos += 2 + aad_byte_len;
-    }
-
-    // EDK count offset
-    let edk_count_offset = pos;
-    let edk_count = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
-    pos += 2;
-    for _ in 0..edk_count {
-        let pid_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
-        pos += 2 + pid_len;
-        let pinfo_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
-        pos += 2 + pinfo_len;
-        let ct_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
-        pos += 2 + ct_len;
-    }
-
-    let content_type_offset = pos;
-    pos += 1; // Content Type: 1 byte
-
-    let frame_length_offset = pos;
-
-    (edk_count_offset, content_type_offset, frame_length_offset)
-}
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_header_big_endian_format() {
     //= specification/data-format/message-header.md#structure

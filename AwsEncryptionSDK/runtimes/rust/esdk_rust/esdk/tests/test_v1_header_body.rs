@@ -234,38 +234,6 @@ async fn test_v1_header_serialization_order() {
     assert_eq!(result, b"order test", "round-trip proves serialization order is correct");
 }
 
-/// Parse V1 header trailing field offsets from ciphertext.
-/// Returns (content_type_offset, reserved_offset, iv_length_offset, frame_length_offset).
-fn parse_v1_trailing_offsets(ct: &[u8]) -> (usize, usize, usize, usize) {
-    // V1 header: Version(1) + Type(1) + AlgSuiteID(2) + MessageID(16) = 20 fixed bytes
-    let mut pos: usize = 20;
-
-    // AAD: 2-byte length, then if non-zero: 2-byte kv_count + aad_byte_len bytes
-    let aad_byte_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
-    pos += 2;
-    if aad_byte_len > 0 {
-        pos += 2 + aad_byte_len;
-    }
-
-    // EDKs: 2-byte count, then for each: provider_id(2+len) + provider_info(2+len) + ciphertext(2+len)
-    let edk_count = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
-    pos += 2;
-    for _ in 0..edk_count {
-        let pid_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
-        pos += 2 + pid_len;
-        let pinfo_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
-        pos += 2 + pinfo_len;
-        let ct_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
-        pos += 2 + ct_len;
-    }
-
-    let content_type_offset = pos;
-    let reserved_offset = pos + 1;
-    let iv_length_offset = pos + 1 + 4;
-    let frame_length_offset = pos + 1 + 4 + 1;
-    (content_type_offset, reserved_offset, iv_length_offset, frame_length_offset)
-}
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_version_field_is_1_byte() {
     //= specification/data-format/message-header.md#version

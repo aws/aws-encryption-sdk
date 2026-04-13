@@ -11,19 +11,6 @@ use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
 use test_helpers::*;
 
-/// Find the footer offset in a signing-suite ciphertext.
-/// Footer format: [sig_len: 2 bytes big-endian] [signature: sig_len bytes] at the end.
-fn find_footer_offset(ct: &[u8]) -> usize {
-    for candidate_len in 90..=110 {
-        let offset = ct.len() - 2 - candidate_len;
-        let sig_len = u16::from_be_bytes([ct[offset], ct[offset + 1]]);
-        if sig_len as usize == candidate_len {
-            return offset;
-        }
-    }
-    panic!("Could not find footer in ciphertext");
-}
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_verify_signature_round_trip_signing_suite() {
     //= specification/client-apis/decrypt.md#verify-the-signature
@@ -87,7 +74,7 @@ async fn test_verify_signature_fails_on_tampered_footer() {
     let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
     // Tamper with a signature byte in the footer (last byte of ciphertext is part of the signature)
-    let footer_offset = find_footer_offset(&ct);
+    let footer_offset = find_footer_offset_only(&ct);
     ct[footer_offset + 3] ^= 0xFF;
 
     let dec_input =

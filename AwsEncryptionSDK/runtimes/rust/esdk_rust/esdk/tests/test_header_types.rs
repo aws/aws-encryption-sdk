@@ -11,33 +11,6 @@ use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
 use fixtures::*;
 use test_helpers::*;
 
-/// Find the content type byte offset in a V2 ciphertext.
-/// V2 header: Version(1) + AlgSuiteID(2) + MessageID(32) + AAD(variable) + EDKs(variable) + ContentType(1).
-fn content_type_offset_v2(ct: &[u8]) -> usize {
-    let mut pos: usize = 1 + 2 + 32; // skip Version, AlgSuiteID, MessageID
-
-    // AAD: 2-byte length, then if non-zero: 2-byte kv_count + aad_byte_len bytes
-    let aad_byte_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
-    pos += 2;
-    if aad_byte_len > 0 {
-        pos += 2 + aad_byte_len;
-    }
-
-    // EDKs: 2-byte count, then for each: provider_id(2+len) + provider_info(2+len) + ciphertext(2+len)
-    let edk_count = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
-    pos += 2;
-    for _ in 0..edk_count {
-        let pid_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
-        pos += 2 + pid_len;
-        let pinfo_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
-        pos += 2 + pinfo_len;
-        let ct_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
-        pos += 2 + ct_len;
-    }
-
-    pos
-}
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_version_v2_value() {
     //= specification/data-format/message-header.md#supported-versions

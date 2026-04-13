@@ -10,84 +10,8 @@ use aws_esdk::*;
 use fixtures::*;
 use test_helpers::*;
 
-
 // The ESDK always uses framed encryption, so non-framed deserialization
 // is tested by the decrypt path.
-
-fn find_body_start(ct: &[u8], frame_length: u32) -> Option<usize> {
-    let seq_one = 1u32.to_be_bytes();
-    for i in 0..ct.len().saturating_sub(4) {
-        if i + 8 <= ct.len() && ct[i..i + 4] == ENDFRAME_MARKER && ct[i + 4..i + 8] == seq_one {
-            return Some(i);
-        }
-        if ct[i..i + 4] == seq_one && validate_frame_walk(ct, i, frame_length) {
-            return Some(i);
-        }
-    }
-    None
-}
-
-fn validate_frame_walk(ct: &[u8], offset: usize, frame_length: u32) -> bool {
-    let regular_frame_size = 4 + IV_LEN + frame_length as usize + TAG_LEN;
-    let mut pos = offset;
-    loop {
-        if pos + 4 > ct.len() {
-            return false;
-        }
-        if ct[pos..pos + 4] == ENDFRAME_MARKER {
-            return true;
-        }
-        let next = pos + regular_frame_size;
-        if next > ct.len() {
-            return false;
-        }
-        pos = next;
-    }
-}
-
-/// Parse frames from ciphertext. Returns vec of (seq_num, iv, encrypted_content, auth_tag, is_final).
-type ParsedFrame = (u32, Vec<u8>, Vec<u8>, Vec<u8>, bool);
-
-fn parse_frames(ct: &[u8], frame_length: u32) -> Vec<ParsedFrame> {
-    let body_start = find_body_start(ct, frame_length).expect("could not find body start");
-    let mut pos = body_start;
-    let mut frames = Vec::new();
-
-    loop {
-        if pos + 4 > ct.len() {
-            break;
-        }
-        let first4 = u32::from_be_bytes([ct[pos], ct[pos + 1], ct[pos + 2], ct[pos + 3]]);
-        if first4 == 0xFFFF_FFFF {
-            // Final frame: ENDFRAME(4) + SeqNum(4) + IV(12) + ContentLen(4) + Content(N) + Tag(16)
-            pos += 4;
-            let seq = u32::from_be_bytes([ct[pos], ct[pos + 1], ct[pos + 2], ct[pos + 3]]);
-            pos += 4;
-            let iv = ct[pos..pos + IV_LEN].to_vec();
-            pos += IV_LEN;
-            let content_len =
-                u32::from_be_bytes([ct[pos], ct[pos + 1], ct[pos + 2], ct[pos + 3]]) as usize;
-            pos += 4;
-            let enc_content = ct[pos..pos + content_len].to_vec();
-            pos += content_len;
-            let tag = ct[pos..pos + TAG_LEN].to_vec();
-            frames.push((seq, iv, enc_content, tag, true));
-            break;
-        } else {
-            // Regular frame: SeqNum(4) + IV(12) + Content(frame_length) + Tag(16)
-            let seq = first4;
-            pos += 4;
-            let iv = ct[pos..pos + IV_LEN].to_vec();
-            pos += IV_LEN;
-            let enc_content = ct[pos..pos + frame_length as usize].to_vec();
-            pos += frame_length as usize;
-            let tag = ct[pos..pos + TAG_LEN].to_vec();
-            pos += TAG_LEN;
-            frames.push((seq, iv, enc_content, tag, false));
-        }
-    }
-    frames
-}
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_framed_data_max_frame_count() {

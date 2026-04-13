@@ -117,40 +117,6 @@ fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
     message
 }
 
-
-/// Find the start of the message body by scanning for the first frame.
-fn find_body_start(ct: &[u8], frame_length: u32) -> Option<usize> {
-    let seq_one = 1u32.to_be_bytes();
-    for i in 0..ct.len().saturating_sub(4) {
-        if i + 8 <= ct.len() && ct[i..i + 4] == ENDFRAME_MARKER && ct[i + 4..i + 8] == seq_one {
-            return Some(i);
-        }
-        if ct[i..i + 4] == seq_one && validate_frame_walk(ct, i, frame_length) {
-            return Some(i);
-        }
-    }
-    None
-}
-
-/// Validate that starting at `offset` and walking regular frames leads to an ENDFRAME marker.
-fn validate_frame_walk(ct: &[u8], offset: usize, frame_length: u32) -> bool {
-    let regular_frame_size = 4 + IV_LEN + frame_length as usize + TAG_LEN;
-    let mut pos = offset;
-    loop {
-        if pos + 4 > ct.len() {
-            return false;
-        }
-        if ct[pos..pos + 4] == ENDFRAME_MARKER {
-            return true;
-        }
-        let next = pos + regular_frame_size;
-        if next > ct.len() {
-            return false;
-        }
-        pos = next;
-    }
-}
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_regular_frame_deserialization() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
