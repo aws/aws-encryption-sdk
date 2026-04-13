@@ -518,7 +518,7 @@ fn build_header_for_encrypt(
 
     let body: HeaderBody = build_header_body(
         message_id, suite, &canonical_stored_encryption_context,
-        encrypted_data_keys, frame_length, derived_data_keys.commitment_key.clone(),
+        encrypted_data_keys, frame_length, derived_data_keys.commitment_key.as_deref().map(|k| k.to_vec()),
     )?;
 
     let canonical_req_encryption_context = to_canonical_pairs(required_encryption_context_map);

@@ -6,13 +6,14 @@ use crate::message::header_types::MessageId;
 use crate::message::serializable_types::get_encrypt_key_length;
 use aws_mpl_legacy::suites::AlgorithmSuite;
 use aws_mpl_legacy::suites::DerivationAlgorithm;
+use zeroize::Zeroizing;
 
 // Convenience container to hold both a data key and an optional commitment key
 // to support algorithm suites that provide commitment and those that do not
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) struct ExpandedKeyMaterial {
-    pub(crate) data_key: Vec<u8>,
-    pub(crate) commitment_key: Option<Vec<u8>>,
+    pub(crate) data_key: Zeroizing<Vec<u8>>,
+    pub(crate) commitment_key: Option<Zeroizing<Vec<u8>>>,
 }
 
 fn get_kdf_outlen(suite: &AlgorithmSuite) -> Result<u32, Error> {
@@ -79,7 +80,7 @@ pub(crate) fn derive_key(
         //# If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
         //# then the derived data key MUST be the same as the plaintext data key.
         DerivationAlgorithm::Identity => Ok(ExpandedKeyMaterial {
-            data_key: plaintext_data_key.to_vec(),
+            data_key: Zeroizing::new(plaintext_data_key.to_vec()),
             commitment_key: None,
         }),
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
@@ -108,7 +109,7 @@ pub(crate) fn derive_key(
             }
 
             Ok(ExpandedKeyMaterial {
-                data_key: derived_key,
+                data_key: Zeroizing::new(derived_key),
                 commitment_key: None,
             })
         }
@@ -167,8 +168,8 @@ pub(crate) fn expand_key_material(
     )?;
 
     Ok(ExpandedKeyMaterial {
-        data_key: encrypt_key,
-        commitment_key: Some(commit_key),
+        data_key: Zeroizing::new(encrypt_key),
+        commitment_key: Some(Zeroizing::new(commit_key)),
     })
 }
 
