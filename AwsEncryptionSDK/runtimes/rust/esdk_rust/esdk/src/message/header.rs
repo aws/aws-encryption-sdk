@@ -15,6 +15,7 @@ pub(crate) const START_SEQUENCE_NUMBER: u32 = 1;
 pub(crate) const ENDFRAME_SEQUENCE_NUMBER: u32 = 0xFFFF_FFFF;
 pub(crate) const NONFRAMED_SEQUENCE_NUMBER: u32 = 1;
 pub(crate) const SAFE_MAX_ENCRYPT: u64 = 0x000F_FFFF_FFE0;
+use aws_lc_rs::constant_time;
 use aws_mpl_legacy::suites::AlgorithmSuite;
 use aws_mpl_legacy::suites::DerivationAlgorithm;
 
@@ -162,7 +163,7 @@ pub(crate) fn validate_suite_data(
     //= specification/data-format/message-header.md#algorithm-suite-data
     //= reason=Check against expected_suite_data (a &[u8] type) implies interpreting as bytes
     //# The algorithm suite data MUST be interpreted as bytes.
-    if header_body.suite_data() != expected_suite_data {
+    if constant_time::verify_slices_are_equal(header_body.suite_data(), expected_suite_data).is_err() {
         return Err(val_err("Commitment key does not match"));
     }
     //= specification/data-format/message-header.md#algorithm-suite-data
