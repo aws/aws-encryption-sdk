@@ -86,7 +86,6 @@ pub(crate) async fn create_cmm_from_input(
             //# If the Keyring is provided as the input, the client MUST construct a [default CMM](../framework/default-cmm.md) that uses this keyring,
             //# to obtain the [decryption materials](../framework/structures.md#decryption-materials) that is required for decryption.
             //= specification/client-apis/decrypt.md#keyring
-            //= type=implication
             //= reason=The default CMM constructed above will obtain decryption materials when decrypt_materials is called on it
             //# This default CMM constructed from the keyring MUST obtain the decryption materials required for decryption.
             let cmm = aws_mpl_legacy::cmm::create_default_cryptographic_materials_manager(keyring)?;
@@ -627,12 +626,10 @@ pub(crate) async fn get_legacy_encryption_materials(
         //# If no Algorithm Suite is provided, this field MUST NOT be included.
         .set_algorithm_suite_id(algorithm_suite_id.map(convert_alg))
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
-        //= type=implication
         //= reason=The caller resolves known length vs Plaintext Length Bound before calling; this receives the resolved value
         //# If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
         //# was provided, this MUST be the [Plaintext Length Bound](#plaintext-length-bound).
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
-        //= type=implication
         //= reason=max_plaintext_length is Option; .set_ with None means the field is not set
         //# If no Plaintext Length Bound is provided, this field MUST NOT be included.
         .set_max_plaintext_length(max_plaintext_length.map(|x| x as i64))
