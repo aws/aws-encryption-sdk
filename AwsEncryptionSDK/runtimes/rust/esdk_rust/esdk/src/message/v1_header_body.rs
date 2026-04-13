@@ -212,17 +212,6 @@ pub(crate) fn read_v1_header_body(
     //# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be deserialized according to the
     //# [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
     let encrypted_data_keys = read_edks(r, max_edks, raw)?;
-    //= specification/client-apis/decrypt.md#v2-header-deserialization
-    //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
-    //# deserialized from the [message header](../data-format/message-header.md)
-    //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
-    //# then as soon as that can be determined during deserializing
-    //# decrypt MUST process no more bytes and yield an error.
-    if let Some(max) = max_edks {
-        if encrypted_data_keys.len() > max.get() {
-            return ser_err("Number of encrypted data keys exceeds the maximum allowed.");
-        }
-    }
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //# - [Content Type](../data-format/message-header.md#content-type): MUST be deserialized according to the
     //# [Content Type](../data-format/message-header.md#content-type) specification.

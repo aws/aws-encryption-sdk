@@ -179,17 +179,6 @@ pub(crate) fn read_v2_header_body(
     let message_id = read_message_id_v2(r, raw)?;
     let encryption_context: Vec<(String, String)> = read_canonical_ec(r, raw)?;
     let encrypted_data_keys = read_edks(r, max_edks, raw)?;
-    //= specification/client-apis/decrypt.md#v2-header-deserialization
-    //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
-    //# deserialized from the [message header](../data-format/message-header.md)
-    //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
-    //# then as soon as that can be determined during deserializing
-    //# decrypt MUST process no more bytes and yield an error.
-    if let Some(max) = max_edks {
-        if encrypted_data_keys.len() > max.get() {
-            return ser_err("Number of encrypted data keys exceeds the maximum allowed.");
-        }
-    }
     let content_type = read_content_type(r, raw)?;
     //= specification/data-format/message-header.md#frame-length
     //# The length of the serialized frame length field MUST be 4 bytes.
