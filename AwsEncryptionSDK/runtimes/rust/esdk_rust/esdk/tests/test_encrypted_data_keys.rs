@@ -120,13 +120,12 @@ fn parse_edk_raw_at(ct: &[u8], offset: usize) -> (u16, &[u8], u16, &[u8], u16, &
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypted_data_keys_serialization_order() {
+    // Create two keyrings so we get 2 EDKs in the message
     //= specification/data-format/message-header.md#encrypted-data-keys
     //= type=test
     //# The Encrypted Data Keys MUST consist of, in order,
     //# Encrypted Data Key Count,
     //# and Encrypted Data Key Entries.
-
-    // Create two keyrings so we get 2 EDKs in the message
     let keyring1 = test_keyring().await;
     let (ns2, name2) = namespace_and_name(1);
     let keyring2 = mpl()
@@ -194,10 +193,10 @@ async fn test_encrypted_data_key_count_must_be_greater_than_zero() {
     for version in VERSIONS {
         let mut ct = encrypt_with(b"test zero edks", version, keyring.clone()).await;
         let offset = edk_count_offset(&ct, version);
+        // Tampering test; set to 0 on message to create failure condition
         //= specification/data-format/message-header.md#encrypted-data-key-count
         //= type=test
         //# This value MUST be greater than 0.
-        // Tampering test; set to 0 on message to create failure condition
         ct[offset] = 0;
         ct[offset + 1] = 0;
 
@@ -244,12 +243,12 @@ async fn test_encrypted_data_key_count_must_not_exceed_max() {
             enc_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
         }
 
+        // 2 EDKs, max=1 → must fail
         //= specification/data-format/message-header.md#encrypted-data-key-count
         //= type=test
         //# This value MUST be less than or equal to the
         //# [maximum number of encrypted data keys](../client-apis/client.md#maximum-number-of-encrypted-data-keys)
         //# if the maximum number is configured.
-        // 2 EDKs, max=1 → must fail
         enc_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(1).unwrap());
         assert!(
             encrypt(&enc_input).await.is_err(),
@@ -307,6 +306,12 @@ async fn test_key_provider_id_length_matches_data() {
     for version in VERSIONS {
         let ct = encrypt_with(b"kp id length test", version, keyring.clone()).await;
         let first_edk_offset = edk_count_offset(&ct, version) + 2;
+        //= specification/data-format/message-header.md#key-provider-id-length
+        //= type=test
+        //# The length of the serialized key provider ID length field MUST be 2 bytes.
+        //= specification/data-format/message-header.md#key-provider-id-length
+        //= type=test
+        //# The key provider ID length MUST be interpreted as a UInt16.
         let (kp_id_len, kp_id, _, _, _, _) = parse_edk_raw_at(&ct, first_edk_offset);
         //= specification/data-format/message-header.md#key-provider-id
         //= type=test
@@ -362,7 +367,7 @@ async fn test_key_provider_information_length_matches_data() {
         let ct = encrypt_with(b"kp info data test", version, keyring.clone()).await;
         let first_edk_offset = edk_count_offset(&ct, version) + 2;
         let (_, _, kp_info_len, kp_info, _, _) = parse_edk_raw_at(&ct, first_edk_offset);
-        //= specification/data-formSame for the key provider information, because it says it... Oh, never mind. at/message-header.md#key-provider-information
+        //= specification/data-format/message-header.md#key-provider-information
         //= type=test
         //# The length of the serialized key provider information MUST be equal to the value of the [Key Provider Information Length](#key-provider-information-length) field.
         assert_eq!(kp_info_len as usize, kp_info.len(), "{version:?}: info length must match data");
@@ -377,12 +382,11 @@ async fn test_key_provider_information_is_bytes() {
         let ct = encrypt_with(b"kp info bytes test", version, keyring.clone()).await;
         let first_edk_offset = edk_count_offset(&ct, version) + 2;
         let (_, _, kp_info_len, kp_info, _, _) = parse_edk_raw_at(&ct, first_edk_offset);
+        // Raw AES keyring provider info format:
+        //   key_name || tag_len_bits(u32be) || iv_len_bytes(u32be) || iv
         //= specification/data-format/message-header.md#key-provider-information
         //= type=test
         //# The key provider information MUST be interpreted as bytes.
-
-        // Raw AES keyring provider info format:
-        //   key_name || tag_len_bits(u32be) || iv_len_bytes(u32be) || iv
         let key_name = b"child0 Name";
         assert!(kp_info_len as usize >= key_name.len() + 4 + 4 + 12,
             "{version:?}: provider info too short for raw AES keyring format");

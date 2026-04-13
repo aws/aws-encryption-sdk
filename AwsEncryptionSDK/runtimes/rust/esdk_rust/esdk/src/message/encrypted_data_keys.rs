@@ -182,6 +182,7 @@ pub(crate) fn read_edk(
     //= specification/data-format/message-header.md#key-provider-id-length
     //# The length of the serialized key provider ID length field MUST be 2 bytes.
     //= specification/data-format/message-header.md#key-provider-id
+    //= reason=The length field is derived from the same byte slice that is serialized, so they are equal by construction.
     //# The length of the serialized key provider ID MUST be equal to the value of the [Key Provider ID Length](#key-provider-id-length) field.
     //= specification/data-format/message-header.md#key-provider-id
     //# The key provider ID MUST be interpreted as UTF-8 encoded bytes.
