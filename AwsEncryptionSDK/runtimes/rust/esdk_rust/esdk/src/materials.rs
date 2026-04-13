@@ -1,4 +1,3 @@
-// use crate::message::header::*;
 use crate::legacy_compat::{convert_alg, convert_commit, convert_edks, from_legacy_dm, from_legacy_em};
 use crate::message::header_types::HeaderBody;
 use crate::message::serializable_types::{from_canonical_pairs, is_esdk_encrypted_data_keys, is_esdk_encryption_context};
@@ -255,13 +254,6 @@ pub(crate) async fn get_legacy_decryption_materials(
     from_legacy_dm(return_materials)
 }
 
-/*
-    // pub encryption_context: EncryptionContext,
-    // pub commitment_policy: CommitmentPolicy,
-    // pub algorithm_suite_id: Option<AlgorithmSuiteId>,
-    // pub max_plaintext_length: Option<u64>,
-    pub required_encryption_context_keys: Vec<EncryptionContextKey>,
-*/
 pub(crate) async fn get_modern_encryption_materials(
     cmm: aws_mpl_legacy::cmm::CryptographicMaterialsManagerRef,
     algorithm_suite_id: Option<aws_mpl_legacy::suites::AlgorithmSuiteId>,
@@ -291,7 +283,6 @@ pub(crate) async fn get_modern_encryption_materials(
     //= reason=max_plaintext_length is Option; None means the field is not set on the input
     //# If no Plaintext Length Bound is provided, this field MUST NOT be included.
     input.max_plaintext_length = max_plaintext_length;
-    // input.required_encryption_context_keys = required_encryption_context_keys.clone();
     let materials = cmm.get_encryption_materials(&input).await?;
 
     //= specification/client-apis/encrypt.md#get-the-encryption-materials

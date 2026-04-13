@@ -11,11 +11,6 @@ use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
 use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use std::num::NonZeroUsize;
 
-#[expect(dead_code)]
-fn comp(x: &KeyringRef, y: &KeyringRef) -> bool {
-    std::ptr::addr_eq(std::sync::Arc::as_ptr(x), std::sync::Arc::as_ptr(y))
-}
-
 /// Source for Cryptographic Materials
 #[derive(Debug, Clone)]
 #[non_exhaustive]

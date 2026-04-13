@@ -79,10 +79,6 @@ pub(crate) fn write_bytes(w: &mut dyn SafeWrite, data: &[u8]) -> Result<(), Erro
     Ok(())
 }
 
-#[expect(dead_code)]
-pub(crate) fn write_str_u16(w: &mut dyn SafeWrite, data: &str) -> Result<(), Error> {
-    write_seq_u16(w, data.as_bytes())
-}
 pub(crate) fn write_u8(w: &mut dyn SafeWrite, data: u8) -> Result<(), Error> {
     write_bytes(w, &[data])
 }

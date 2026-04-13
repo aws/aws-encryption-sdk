@@ -31,18 +31,6 @@ pub(crate) struct DigestWriter {
     pub(crate) context: Option<DigestContext>,
 }
 impl DigestWriter {
-    #[expect(dead_code)]
-    pub(crate) fn new(alg: aws_mpl_legacy::primitives::DigestAlg) -> Result<Self, Error> {
-        let context = Some(DigestContext::new(alg)?);
-        Ok(Self { context })
-    }
-    #[expect(dead_code)]
-    pub(crate) fn from_ecdsa(
-        alg: aws_mpl_legacy::primitives::EcdsaSignatureAlgorithm,
-    ) -> Result<Self, Error> {
-        let context = Some(DigestContext::new_from_ecdsa(alg)?);
-        Ok(Self { context })
-    }
     pub(crate) fn from_old_ecdsa(
         alg: aws_mpl_legacy::suites::SignatureAlgorithm,
     ) -> Result<Self, Error> {
