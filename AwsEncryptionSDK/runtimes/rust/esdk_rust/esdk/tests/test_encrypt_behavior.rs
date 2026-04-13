@@ -42,7 +42,6 @@ async fn round_trip(plaintext: &[u8]) -> Vec<u8> {
     decrypt(&dec_input).await.unwrap().plaintext
 }
 
-// ── Behavior: Step ordering ──
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_step_1_get_encryption_materials() {
@@ -132,7 +131,6 @@ async fn test_no_extra_data_in_output_message() {
     assert_eq!(result, pt);
 }
 
-// ── Get the encryption materials ──
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_input_suite_vs_commitment_policy_error() {
@@ -422,7 +420,6 @@ async fn test_default_frame_length_used() {
     assert_eq!(result, pt);
 }
 
-// ── Construct the header ──
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_serialize_header_before_body() {
@@ -463,7 +460,6 @@ async fn test_message_format_version_matches_suite() {
     assert_eq!(ct_v1[0], 0x01, "V1 non-committing suite must produce message version 1");
 }
 
-// ── Output ──
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_output_includes_encrypted_message() {
