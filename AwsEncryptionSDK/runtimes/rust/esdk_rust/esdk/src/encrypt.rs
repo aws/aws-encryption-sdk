@@ -296,7 +296,9 @@ async fn step_get_encryption_materials(
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
         //# The data key used as input for all encryption described below MUST be a data key derived from the plaintext data key
         //# included in the [encryption materials](../framework/structures.md#encryption-materials).
-        &materials.plaintext_data_key.as_ref().unwrap().0, // TODO - can this be None?
+        &materials.plaintext_data_key.as_ref()
+            .ok_or::<Error>("Encryption materials must contain a plaintext data key".into())?
+            .0,
         algorithm_suite,
         false,
     )?;
