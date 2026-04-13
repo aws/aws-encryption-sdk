@@ -54,8 +54,6 @@ pub(crate) fn read_msg_format_version(
 
 //= specification/data-format/message-header.md#supported-types
 //# The supported types MUST be:
-//= specification/data-format/message-header.md#type
-//# The type (hex) of this field MUST be a value that exists in the following table:
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub(crate) enum MessageType {
     //= specification/data-format/message-header.md#supported-types
@@ -79,6 +77,8 @@ pub(crate) fn read_msg_type(
     let msg_type = read_u8(r, raw)?;
     match msg_type {
         val if val == MessageType::TypeCustomerAed as u8 => Ok(MessageType::TypeCustomerAed),
+        //= specification/data-format/message-header.md#type
+        //# The type (hex) of this field MUST be a value that exists in the following table:
         //= specification/client-apis/decrypt.md#v1-header-deserialization
         //# The value MUST be a [supported type](../data-format/message-header.md#supported-types).
         _ => ser_err("Unsupported Message Type."),
