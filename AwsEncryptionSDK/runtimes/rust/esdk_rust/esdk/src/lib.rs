@@ -102,5 +102,6 @@ mod types;
 pub use types::*;
 
 pub(crate) mod key_derivation;
+pub(crate) mod legacy_compat;
 pub(crate) mod materials;
 pub(crate) mod message;
