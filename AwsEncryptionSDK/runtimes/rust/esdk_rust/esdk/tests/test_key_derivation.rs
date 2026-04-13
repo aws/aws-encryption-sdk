@@ -66,6 +66,10 @@ async fn test_identity_kdf_derived_key_equals_plaintext_key() {
     //= type=test
     //# - If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
     //# then the derived data key MUST be the same as the plaintext data key.
+    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //# If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
+    //# then the derived data key MUST be the same as the plaintext data key.
     let pt = b"test identity kdf";
     let result = round_trip_with_suite(
         pt,
