@@ -24,14 +24,13 @@ async fn test_keyring() -> aws_mpl_legacy::dafny::types::keyring::KeyringRef {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_rejects_base64_encoded_input() {
+    // Construct input starting with 0x41 ('A') — the first byte of Base64-encoded
+    // version 0x01 type 0x80 (per the spec table: "01 80" → "AY..." → "41 59...")
     //= specification/client-apis/decrypt.md#encrypted-message-format
     //= type=test
     //# To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version-1)
     //# and [types](../data-format/message-header.md#type)
     //# and fail with a more specific error message.
-
-    // Construct input starting with 0x41 ('A') — the first byte of Base64-encoded
-    // version 0x01 type 0x80 (per the spec table: "01 80" → "AY..." → "41 59...")
     let fake_b64_input: Vec<u8> = {
         let mut v = vec![0x41, 0x59]; // 'A', 'Y'
         v.extend_from_slice(&[0u8; 100]); // padding
