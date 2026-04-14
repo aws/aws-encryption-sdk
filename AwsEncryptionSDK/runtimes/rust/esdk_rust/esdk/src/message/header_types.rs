@@ -1,5 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+//! Type definitions for message header fields.
 
 use super::serializable_types::ESDKCanonicalEncryptionContext;
 use super::serialize_functions::{read_u8, write_u8};
@@ -45,10 +46,10 @@ pub(crate) fn read_msg_format_version(
         //# To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version-1)
         //# and [types](../data-format/message-header.md#type)
         //# and fail with a more specific error message.
-        0x41 => ser_err("Input appears to be Base64-encoded. The ESDK expects raw binary message format, not Base64."),
+        0x41 => ser_err("Input appears to be Base64-encoded. The ESDK expects raw binary message format, not Base64"),
         //= specification/client-apis/decrypt.md#parse-the-header
         //# The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
-        _ => ser_err("Unsupported Version."),
+        _ => ser_err("Unsupported Version"),
     }
 }
 
@@ -81,7 +82,7 @@ pub(crate) fn read_msg_type(
         //# The type (hex) of this field MUST be a value that exists in the following table:
         //= specification/client-apis/decrypt.md#v1-header-deserialization
         //# The value MUST be a [supported type](../data-format/message-header.md#supported-types).
-        _ => ser_err("Unsupported Message Type."),
+        _ => ser_err("Unsupported Message Type"),
     }
 }
 
@@ -118,7 +119,7 @@ pub(crate) fn read_content_type(
         //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
         //= specification/client-apis/decrypt.md#v1-header-deserialization
         //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
-        _ => ser_err("Unsupported Content Type."),
+        _ => ser_err("Unsupported Content Type"),
     }
 }
 

@@ -1,5 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+//! Encrypted data key serialization and deserialization.
 
 use super::serialize_functions::{read_seq_u16, read_str_u16, read_u16, write_bytes, write_u16};
 use super::{Error, ser_err};
@@ -152,7 +153,7 @@ pub(crate) fn read_edks(
     if let Some(max_edks) = max_edks
         && count as usize > max_edks.get()
     {
-        return ser_err("Ciphertext encrypted data keys exceed maxEncryptedDataKeys");
+        return ser_err("Ciphertext encrypted data keys exceed maximum encrypted data keys limit");
     }
 
     // Encrypted Data Key Entries

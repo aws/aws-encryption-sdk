@@ -211,7 +211,7 @@ async fn internal_encrypt(
             &header,
             &mat_result.materials,
             //= specification/client-apis/encrypt.md#construct-the-signature
-            //= reason=sig_digest (DigestWriter) was fed the header bytes in step 2 (serialize_header) and the body bytes in step 3 (encrypt_and_serialize_body)
+            //= reason=sig_digest (DigestWriter) was fed the header bytes in step 2 (write_header) and the body bytes in step 3 (encrypt_and_serialize_body)
             //# Note that the message header and message body MAY have already been input during previous steps.
             sig_digest,
             ciphertext,
@@ -355,11 +355,11 @@ fn step_construct_header(
         &mat_result.derived_data_keys,
     )?;
     //= specification/client-apis/encrypt.md#authentication-tag
-    //= reason=serialize_header writes the complete header (body + auth tag) to ciphertext via SafeWrite, which flushes immediately before body serialization begins
+    //= reason=write_header writes the complete header (body + auth tag) to ciphertext via SafeWrite, which flushes immediately before body serialization begins
     //# If this operation is streaming the encrypted message and
     //# the entire message header has been serialized,
     //# the serialized message header MUST be released.
-    header::serialize_header(
+    header::write_header(
         &header,
         ciphertext,
         sig_digest,
@@ -450,7 +450,7 @@ fn step_construct_signature(
         //= specification/data-format/message.md#structure
         //# If the algorithm suite does not contain a signature algorithm, the message MUST NOT contain a message footer.
         aws_mpl_legacy::suites::SignatureAlgorithm::None => {}
-    
+
         //= specification/data-format/message.md#structure
         //# If the algorithm suite contains an unrecognized signature algorithm, the operation MUST raise an error.
         _ => {

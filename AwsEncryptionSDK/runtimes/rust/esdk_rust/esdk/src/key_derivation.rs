@@ -1,5 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+//! Key derivation for V1 (HKDF-extract) and V2 (HKDF-expand) algorithm suites.
 
 use super::{Error, val_err};
 use crate::message::header_types::MessageId;
@@ -121,10 +122,8 @@ pub(crate) fn derive_key(
 const COMMIT_LABEL: &str = "COMMITKEY";
 const KEY_LABEL: &str = "DERIVEKEY";
 
-/*
- * Derives keys from an input plaintext data key, using "v2"-style
- * key derivation (that is, including key commitment).
- */
+// Derives keys from an input plaintext data key, using "v2"-style
+// key derivation (that is, including key commitment).
 pub(crate) fn expand_key_material(
     message_id: &MessageId,
     plaintext_key: &[u8],
@@ -173,10 +172,8 @@ pub(crate) fn expand_key_material(
     })
 }
 
-/*
- * Derives key material for encryption/decryption. Delegates out to specific methods
- * based on the input algorithm suite.
- */
+// Derives key material for encryption/decryption. Delegates out to specific methods
+// based on the input algorithm suite.
 pub(crate) fn derive_keys(
     message_id: &MessageId,
     plaintext_key: &[u8],

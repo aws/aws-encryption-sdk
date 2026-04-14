@@ -1,5 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+//! Top-level message header construction and parsing.
 
 use super::header_types::{ContentType, HeaderAuth, HeaderBody, MESSAGE_ID_LEN_V1, MESSAGE_ID_LEN_V2, MessageFormatVersion, MessageId, read_msg_format_version};
 use super::serializable_types::ESDKEncryptionContext;
@@ -128,12 +129,12 @@ pub(crate) fn validate_max_encrypted_data_keys(
         //# [maximum number of encrypted data keys](../client-apis/client.md#maximum-number-of-encrypted-data-keys)
         //# if the maximum number is configured.
         if edks.len() > max.get() {
-            return Err(val_err("Encrypted data keys exceed maxEncryptedDataKeys"));
+            return Err(val_err("Encrypted data keys exceed maximum encrypted data keys limit"));
         }
         //= specification/data-format/message-header.md#encrypted-data-key-count
         //# This value MUST be greater than 0.
         if edks.is_empty() {
-            return Err(val_err("Encrypted data keys is empty."));
+            return Err(val_err("Encrypted data keys is empty"));
         }
     }
     Ok(())
@@ -175,8 +176,8 @@ pub(crate) fn validate_suite_data(
     Ok(())
 }
 
-/// Serialize the message header (body + auth tag) to the output stream.
-pub(crate) fn serialize_header(
+/// Write the message header (body + auth tag) to the output stream.
+pub(crate) fn write_header(
     header: &HeaderInfo,
     ciphertext: &mut dyn SafeWrite,
     sig_digest: &mut DigestWriter,

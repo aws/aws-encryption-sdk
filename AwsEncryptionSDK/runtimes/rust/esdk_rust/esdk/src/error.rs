@@ -1,3 +1,7 @@
+// Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//! Error types for the AWS Encryption SDK.
+
 use std::backtrace::Backtrace;
 use std::sync::Arc;
 

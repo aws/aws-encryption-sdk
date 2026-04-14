@@ -1,10 +1,11 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+//! Header authentication tag serialization and deserialization.
 
 use super::header_types::HeaderAuth;
 use super::{Error, ser_err};
-use crate::message::serializable_types::{get_iv_length, get_tag_length};
-use crate::message::serialize_functions::{read_vec, write_bytes};
+use super::serializable_types::{get_iv_length, get_tag_length};
+use super::serialize_functions::{read_vec, write_bytes};
 use crate::types::{SafeRead, SafeWrite};
 use aws_mpl_legacy::suites::AlgorithmSuite;
 

@@ -1,5 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+//! Encryption context serialization for message header and AAD.
 
 use super::serializable_types::ESDKCanonicalEncryptionContext;
 use super::serialize_functions::{read_str_u16, read_u16, write_bytes, write_u16};

@@ -1,3 +1,7 @@
+// Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//! Message format serialization and deserialization.
+
 pub(crate) mod body;
 pub(crate) mod encrypted_data_keys;
 pub(crate) mod encryption_context;

@@ -1,3 +1,5 @@
+// Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
 //! # AWS Encryption SDK for Rust
 //!
 //! A native Rust implementation of the AWS Encryption SDK, providing

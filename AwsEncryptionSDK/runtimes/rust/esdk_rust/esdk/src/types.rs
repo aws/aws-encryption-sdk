@@ -1,5 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+//! Public API types for encrypt and decrypt operations.
 
 use crate::Error;
 use crate::val_err;
@@ -341,7 +342,7 @@ impl<'a> EncryptInput<'a> {
         //= specification/client-apis/encrypt.md#input
         //# If the caller does not provide exactly one of a keyring or CMM, the Encrypt operation MUST fail.
         if self.source.is_none() {
-            Err(val_err("A Materials Source must be provided."))
+            Err(val_err("A materials source must be provided"))
         } else {
             Ok(())
         }
@@ -418,7 +419,7 @@ impl EncryptStreamInput {
     }
     pub(crate) fn validate(&self) -> Result<(), Error> {
         if self.source.is_none() {
-            Err(val_err("A Materials Source must be provided."))
+            Err(val_err("A materials source must be provided"))
         } else {
             Ok(())
         }
@@ -561,7 +562,7 @@ impl<'a> DecryptInput<'a> {
         //= specification/client-apis/decrypt.md#input
         //# If the caller does not provide exactly one of a keyring or CMM, the Decrypt operation MUST fail.
         if self.source.is_none() {
-            Err(val_err("A Materials Source must be provided."))
+            Err(val_err("A materials source must be provided"))
         } else {
             Ok(())
         }
@@ -625,7 +626,7 @@ impl DecryptStreamInput {
 
     pub(crate) fn validate(&self) -> Result<(), Error> {
         if self.source.is_none() {
-            Err(val_err("A Materials Source must be provided."))
+            Err(val_err("A materials source must be provided"))
         } else {
             Ok(())
         }

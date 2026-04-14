@@ -26,7 +26,7 @@ pub(crate) fn write_footer(
     signature: &[u8],
 ) -> Result<(), Error> {
     if signature.len() >= u16::MAX.into() {
-        return ser_err("Length of signature bytes is larger than the uint16 limit.");
+        return ser_err("Length of signature bytes is larger than the uint16 limit");
     }
     //= specification/client-apis/encrypt.md#construct-the-signature
     //# This operation MUST then serialize a message footer.

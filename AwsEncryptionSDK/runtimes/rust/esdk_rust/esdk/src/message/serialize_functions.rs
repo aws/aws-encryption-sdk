@@ -1,5 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+//! Low-level byte read/write primitives for message serialization.
 
 use super::{Error, ser_err};
 use crate::error::ErrorKind;

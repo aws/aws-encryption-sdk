@@ -1,5 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+//! Frame encryption and body serialization.
 
 use super::{body_aad, get_encrypt, iv_seq, BodyAADContent};
 use crate::error::val_err;
@@ -155,7 +156,7 @@ pub(crate) fn construct_frame(
         //# The length of the serialized encrypted content length field MUST be 4 bytes.
         //= specification/data-format/message-body.md#final-frame-encrypted-content-length
         //# The encrypted content length MUST be a UInt32.
-        write_u32(frame_buf, u32::try_from(input.plaintext.len()).map_err(|_| val_err("plaintext length exceeds u32"))?)?;
+        write_u32(frame_buf, u32::try_from(input.plaintext.len()).map_err(|_| val_err("Plaintext length exceeds u32"))?)?;
     }
 
     //= specification/client-apis/encrypt.md#construct-a-frame
@@ -295,12 +296,12 @@ pub(crate) fn encrypt_and_serialize_body(
         //= specification/data-format/message-body.md#framed-data
         //# - The number of frames in a single message MUST be less than or equal to `2^32 - 1`.
         if sequence_number == ENDFRAME_SEQUENCE_NUMBER {
-            return Err(val_err("too many frames"));
+            return Err(val_err("Too many frames"));
         }
 
         total_data_size += frame_length;
         if total_data_size > MAX_DATA {
-            return Err(val_err("Plain text too large"));
+            return Err(val_err("Plaintext too large"));
         }
         if let Some(max_plaintext_len) = max_plaintext_length {
             //= specification/client-apis/encrypt.md#plaintext-length-bound
@@ -360,7 +361,7 @@ pub(crate) fn encrypt_and_serialize_body(
     // Final frame
     total_data_size += in_size;
     if total_data_size > MAX_DATA {
-        return Err(val_err("Plain text too large"));
+        return Err(val_err("Plaintext too large"));
     }
     if let Some(max_len) = max_plaintext_length {
         if total_data_size > max_len {

@@ -1,13 +1,14 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+//! V1 message header body serialization and deserialization.
 
 use super::encrypted_data_keys::{read_edks, write_edks};
 use super::encryption_context::{read_canonical_ec, write_aad_section};
 use super::shared_header_functions::{read_esdk_suite_id, read_message_id_v1, write_esdk_suite_id, write_message_id};
 use super::{Error, ser_err};
-use crate::message::header_types::{MessageFormatVersion, V1HeaderBody, read_content_type, read_msg_type, write_content_type, write_msg_format_version, write_msg_type};
-use crate::message::serializable_types::get_iv_length;
-use crate::message::serialize_functions::{read_bytes, read_u32, read_u8, write_bytes, write_u32, write_u8};
+use super::header_types::{MessageFormatVersion, V1HeaderBody, read_content_type, read_msg_type, write_content_type, write_msg_format_version, write_msg_type};
+use super::serializable_types::get_iv_length;
+use super::serialize_functions::{read_bytes, read_u32, read_u8, write_bytes, write_u32, write_u8};
 use crate::types::{SafeRead, SafeWrite};
 use aws_mpl_legacy::suites::AlgorithmSuite;
 
@@ -163,7 +164,7 @@ pub(crate) fn read_v1_reserved_bytes(
     if result == RESERVED_BYTES {
         Ok(())
     } else {
-        ser_err("Incorrect reserved bytes.")
+        ser_err("Incorrect reserved bytes")
     }
 }
 
@@ -183,7 +184,7 @@ pub(crate) fn read_v1_header_iv_length(
     if raw == get_iv_length(suite) {
         Ok(raw)
     } else {
-        ser_err("HeaderIv Length does not match Algorithm Suite.")
+        ser_err("Header IV length does not match algorithm suite")
     }
 }
 

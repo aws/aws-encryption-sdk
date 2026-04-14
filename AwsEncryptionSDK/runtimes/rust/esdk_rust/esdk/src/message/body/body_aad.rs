@@ -1,5 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+//! Message body AAD (additional authenticated data) construction.
 
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub(crate) enum BodyAADContent {
@@ -34,9 +35,7 @@ pub(crate) fn iv_seq(sequence_number: u32, result: &mut [u8]) {
     result[pivot..].copy_from_slice(&sequence_number.to_be_bytes());
 }
 
-/*
- * Serializes the Message Body AAD
- */
+// Serializes the Message Body AAD
 
 pub(crate) fn body_aad(
     message_id: &[u8],

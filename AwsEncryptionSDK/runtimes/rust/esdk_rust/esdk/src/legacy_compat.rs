@@ -1,3 +1,5 @@
+// Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
 //! Legacy type conversion layer between aws_mpl_legacy::dafny::types and aws_mpl_legacy::suites.
 
 use crate::{Error, val_err};

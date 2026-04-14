@@ -1,3 +1,7 @@
+// Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+//! Cryptographic materials management — CMM creation and materials retrieval.
+
 use crate::legacy_compat::{convert_alg, convert_commit, convert_edks, from_legacy_dm, from_legacy_em};
 use crate::message::header_types::HeaderBody;
 use crate::message::serializable_types::{from_canonical_pairs, is_esdk_encrypted_data_keys, is_esdk_encryption_context};
@@ -78,7 +82,7 @@ pub(crate) async fn get_decryption_materials(
         }
     };
     if !is_esdk_encryption_context(&materials.encryption_context) {
-        return Err(val_err("CMM failed to return serializable encryption materials."));
+        return Err(val_err("CMM failed to return serializable encryption materials"));
     }
     Ok(materials)
 }
@@ -113,10 +117,10 @@ pub(crate) async fn get_encryption_materials(
         }
     };
     if !is_esdk_encryption_context(&materials.encryption_context) {
-        return Err(val_err("CMM failed to return serializable encryption materials."));
+        return Err(val_err("CMM failed to return serializable encryption materials"));
     }
     if !is_esdk_encrypted_data_keys(&materials.encrypted_data_keys) {
-        return Err(val_err("CMM failed to return serializable encrypted data keys."));
+        return Err(val_err("CMM failed to return serializable encrypted data keys"));
     }
     Ok(materials)
 }

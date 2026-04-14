@@ -1,5 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+//! Type aliases and helper functions for message serialization.
 
 use crate::types::EncryptionContext;
 use aws_mpl_legacy::EncryptedDataKey;
@@ -32,19 +33,17 @@ pub(crate) const fn get_encrypt_key_length(a: &AlgorithmSuite) -> u8 {
     }
 }
 
-/*
- * Length properties of the Encryption Context.
- * The Encryption Context has a complex relationship with length.
- * Each key or value MUST be less than Uint16,
- * However the entire thing MUST also serialize to less than Uint16.
- * In practice, this means than the longest value,
- * given a key of 1 bytes is Uint16-2-2-1.
- * e.g.
- * 2 for the key length
- * 1 for the key data
- * 2 for the value length
- * Uint16-2-2-1 for the value data
- */
+// Length properties of the Encryption Context.
+// The Encryption Context has a complex relationship with length.
+// Each key or value MUST be less than Uint16,
+// However the entire thing MUST also serialize to less than Uint16.
+// In practice, this means than the longest value,
+// given a key of 1 bytes is Uint16-2-2-1.
+// e.g.
+// 2 for the key length
+// 1 for the key data
+// 2 for the value length
+// Uint16-2-2-1 for the value data
 
 pub(crate) fn length(encryption_context: &ESDKEncryptionContext) -> u64 {
     let mut length: usize = 0;

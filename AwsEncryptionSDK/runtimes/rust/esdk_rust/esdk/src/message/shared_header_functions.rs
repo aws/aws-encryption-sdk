@@ -1,9 +1,10 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+//! Shared header field read/write functions for V1 and V2 formats.
 
 use super::header_types::{MESSAGE_ID_LEN_V1, MESSAGE_ID_LEN_V2, MessageId};
 use super::Error;
-use crate::message::serialize_functions::{read_bytes, read_vec, write_bytes};
+use super::serialize_functions::{read_bytes, read_vec, write_bytes};
 use crate::types::{SafeRead, SafeWrite};
 use aws_mpl_legacy::suites::AlgorithmSuite;
 

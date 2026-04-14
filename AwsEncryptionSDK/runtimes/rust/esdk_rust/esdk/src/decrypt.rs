@@ -143,7 +143,7 @@ pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
     //# but there are consumable bytes which are intended to be decrypted,
     //# this operation MUST fail.
     if cursor.position() != input.ciphertext.len() as u64 {
-        return Err(esdk_err("Data after message footer."));
+        return Err(esdk_err("Data after message footer"));
     }
 
     Ok(DecryptOutput {
@@ -324,7 +324,7 @@ async fn step_get_decryption_materials(
 
     if suite != header_body.algorithm_suite() {
         return Err(
-            val_err("Stored header algorithm suite does not match decryption algorithm suite."),
+            val_err("Stored header algorithm suite does not match decryption algorithm suite"),
         );
     }
     //= specification/client-apis/decrypt.md#v2-header-deserialization
@@ -348,7 +348,7 @@ async fn step_get_decryption_materials(
     )?;
 
     if !header::header_version_supports_commitment(suite, header_body) {
-        return Err(val_err("Invalid commitment values found in header body."));
+        return Err(val_err("Invalid commitment values found in header body"));
     }
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# If the [algorithm suite](../framework/algorithm-suites.md#algorithm-suites-encryption-key-derivation-settings) supports [key commitment](../framework/algorithm-suites.md#key-commitment)
@@ -626,7 +626,7 @@ fn verify_signature(
     )?;
 
     if !valid {
-        return Err(esdk_err("InvalidSignature"));
+        return Err(esdk_err("Signature verification failed"));
     }
     Ok(())
 }
