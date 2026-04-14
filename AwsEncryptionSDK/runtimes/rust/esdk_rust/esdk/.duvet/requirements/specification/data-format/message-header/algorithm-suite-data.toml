@@ -6,6 +6,7 @@ target = "specification/data-format/message-header.md#algorithm-suite-data"
 # The length of the suite data field MUST be equal to the [Algorithm Suite Data Length](../framework/algorithm-suites.md#algorithm-suite-data-length) value
 # of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
 # The algorithm suite data MUST be interpreted as bytes.
+# If the algorithm suite data stores the commit key, equality checks against this commit key MUST be done in constant time.
 
 [[spec]]
 level = "MUST"
@@ -18,5 +19,11 @@ of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Alg
 level = "MUST"
 quote = '''
 The algorithm suite data MUST be interpreted as bytes.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If the algorithm suite data stores the commit key, equality checks against this commit key MUST be done in constant time.
 '''
 

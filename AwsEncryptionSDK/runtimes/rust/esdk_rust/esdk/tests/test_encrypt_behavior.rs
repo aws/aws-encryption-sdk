@@ -393,7 +393,7 @@ async fn test_default_frame_length_used() {
 
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_serialize_header_before_body() {
+async fn test_write_header_before_body() {
     //= specification/client-apis/encrypt.md#construct-the-header
     //= type=test
     //# Before encrypting input plaintext,
