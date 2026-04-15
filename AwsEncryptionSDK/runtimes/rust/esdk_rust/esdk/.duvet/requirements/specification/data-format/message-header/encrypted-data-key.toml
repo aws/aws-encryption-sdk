@@ -1,0 +1,21 @@
+target = "specification/data-format/message-header.md#encrypted-data-key"
+
+# Encrypted Data Key
+#
+# The encrypted data key.
+# It is the data key encrypted by the key provider.
+# The length of the serialized encrypted data key MUST be equal to the value of the [Encrypted Data Key Length](#encrypted-data-key-length) field.
+# The encrypted data key MUST be interpreted as bytes.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized encrypted data key MUST be equal to the value of the [Encrypted Data Key Length](#encrypted-data-key-length) field.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The encrypted data key MUST be interpreted as bytes.
+'''
+

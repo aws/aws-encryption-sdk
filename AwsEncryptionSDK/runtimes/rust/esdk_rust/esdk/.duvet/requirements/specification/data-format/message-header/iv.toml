@@ -1,0 +1,20 @@
+target = "specification/data-format/message-header.md#iv"
+
+# IV
+#
+# The initialization vector (IV) used as input to calculate the [authentication tag](#authentication-tag).
+# The length of the serialized IV MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
+# The IV MUST be interpreted as bytes.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized IV MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The IV MUST be interpreted as bytes.
+'''
+

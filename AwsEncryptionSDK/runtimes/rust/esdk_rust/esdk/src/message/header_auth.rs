@@ -42,12 +42,13 @@ pub(crate) fn write_header_auth_tag_v1(
             //# IV,
             //# and Authentication Tag.
             //= specification/client-apis/encrypt.md#v1-authentication-tag
-            //# - [IV](../data-format/message-header.md#iv): MUST have the value of the IV used in the calculation above,
+            //# - The Encrypt operation MUST serialize the [IV](../data-format/message-header.md#iv).
+            //# The value MUST be the IV used in the calculation above,
             //# padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
             write_bytes(w, header_iv)?;
             //= specification/client-apis/encrypt.md#v1-authentication-tag
-            //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
-            //# of the authentication tag calculated above.
+            //# - The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
+            //# The value MUST be the authentication tag calculated above.
             write_bytes(w, header_auth_tag)
         }
     }
@@ -63,8 +64,8 @@ pub(crate) fn write_header_auth_tag_v2(
             //= specification/data-format/message-header.md#header-authentication-version-2-0
             //# The V2 Header Authentication MUST consist of the Authentication Tag only.
             //= specification/client-apis/encrypt.md#v2-authentication-tag
-            //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
-            //# of the authentication tag calculated above.
+            //# - The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
+            //# The value MUST be the authentication tag calculated above.
             write_bytes(w, header_auth_tag)
         }
     }
@@ -86,6 +87,9 @@ pub(crate) fn read_header_auth_tag_v1(
     suite: &AlgorithmSuite,
     raw: &mut dyn SafeWrite,
 ) -> Result<HeaderAuth, Error> {
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
+    //= reason=read_vec reads the IV bytes from the V1 header authentication section
+    //# - The Decrypt operation MUST deserialize the [IV](../data-format/message-header.md#iv).
     //= specification/data-format/message-header.md#iv
     //# The length of the serialized IV MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
     //= specification/data-format/message-header.md#iv

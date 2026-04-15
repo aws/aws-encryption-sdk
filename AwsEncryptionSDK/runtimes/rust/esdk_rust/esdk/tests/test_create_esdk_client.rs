@@ -214,7 +214,7 @@ fn test_decrypt_input_accepts_encrypted_message() {
 fn test_decrypt_input_accepts_cmm_and_keyring() {
     //= specification/client-apis/decrypt.md#input
     //= type=test
-    //# - The input to the Decrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
+    //# - The input to the Decrypt operation MUST accept an optional [Cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
     let input = DecryptInput::default();
     // source field exists and is Option<MaterialSource>, accepting CMM or keyring
     assert!(input.source.is_none());

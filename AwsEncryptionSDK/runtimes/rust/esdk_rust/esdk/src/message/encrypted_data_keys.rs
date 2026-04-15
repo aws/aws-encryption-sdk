@@ -7,14 +7,11 @@ use super::{Error, ser_err};
 use crate::types::{SafeRead, SafeWrite};
 use aws_mpl_legacy::EncryptedDataKey;
 
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#v1-header
+//= specification/client-apis/encrypt.md#v1-header
+//# - The Encrypt operation MUST serialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
+//= specification/client-apis/encrypt.md#v2-header
 //= type=implication
-//# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be serialized according to the
-//# [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
-//= type=implication
-//# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be serialized according to the
-//# [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
+//# - The Encrypt operation MUST serialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
 pub(crate) fn write_edks(w: &mut dyn SafeWrite, edks: &[EncryptedDataKey]) -> Result<(), Error> {
     //= specification/data-format/message-header.md#encrypted-data-keys
     //# The Encrypted Data Keys MUST consist of, in order,
@@ -118,14 +115,10 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
     write_bytes(w, &edk.ciphertext)
 }
 
-//= aws-encryption-sdk-specification/client-apis/decrypt.md#v1-header-deserialization
-//= type=implication
-//# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be deserialized according to the
-//# [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
-//= aws-encryption-sdk-specification/client-apis/decrypt.md#v2-header-deserialization
-//= type=implication
-//# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be deserialized according to the
-//# [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
+//= specification/client-apis/decrypt.md#v1-header-deserialization
+//# - The Decrypt operation MUST deserialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
+//= specification/client-apis/decrypt.md#v2-header-deserialization
+//# - The Decrypt operation MUST deserialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
 pub(crate) fn read_edks(
     r: &mut dyn SafeRead,
     max_edks: Option<std::num::NonZeroUsize>,

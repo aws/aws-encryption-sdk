@@ -43,7 +43,7 @@ pub(crate) fn read_msg_format_version(
         val if val == MessageFormatVersion::V1 as u8 => Ok(MessageFormatVersion::V1),
         val if val == MessageFormatVersion::V2 as u8 => Ok(MessageFormatVersion::V2),
         //= specification/client-apis/decrypt.md#encrypted-message-format
-        //# To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version-1)
+        //# To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version)
         //# and [types](../data-format/message-header.md#type)
         //# and fail with a more specific error message.
         0x41 => ser_err("Input appears to be Base64-encoded. The ESDK expects raw binary message format, not Base64"),
@@ -91,7 +91,7 @@ pub(crate) fn read_msg_type(
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub(crate) enum ContentType {
     //= specification/data-format/message-header.md#supported-content-types
-    //# - `01` for [Non-Framed](message-body.md#non-framed-data)
+    //# - `01` for [nonframed](message-body.md#nonframed-data)
     NonFramed = 1,
     //= specification/data-format/message-header.md#supported-content-types
     //# - `02` for [Framed](message-body.md#framed-data)

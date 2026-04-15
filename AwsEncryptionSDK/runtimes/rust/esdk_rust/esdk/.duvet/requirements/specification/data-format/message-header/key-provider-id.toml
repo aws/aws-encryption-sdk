@@ -1,0 +1,21 @@
+target = "specification/data-format/message-header.md#key-provider-id"
+
+# Key Provider ID
+#
+# The key provider ID.
+# The length of the serialized key provider ID MUST be equal to the value of the [Key Provider ID Length](#key-provider-id-length) field.
+# The key provider ID MUST be interpreted as UTF-8 encoded bytes.
+# See [the specification for encrypted data keys](../framework/structures.md#encrypted-data-key).
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized key provider ID MUST be equal to the value of the [Key Provider ID Length](#key-provider-id-length) field.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The key provider ID MUST be interpreted as UTF-8 encoded bytes.
+'''
+

@@ -31,7 +31,7 @@ target = "specification/data-format/message-body.md#final-frame"
 # | [Sequence Number End](#sequence-number-end)             | 4                                                                                                            | Bytes          |
 # | [Sequence Number](#final-frame-sequence-number)         | 4                                                                                                            | UInt32         |
 # | [IV](#final-frame-iv)                                   | [IV Length](message-header.md#iv-length)                                                                     | Bytes          |
-# | [Encrypted Content Length](#encrypted-content-length-1) | 4                                                                                                            | UInt32         |
+# | [Encrypted Content Length](#final-frame-encrypted-content-length) | 4                                                                                                            | UInt32         |
 # | [Encrypted Content](#final-frame-encrypted-content)     | Variable                                                                                                     | Bytes          |
 # | [Authentication Tag](#final-frame-authentication-tag)   | Algorithm suite ID's [Authentication Tag Length](../framework/algorithm-suites.md#authentication-tag-length) | Bytes          |
 # 

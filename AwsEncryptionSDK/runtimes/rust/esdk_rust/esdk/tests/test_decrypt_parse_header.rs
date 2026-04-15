@@ -36,39 +36,31 @@ async fn test_v2_header_fields_deserialized() {
     //# The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
-    //# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST be deserialized according to the
-    //# [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id) specification.
+    //# - The Decrypt operation MUST deserialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
-    //# - [Message ID](../data-format/message-header.md#message-id): MUST be deserialized according to the
-    //# [Message ID](../data-format/message-header.md#message-id) specification.
+    //# - The Decrypt operation MUST deserialize the [Message ID](../data-format/message-header.md#message-id).
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
-    //# - [AAD](../data-format/message-header.md#aad): MUST be deserialized according to the
-    //# [AAD](../data-format/message-header.md#aad) specification.
+    //# - The Decrypt operation MUST deserialize the [AAD](../data-format/message-header.md#aad).
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
-    //# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be deserialized according to the
-    //# [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
+    //# - The Decrypt operation MUST deserialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
-    //# - [Content Type](../data-format/message-header.md#content-type): MUST be deserialized according to the
-    //# [Content Type](../data-format/message-header.md#content-type) specification.
+    //# - The Decrypt operation MUST deserialize the [Content Type](../data-format/message-header.md#content-type).
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
-    //# - [Frame Length](../data-format/message-header.md#frame-length): MUST be deserialized according to the
-    //# [Frame Length](../data-format/message-header.md#frame-length) specification.
+    //# - The Decrypt operation MUST deserialize the [Frame Length](../data-format/message-header.md#frame-length).
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
-    //# - [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data): MUST be deserialized according to the
-    //# [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data) specification.
+    //# - The Decrypt operation MUST deserialize the [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data).
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
-    //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST be deserialized according to the
-    //# [Authentication Tag](../data-format/message-header.md#authentication-tag) specification.
+    //# - The Decrypt operation MUST deserialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
     let keyring = test_keyring().await;
     let plaintext = b"v2 parse header round-trip";
 
@@ -95,47 +87,37 @@ async fn test_v1_header_fields_deserialized() {
     //# [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //# - [Type](../data-format/message-header.md#type): MUST be deserialized according to the
-    //# [Type](../data-format/message-header.md#type) specification.
+    //# - The Decrypt operation MUST deserialize the [Type](../data-format/message-header.md#type).
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //# The value MUST be a [supported type](../data-format/message-header.md#supported-types).
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST be deserialized according to the
-    //# [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id) specification.
+    //# - The Decrypt operation MUST deserialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //# - [Message ID](../data-format/message-header.md#message-id): MUST be deserialized according to the
-    //# [Message ID](../data-format/message-header.md#message-id) specification.
+    //# - The Decrypt operation MUST deserialize the [Message ID](../data-format/message-header.md#message-id).
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //# - [AAD](../data-format/message-header.md#aad): MUST be deserialized according to the
-    //# [AAD](../data-format/message-header.md#aad) specification.
+    //# - The Decrypt operation MUST deserialize the [AAD](../data-format/message-header.md#aad).
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be deserialized according to the
-    //# [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
+    //# - The Decrypt operation MUST deserialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //# - [Content Type](../data-format/message-header.md#content-type): MUST be deserialized according to the
-    //# [Content Type](../data-format/message-header.md#content-type) specification.
+    //# - The Decrypt operation MUST deserialize the [Content Type](../data-format/message-header.md#content-type).
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //# - [Reserved](../data-format/message-header.md#reserved): MUST be deserialized according to the
-    //# [Reserved](../data-format/message-header.md#reserved) specification.
+    //# - The Decrypt operation MUST deserialize the [Reserved](../data-format/message-header.md#reserved).
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //# - [IV Length](../data-format/message-header.md#iv-length): MUST be deserialized according to the
-    //# [IV Length](../data-format/message-header.md#iv-length) specification.
+    //# - The Decrypt operation MUST deserialize the [IV Length](../data-format/message-header.md#iv-length).
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //# - [Frame Length](../data-format/message-header.md#frame-length): MUST be deserialized according to the
-    //# [Frame Length](../data-format/message-header.md#frame-length) specification.
+    //# - The Decrypt operation MUST deserialize the [Frame Length](../data-format/message-header.md#frame-length).
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST be deserialized according to the
-    //# [Authentication Tag](../data-format/message-header.md#authentication-tag) specification.
+    //# - The Decrypt operation MUST deserialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
     let keyring = test_keyring().await;
     let plaintext = b"v1 parse header round-trip";
 

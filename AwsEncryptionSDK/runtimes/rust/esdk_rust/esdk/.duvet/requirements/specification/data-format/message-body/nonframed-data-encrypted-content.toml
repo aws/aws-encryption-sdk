@@ -1,0 +1,21 @@
+target = "specification/data-format/message-body.md#nonframed-data-encrypted-content"
+
+# nonframed Data Encrypted Content
+#
+# The encrypted data as returned by the [encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm).
+# 
+# The length of the serialized encrypted content field MUST be equal to the value of the [Encrypted Content Length](#nonframed-data-encrypted-content-length) field.
+# The encrypted content value MUST be interpreted as bytes.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized encrypted content field MUST be equal to the value of the [Encrypted Content Length](#nonframed-data-encrypted-content-length) field.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The encrypted content value MUST be interpreted as bytes.
+'''
+

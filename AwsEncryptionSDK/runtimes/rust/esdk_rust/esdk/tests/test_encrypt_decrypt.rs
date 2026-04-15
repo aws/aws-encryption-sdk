@@ -76,7 +76,7 @@ async fn test_bad_decrypt_input() {
     let bad_decrypt_output = decrypt(&decrypt_input).await;
     //= specification/client-apis/decrypt.md#input
     //= type=test
-    //# The Decrypt operation MUST validate that exactly one keyring or CMM was provided by the caller.
+    //# The Decrypt operation MUST validate that exactly one of a keyring or CMM was provided by the caller.
     //= specification/client-apis/decrypt.md#input
     //= type=test
     //# If the caller does not provide exactly one of a keyring or CMM, the Decrypt operation MUST fail.

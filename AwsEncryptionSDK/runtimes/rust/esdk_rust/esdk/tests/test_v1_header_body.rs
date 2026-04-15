@@ -27,8 +27,7 @@ async fn test_v1_header_serialized() {
 async fn test_v1_header_version() {
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [Version](../data-format/message-header.md#version): MUST be serialized according to the
-    //# [Version](../data-format/message-header.md#version) specification.
+    //# - The Encrypt operation MUST serialize the [Version](../data-format/message-header.md#version).
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
     //# The value MUST correspond to [1.0](../data-format/message-header.md#supported-versions).
@@ -43,8 +42,7 @@ async fn test_v1_header_version() {
 async fn test_v1_header_type() {
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [Type](../data-format/message-header.md#type): MUST be serialized according to the
-    //# [Type](../data-format/message-header.md#type) specification.
+    //# - The Encrypt operation MUST serialize the [Type](../data-format/message-header.md#type).
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
     //# The value MUST correspond to [Customer Authenticated Encrypted Data](../data-format/message-header.md#supported-types).
@@ -57,8 +55,7 @@ async fn test_v1_header_type() {
 async fn test_v1_header_algorithm_suite_id() {
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST be serialized according to the
-    //# [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id) specification.
+    //# - The Encrypt operation MUST serialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
     //# The value MUST correspond to the [algorithm suite](../framework/algorithm-suites.md) used in this behavior.
@@ -84,8 +81,7 @@ async fn test_v1_header_algorithm_suite_id() {
 async fn test_v1_header_message_id() {
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [Message ID](../data-format/message-header.md#message-id): MUST be serialized according to the
-    //# [Message ID](../data-format/message-header.md#message-id) specification.
+    //# - The Encrypt operation MUST serialize the [Message ID](../data-format/message-header.md#message-id).
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
     //# The process used to generate this identifier MUST use a good source of randomness
@@ -114,8 +110,7 @@ async fn test_v1_header_message_id() {
 async fn test_v1_header_aad() {
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [AAD](../data-format/message-header.md#aad): MUST be serialized according to the
-    //# [AAD](../data-format/message-header.md#aad) specification.
+    //# - The Encrypt operation MUST serialize the [AAD](../data-format/message-header.md#aad).
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
     //# The value MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
@@ -133,8 +128,7 @@ async fn test_v1_header_aad() {
 async fn test_v1_header_encrypted_data_keys() {
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be serialized according to the
-    //# [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
+    //# - The Encrypt operation MUST serialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
     //# The value MUST be the serialization of the
@@ -148,8 +142,7 @@ async fn test_v1_header_encrypted_data_keys() {
 async fn test_v1_header_content_type() {
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [Content Type](../data-format/message-header.md#content-type): MUST be serialized according to the
-    //# [Content Type](../data-format/message-header.md#content-type) specification.
+    //# - The Encrypt operation MUST serialize the [Content Type](../data-format/message-header.md#content-type).
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
     //# The value MUST be [02](../data-format/message-header.md#supported-content-types).
@@ -162,8 +155,7 @@ async fn test_v1_header_content_type() {
 async fn test_v1_header_reserved() {
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [Reserved](../data-format/message-header.md#reserved): MUST be serialized according to the
-    //# [Reserved](../data-format/message-header.md#reserved) specification.
+    //# - The Encrypt operation MUST serialize the [Reserved](../data-format/message-header.md#reserved).
     let pt = b"reserved test";
     let result = round_trip_v1(pt, EncryptionContext::new()).await;
     assert_eq!(result, pt, "round-trip proves reserved bytes are correct (decrypt validates them)");
@@ -173,8 +165,7 @@ async fn test_v1_header_reserved() {
 async fn test_v1_header_iv_length() {
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [IV Length](../data-format/message-header.md#iv-length): MUST be serialized according to the
-    //# [IV Length](../data-format/message-header.md#iv-length) specification.
+    //# - The Encrypt operation MUST serialize the [IV Length](../data-format/message-header.md#iv-length).
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
     //# The value MUST match the [IV length](../framework/algorithm-suites.md#iv-length)
@@ -188,8 +179,7 @@ async fn test_v1_header_iv_length() {
 async fn test_v1_header_frame_length() {
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [Frame Length](../data-format/message-header.md#frame-length): MUST be serialized according to the
-    //# [Frame Length](../data-format/message-header.md#frame-length) specification.
+    //# - The Encrypt operation MUST serialize the [Frame Length](../data-format/message-header.md#frame-length).
     //= specification/client-apis/encrypt.md#v1-header
     //= type=test
     //# The value MUST be the value of the frame size determined above.

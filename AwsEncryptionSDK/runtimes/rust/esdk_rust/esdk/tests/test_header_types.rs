@@ -74,7 +74,7 @@ async fn test_content_type_framed_value() {
 async fn test_content_type_nonframed_value() {
     //= specification/data-format/message-header.md#supported-content-types
     //= type=test
-    //# - `01` for [Non-Framed](message-body.md#non-framed-data)
+    //# - `01` for [nonframed](message-body.md#nonframed-data)
     let keyring = test_keyring().await;
     let mut ct = encrypt_v2(b"test").await;
 

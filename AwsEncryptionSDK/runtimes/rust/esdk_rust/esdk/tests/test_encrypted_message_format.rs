@@ -16,7 +16,7 @@ async fn test_decrypt_rejects_base64_encoded_input() {
     // version 0x01 type 0x80 (per the spec table: "01 80" → "AY..." → "41 59...")
     //= specification/client-apis/decrypt.md#encrypted-message-format
     //= type=test
-    //# To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version-1)
+    //# To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version)
     //# and [types](../data-format/message-header.md#type)
     //# and fail with a more specific error message.
     let fake_b64_input: Vec<u8> = {

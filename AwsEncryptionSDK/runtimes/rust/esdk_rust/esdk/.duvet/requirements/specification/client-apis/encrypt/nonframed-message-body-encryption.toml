@@ -1,0 +1,12 @@
+target = "specification/client-apis/encrypt.md#nonframed-message-body-encryption"
+
+# nonframed Message Body Encryption
+#
+# Implementations of the AWS Encryption SDK MUST NOT encrypt using the nonframed content type.
+
+[[spec]]
+level = "MUST"
+quote = '''
+Implementations of the AWS Encryption SDK MUST NOT encrypt using the nonframed content type.
+'''
+

@@ -12,14 +12,12 @@ use crate::types::{SafeRead, SafeWrite};
 ///
 /// The caller is responsible for ensuring this is only called when the algorithm suite
 /// includes a signature algorithm.
-//= aws-encryption-sdk-specification/data-format/message.md#structure
-//= type=implication
+//= specification/data-format/message.md#structure
 //# If the [message header](message-header.md) contains an [algorithm suite](../framework/algorithm-suites.md) in the
 //# [algorithm suite ID](message-header.md#algorithm-suite-id) field that contains a
 //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm), the message MUST also contain a
 //# [message footer](message-footer.md) serialized after the [message body](message-body.md).
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#construct-the-signature
-//= type=implication
+//= specification/client-apis/encrypt.md#construct-the-signature
 //# The order for message footer serialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
 pub(crate) fn write_footer(
     w: &mut dyn SafeWrite,
@@ -31,8 +29,8 @@ pub(crate) fn write_footer(
     //= specification/client-apis/encrypt.md#construct-the-signature
     //# This operation MUST then serialize a message footer.
     //= specification/client-apis/encrypt.md#construct-the-signature
-    //# - [Signature Length](../data-format/message-footer.md#signature-length): The value MUST be the length of the
-    //# output of the signature calculation above.
+    //# - The Encrypt operation MUST serialize the [Signature Length](../data-format/message-footer.md#signature-length).
+    //# The value MUST be the length of the output of the signature calculation above.
     let Ok(len) = u16::try_from(signature.len()) else {
         return ser_err("Sequence length too long for 16 bits");
     };
@@ -46,7 +44,8 @@ pub(crate) fn write_footer(
     //# The signature length value MUST be a UInt16.
     write_u16(w, len)?;
     //= specification/client-apis/encrypt.md#construct-the-signature
-    //# - [Signature](../data-format/message-footer.md#signature): The value MUST be the output of the signature calculation above.
+    //# - The Encrypt operation MUST serialize the [Signature](../data-format/message-footer.md#signature).
+    //# The value MUST be the output of the signature calculation above.
     //= specification/data-format/message-footer.md#signature
     //# The signature MUST be interpreted as bytes.
     write_bytes(w, signature)?;
@@ -57,8 +56,7 @@ pub(crate) fn write_footer(
 }
 
 /// Read a message footer, returning the signature bytes.
-//= aws-encryption-sdk-specification/client-apis/decrypt.md#verify-the-signature
-//= type=implication
+//= specification/client-apis/decrypt.md#verify-the-signature
 //# The order for message footer deserialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
 pub(crate) fn read_footer(
     r: &mut dyn SafeRead,

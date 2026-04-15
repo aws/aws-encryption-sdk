@@ -11,7 +11,7 @@
 //! - [`encrypt::encrypt()`] — encrypts plaintext and serializes an encrypted message
 //! - [`decrypt::decrypt()`] — deserializes an encrypted message and decrypts the plaintext
 //!
-//! The SDK supports both **framed** and **non-framed** message body formats,
+//! The SDK supports both **framed** and **nonframed** message body formats,
 //! as well as **V1** and **V2** message format versions (V2 adds key commitment).
 //!
 #![cfg_attr(docsrs, feature(doc_cfg))]

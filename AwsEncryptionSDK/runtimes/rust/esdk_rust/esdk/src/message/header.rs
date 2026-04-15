@@ -38,13 +38,13 @@ pub(crate) fn write_header_body(w: &mut dyn SafeWrite, body: &HeaderBody) -> Res
     }
 }
 
-//= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+//= specification/client-apis/decrypt.md#parse-the-header
 //= type=implication
 //= reason=SafeRead (std::io::Read) only supports sequential consumption with no skip/seek,
 //= reason=so reading from it inherently processes all consumable bytes until a valid header is formed.
 //# This operation MUST attempt to deserialize all consumable encrypted message bytes
 //# until it has successfully deserialized a valid [message header](../data-format/message-header.md).
-//= aws-encryption-sdk-specification/client-apis/decrypt.md#v2-header-deserialization
+//= specification/client-apis/decrypt.md#v2-header-deserialization
 //= type=implication
 //= reason=SafeRead (std::io::Read) only supports sequential consumption with no skip/seek,
 //= reason=so reading from it inherently processes all consumable bytes until a valid header is formed.
@@ -97,9 +97,9 @@ pub(crate) fn read_header_body(
         }
         ContentType::NonFramed => {
             //= specification/data-format/message-header.md#frame-length
-            //# When the [content type](#content-type) is non-framed, the value of this field MUST be 0.
+            //# When the [content type](#content-type) is nonframed, the value of this field MUST be 0.
             if result.frame_length() != 0 {
-                return ser_err("Frame length must be zero if content is non-framed");
+                return ser_err("Frame length must be zero if content is nonframed");
             }
         }
     }

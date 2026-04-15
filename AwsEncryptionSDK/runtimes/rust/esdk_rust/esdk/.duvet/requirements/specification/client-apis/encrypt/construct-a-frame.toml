@@ -41,36 +41,26 @@ target = "specification/client-apis/encrypt.md#construct-a-frame"
 # 
 # For a regular frame, each field MUST be serialized according to its specification:
 # 
-# - [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number): MUST be serialized according to the
-#   [Regular Frame Sequence Number](../data-format/message-body.md#regular-frame-sequence-number) specification.
+# - The Encrypt operation MUST serialize the [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number).
 #   The value MUST be the sequence number of this frame.
-# - [IV](../data-format/message-body.md#regular-frame-iv): MUST be serialized according to the
-#   [Regular Frame IV](../data-format/message-body.md#regular-frame-iv) specification.
+# - The Encrypt operation MUST serialize the [IV](../data-format/message-body.md#regular-frame-iv).
 #   The value MUST be the IV used when calculating the encrypted content for this frame.
-# - [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content): MUST be serialized according to the
-#   [Regular Frame Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content) specification.
+# - The Encrypt operation MUST serialize the [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content).
 #   The value MUST be the encrypted content calculated for this frame.
-# - [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag): MUST be serialized according to the
-#   [Regular Frame Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag) specification.
+# - The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag).
 #   The value MUST be the authentication tag output when calculating the encrypted content for this frame.
 # 
 # For a final frame, each field MUST be serialized according to its specification:
 # 
-# - [Sequence Number End](../data-format/message-body.md#sequence-number-end): MUST be serialized according to the
-#   [Sequence Number End](../data-format/message-body.md#sequence-number-end) specification.
-# - [Sequence Number](../data-format/message-body.md#final-frame-sequence-number): MUST be serialized according to the
-#   [Final Frame Sequence Number](../data-format/message-body.md#final-frame-sequence-number) specification.
+# - The Encrypt operation MUST serialize the [Sequence Number End](../data-format/message-body.md#sequence-number-end).
+# - The Encrypt operation MUST serialize the [Sequence Number](../data-format/message-body.md#final-frame-sequence-number).
 #   The value MUST be the sequence number of this frame.
-# - [IV](../data-format/message-body.md#final-frame-iv): MUST be serialized according to the
-#   [Final Frame IV](../data-format/message-body.md#final-frame-iv) specification.
+# - The Encrypt operation MUST serialize the [IV](../data-format/message-body.md#final-frame-iv).
 #   The value MUST be the IV used when calculating the encrypted content for this frame.
-# - [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length): MUST be serialized according to the
-#   [Final Frame Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length) specification.
-# - [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content): MUST be serialized according to the
-#   [Final Frame Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content) specification.
+# - The Encrypt operation MUST serialize the [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length).
+# - The Encrypt operation MUST serialize the [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content).
 #   The value MUST be the encrypted content calculated for this frame.
-# - [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag): MUST be serialized according to the
-#   [Final Frame Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag) specification.
+# - The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag).
 #   The value MUST be the authentication tag output when calculating the encrypted content for this frame.
 # 
 # The serialized frame bytes MUST NOT be released until the entire frame has been serialized.
@@ -215,8 +205,7 @@ For a regular frame, each field MUST be serialized according to its specificatio
 [[spec]]
 level = "MUST"
 quote = '''
-- [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number): MUST be serialized according to the
-[Regular Frame Sequence Number](../data-format/message-body.md#regular-frame-sequence-number) specification.
+- The Encrypt operation MUST serialize the [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number).
 '''
 
 [[spec]]
@@ -228,8 +217,7 @@ The value MUST be the sequence number of this frame.
 [[spec]]
 level = "MUST"
 quote = '''
-- [IV](../data-format/message-body.md#regular-frame-iv): MUST be serialized according to the
-[Regular Frame IV](../data-format/message-body.md#regular-frame-iv) specification.
+- The Encrypt operation MUST serialize the [IV](../data-format/message-body.md#regular-frame-iv).
 '''
 
 [[spec]]
@@ -241,8 +229,7 @@ The value MUST be the IV used when calculating the encrypted content for this fr
 [[spec]]
 level = "MUST"
 quote = '''
-- [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content): MUST be serialized according to the
-[Regular Frame Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content) specification.
+- The Encrypt operation MUST serialize the [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content).
 '''
 
 [[spec]]
@@ -254,8 +241,7 @@ The value MUST be the encrypted content calculated for this frame.
 [[spec]]
 level = "MUST"
 quote = '''
-- [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag): MUST be serialized according to the
-[Regular Frame Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag) specification.
+- The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag).
 '''
 
 [[spec]]
@@ -273,43 +259,37 @@ For a final frame, each field MUST be serialized according to its specification:
 [[spec]]
 level = "MUST"
 quote = '''
-- [Sequence Number End](../data-format/message-body.md#sequence-number-end): MUST be serialized according to the
-[Sequence Number End](../data-format/message-body.md#sequence-number-end) specification.
+- The Encrypt operation MUST serialize the [Sequence Number End](../data-format/message-body.md#sequence-number-end).
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-- [Sequence Number](../data-format/message-body.md#final-frame-sequence-number): MUST be serialized according to the
-[Final Frame Sequence Number](../data-format/message-body.md#final-frame-sequence-number) specification.
+- The Encrypt operation MUST serialize the [Sequence Number](../data-format/message-body.md#final-frame-sequence-number).
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-- [IV](../data-format/message-body.md#final-frame-iv): MUST be serialized according to the
-[Final Frame IV](../data-format/message-body.md#final-frame-iv) specification.
+- The Encrypt operation MUST serialize the [IV](../data-format/message-body.md#final-frame-iv).
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-- [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length): MUST be serialized according to the
-[Final Frame Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length) specification.
+- The Encrypt operation MUST serialize the [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length).
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-- [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content): MUST be serialized according to the
-[Final Frame Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content) specification.
+- The Encrypt operation MUST serialize the [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content).
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-- [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag): MUST be serialized according to the
-[Final Frame Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag) specification.
+- The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag).
 '''
 
 [[spec]]

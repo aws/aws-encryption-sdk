@@ -6,35 +6,27 @@ target = "specification/client-apis/encrypt.md#v2-header"
 # the remaining header fields MUST be serialized according to the
 # [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
 # 
-# - [Version](../data-format/message-header.md#version): MUST be serialized according to the
-#   [Version](../data-format/message-header.md#version) specification.
+# - The Encrypt operation MUST serialize the [Version](../data-format/message-header.md#version).
 #   The value MUST correspond to [2.0](../data-format/message-header.md#supported-versions).
-# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST be serialized according to the
-#   [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id) specification.
+# - The Encrypt operation MUST serialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
 #   The value MUST correspond to the [algorithm suite](../framework/algorithm-suites.md) used in this behavior.
-# - [Message ID](../data-format/message-header.md#message-id): MUST be serialized according to the
-#   [Message ID](../data-format/message-header.md#message-id) specification.
+# - The Encrypt operation MUST serialize the [Message ID](../data-format/message-header.md#message-id).
 #   The process used to generate this identifier MUST use a good source of randomness
 #   to make the chance of duplicate identifiers negligible.
-# - [AAD](../data-format/message-header.md#aad): MUST be serialized according to the
-#   [AAD](../data-format/message-header.md#aad) specification.
+# - The Encrypt operation MUST serialize the [AAD](../data-format/message-header.md#aad).
 #   The value MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
 #   in the [encryption materials](../framework/structures.md#encryption-materials),
 #   and this serialization MUST NOT contain any key value pairs listed in
 #   the [encryption material's](../framework/structures.md#encryption-materials)
 #   [required encryption context keys](../framework/structures.md#required-encryption-context-keys).
-# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be serialized according to the
-#   [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
+# - The Encrypt operation MUST serialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
 #   The value MUST be the serialization of the
 #   [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials).
-# - [Content Type](../data-format/message-header.md#content-type): MUST be serialized according to the
-#   [Content Type](../data-format/message-header.md#content-type) specification.
+# - The Encrypt operation MUST serialize the [Content Type](../data-format/message-header.md#content-type).
 #   The value MUST be [02](../data-format/message-header.md#supported-content-types).
-# - [Frame Length](../data-format/message-header.md#frame-length): MUST be serialized according to the
-#   [Frame Length](../data-format/message-header.md#frame-length) specification.
+# - The Encrypt operation MUST serialize the [Frame Length](../data-format/message-header.md#frame-length).
 #   The value MUST be the value of the frame size determined above.
-# - [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data): MUST be serialized according to the
-#   [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data) specification.
+# - The Encrypt operation MUST serialize the [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data).
 #   The value MUST be the value of the [commit key](../framework/algorithm-suites.md#commit-key)
 #   derived according to the [algorithm suites commit key derivation settings](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
 # 
@@ -51,8 +43,7 @@ the remaining header fields MUST be serialized according to the
 [[spec]]
 level = "MUST"
 quote = '''
-- [Version](../data-format/message-header.md#version): MUST be serialized according to the
-[Version](../data-format/message-header.md#version) specification.
+- The Encrypt operation MUST serialize the [Version](../data-format/message-header.md#version).
 '''
 
 [[spec]]
@@ -64,8 +55,7 @@ The value MUST correspond to [2.0](../data-format/message-header.md#supported-ve
 [[spec]]
 level = "MUST"
 quote = '''
-- [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST be serialized according to the
-[Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id) specification.
+- The Encrypt operation MUST serialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
 '''
 
 [[spec]]
@@ -77,8 +67,7 @@ The value MUST correspond to the [algorithm suite](../framework/algorithm-suites
 [[spec]]
 level = "MUST"
 quote = '''
-- [Message ID](../data-format/message-header.md#message-id): MUST be serialized according to the
-[Message ID](../data-format/message-header.md#message-id) specification.
+- The Encrypt operation MUST serialize the [Message ID](../data-format/message-header.md#message-id).
 '''
 
 [[spec]]
@@ -91,8 +80,7 @@ to make the chance of duplicate identifiers negligible.
 [[spec]]
 level = "MUST"
 quote = '''
-- [AAD](../data-format/message-header.md#aad): MUST be serialized according to the
-[AAD](../data-format/message-header.md#aad) specification.
+- The Encrypt operation MUST serialize the [AAD](../data-format/message-header.md#aad).
 '''
 
 [[spec]]
@@ -108,8 +96,7 @@ the [encryption material's](../framework/structures.md#encryption-materials)
 [[spec]]
 level = "MUST"
 quote = '''
-- [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys): MUST be serialized according to the
-[Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys) specification.
+- The Encrypt operation MUST serialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
 '''
 
 [[spec]]
@@ -122,8 +109,7 @@ The value MUST be the serialization of the
 [[spec]]
 level = "MUST"
 quote = '''
-- [Content Type](../data-format/message-header.md#content-type): MUST be serialized according to the
-[Content Type](../data-format/message-header.md#content-type) specification.
+- The Encrypt operation MUST serialize the [Content Type](../data-format/message-header.md#content-type).
 '''
 
 [[spec]]
@@ -135,8 +121,7 @@ The value MUST be [02](../data-format/message-header.md#supported-content-types)
 [[spec]]
 level = "MUST"
 quote = '''
-- [Frame Length](../data-format/message-header.md#frame-length): MUST be serialized according to the
-[Frame Length](../data-format/message-header.md#frame-length) specification.
+- The Encrypt operation MUST serialize the [Frame Length](../data-format/message-header.md#frame-length).
 '''
 
 [[spec]]
@@ -148,8 +133,7 @@ The value MUST be the value of the frame size determined above.
 [[spec]]
 level = "MUST"
 quote = '''
-- [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data): MUST be serialized according to the
-[Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data) specification.
+- The Encrypt operation MUST serialize the [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data).
 '''
 
 [[spec]]

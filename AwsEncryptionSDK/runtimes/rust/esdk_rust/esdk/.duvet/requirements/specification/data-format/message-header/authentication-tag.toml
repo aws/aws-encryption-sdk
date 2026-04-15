@@ -1,0 +1,23 @@
+target = "specification/data-format/message-header.md#authentication-tag"
+
+# Authentication Tag
+#
+# The authentication value for the header.
+# The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
+# The authentication tag MUST be interpreted as bytes.
+# The [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field
+# [determines how the value of this field is calculated](../client-apis/encrypt.md),
+# and uses this value to [authenticate the contents of the header during decryption](../client-apis/decrypt.md).
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The authentication tag MUST be interpreted as bytes.
+'''
+

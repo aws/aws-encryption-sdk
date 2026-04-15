@@ -282,7 +282,7 @@ async fn test_unsupported_esdk_algorithm_suite_yields_error() {
     //= type=test
     //= reason=get_esdk_id rejects non-ESDK suite IDs; a valid round-trip proves ESDK suites pass, and tampering the suite ID to a non-ESDK value triggers the error path
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
-    //# encrypt MUST yield an error.
+    //# decrypt MUST yield an error.
     let keyring = aes_keyring(0).await;
     let pt = b"unsupported esdk suite test";
 

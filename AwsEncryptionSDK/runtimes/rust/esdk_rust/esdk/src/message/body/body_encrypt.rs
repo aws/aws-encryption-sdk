@@ -124,6 +124,11 @@ pub(crate) fn construct_frame(
     //# The Final Frame Sequence Number MUST be interpreted as the same type as the
     //# [Regular Frame Sequence Number](#regular-frame-sequence-number).
     let _seq_num_written = &input.sequence_number;
+    //= specification/data-format/message-body.md#final-frame-sequence-number
+    //= reason=write_u32 writes exactly 4 bytes, the same length as the regular frame sequence number field
+    //# The length of the Final Frame Sequence number field MUST be the same as the
+    //# [Regular Frame Sequence Number](#regular-frame-sequence-number).
+    let _seq_num_length = &input.sequence_number;
 
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# - [IV](../data-format/message-body.md#regular-frame-iv): MUST be serialized according to the

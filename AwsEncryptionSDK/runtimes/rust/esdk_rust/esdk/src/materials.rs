@@ -166,7 +166,7 @@ pub(crate) async fn get_modern_decryption_materials(
     let materials = cmm.decrypt_materials(&input).await?;
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
-    //# encrypt MUST yield an error.
+    //# decrypt MUST yield an error.
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) decrypt MUST yield an error.
@@ -228,7 +228,7 @@ pub(crate) async fn get_legacy_decryption_materials(
     let mpl = mpl();
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
-    //# encrypt MUST yield an error.
+    //# decrypt MUST yield an error.
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) decrypt MUST yield an error.

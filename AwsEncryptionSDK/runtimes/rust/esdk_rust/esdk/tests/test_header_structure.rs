@@ -108,7 +108,7 @@ async fn test_frame_length_serialized_as_uint32() {
 async fn test_nonframed_frame_length_must_be_zero() {
     //= specification/data-format/message-header.md#frame-length
     //= type=test
-    //# When the [content type](#content-type) is non-framed, the value of this field MUST be 0.
+    //# When the [content type](#content-type) is nonframed, the value of this field MUST be 0.
     let keyring = test_keyring().await;
     let input = EncryptInput::with_legacy_keyring(b"frame length test", EncryptionContext::new(), keyring.clone());
     let mut ct = encrypt(&input).await.unwrap().ciphertext;
@@ -123,5 +123,5 @@ async fn test_nonframed_frame_length_must_be_zero() {
     ct[frame_length_offset + 3] = 0x00;
 
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    assert!(decrypt(&dec_input).await.is_err(), "non-framed content with non-zero frame length must be rejected");
+    assert!(decrypt(&dec_input).await.is_err(), "nonframed content with non-zero frame length must be rejected");
 }

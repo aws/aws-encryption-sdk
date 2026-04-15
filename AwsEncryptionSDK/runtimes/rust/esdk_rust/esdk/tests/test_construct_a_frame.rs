@@ -218,15 +218,13 @@ async fn test_construct_frame_serialization_regular_and_final() {
 async fn test_construct_frame_sequence_number_serialized() {
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
-    //# - [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number): MUST be serialized according to the
-    //# [Regular Frame Sequence Number](../data-format/message-body.md#regular-frame-sequence-number) specification.
+    //# - The Encrypt operation MUST serialize the [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number).
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# The value MUST be the sequence number of this frame.
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
-    //# - [Sequence Number](../data-format/message-body.md#final-frame-sequence-number): MUST be serialized according to the
-    //# [Final Frame Sequence Number](../data-format/message-body.md#final-frame-sequence-number) specification.
+    //# - The Encrypt operation MUST serialize the [Sequence Number](../data-format/message-body.md#final-frame-sequence-number).
     let pt = vec![0xEEu8; 30];
     let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "decrypt success proves sequence numbers are correctly serialized");
@@ -236,15 +234,13 @@ async fn test_construct_frame_sequence_number_serialized() {
 async fn test_construct_frame_iv_serialized() {
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
-    //# - [IV](../data-format/message-body.md#regular-frame-iv): MUST be serialized according to the
-    //# [Regular Frame IV](../data-format/message-body.md#regular-frame-iv) specification.
+    //# - The Encrypt operation MUST serialize the [IV](../data-format/message-body.md#regular-frame-iv).
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# The value MUST be the IV used when calculating the encrypted content for this frame.
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
-    //# - [IV](../data-format/message-body.md#final-frame-iv): MUST be serialized according to the
-    //# [Final Frame IV](../data-format/message-body.md#final-frame-iv) specification.
+    //# - The Encrypt operation MUST serialize the [IV](../data-format/message-body.md#final-frame-iv).
     let pt = b"iv serialization test";
     let result = round_trip_framed(pt, 4096).await;
     assert_eq!(result, pt.to_vec(), "decrypt success proves IV is correctly serialized");
@@ -254,12 +250,10 @@ async fn test_construct_frame_iv_serialized() {
 async fn test_construct_frame_final_frame_has_endframe_marker() {
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
-    //# - [Sequence Number End](../data-format/message-body.md#sequence-number-end): MUST be serialized according to the
-    //# [Sequence Number End](../data-format/message-body.md#sequence-number-end) specification.
+    //# - The Encrypt operation MUST serialize the [Sequence Number End](../data-format/message-body.md#sequence-number-end).
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
-    //# - [Sequence Number End](../data-format/message-body.md#sequence-number-end): MUST be serialized according to the
-    //# [Sequence Number End](../data-format/message-body.md#sequence-number-end) specification.
+    //# - The Encrypt operation MUST serialize the [Sequence Number End](../data-format/message-body.md#sequence-number-end).
     let ct = encrypt_with_frame_length(b"endframe marker", 4096).await;
     let endframe = 0xFFFF_FFFFu32.to_be_bytes();
     let count = ct.windows(4).filter(|w| *w == endframe).count();
@@ -270,12 +264,10 @@ async fn test_construct_frame_final_frame_has_endframe_marker() {
 async fn test_construct_frame_final_frame_content_length_serialized() {
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
-    //# - [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length): MUST be serialized according to the
-    //# [Final Frame Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length) specification.
+    //# - The Encrypt operation MUST serialize the [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length).
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
-    //# - [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length): MUST be serialized according to the
-    //# [Final Frame Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length) specification.
+    //# - The Encrypt operation MUST serialize the [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length).
     // 7 bytes with frame_length=10 → single final frame with content length 7
     let pt = b"1234567";
     let ct = encrypt_with_frame_length(pt, 10).await;
@@ -301,26 +293,22 @@ async fn test_construct_frame_final_frame_content_length_serialized() {
 async fn test_construct_frame_auth_tag_serialized() {
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
-    //# - [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content): MUST be serialized according to the
-    //# [Regular Frame Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content) specification.
+    //# - The Encrypt operation MUST serialize the [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content).
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# The value MUST be the encrypted content calculated for this frame.
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
-    //# - [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag): MUST be serialized according to the
-    //# [Regular Frame Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag) specification.
+    //# - The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag).
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# The value MUST be the authentication tag output when calculating the encrypted content for this frame.
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
-    //# - [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content): MUST be serialized according to the
-    //# [Final Frame Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content) specification.
+    //# - The Encrypt operation MUST serialize the [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content).
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
-    //# - [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag): MUST be serialized according to the
-    //# [Final Frame Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag) specification.
+    //# - The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag).
     let pt = b"encrypted content and auth tag test";
     let result = round_trip_framed(pt, 4096).await;
     assert_eq!(result, pt.to_vec(), "decrypt success proves encrypted content and auth tag are correctly serialized");

@@ -1,0 +1,37 @@
+target = "specification/data-format/message-header.md#encrypted-data-key-entries"
+
+# Encrypted Data Key Entries
+#
+# A sequence of one or more encrypted data key entries.
+# 
+# The following table is a non-normative representation of the normative requirements in this section.
+# 
+# | Field                                                               | Length, in bytes                                                                                  | Interpreted as      |
+# | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------- |
+# | [Key Provider ID Length](#key-provider-id-length)                   | 2                                                                                                 | UInt16              |
+# | [Key Provider ID](#key-provider-id)                                 | Variable. Equal to the value specified in the previous 2 bytes (Key Provider ID Length).          | UTF-8 encoded bytes |
+# | [Key Provider Information Length](#key-provider-information-length) | 2                                                                                                 | UInt16              |
+# | [Key Provider Information](#key-provider-information)               | Variable. Equal to the value specified in the previous 2 bytes (Key Provider Information Length). | Bytes               |
+# | [Encrypted Data Key Length](#encrypted-data-key-length)             | 2                                                                                                 | UInt16              |
+# | [Encrypted Data Key](#encrypted-data-key)                           | Variable. Equal to the value specified in the previous 2 bytes (Encrypted Data Key Length).       | Bytes               |
+# 
+# Each Encrypted Data Key Entry MUST consist of, in order,
+# Key Provider ID Length,
+# Key Provider ID,
+# Key Provider Information Length,
+# Key Provider Information,
+# Encrypted Data Key Length,
+# and Encrypted Data Key.
+
+[[spec]]
+level = "MUST"
+quote = '''
+Each Encrypted Data Key Entry MUST consist of, in order,
+Key Provider ID Length,
+Key Provider ID,
+Key Provider Information Length,
+Key Provider Information,
+Encrypted Data Key Length,
+and Encrypted Data Key.
+'''
+

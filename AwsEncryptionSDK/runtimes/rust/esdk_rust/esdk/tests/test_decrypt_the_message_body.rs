@@ -11,7 +11,7 @@ use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
 use test_helpers::*;
 
-/// Build a complete non-framed encrypted message from scratch.
+/// Build a complete nonframed encrypted message from scratch.
 ///
 /// Uses AlgAes256GcmHkdfSha512CommitKey (0x0478), V2 header, NonFramed content type.
 /// The wrapping key is `[0u8; 32]` matching the test_keyring() configuration.
@@ -72,7 +72,7 @@ fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
     header_body.extend_from_slice(&(edk_ciphertext.len() as u16).to_be_bytes());
     header_body.extend_from_slice(&edk_ciphertext);
     header_body.push(0x01); // Content Type: NonFramed
-    header_body.extend_from_slice(&0u32.to_be_bytes()); // Frame Length: 0 for non-framed
+    header_body.extend_from_slice(&0u32.to_be_bytes()); // Frame Length: 0 for nonframed
     header_body.extend_from_slice(&commit_key); // Algorithm Suite Data (commitment key)
 
     // --- Compute header auth (V2: IV=zeros, AAD=header_body, empty ciphertext) ---
@@ -83,7 +83,7 @@ fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
     let mut empty = Vec::new();
     let header_auth_tag = key.seal_in_place_separate_tag(nonce, Aad::from(&header_body[..]), &mut empty).unwrap();
 
-    // --- Build non-framed body ---
+    // --- Build nonframed body ---
     // Body AAD: message_id + "AWSKMSEncryptionClient Single Block" + seq_num(4, be) + content_len(8, be)
     let mut body_aad = Vec::new();
     body_aad.extend_from_slice(&message_id);
@@ -108,7 +108,7 @@ fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
     message.extend_from_slice(&header_body);
     // Header auth (V2: tag only, no IV)
     message.extend_from_slice(header_auth_tag.as_ref());
-    // Non-framed body: IV(12) + content_length(8) + encrypted_content(N) + auth_tag(16)
+    // nonframed body: IV(12) + content_length(8) + encrypted_content(N) + auth_tag(16)
     message.extend_from_slice(&body_iv);
     message.extend_from_slice(&(body_ct.len() as u64).to_be_bytes());
     message.extend_from_slice(&body_ct);
@@ -139,20 +139,16 @@ async fn test_decrypt_final_frame_deserialization() {
     //# For a final frame, each field MUST be deserialized according to its specification:
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# - [Sequence Number](../data-format/message-body.md#final-frame-sequence-number): MUST be deserialized according to the
-    //# [Final Frame Sequence Number](../data-format/message-body.md#final-frame-sequence-number) specification.
+    //# - The Decrypt operation MUST deserialize the [Sequence Number](../data-format/message-body.md#final-frame-sequence-number).
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# - [IV](../data-format/message-body.md#final-frame-iv): MUST be deserialized according to the
-    //# [Final Frame IV](../data-format/message-body.md#final-frame-iv) specification.
+    //# - The Decrypt operation MUST deserialize the [IV](../data-format/message-body.md#final-frame-iv).
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# - [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content): MUST be deserialized according to the
-    //# [Final Frame Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content) specification.
+    //# - The Decrypt operation MUST deserialize the [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content).
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# - [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag): MUST be deserialized according to the
-    //# [Final Frame Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag) specification.
+    //# - The Decrypt operation MUST deserialize the [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag).
     // Single-frame message: 5 bytes with frame_length=10 → 1 final frame only.
     // Successful authenticated decryption proves all final frame fields were deserialized correctly.
     let pt = vec![0xBBu8; 5];
@@ -179,7 +175,8 @@ async fn test_decrypt_final_frame_detected_by_endframe_marker() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# If the first 4 bytes have a value of 0xFFFFFFFF,
-    //# then the Decrypt operation MUST deserialize the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
+    //# the Decrypt operation MUST treat them as the [Sequence Number End](../data-format/message-body.md#sequence-number-end)
+    //# and deserialize the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
     // Single final frame: the first 4 bytes of the body are 0xFFFFFFFF.
     let pt = b"final frame test";
     let result = round_trip_framed(pt, 4096).await;
@@ -190,7 +187,8 @@ async fn test_decrypt_final_frame_detected_by_endframe_marker() {
 async fn test_decrypt_regular_frame_detected_without_endframe() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# Otherwise, the Decrypt operation MUST deserialize the bytes according to the [regular frame spec](../data-format/message-body.md#regular-frame).
+    //# Otherwise, the Decrypt operation MUST treat them as the [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number)
+    //# and deserialize the following bytes according to the [regular frame spec](../data-format/message-body.md#regular-frame).
     // Multi-frame: first frame starts with sequence number 1 (not 0xFFFFFFFF), so it's a regular frame.
     let pt = vec![0xDDu8; 30];
     let result = round_trip_framed(&pt, 10).await;
@@ -226,7 +224,7 @@ async fn test_decrypt_final_frame_content_length_validation() {
 async fn test_decrypt_authenticates_each_frame() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# Once at least a single frame is deserialized (or the entire body in the un-framed case),
+    //# Once at least a single frame is deserialized (or the entire body in the nonframed case),
     //# the Decrypt operation MUST decrypt and authenticate the frame (or body) using the
     //# [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
@@ -354,7 +352,7 @@ async fn test_decrypt_content_type_determines_framed_or_nonframed() {
     //# The Decrypt operation MUST use the [content type](../data-format/message-header.md#content-type) field parsed from the
     //# message header to determine whether the operation will deserialize the message bytes as
     //# [framed data](../data-format/message-body.md#framed-data) or
-    //# [un-framed data](../data-format/message-body.md#non-framed-data).
+    //# [nonframed data](../data-format/message-body.md#nonframed-data).
     // Framed round-trip: content type is Framed, body is deserialized as framed data.
     let pt = vec![0xAAu8; 20];
     let result = round_trip_framed(&pt, 10).await;
@@ -368,28 +366,22 @@ async fn test_decrypt_frame_fields_deserialized_correctly() {
     //# For a regular frame, each field MUST be deserialized according to its specification:
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# - The [Sequence Number End](../data-format/message-body.md#sequence-number-end): MUST be deserialized according to the
-    //# [Sequence Number End](../data-format/message-body.md#sequence-number-end) specification.
+    //# The Decrypt operation MUST deserialize the [Sequence Number End](../data-format/message-body.md#sequence-number-end).
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# - [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number): MUST be deserialized according to the
-    //# [Regular Frame Sequence Number](../data-format/message-body.md#regular-frame-sequence-number) specification.
+    //# - The Decrypt operation MUST deserialize the [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number).
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# - [IV](../data-format/message-body.md#regular-frame-iv): MUST be deserialized according to the
-    //# [Regular Frame IV](../data-format/message-body.md#regular-frame-iv) specification.
+    //# - The Decrypt operation MUST deserialize the [IV](../data-format/message-body.md#regular-frame-iv).
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# - [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length): MUST be deserialized according to the
-    //# [Final Frame Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length) specification.
+    //# - The Decrypt operation MUST deserialize the [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length).
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# - [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content): MUST be deserialized according to the
-    //# [Regular Frame Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content) specification.
+    //# - The Decrypt operation MUST deserialize the [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content).
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# - [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag): MUST be deserialized according to the
-    //# [Regular Frame Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag) specification.
+    //# - The Decrypt operation MUST deserialize the [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag).
     // Multi-frame round-trip: 2 regular frames + 1 final frame.
     // Successful authenticated decryption proves all frame fields were deserialized correctly:
     // sequence number end, sequence number, IV, encrypted content length, encrypted content, auth tag.
@@ -412,7 +404,7 @@ async fn test_decrypt_aad_constructed_correctly() {
     //= type=test
     //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be constructed
     //# according to [Message Body AAD](../data-format/message-body-aad.md) depending on
-    //# whether the bytes being decrypted are a regular frame, final frame, or un-framed data.
+    //# whether the bytes being decrypted are a regular frame, final frame, or nonframed data.
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be the sequence
@@ -428,8 +420,8 @@ async fn test_decrypt_aad_constructed_correctly() {
 async fn test_decrypt_unframed_sequence_number_is_one() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# If this is un-framed data, this value MUST be 1.
-    // We cannot encrypt non-framed data with this ESDK (it only encrypts framed),
+    //# If this is nonframed data, this value MUST be 1.
+    // We cannot encrypt nonframed data with this ESDK (it only encrypts framed),
     // but we can verify the framed path uses sequence number 1 for the first frame,
     // which exercises the same code path for AAD construction.
     // A single-frame message has only a final frame with sequence number 1.
@@ -450,12 +442,10 @@ async fn test_decrypt_aes_inputs_correct() {
     //# - The cipherkey MUST be the derived data key
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# - The ciphertext MUST be the [encrypted content](../data-format/message-body.md#regular-frame-encrypted-content).
+    //# - The ciphertext MUST be the encrypted content deserialized from the frame or body.
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# - The tag MUST be the value serialized in the
-    //# [authentication tag field](../data-format/message-body.md#regular-frame-authentication-tag)
-    //# in the message body or frame.
+    //# - The tag MUST be the authentication tag deserialized from the frame or body.
     // Round-trip: if any AES-GCM input (IV, cipherkey, ciphertext, tag) were wrong,
     // authenticated decryption would fail.
     let pt = vec![0xDDu8; 40];
@@ -538,7 +528,7 @@ async fn test_decrypt_regular_frame_content_length_uses_frame_length() {
 async fn test_decrypt_final_frame_content_length_uses_encrypted_content_length() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# If this is not a regular frame, this SHOULD be determined by using the the [encrypted content length](../data-format/message-body.md#final-frame-encrypted-content-length).
+    //# If this is a final frame, this SHOULD be determined by using the [final frame encrypted content length](../data-format/message-body.md#final-frame-encrypted-content-length).
     // Single final frame with plaintext shorter than frame length.
     // The final frame's content length in AAD must use the actual encrypted content length (5),
     // not the frame length (4096). If wrong, authenticated decryption would fail.
@@ -551,7 +541,7 @@ async fn test_decrypt_final_frame_content_length_uses_encrypted_content_length()
 async fn test_decrypt_final_frame_held_until_signature_verification() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# Any plaintext decrypted from [unframed data](../data-format/message-body.md#un-framed-data) or
+    //# Any plaintext decrypted from [unframed data](../data-format/message-body.md#nonframed-data) or
     //# a final frame in a streamed Decrypt operation MUST NOT be released until [signature verification](#verify-the-signature)
     //# successfully completes.
     // Encrypt with a signing algorithm suite, then tamper with the signature.
@@ -577,29 +567,29 @@ async fn test_decrypt_final_frame_held_until_signature_verification() {
 async fn test_decrypt_nonframed_deserialization_conforms_to_spec() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# Non-framed data deserialization MUST conform to the [Non-Framed Data](../data-format/message-body.md#non-framed-data) specification.
-    // Construct a non-framed message from scratch and decrypt it.
-    // Successful decryption proves the non-framed deserialization conforms to the spec.
-    let pt = b"non-framed conformance test";
+    //# nonframed data deserialization MUST conform to the [nonframed Data](../data-format/message-body.md#nonframed-data) specification.
+    // Construct a nonframed message from scratch and decrypt it.
+    // Successful decryption proves the nonframed deserialization conforms to the spec.
+    let pt = b"nonframed conformance test";
     let ct = build_nonframed_message(pt);
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt.to_vec(), "non-framed round-trip proves deserialization conforms to Non-Framed Data spec");
+    assert_eq!(result.plaintext, pt.to_vec(), "nonframed round-trip proves deserialization conforms to nonframed Data spec");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_deserializes_and_decrypts() {
-    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
-    //# If a message has the [non-framed](../data-format/message-body.md#non-framed-data) content type,
+    //# If a message has the [nonframed](../data-format/message-body.md#nonframed-data) content type,
     //# the Decrypt operation MUST deserialize the message body according to the
-    //# [non-framed data specification](../data-format/message-body.md#non-framed-data)
-    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //# [nonframed data specification](../data-format/message-body.md#nonframed-data)
+    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# and decrypt it using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
-    let pt = b"un-framed appendix test";
+    let pt = b"nonframed appendix test";
     let ct = build_nonframed_message(pt);
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
@@ -609,10 +599,10 @@ async fn test_unframed_decrypt_deserializes_and_decrypts() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_iv_from_body() {
-    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
-    //# - The IV MUST be the [IV](../data-format/message-body.md#non-framed-data-iv) deserialized from the message body.
-    // Successful authenticated decryption of a non-framed message proves the IV
+    //# - The IV MUST be the [IV](../data-format/message-body.md#nonframed-data-iv) deserialized from the message body.
+    // Successful authenticated decryption of a nonframed message proves the IV
     // was correctly deserialized from the body and used for decryption.
     let pt = b"iv test payload";
     let ct = build_nonframed_message(pt);
@@ -624,9 +614,9 @@ async fn test_unframed_decrypt_iv_from_body() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_ciphertext_from_body() {
-    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
-    //# - The ciphertext MUST be the [Encrypted Content](../data-format/message-body.md#non-framed-data-encrypted-content) deserialized from the message body.
+    //# - The ciphertext MUST be the [Encrypted Content](../data-format/message-body.md#nonframed-data-encrypted-content) deserialized from the message body.
     let pt = b"ciphertext input test";
     let ct = build_nonframed_message(pt);
     let keyring = test_keyring().await;
@@ -637,7 +627,7 @@ async fn test_unframed_decrypt_ciphertext_from_body() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_cipherkey_is_derived_data_key() {
-    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The cipherkey MUST be the derived data key.
     // Successful decryption proves the derived data key was used as the cipherkey.
@@ -651,9 +641,9 @@ async fn test_unframed_decrypt_cipherkey_is_derived_data_key() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_tag_from_body() {
-    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
-    //# - The tag MUST be the [Authentication Tag](../data-format/message-body.md#non-framed-data-authentication-tag) deserialized from the message body.
+    //# - The tag MUST be the [Authentication Tag](../data-format/message-body.md#nonframed-data-authentication-tag) deserialized from the message body.
     let pt = b"auth tag test";
     let ct = build_nonframed_message(pt);
     let keyring = test_keyring().await;
@@ -664,11 +654,11 @@ async fn test_unframed_decrypt_tag_from_body() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_aad_body_aad_content() {
-    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST use the value for
-    //# [non-framed data](../data-format/message-body-aad.md#body-aad-content).
-    // The non-framed message was constructed with "AWSKMSEncryptionClient Single Block".
+    //# [nonframed data](../data-format/message-body-aad.md#body-aad-content).
+    // The nonframed message was constructed with "AWSKMSEncryptionClient Single Block".
     // If the wrong AAD content string were used, authenticated decryption would fail.
     let pt = b"aad content test";
     let ct = build_nonframed_message(pt);
@@ -680,10 +670,10 @@ async fn test_unframed_decrypt_aad_body_aad_content() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_aad_sequence_number_is_one() {
-    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be `1`.
-    // The non-framed message was constructed with sequence number 1 in the AAD.
+    // The nonframed message was constructed with sequence number 1 in the AAD.
     // If a different sequence number were used, authenticated decryption would fail.
     let pt = b"seq num one test";
     let ct = build_nonframed_message(pt);
@@ -695,10 +685,10 @@ async fn test_unframed_decrypt_aad_sequence_number_is_one() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_aad_content_length_equals_encrypted_content_length() {
-    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The [content length](../data-format/message-body-aad.md#content-length) MUST equal the length of the encrypted content.
-    // The non-framed message was constructed with content_length = plaintext.len() in the AAD.
+    // The nonframed message was constructed with content_length = plaintext.len() in the AAD.
     // If the wrong content length were used, authenticated decryption would fail.
     let pt = b"content length test payload";
     let ct = build_nonframed_message(pt);
@@ -710,10 +700,10 @@ async fn test_unframed_decrypt_aad_content_length_equals_encrypted_content_lengt
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_fails_on_tampered_auth_tag() {
-    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# If this decryption fails, this operation MUST immediately halt and fail.
-    // Tamper with the authentication tag in a non-framed message. Decrypt must fail.
+    // Tamper with the authentication tag in a nonframed message. Decrypt must fail.
     let pt = b"tamper test";
     let mut ct = build_nonframed_message(pt);
     // The auth tag is the last 16 bytes of the message
@@ -722,16 +712,16 @@ async fn test_unframed_decrypt_fails_on_tampered_auth_tag() {
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
-    assert!(result.is_err(), "tampered non-framed auth tag must cause immediate decryption failure");
+    assert!(result.is_err(), "tampered nonframed auth tag must cause immediate decryption failure");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_aad_constructed_correctly() {
-    //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
+    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
     //# constructed with:
-    // Successful authenticated decryption of a non-framed message proves the AAD
+    // Successful authenticated decryption of a nonframed message proves the AAD
     // was constructed correctly per the message-body-aad spec.
     let pt = b"aad construction test";
     let ct = build_nonframed_message(pt);

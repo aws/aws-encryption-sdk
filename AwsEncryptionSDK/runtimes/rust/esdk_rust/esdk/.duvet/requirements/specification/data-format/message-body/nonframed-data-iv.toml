@@ -1,0 +1,29 @@
+target = "specification/data-format/message-body.md#nonframed-data-iv"
+
+# nonframed Data IV
+#
+# The initialization vector to use with the encryption algorithm.
+# 
+# A generated IV MUST be a unique IV within the message.
+# 
+# The length of the IV field MUST be [IV Length](message-header.md#iv-length) bytes.
+# The IV MUST be interpreted as bytes.
+
+[[spec]]
+level = "MUST"
+quote = '''
+A generated IV MUST be a unique IV within the message.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the IV field MUST be [IV Length](message-header.md#iv-length) bytes.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The IV MUST be interpreted as bytes.
+'''
+

@@ -76,8 +76,8 @@ async fn test_footer_serialization() {
 
     //= specification/client-apis/encrypt.md#construct-the-signature
     //= type=test
-    //# - [Signature Length](../data-format/message-footer.md#signature-length): The value MUST be the length of the
-    //# output of the signature calculation above.
+    //# - The Encrypt operation MUST serialize the [Signature Length](../data-format/message-footer.md#signature-length).
+    //# The value MUST be the length of the output of the signature calculation above.
     assert_eq!(
         ct.len() - offset - 2,
         sig_len as usize,
@@ -86,7 +86,8 @@ async fn test_footer_serialization() {
 
     //= specification/client-apis/encrypt.md#construct-the-signature
     //= type=test
-    //# - [Signature](../data-format/message-footer.md#signature): The value MUST be the output of the signature calculation above.
+    //# - The Encrypt operation MUST serialize the [Signature](../data-format/message-footer.md#signature).
+    //# The value MUST be the output of the signature calculation above.
     let signature_bytes = &ct[offset + 2..];
     assert_eq!(
         signature_bytes.len(),

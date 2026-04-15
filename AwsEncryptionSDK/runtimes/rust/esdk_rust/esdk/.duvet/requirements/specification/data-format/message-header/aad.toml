@@ -1,0 +1,27 @@
+target = "specification/data-format/message-header.md#aad"
+
+# AAD
+#
+# The Additional Authenticated Data (AAD) for the header.
+# 
+# This AAD is an encoding of the [encryption context](../framework/structures.md#encryption-context).
+# 
+# The following table is a non-normative representation of the normative requirements in this section.
+# 
+# | Field                                             | Length (bytes)                                                                          | Interpreted as                      |
+# | ------------------------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------- |
+# | [Key Value Pairs Length](#key-value-pairs-length) | 2                                                                                       | UInt16                              |
+# | [Key Value Pairs](#key-value-pairs)               | Variable. Determined by the value of [Key Value Pairs Length](#key-value-pairs-length). | [Key Value Pairs](#key-value-pairs) |
+# 
+# The AAD MUST consist of, in order,
+# Key Value Pairs Length,
+# and Key Value Pairs.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The AAD MUST consist of, in order,
+Key Value Pairs Length,
+and Key Value Pairs.
+'''
+
