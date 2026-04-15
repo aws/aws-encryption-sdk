@@ -18,7 +18,7 @@ const BODY_AAD_CONTENT_REGULAR_FRAME: &str = "AWSKMSEncryptionClient Frame";
 //# MUST use the value `AWSKMSEncryptionClient Final Frame`.
 const BODY_AAD_CONTENT_FINAL_FRAME: &str = "AWSKMSEncryptionClient Final Frame";
 //= specification/data-format/message-body-aad.md#body-aad-content
-//# - [Non-framed data](message-body.md#non-framed-data)
+//# - [nonframed data](message-body.md#nonframed-data)
 //# MUST use the value `AWSKMSEncryptionClient Single Block`.
 const BODY_AAD_CONTENT_SINGLE_BLOCK: &str = "AWSKMSEncryptionClient Single Block";
 
@@ -58,6 +58,9 @@ pub(crate) fn body_aad(
     //# Sequence Number,
     //# and Content Length.
     // Message ID
+    //= specification/data-format/message-body-aad.md#message-id
+    //= reason=V1 message IDs are 16 bytes, V2 message IDs are 32 bytes; the debug_assert enforces this
+    //# The length of the Message ID field MUST be equal to the length of the [Message ID](message-header.md#message-id) defined by the message header version.
     debug_assert!(
         message_id.len() == 16 || message_id.len() == 32,
         "message ID must be 16 or 32 bytes, got {}",

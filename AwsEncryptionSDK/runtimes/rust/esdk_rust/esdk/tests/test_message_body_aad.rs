@@ -92,7 +92,7 @@ async fn test_body_aad_sequence_number_uint32() {
 async fn test_body_aad_sequence_number_framed_value() {
     //= specification/data-format/message-body-aad.md#sequence-number
     //= type=test
-    //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
+    //# For [framed data](message-body.md#framed-data), the value of this field MUST be the frame sequence number.
     // Multi-frame: each frame's AAD must use the correct sequence number
     let pt = vec![0xBBu8; 50];
     let result = round_trip_framed(&pt, 10).await;
@@ -153,4 +153,54 @@ async fn test_body_aad_content_length_final_frame_bounded() {
     let pt = vec![0xEEu8; 15];
     let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "round-trip proves final frame content length is bounded by frame length");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_body_aad_content_nonframed_single_block() {
+    //= specification/data-format/message-body-aad.md#body-aad-content
+    //= type=test
+    //= reason=builds and decrypts a nonframed message; the AAD uses "AWSKMSEncryptionClient Single Block" — if wrong, authenticated decryption would fail
+    //# - [nonframed data](message-body.md#nonframed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
+    let pt = b"nonframed single block aad test";
+    let msg = build_nonframed_message(pt);
+    let result = decrypt_nonframed(&msg).await;
+    assert_eq!(result, pt, "nonframed round-trip proves body AAD content is 'AWSKMSEncryptionClient Single Block'");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_body_aad_sequence_number_nonframed_is_one() {
+    //= specification/data-format/message-body-aad.md#sequence-number
+    //= type=test
+    //= reason=builds and decrypts a nonframed message; the AAD uses sequence number 1 — if wrong, authenticated decryption would fail
+    //# For [nonframed data](message-body.md#nonframed-data), the value of this field MUST be `1`.
+    let pt = b"nonframed seq num one test";
+    let msg = build_nonframed_message(pt);
+    let result = decrypt_nonframed(&msg).await;
+    assert_eq!(result, pt, "nonframed round-trip proves sequence number in AAD is 1");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_body_aad_content_length_nonframed_equals_plaintext() {
+    //= specification/data-format/message-body-aad.md#content-length
+    //= type=test
+    //= reason=builds and decrypts a nonframed message; the AAD content length equals the plaintext length — if wrong, authenticated decryption would fail
+    //# - For [nonframed data](message-body.md#nonframed-data), this value MUST equal the length, in bytes,
+    //# of the plaintext data provided to the algorithm for encryption.
+    let pt = b"nonframed content length test";
+    let msg = build_nonframed_message(pt);
+    let result = decrypt_nonframed(&msg).await;
+    assert_eq!(result, pt, "nonframed round-trip proves content length in AAD equals plaintext length");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_body_aad_message_id_length_matches_header_version() {
+    //= specification/data-format/message-body-aad.md#message-id
+    //= type=test
+    //= reason=builds and decrypts a nonframed V2 message (32-byte message ID); if the AAD message ID length didn't match the header version's message ID length, authenticated decryption would fail
+    //# The length of the Message ID field MUST be equal to the length of the [Message ID](message-header.md#message-id) defined by the message header version.
+    let pt = b"message id length test";
+    let msg = build_nonframed_message(pt);
+    // V2 message ID is 32 bytes; the AAD uses the same 32-byte message ID from the header
+    let result = decrypt_nonframed(&msg).await;
+    assert_eq!(result, pt, "nonframed V2 round-trip proves message ID length in AAD matches header version (32 bytes)");
 }
