@@ -11,11 +11,11 @@ pub(crate) fn read_canonical_ec(
     r: &mut dyn SafeRead,
     raw: &mut dyn SafeWrite,
 ) -> Result<ESDKCanonicalEncryptionContext, Error> {
-    let bytes = read_u16(r, raw)? as usize;
+    let bytes = usize::from(read_u16(r, raw)?);
     if bytes == 0 {
         return Ok(Vec::new());
     }
-    let count = read_u16(r, raw)? as usize;
+    let count = usize::from(read_u16(r, raw)?);
     let mut result: ESDKCanonicalEncryptionContext = Vec::with_capacity(count);
     for _ in 0..count {
         let key = read_str_u16(r, raw)?;

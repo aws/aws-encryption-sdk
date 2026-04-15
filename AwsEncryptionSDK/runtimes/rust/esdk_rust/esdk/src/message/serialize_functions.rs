@@ -130,12 +130,7 @@ pub(crate) fn read_opt_u8(r: &mut dyn SafeRead) -> Result<Option<u8>, Error> {
         Ok(()) => Ok(Some(result[0])),
         Err(e) => match e.kind() {
             std::io::ErrorKind::UnexpectedEof => Ok(None),
-            _ => Err(Error {
-                kind: ErrorKind::SerializationError,
-                message: "IO Error".into(),
-                cause: Some(Arc::new(e)),
-                backtrace: Arc::new(Backtrace::capture()),
-            }),
+            _ => Err(ser_io(e)),
         },
     }
 }
@@ -161,7 +156,7 @@ pub(crate) fn read_seq_u16(
     raw: &mut dyn SafeWrite,
 ) -> Result<Vec<u8>, Error> {
     let len = read_u16(r, raw)?;
-    read_vec(r, len as usize, raw)
+    read_vec(r, usize::from(len), raw)
 }
 
 pub(crate) fn read_seq_u32_bounded(
@@ -175,7 +170,8 @@ pub(crate) fn read_seq_u32_bounded(
     if len > bound {
         return ser_err(msg);
     }
-    data.resize(len as usize, 0);
+    let len_usize = len as usize;
+    data.resize(len_usize, 0);
     read_bytes(r, &mut data[..], raw)
 }
 
@@ -197,7 +193,7 @@ pub(crate) fn read_seq_u64_bounded(
 
 pub(crate) fn read_str_u16(r: &mut dyn SafeRead, raw: &mut dyn SafeWrite) -> Result<String, Error> {
     let len = read_u16(r, raw)?;
-    let result = read_vec(r, len as usize, raw)?;
+    let result = read_vec(r, usize::from(len), raw)?;
     let result = String::from_utf8(result).map_err(|e| ser_utf8(e))?;
     Ok(result)
 }

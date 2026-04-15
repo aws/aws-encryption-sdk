@@ -174,9 +174,21 @@ pub(crate) const fn from_legacy_hmac(
 pub(crate) fn from_legacy_hkdf(x: &aws_mpl_legacy::dafny::types::Hkdf) -> Result<aws_mpl_legacy::suites::Hkdf, Error> {
     let mut n = aws_mpl_legacy::suites::Hkdf::default();
     n.hmac = from_legacy_hmac(x.hmac.ok_or_else(|| val_err("Legacy HKDF missing hmac"))?);
-    n.salt_length = u32::try_from(x.salt_length.ok_or_else(|| val_err("Legacy HKDF missing salt_length"))?).map_err(|_| val_err("negative value from MPL"))?;
-    n.input_key_length = u32::try_from(x.input_key_length.ok_or_else(|| val_err("Legacy HKDF missing input_key_length"))?).map_err(|_| val_err("negative value from MPL"))?;
-    n.output_key_length = u32::try_from(x.output_key_length.ok_or_else(|| val_err("Legacy HKDF missing output_key_length"))?).map_err(|_| val_err("negative value from MPL"))?;
+    let salt_length = x.salt_length.ok_or_else(|| val_err("Legacy HKDF missing salt_length"))?;
+    let Ok(salt_length) = u32::try_from(salt_length) else {
+        return Err(val_err("negative value from MPL"));
+    };
+    n.salt_length = salt_length;
+    let input_key_length = x.input_key_length.ok_or_else(|| val_err("Legacy HKDF missing input_key_length"))?;
+    let Ok(input_key_length) = u32::try_from(input_key_length) else {
+        return Err(val_err("negative value from MPL"));
+    };
+    n.input_key_length = input_key_length;
+    let output_key_length = x.output_key_length.ok_or_else(|| val_err("Legacy HKDF missing output_key_length"))?;
+    let Ok(output_key_length) = u32::try_from(output_key_length) else {
+        return Err(val_err("negative value from MPL"));
+    };
+    n.output_key_length = output_key_length;
     Ok(n)
 }
 
@@ -257,7 +269,12 @@ pub(crate) fn from_legacy_as(x: aws_mpl_legacy::dafny::types::AlgorithmSuiteInfo
     s.binary_id = x.binary_id.ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing binary_id"))?
         .as_ref()[0..2].try_into()
         .map_err(|_| val_err("Legacy AlgorithmSuiteInfo binary_id too short"))?;
-    s.message_version = u32::try_from(x.message_version.ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing message_version"))?).map_err(|_| val_err("negative value from MPL"))?;
+    let message_version = x.message_version
+        .ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing message_version"))?;
+    let Ok(message_version) = u32::try_from(message_version) else {
+        return Err(val_err("negative value from MPL"));
+    };
+    s.message_version = message_version;
     s.encrypt = aws_mpl_legacy::suites::Encrypt::AesGcm(from_legacy_encrypt(x.encrypt.ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing encrypt"))?)?);
     s.kdf = from_legacy_da(x.kdf.ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing kdf"))?)?;
     s.commitment = from_legacy_da(x.commitment.ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing commitment"))?)?;

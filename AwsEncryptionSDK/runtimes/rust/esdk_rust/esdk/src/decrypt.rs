@@ -15,13 +15,13 @@ use crate::message::serializable_types::{from_canonical_pairs, to_canonical_pair
 use crate::message::{header, DigestWriter, serialize_functions, header_types, header_auth, v2_header_body, encryption_context, body, NoopWriter, footer};
 use crate::types::{SafeRead, SafeWrite, DecryptStreamInput, DecryptStreamOutput, DecryptInput, DecryptOutput, EncryptionContext, MaterialSource, NetV400RetryPolicy};
 use aws_mpl_legacy::primitives::{aes_decrypt, EcdsaSignatureAlgorithm, DigestContext, ecdsa_verify_context};
-//= specification/client-apis/client.md#commitment-policy
+//= aws-encryption-sdk-specification/client-apis/client.md#commitment-policy
 //= type=implication
 //# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
-//= specification/client-apis/client.md#initialization
+//= aws-encryption-sdk-specification/client-apis/client.md#initialization
 //= type=implication
 //# If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
-//= specification/client-apis/client.md#initialization
+//= aws-encryption-sdk-specification/client-apis/client.md#initialization
 //= type=implication
 //# Once a [commitment policy](#commitment-policy) has been set it SHOULD be immutable.
 use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
@@ -47,30 +47,30 @@ impl ProtectionNeeded {
     }
 }
 
-//= specification/client-apis/streaming.md#overview
+//= aws-encryption-sdk-specification/client-apis/streaming.md#overview
 //= type=implication
 //= reason=decrypt_stream provides a streaming decryption API via SafeRead/SafeWrite
 //# The AWS Encryption SDK MAY provide APIs that enable streamed [encryption](encrypt.md)
 //# and [decryption](decrypt.md).
-//= specification/client-apis/streaming.md#overview
+//= aws-encryption-sdk-specification/client-apis/streaming.md#overview
 //= type=implication
 //= reason=decrypt_stream reads ciphertext incrementally via SafeRead and writes plaintext incrementally via SafeWrite, never buffering the full input
 //# APIs that support streaming of the encrypt or decrypt operation SHOULD allow customers
 //# to be able to process arbitrarily large inputs with a finite amount of working memory.
-//= specification/client-apis/decrypt.md#encrypted-message
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#encrypted-message
 //= type=implication
 //= reason=SafeRead accepts incremental reads, so callers can stream the encrypted message without buffering it entirely in memory
 //# This input MAY be [streamed](streaming.md) to this operation.
-//= specification/client-apis/decrypt.md#encrypted-message
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#encrypted-message
 //= type=implication
 //= reason=The implementation does not require holding the entire encrypted message in memory; it processes bytes incrementally via SafeRead
 //# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
 //# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
-//= specification/client-apis/decrypt.md#plaintext
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#plaintext
 //= type=implication
 //= reason=SafeWrite accepts incremental writes, so each decrypted frame is flushed to the output as it's produced without buffering the full plaintext
 //# This operation MAY [stream](streaming.md) the plaintext as output.
-//= specification/client-apis/decrypt.md#plaintext
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#plaintext
 //= type=implication
 //= reason=The implementation streams plaintext output incrementally via SafeWrite, so it does not require buffering the full plaintext in memory
 //# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
@@ -121,7 +121,7 @@ pub async fn decrypt_stream(
     result
 }
 
-//= specification/client-apis/client.md#decrypt
+//= aws-encryption-sdk-specification/client-apis/client.md#decrypt
 //= type=implication
 //# The AWS Encryption SDK Client MUST provide an [decrypt](./decrypt.md#input) function
 //# that adheres to [decrypt](./decrypt.md).
@@ -283,7 +283,7 @@ fn step_parse_header(
         header::read_header_body(ciphertext, max_encrypted_data_keys, &mut raw_header)?;
 
     //= specification/client-apis/decrypt.md#verify-the-header
-    //= reason=sig_digest holds signature; this is done as soon
+    //= reason=sig_digest is fed the serialized header bytes immediately after deserialization, so the raw header does not need to remain in memory for signature verification
     //# - The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
     //# such that the serialized header isn't required to remain in memory to [verify the signature](#verify-the-signature).
     let mut sig_digest = DigestWriter::from_old_ecdsa(header_body.algorithm_suite().signature)?;
@@ -429,32 +429,32 @@ fn step_verify_header(
     )?;
 
     //= specification/client-apis/decrypt.md#verify-the-header
-    //# - The AAD MUST be the concatenation of the serialized [message header body](../data-format/message-header.md#header-body)
-    //# and the serialization of encryption context to only authenticate.
-    //= specification/client-apis/decrypt.md#verify-the-header
     //# Once a valid message header is deserialized and decryption materials are available,
     //# this operation MUST validate the [message header body](../data-format/message-header.md#header-body)
     //# by using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# to decrypt with the following inputs:
-    //= specification/client-apis/decrypt.md#verify-the-header
-    //# - the cipherkey MUST be the derived data key
-    //= specification/client-apis/decrypt.md#verify-the-header
-    //# - the ciphertext MUST be an empty byte array
-    //= specification/client-apis/decrypt.md#verify-the-header
-    //# - the tag MUST be the value serialized in the message header's
-    //# [authentication tag field](../data-format/message-header.md#authentication-tag)
-    //= specification/client-apis/decrypt.md#verify-the-header
-    //# - For message format version [1.0](../data-format/message-header.md#supported-versions)
-    //# the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header.md#iv).
-    //= specification/client-apis/decrypt.md#verify-the-header
-    //# For message format version [2.0](../data-format/message-header.md#supported-versions)
-    //# the IV MUST be 0.
     let mut maybe_header_auth = aes_decrypt(
         body::get_encrypt(&state.header.suite)?,
+        //= specification/client-apis/decrypt.md#verify-the-header
+        //# - the cipherkey MUST be the derived data key
         &state.derived_data_keys.data_key,
+        //= specification/client-apis/decrypt.md#verify-the-header
+        //# - the ciphertext MUST be an empty byte array
         &[],
+        //= specification/client-apis/decrypt.md#verify-the-header
+        //# - the tag MUST be the value serialized in the message header's
+        //# [authentication tag field](../data-format/message-header.md#authentication-tag)
         state.header.header_auth.header_auth_tag(),
+        //= specification/client-apis/decrypt.md#verify-the-header
+        //# - For message format version [1.0](../data-format/message-header.md#supported-versions)
+        //# the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header.md#iv).
+        //= specification/client-apis/decrypt.md#verify-the-header
+        //# For message format version [2.0](../data-format/message-header.md#supported-versions)
+        //# the IV MUST be 0.
         state.header.header_auth.header_iv(),
+        //= specification/client-apis/decrypt.md#verify-the-header
+        //# - The AAD MUST be the concatenation of the serialized [message header body](../data-format/message-header.md#header-body)
+        //# and the serialization of encryption context to only authenticate.
         &[&state.header.raw_header[..], &serialized_req_encryption_context[..]].concat(),
         &mut [],
     );
@@ -570,17 +570,17 @@ fn step_verify_signature(
         //# from the [algorithm suite](../framework/algorithm-suites.md) in the decryption materials to
         //# verify the encrypted message, with the following inputs:
         //= specification/client-apis/decrypt.md#verify-the-signature
-        //# - The verification key MUST be the [verification key](../framework/structures.md#verification-key)
-        //# in the decryption materials.
-        //= specification/client-apis/decrypt.md#verify-the-signature
-        //# - The input to verify MUST be the concatenation of the serialization of the
-        //# [message header](../data-format/message-header.md) and [message body](../data-format/message-body.md).
-        //= specification/client-apis/decrypt.md#verify-the-signature
         //# If this verification is not successful, this operation MUST immediately halt and fail.
         verify_signature(
             ciphertext,
+            //= specification/client-apis/decrypt.md#verify-the-signature
+            //# - The input to verify MUST be the concatenation of the serialization of the
+            //# [message header](../data-format/message-header.md) and [message body](../data-format/message-body.md).
             state.sig_digest.context.clone()
                 .ok_or_else(|| val_err("Signature digest context must be present for signature verification"))?,
+            //= specification/client-apis/decrypt.md#verify-the-signature
+            //# - The verification key MUST be the [verification key](../framework/structures.md#verification-key)
+            //# in the decryption materials.
             state.dec_mat.clone(),
             &mut noop,
         )?;

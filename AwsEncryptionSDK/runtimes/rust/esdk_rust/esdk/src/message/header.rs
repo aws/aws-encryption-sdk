@@ -38,13 +38,13 @@ pub(crate) fn write_header_body(w: &mut dyn SafeWrite, body: &HeaderBody) -> Res
     }
 }
 
-//= specification/client-apis/decrypt.md#parse-the-header
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
 //= type=implication
 //= reason=SafeRead (std::io::Read) only supports sequential consumption with no skip/seek,
 //= reason=so reading from it inherently processes all consumable bytes until a valid header is formed.
 //# This operation MUST attempt to deserialize all consumable encrypted message bytes
 //# until it has successfully deserialized a valid [message header](../data-format/message-header.md).
-//= specification/client-apis/decrypt.md#v2-header-deserialization
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#v2-header-deserialization
 //= type=implication
 //= reason=SafeRead (std::io::Read) only supports sequential consumption with no skip/seek,
 //= reason=so reading from it inherently processes all consumable bytes until a valid header is formed.

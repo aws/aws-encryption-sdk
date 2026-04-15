@@ -37,7 +37,6 @@ pub async fn test_keyring() -> KeyringRef {
         .unwrap()
 }
 
-// ── Keyring helpers ──
 
 /// Create a raw AES keyring with key material derived from `n`.
 pub async fn aes_keyring(n: u8) -> KeyringRef {
@@ -67,7 +66,6 @@ pub async fn multi_keyring(
         .unwrap()
 }
 
-// ── Encrypt helpers ──
 
 /// Encrypt with defaults, return full EncryptOutput.
 pub async fn encrypt_default(plaintext: &[u8]) -> EncryptOutput {
@@ -157,7 +155,6 @@ pub async fn encrypt_with_version(
     encrypt(&input).await.unwrap().ciphertext
 }
 
-// ── Decrypt helpers ──
 
 /// Decrypt ciphertext with the default test keyring, return full DecryptOutput.
 pub async fn decrypt_ciphertext(ciphertext: &[u8]) -> DecryptOutput {
@@ -178,7 +175,6 @@ pub async fn decrypt_with(
     decrypt(&dec_input).await.unwrap()
 }
 
-// ── Round-trip helpers ──
 
 /// Encrypt then decrypt round-trip, return decrypted plaintext.
 pub async fn round_trip(plaintext: &[u8]) -> Vec<u8> {
@@ -241,7 +237,6 @@ pub async fn round_trip_with_ec(plaintext: &[u8], ec: EncryptionContext) -> Decr
     decrypt(&dec_input).await.unwrap()
 }
 
-// --- Frame Parsing Utilities ---
 
 /// Find the start of the message body by scanning for the first frame.
 /// Returns the byte offset where the first frame begins.
@@ -379,7 +374,6 @@ pub fn parse_frames(ct: &[u8], frame_length: u32) -> Vec<ParsedFrame> {
     frames
 }
 
-// --- Header Parsing Utilities ---
 
 /// Parse V1 header trailing field offsets from ciphertext.
 /// Returns (content_type_offset, reserved_offset, iv_length_offset, frame_length_offset).
@@ -541,7 +535,6 @@ pub fn content_type_offset_v2(ct: &[u8]) -> usize {
     pos
 }
 
-// --- Footer Parsing Utilities ---
 
 /// Read the signature length from the end of a signing-suite ciphertext.
 /// The footer is: [sig_len: 2 bytes] [signature: sig_len bytes] at the end.
@@ -572,7 +565,6 @@ pub fn find_footer_offset_only(ct: &[u8]) -> usize {
     panic!("Could not find footer in ciphertext");
 }
 
-// --- EDK Parsing Utilities ---
 
 /// Find the byte offset of the EDK count field in a ciphertext header.
 /// V1: Version(1) + Type(1) + AlgSuiteID(2) + MessageID(16) + AAD(variable)
@@ -713,7 +705,6 @@ pub fn parse_edk_section(ct: &[u8], version: Version) -> ParsedEdkSection {
     ParsedEdkSection { edk_count_offset, edk_count, edks, end_offset: pos }
 }
 
-// --- Non-framed Message Utilities ---
 
 /// Build a complete nonframed encrypted message from scratch.
 ///

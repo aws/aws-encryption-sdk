@@ -187,8 +187,6 @@ async fn test_empty_plaintext_constructs_empty_final_frame() {
     assert_eq!(content_len, 0, "empty final frame has Encrypted Content Length field (value 0)");
 }
 
-
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_plaintext_length_bound_must_not_encrypt_longer() {
     //= specification/client-apis/encrypt.md#plaintext-length-bound

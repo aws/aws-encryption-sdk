@@ -86,21 +86,21 @@ pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
     })
 }
 
-//= specification/client-apis/streaming.md#overview
+//= aws-encryption-sdk-specification/client-apis/streaming.md#overview
 //= type=implication
 //= reason=encrypt_stream provides a streaming encryption API via SafeRead/SafeWrite
 //# The AWS Encryption SDK MAY provide APIs that enable streamed [encryption](encrypt.md)
 //# and [decryption](decrypt.md).
-//= specification/client-apis/streaming.md#overview
+//= aws-encryption-sdk-specification/client-apis/streaming.md#overview
 //= type=implication
 //= reason=encrypt_stream reads plaintext incrementally via SafeRead and writes ciphertext incrementally via SafeWrite, never buffering the full input
 //# APIs that support streaming of the encrypt or decrypt operation SHOULD allow customers
 //# to be able to process arbitrarily large inputs with a finite amount of working memory.
-//= specification/client-apis/encrypt.md#plaintext
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#plaintext
 //= type=implication
 //= reason=SafeRead accepts incremental reads, so callers can stream the encrypted message without buffering it entirely in memory
 //# This input MAY be [streamed](streaming.md) to this operation.
-//= specification/client-apis/encrypt.md#encrypted-message
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#encrypted-message
 //= type=implication
 //= reason=SafeWrite accepts incremental writes, so each decrypted frame is flushed to the output as it's produced without buffering the full ciphertext
 //# This operation MAY [stream](streaming.md) the encrypted message.

@@ -15,29 +15,29 @@ use aws_mpl_legacy::suites::DerivationAlgorithm;
 //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
 //# the remaining header fields MUST be serialized according to the
 //# [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
-//= specification/client-apis/encrypt.md#v2-header
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# The serialization order MUST follow the [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification.
-//= specification/client-apis/encrypt.md#v2-header
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# - The Encrypt operation MUST serialize the [Version](../data-format/message-header.md#version).
-//= specification/client-apis/encrypt.md#v2-header
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# The value MUST correspond to [2.0](../data-format/message-header.md#supported-versions).
-//= specification/client-apis/encrypt.md#v2-header
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# - The Encrypt operation MUST serialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
-//= specification/client-apis/encrypt.md#v2-header
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# The value MUST correspond to the [algorithm suite](../framework/algorithm-suites.md) used in this behavior.
-//= specification/client-apis/encrypt.md#v2-header
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# - The Encrypt operation MUST serialize the [Message ID](../data-format/message-header.md#message-id).
-//= specification/client-apis/encrypt.md#v2-header
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# The process used to generate this identifier MUST use a good source of randomness
 //# to make the chance of duplicate identifiers negligible.
-//= specification/client-apis/encrypt.md#v2-header
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# - The Encrypt operation MUST serialize the [AAD](../data-format/message-header.md#aad).
 //= specification/client-apis/encrypt.md#v2-header
@@ -46,24 +46,24 @@ use aws_mpl_legacy::suites::DerivationAlgorithm;
 //# and this serialization MUST NOT contain any key value pairs listed in
 //# the [encryption material's](../framework/structures.md#encryption-materials)
 //# [required encryption context keys](../framework/structures.md#required-encryption-context-keys).
-//= specification/client-apis/encrypt.md#v2-header
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# - The Encrypt operation MUST serialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
 //= specification/client-apis/encrypt.md#v2-header
 //# The value MUST be the serialization of the
 //# [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials).
-//= specification/client-apis/encrypt.md#v2-header
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# - The Encrypt operation MUST serialize the [Content Type](../data-format/message-header.md#content-type).
 //= specification/client-apis/encrypt.md#v2-header
 //# The value MUST be [02](../data-format/message-header.md#supported-content-types).
-//= specification/client-apis/encrypt.md#v2-header
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# - The Encrypt operation MUST serialize the [Frame Length](../data-format/message-header.md#frame-length).
-//= specification/client-apis/encrypt.md#v2-header
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# The value MUST be the value of the frame size determined above.
-//= specification/client-apis/encrypt.md#v2-header
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# - The Encrypt operation MUST serialize the [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data).
 //= specification/client-apis/encrypt.md#v2-header
@@ -126,39 +126,39 @@ pub(crate) const fn has_hkdf(x: &DerivationAlgorithm) -> bool {
     matches!(x, DerivationAlgorithm::Hkdf(_))
 }
 
-//= specification/client-apis/decrypt.md#v2-header-deserialization
-//# - The Decrypt operation MUST deserialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
-//= specification/client-apis/decrypt.md#v2-header-deserialization
-//# - The Decrypt operation MUST deserialize the [Message ID](../data-format/message-header.md#message-id).
-//= specification/client-apis/decrypt.md#v2-header-deserialization
-//# - The Decrypt operation MUST deserialize the [AAD](../data-format/message-header.md#aad).
-//= specification/client-apis/decrypt.md#v2-header-deserialization
-//# - The Decrypt operation MUST deserialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
-//= specification/client-apis/decrypt.md#v2-header-deserialization
-//# - The Decrypt operation MUST deserialize the [Content Type](../data-format/message-header.md#content-type).
-//= specification/client-apis/decrypt.md#v2-header-deserialization
-//# - The Decrypt operation MUST deserialize the [Frame Length](../data-format/message-header.md#frame-length).
-//= specification/client-apis/decrypt.md#v2-header-deserialization
-//# - The Decrypt operation MUST deserialize the [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data).
 pub(crate) fn read_v2_header_body(
     r: &mut dyn SafeRead,
     max_edks: Option<std::num::NonZeroUsize>,
     raw: &mut dyn SafeWrite,
 ) -> Result<V2HeaderBody, Error> {
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
+    //# - The Decrypt operation MUST deserialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
     let algorithm_suite = read_esdk_suite_id(r, raw)?;
     if !has_hkdf(&algorithm_suite.commitment) {
         return ser_err("Algorithm suite must support commitment");
     }
 
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
+    //# - The Decrypt operation MUST deserialize the [Message ID](../data-format/message-header.md#message-id).
     let message_id = read_message_id_v2(r, raw)?;
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
+    //# - The Decrypt operation MUST deserialize the [AAD](../data-format/message-header.md#aad).
     let encryption_context: Vec<(String, String)> = read_canonical_ec(r, raw)?;
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
+    //# - The Decrypt operation MUST deserialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
     let encrypted_data_keys = read_edks(r, max_edks, raw)?;
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
+    //# - The Decrypt operation MUST deserialize the [Content Type](../data-format/message-header.md#content-type).
     let content_type = read_content_type(r, raw)?;
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
+    //# - The Decrypt operation MUST deserialize the [Frame Length](../data-format/message-header.md#frame-length).
     //= specification/data-format/message-header.md#frame-length
     //# The length of the serialized frame length field MUST be 4 bytes.
     //= specification/data-format/message-header.md#frame-length
     //# The frame length MUST be interpreted as a UInt32.
     let frame_length = read_u32(r, raw)?;
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
+    //# - The Decrypt operation MUST deserialize the [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data).
     let len = get_hkdf(&algorithm_suite.commitment)?.output_key_length;
     let suite_data = read_vec(r, len as usize, raw)?;
 

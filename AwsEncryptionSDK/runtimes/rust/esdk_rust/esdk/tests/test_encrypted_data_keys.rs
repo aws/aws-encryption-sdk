@@ -12,7 +12,6 @@ use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
 use test_helpers::*;
 
-// ─── Tests ───
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypted_data_keys_serialization_order() {

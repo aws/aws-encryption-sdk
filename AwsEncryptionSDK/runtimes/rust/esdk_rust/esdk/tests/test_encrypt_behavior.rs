@@ -13,7 +13,6 @@ use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
 use test_helpers::*;
 
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_step_1_get_encryption_materials() {
     //= specification/client-apis/encrypt.md#behavior
@@ -101,7 +100,6 @@ async fn test_no_extra_data_in_output_message() {
     let result = round_trip(pt).await;
     assert_eq!(result, pt);
 }
-
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_input_suite_vs_commitment_policy_error() {
@@ -391,7 +389,6 @@ async fn test_default_frame_length_used() {
     assert_eq!(result, pt);
 }
 
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_write_header_before_body() {
     //= specification/client-apis/encrypt.md#construct-the-header
@@ -430,7 +427,6 @@ async fn test_message_format_version_matches_suite() {
     let ct_v1 = encrypt(&enc_input_v1).await.unwrap().ciphertext;
     assert_eq!(ct_v1[0], 0x01, "V1 non-committing suite must produce message version 1");
 }
-
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_output_includes_encrypted_message() {

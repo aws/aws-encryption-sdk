@@ -312,10 +312,10 @@ pub(crate) async fn get_legacy_encryption_materials(
     commitment_policy: aws_mpl_legacy::commitment::EsdkCommitmentPolicy,
 ) -> Result<EncryptionMaterials, Error> {
     let mpl = mpl();
-    #[expect(
-        clippy::cast_possible_wrap,
-        reason = "max_plaintext_length is i64 in legacy mpl"
-    )]
+    let max_plaintext_length_i64 = max_plaintext_length
+        .map(i64::try_from)
+        .transpose()
+        .map_err(|_| val_err("max_plaintext_length too large for i64"))?;
     let output = cmm
         .get_encryption_materials()
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
@@ -332,7 +332,7 @@ pub(crate) async fn get_legacy_encryption_materials(
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
         //= reason=max_plaintext_length is Option; .set_ with None means the field is not set
         //# If no Plaintext Length Bound is provided, this field MUST NOT be included.
-        .set_max_plaintext_length(max_plaintext_length.map(|x| x as i64))
+        .set_max_plaintext_length(max_plaintext_length_i64)
         .send()
         .await?;
 

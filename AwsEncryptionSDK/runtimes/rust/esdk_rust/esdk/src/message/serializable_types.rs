@@ -70,17 +70,17 @@ pub(crate) fn from_canonical_pairs(pairs: ESDKCanonicalEncryptionContext) -> ESD
 }
 
 pub(crate) fn is_esdk_encryption_context(ec: &EncryptionContext) -> bool {
-    if ec.len() >= u16::MAX as usize {
+    if ec.len() >= usize::from(u16::MAX) {
         return false;
     }
     if length(ec) >= ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH {
         return false;
     }
     for (key, value) in ec {
-        if key.len() >= u16::MAX as usize {
+        if key.len() >= usize::from(u16::MAX) {
             return false;
         }
-        if value.len() >= u16::MAX as usize {
+        if value.len() >= usize::from(u16::MAX) {
             return false;
         }
     }
@@ -94,7 +94,7 @@ pub(crate) fn is_esdk_encrypted_data_key(edk: &EncryptedDataKey) -> bool {
 }
 
 pub(crate) fn is_esdk_encrypted_data_keys(edks: &[EncryptedDataKey]) -> bool {
-    if edks.len() >= u16::MAX as usize {
+    if edks.len() >= usize::from(u16::MAX) {
         return false;
     }
     for edk in edks {

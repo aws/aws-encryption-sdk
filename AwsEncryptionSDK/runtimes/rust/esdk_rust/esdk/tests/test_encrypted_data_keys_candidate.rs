@@ -387,10 +387,10 @@ async fn test_key_provider_info_interpreted_as_bytes() {
         let ct = encrypt_with_version(b"pinfo bytes", version, kr.clone()).await;
         let parsed = parse_edk_section(&ct, version);
         let edk = &parsed.edks[0];
-        // Provider info is opaque bytes; for raw AES keyring it contains the key name
-        // plus additional wrapping metadata. Verify it is non-empty.
-        assert!(!edk.provider_info.is_empty(),
-            "provider info must contain bytes (key provider metadata)");
+        // Provider info for raw AES keyring starts with the key name
+        let (_, expected_name) = namespace_and_name(0);
+        assert!(edk.provider_info.starts_with(expected_name.as_bytes()),
+            "provider info must start with the known key name");
         // Round-trip proves the bytes are correctly interpreted
         let mut dec = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), kr);
         if let Version::V1 = version {

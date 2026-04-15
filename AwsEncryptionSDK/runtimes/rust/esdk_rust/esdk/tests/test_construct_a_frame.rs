@@ -10,9 +10,6 @@ use aws_esdk::*;
 use fixtures::*;
 use test_helpers::*;
 
-
-// ─── Encryption calculation tests ───────────────────────────────────────────
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_construct_frame_cipherkey_and_plaintext() {
     //= specification/client-apis/encrypt.md#construct-a-frame
@@ -94,8 +91,6 @@ async fn test_construct_frame_content_length_in_aad() {
     assert_eq!(result, pt, "round-trip proves content length in AAD is correct for each frame");
 }
 
-// ─── Sequence number tests ──────────────────────────────────────────────────
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_construct_frame_sequence_number_starts_at_one() {
     //= specification/client-apis/encrypt.md#construct-a-frame
@@ -145,8 +140,6 @@ async fn test_construct_frame_sequence_number_increments() {
     assert!(has_seq3, "ciphertext must contain sequence number 3: {ct_str}");
 }
 
-// ─── Plaintext length tests ─────────────────────────────────────────────────
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_construct_frame_regular_frame_plaintext_equals_frame_length() {
     //= specification/client-apis/encrypt.md#construct-a-frame
@@ -188,8 +181,6 @@ async fn test_construct_frame_regular_frame_plaintext_subsequence() {
     let result = round_trip_framed(&pt, 50).await;
     assert_eq!(result, pt, "each frame must encrypt the next unconsumed subsequence");
 }
-
-// ─── Serialization tests ────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_construct_frame_serialization_regular_and_final() {
@@ -314,8 +305,6 @@ async fn test_construct_frame_auth_tag_serialized() {
     assert_eq!(result, pt.to_vec(), "decrypt success proves encrypted content and auth tag are correctly serialized");
 }
 
-// ─── Frame release test ─────────────────────────────────────────────────────
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_construct_frame_bytes_not_released_until_complete() {
     //= specification/client-apis/encrypt.md#construct-a-frame
@@ -328,8 +317,6 @@ async fn test_construct_frame_bytes_not_released_until_complete() {
     let result = round_trip_framed(&pt, 20).await;
     assert_eq!(result, pt, "successful multi-frame decrypt proves frames are fully serialized before release");
 }
-
-// ─── Edge case tests ────────────────────────────────────────────────────────
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_construct_frame_empty_plaintext() {

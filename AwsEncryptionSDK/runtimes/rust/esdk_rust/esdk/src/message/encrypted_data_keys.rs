@@ -7,9 +7,10 @@ use super::{Error, ser_err};
 use crate::types::{SafeRead, SafeWrite};
 use aws_mpl_legacy::EncryptedDataKey;
 
-//= specification/client-apis/encrypt.md#v1-header
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#v1-header
+//= type=implication
 //# - The Encrypt operation MUST serialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
-//= specification/client-apis/encrypt.md#v2-header
+//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# - The Encrypt operation MUST serialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
 pub(crate) fn write_edks(w: &mut dyn SafeWrite, edks: &[EncryptedDataKey]) -> Result<(), Error> {
@@ -115,9 +116,11 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
     write_bytes(w, &edk.ciphertext)
 }
 
-//= specification/client-apis/decrypt.md#v1-header-deserialization
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#v1-header-deserialization
+//= type=implication
 //# - The Decrypt operation MUST deserialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
-//= specification/client-apis/decrypt.md#v2-header-deserialization
+//= aws-encryption-sdk-specification/client-apis/decrypt.md#v2-header-deserialization
+//= type=implication
 //# - The Decrypt operation MUST deserialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
 pub(crate) fn read_edks(
     r: &mut dyn SafeRead,
@@ -144,14 +147,14 @@ pub(crate) fn read_edks(
     //# then as soon as that can be determined during deserializing
     //# decrypt MUST process no more bytes and yield an error.
     if let Some(max_edks) = max_edks
-        && count as usize > max_edks.get()
+        && usize::from(count) > max_edks.get()
     {
         return ser_err("Ciphertext encrypted data keys exceed maximum encrypted data keys limit");
     }
 
     // Encrypted Data Key Entries
 
-    let mut edks = Vec::with_capacity(count as usize);
+    let mut edks = Vec::with_capacity(usize::from(count));
     for _ in 0..count {
         edks.push(read_edk(r, raw)?);
     }
@@ -179,7 +182,7 @@ pub(crate) fn read_edk(
     //= specification/data-format/message-header.md#key-provider-id-length
     //# The length of the serialized key provider ID length field MUST be 2 bytes.
     //= specification/data-format/message-header.md#key-provider-id
-    //= reason=The length field is derived from the same byte slice that is serialized, so they are equal by construction.
+    //= reason=read_str_u16 reads a u16 length then that many bytes, so the length field and data are equal by construction.
     //# The length of the serialized key provider ID MUST be equal to the value of the [Key Provider ID Length](#key-provider-id-length) field.
     //= specification/data-format/message-header.md#key-provider-id
     //# The key provider ID MUST be interpreted as UTF-8 encoded bytes.
@@ -192,7 +195,7 @@ pub(crate) fn read_edk(
     //= specification/data-format/message-header.md#key-provider-information-length
     //# The length of the serialized key provider information length field MUST be 2 bytes.
     //= specification/data-format/message-header.md#key-provider-information
-    //= reason=The length field is derived from the same byte slice that is serialized, so they are equal by construction.
+    //= reason=read_seq_u16 reads a u16 length then that many bytes, so the length field and data are equal by construction.
     //# The length of the serialized key provider information MUST be equal to the value of the [Key Provider Information Length](#key-provider-information-length) field.
     //= specification/data-format/message-header.md#key-provider-information
     //# The key provider information MUST be interpreted as bytes.
@@ -205,7 +208,7 @@ pub(crate) fn read_edk(
     //= specification/data-format/message-header.md#encrypted-data-key-length
     //# The length of the serialized encrypted data key length field MUST be 2 bytes.
     //= specification/data-format/message-header.md#encrypted-data-key
-    //= reason=The length field is derived from the same byte slice that is serialized, so they are equal by construction.
+    //= reason=read_seq_u16 reads a u16 length then that many bytes, so the length field and data are equal by construction.
     //# The length of the serialized encrypted data key MUST be equal to the value of the [Encrypted Data Key Length](#encrypted-data-key-length) field.
     //= specification/data-format/message-header.md#encrypted-data-key
     //# The encrypted data key MUST be interpreted as bytes.

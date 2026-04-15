@@ -92,9 +92,10 @@ pub(crate) fn read_header_auth_tag_v1(
     //# - The Decrypt operation MUST deserialize the [IV](../data-format/message-header.md#iv).
     //= specification/data-format/message-header.md#iv
     //# The length of the serialized IV MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
+    let iv_len = get_iv_length(suite) as usize;
     //= specification/data-format/message-header.md#iv
     //# The IV MUST be interpreted as bytes.
-    let header_iv = read_vec(r, get_iv_length(suite) as usize, raw)?;
+    let header_iv = read_vec(r, iv_len, raw)?;
     //= specification/data-format/message-header.md#authentication-tag
     //# The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
     //= specification/data-format/message-header.md#authentication-tag
