@@ -18,7 +18,7 @@ const BODY_AAD_CONTENT_REGULAR_FRAME: &str = "AWSKMSEncryptionClient Frame";
 //# MUST use the value `AWSKMSEncryptionClient Final Frame`.
 const BODY_AAD_CONTENT_FINAL_FRAME: &str = "AWSKMSEncryptionClient Final Frame";
 //= specification/data-format/message-body-aad.md#body-aad-content
-//# - [nonframed data](message-body.md#nonframed-data)
+//# - [Non-framed data](message-body.md#non-framed-data)
 //# MUST use the value `AWSKMSEncryptionClient Single Block`.
 const BODY_AAD_CONTENT_SINGLE_BLOCK: &str = "AWSKMSEncryptionClient Single Block";
 
@@ -71,6 +71,9 @@ pub(crate) fn body_aad(
     result.extend_from_slice(message_id);
 
     // Body AAD Content
+    //= specification/data-format/message-body-aad.md#body-aad-content
+    //= reason=Rust &str is guaranteed UTF-8; .as_bytes() produces the UTF-8 encoding
+    //# The body AAD content value MUST be encoded as UTF-8 bytes.
     result.extend_from_slice(body_aad_content_type_string(bc).as_bytes());
 
     // Sequence Number

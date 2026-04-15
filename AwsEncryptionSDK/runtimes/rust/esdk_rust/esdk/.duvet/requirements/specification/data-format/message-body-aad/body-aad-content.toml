@@ -6,7 +6,7 @@ target = "specification/data-format/message-body-aad.md#body-aad-content"
 # 
 # This value depends on the [content type](message-header.md#content-type) of the [message](message.md):
 # 
-# - [Non-framed data](message-body.md#non-framed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
+# - [nonframed data](message-body.md#nonframed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
 # - The [regular frames](message-body.md#regular-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Frame`.
 # - The [final frame](message-body.md#final-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Final Frame`.
 # 
@@ -15,7 +15,7 @@ target = "specification/data-format/message-body-aad.md#body-aad-content"
 [[spec]]
 level = "MUST"
 quote = '''
-- [Non-framed data](message-body.md#non-framed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
+- [nonframed data](message-body.md#nonframed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
 '''
 
 [[spec]]

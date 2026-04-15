@@ -92,7 +92,7 @@ async fn test_body_aad_sequence_number_uint32() {
 async fn test_body_aad_sequence_number_framed_value() {
     //= specification/data-format/message-body-aad.md#sequence-number
     //= type=test
-    //# For [framed data](message-body.md#framed-data), the value of this field MUST be the frame sequence number.
+    //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
     // Multi-frame: each frame's AAD must use the correct sequence number
     let pt = vec![0xBBu8; 50];
     let result = round_trip_framed(&pt, 10).await;
@@ -160,7 +160,7 @@ async fn test_body_aad_content_nonframed_single_block() {
     //= specification/data-format/message-body-aad.md#body-aad-content
     //= type=test
     //= reason=builds and decrypts a nonframed message; the AAD uses "AWSKMSEncryptionClient Single Block" — if wrong, authenticated decryption would fail
-    //# - [nonframed data](message-body.md#nonframed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
+    //# - [Non-framed data](message-body.md#non-framed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
     let pt = b"nonframed single block aad test";
     let msg = build_nonframed_message(pt);
     let result = decrypt_nonframed(&msg).await;
@@ -172,7 +172,7 @@ async fn test_body_aad_sequence_number_nonframed_is_one() {
     //= specification/data-format/message-body-aad.md#sequence-number
     //= type=test
     //= reason=builds and decrypts a nonframed message; the AAD uses sequence number 1 — if wrong, authenticated decryption would fail
-    //# For [nonframed data](message-body.md#nonframed-data), the value of this field MUST be `1`.
+    //# For [non-framed data](message-body.md#non-framed-data), the value of this field MUST be `1`.
     let pt = b"nonframed seq num one test";
     let msg = build_nonframed_message(pt);
     let result = decrypt_nonframed(&msg).await;
@@ -184,7 +184,7 @@ async fn test_body_aad_content_length_nonframed_equals_plaintext() {
     //= specification/data-format/message-body-aad.md#content-length
     //= type=test
     //= reason=builds and decrypts a nonframed message; the AAD content length equals the plaintext length — if wrong, authenticated decryption would fail
-    //# - For [nonframed data](message-body.md#nonframed-data), this value MUST equal the length, in bytes,
+    //# - For [non-framed data](message-body.md#non-framed-data), this value MUST equal the length, in bytes,
     //# of the plaintext data provided to the algorithm for encryption.
     let pt = b"nonframed content length test";
     let msg = build_nonframed_message(pt);
