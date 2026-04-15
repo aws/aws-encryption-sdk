@@ -95,8 +95,7 @@ async fn test_streaming_halts_on_incomplete_message() {
 
     // Truncate to ~60% of the message — enough for the header but not the full body
     let truncated = &ct[..ct.len() * 3 / 5];
-    let dec_input =
-        DecryptInput::with_legacy_keyring(truncated, EncryptionContext::new(), keyring);
+    let dec_input = DecryptInput::with_legacy_keyring(truncated, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
     assert!(
         result.is_err(),

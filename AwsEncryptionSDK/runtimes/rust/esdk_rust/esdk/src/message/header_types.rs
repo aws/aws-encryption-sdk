@@ -46,7 +46,9 @@ pub(crate) fn read_msg_format_version(
         //# To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version)
         //# and [types](../data-format/message-header.md#type)
         //# and fail with a more specific error message.
-        0x41 => ser_err("Input appears to be Base64-encoded. The ESDK expects raw binary message format, not Base64"),
+        0x41 => ser_err(
+            "Input appears to be Base64-encoded. The ESDK expects raw binary message format, not Base64",
+        ),
         //= specification/client-apis/decrypt.md#parse-the-header
         //# The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
         _ => ser_err("Unsupported Version"),

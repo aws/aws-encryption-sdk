@@ -33,7 +33,10 @@ async fn test_regular_frame_serialization_conforms_to_spec() {
     //# The encrypted message output by the Encrypt operation MUST have a message body equal
     //# to the message body calculated in this step.
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves body in output equals calculated body");
+    assert_eq!(
+        result, pt,
+        "round-trip proves body in output equals calculated body"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -50,7 +53,10 @@ async fn test_process_consumable_bytes_as_regular_frames() {
     assert_eq!(regular, 4, "50 bytes / 10-byte frames → 4 regular frames");
     assert_eq!(final_count, 1, "must have exactly 1 final frame");
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "all consumable bytes processed as regular frames before final");
+    assert_eq!(
+        result, pt,
+        "all consumable bytes processed as regular frames before final"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -71,10 +77,19 @@ async fn test_end_of_input_processing() {
     assert_eq!(regular, 1, "15 bytes → 1 regular frame (10 bytes)");
     assert_eq!(final_count, 1, "must have exactly 1 final frame");
     let content_len = final_frame_content_length(&ct).unwrap();
-    assert_eq!(content_len, 5, "final frame content length must be 5 (remaining bytes)");
-    assert!(content_len <= 10, "final frame content length must be <= frame length");
+    assert_eq!(
+        content_len, 5,
+        "final frame content length must be 5 (remaining bytes)"
+    );
+    assert!(
+        content_len <= 10,
+        "final frame content length must be <= frame length"
+    );
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "end-of-input processing produces correct output");
+    assert_eq!(
+        result, pt,
+        "end-of-input processing produces correct output"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -99,7 +114,10 @@ async fn test_exact_frame_length_constructs_final_or_regular() {
     assert_eq!(regular, 0, "exact-match case: no regular frames");
     assert_eq!(final_count, 1, "exact-match case: exactly 1 final frame");
     let content_len = final_frame_content_length(&ct).unwrap();
-    assert_eq!(content_len, 10, "final frame content length must equal frame length");
+    assert_eq!(
+        content_len, 10,
+        "final frame content length must equal frame length"
+    );
     let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "exact frame-length plaintext handled correctly");
 }
@@ -121,7 +139,10 @@ async fn test_enough_bytes_constructs_regular_frame() {
     let content_len = final_frame_content_length(&ct).unwrap();
     assert_eq!(content_len, 5, "final frame content length must be 5");
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "regular frames constructed when more bytes remain");
+    assert_eq!(
+        result, pt,
+        "regular frames constructed when more bytes remain"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -146,7 +167,10 @@ async fn test_not_enough_bytes_constructs_final_frame() {
     //= type=test
     //# Final frame serialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "short plaintext produces final frame with correct serialization");
+    assert_eq!(
+        result, pt,
+        "short plaintext produces final frame with correct serialization"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -181,13 +205,19 @@ async fn test_empty_plaintext_constructs_empty_final_frame() {
     //# Encrypted Content Length,
     //# Encrypted Content,
     //# and Authentication Tag.
-    assert!(found_structure, "final frame must have Sequence Number End followed by Sequence Number");
+    assert!(
+        found_structure,
+        "final frame must have Sequence Number End followed by Sequence Number"
+    );
     //= specification/data-format/message-body.md#final-frame
     //= type=test
     //# A final frame MUST only differ from a regular frame by the addition of the
     //# Sequence Number End
     //# and Encrypted Content Length.
-    assert_eq!(content_len, 0, "empty final frame has Encrypted Content Length field (value 0)");
+    assert_eq!(
+        content_len, 0,
+        "empty final frame has Encrypted Content Length field (value 0)"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -197,7 +227,8 @@ async fn test_plaintext_length_bound_must_not_encrypt_longer() {
     //# If this input is provided, this operation MUST NOT encrypt a plaintext with length
     //# greater than this value.
     let keyring = test_keyring().await;
-    let mut stream_input = EncryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
+    let mut stream_input =
+        EncryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
     // Set data_size (plaintext length bound) to 5 bytes
     stream_input.data_size = Some(5);
     // Provide 20 bytes of plaintext, exceeding the bound
@@ -205,7 +236,10 @@ async fn test_plaintext_length_bound_must_not_encrypt_longer() {
     let mut reader = std::io::Cursor::new(&plaintext);
     let mut output = Vec::new();
     let result = encrypt_stream(&mut reader, &mut output, &stream_input).await;
-    assert!(result.is_err(), "encrypt_stream must fail when plaintext exceeds plaintext length bound");
+    assert!(
+        result.is_err(),
+        "encrypt_stream must fail when plaintext exceeds plaintext length bound"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -217,7 +251,8 @@ async fn test_construct_body_plaintext_length_bound_runtime_enforcement() {
     //# has a length greater than this value,
     //# this operation MUST immediately fail.
     let keyring = test_keyring().await;
-    let mut stream_input = EncryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
+    let mut stream_input =
+        EncryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
     // Set data_size to 10 bytes but provide 50 bytes
     stream_input.data_size = Some(10);
     stream_input.frame_length = FrameLength::new(10).unwrap();
@@ -225,5 +260,8 @@ async fn test_construct_body_plaintext_length_bound_runtime_enforcement() {
     let mut reader = std::io::Cursor::new(&plaintext);
     let mut output = Vec::new();
     let result = encrypt_stream(&mut reader, &mut output, &stream_input).await;
-    assert!(result.is_err(), "encrypt_stream must immediately fail when plaintext exceeds bound during body construction");
+    assert!(
+        result.is_err(),
+        "encrypt_stream must immediately fail when plaintext exceeds bound during body construction"
+    );
 }

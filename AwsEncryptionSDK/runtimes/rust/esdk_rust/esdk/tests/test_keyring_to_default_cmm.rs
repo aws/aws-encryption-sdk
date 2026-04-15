@@ -18,55 +18,60 @@ use aws_esdk::*;
 use fixtures::*;
 use test_helpers::*;
 
+//= specification/client-apis/decrypt.md#keyring
+//= type=test
+//# If the Keyring is provided as the input, the client MUST construct a [default CMM](../framework/default-cmm.md) that uses this keyring,
+//# to obtain the [decryption materials](../framework/structures.md#decryption-materials) that is required for decryption.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_keyring_constructs_default_cmm_for_decrypt() {
-    //= specification/client-apis/decrypt.md#keyring
-    //= type=test
-    //# If the Keyring is provided as the input, the client MUST construct a [default CMM](../framework/default-cmm.md) that uses this keyring,
-    //# to obtain the [decryption materials](../framework/structures.md#decryption-materials) that is required for decryption.
     let keyring = test_keyring().await;
     let pt = b"test keyring constructs default cmm for decrypt";
-    let enc_input = EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring.clone());
+    let enc_input =
+        EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring.clone());
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await.unwrap();
     assert_eq!(result.plaintext, pt);
 }
 
+//= specification/client-apis/decrypt.md#keyring
+//= type=test
+//# This default CMM constructed from the keyring MUST obtain the decryption materials required for decryption.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_default_cmm_obtains_decryption_materials() {
-    //= specification/client-apis/decrypt.md#keyring
-    //= type=test
-    //# This default CMM constructed from the keyring MUST obtain the decryption materials required for decryption.
     let keyring = test_keyring().await;
     let pt = b"test default cmm obtains decryption materials";
-    let enc_input = EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring.clone());
+    let enc_input =
+        EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring.clone());
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await.unwrap();
     assert_eq!(result.plaintext, pt);
 }
 
+//= specification/client-apis/encrypt.md#get-the-encryption-materials
+//= type=test
+//# If instead the caller supplied a [keyring](../framework/keyring-interface.md),
+//# this behavior MUST use a [default CMM](../framework/default-cmm.md)
+//# constructed using the caller-supplied keyring as input.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_keyring_constructs_default_cmm_for_encrypt() {
-    //= specification/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# If instead the caller supplied a [keyring](../framework/keyring-interface.md),
-    //# this behavior MUST use a [default CMM](../framework/default-cmm.md)
-    //# constructed using the caller-supplied keyring as input.
     let keyring = test_keyring().await;
     let pt = b"test keyring constructs default cmm for encrypt";
     let enc_input = EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring);
     let result = encrypt(&enc_input).await;
-    assert!(result.is_ok(), "encrypt with keyring must succeed via default CMM");
+    assert!(
+        result.is_ok(),
+        "encrypt with keyring must succeed via default CMM"
+    );
 }
 
+//= specification/client-apis/decrypt.md#keyring
+//= type=test
+//# If the Keyring is provided as the input, the client MUST construct a [default CMM](../framework/default-cmm.md) that uses this keyring,
+//# to obtain the [decryption materials](../framework/structures.md#decryption-materials) that is required for decryption.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_fails_with_wrong_keyring() {
-    //= specification/client-apis/decrypt.md#keyring
-    //= type=test
-    //# If the Keyring is provided as the input, the client MUST construct a [default CMM](../framework/default-cmm.md) that uses this keyring,
-    //# to obtain the [decryption materials](../framework/structures.md#decryption-materials) that is required for decryption.
     let keyring = test_keyring().await;
     let pt = b"negative test keyring to default cmm";
     let enc_input = EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring);

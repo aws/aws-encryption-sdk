@@ -29,11 +29,17 @@ async fn test_nonframed_data_serialization_order() {
     // Fields are parsed sequentially from body_start: IV(12) + ContentLen(8) + Content(N) + Tag(16)
     // If order were wrong, parse_nonframed_body would read garbage and decrypt would fail.
     let result = decrypt_nonframed(&msg).await;
-    assert_eq!(result, pt, "round-trip proves nonframed body fields are in correct order");
+    assert_eq!(
+        result, pt,
+        "round-trip proves nonframed body fields are in correct order"
+    );
     // Also verify the parsed field sizes are consistent
     assert_eq!(body.iv.len(), IV_LEN);
     assert_eq!(body.encrypted_content_length_bytes.len(), 8);
-    assert_eq!(body.encrypted_content.len(), body.encrypted_content_length as usize);
+    assert_eq!(
+        body.encrypted_content.len(),
+        body.encrypted_content_length as usize
+    );
     assert_eq!(body.auth_tag.len(), TAG_LEN);
 }
 
@@ -44,7 +50,11 @@ async fn test_nonframed_iv_length() {
     //# The length of the IV field MUST be [IV Length](message-header.md#iv-length) bytes.
     let msg = build_nonframed_message(b"iv length test");
     let body = parse_nonframed_body(&msg);
-    assert_eq!(body.iv.len(), IV_LEN, "nonframed IV must be IV_LEN (12) bytes");
+    assert_eq!(
+        body.iv.len(),
+        IV_LEN,
+        "nonframed IV must be IV_LEN (12) bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -56,7 +66,10 @@ async fn test_nonframed_iv_interpreted_as_bytes() {
     let pt = b"iv bytes test";
     let msg = build_nonframed_message(pt);
     let result = decrypt_nonframed(&msg).await;
-    assert_eq!(result, pt, "round-trip proves nonframed IV is interpreted as bytes");
+    assert_eq!(
+        result, pt,
+        "round-trip proves nonframed IV is interpreted as bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -69,8 +82,11 @@ async fn test_nonframed_encrypted_content_length_uint64() {
     let msg = build_nonframed_message(pt);
     let body = parse_nonframed_body(&msg);
     // The content length is read as u64 from 8 big-endian bytes
-    assert_eq!(body.encrypted_content_length, pt.len() as u64,
-        "encrypted content length interpreted as UInt64 must equal plaintext length");
+    assert_eq!(
+        body.encrypted_content_length,
+        pt.len() as u64,
+        "encrypted content length interpreted as UInt64 must equal plaintext length"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -84,8 +100,12 @@ async fn test_nonframed_encrypted_content_length_max_value() {
     let msg = build_nonframed_message(pt);
     let body = parse_nonframed_body(&msg);
     let max_allowed: u64 = (1u64 << 36) - 32;
-    assert!(body.encrypted_content_length <= max_allowed,
-        "encrypted content length {} must not exceed 2^36 - 32 = {}", body.encrypted_content_length, max_allowed);
+    assert!(
+        body.encrypted_content_length <= max_allowed,
+        "encrypted content length {} must not exceed 2^36 - 32 = {}",
+        body.encrypted_content_length,
+        max_allowed
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -95,8 +115,11 @@ async fn test_nonframed_encrypted_content_length_field_8_bytes() {
     //# The length of the Encrypted Content Length field MUST be 8 bytes.
     let msg = build_nonframed_message(b"8 bytes test");
     let body = parse_nonframed_body(&msg);
-    assert_eq!(body.encrypted_content_length_bytes.len(), 8,
-        "encrypted content length field must be exactly 8 bytes");
+    assert_eq!(
+        body.encrypted_content_length_bytes.len(),
+        8,
+        "encrypted content length field must be exactly 8 bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -108,8 +131,11 @@ async fn test_nonframed_encrypted_content_length_matches_content() {
     let pt = b"content length match test";
     let msg = build_nonframed_message(pt);
     let body = parse_nonframed_body(&msg);
-    assert_eq!(body.encrypted_content.len(), body.encrypted_content_length as usize,
-        "encrypted content byte count must equal the content length field value");
+    assert_eq!(
+        body.encrypted_content.len(),
+        body.encrypted_content_length as usize,
+        "encrypted content byte count must equal the content length field value"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -121,7 +147,10 @@ async fn test_nonframed_encrypted_content_interpreted_as_bytes() {
     let pt = b"content bytes test";
     let msg = build_nonframed_message(pt);
     let result = decrypt_nonframed(&msg).await;
-    assert_eq!(result, pt, "round-trip proves nonframed encrypted content is interpreted as bytes");
+    assert_eq!(
+        result, pt,
+        "round-trip proves nonframed encrypted content is interpreted as bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -132,8 +161,11 @@ async fn test_nonframed_auth_tag_length() {
     //# The length of the serialized authentication tag field MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
     let msg = build_nonframed_message(b"auth tag length test");
     let body = parse_nonframed_body(&msg);
-    assert_eq!(body.auth_tag.len(), TAG_LEN,
-        "nonframed auth tag length must equal algorithm suite tag length (16)");
+    assert_eq!(
+        body.auth_tag.len(),
+        TAG_LEN,
+        "nonframed auth tag length must equal algorithm suite tag length (16)"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -145,19 +177,26 @@ async fn test_nonframed_auth_tag_interpreted_as_bytes() {
     let pt = b"auth tag bytes test";
     let msg = build_nonframed_message(pt);
     let result = decrypt_nonframed(&msg).await;
-    assert_eq!(result, pt, "round-trip proves nonframed auth tag is interpreted as bytes");
+    assert_eq!(
+        result, pt,
+        "round-trip proves nonframed auth tag is interpreted as bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_framed_data_max_frame_count() {
+    // With frame_length=4 and 20 bytes, we get 4 regular + 1 final = 5 frames.
+    // The implementation checks sequence_number == ENDFRAME_SEQUENCE_NUMBER to enforce the limit.
     //= specification/data-format/message-body.md#framed-data
     //= type=test
     //# - The number of frames in a single message MUST be less than or equal to `2^32 - 1`.
-    // With frame_length=4 and 20 bytes, we get 4 regular + 1 final = 5 frames.
-    // The implementation checks sequence_number == ENDFRAME_SEQUENCE_NUMBER to enforce the limit.
     let pt = vec![0xBBu8; 20];
     let frames = parse_frames(&encrypt_with_frame_length(&pt, 4).await, 4);
-    assert_eq!(frames.len(), 5, "20 bytes / 4-byte frames = 4 regular + 1 final = 5 frames");
+    assert_eq!(
+        frames.len(),
+        5,
+        "20 bytes / 4-byte frames = 4 regular + 1 final = 5 frames"
+    );
     let result = round_trip_framed(&pt, 4).await;
     assert_eq!(result, pt);
 }
@@ -175,12 +214,20 @@ async fn test_regular_frame_serialization_order() {
     let ct = encrypt_with_frame_length(&pt, 10).await;
     let body_start = find_body_start(&ct, 10).expect("must find body");
     // First regular frame at body_start: SeqNum(4) + IV(12) + Content(10) + Tag(16)
-    let seq = u32::from_be_bytes([ct[body_start], ct[body_start + 1], ct[body_start + 2], ct[body_start + 3]]);
+    let seq = u32::from_be_bytes([
+        ct[body_start],
+        ct[body_start + 1],
+        ct[body_start + 2],
+        ct[body_start + 3],
+    ]);
     assert_eq!(seq, 1, "first field is sequence number");
     // IV follows at body_start+4, content at body_start+16, tag at body_start+26
     // Verify by successful round-trip (wrong order would fail decryption)
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves regular frame serialization order is correct");
+    assert_eq!(
+        result, pt,
+        "round-trip proves regular frame serialization order is correct"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -221,8 +268,15 @@ async fn test_regular_frame_sequence_number_4_bytes() {
     let body_start = find_body_start(&ct, 10).expect("must find body");
     // Sequence number occupies exactly bytes [body_start..body_start+4]
     let seq_bytes = &ct[body_start..body_start + 4];
-    assert_eq!(seq_bytes.len(), 4, "sequence number must be exactly 4 bytes");
-    assert_eq!(u32::from_be_bytes([seq_bytes[0], seq_bytes[1], seq_bytes[2], seq_bytes[3]]), 1);
+    assert_eq!(
+        seq_bytes.len(),
+        4,
+        "sequence number must be exactly 4 bytes"
+    );
+    assert_eq!(
+        u32::from_be_bytes([seq_bytes[0], seq_bytes[1], seq_bytes[2], seq_bytes[3]]),
+        1
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -240,13 +294,16 @@ async fn test_regular_frame_sequence_number_uint32() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_sequence_number_read_as_uint32() {
+    // Successful round-trip proves the decrypt path reads sequence numbers as UInt32
     //= specification/data-format/message-body.md#regular-frame-sequence-number
     //= type=test
     //# The sequence number MUST be interpreted as a UInt32.
-    // Successful round-trip proves the decrypt path reads sequence numbers as UInt32
     let pt = vec![0xBBu8; 30];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves sequence numbers are read as UInt32");
+    assert_eq!(
+        result, pt,
+        "round-trip proves sequence numbers are read as UInt32"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -259,7 +316,11 @@ async fn test_regular_frame_iv_unique() {
     let ivs: Vec<&Vec<u8>> = frames.iter().map(|(_, iv, _, _, _)| iv).collect();
     for i in 0..ivs.len() {
         for j in (i + 1)..ivs.len() {
-            assert_ne!(ivs[i], ivs[j], "IV for frame {} must differ from frame {}", i, j);
+            assert_ne!(
+                ivs[i], ivs[j],
+                "IV for frame {} must differ from frame {}",
+                i, j
+            );
         }
     }
 }
@@ -272,19 +333,26 @@ async fn test_regular_frame_iv_length_matches_algorithm() {
     let pt = vec![0xDDu8; 20];
     let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
     for (_, iv, _, _, _) in &frames {
-        assert_eq!(iv.len(), IV_LEN, "IV length must match algorithm suite IV length (12)");
+        assert_eq!(
+            iv.len(),
+            IV_LEN,
+            "IV length must match algorithm suite IV length (12)"
+        );
     }
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_iv_interpreted_as_bytes() {
+    // Round-trip proves the IV bytes are correctly interpreted during decrypt
     //= specification/data-format/message-body.md#regular-frame-iv
     //= type=test
     //# The IV MUST be interpreted as bytes.
-    // Round-trip proves the IV bytes are correctly interpreted during decrypt
     let pt = vec![0xEEu8; 20];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves IV is correctly interpreted as bytes");
+    assert_eq!(
+        result, pt,
+        "round-trip proves IV is correctly interpreted as bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -294,7 +362,10 @@ async fn test_regular_frame_encrypted_content_length_equals_frame_length() {
     //# The length of the encrypted content of a Regular Frame MUST be equal to the Frame Length.
     let frame_length: u32 = 10;
     let pt = vec![0xFFu8; 30];
-    let frames = parse_frames(&encrypt_with_frame_length(&pt, frame_length).await, frame_length);
+    let frames = parse_frames(
+        &encrypt_with_frame_length(&pt, frame_length).await,
+        frame_length,
+    );
     for (_, _, enc_content, _, is_final) in &frames {
         if !is_final {
             assert_eq!(
@@ -313,7 +384,10 @@ async fn test_regular_frame_encrypted_content_interpreted_as_bytes() {
     //# The encrypted content MUST be interpreted as bytes.
     let pt = vec![0xAAu8; 20];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves encrypted content is interpreted as bytes");
+    assert_eq!(
+        result, pt,
+        "round-trip proves encrypted content is interpreted as bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -325,7 +399,11 @@ async fn test_regular_frame_auth_tag_length_matches_algorithm() {
     let pt = vec![0xBBu8; 20];
     let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
     for (_, _, _, tag, _) in &frames {
-        assert_eq!(tag.len(), TAG_LEN, "auth tag length must match algorithm suite (16)");
+        assert_eq!(
+            tag.len(),
+            TAG_LEN,
+            "auth tag length must match algorithm suite (16)"
+        );
     }
 }
 
@@ -336,7 +414,10 @@ async fn test_regular_frame_auth_tag_interpreted_as_bytes() {
     //# The authentication tag MUST be interpreted as bytes.
     let pt = vec![0xCCu8; 20];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves auth tag is interpreted as bytes");
+    assert_eq!(
+        result, pt,
+        "round-trip proves auth tag is interpreted as bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -353,10 +434,16 @@ async fn test_final_frame_serialization_order() {
     let pt = vec![0xAAu8; 7];
     let ct = encrypt_with_frame_length(&pt, 10).await;
     // Find ENDFRAME marker — that's the start of the final frame
-    let pos = ct.windows(4).position(|w| w == ENDFRAME_MARKER).expect("must find ENDFRAME");
+    let pos = ct
+        .windows(4)
+        .position(|w| w == ENDFRAME_MARKER)
+        .expect("must find ENDFRAME");
     // Verify field order: ENDFRAME(4) + SeqNum(4) + IV(12) + ContentLen(4) + Content(7) + Tag(16)
     let expected_total = 4 + 4 + IV_LEN + 4 + 7 + TAG_LEN;
-    assert!(pos + expected_total <= ct.len(), "final frame must have all fields in order");
+    assert!(
+        pos + expected_total <= ct.len(),
+        "final frame must have all fields in order"
+    );
     // Verify round-trip to confirm correct serialization
     let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt);
@@ -371,12 +458,22 @@ async fn test_final_frame_is_regular_frame_plus_additions() {
     //# and Encrypted Content Length.
     let pt = vec![0xBBu8; 5];
     let ct = encrypt_with_frame_length(&pt, 10).await;
-    let pos = ct.windows(4).position(|w| w == ENDFRAME_MARKER).expect("must find ENDFRAME");
+    let pos = ct
+        .windows(4)
+        .position(|w| w == ENDFRAME_MARKER)
+        .expect("must find ENDFRAME");
     // Final frame has Sequence Number End (extra vs regular) at pos
-    assert_eq!(&ct[pos..pos + 4], &ENDFRAME_MARKER, "final frame starts with Sequence Number End");
+    assert_eq!(
+        &ct[pos..pos + 4],
+        &ENDFRAME_MARKER,
+        "final frame starts with Sequence Number End"
+    );
     // Then SeqNum(4) + IV(12) + ContentLen(4, extra vs regular) + Content + Tag
     let content_len = u32::from_be_bytes([ct[pos + 20], ct[pos + 21], ct[pos + 22], ct[pos + 23]]);
-    assert!(content_len <= 10, "final frame has Encrypted Content Length field");
+    assert!(
+        content_len <= 10,
+        "final frame has Encrypted Content Length field"
+    );
     let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt);
 }
@@ -388,7 +485,10 @@ async fn test_sequence_number_end_value() {
     //# The value MUST be encoded as the 4 bytes `FF FF FF FF` in hexadecimal notation.
     let pt = b"test";
     let ct = encrypt_with_frame_length(pt, 4096).await;
-    let pos = ct.windows(4).position(|w| w == ENDFRAME_MARKER).expect("must find ENDFRAME");
+    let pos = ct
+        .windows(4)
+        .position(|w| w == ENDFRAME_MARKER)
+        .expect("must find ENDFRAME");
     assert_eq!(ct[pos], 0xFF);
     assert_eq!(ct[pos + 1], 0xFF);
     assert_eq!(ct[pos + 2], 0xFF);
@@ -403,32 +503,46 @@ async fn test_sequence_number_end_4_bytes() {
     let pt = b"test";
     let ct = encrypt_with_frame_length(pt, 4096).await;
     // The ENDFRAME marker is exactly 4 bytes: FF FF FF FF
-    let pos = ct.windows(4).position(|w| w == ENDFRAME_MARKER).expect("must find ENDFRAME");
-    assert_eq!(&ct[pos..pos + 4], &[0xFF, 0xFF, 0xFF, 0xFF], "sequence number end is exactly 4 bytes");
+    let pos = ct
+        .windows(4)
+        .position(|w| w == ENDFRAME_MARKER)
+        .expect("must find ENDFRAME");
+    assert_eq!(
+        &ct[pos..pos + 4],
+        &[0xFF, 0xFF, 0xFF, 0xFF],
+        "sequence number end is exactly 4 bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_sequence_number_end_interpreted_as_bytes() {
+    // Successful round-trip proves the decrypt path correctly interprets the ENDFRAME marker bytes
     //= specification/data-format/message-body.md#sequence-number-end
     //= type=test
     //# The sequence number end MUST be interpreted as bytes.
-    // Successful round-trip proves the decrypt path correctly interprets the ENDFRAME marker bytes
     let pt = b"test seq end";
     let result = round_trip_framed(pt, 4096).await;
-    assert_eq!(result, pt, "round-trip proves sequence number end is interpreted as bytes");
+    assert_eq!(
+        result, pt,
+        "round-trip proves sequence number end is interpreted as bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_sequence_number_equals_total_frames() {
+    // 30 bytes / 10-byte frames → 2 regular + 1 final = 3 total frames
     //= specification/data-format/message-body.md#final-frame-sequence-number
     //= type=test
     //# The Final Frame Sequence number MUST be equal to the total number of frames in the Framed Data.
-    // 30 bytes / 10-byte frames → 2 regular + 1 final = 3 total frames
     let pt = vec![0xAAu8; 30];
     let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
     let final_frame = frames.last().expect("must have final frame");
     assert!(final_frame.4, "last frame must be final");
-    assert_eq!(final_frame.0, frames.len() as u32, "final frame seq num must equal total frame count");
+    assert_eq!(
+        final_frame.0,
+        frames.len() as u32,
+        "final frame seq num must equal total frame count"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -439,24 +553,36 @@ async fn test_final_frame_sequence_number_serialized_same_as_regular() {
     //# [Regular Frame Sequence Number](#regular-frame-sequence-number).
     let pt = vec![0xBBu8; 20];
     let ct = encrypt_with_frame_length(&pt, 10).await;
-    let pos = ct.windows(4).position(|w| w == ENDFRAME_MARKER).expect("must find ENDFRAME");
+    let pos = ct
+        .windows(4)
+        .position(|w| w == ENDFRAME_MARKER)
+        .expect("must find ENDFRAME");
     // Final frame seq num is at pos+4, serialized as 4-byte big-endian UInt32 (same as regular)
     let final_seq = u32::from_be_bytes([ct[pos + 4], ct[pos + 5], ct[pos + 6], ct[pos + 7]]);
-    assert!(final_seq > 0, "final frame sequence number is a valid UInt32");
+    assert!(
+        final_seq > 0,
+        "final frame sequence number is a valid UInt32"
+    );
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves final frame seq num serialized same as regular");
+    assert_eq!(
+        result, pt,
+        "round-trip proves final frame seq num serialized same as regular"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_sequence_number_interpreted_same_as_regular() {
+    // Multi-frame round-trip: decrypt reads final frame seq num as UInt32 (same as regular)
     //= specification/data-format/message-body.md#final-frame-sequence-number
     //= type=test
     //# The Final Frame Sequence Number MUST be interpreted as the same type as the
     //# [Regular Frame Sequence Number](#regular-frame-sequence-number).
-    // Multi-frame round-trip: decrypt reads final frame seq num as UInt32 (same as regular)
     let pt = vec![0xCCu8; 30];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves final frame seq num is interpreted same as regular");
+    assert_eq!(
+        result, pt,
+        "round-trip proves final frame seq num is interpreted same as regular"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -469,7 +595,11 @@ async fn test_final_frame_iv_unique() {
     let final_iv = &frames.last().expect("must have final frame").1;
     for (i, (_, iv, _, _, is_final)) in frames.iter().enumerate() {
         if !is_final {
-            assert_ne!(iv, final_iv, "final frame IV must differ from regular frame {}", i);
+            assert_ne!(
+                iv, final_iv,
+                "final frame IV must differ from regular frame {}",
+                i
+            );
         }
     }
 }
@@ -483,7 +613,11 @@ async fn test_final_frame_iv_length_matches_algorithm() {
     let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
     let final_frame = frames.last().expect("must have final frame");
     assert!(final_frame.4, "must be final frame");
-    assert_eq!(final_frame.1.len(), IV_LEN, "final frame IV length must match algorithm suite");
+    assert_eq!(
+        final_frame.1.len(),
+        IV_LEN,
+        "final frame IV length must match algorithm suite"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -493,7 +627,10 @@ async fn test_final_frame_iv_interpreted_as_bytes() {
     //# The IV MUST be interpreted as bytes.
     let pt = vec![0xFFu8; 5];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves final frame IV is interpreted as bytes");
+    assert_eq!(
+        result, pt,
+        "round-trip proves final frame IV is interpreted as bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -503,10 +640,17 @@ async fn test_final_frame_encrypted_content_length_4_bytes() {
     //# The length of the serialized encrypted content length field MUST be 4 bytes.
     let pt = vec![0xAAu8; 7];
     let ct = encrypt_with_frame_length(&pt, 10).await;
-    let pos = ct.windows(4).position(|w| w == ENDFRAME_MARKER).expect("must find ENDFRAME");
+    let pos = ct
+        .windows(4)
+        .position(|w| w == ENDFRAME_MARKER)
+        .expect("must find ENDFRAME");
     // Content length field is at pos+20 (ENDFRAME(4)+SeqNum(4)+IV(12)), exactly 4 bytes
     let content_len_bytes = &ct[pos + 20..pos + 24];
-    assert_eq!(content_len_bytes.len(), 4, "encrypted content length field must be exactly 4 bytes");
+    assert_eq!(
+        content_len_bytes.len(),
+        4,
+        "encrypted content length field must be exactly 4 bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -516,20 +660,29 @@ async fn test_final_frame_encrypted_content_length_uint32() {
     //# The encrypted content length MUST be a UInt32.
     let pt = vec![0xBBu8; 7];
     let ct = encrypt_with_frame_length(&pt, 10).await;
-    let pos = ct.windows(4).position(|w| w == ENDFRAME_MARKER).expect("must find ENDFRAME");
+    let pos = ct
+        .windows(4)
+        .position(|w| w == ENDFRAME_MARKER)
+        .expect("must find ENDFRAME");
     let content_len = u32::from_be_bytes([ct[pos + 20], ct[pos + 21], ct[pos + 22], ct[pos + 23]]);
-    assert_eq!(content_len, 7, "encrypted content length serialized as UInt32 must equal 7");
+    assert_eq!(
+        content_len, 7,
+        "encrypted content length serialized as UInt32 must equal 7"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_encrypted_content_length_read_as_uint32() {
+    // Successful round-trip proves decrypt reads the content length as UInt32
     //= specification/data-format/message-body.md#final-frame-encrypted-content-length
     //= type=test
     //# The encrypted content length MUST be a UInt32.
-    // Successful round-trip proves decrypt reads the content length as UInt32
     let pt = vec![0xCCu8; 7];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves encrypted content length is read as UInt32");
+    assert_eq!(
+        result, pt,
+        "round-trip proves encrypted content length is read as UInt32"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -543,7 +696,11 @@ async fn test_final_frame_encrypted_content_length_matches() {
     assert!(final_frame.4, "must be final frame");
     // parse_frames reads content_len from the field and uses it to read enc_content
     // If they didn't match, parsing would fail or produce wrong data
-    assert_eq!(final_frame.2.len(), 7, "encrypted content length must match the content length field");
+    assert_eq!(
+        final_frame.2.len(),
+        7,
+        "encrypted content length must match the content length field"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -553,7 +710,10 @@ async fn test_final_frame_encrypted_content_interpreted_as_bytes() {
     //# The encrypted content MUST be interpreted as bytes.
     let pt = vec![0xEEu8; 5];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves final frame encrypted content is interpreted as bytes");
+    assert_eq!(
+        result, pt,
+        "round-trip proves final frame encrypted content is interpreted as bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -566,7 +726,11 @@ async fn test_final_frame_auth_tag_length_matches_algorithm() {
     let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
     let final_frame = frames.last().expect("must have final frame");
     assert!(final_frame.4, "must be final frame");
-    assert_eq!(final_frame.3.len(), TAG_LEN, "final frame auth tag length must match algorithm suite (16)");
+    assert_eq!(
+        final_frame.3.len(),
+        TAG_LEN,
+        "final frame auth tag length must match algorithm suite (16)"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -576,15 +740,18 @@ async fn test_final_frame_auth_tag_interpreted_as_bytes() {
     //# The authentication tag MUST be interpreted as bytes.
     let pt = vec![0xAAu8; 5];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves final frame auth tag is interpreted as bytes");
+    assert_eq!(
+        result, pt,
+        "round-trip proves final frame auth tag is interpreted as bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_auth_tag_authenticates_final_frame() {
+    // Successful decrypt proves the auth tag authenticated the final frame.
     //= specification/data-format/message-body.md#final-frame-authentication-tag
     //= type=test
     //# It MUST be used to authenticate the final frame.
-    // Successful decrypt proves the auth tag authenticated the final frame.
     let pt = vec![0xBBu8; 5];
     assert_eq!(round_trip_framed(&pt, 10).await, pt);
 
@@ -607,5 +774,8 @@ async fn test_final_frame_auth_tag_authenticates_final_frame() {
 
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&tampered, EncryptionContext::new(), keyring);
-    assert!(decrypt(&dec_input).await.is_err(), "tampered final frame auth tag must cause decryption failure");
+    assert!(
+        decrypt(&dec_input).await.is_err(),
+        "tampered final frame auth tag must cause decryption failure"
+    );
 }

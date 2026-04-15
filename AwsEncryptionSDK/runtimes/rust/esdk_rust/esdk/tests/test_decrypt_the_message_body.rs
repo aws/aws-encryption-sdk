@@ -16,13 +16,15 @@ use test_helpers::*;
 /// Uses AlgAes256GcmHkdfSha512CommitKey (0x0478), V2 header, NonFramed content type.
 /// The wrapping key is `[0u8; 32]` matching the test_keyring() configuration.
 fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
-    use aws_lc_rs::aead::{Aad, LessSafeKey, Nonce, UnboundKey, AES_256_GCM};
-    use aws_lc_rs::hkdf::{Salt, HKDF_SHA512};
+    use aws_lc_rs::aead::{AES_256_GCM, Aad, LessSafeKey, Nonce, UnboundKey};
+    use aws_lc_rs::hkdf::{HKDF_SHA512, Salt};
 
     let wrapping_key = [0u8; 32];
     let plaintext_data_key = [0x42u8; 32];
     let message_id = [0xAAu8; 32];
-    let edk_iv: [u8; 12] = [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C];
+    let edk_iv: [u8; 12] = [
+        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C,
+    ];
     let alg_suite_id: [u8; 2] = [0x04, 0x78];
 
     // --- Wrap the data key (raw AES keyring format) ---
@@ -31,7 +33,9 @@ fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
     let key = LessSafeKey::new(key);
     let nonce = Nonce::try_assume_unique_for_key(&edk_iv).unwrap();
     let mut edk_ct = plaintext_data_key.to_vec();
-    let edk_tag = key.seal_in_place_separate_tag(nonce, Aad::from(&[] as &[u8]), &mut edk_ct).unwrap();
+    let edk_tag = key
+        .seal_in_place_separate_tag(nonce, Aad::from(&[] as &[u8]), &mut edk_ct)
+        .unwrap();
     let mut edk_ciphertext = edk_ct;
     edk_ciphertext.extend_from_slice(edk_tag.as_ref());
 
@@ -41,7 +45,7 @@ fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
     let mut provider_info = Vec::new();
     provider_info.extend_from_slice(key_name);
     provider_info.extend_from_slice(&128u32.to_be_bytes()); // tag length in bits
-    provider_info.extend_from_slice(&12u32.to_be_bytes());  // IV length in bytes
+    provider_info.extend_from_slice(&12u32.to_be_bytes()); // IV length in bytes
     provider_info.extend_from_slice(&edk_iv);
 
     // --- Derive keys (V2 HKDF-SHA512 with commitment) ---
@@ -81,7 +85,9 @@ fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
     let key = LessSafeKey::new(key);
     let nonce = Nonce::try_assume_unique_for_key(&header_auth_iv).unwrap();
     let mut empty = Vec::new();
-    let header_auth_tag = key.seal_in_place_separate_tag(nonce, Aad::from(&header_body[..]), &mut empty).unwrap();
+    let header_auth_tag = key
+        .seal_in_place_separate_tag(nonce, Aad::from(&header_body[..]), &mut empty)
+        .unwrap();
 
     // --- Build nonframed body ---
     // Body AAD: message_id + "AWSKMSEncryptionClient Single Block" + seq_num(4, be) + content_len(8, be)
@@ -100,7 +106,9 @@ fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
     let key = LessSafeKey::new(key);
     let nonce = Nonce::try_assume_unique_for_key(&body_iv).unwrap();
     let mut body_ct = plaintext.to_vec();
-    let body_tag = key.seal_in_place_separate_tag(nonce, Aad::from(&body_aad[..]), &mut body_ct).unwrap();
+    let body_tag = key
+        .seal_in_place_separate_tag(nonce, Aad::from(&body_aad[..]), &mut body_ct)
+        .unwrap();
 
     // --- Assemble the full message ---
     let mut message = Vec::new();
@@ -126,7 +134,10 @@ async fn test_decrypt_regular_frame_deserialization() {
     // Successful decrypt proves regular frames were deserialized correctly.
     let pt = vec![0xAAu8; 30];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves regular frame deserialization conforms to spec");
+    assert_eq!(
+        result, pt,
+        "round-trip proves regular frame deserialization conforms to spec"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -158,7 +169,10 @@ async fn test_decrypt_final_frame_deserialization() {
     // Successful authenticated decryption proves all final frame fields were deserialized correctly.
     let pt = vec![0xBBu8; 5];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves final frame deserialization conforms to spec");
+    assert_eq!(
+        result, pt,
+        "round-trip proves final frame deserialization conforms to spec"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -172,7 +186,10 @@ async fn test_decrypt_uses_first_4_bytes_to_determine_frame_type() {
     // Multi-frame: decrypt must correctly distinguish regular from final frames.
     let pt = vec![0xCCu8; 25];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "multi-frame decrypt proves frame type detection from first 4 bytes");
+    assert_eq!(
+        result, pt,
+        "multi-frame decrypt proves frame type detection from first 4 bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -185,7 +202,11 @@ async fn test_decrypt_final_frame_detected_by_endframe_marker() {
     // Single final frame: the first 4 bytes of the body are 0xFFFFFFFF.
     let pt = b"final frame test";
     let result = round_trip_framed(pt, 4096).await;
-    assert_eq!(result, pt.to_vec(), "single-frame decrypt proves 0xFFFFFFFF triggers final frame deserialization");
+    assert_eq!(
+        result,
+        pt.to_vec(),
+        "single-frame decrypt proves 0xFFFFFFFF triggers final frame deserialization"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -197,7 +218,10 @@ async fn test_decrypt_regular_frame_detected_without_endframe() {
     // Multi-frame: first frame starts with sequence number 1 (not 0xFFFFFFFF), so it's a regular frame.
     let pt = vec![0xDDu8; 30];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "multi-frame decrypt proves non-ENDFRAME bytes trigger regular frame deserialization");
+    assert_eq!(
+        result, pt,
+        "multi-frame decrypt proves non-ENDFRAME bytes trigger regular frame deserialization"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -222,7 +246,10 @@ async fn test_decrypt_final_frame_content_length_validation() {
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
-    assert!(result.is_err(), "decrypt must fail when final frame content length exceeds frame length");
+    assert!(
+        result.is_err(),
+        "decrypt must fail when final frame content length exceeds frame length"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -236,7 +263,10 @@ async fn test_decrypt_authenticates_each_frame() {
     // Multi-frame round-trip: each frame is decrypted and authenticated.
     let pt = vec![0xFFu8; 50];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "multi-frame round-trip proves each frame is decrypted and authenticated");
+    assert_eq!(
+        result, pt,
+        "multi-frame round-trip proves each frame is decrypted and authenticated"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -248,7 +278,11 @@ async fn test_decrypt_first_frame_sequence_number_is_one() {
     // Successful decrypt proves the AAD used sequence number 1.
     let pt = b"seq one test";
     let result = round_trip_framed(pt, 4096).await;
-    assert_eq!(result, pt.to_vec(), "single-frame decrypt proves first frame sequence number is 1");
+    assert_eq!(
+        result,
+        pt.to_vec(),
+        "single-frame decrypt proves first frame sequence number is 1"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -261,7 +295,10 @@ async fn test_decrypt_sequence_numbers_increment() {
     // Successful decrypt proves each frame's AAD had the correct incrementing sequence number.
     let pt = vec![0xABu8; 40];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "multi-frame decrypt proves sequence numbers increment correctly");
+    assert_eq!(
+        result, pt,
+        "multi-frame decrypt proves sequence numbers increment correctly"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -274,7 +311,10 @@ async fn test_decrypt_content_length_in_aad() {
     // If content length in AAD were wrong, authenticated decryption would fail.
     let pt = vec![0xCDu8; 35];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves content length in AAD equals plaintext length for each frame");
+    assert_eq!(
+        result, pt,
+        "round-trip proves content length in AAD equals plaintext length for each frame"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -293,7 +333,10 @@ async fn test_decrypt_fails_on_tampered_auth_tag() {
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
-    assert!(result.is_err(), "tampered auth tag must cause immediate decryption failure");
+    assert!(
+        result.is_err(),
+        "tampered auth tag must cause immediate decryption failure"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -312,7 +355,10 @@ async fn test_decrypt_no_unauthenticated_plaintext_released() {
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
-    assert!(result.is_err(), "tampered ciphertext must produce error, not partial plaintext");
+    assert!(
+        result.is_err(),
+        "tampered ciphertext must produce error, not partial plaintext"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -335,7 +381,10 @@ async fn test_decrypt_streaming_releases_regular_frames() {
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await.unwrap().plaintext;
-    assert_eq!(result, pt, "multi-frame decrypt with signing suite proves regular frames released after tag verification");
+    assert_eq!(
+        result, pt,
+        "multi-frame decrypt with signing suite proves regular frames released after tag verification"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -347,7 +396,11 @@ async fn test_decrypt_body_deserialized_after_header() {
     // Successful round-trip proves body bytes are deserialized after header parsing.
     let pt = b"body after header test";
     let result = round_trip_framed(pt, 4096).await;
-    assert_eq!(result, pt.to_vec(), "round-trip proves body is deserialized after header");
+    assert_eq!(
+        result,
+        pt.to_vec(),
+        "round-trip proves body is deserialized after header"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -361,7 +414,10 @@ async fn test_decrypt_content_type_determines_framed_or_nonframed() {
     // Framed round-trip: content type is Framed, body is deserialized as framed data.
     let pt = vec![0xAAu8; 20];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "framed round-trip proves content type determines framed deserialization");
+    assert_eq!(
+        result, pt,
+        "framed round-trip proves content type determines framed deserialization"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -398,7 +454,10 @@ async fn test_decrypt_frame_fields_deserialized_correctly() {
     // sequence number end, sequence number, IV, encrypted content length, encrypted content, auth tag.
     let pt = vec![0xBBu8; 25];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "multi-frame round-trip proves all frame fields deserialized correctly");
+    assert_eq!(
+        result, pt,
+        "multi-frame round-trip proves all frame fields deserialized correctly"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -427,7 +486,10 @@ async fn test_decrypt_aad_constructed_correctly() {
     // were wrong, authenticated decryption would fail.
     let pt = vec![0xCCu8; 35];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves AAD is constructed correctly with message ID, body AAD content, and sequence number");
+    assert_eq!(
+        result, pt,
+        "round-trip proves AAD is constructed correctly with message ID, body AAD content, and sequence number"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -441,7 +503,11 @@ async fn test_decrypt_unframed_sequence_number_is_one() {
     // A single-frame message has only a final frame with sequence number 1.
     let pt = b"unframed seq test";
     let result = round_trip_framed(pt, 4096).await;
-    assert_eq!(result, pt.to_vec(), "single-frame decrypt proves sequence number 1 is used");
+    assert_eq!(
+        result,
+        pt.to_vec(),
+        "single-frame decrypt proves sequence number 1 is used"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -467,7 +533,10 @@ async fn test_decrypt_aes_inputs_correct() {
     // authenticated decryption would fail.
     let pt = vec![0xDDu8; 40];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves all AES-GCM inputs (IV, key, ciphertext, tag) are correct");
+    assert_eq!(
+        result, pt,
+        "round-trip proves all AES-GCM inputs (IV, key, ciphertext, tag) are correct"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -482,7 +551,10 @@ async fn test_decrypt_wait_for_bytes() {
     // continues reading frames until the final frame is encountered.
     let pt = vec![0xEEu8; 50];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "multi-frame decrypt proves operation waits for and processes all body bytes");
+    assert_eq!(
+        result, pt,
+        "multi-frame decrypt proves operation waits for and processes all body bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -498,12 +570,14 @@ async fn test_decrypt_streaming_without_signature_releases() {
     let mut enc_input =
         EncryptInput::with_legacy_keyring(&pt, EncryptionContext::new(), keyring.clone());
     enc_input.frame_length = FrameLength::new(10).unwrap();
-    enc_input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
+    enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await.unwrap().plaintext;
-    assert_eq!(result, pt, "non-signing suite decrypt proves plaintext released after tag verification");
+    assert_eq!(
+        result, pt,
+        "non-signing suite decrypt proves plaintext released after tag verification"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -525,7 +599,10 @@ async fn test_decrypt_streaming_feeds_signature_algorithm() {
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await.unwrap().plaintext;
-    assert_eq!(result, pt, "signing suite decrypt proves serialized frames fed to signature algorithm");
+    assert_eq!(
+        result, pt,
+        "signing suite decrypt proves serialized frames fed to signature algorithm"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -538,7 +615,10 @@ async fn test_decrypt_regular_frame_content_length_uses_frame_length() {
     // If the wrong content length were used, authenticated decryption would fail.
     let pt = vec![0xCCu8; 30];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "multi-frame decrypt proves regular frame content length uses frame length from header");
+    assert_eq!(
+        result, pt,
+        "multi-frame decrypt proves regular frame content length uses frame length from header"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -551,7 +631,10 @@ async fn test_decrypt_final_frame_content_length_uses_encrypted_content_length()
     // not the frame length (4096). If wrong, authenticated decryption would fail.
     let pt = vec![0xDDu8; 5];
     let result = round_trip_framed(&pt, 4096).await;
-    assert_eq!(result, pt, "final-frame-only decrypt proves content length uses encrypted content length");
+    assert_eq!(
+        result, pt,
+        "final-frame-only decrypt proves content length uses encrypted content length"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -577,7 +660,10 @@ async fn test_decrypt_final_frame_held_until_signature_verification() {
     ct[last] ^= 0xFF;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
-    assert!(result.is_err(), "tampered signature must cause decrypt failure, proving final frame was held back");
+    assert!(
+        result.is_err(),
+        "tampered signature must cause decrypt failure, proving final frame was held back"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -592,7 +678,11 @@ async fn test_decrypt_nonframed_deserialization_conforms_to_spec() {
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt.to_vec(), "nonframed round-trip proves deserialization conforms to nonframed Data spec");
+    assert_eq!(
+        result.plaintext,
+        pt.to_vec(),
+        "nonframed round-trip proves deserialization conforms to nonframed Data spec"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -730,7 +820,10 @@ async fn test_unframed_decrypt_fails_on_tampered_auth_tag() {
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
-    assert!(result.is_err(), "tampered nonframed auth tag must cause immediate decryption failure");
+    assert!(
+        result.is_err(),
+        "tampered nonframed auth tag must cause immediate decryption failure"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]

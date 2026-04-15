@@ -6,10 +6,7 @@
 mod fixtures;
 mod test_helpers;
 
-use aws_esdk::*;
-use fixtures::*;
 use test_helpers::*;
-
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_structure_ordering() {
@@ -22,7 +19,10 @@ async fn test_body_aad_structure_ordering() {
     //# and Content Length.
     let pt = b"body aad structure test";
     let result = round_trip_framed(pt, 4096).await;
-    assert_eq!(result, pt, "round-trip proves body AAD fields are in correct order");
+    assert_eq!(
+        result, pt,
+        "round-trip proves body AAD fields are in correct order"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -32,7 +32,10 @@ async fn test_body_aad_message_id_from_header() {
     //# This MUST be the [message ID](message-header.md#message-id) stored in the header of the message.
     let pt = b"message id from header test";
     let result = round_trip_framed(pt, 4096).await;
-    assert_eq!(result, pt, "round-trip proves body AAD uses the message ID from the header");
+    assert_eq!(
+        result, pt,
+        "round-trip proves body AAD uses the message ID from the header"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -42,19 +45,25 @@ async fn test_body_aad_content_utf8_encoding() {
     //# The body AAD content value MUST be encoded as UTF-8 bytes.
     let pt = b"utf8 encoding test";
     let result = round_trip_framed(pt, 4096).await;
-    assert_eq!(result, pt, "round-trip proves body AAD content is correctly UTF-8 encoded");
+    assert_eq!(
+        result, pt,
+        "round-trip proves body AAD content is correctly UTF-8 encoded"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_content_regular_frame_value() {
+    // Multi-frame: 30 bytes with frame_length=10 produces regular frames
     //= specification/data-format/message-body-aad.md#body-aad-content
     //= type=test
     //# - The [regular frames](message-body.md#regular-frame) in [framed data](message-body.md#framed-data)
     //# MUST use the value `AWSKMSEncryptionClient Frame`.
-    // Multi-frame: 30 bytes with frame_length=10 produces regular frames
     let pt = vec![0xAAu8; 30];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves regular frame body AAD content value is correct");
+    assert_eq!(
+        result, pt,
+        "round-trip proves regular frame body AAD content value is correct"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -65,7 +74,10 @@ async fn test_body_aad_content_final_frame_value() {
     //# MUST use the value `AWSKMSEncryptionClient Final Frame`.
     let pt = b"final frame aad test";
     let result = round_trip_framed(pt, 4096).await;
-    assert_eq!(result, pt, "round-trip proves final frame body AAD content value is correct");
+    assert_eq!(
+        result, pt,
+        "round-trip proves final frame body AAD content value is correct"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -75,7 +87,10 @@ async fn test_body_aad_sequence_number_length() {
     //# The length of the sequence number field MUST be 4 bytes.
     let pt = b"seq num length test";
     let result = round_trip_framed(pt, 4096).await;
-    assert_eq!(result, pt, "round-trip proves sequence number field is 4 bytes");
+    assert_eq!(
+        result, pt,
+        "round-trip proves sequence number field is 4 bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -85,18 +100,24 @@ async fn test_body_aad_sequence_number_uint32() {
     //# The sequence number field MUST be interpreted as a UInt32.
     let pt = b"seq num uint32 test";
     let result = round_trip_framed(pt, 4096).await;
-    assert_eq!(result, pt, "round-trip proves sequence number is interpreted as UInt32");
+    assert_eq!(
+        result, pt,
+        "round-trip proves sequence number is interpreted as UInt32"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_sequence_number_framed_value() {
+    // Multi-frame: each frame's AAD must use the correct sequence number
     //= specification/data-format/message-body-aad.md#sequence-number
     //= type=test
     //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
-    // Multi-frame: each frame's AAD must use the correct sequence number
     let pt = vec![0xBBu8; 50];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "multi-frame round-trip proves per-frame sequence numbers in AAD are correct");
+    assert_eq!(
+        result, pt,
+        "multi-frame round-trip proves per-frame sequence numbers in AAD are correct"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -106,7 +127,10 @@ async fn test_body_aad_content_length_8_bytes() {
     //# The length of the content length field MUST be 8 bytes.
     let pt = b"content length 8 bytes test";
     let result = round_trip_framed(pt, 4096).await;
-    assert_eq!(result, pt, "round-trip proves content length field is 8 bytes");
+    assert_eq!(
+        result, pt,
+        "round-trip proves content length field is 8 bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -116,7 +140,10 @@ async fn test_body_aad_content_length_uint64() {
     //# The content length field MUST be interpreted as a UInt64.
     let pt = b"content length uint64 test";
     let result = round_trip_framed(pt, 4096).await;
-    assert_eq!(result, pt, "round-trip proves content length is interpreted as UInt64");
+    assert_eq!(
+        result, pt,
+        "round-trip proves content length is interpreted as UInt64"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -127,32 +154,41 @@ async fn test_body_aad_content_length_framed_value() {
     //# of the plaintext being encrypted in this frame.
     let pt = vec![0xCCu8; 25];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves content length in AAD equals plaintext length per frame");
+    assert_eq!(
+        result, pt,
+        "round-trip proves content length in AAD equals plaintext length per frame"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_content_length_regular_frame_equals_frame_length() {
+    // 30 bytes with frame_length=10 → regular frames have content_length=10
     //= specification/data-format/message-body-aad.md#content-length
     //= type=test
     //# - For [regular frames](message-body.md#regular-frame), this value MUST equal the value of
     //# the [frame length](message-header.md#frame-length) field in the message header.
-    // 30 bytes with frame_length=10 → regular frames have content_length=10
     let pt = vec![0xDDu8; 30];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves regular frame content length equals frame length");
+    assert_eq!(
+        result, pt,
+        "round-trip proves regular frame content length equals frame length"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_content_length_final_frame_bounded() {
+    // 15 bytes with frame_length=10 → final frame has 5 bytes (0 < 5 <= 10)
     //= specification/data-format/message-body-aad.md#content-length
     //= type=test
     //# - For the [final frame](message-body.md#final-frame), this value MUST be greater than or equal to
     //# 0 and less than or equal to the value of the [frame length](message-header.md#frame-length)
     //# field in the message header.
-    // 15 bytes with frame_length=10 → final frame has 5 bytes (0 < 5 <= 10)
     let pt = vec![0xEEu8; 15];
     let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "round-trip proves final frame content length is bounded by frame length");
+    assert_eq!(
+        result, pt,
+        "round-trip proves final frame content length is bounded by frame length"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -164,7 +200,10 @@ async fn test_body_aad_content_nonframed_single_block() {
     let pt = b"nonframed single block aad test";
     let msg = build_nonframed_message(pt);
     let result = decrypt_nonframed(&msg).await;
-    assert_eq!(result, pt, "nonframed round-trip proves body AAD content is 'AWSKMSEncryptionClient Single Block'");
+    assert_eq!(
+        result, pt,
+        "nonframed round-trip proves body AAD content is 'AWSKMSEncryptionClient Single Block'"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -176,7 +215,10 @@ async fn test_body_aad_sequence_number_nonframed_is_one() {
     let pt = b"nonframed seq num one test";
     let msg = build_nonframed_message(pt);
     let result = decrypt_nonframed(&msg).await;
-    assert_eq!(result, pt, "nonframed round-trip proves sequence number in AAD is 1");
+    assert_eq!(
+        result, pt,
+        "nonframed round-trip proves sequence number in AAD is 1"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -189,7 +231,10 @@ async fn test_body_aad_content_length_nonframed_equals_plaintext() {
     let pt = b"nonframed content length test";
     let msg = build_nonframed_message(pt);
     let result = decrypt_nonframed(&msg).await;
-    assert_eq!(result, pt, "nonframed round-trip proves content length in AAD equals plaintext length");
+    assert_eq!(
+        result, pt,
+        "nonframed round-trip proves content length in AAD equals plaintext length"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -202,5 +247,8 @@ async fn test_body_aad_message_id_length_matches_header_version() {
     let msg = build_nonframed_message(pt);
     // V2 message ID is 32 bytes; the AAD uses the same 32-byte message ID from the header
     let result = decrypt_nonframed(&msg).await;
-    assert_eq!(result, pt, "nonframed V2 round-trip proves message ID length in AAD matches header version (32 bytes)");
+    assert_eq!(
+        result, pt,
+        "nonframed V2 round-trip proves message ID length in AAD matches header version (32 bytes)"
+    );
 }

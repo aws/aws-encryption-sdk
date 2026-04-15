@@ -273,7 +273,8 @@ async fn test_auth_tag_tampered_header_fails_decrypt() {
         .unwrap();
     let plaintext = b"test tampered header";
     let ec = EncryptionContext::new();
-    let encrypt_input = EncryptInput::with_legacy_keyring(plaintext, ec.clone(), kms_keyring.clone());
+    let encrypt_input =
+        EncryptInput::with_legacy_keyring(plaintext, ec.clone(), kms_keyring.clone());
     let encrypt_output = encrypt(&encrypt_input).await.unwrap();
     let mut tampered = encrypt_output.ciphertext.clone();
 

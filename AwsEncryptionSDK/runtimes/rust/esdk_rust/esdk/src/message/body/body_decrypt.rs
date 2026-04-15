@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //! Frame decryption and body deserialization.
 
-use super::{body_aad, get_encrypt, BodyAADContent};
+use super::{BodyAADContent, body_aad, get_encrypt};
 use crate::error::esdk_err;
 use crate::message::header::{ENDFRAME_SEQUENCE_NUMBER, HeaderInfo, START_SEQUENCE_NUMBER};
 use crate::message::serializable_types::{get_iv_length, get_tag_length};
-use crate::message::serialize_functions::{read_bytes, read_seq_u32_bounded, read_u32, write_bytes};
+use crate::message::serialize_functions::{
+    read_bytes, read_seq_u32_bounded, read_u32, write_bytes,
+};
 use crate::message::{Error, header, ser_err, serialize_functions};
 use crate::types::{SafeRead, SafeWrite};
 use aws_mpl_legacy::primitives::aes_decrypt;
@@ -224,7 +226,9 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 // write previous frame's data, now that we know we have another frame.
                 if expected_frame != START_SEQUENCE_NUMBER {
                     if fail_if_multi_frame {
-                        return Err(esdk_err("Streaming interface can return data before signature has been validated. Set `allow_unsafe_unverified_signature` in the DecryptStreamInput struct if this is ok"));
+                        return Err(esdk_err(
+                            "Streaming interface can return data before signature has been validated. Set `allow_unsafe_unverified_signature` in the DecryptStreamInput struct if this is ok",
+                        ));
                     }
                     write_bytes(w, &result)?;
                 }
@@ -261,7 +265,9 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         // write previous frame's data, now that we know we have another frame.
         if expected_frame != START_SEQUENCE_NUMBER {
             if fail_if_multi_frame {
-                return Err(esdk_err("Streaming interface can return data before signature has been validated. Set `allow_unsafe_unverified_signature` in the DecryptStreamInput struct if this is ok"));
+                return Err(esdk_err(
+                    "Streaming interface can return data before signature has been validated. Set `allow_unsafe_unverified_signature` in the DecryptStreamInput struct if this is ok",
+                ));
             }
             write_bytes(w, &result)?;
         }
@@ -421,7 +427,11 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= reason=iv is deserialized here and passed to aes_decrypt below
     //# - The IV MUST be the [IV](../data-format/message-body.md#nonframed-data-iv) deserialized from the message body.
-    let iv = serialize_functions::read_vec(ciphertext, get_iv_length(&header.suite) as usize, sig_digest)?;
+    let iv = serialize_functions::read_vec(
+        ciphertext,
+        get_iv_length(&header.suite) as usize,
+        sig_digest,
+    )?;
     //= specification/data-format/message-body.md#nonframed-data-iv
     //= reason=read_vec returns Vec<u8>
     //# The IV MUST be interpreted as bytes.
@@ -463,7 +473,11 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= reason=auth_tag is deserialized here and passed to aes_decrypt below
     //# - The tag MUST be the [Authentication Tag](../data-format/message-body.md#nonframed-data-authentication-tag) deserialized from the message body.
-    let auth_tag = serialize_functions::read_vec(ciphertext, get_tag_length(&header.suite) as usize, sig_digest)?;
+    let auth_tag = serialize_functions::read_vec(
+        ciphertext,
+        get_tag_length(&header.suite) as usize,
+        sig_digest,
+    )?;
     //= specification/data-format/message-body.md#nonframed-data-authentication-tag
     //= reason=read_vec returns Vec<u8>
     //# The authentication tag value MUST be interpreted as bytes.

@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //! Top-level message header construction and parsing.
 
-use super::header_types::{ContentType, HeaderAuth, HeaderBody, MESSAGE_ID_LEN_V1, MESSAGE_ID_LEN_V2, MessageFormatVersion, MessageId, read_msg_format_version};
+use super::header_types::{
+    ContentType, HeaderAuth, HeaderBody, MESSAGE_ID_LEN_V1, MESSAGE_ID_LEN_V2,
+    MessageFormatVersion, MessageId, read_msg_format_version,
+};
 use super::serializable_types::ESDKEncryptionContext;
 use super::v1_header_body::{read_v1_header_body, write_v1_header_body};
 use super::v2_header_body::{get_hkdf, read_v2_header_body, write_v2_header_body};
@@ -132,7 +135,9 @@ pub(crate) fn validate_max_encrypted_data_keys(
         //# [maximum number of encrypted data keys](../client-apis/client.md#maximum-number-of-encrypted-data-keys)
         //# if the maximum number is configured.
         if edks.len() > max.get() {
-            return Err(val_err("Encrypted data keys exceed maximum encrypted data keys limit"));
+            return Err(val_err(
+                "Encrypted data keys exceed maximum encrypted data keys limit",
+            ));
         }
         //= specification/data-format/message-header.md#encrypted-data-key-count
         //# This value MUST be greater than 0.
@@ -167,13 +172,17 @@ pub(crate) fn validate_suite_data(
     //= specification/data-format/message-header.md#algorithm-suite-data
     //= reason=Check against expected_suite_data (a &[u8] type) implies interpreting as bytes
     //# The algorithm suite data MUST be interpreted as bytes.
-    if constant_time::verify_slices_are_equal(header_body.suite_data(), expected_suite_data).is_err() {
+    if constant_time::verify_slices_are_equal(header_body.suite_data(), expected_suite_data)
+        .is_err()
+    {
         return Err(val_err("Commitment key does not match"));
     }
     //= specification/data-format/message-header.md#algorithm-suite-data
     //# The length of the suite data field MUST be equal to the [Algorithm Suite Data Length](../framework/algorithm-suites.md#algorithm-suite-data-length) value
     //# of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-    if get_hkdf(&suite.commitment)?.output_key_length != u32::try_from(expected_suite_data.len()).map_err(|_| val_err("header too large"))? {
+    if get_hkdf(&suite.commitment)?.output_key_length
+        != u32::try_from(expected_suite_data.len()).map_err(|_| val_err("header too large"))?
+    {
         return Err(val_err("Commitment key is invalid"));
     }
     Ok(())

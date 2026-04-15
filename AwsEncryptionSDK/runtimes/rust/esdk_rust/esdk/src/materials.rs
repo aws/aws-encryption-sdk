@@ -2,10 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //! Cryptographic materials management — CMM creation and materials retrieval.
 
-use crate::legacy_compat::{convert_alg, convert_commit, convert_edks, from_legacy_dm, from_legacy_em};
-use crate::message::header_types::HeaderBody;
-use crate::message::serializable_types::{from_canonical_pairs, is_esdk_encrypted_data_keys, is_esdk_encryption_context};
 use crate::error::{Error, val_err};
+use crate::legacy_compat::{
+    convert_alg, convert_commit, convert_edks, from_legacy_dm, from_legacy_em,
+};
+use crate::message::header_types::HeaderBody;
+use crate::message::serializable_types::{
+    from_canonical_pairs, is_esdk_encrypted_data_keys, is_esdk_encryption_context,
+};
 use crate::types::{EncryptionContext, MaterialSource, mpl};
 use aws_mpl_legacy::DecryptionMaterials;
 use aws_mpl_legacy::EncryptionMaterials;
@@ -84,7 +88,9 @@ pub(crate) async fn get_decryption_materials(
         }
     };
     if !is_esdk_encryption_context(&materials.encryption_context) {
-        return Err(val_err("CMM failed to return serializable encryption materials"));
+        return Err(val_err(
+            "CMM failed to return serializable encryption materials",
+        ));
     }
     Ok(materials)
 }
@@ -119,10 +125,14 @@ pub(crate) async fn get_encryption_materials(
         }
     };
     if !is_esdk_encryption_context(&materials.encryption_context) {
-        return Err(val_err("CMM failed to return serializable encryption materials"));
+        return Err(val_err(
+            "CMM failed to return serializable encryption materials",
+        ));
     }
     if !is_esdk_encrypted_data_keys(&materials.encrypted_data_keys) {
-        return Err(val_err("CMM failed to return serializable encrypted data keys"));
+        return Err(val_err(
+            "CMM failed to return serializable encrypted data keys",
+        ));
     }
     Ok(materials)
 }
@@ -229,7 +239,8 @@ pub(crate) async fn get_legacy_decryption_materials(
         .send()
         .await?;
 
-    let materials = output.decryption_materials
+    let materials = output
+        .decryption_materials
         .ok_or_else(|| val_err("Legacy CMM did not return decryption materials"))?;
     let return_materials = materials.clone();
     let mpl = mpl();
@@ -339,7 +350,6 @@ pub(crate) async fn get_legacy_encryption_materials(
         //= reason=The caller resolves known length vs Plaintext Length Bound before calling; this receives the resolved value
         //# If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
         //# was provided, this MUST be the [Plaintext Length Bound](#plaintext-length-bound).
-
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
         //= reason=max_plaintext_length is Option; .set_ with None means the field is not set
         //# If no Plaintext Length Bound is provided, this field MUST NOT be included.
@@ -347,7 +357,8 @@ pub(crate) async fn get_legacy_encryption_materials(
         .send()
         .await?;
 
-    let materials = output.encryption_materials
+    let materials = output
+        .encryption_materials
         .ok_or_else(|| val_err("Legacy CMM did not return encryption materials"))?;
     let return_materials = materials.clone();
     //= specification/client-apis/encrypt.md#get-the-encryption-materials

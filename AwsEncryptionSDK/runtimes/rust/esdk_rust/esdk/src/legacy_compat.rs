@@ -20,11 +20,19 @@ pub(crate) fn from_dafny_esdk_suite_id(
         Old::AlgAes128GcmIv12Tag16HkdfSha256 => Ok(New::AlgAes128GcmIv12Tag16HkdfSha256),
         Old::AlgAes192GcmIv12Tag16HkdfSha256 => Ok(New::AlgAes192GcmIv12Tag16HkdfSha256),
         Old::AlgAes256GcmIv12Tag16HkdfSha256 => Ok(New::AlgAes256GcmIv12Tag16HkdfSha256),
-        Old::AlgAes128GcmIv12Tag16HkdfSha256EcdsaP256 => Ok(New::AlgAes128GcmIv12Tag16HkdfSha256EcdsaP256),
-        Old::AlgAes192GcmIv12Tag16HkdfSha384EcdsaP384 => Ok(New::AlgAes192GcmIv12Tag16HkdfSha384EcdsaP384),
-        Old::AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384 => Ok(New::AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384),
+        Old::AlgAes128GcmIv12Tag16HkdfSha256EcdsaP256 => {
+            Ok(New::AlgAes128GcmIv12Tag16HkdfSha256EcdsaP256)
+        }
+        Old::AlgAes192GcmIv12Tag16HkdfSha384EcdsaP384 => {
+            Ok(New::AlgAes192GcmIv12Tag16HkdfSha384EcdsaP384)
+        }
+        Old::AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384 => {
+            Ok(New::AlgAes256GcmIv12Tag16HkdfSha384EcdsaP384)
+        }
         Old::AlgAes256GcmHkdfSha512CommitKey => Ok(New::AlgAes256GcmHkdfSha512CommitKey),
-        Old::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384 => Ok(New::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384),
+        Old::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384 => {
+            Ok(New::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384)
+        }
         _ => Err(val_err("Unknown ESDK algorithm suite")),
     }
 }
@@ -35,8 +43,12 @@ pub(crate) fn from_dafny_dbe_suite_id(
     use aws_mpl_legacy::dafny::types::DbeAlgorithmSuiteId as Old;
     use aws_mpl_legacy::suites::DbeAlgorithmSuiteId as New;
     match legacy {
-        Old::AlgAes256GcmHkdfSha512CommitKeySymsigHmacSha384 => Ok(New::AlgAes256GcmHkdfSha512CommitKeySymsigHmacSha384),
-        Old::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384SymsigHmacSha384 => Ok(New::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384SymsigHmacSha384),
+        Old::AlgAes256GcmHkdfSha512CommitKeySymsigHmacSha384 => {
+            Ok(New::AlgAes256GcmHkdfSha512CommitKeySymsigHmacSha384)
+        }
+        Old::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384SymsigHmacSha384 => {
+            Ok(New::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384SymsigHmacSha384)
+        }
         _ => Err(val_err("Unknown DBE algorithm suite")),
     }
 }
@@ -76,7 +88,9 @@ pub(crate) fn convert_commit(
     }
 }
 
-pub(crate) fn convert_edk(x: &aws_mpl_legacy::EncryptedDataKey) -> Result<aws_mpl_legacy::dafny::types::EncryptedDataKey, Error> {
+pub(crate) fn convert_edk(
+    x: &aws_mpl_legacy::EncryptedDataKey,
+) -> Result<aws_mpl_legacy::dafny::types::EncryptedDataKey, Error> {
     aws_mpl_legacy::dafny::types::EncryptedDataKey::builder()
         .key_provider_id(x.key_provider_id.clone())
         .key_provider_info(x.key_provider_info.clone())
@@ -132,11 +146,13 @@ pub(crate) fn convert_esdk_alg(
     }
 }
 
-pub(crate) fn convert_alg(x: aws_mpl_legacy::suites::AlgorithmSuiteId) -> Result<aws_mpl_legacy::dafny::types::AlgorithmSuiteId, Error> {
+pub(crate) fn convert_alg(
+    x: aws_mpl_legacy::suites::AlgorithmSuiteId,
+) -> Result<aws_mpl_legacy::dafny::types::AlgorithmSuiteId, Error> {
     match x {
-        aws_mpl_legacy::suites::AlgorithmSuiteId::Esdk(a) => {
-            Ok(aws_mpl_legacy::dafny::types::AlgorithmSuiteId::Esdk(convert_esdk_alg(a)?))
-        }
+        aws_mpl_legacy::suites::AlgorithmSuiteId::Esdk(a) => Ok(
+            aws_mpl_legacy::dafny::types::AlgorithmSuiteId::Esdk(convert_esdk_alg(a)?),
+        ),
         _ => Err(val_err("Unknown algorithm suite variant for conversion")),
     }
 }
@@ -144,7 +160,10 @@ pub(crate) fn convert_alg(x: aws_mpl_legacy::suites::AlgorithmSuiteId) -> Result
 pub(crate) fn from_legacy_aes(
     x: &aws_mpl_legacy::dafny::aws_cryptography_primitives::types::AesGcm,
 ) -> Result<aws_mpl_legacy::primitives::AesGcm, Error> {
-    match x.key_length().ok_or_else(|| val_err("Legacy AES-GCM missing key_length"))? {
+    match x
+        .key_length()
+        .ok_or_else(|| val_err("Legacy AES-GCM missing key_length"))?
+    {
         16 => Ok(aws_mpl_legacy::primitives::AesGcm::Aes128Gcm),
         24 => Ok(aws_mpl_legacy::primitives::AesGcm::Aes192Gcm),
         32 => Ok(aws_mpl_legacy::primitives::AesGcm::Aes256Gcm),
@@ -152,7 +171,9 @@ pub(crate) fn from_legacy_aes(
     }
 }
 
-pub(crate) fn from_legacy_encrypt(x: aws_mpl_legacy::dafny::types::Encrypt) -> Result<aws_mpl_legacy::primitives::AesGcm, Error> {
+pub(crate) fn from_legacy_encrypt(
+    x: aws_mpl_legacy::dafny::types::Encrypt,
+) -> Result<aws_mpl_legacy::primitives::AesGcm, Error> {
     match x {
         aws_mpl_legacy::dafny::types::Encrypt::AesGcm(x) => from_legacy_aes(&x),
         _ => Err(val_err("Unknown legacy encrypt variant")),
@@ -171,20 +192,28 @@ pub(crate) const fn from_legacy_hmac(
     }
 }
 
-pub(crate) fn from_legacy_hkdf(x: &aws_mpl_legacy::dafny::types::Hkdf) -> Result<aws_mpl_legacy::suites::Hkdf, Error> {
+pub(crate) fn from_legacy_hkdf(
+    x: &aws_mpl_legacy::dafny::types::Hkdf,
+) -> Result<aws_mpl_legacy::suites::Hkdf, Error> {
     let mut n = aws_mpl_legacy::suites::Hkdf::default();
     n.hmac = from_legacy_hmac(x.hmac.ok_or_else(|| val_err("Legacy HKDF missing hmac"))?);
-    let salt_length = x.salt_length.ok_or_else(|| val_err("Legacy HKDF missing salt_length"))?;
+    let salt_length = x
+        .salt_length
+        .ok_or_else(|| val_err("Legacy HKDF missing salt_length"))?;
     let Ok(salt_length) = u32::try_from(salt_length) else {
         return Err(val_err("negative value from MPL"));
     };
     n.salt_length = salt_length;
-    let input_key_length = x.input_key_length.ok_or_else(|| val_err("Legacy HKDF missing input_key_length"))?;
+    let input_key_length = x
+        .input_key_length
+        .ok_or_else(|| val_err("Legacy HKDF missing input_key_length"))?;
     let Ok(input_key_length) = u32::try_from(input_key_length) else {
         return Err(val_err("negative value from MPL"));
     };
     n.input_key_length = input_key_length;
-    let output_key_length = x.output_key_length.ok_or_else(|| val_err("Legacy HKDF missing output_key_length"))?;
+    let output_key_length = x
+        .output_key_length
+        .ok_or_else(|| val_err("Legacy HKDF missing output_key_length"))?;
     let Ok(output_key_length) = u32::try_from(output_key_length) else {
         return Err(val_err("negative value from MPL"));
     };
@@ -210,7 +239,10 @@ pub(crate) fn from_legacy_ecdsa(
 ) -> Result<aws_mpl_legacy::primitives::EcdsaSignatureAlgorithm, Error> {
     use aws_mpl_legacy::dafny::aws_cryptography_primitives::types::EcdsaSignatureAlgorithm as Old;
     use aws_mpl_legacy::primitives::EcdsaSignatureAlgorithm as New;
-    match x.curve.ok_or_else(|| val_err("Legacy ECDSA missing curve"))? {
+    match x
+        .curve
+        .ok_or_else(|| val_err("Legacy ECDSA missing curve"))?
+    {
         Old::EcdsaP256 => Ok(New::EcdsaP256),
         Old::EcdsaP384 => Ok(New::EcdsaP384),
     }
@@ -236,7 +268,9 @@ pub(crate) fn from_legacy_ssig(
     match x {
         Old::Hmac(x) => Ok(New::Hmac(from_legacy_hmac(x))),
         Old::None(_x) => Ok(New::None),
-        _ => Err(val_err("Unknown legacy SymmetricSignatureAlgorithm variant")),
+        _ => Err(val_err(
+            "Unknown legacy SymmetricSignatureAlgorithm variant",
+        )),
     }
 }
 
@@ -244,10 +278,18 @@ pub(crate) fn from_legacy_inter_wrap(
     x: aws_mpl_legacy::dafny::types::IntermediateKeyWrapping,
 ) -> Result<aws_mpl_legacy::suites::IntermediateKeyWrapping, Error> {
     let mut r = aws_mpl_legacy::suites::IntermediateKeyWrapping::default();
-    r.key_encryption_key_kdf = from_legacy_da(x.key_encryption_key_kdf.ok_or_else(|| val_err("Legacy IntermediateKeyWrapping missing key_encryption_key_kdf"))?)?;
-    r.mac_key_kdf = from_legacy_da(x.mac_key_kdf.ok_or_else(|| val_err("Legacy IntermediateKeyWrapping missing mac_key_kdf"))?)?;
-    r.pdk_encrypt_algorithm =
-        aws_mpl_legacy::suites::Encrypt::AesGcm(from_legacy_encrypt(x.pdk_encrypt_algorithm.ok_or_else(|| val_err("Legacy IntermediateKeyWrapping missing pdk_encrypt_algorithm"))?)?);
+    r.key_encryption_key_kdf = from_legacy_da(x.key_encryption_key_kdf.ok_or_else(|| {
+        val_err("Legacy IntermediateKeyWrapping missing key_encryption_key_kdf")
+    })?)?;
+    r.mac_key_kdf = from_legacy_da(
+        x.mac_key_kdf
+            .ok_or_else(|| val_err("Legacy IntermediateKeyWrapping missing mac_key_kdf"))?,
+    )?;
+    r.pdk_encrypt_algorithm = aws_mpl_legacy::suites::Encrypt::AesGcm(from_legacy_encrypt(
+        x.pdk_encrypt_algorithm.ok_or_else(|| {
+            val_err("Legacy IntermediateKeyWrapping missing pdk_encrypt_algorithm")
+        })?,
+    )?);
     Ok(r)
 }
 
@@ -258,29 +300,58 @@ pub(crate) fn from_legacy_wrap(
     use aws_mpl_legacy::suites::EdkWrappingAlgorithm as New;
     match x {
         Old::DirectKeyWrapping(_x) => Ok(New::DirectKeyWrapping),
-        Old::IntermediateKeyWrapping(x) => Ok(New::IntermediateKeyWrapping(from_legacy_inter_wrap(x)?)),
+        Old::IntermediateKeyWrapping(x) => {
+            Ok(New::IntermediateKeyWrapping(from_legacy_inter_wrap(x)?))
+        }
         _ => Err(val_err("Unknown legacy EdkWrappingAlgorithm variant")),
     }
 }
 
-pub(crate) fn from_legacy_as(x: aws_mpl_legacy::dafny::types::AlgorithmSuiteInfo) -> Result<AlgorithmSuite, Error> {
+pub(crate) fn from_legacy_as(
+    x: aws_mpl_legacy::dafny::types::AlgorithmSuiteInfo,
+) -> Result<AlgorithmSuite, Error> {
     let mut s = AlgorithmSuite::default();
-    s.id = from_dafny_suite_id(&x.id.ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing id"))?)?;
-    s.binary_id = x.binary_id.ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing binary_id"))?
-        .as_ref()[0..2].try_into()
+    s.id = from_dafny_suite_id(
+        &x.id
+            .ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing id"))?,
+    )?;
+    s.binary_id = x
+        .binary_id
+        .ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing binary_id"))?
+        .as_ref()[0..2]
+        .try_into()
         .map_err(|_| val_err("Legacy AlgorithmSuiteInfo binary_id too short"))?;
-    let message_version = x.message_version
+    let message_version = x
+        .message_version
         .ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing message_version"))?;
     let Ok(message_version) = u32::try_from(message_version) else {
         return Err(val_err("negative value from MPL"));
     };
     s.message_version = message_version;
-    s.encrypt = aws_mpl_legacy::suites::Encrypt::AesGcm(from_legacy_encrypt(x.encrypt.ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing encrypt"))?)?);
-    s.kdf = from_legacy_da(x.kdf.ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing kdf"))?)?;
-    s.commitment = from_legacy_da(x.commitment.ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing commitment"))?)?;
-    s.signature = from_legacy_sig(x.signature.ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing signature"))?)?;
-    s.symmetric_signature = from_legacy_ssig(x.symmetric_signature.ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing symmetric_signature"))?)?;
-    s.edk_wrapping = from_legacy_wrap(x.edk_wrapping.ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing edk_wrapping"))?)?;
+    s.encrypt = aws_mpl_legacy::suites::Encrypt::AesGcm(from_legacy_encrypt(
+        x.encrypt
+            .ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing encrypt"))?,
+    )?);
+    s.kdf = from_legacy_da(
+        x.kdf
+            .ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing kdf"))?,
+    )?;
+    s.commitment = from_legacy_da(
+        x.commitment
+            .ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing commitment"))?,
+    )?;
+    s.signature = from_legacy_sig(
+        x.signature
+            .ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing signature"))?,
+    )?;
+    s.symmetric_signature = from_legacy_ssig(
+        x.symmetric_signature
+            .ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing symmetric_signature"))?,
+    )?;
+    s.edk_wrapping = from_legacy_wrap(
+        x.edk_wrapping
+            .ok_or_else(|| val_err("Legacy AlgorithmSuiteInfo missing edk_wrapping"))?,
+    )?;
     Ok(s)
 }
 
@@ -299,15 +370,31 @@ pub(crate) fn from_legacy_em(
         .iter()
         .map(|x| {
             Ok(aws_mpl_legacy::EncryptedDataKey::new(
-                x.key_provider_id().as_ref().ok_or_else(|| val_err("Legacy EDK missing key_provider_id"))?.clone(),
-                x.key_provider_info().as_ref().ok_or_else(|| val_err("Legacy EDK missing key_provider_info"))?.clone(),
-                x.ciphertext().as_ref().ok_or_else(|| val_err("Legacy EDK missing ciphertext"))?.clone(),
+                x.key_provider_id()
+                    .as_ref()
+                    .ok_or_else(|| val_err("Legacy EDK missing key_provider_id"))?
+                    .clone(),
+                x.key_provider_info()
+                    .as_ref()
+                    .ok_or_else(|| val_err("Legacy EDK missing key_provider_info"))?
+                    .clone(),
+                x.ciphertext()
+                    .as_ref()
+                    .ok_or_else(|| val_err("Legacy EDK missing ciphertext"))?
+                    .clone(),
             ))
         })
         .collect::<Result<Vec<_>, Error>>()?;
-    ret.algorithm_suite = from_legacy_as(x.algorithm_suite.ok_or_else(|| val_err("Legacy EncryptionMaterials missing algorithm_suite"))?)?;
-    ret.encryption_context = x.encryption_context.ok_or_else(|| val_err("Legacy EncryptionMaterials missing encryption_context"))?;
-    ret.required_encryption_context_keys = x.required_encryption_context_keys.ok_or_else(|| val_err("Legacy EncryptionMaterials missing required_encryption_context_keys"))?;
+    ret.algorithm_suite = from_legacy_as(
+        x.algorithm_suite
+            .ok_or_else(|| val_err("Legacy EncryptionMaterials missing algorithm_suite"))?,
+    )?;
+    ret.encryption_context = x
+        .encryption_context
+        .ok_or_else(|| val_err("Legacy EncryptionMaterials missing encryption_context"))?;
+    ret.required_encryption_context_keys = x.required_encryption_context_keys.ok_or_else(|| {
+        val_err("Legacy EncryptionMaterials missing required_encryption_context_keys")
+    })?;
     ret.plaintext_data_key = x.plaintext_data_key.map(|y| Secret(y.into_inner()));
     ret.signing_key = x.signing_key.map(|y| Secret(y.into_inner()));
     Ok(ret)
@@ -317,9 +404,16 @@ pub(crate) fn from_legacy_dm(
     x: aws_mpl_legacy::dafny::types::DecryptionMaterials,
 ) -> Result<DecryptionMaterials, Error> {
     let mut ret = DecryptionMaterials::default();
-    ret.algorithm_suite = from_legacy_as(x.algorithm_suite.ok_or_else(|| val_err("Legacy DecryptionMaterials missing algorithm_suite"))?)?;
-    ret.encryption_context = x.encryption_context.ok_or_else(|| val_err("Legacy DecryptionMaterials missing encryption_context"))?;
-    ret.required_encryption_context_keys = x.required_encryption_context_keys.ok_or_else(|| val_err("Legacy DecryptionMaterials missing required_encryption_context_keys"))?;
+    ret.algorithm_suite = from_legacy_as(
+        x.algorithm_suite
+            .ok_or_else(|| val_err("Legacy DecryptionMaterials missing algorithm_suite"))?,
+    )?;
+    ret.encryption_context = x
+        .encryption_context
+        .ok_or_else(|| val_err("Legacy DecryptionMaterials missing encryption_context"))?;
+    ret.required_encryption_context_keys = x.required_encryption_context_keys.ok_or_else(|| {
+        val_err("Legacy DecryptionMaterials missing required_encryption_context_keys")
+    })?;
 
     ret.plaintext_data_key = x.plaintext_data_key.map(|y| Secret(y.into_inner()));
     ret.verification_key = x.verification_key.map(|y| Secret(y.into_inner()));

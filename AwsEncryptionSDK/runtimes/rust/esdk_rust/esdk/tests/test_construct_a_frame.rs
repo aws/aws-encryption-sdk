@@ -7,7 +7,6 @@ mod fixtures;
 mod test_helpers;
 
 use aws_esdk::*;
-use fixtures::*;
 use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
@@ -73,11 +72,11 @@ async fn test_construct_frame_body_aad_content() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_construct_frame_sequence_number_in_aad() {
+    // Multi-frame: each frame's AAD must have the correct sequence number
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be the sequence
     //# number of the frame being encrypted.
-    // Multi-frame: each frame's AAD must have the correct sequence number
     let pt = vec![0xABu8; 100];
     let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "multi-frame round-trip proves per-frame sequence numbers in AAD are correct");
@@ -118,11 +117,11 @@ async fn test_construct_frame_sequence_number_starts_at_one() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_construct_frame_sequence_number_increments() {
+    // Create a multi-frame message: 30 bytes with frame_length=10 → 3 regular frames + 1 final (empty or 10-byte)
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# Otherwise, the sequence number value MUST be 1 greater than the value of the sequence number
     //# of the previous frame.
-    // Create a multi-frame message: 30 bytes with frame_length=10 → 3 regular frames + 1 final (empty or 10-byte)
     let pt = vec![0xAAu8; 30];
     let ct = encrypt_with_frame_length(&pt, 10).await;
     // Regular frames start with sequence number (4 bytes).
@@ -149,10 +148,10 @@ async fn test_construct_frame_regular_frame_plaintext_equals_frame_length() {
     //= type=test
     //# - For a regular frame the length of this plaintext MUST equal the frame length.
 
+    // 20 bytes with frame_length=10 → 1 regular frame (10 bytes) + 1 final frame (10 bytes)
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - For a regular frame the length of this plaintext subsequence MUST equal the frame length.
-    // 20 bytes with frame_length=10 → 1 regular frame (10 bytes) + 1 final frame (10 bytes)
     let pt = vec![0xBBu8; 20];
     let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "regular frame must encrypt exactly frame_length bytes");
@@ -166,11 +165,11 @@ async fn test_construct_frame_final_frame_remaining_plaintext() {
     //# which have not yet been encrypted,
     //# whose length MUST be equal to or less than the frame length.
 
+    // 15 bytes with frame_length=10 → 1 regular (10) + 1 final (5, which is < frame_length)
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - For a final frame this MUST be the remaining plaintext bytes which have not yet been encrypted,
     //# whose length MUST be equal to or less than the frame length.
-    // 15 bytes with frame_length=10 → 1 regular (10) + 1 final (5, which is < frame_length)
     let pt = vec![0xCCu8; 15];
     let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "final frame must encrypt remaining bytes (less than frame length)");
@@ -178,10 +177,10 @@ async fn test_construct_frame_final_frame_remaining_plaintext() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_construct_frame_regular_frame_plaintext_subsequence() {
+    // Verify that multi-frame encryption preserves the full plaintext in order
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The plaintext MUST be the next subsequence of consumable plaintext bytes that have not yet been encrypted.
-    // Verify that multi-frame encryption preserves the full plaintext in order
     let pt: Vec<u8> = (0..=255).collect();
     let result = round_trip_framed(&pt, 50).await;
     assert_eq!(result, pt, "each frame must encrypt the next unconsumed subsequence");
@@ -205,10 +204,10 @@ async fn test_construct_frame_serialization_regular_and_final() {
     //= type=test
     //# For a regular frame, each field MUST be serialized according to its specification:
 
+    // Multi-frame message: proves both regular and final frame serialization
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# For a final frame, each field MUST be serialized according to its specification:
-    // Multi-frame message: proves both regular and final frame serialization
     let pt = vec![0xDDu8; 25];
     let result = round_trip_framed(&pt, 10).await;
     assert_eq!(result, pt, "successful decrypt proves both regular and final frames are correctly serialized");
@@ -271,10 +270,10 @@ async fn test_construct_frame_final_frame_content_length_serialized() {
     //= type=test
     //# - The Encrypt operation MUST serialize the [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length).
 
+    // 7 bytes with frame_length=10 → single final frame with content length 7
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The Encrypt operation MUST serialize the [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length).
-    // 7 bytes with frame_length=10 → single final frame with content length 7
     let pt = b"1234567";
     let ct = encrypt_with_frame_length(pt, 10).await;
     // The final frame has: ENDFRAME(4) + SeqNum(4) + IV(12) + ContentLength(4) + EncContent + AuthTag
@@ -327,12 +326,12 @@ async fn test_construct_frame_auth_tag_serialized() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_construct_frame_bytes_not_released_until_complete() {
-    //= specification/client-apis/encrypt.md#construct-a-frame
-    //= type=test
-    //# The serialized frame bytes MUST NOT be released until the entire frame has been serialized.
     // If bytes were released prematurely (partial frame), decryption would fail
     // because the auth tag wouldn't be present. A successful round-trip proves
     // the entire frame was serialized before release.
+    //= specification/client-apis/encrypt.md#construct-a-frame
+    //= type=test
+    //# The serialized frame bytes MUST NOT be released until the entire frame has been serialized.
     let pt = vec![0xFFu8; 100];
     let result = round_trip_framed(&pt, 20).await;
     assert_eq!(result, pt, "successful multi-frame decrypt proves frames are fully serialized before release");
@@ -340,12 +339,12 @@ async fn test_construct_frame_bytes_not_released_until_complete() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_construct_frame_empty_plaintext() {
+    // Empty plaintext produces a single final frame with 0-length encrypted content.
+    // The encrypt side correctly produces this; verify it doesn't error.
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - For a final frame this MUST be the remaining plaintext bytes which have not yet been encrypted,
     //# whose length MUST be equal to or less than the frame length.
-    // Empty plaintext produces a single final frame with 0-length encrypted content.
-    // The encrypt side correctly produces this; verify it doesn't error.
     let pt = b"";
     let ct = encrypt_with_frame_length(pt, 4096).await;
     // Verify the ciphertext contains an ENDFRAME marker (final frame was produced)
@@ -355,10 +354,10 @@ async fn test_construct_frame_empty_plaintext() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_construct_frame_single_final_frame() {
+    // Plaintext smaller than frame length → single final frame only
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# For a final frame, the serialization MUST follow the [Final Frame](../data-format/message-body.md#final-frame) specification.
-    // Plaintext smaller than frame length → single final frame only
     let pt = b"short";
     let result = round_trip_framed(pt, 4096).await;
     assert_eq!(result, pt.to_vec(), "single final frame must correctly encrypt short plaintext");
@@ -366,12 +365,12 @@ async fn test_construct_frame_single_final_frame() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_construct_frame_final_frame_content_length_less_than_frame_length() {
+    // 13 bytes with frame_length=10 → 1 regular (10) + 1 final (3)
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - For a final frame this MUST be the length of the remaining plaintext bytes
     //# which have not yet been encrypted,
     //# whose length MUST be equal to or less than the frame length.
-    // 13 bytes with frame_length=10 → 1 regular (10) + 1 final (3)
     let pt = vec![0x42u8; 13];
     let ct = encrypt_with_frame_length(&pt, 10).await;
     // Find the final frame's content length field (should be 3)

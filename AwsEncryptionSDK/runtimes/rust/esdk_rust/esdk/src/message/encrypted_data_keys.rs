@@ -31,7 +31,7 @@ pub(crate) fn write_edks(w: &mut dyn SafeWrite, edks: &[EncryptedDataKey]) -> Re
         w,
         //= specification/data-format/message-header.md#encrypted-data-key-count
         //# The encrypted data key count MUST be interpreted as a UInt16.
-        edk_count
+        edk_count,
     )?;
 
     // Encrypted Data Key Entries
@@ -166,7 +166,6 @@ pub(crate) fn read_edks(
     }
     Ok(edks)
 }
-
 
 pub(crate) fn read_edk(
     r: &mut dyn SafeRead,

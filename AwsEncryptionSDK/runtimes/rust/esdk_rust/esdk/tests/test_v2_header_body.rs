@@ -53,15 +53,12 @@ async fn test_v2_header_body_serialization_order() {
             "field {} should be '{}' but was '{}'",
             i, expected_order[i], name
         );
-        assert!(
-            start < end,
-            "field '{}' has zero or negative length",
-            name
-        );
+        assert!(start < end, "field '{}' has zero or negative length", name);
         if i > 0 {
             let (_, _, prev_end) = fields[i - 1];
             assert_eq!(
-                *start, prev_end,
+                *start,
+                prev_end,
                 "field '{}' does not immediately follow '{}' (gap at byte {})",
                 name,
                 fields[i - 1].0,
@@ -101,16 +98,24 @@ async fn test_v2_header_algorithm_suite_id() {
     //# The length of the serialized algorithm suite ID field MUST be 2 bytes.
     let ct = encrypt_default(b"suite test").await.ciphertext;
     let suite_id_bytes = &ct[1..3];
-    assert_eq!(suite_id_bytes.len(), 2, "Algorithm Suite ID must be 2 bytes");
+    assert_eq!(
+        suite_id_bytes.len(),
+        2,
+        "Algorithm Suite ID must be 2 bytes"
+    );
 
     // Default V2 suite AlgAes256GcmHkdfSha512CommitKeyEcdsaP384 = 0x0578
+
     //= specification/data-format/message-header.md#algorithm-suite-id
     //= type=test
     //= reason=verifies the suite ID value 0x0578 matches the default V2 committing+signing suite
     //# The value (hex) of this field MUST be a value that exists in the
     //# [Supported Algorithm Suites](../framework/algorithm-suites.md#supported-algorithm-suites) table.
     let suite_id = u16::from_be_bytes([ct[1], ct[2]]);
-    assert_eq!(suite_id, 0x0578, "Algorithm Suite ID must match the suite used");
+    assert_eq!(
+        suite_id, 0x0578,
+        "Algorithm Suite ID must match the suite used"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -148,7 +153,10 @@ async fn test_v2_header_aad() {
     let ec = std::collections::HashMap::from([("key1".to_string(), "val1".to_string())]);
     let pt = b"aad test";
     let result = round_trip_v2(pt, ec).await;
-    assert_eq!(result, pt, "round-trip with EC proves AAD serialized correctly");
+    assert_eq!(
+        result, pt,
+        "round-trip with EC proves AAD serialized correctly"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -160,7 +168,10 @@ async fn test_v2_header_encrypted_data_keys() {
     //# [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials).
     let pt = b"edk test";
     let result = round_trip_v2(pt, EncryptionContext::new()).await;
-    assert_eq!(result, pt, "round-trip proves EDKs serialized correctly (decrypt uses them)");
+    assert_eq!(
+        result, pt,
+        "round-trip proves EDKs serialized correctly (decrypt uses them)"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -171,7 +182,10 @@ async fn test_v2_header_content_type() {
     //# The value MUST be [02](../data-format/message-header.md#supported-content-types).
     let pt = b"content type test";
     let result = round_trip_v2(pt, EncryptionContext::new()).await;
-    assert_eq!(result, pt, "round-trip proves content type is correct (framed = 0x02)");
+    assert_eq!(
+        result, pt,
+        "round-trip proves content type is correct (framed = 0x02)"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -182,15 +196,22 @@ async fn test_v2_header_frame_length() {
     //# The frame length MUST be interpreted as a UInt32.
     let ct = encrypt_default(b"frame length test").await.ciphertext;
     let fields = parse_v2_header_field_offsets(&ct);
-    let (name, start, end) = fields.iter().find(|(n, _, _)| *n == "Frame Length").unwrap();
+    let (name, start, end) = fields
+        .iter()
+        .find(|(n, _, _)| *n == "Frame Length")
+        .unwrap();
     assert_eq!(*name, "Frame Length");
+
     //= specification/data-format/message-header.md#frame-length
     //= type=test
     //= reason=verifies the serialized frame length field is exactly 4 bytes
     //# The length of the serialized frame length field MUST be 4 bytes.
     assert_eq!(end - start, 4, "Frame Length field must be 4 bytes");
     let frame_len = u32::from_be_bytes([ct[*start], ct[start + 1], ct[start + 2], ct[start + 3]]);
-    assert!(frame_len > 0, "Frame length must be positive for framed content");
+    assert!(
+        frame_len > 0,
+        "Frame length must be positive for framed content"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -202,5 +223,8 @@ async fn test_v2_header_algorithm_suite_data() {
     //# derived according to the [algorithm suites commit key derivation settings](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
     let pt = b"suite data test";
     let result = round_trip_v2(pt, EncryptionContext::new()).await;
-    assert_eq!(result, pt, "round-trip proves algorithm suite data (commit key) is correct");
+    assert_eq!(
+        result, pt,
+        "round-trip proves algorithm suite data (commit key) is correct"
+    );
 }

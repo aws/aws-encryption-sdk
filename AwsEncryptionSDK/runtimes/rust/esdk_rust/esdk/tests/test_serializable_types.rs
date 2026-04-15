@@ -4,11 +4,8 @@
 //! Tests for specification/data-format/message-header.md
 //! Covers: #key-provider-id-length, #key-provider-information-length, #encrypted-data-key-length
 
-mod fixtures;
 mod test_helpers;
 
-use aws_esdk::*;
-use fixtures::*;
 use test_helpers::*;
 
 /// Find the offset of the first EDK entry in a V1 ciphertext with empty encryption context.
@@ -42,8 +39,7 @@ async fn test_edk_key_provider_id_length_is_2_bytes() {
 
     // The Key Provider ID Length field is at FIRST_EDK_OFFSET and is exactly 2 bytes.
     // Read those 2 bytes as a big-endian u16.
-    let key_provider_id_len =
-        u16::from_be_bytes([ct[FIRST_EDK_OFFSET], ct[FIRST_EDK_OFFSET + 1]]);
+    let key_provider_id_len = u16::from_be_bytes([ct[FIRST_EDK_OFFSET], ct[FIRST_EDK_OFFSET + 1]]);
 
     // The key provider ID is the namespace "child0 Namespace" (16 bytes).
     let expected_ns = "child0 Namespace";
@@ -75,7 +71,11 @@ async fn test_edk_key_provider_id_length_serialized_as_uint16() {
     let key_provider_id_len = u16::from_be_bytes([len_bytes[0], len_bytes[1]]);
 
     // "child0 Namespace" is 16 bytes = 0x0010 in big-endian UInt16
-    assert_eq!(len_bytes, &[0x00, 0x10], "Key Provider ID Length must be big-endian UInt16");
+    assert_eq!(
+        len_bytes,
+        &[0x00, 0x10],
+        "Key Provider ID Length must be big-endian UInt16"
+    );
     assert_eq!(
         key_provider_id_len, 16,
         "Key Provider ID Length must decode to 16 (length of 'child0 Namespace')"

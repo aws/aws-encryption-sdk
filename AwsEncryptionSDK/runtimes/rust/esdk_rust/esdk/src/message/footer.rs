@@ -22,10 +22,7 @@ use crate::types::{SafeRead, SafeWrite};
 //= specification/client-apis/encrypt.md#construct-the-signature
 //= type=implication
 //# The order for message footer serialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
-pub(crate) fn write_footer(
-    w: &mut dyn SafeWrite,
-    signature: &[u8],
-) -> Result<(), Error> {
+pub(crate) fn write_footer(w: &mut dyn SafeWrite, signature: &[u8]) -> Result<(), Error> {
     //= specification/data-format/message-footer.md#structure
     //# The message footer MUST consist of, in order,
     //# Signature Length,
@@ -72,10 +69,7 @@ pub(crate) fn write_footer(
 //= specification/client-apis/decrypt.md#verify-the-signature
 //= type=implication
 //# The order for message footer deserialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
-pub(crate) fn read_footer(
-    r: &mut dyn SafeRead,
-    raw: &mut dyn SafeWrite,
-) -> Result<Vec<u8>, Error> {
+pub(crate) fn read_footer(r: &mut dyn SafeRead, raw: &mut dyn SafeWrite) -> Result<Vec<u8>, Error> {
     //= specification/data-format/message-footer.md#structure
     //= reason=read_u16 reads Signature Length, then read_vec reads Signature, matching the required order
     //# The message footer MUST consist of, in order,

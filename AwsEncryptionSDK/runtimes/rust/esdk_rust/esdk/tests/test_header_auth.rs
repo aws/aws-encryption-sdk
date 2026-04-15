@@ -4,11 +4,9 @@
 //! Tests for specification/data-format/message-header.md
 //! header-authentication-version-1-0 and header-authentication-version-2-0
 
-mod fixtures;
 mod test_helpers;
 
 use aws_esdk::*;
-use fixtures::*;
 use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
@@ -20,7 +18,10 @@ async fn test_v1_header_auth_serialization_order() {
     //# and Authentication Tag.
     let pt = b"v1 header auth serialization test";
     let result = round_trip_v1(pt, EncryptionContext::new()).await;
-    assert_eq!(result, pt, "successful V1 round-trip proves header auth was serialized as IV then Authentication Tag");
+    assert_eq!(
+        result, pt,
+        "successful V1 round-trip proves header auth was serialized as IV then Authentication Tag"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -30,7 +31,10 @@ async fn test_v2_header_auth_serialization() {
     //# The V2 Header Authentication MUST consist of the Authentication Tag only.
     let pt = b"v2 header auth serialization test";
     let result = round_trip_v2(pt, EncryptionContext::new()).await;
-    assert_eq!(result, pt, "successful V2 round-trip proves header auth was serialized as Authentication Tag only");
+    assert_eq!(
+        result, pt,
+        "successful V2 round-trip proves header auth was serialized as Authentication Tag only"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -53,7 +57,10 @@ async fn test_v1_encrypt_header_auth_tag_serialization() {
     //# - The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
     //# The value MUST be the authentication tag calculated above.
     let result = round_trip_v1(pt, EncryptionContext::new()).await;
-    assert_eq!(result, pt, "successful V1 round-trip proves header auth was serialized with correct IV and Authentication Tag");
+    assert_eq!(
+        result, pt,
+        "successful V1 round-trip proves header auth was serialized with correct IV and Authentication Tag"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -70,7 +77,10 @@ async fn test_v2_encrypt_header_auth_tag_serialization() {
     //# The value MUST be the authentication tag calculated above.
     let pt = b"v2 encrypt header auth tag test";
     let result = round_trip_v2(pt, EncryptionContext::new()).await;
-    assert_eq!(result, pt, "successful V2 round-trip proves header auth was serialized with correct Authentication Tag");
+    assert_eq!(
+        result, pt,
+        "successful V2 round-trip proves header auth was serialized with correct Authentication Tag"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -84,7 +94,10 @@ async fn test_v1_header_auth_iv_length_and_bytes() {
     //= type=test
     //# The IV MUST be interpreted as bytes.
     let result = round_trip_v1(pt, EncryptionContext::new()).await;
-    assert_eq!(result, pt, "successful V1 round-trip proves IV was serialized with correct length and interpreted as bytes");
+    assert_eq!(
+        result, pt,
+        "successful V1 round-trip proves IV was serialized with correct length and interpreted as bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -98,7 +111,10 @@ async fn test_v1_header_auth_tag_length_and_bytes() {
     //= type=test
     //# The authentication tag MUST be interpreted as bytes.
     let result = round_trip_v1(pt, EncryptionContext::new()).await;
-    assert_eq!(result, pt, "successful V1 round-trip proves authentication tag was serialized with correct length and interpreted as bytes");
+    assert_eq!(
+        result, pt,
+        "successful V1 round-trip proves authentication tag was serialized with correct length and interpreted as bytes"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -112,5 +128,8 @@ async fn test_v2_header_auth_tag_length_and_bytes() {
     //= type=test
     //# The authentication tag MUST be interpreted as bytes.
     let result = round_trip_v2(pt, EncryptionContext::new()).await;
-    assert_eq!(result, pt, "successful V2 round-trip proves authentication tag was serialized with correct length and interpreted as bytes");
+    assert_eq!(
+        result, pt,
+        "successful V2 round-trip proves authentication tag was serialized with correct length and interpreted as bytes"
+    );
 }

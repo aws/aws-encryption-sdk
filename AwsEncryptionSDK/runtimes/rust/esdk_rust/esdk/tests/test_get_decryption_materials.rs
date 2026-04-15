@@ -117,7 +117,10 @@ async fn test_decrypt_fails_with_wrong_keyring() {
         .unwrap();
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), wrong_keyring);
     let result = decrypt(&dec_input).await;
-    assert!(result.is_err(), "decrypt must fail when CMM cannot obtain decryption materials");
+    assert!(
+        result.is_err(),
+        "decrypt must fail when CMM cannot obtain decryption materials"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -138,11 +141,13 @@ async fn test_pre_cmm_commitment_policy_check() {
     )
     .await;
     // Decrypt with RequireEncryptRequireDecrypt — pre-CMM check must reject non-committing suite
-    let mut dec_input =
-        DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     dec_input.commitment_policy = EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
     let result = decrypt(&dec_input).await;
-    assert!(result.is_err(), "decrypt must fail when parsed algorithm suite is not supported by commitment policy");
+    assert!(
+        result.is_err(),
+        "decrypt must fail when parsed algorithm suite is not supported by commitment policy"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -173,7 +178,8 @@ async fn test_default_cmm_constructed_from_keyring() {
     //# from the input [keyring](../framework/keyring-interface.md).
     let keyring = aes_keyring(0).await;
     let pt = b"test default cmm from keyring";
-    let enc_input = EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring.clone());
+    let enc_input =
+        EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring.clone());
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
     // Decrypt with keyring (not CMM) — decrypt must construct default CMM internally
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
@@ -197,11 +203,13 @@ async fn test_data_key_derived_from_plaintext_data_key() {
         &keyring,
     )
     .await;
-    let mut dec_input =
-        DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
     let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt, "successful round-trip proves data key was correctly derived from plaintext data key");
+    assert_eq!(
+        result.plaintext, pt,
+        "successful round-trip proves data key was correctly derived from plaintext data key"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -219,11 +227,13 @@ async fn test_algorithm_suite_from_decryption_materials() {
         &keyring,
     )
     .await;
-    let mut dec_input =
-        DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
     let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt, "successful round-trip proves algorithm suite from materials was used for decryption");
+    assert_eq!(
+        result.plaintext, pt,
+        "successful round-trip proves algorithm suite from materials was used for decryption"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -247,10 +257,12 @@ async fn test_commit_key_derived_and_validated() {
         &keyring,
     )
     .await;
-    let dec_input =
-        DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt, "successful round-trip with committing suite proves commit key was derived and matched header");
+    assert_eq!(
+        result.plaintext, pt,
+        "successful round-trip with committing suite proves commit key was derived and matched header"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -271,11 +283,13 @@ async fn test_kdf_algorithm_from_materials_suite() {
         &keyring,
     )
     .await;
-    let mut dec_input =
-        DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
     let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt, "successful round-trip proves KDF algorithm from materials suite was used");
+    assert_eq!(
+        result.plaintext, pt,
+        "successful round-trip proves KDF algorithm from materials suite was used"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -289,7 +303,8 @@ async fn test_unsupported_esdk_algorithm_suite_yields_error() {
     let pt = b"unsupported esdk suite test";
 
     // Encrypt with a valid ESDK suite
-    let enc_input = EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring.clone());
+    let enc_input =
+        EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring.clone());
     let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
     // Tamper with the algorithm suite ID bytes in the header to an invalid value.

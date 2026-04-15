@@ -47,7 +47,7 @@ async fn test_encryption_context_on_decrypt() {
     .await
     .unwrap();
 
-    assert!(decrypt_output.plaintext == asdf)
+    assert_eq!(decrypt_output.plaintext, asdf);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -132,16 +132,16 @@ async fn test_mismatched_encryption_context_on_decrypt() {
     );
     let decrypt_output = decrypt(&decrypt_input).await;
 
-    // We expect to fail because although the same key is present on the ec
-    // their value is different.
+    // We expect to fail because although the same key is present on the ec,
+    // the value is different.
     assert!(decrypt_output.is_err());
 
     decrypt_input.encryption_context = encryption_context;
-    // test that if we supply the right ec we will succeed
+    // Test that if we supply the right ec we will succeed.
     let _ = decrypt(&decrypt_input).await.unwrap();
 
-    // Since we store all encryption context we MUST succeed if no encryption context is
-    // supplied on decrypt
+    // Since we store all encryption context, we MUST succeed if no encryption context is
+    // supplied on decrypt.
     decrypt_input.encryption_context = EncryptionContext::new();
     let _ = decrypt(&decrypt_input).await.unwrap();
 }

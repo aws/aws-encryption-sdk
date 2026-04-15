@@ -119,7 +119,8 @@ pub(crate) async fn do_run_decrypt_test(
         ciphertext: &ciphertext,
         source: Some(ms),
         encryption_context: test.reproduced_encryption_context.clone(),
-        commitment_policy: aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
+        commitment_policy:
+            aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
         ..Default::default()
     };
     let decrypt_output = decrypt(&decrypt_input).await?;
@@ -407,7 +408,9 @@ pub(crate) async fn get_kms_ecdh_keyring_discovery_legacy(
         .create_aws_kms_ecdh_keyring()
         .curve_spec(get_curve_legacy(&key.key_id)?)
         .key_agreement_scheme(
-            aws_mpl_legacy::dafny::types::KmsEcdhStaticConfigurations::KmsPublicKeyDiscovery(schema),
+            aws_mpl_legacy::dafny::types::KmsEcdhStaticConfigurations::KmsPublicKeyDiscovery(
+                schema,
+            ),
         )
         .kms_client(kms_client.clone())
         .send()
@@ -726,7 +729,6 @@ pub(crate) enum SourceStatus {
     NoKmsFeature,
     NoDdbFeature,
 }
-
 
 fn legacy_not_implemented(x: &str) -> bool {
     x == "aws-kms-hierarchy" || x == "unknown"

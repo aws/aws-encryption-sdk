@@ -99,8 +99,7 @@ async fn test_streamed_release_parsed_header_after_verification() {
 
     let mut ec = EncryptionContext::new();
     ec.insert("release-key".to_string(), "release-value".to_string());
-    let enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, ec, keyring.clone());
+    let enc_input = EncryptInput::with_legacy_keyring(plaintext, ec, keyring.clone());
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
     let mut cursor = std::io::Cursor::new(ct.as_slice());
@@ -113,7 +112,10 @@ async fn test_streamed_release_parsed_header_after_verification() {
         .unwrap();
     assert_eq!(output, plaintext);
     assert_eq!(
-        result.encryption_context.get("release-key").map(String::as_str),
+        result
+            .encryption_context
+            .get("release-key")
+            .map(String::as_str),
         Some("release-value"),
         "encryption context must be released after header verification"
     );
@@ -154,7 +156,10 @@ async fn test_sequence_number_end_value_is_0xffffffff() {
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt, "decrypt proves 0xFFFFFFFF value was validated");
+    assert_eq!(
+        result.plaintext, pt,
+        "decrypt proves 0xFFFFFFFF value was validated"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -184,7 +189,7 @@ async fn test_streamed_header_fed_to_signature_algorithm() {
     //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //= reason=Successful signing-suite round-trip proves the serialized header was fed to the signature algorithm during deserialization
-    //# The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
+    //# - The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
     //# such that the serialized header isn't required to remain in memory to [verify the signature](#verify-the-signature).
     let keyring = test_keyring().await;
     let plaintext = b"header to sig alg test";
@@ -264,8 +269,7 @@ async fn test_footer_wait_truncated_message_fails() {
     let footer_offset = find_footer_offset_only(&ct);
     let truncated = &ct[..footer_offset + 2]; // Keep sig_len but truncate signature bytes
 
-    let dec_input =
-        DecryptInput::with_legacy_keyring(truncated, EncryptionContext::new(), keyring);
+    let dec_input = DecryptInput::with_legacy_keyring(truncated, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
     assert!(
         result.is_err(),

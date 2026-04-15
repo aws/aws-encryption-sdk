@@ -4,11 +4,11 @@
 
 use crate::Error;
 use crate::val_err;
-use aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef as LegacyCMM;
-use aws_mpl_legacy::dafny::types::keyring::KeyringRef as LegacyKeyring;
 use aws_mpl_legacy::CryptographicMaterialsManagerRef;
 use aws_mpl_legacy::KeyringRef;
 use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
+use aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef as LegacyCMM;
+use aws_mpl_legacy::dafny::types::keyring::KeyringRef as LegacyKeyring;
 use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use std::num::NonZeroUsize;
 

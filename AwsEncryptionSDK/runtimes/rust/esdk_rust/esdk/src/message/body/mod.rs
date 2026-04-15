@@ -10,9 +10,9 @@ pub(crate) use body_aad::*;
 pub(crate) use body_decrypt::*;
 pub(crate) use body_encrypt::*;
 
+use crate::error::{Error, val_err};
 use aws_mpl_legacy::primitives::AesGcm;
 use aws_mpl_legacy::suites::AlgorithmSuite;
-use crate::error::{Error, val_err};
 
 pub(crate) fn get_encrypt(info: &AlgorithmSuite) -> Result<AesGcm, Error> {
     match &info.encrypt {

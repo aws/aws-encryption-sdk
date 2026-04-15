@@ -12,9 +12,17 @@ use crate::key_derivation;
 use crate::materials;
 use crate::message::header_types::ContentType;
 use crate::message::serializable_types::{from_canonical_pairs, to_canonical_pairs};
-use crate::message::{header, DigestWriter, serialize_functions, header_types, header_auth, v2_header_body, encryption_context, body, NoopWriter, footer};
-use crate::types::{SafeRead, SafeWrite, DecryptStreamInput, DecryptStreamOutput, DecryptInput, DecryptOutput, EncryptionContext, MaterialSource, NetV400RetryPolicy};
-use aws_mpl_legacy::primitives::{aes_decrypt, EcdsaSignatureAlgorithm, DigestContext, ecdsa_verify_context};
+use crate::message::{
+    DigestWriter, NoopWriter, body, encryption_context, footer, header, header_auth, header_types,
+    serialize_functions, v2_header_body,
+};
+use crate::types::{
+    DecryptInput, DecryptOutput, DecryptStreamInput, DecryptStreamOutput, EncryptionContext,
+    MaterialSource, NetV400RetryPolicy, SafeRead, SafeWrite,
+};
+use aws_mpl_legacy::primitives::{
+    DigestContext, EcdsaSignatureAlgorithm, aes_decrypt, ecdsa_verify_context,
+};
 //= specification/client-apis/client.md#commitment-policy
 //= type=implication
 //# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
@@ -223,7 +231,8 @@ async fn internal_decrypt(
     //# - If all bytes have been provided and this operation
     //# is unable to complete the above steps with the consumable encrypted message bytes,
     //# this operation MUST halt and indicate a failure to the caller.
-    let (header_body, raw_header, sig_digest) = step_parse_header(ciphertext, max_encrypted_data_keys)?;
+    let (header_body, raw_header, sig_digest) =
+        step_parse_header(ciphertext, max_encrypted_data_keys)?;
 
     //= specification/client-apis/decrypt.md#behavior
     //# - Decrypt operation Step 2 MUST be [Get the decryption materials](#get-the-decryption-materials)
@@ -255,8 +264,7 @@ async fn internal_decrypt(
 
     //= specification/client-apis/decrypt.md#behavior
     //# - Decrypt operation Step 4 MUST be [Decrypt the message body](#decrypt-the-message-body)
-    let last_frame =
-        step_decrypt_body(ciphertext, plaintext, &mut state, &safety_needed)?;
+    let last_frame = step_decrypt_body(ciphertext, plaintext, &mut state, &safety_needed)?;
 
     //= specification/client-apis/decrypt.md#behavior
     //# - Decrypt operation Step 5 MUST be [Verify the signature](#verify-the-signature)
@@ -357,9 +365,9 @@ async fn step_get_decryption_materials(
     let suite = &dec_mat.algorithm_suite;
 
     if suite != header_body.algorithm_suite() {
-        return Err(
-            val_err("Stored header algorithm suite does not match decryption algorithm suite"),
-        );
+        return Err(val_err(
+            "Stored header algorithm suite does not match decryption algorithm suite",
+        ));
     }
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= reason=read_header_auth_tag dispatches to V1 or V2 based on suite.message_version
@@ -383,7 +391,9 @@ async fn step_get_decryption_materials(
     //# included in the [decryption materials](../framework/structures.md#decryption-materials).
     let derived_data_keys = key_derivation::derive_keys(
         header_body.message_id(),
-        dec_mat.plaintext_data_key.as_ref()
+        dec_mat
+            .plaintext_data_key
+            .as_ref()
             .ok_or_else(|| val_err("Decryption materials must contain a plaintext data key"))?
             .as_bytes(),
         suite,
@@ -403,8 +413,9 @@ async fn step_get_decryption_materials(
         header::validate_suite_data(
             suite,
             header_body,
-            derived_data_keys.commitment_key.as_ref()
-                .ok_or_else(|| val_err("Derived key material must contain a commitment key for HKDF commitment"))?,
+            derived_data_keys.commitment_key.as_ref().ok_or_else(|| {
+                val_err("Derived key material must contain a commitment key for HKDF commitment")
+            })?,
         )?;
     }
 
@@ -477,7 +488,11 @@ fn step_verify_header(
         //= specification/client-apis/decrypt.md#verify-the-header
         //# - The AAD MUST be the concatenation of the serialized [message header body](../data-format/message-header.md#header-body)
         //# and the serialization of encryption context to only authenticate.
-        &[&state.header.raw_header[..], &serialized_req_encryption_context[..]].concat(),
+        &[
+            &state.header.raw_header[..],
+            &serialized_req_encryption_context[..],
+        ]
+        .concat(),
         &mut [],
     );
 
@@ -486,7 +501,10 @@ fn step_verify_header(
     if maybe_header_auth.is_err() && net_v4_retry_policy == NetV400RetryPolicy::AllowRetry {
         let derived_data_keys = key_derivation::derive_keys(
             state.header.body.message_id(),
-            state.dec_mat.plaintext_data_key.as_ref()
+            state
+                .dec_mat
+                .plaintext_data_key
+                .as_ref()
                 .ok_or_else(|| val_err("Decryption materials must contain a plaintext data key"))?
                 .as_bytes(),
             &state.header.suite,
@@ -504,7 +522,11 @@ fn step_verify_header(
             &[],
             state.header.header_auth.header_auth_tag(),
             state.header.header_auth.header_iv(),
-            &[&state.header.raw_header[..], &serialized_req_encryption_context_v4[..]].concat(),
+            &[
+                &state.header.raw_header[..],
+                &serialized_req_encryption_context_v4[..],
+            ]
+            .concat(),
             &mut [],
         );
     }
@@ -551,7 +573,10 @@ fn step_decrypt_body(
             //# Encrypted Content,
             //# and Authentication Tag.
             body::read_and_decrypt_non_framed_message_body(
-                ciphertext, &state.header, &key, &mut state.sig_digest,
+                ciphertext,
+                &state.header,
+                &key,
+                &mut state.sig_digest,
             )?
         }
         ContentType::Framed => {
@@ -559,7 +584,8 @@ fn step_decrypt_body(
             //# Any plaintext decrypted from [unframed data](../data-format/message-body.md#nonframed-data) or
             //# a final frame in a streamed Decrypt operation MUST NOT be released until [signature verification](#verify-the-signature)
             //# successfully completes.
-            let fail_if_multi_frame = state.dec_mat.verification_key.is_some() && safety_needed.yes();
+            let fail_if_multi_frame =
+                state.dec_mat.verification_key.is_some() && safety_needed.yes();
             body::read_and_decrypt_framed_message_body(
                 ciphertext,
                 plaintext,
@@ -574,10 +600,7 @@ fn step_decrypt_body(
 }
 
 // Step 5: Verify the signature
-fn step_verify_signature(
-    ciphertext: &mut dyn SafeRead,
-    state: &DecryptState,
-) -> Result<(), Error> {
+fn step_verify_signature(ciphertext: &mut dyn SafeRead, state: &DecryptState) -> Result<(), Error> {
     //= specification/client-apis/decrypt.md#verify-the-signature
     //# If the algorithm suite has a signature algorithm,
     //# the Decrypt operation MUST verify the message footer using the specified signature algorithm.
@@ -604,8 +627,9 @@ fn step_verify_signature(
             //= specification/client-apis/decrypt.md#verify-the-signature
             //# - The input to verify MUST be the concatenation of the serialization of the
             //# [message header](../data-format/message-header.md) and [message body](../data-format/message-body.md).
-            state.sig_digest.context.clone()
-                .ok_or_else(|| val_err("Signature digest context must be present for signature verification"))?,
+            state.sig_digest.context.clone().ok_or_else(|| {
+                val_err("Signature digest context must be present for signature verification")
+            })?,
             //= specification/client-apis/decrypt.md#verify-the-signature
             //# - The verification key MUST be the [verification key](../framework/structures.md#verification-key)
             //# in the decryption materials.

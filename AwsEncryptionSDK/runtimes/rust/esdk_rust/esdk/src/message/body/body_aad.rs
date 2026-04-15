@@ -81,7 +81,11 @@ pub(crate) fn body_aad(
     //= reason=u32::to_be_bytes() produces exactly 4 bytes
     //# The length of the sequence number field MUST be 4 bytes.
     let seq_bytes = sequence_number.to_be_bytes();
-    debug_assert_eq!(seq_bytes.len(), 4, "sequence number field must be exactly 4 bytes");
+    debug_assert_eq!(
+        seq_bytes.len(),
+        4,
+        "sequence number field must be exactly 4 bytes"
+    );
     result.extend_from_slice(&seq_bytes);
 
     // Content Length
@@ -89,6 +93,10 @@ pub(crate) fn body_aad(
     //= reason=u64::to_be_bytes() produces exactly 8 bytes
     //# The length of the content length field MUST be 8 bytes.
     let len_bytes = length.to_be_bytes();
-    debug_assert_eq!(len_bytes.len(), 8, "content length field must be exactly 8 bytes");
+    debug_assert_eq!(
+        len_bytes.len(),
+        8,
+        "content length field must be exactly 8 bytes"
+    );
     result.extend_from_slice(&len_bytes);
 }

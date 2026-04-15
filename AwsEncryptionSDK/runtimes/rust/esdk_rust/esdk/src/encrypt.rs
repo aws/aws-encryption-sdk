@@ -10,13 +10,20 @@ use crate::error::val_err;
 use crate::key_derivation;
 use crate::materials;
 use crate::message::encryption_context::write_empty_ec_or_write_aad;
-use crate::message::header_types::{MessageId, HeaderBody, V2HeaderBody, ContentType, V1HeaderBody, MessageType, HeaderAuth};
-use crate::message::serializable_types::{to_canonical_pairs, ESDKCanonicalEncryptionContext, get_iv_length, get_encrypt_key_length};
-use crate::message::{DigestWriter, header, body, footer};
-use crate::types::{EncryptInput, EncryptOutput, SafeRead, SafeWrite, EncryptStreamInput, EncryptStreamOutput, MaterialSource, EncryptionContext, FrameLength};
+use crate::message::header_types::{
+    ContentType, HeaderAuth, HeaderBody, MessageId, MessageType, V1HeaderBody, V2HeaderBody,
+};
+use crate::message::serializable_types::{
+    ESDKCanonicalEncryptionContext, get_encrypt_key_length, get_iv_length, to_canonical_pairs,
+};
+use crate::message::{DigestWriter, body, footer, header};
+use crate::types::{
+    EncryptInput, EncryptOutput, EncryptStreamInput, EncryptStreamOutput, EncryptionContext,
+    FrameLength, MaterialSource, SafeRead, SafeWrite,
+};
 use aws_mpl_legacy::EncryptedDataKey;
-use aws_mpl_legacy::primitives::{ecdsa_sign_digest, aes_encrypt};
 use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
+use aws_mpl_legacy::primitives::{aes_encrypt, ecdsa_sign_digest};
 use aws_mpl_legacy::suites::AlgorithmSuite;
 
 /// Intermediate state produced by [step_get_encryption_materials] and consumed by subsequent steps.
@@ -186,7 +193,8 @@ async fn internal_encrypt(
     //= specification/client-apis/encrypt.md#construct-the-header
     //# Before encrypting input plaintext,
     //# this operation MUST serialize the [message header body](../data-format/message-header.md).
-    let mut sig_digest = DigestWriter::from_old_ecdsa(mat_result.materials.algorithm_suite.signature)?;
+    let mut sig_digest =
+        DigestWriter::from_old_ecdsa(mat_result.materials.algorithm_suite.signature)?;
     //= specification/data-format/message.md#structure
     //# - The message MUST begin with [Message Header](message-header.md)
     let header = step_construct_header(
@@ -221,7 +229,10 @@ async fn internal_encrypt(
 
     //= specification/client-apis/encrypt.md#behavior
     //# - Encrypt operation step 4 MUST be [Construct the signature](#construct-the-signature)
-    if !matches!(mat_result.materials.algorithm_suite.signature, aws_mpl_legacy::suites::SignatureAlgorithm::None) {
+    if !matches!(
+        mat_result.materials.algorithm_suite.signature,
+        aws_mpl_legacy::suites::SignatureAlgorithm::None
+    ) {
         //= specification/client-apis/encrypt.md#behavior
         //# - If the [encryption materials gathered](#get-the-encryption-materials) has a algorithm suite
         //# including a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
@@ -343,8 +354,12 @@ async fn step_get_encryption_materials(
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
         //# The data key used as input for all encryption described below MUST be a data key derived from the plaintext data key
         //# included in the [encryption materials](../framework/structures.md#encryption-materials).
-        &materials.plaintext_data_key.as_ref()
-            .ok_or::<Error>(val_err("Encryption materials must contain a plaintext data key"))?
+        &materials
+            .plaintext_data_key
+            .as_ref()
+            .ok_or::<Error>(val_err(
+                "Encryption materials must contain a plaintext data key",
+            ))?
             .0,
         algorithm_suite,
         false,
@@ -384,11 +399,7 @@ fn step_construct_header(
     //# If this operation is streaming the encrypted message and
     //# the entire message header has been serialized,
     //# the serialized message header MUST be released.
-    header::write_header(
-        &header,
-        ciphertext,
-        sig_digest,
-    )?;
+    header::write_header(&header, ciphertext, sig_digest)?;
     //= specification/client-apis/encrypt.md#authentication-tag
     //# The encrypted message output by the Encrypt operation MUST have a message header equal
     //# to the message header calculated in this step.
@@ -471,7 +482,7 @@ fn step_construct_signature(
                 //# This signature MUST be calculated over both the [message header](message-header.md) and the [message body](message-body.md),
                 //# in the order of serialization.
                 ciphertext,
-                signature_bytes.as_ref()
+                signature_bytes.as_ref(),
             )?;
         }
 
@@ -482,7 +493,9 @@ fn step_construct_signature(
         //= specification/data-format/message.md#structure
         //# If the algorithm suite contains an unrecognized signature algorithm, the operation MUST raise an error.
         _ => {
-            return Err(val_err("Unrecognized signature algorithm in algorithm suite"));
+            return Err(val_err(
+                "Unrecognized signature algorithm in algorithm suite",
+            ));
         }
     }
     //= specification/client-apis/encrypt.md#construct-the-signature
@@ -509,9 +522,9 @@ const RESERVED_ENCRYPTION_CONTEXT: &str = "aws-crypto-";
 fn validate_encryption_context(ec: &EncryptionContext) -> Result<(), Error> {
     for key in ec.keys() {
         if key.starts_with(RESERVED_ENCRYPTION_CONTEXT) {
-            return Err(
-                val_err("Encryption context keys cannot contain reserved prefix 'aws-crypto-'"),
-            );
+            return Err(val_err(
+                "Encryption context keys cannot contain reserved prefix 'aws-crypto-'",
+            ));
         }
     }
     Ok(())
@@ -545,8 +558,15 @@ fn build_header_for_encrypt(
     let canonical_stored_encryption_context = to_canonical_pairs(stored_encryption_context);
 
     let body: HeaderBody = build_header_body(
-        message_id, suite, &canonical_stored_encryption_context,
-        encrypted_data_keys, frame_length, derived_data_keys.commitment_key.as_deref().map(|k| k.to_vec()),
+        message_id,
+        suite,
+        &canonical_stored_encryption_context,
+        encrypted_data_keys,
+        frame_length,
+        derived_data_keys
+            .commitment_key
+            .as_deref()
+            .map(|k| k.to_vec()),
     )?;
 
     let canonical_req_encryption_context = to_canonical_pairs(required_encryption_context_map);
@@ -567,14 +587,18 @@ fn build_header_for_encrypt(
     //= specification/data-format/message-header.md#authentication-tag
     //# The authentication tag MUST be interpreted as bytes.
     let header_auth = build_header_auth_tag(
-        suite, &derived_data_keys.data_key,
-        &raw_header, &serialized_req_encryption_context,
+        suite,
+        &derived_data_keys.data_key,
+        &raw_header,
+        &serialized_req_encryption_context,
     )?;
 
     Ok(header::HeaderInfo {
-        suite: suite.clone(), body,
+        suite: suite.clone(),
+        body,
         encryption_context: encryption_context.clone(),
-        header_auth, raw_header,
+        header_auth,
+        raw_header,
     })
 }
 
@@ -592,9 +616,10 @@ fn build_header_body(
         aws_mpl_legacy::suites::DerivationAlgorithm::Hkdf(h) => {
             let sd = suite_data
                 .ok_or_else(|| val_err("Suite data must be present for HKDF commitment"))?;
-            if sd.len() != h.output_key_length as usize
-            {
-                return Err(val_err("Suite data length must match the commitment key output length for HKDF commitment"));
+            if sd.len() != h.output_key_length as usize {
+                return Err(val_err(
+                    "Suite data length must match the commitment key output length for HKDF commitment",
+                ));
             }
             Ok(HeaderBody::V2Body(V2HeaderBody {
                 algorithm_suite: suite.clone(),
@@ -608,7 +633,9 @@ fn build_header_body(
                 suite_data: sd,
             }))
         }
-        aws_mpl_legacy::suites::DerivationAlgorithm::Identity => Err(val_err("Identity key derivation is not supported for V2 message format")),
+        aws_mpl_legacy::suites::DerivationAlgorithm::Identity => Err(val_err(
+            "Identity key derivation is not supported for V2 message format",
+        )),
         _ => Ok(HeaderBody::V1Body(V1HeaderBody {
             message_type: MessageType::TypeCustomerAed,
             algorithm_suite: suite.clone(),

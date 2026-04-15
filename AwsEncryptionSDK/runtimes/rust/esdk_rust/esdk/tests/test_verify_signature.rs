@@ -3,12 +3,10 @@
 
 //! Tests for specification/client-apis/decrypt.md#verify-the-signature
 
-mod fixtures;
 mod test_helpers;
 
 use aws_esdk::*;
 use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
-use fixtures::*;
 use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
@@ -56,8 +54,7 @@ async fn test_verify_signature_round_trip_signing_suite() {
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    let dec_input =
-        DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await.unwrap();
     assert_eq!(
         result.plaintext, plaintext,
@@ -83,8 +80,7 @@ async fn test_verify_signature_fails_on_tampered_footer() {
     let footer_offset = find_footer_offset_only(&ct);
     ct[footer_offset + 3] ^= 0xFF;
 
-    let dec_input =
-        DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
     assert!(
         result.is_err(),

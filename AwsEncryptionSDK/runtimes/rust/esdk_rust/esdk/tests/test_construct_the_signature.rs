@@ -21,7 +21,10 @@ async fn test_signing_suite_produces_footer() {
 
     let ct = encrypt_with_signing_suite(b"signature presence test").await;
     let (_, sig_len) = find_footer_offset(&ct);
-    assert!(sig_len > 0, "signing suite must produce a footer with non-zero signature");
+    assert!(
+        sig_len > 0,
+        "signing suite must produce a footer with non-zero signature"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -35,7 +38,10 @@ async fn test_signature_uses_signing_algorithm() {
     // because decrypt verifies the signature using the same algorithm suite.
     let pt = b"signature algorithm test";
     let result = round_trip_signing(pt).await;
-    assert_eq!(result, pt, "round-trip proves correct signature algorithm was used");
+    assert_eq!(
+        result, pt,
+        "round-trip proves correct signature algorithm was used"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -62,7 +68,10 @@ async fn test_signature_input_is_header_plus_body() {
     // because decrypt recomputes the digest over header+body and verifies the signature.
     let pt = b"header plus body input test";
     let result = round_trip_signing(pt).await;
-    assert_eq!(result, pt, "round-trip proves signature input is header+body concatenation");
+    assert_eq!(
+        result, pt,
+        "round-trip proves signature input is header+body concatenation"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -112,7 +121,10 @@ async fn test_footer_equals_calculated() {
     // because decrypt verifies the signature from the footer.
     let pt = b"footer equals calculated test";
     let result = round_trip_signing(pt).await;
-    assert_eq!(result, pt, "round-trip proves output footer equals calculated footer");
+    assert_eq!(
+        result, pt,
+        "round-trip proves output footer equals calculated footer"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -127,16 +139,17 @@ async fn test_no_signature_without_signing_suite() {
     // that the decryptor (knowing the suite has no signature) would not expect,
     // causing failure or trailing bytes.
     let keyring = test_keyring().await;
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(b"no signature test", EncryptionContext::new(), keyring.clone());
-    enc_input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
+    let mut enc_input = EncryptInput::with_legacy_keyring(
+        b"no signature test",
+        EncryptionContext::new(),
+        keyring.clone(),
+    );
+    enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let pt = decrypt(&dec_input).await.unwrap().plaintext;
     assert_eq!(
-        pt,
-        b"no signature test",
+        pt, b"no signature test",
         "successful round-trip with non-signing suite proves no signature was constructed"
     );
 }

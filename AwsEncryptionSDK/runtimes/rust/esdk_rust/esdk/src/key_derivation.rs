@@ -20,14 +20,18 @@ pub(crate) struct ExpandedKeyMaterial {
 fn get_kdf_outlen(suite: &AlgorithmSuite) -> Result<u32, Error> {
     match suite.kdf {
         DerivationAlgorithm::Hkdf(x) => Ok(x.output_key_length),
-        _ => Err(val_err("Algorithm suite KDF must be HKDF to derive output key length")),
+        _ => Err(val_err(
+            "Algorithm suite KDF must be HKDF to derive output key length",
+        )),
     }
 }
 
 fn get_kdf_inlen(suite: &AlgorithmSuite) -> Result<u32, Error> {
     match suite.kdf {
         DerivationAlgorithm::Hkdf(x) => Ok(x.input_key_length),
-        _ => Err(val_err("Algorithm suite KDF must be HKDF to derive input key length")),
+        _ => Err(val_err(
+            "Algorithm suite KDF must be HKDF to derive input key length",
+        )),
     }
 }
 
@@ -136,13 +140,17 @@ pub(crate) fn expand_key_material(
     }
     // For v2 algorithms, KDF can only be HKDF
     if u32::from(get_encrypt_key_length(suite)) != get_kdf_outlen(suite)? {
-        return Err(val_err("Encrypt key length must match KDF output key length"));
+        return Err(val_err(
+            "Encrypt key length must match KDF output key length",
+        ));
     }
     if message_id.is_empty() {
         return Err(val_err("Message ID must not be empty"));
     }
     if plaintext_key.len() != get_kdf_inlen(suite)? as usize {
-        return Err(val_err("Plaintext key length must match KDF input key length"));
+        return Err(val_err(
+            "Plaintext key length must match KDF input key length",
+        ));
     }
 
     let (digest, commit_len) = match &suite.commitment {
@@ -157,7 +165,8 @@ pub(crate) fn expand_key_material(
     let alg = digest;
     let info = [&suite.binary_id[..], KEY_LABEL.as_bytes()];
 
-    let pseudo_random_key = aws_mpl_legacy::primitives::hkdf_extract(alg, message_id, plaintext_key);
+    let pseudo_random_key =
+        aws_mpl_legacy::primitives::hkdf_extract(alg, message_id, plaintext_key);
     let mut encrypt_key = vec![0u8; get_kdf_outlen(suite)? as usize];
     let mut commit_key = vec![0u8; commit_len as usize];
     aws_mpl_legacy::primitives::hkdf_expand(&pseudo_random_key, &info, &mut encrypt_key)?;

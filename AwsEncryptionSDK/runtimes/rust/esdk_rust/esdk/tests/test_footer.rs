@@ -24,7 +24,6 @@ async fn test_footer_present_with_signing_suite() {
     //# [algorithm suite ID](message-header.md#algorithm-suite-id) field that contains a
     //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm), the message MUST also contain a
     //# [message footer](message-footer.md) serialized after the [message body](message-body.md).
-
     let ct_signing = encrypt_with_signing_suite(b"footer presence test").await;
     let ct_no_signing = encrypt_without_signing_suite(b"footer presence test").await;
 
@@ -39,7 +38,10 @@ async fn test_footer_present_with_signing_suite() {
 
     // Verify the footer is parseable: find the 2-byte length + signature at the end
     let (_, sig_len) = find_footer_offset(&ct_signing);
-    assert!(sig_len > 0, "footer signature length must be non-zero for signing suite");
+    assert!(
+        sig_len > 0,
+        "footer signature length must be non-zero for signing suite"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -47,7 +49,6 @@ async fn test_footer_signature_length_is_two_bytes() {
     //= specification/data-format/message-footer.md#signature-length
     //= type=test
     //# The length of the signature length field MUST be 2 bytes.
-
     let ct = encrypt_with_signing_suite(b"sig length 2 bytes test").await;
     let (offset, sig_len) = find_footer_offset(&ct);
 
@@ -65,7 +66,6 @@ async fn test_footer_signature_length_is_uint16() {
     //= specification/data-format/message-footer.md#signature-length
     //= type=test
     //# The signature length value MUST be a UInt16.
-
     let ct = encrypt_with_signing_suite(b"sig length uint16 test").await;
     let (offset, sig_len) = find_footer_offset(&ct);
 
@@ -82,13 +82,12 @@ async fn test_footer_signature_length_is_uint16() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_footer_signature_calculated_over_header_and_body() {
+    // A successful round-trip decrypt with a signing suite proves the signature
+    // was correctly calculated over header+body, because decrypt verifies it.
     //= specification/data-format/message-footer.md#signature
     //= type=test
     //# This signature MUST be calculated over both the [message header](message-header.md) and the [message body](message-body.md),
     //# in the order of serialization.
-
-    // A successful round-trip decrypt with a signing suite proves the signature
-    // was correctly calculated over header+body, because decrypt verifies it.
     let pt = b"signature over header and body test";
     let result = round_trip_signing(pt).await;
     assert_eq!(
@@ -99,24 +98,24 @@ async fn test_footer_signature_calculated_over_header_and_body() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_no_footer_without_signing_suite() {
-    //= specification/data-format/message.md#structure
-    //= type=test
-    //# If the algorithm suite does not contain a signature algorithm, the message MUST NOT contain a message footer.
-
     // Encrypt with non-signing suite and verify successful round-trip decrypt.
     // If a footer were present, the decryptor (which knows the suite has no signature)
     // would either fail or leave trailing bytes. A successful decrypt proves no footer.
+    //= specification/data-format/message.md#structure
+    //= type=test
+    //# If the algorithm suite does not contain a signature algorithm, the message MUST NOT contain a message footer.
     let keyring = test_keyring().await;
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(b"no footer test", EncryptionContext::new(), keyring.clone());
-    enc_input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
+    let mut enc_input = EncryptInput::with_legacy_keyring(
+        b"no footer test",
+        EncryptionContext::new(),
+        keyring.clone(),
+    );
+    enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let pt = decrypt(&dec_input).await.unwrap().plaintext;
     assert_eq!(
-        pt,
-        b"no footer test",
+        pt, b"no footer test",
         "successful round-trip with non-signing suite proves no footer is present"
     );
 }
@@ -126,22 +125,23 @@ async fn test_message_begins_with_header() {
     //= specification/data-format/message.md#structure
     //= type=test
     //# - The message MUST begin with [Message Header](message-header.md)
-
     let ct = encrypt_with_signing_suite(b"header first test").await;
 
     // V2 messages begin with version byte 0x02, followed by the 2-byte algorithm suite ID.
     // If the message didn't begin with the header, decrypt would fail.
-    assert_eq!(ct[0], 0x02, "message must begin with V2 header version byte");
+    assert_eq!(
+        ct[0], 0x02,
+        "message must begin with V2 header version byte"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_message_body_follows_header() {
+    // A successful round-trip decrypt proves the body follows the header,
+    // because the decryptor parses header then body in sequence.
     //= specification/data-format/message.md#structure
     //= type=test
     //# - The [Message Body](message-body.md) MUST follow the Message Header
-
-    // A successful round-trip decrypt proves the body follows the header,
-    // because the decryptor parses header then body in sequence.
     let pt = b"body follows header test";
     let result = round_trip_signing(pt).await;
     assert_eq!(
@@ -162,13 +162,28 @@ async fn test_footer_consists_of_signature_length_then_signature() {
     let footer = &ct[offset..];
 
     // Footer must be exactly: 2-byte signature length + signature bytes
-    assert_eq!(footer.len(), 2 + sig_len as usize, "footer must be exactly sig_len field + signature");
+    assert_eq!(
+        footer.len(),
+        2 + sig_len as usize,
+        "footer must be exactly sig_len field + signature"
+    );
     let parsed_len = u16::from_be_bytes([footer[0], footer[1]]);
-    assert_eq!(parsed_len, sig_len, "first 2 bytes must be the signature length");
-    assert_eq!(footer[2..].len(), sig_len as usize, "remaining bytes must be the signature");
+    assert_eq!(
+        parsed_len, sig_len,
+        "first 2 bytes must be the signature length"
+    );
+    assert_eq!(
+        footer[2..].len(),
+        sig_len as usize,
+        "remaining bytes must be the signature"
+    );
 
     // Verify the footer ends exactly at the end of the message (no trailing bytes)
-    assert_eq!(offset + 2 + sig_len as usize, ct.len(), "footer must be the final component of the message");
+    assert_eq!(
+        offset + 2 + sig_len as usize,
+        ct.len(),
+        "footer must be the final component of the message"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -198,5 +213,8 @@ async fn test_unrecognized_algorithm_suite_errors() {
     ct[2] = 0xFF;
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    assert!(decrypt(&dec_input).await.is_err(), "unrecognized algorithm suite ID must cause an error");
+    assert!(
+        decrypt(&dec_input).await.is_err(),
+        "unrecognized algorithm suite ID must cause an error"
+    );
 }

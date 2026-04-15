@@ -6,8 +6,8 @@ use super::do_decrypt::{SourceStatus, trim_filename};
 use crate::test_vectors::types::*;
 use crate::{EncryptInput, MaterialSource, encrypt};
 use anyhow::Result;
-use aws_mpl_legacy::primitives::generate_random_bytes;
 use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
+use aws_mpl_legacy::primitives::generate_random_bytes;
 use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use serde_json::Value as JsonValue;
 

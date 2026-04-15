@@ -10,7 +10,6 @@ mod test_helpers;
 use aws_esdk::*;
 use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
 use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
-use fixtures::*;
 use test_helpers::*;
 
 /// Encrypt then decrypt with a specific algorithm suite and commitment policy.
@@ -25,8 +24,7 @@ async fn round_trip_with_suite(
     enc_input.algorithm_suite_id = Some(suite);
     enc_input.commitment_policy = policy;
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let mut dec_input =
-        DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     dec_input.commitment_policy = policy;
     decrypt(&dec_input).await.unwrap().plaintext
 }
@@ -45,7 +43,10 @@ async fn test_key_derivation_uses_suite_kdf() {
         EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
     )
     .await;
-    assert_eq!(result, pt, "round-trip proves the correct KDF from the algorithm suite was used");
+    assert_eq!(
+        result, pt,
+        "round-trip proves the correct KDF from the algorithm suite was used"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -66,7 +67,10 @@ async fn test_identity_kdf_derived_key_equals_plaintext_key() {
         EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
     )
     .await;
-    assert_eq!(result, pt, "round-trip with identity KDF proves derived key equals plaintext key");
+    assert_eq!(
+        result, pt,
+        "round-trip with identity KDF proves derived key equals plaintext key"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -82,5 +86,8 @@ async fn test_hkdf_derivation_process() {
         EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
     )
     .await;
-    assert_eq!(result, pt, "round-trip with HKDF suite proves correct HKDF derivation process");
+    assert_eq!(
+        result, pt,
+        "round-trip with HKDF suite proves correct HKDF derivation process"
+    );
 }

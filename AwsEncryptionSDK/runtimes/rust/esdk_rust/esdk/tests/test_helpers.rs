@@ -37,7 +37,6 @@ pub async fn test_keyring() -> KeyringRef {
         .unwrap()
 }
 
-
 /// Create a raw AES keyring with key material derived from `n`.
 pub async fn aes_keyring(n: u8) -> KeyringRef {
     let (ns, name) = namespace_and_name(n);
@@ -53,10 +52,7 @@ pub async fn aes_keyring(n: u8) -> KeyringRef {
 }
 
 /// Create a multi-keyring from a generator and child keyrings.
-pub async fn multi_keyring(
-    generator_kr: KeyringRef,
-    children: Vec<KeyringRef>,
-) -> KeyringRef {
+pub async fn multi_keyring(generator_kr: KeyringRef, children: Vec<KeyringRef>) -> KeyringRef {
     mpl()
         .create_multi_keyring()
         .generator(generator_kr)
@@ -65,7 +61,6 @@ pub async fn multi_keyring(
         .await
         .unwrap()
 }
-
 
 /// Encrypt with defaults, return full EncryptOutput.
 pub async fn encrypt_default(plaintext: &[u8]) -> EncryptOutput {
@@ -110,20 +105,16 @@ pub async fn encrypt_with_frame_length(plaintext: &[u8], frame_length: u32) -> V
 /// Encrypt with a signing algorithm suite, return ciphertext bytes.
 pub async fn encrypt_with_signing_suite(plaintext: &[u8]) -> Vec<u8> {
     let keyring = test_keyring().await;
-    let mut input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
+    let mut input = EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
+    input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
     encrypt(&input).await.unwrap().ciphertext
 }
 
 /// Encrypt with a non-signing algorithm suite, return ciphertext bytes.
 pub async fn encrypt_without_signing_suite(plaintext: &[u8]) -> Vec<u8> {
     let keyring = test_keyring().await;
-    let mut input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
+    let mut input = EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
+    input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
     encrypt(&input).await.unwrap().ciphertext
 }
 
@@ -155,11 +146,11 @@ pub async fn encrypt_with_version(
     encrypt(&input).await.unwrap().ciphertext
 }
 
-
 /// Decrypt ciphertext with the default test keyring, return full DecryptOutput.
 pub async fn decrypt_ciphertext(ciphertext: &[u8]) -> DecryptOutput {
     let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(ciphertext, EncryptionContext::new(), keyring);
+    let dec_input =
+        DecryptInput::with_legacy_keyring(ciphertext, EncryptionContext::new(), keyring);
     decrypt(&dec_input).await.unwrap()
 }
 
@@ -174,7 +165,6 @@ pub async fn decrypt_with(
     dec_input.commitment_policy = policy;
     decrypt(&dec_input).await.unwrap()
 }
-
 
 /// Encrypt then decrypt round-trip, return decrypted plaintext.
 pub async fn round_trip(plaintext: &[u8]) -> Vec<u8> {
@@ -201,8 +191,7 @@ pub async fn round_trip_framed(plaintext: &[u8], frame_length: u32) -> Vec<u8> {
 pub async fn round_trip_v1(plaintext: &[u8], ec: EncryptionContext) -> Vec<u8> {
     let keyring = test_keyring().await;
     let ct = encrypt_v1_with_ec(plaintext, ec).await;
-    let mut dec_input =
-        DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
     decrypt(&dec_input).await.unwrap().plaintext
 }
@@ -236,7 +225,6 @@ pub async fn round_trip_with_ec(plaintext: &[u8], ec: EncryptionContext) -> Decr
     let dec_input = DecryptInput::with_legacy_keyring(&ct, ec, keyring);
     decrypt(&dec_input).await.unwrap()
 }
-
 
 /// Find the start of the message body by scanning for the first frame.
 /// Returns the byte offset where the first frame begins.
@@ -284,8 +272,8 @@ pub fn validate_frame_walk(ct: &[u8], offset: usize, frame_length: u32) -> bool 
 /// Count regular and final frames in the ciphertext.
 /// Returns `(regular_frame_count, final_frame_count)`.
 pub fn count_frames(ct: &[u8], frame_length: u32) -> (usize, usize) {
-    let body_start = find_body_start(ct, frame_length)
-        .expect("could not find body start in ciphertext");
+    let body_start =
+        find_body_start(ct, frame_length).expect("could not find body start in ciphertext");
     let regular_frame_size = 4 + IV_LEN + frame_length as usize + TAG_LEN;
     let mut pos = body_start;
     let mut regular = 0usize;
@@ -374,7 +362,6 @@ pub fn parse_frames(ct: &[u8], frame_length: u32) -> Vec<ParsedFrame> {
     frames
 }
 
-
 /// Parse V1 header trailing field offsets from ciphertext.
 /// Returns (content_type_offset, reserved_offset, iv_length_offset, frame_length_offset).
 pub fn parse_v1_trailing_offsets(ct: &[u8]) -> (usize, usize, usize, usize) {
@@ -404,7 +391,12 @@ pub fn parse_v1_trailing_offsets(ct: &[u8]) -> (usize, usize, usize, usize) {
     let reserved_offset = pos + 1;
     let iv_length_offset = pos + 1 + 4;
     let frame_length_offset = pos + 1 + 4 + 1;
-    (content_type_offset, reserved_offset, iv_length_offset, frame_length_offset)
+    (
+        content_type_offset,
+        reserved_offset,
+        iv_length_offset,
+        frame_length_offset,
+    )
 }
 
 /// Parse the V2 header body fields from ciphertext bytes, returning the byte offset
@@ -421,7 +413,10 @@ pub fn parse_v2_header_field_offsets(ct: &[u8]) -> Vec<(&'static str, usize, usi
     pos += 1;
 
     // Algorithm Suite ID: 2 bytes
-    assert!(pos + 2 <= ct.len(), "not enough bytes for Algorithm Suite ID");
+    assert!(
+        pos + 2 <= ct.len(),
+        "not enough bytes for Algorithm Suite ID"
+    );
     fields.push(("Algorithm Suite ID", pos, pos + 2));
     pos += 2;
 
@@ -446,13 +441,25 @@ pub fn parse_v2_header_field_offsets(ct: &[u8]) -> Vec<(&'static str, usize, usi
     let edk_count = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
     pos += 2;
     for i in 0..edk_count {
-        assert!(pos + 2 <= ct.len(), "not enough bytes for provider ID length (EDK {})", i);
+        assert!(
+            pos + 2 <= ct.len(),
+            "not enough bytes for provider ID length (EDK {})",
+            i
+        );
         let pid_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
         pos += 2 + pid_len;
-        assert!(pos + 2 <= ct.len(), "not enough bytes for provider info length (EDK {})", i);
+        assert!(
+            pos + 2 <= ct.len(),
+            "not enough bytes for provider info length (EDK {})",
+            i
+        );
         let pinfo_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
         pos += 2 + pinfo_len;
-        assert!(pos + 2 <= ct.len(), "not enough bytes for EDK ciphertext length (EDK {})", i);
+        assert!(
+            pos + 2 <= ct.len(),
+            "not enough bytes for EDK ciphertext length (EDK {})",
+            i
+        );
         let ct_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
         pos += 2 + ct_len;
     }
@@ -469,7 +476,10 @@ pub fn parse_v2_header_field_offsets(ct: &[u8]) -> Vec<(&'static str, usize, usi
     pos += 4;
 
     // Algorithm Suite Data: 32 bytes (commit key for committing suites)
-    assert!(pos + 32 <= ct.len(), "not enough bytes for Algorithm Suite Data");
+    assert!(
+        pos + 32 <= ct.len(),
+        "not enough bytes for Algorithm Suite Data"
+    );
     fields.push(("Algorithm Suite Data", pos, pos + 32));
 
     fields
@@ -535,7 +545,6 @@ pub fn content_type_offset_v2(ct: &[u8]) -> usize {
     pos
 }
 
-
 /// Read the signature length from the end of a signing-suite ciphertext.
 /// The footer is: [sig_len: 2 bytes] [signature: sig_len bytes] at the end.
 /// For ECDSA P384, the DER-encoded signature is typically 102-104 bytes.
@@ -564,7 +573,6 @@ pub fn find_footer_offset_only(ct: &[u8]) -> usize {
     }
     panic!("Could not find footer in ciphertext");
 }
-
 
 /// Find the byte offset of the EDK count field in a ciphertext header.
 /// V1: Version(1) + Type(1) + AlgSuiteID(2) + MessageID(16) + AAD(variable)
@@ -596,7 +604,7 @@ pub fn edk_count_offset(ct: &[u8], version: Version) -> usize {
 
 /// Parse an EDK entry starting at `offset` in `ct`.
 /// Returns (key_provider_id, key_provider_info, edk_ciphertext, end_offset).
-pub fn parse_edk_at<'a>(ct: &'a [u8], offset: usize) -> (&'a str, &'a [u8], &'a [u8], usize) {
+pub fn parse_edk_at(ct: &[u8], offset: usize) -> (&str, &[u8], &[u8], usize) {
     let mut pos = offset;
 
     let kp_id_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
@@ -619,7 +627,10 @@ pub fn parse_edk_at<'a>(ct: &'a [u8], offset: usize) -> (&'a str, &'a [u8], &'a 
 
 /// Parse the raw EDK fields at `offset` returning all 6 fields with their lengths.
 /// Returns (kp_id_len, kp_id, kp_info_len, kp_info, edk_len, edk_data).
-pub fn parse_edk_raw_at<'a>(ct: &'a [u8], offset: usize) -> (u16, &'a [u8], u16, &'a [u8], u16, &'a [u8]) {
+pub fn parse_edk_raw_at(
+    ct: &[u8],
+    offset: usize,
+) -> (u16, &[u8], u16, &[u8], u16, &[u8]) {
     let mut pos = offset;
 
     let kp_id_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]);
@@ -664,7 +675,7 @@ pub struct ParsedEdkSection {
 pub fn skip_to_edk_section(ct: &[u8], version: Version) -> usize {
     let mut pos = match version {
         Version::V1 => 1 + 1 + 2 + 16, // 20
-        Version::V2 => 1 + 2 + 32,      // 35
+        Version::V2 => 1 + 2 + 32,     // 35
     };
     // AAD: 2-byte length, then if non-zero: 2-byte kv_count + aad_byte_len bytes
     let aad_byte_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
@@ -702,22 +713,28 @@ pub fn parse_edk_section(ct: &[u8], version: Version) -> ParsedEdkSection {
             edk: edk_data,
         });
     }
-    ParsedEdkSection { edk_count_offset, edk_count, edks, end_offset: pos }
+    ParsedEdkSection {
+        edk_count_offset,
+        edk_count,
+        edks,
+        end_offset: pos,
+    }
 }
-
 
 /// Build a complete nonframed encrypted message from scratch.
 ///
 /// Uses AlgAes256GcmHkdfSha512CommitKey (0x0478), V2 header, NonFramed content type.
 /// The wrapping key is `[0u8; 32]` matching the test_keyring() configuration.
 pub fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
-    use aws_lc_rs::aead::{Aad, LessSafeKey, Nonce, UnboundKey, AES_256_GCM};
-    use aws_lc_rs::hkdf::{Salt, HKDF_SHA512};
+    use aws_lc_rs::aead::{AES_256_GCM, Aad, LessSafeKey, Nonce, UnboundKey};
+    use aws_lc_rs::hkdf::{HKDF_SHA512, Salt};
 
     let wrapping_key = [0u8; 32];
     let plaintext_data_key = [0x42u8; 32];
     let message_id = [0xAAu8; 32];
-    let edk_iv: [u8; 12] = [0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C];
+    let edk_iv: [u8; 12] = [
+        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C,
+    ];
     let alg_suite_id: [u8; 2] = [0x04, 0x78];
 
     // Wrap the data key (raw AES keyring format)
@@ -725,7 +742,9 @@ pub fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
     let key = LessSafeKey::new(key);
     let nonce = Nonce::try_assume_unique_for_key(&edk_iv).unwrap();
     let mut edk_ct = plaintext_data_key.to_vec();
-    let edk_tag = key.seal_in_place_separate_tag(nonce, Aad::from(&[] as &[u8]), &mut edk_ct).unwrap();
+    let edk_tag = key
+        .seal_in_place_separate_tag(nonce, Aad::from(&[] as &[u8]), &mut edk_ct)
+        .unwrap();
     let mut edk_ciphertext = edk_ct;
     edk_ciphertext.extend_from_slice(edk_tag.as_ref());
 
@@ -772,7 +791,9 @@ pub fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
     let key = LessSafeKey::new(key);
     let nonce = Nonce::try_assume_unique_for_key(&header_auth_iv).unwrap();
     let mut empty = Vec::new();
-    let header_auth_tag = key.seal_in_place_separate_tag(nonce, Aad::from(&header_body[..]), &mut empty).unwrap();
+    let header_auth_tag = key
+        .seal_in_place_separate_tag(nonce, Aad::from(&header_body[..]), &mut empty)
+        .unwrap();
 
     // Build nonframed body
     let mut body_aad = Vec::new();
@@ -788,7 +809,9 @@ pub fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
     let key = LessSafeKey::new(key);
     let nonce = Nonce::try_assume_unique_for_key(&body_iv).unwrap();
     let mut body_ct = plaintext.to_vec();
-    let body_tag = key.seal_in_place_separate_tag(nonce, Aad::from(&body_aad[..]), &mut body_ct).unwrap();
+    let body_tag = key
+        .seal_in_place_separate_tag(nonce, Aad::from(&body_aad[..]), &mut body_ct)
+        .unwrap();
 
     // Assemble the full message
     let mut message = Vec::new();
@@ -848,8 +871,14 @@ pub fn parse_nonframed_body(msg: &[u8]) -> NonframedBody {
     // Encrypted Content Length: 8 bytes
     let encrypted_content_length_bytes = msg[pos..pos + 8].to_vec();
     let encrypted_content_length = u64::from_be_bytes([
-        msg[pos], msg[pos + 1], msg[pos + 2], msg[pos + 3],
-        msg[pos + 4], msg[pos + 5], msg[pos + 6], msg[pos + 7],
+        msg[pos],
+        msg[pos + 1],
+        msg[pos + 2],
+        msg[pos + 3],
+        msg[pos + 4],
+        msg[pos + 5],
+        msg[pos + 6],
+        msg[pos + 7],
     ]);
     pos += 8;
 

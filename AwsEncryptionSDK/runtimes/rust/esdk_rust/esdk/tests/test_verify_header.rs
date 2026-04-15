@@ -54,7 +54,10 @@ async fn test_verify_header_v2_round_trip() {
 
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, plaintext, "successful v2 round-trip proves header verification with IV=0, derived key, empty ciphertext, correct tag, and correct AAD");
+    assert_eq!(
+        result.plaintext, plaintext,
+        "successful v2 round-trip proves header verification with IV=0, derived key, empty ciphertext, correct tag, and correct AAD"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -76,7 +79,10 @@ async fn test_verify_header_v1_round_trip() {
     let mut dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
     let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, plaintext, "successful v1 round-trip proves header verification with IV from header");
+    assert_eq!(
+        result.plaintext, plaintext,
+        "successful v1 round-trip proves header verification with IV from header"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -96,7 +102,10 @@ async fn test_verify_header_fails_on_tampered_header() {
 
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     let result = decrypt(&dec_input).await;
-    assert!(result.is_err(), "decrypt must fail when header bytes are tampered (tag verification failure)");
+    assert!(
+        result.is_err(),
+        "decrypt must fail when header bytes are tampered (tag verification failure)"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -138,19 +147,22 @@ async fn test_verify_header_encryption_context_to_only_authenticate() {
     // Decrypt with the reproduced encryption context — proves the EC filtering is correct
     let dec_input = DecryptInput::with_legacy_keyring(&ct, reproduced_ec, keyring);
     let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, plaintext, "successful round-trip with required EC keys proves encryption context to only authenticate is correctly filtered and serialized");
+    assert_eq!(
+        result.plaintext, plaintext,
+        "successful round-trip with required EC keys proves encryption context to only authenticate is correctly filtered and serialized"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streamed_signed_output_not_signed_until_complete() {
+    // Encrypt a multi-frame message with a signing suite, then tamper with the
+    // signature (footer). decrypt_stream must return Err, proving that output
+    // released before completion cannot be considered signed.
     //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# However, if the streamed Decrypt operation is using an algorithm suite with a signature algorithm
     //# all released output MUST NOT be considered signed data until
     //# this operation successfully completes.
-    // Encrypt a multi-frame message with a signing suite, then tamper with the
-    // signature (footer). decrypt_stream must return Err, proving that output
-    // released before completion cannot be considered signed.
     let keyring = test_keyring().await;
     let plaintext = vec![0xBBu8; 30];
     let mut enc_input =

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //! Frame encryption and body serialization.
 
-use super::{body_aad, get_encrypt, iv_seq, BodyAADContent};
+use super::{BodyAADContent, body_aad, get_encrypt, iv_seq};
 use crate::error::val_err;
 use crate::message::header::{ENDFRAME_SEQUENCE_NUMBER, HeaderInfo, START_SEQUENCE_NUMBER};
 use crate::message::serializable_types::{get_iv_length, get_tag_length};
@@ -342,7 +342,9 @@ pub(crate) fn encrypt_and_serialize_body(
             //# has a length greater than this value,
             //# this operation MUST immediately fail.
             if total_data_size > max_plaintext_len {
-                return Err(val_err("Plaintext length exceeds specified Plaintext Length Bound"));
+                return Err(val_err(
+                    "Plaintext length exceeds specified Plaintext Length Bound",
+                ));
             }
         }
 
@@ -357,7 +359,8 @@ pub(crate) fn encrypt_and_serialize_body(
         //# and Authentication Tag.
         construct_frame(
             &ConstructFrameInput {
-                alg, key,
+                alg,
+                key,
                 //= specification/client-apis/encrypt.md#construct-a-frame
                 //= reason=plaintext_frame is exactly frame_length bytes (the full buffer read from input)
                 //# - For a regular frame the length of this plaintext MUST equal the frame length.
@@ -376,7 +379,11 @@ pub(crate) fn encrypt_and_serialize_body(
                 //# For a regular frame, the serialization MUST follow the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
                 is_final: false,
             },
-            &mut iv, &mut aad, &mut frame_buf, ciphertext, sig_digest,
+            &mut iv,
+            &mut aad,
+            &mut frame_buf,
+            ciphertext,
+            sig_digest,
         )?;
 
         //= specification/data-format/message-body.md#regular-frame-sequence-number
@@ -398,7 +405,9 @@ pub(crate) fn encrypt_and_serialize_body(
     }
     if let Some(max_len) = max_plaintext_length {
         if total_data_size > max_len {
-            return Err(val_err("Plaintext length exceeds specified Plaintext Length Bound"));
+            return Err(val_err(
+                "Plaintext length exceeds specified Plaintext Length Bound",
+            ));
         }
     }
 
@@ -407,8 +416,10 @@ pub(crate) fn encrypt_and_serialize_body(
     //# The length of the plaintext to be encrypted in the Final Frame MUST be
     //# greater than or equal to 0 and less than or equal to the [Frame Length](message-header.md#frame-length).
     debug_assert!(in_size <= frame_length);
-    debug_assert!(in_size > 0 || sequence_number == START_SEQUENCE_NUMBER,
-        "empty final frame only allowed when entire plaintext is empty");
+    debug_assert!(
+        in_size > 0 || sequence_number == START_SEQUENCE_NUMBER,
+        "empty final frame only allowed when entire plaintext is empty"
+    );
 
     //= specification/client-apis/encrypt.md#construct-the-body
     //# If an end to the input has been indicated, there are no more consumable plaintext bytes to process,
@@ -441,7 +452,11 @@ pub(crate) fn encrypt_and_serialize_body(
             //# For a final frame, the serialization MUST follow the [Final Frame](../data-format/message-body.md#final-frame) specification.
             is_final: true,
         },
-        &mut iv, &mut aad, &mut frame_buf, ciphertext, sig_digest,
+        &mut iv,
+        &mut aad,
+        &mut frame_buf,
+        ciphertext,
+        sig_digest,
     )?;
 
     Ok(())
