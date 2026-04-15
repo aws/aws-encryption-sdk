@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Encrypt operation — obtains encryption materials from a keyring/CMM,
-//! derives a data key, encrypts the plaintext (framed or non-framed),
+//! derives a data key, encrypts the plaintext (framed or nonframed),
 //! and serializes the result into an encrypted message.
 
 use crate::error::Error;
@@ -86,11 +86,21 @@ pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
     })
 }
 
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#plaintext
+//= specification/client-apis/streaming.md#overview
+//= type=implication
+//= reason=encrypt_stream provides a streaming encryption API via SafeRead/SafeWrite
+//# The AWS Encryption SDK MAY provide APIs that enable streamed [encryption](encrypt.md)
+//# and [decryption](decrypt.md).
+//= specification/client-apis/streaming.md#overview
+//= type=implication
+//= reason=encrypt_stream reads plaintext incrementally via SafeRead and writes ciphertext incrementally via SafeWrite, never buffering the full input
+//# APIs that support streaming of the encrypt or decrypt operation SHOULD allow customers
+//# to be able to process arbitrarily large inputs with a finite amount of working memory.
+//= specification/client-apis/encrypt.md#plaintext
 //= type=implication
 //= reason=SafeRead accepts incremental reads, so callers can stream the encrypted message without buffering it entirely in memory
 //# This input MAY be [streamed](streaming.md) to this operation.
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#encrypted-message
+//= specification/client-apis/encrypt.md#encrypted-message
 //= type=implication
 //= reason=SafeWrite accepts incremental writes, so each decrypted frame is flushed to the output as it's produced without buffering the full ciphertext
 //# This operation MAY [stream](streaming.md) the encrypted message.
@@ -226,6 +236,9 @@ async fn internal_encrypt(
     //= specification/client-apis/encrypt.md#behavior
     //# Any data that is not specified within the [message format](../data-format/message.md)
     //# MUST NOT be added to the output message.
+    //= specification/client-apis/streaming.md#outputs
+    //= reason=All bytes have been written to the SafeWrite before Ok is returned; success is only indicated after output is complete
+    //# Operations MUST NOT indicate completion or success until an end to the output has been indicated.
     Ok(EncryptStreamOutput {
         encryption_context: header.encryption_context,
         algorithm_suite_id: suite_id,
@@ -572,8 +585,8 @@ fn build_header_body(
                 message_id: message_id.clone(),
                 encryption_context: encryption_context.clone(),
                 encrypted_data_keys: encrypted_data_keys.into(),
-                //= specification/client-apis/encrypt.md#un-framed-message-body-encryption
-                //# Implementations of the AWS Encryption SDK MUST NOT encrypt using the Non-Framed content type.
+                //= specification/client-apis/encrypt.md#nonframed-message-body-encryption
+                //# Implementations of the AWS Encryption SDK MUST NOT encrypt using the nonframed content type.
                 content_type: ContentType::Framed,
                 frame_length,
                 suite_data: sd,

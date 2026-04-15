@@ -3,7 +3,7 @@
 
 //! Decrypt operation — deserializes the encrypted message header and body,
 //! obtains decryption materials from a keyring/CMM, derives the data key,
-//! and decrypts the plaintext (handling both framed and non-framed formats).
+//! and decrypts the plaintext (handling both framed and nonframed formats).
 
 use crate::encrypt::get_esdk_id;
 use crate::error::Error;
@@ -15,13 +15,13 @@ use crate::message::serializable_types::{from_canonical_pairs, to_canonical_pair
 use crate::message::{header, DigestWriter, serialize_functions, header_types, header_auth, v2_header_body, encryption_context, body, NoopWriter, footer};
 use crate::types::{SafeRead, SafeWrite, DecryptStreamInput, DecryptStreamOutput, DecryptInput, DecryptOutput, EncryptionContext, MaterialSource, NetV400RetryPolicy};
 use aws_mpl_legacy::primitives::{aes_decrypt, EcdsaSignatureAlgorithm, DigestContext, ecdsa_verify_context};
-//= aws-encryption-sdk-specification/client-apis/client.md#commitment-policy
+//= specification/client-apis/client.md#commitment-policy
 //= type=implication
 //# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
-//= aws-encryption-sdk-specification/client-apis/client.md#initialization
+//= specification/client-apis/client.md#initialization
 //= type=implication
 //# If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
-//= aws-encryption-sdk-specification/client-apis/client.md#initialization
+//= specification/client-apis/client.md#initialization
 //= type=implication
 //# Once a [commitment policy](#commitment-policy) has been set it SHOULD be immutable.
 use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
@@ -47,20 +47,30 @@ impl ProtectionNeeded {
     }
 }
 
-//= aws-encryption-sdk-specification/client-apis/decrypt.md#encrypted-message
+//= specification/client-apis/streaming.md#overview
+//= type=implication
+//= reason=decrypt_stream provides a streaming decryption API via SafeRead/SafeWrite
+//# The AWS Encryption SDK MAY provide APIs that enable streamed [encryption](encrypt.md)
+//# and [decryption](decrypt.md).
+//= specification/client-apis/streaming.md#overview
+//= type=implication
+//= reason=decrypt_stream reads ciphertext incrementally via SafeRead and writes plaintext incrementally via SafeWrite, never buffering the full input
+//# APIs that support streaming of the encrypt or decrypt operation SHOULD allow customers
+//# to be able to process arbitrarily large inputs with a finite amount of working memory.
+//= specification/client-apis/decrypt.md#encrypted-message
 //= type=implication
 //= reason=SafeRead accepts incremental reads, so callers can stream the encrypted message without buffering it entirely in memory
 //# This input MAY be [streamed](streaming.md) to this operation.
-//= aws-encryption-sdk-specification/client-apis/decrypt.md#encrypted-message
+//= specification/client-apis/decrypt.md#encrypted-message
 //= type=implication
 //= reason=The implementation does not require holding the entire encrypted message in memory; it processes bytes incrementally via SafeRead
 //# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
 //# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
-//= aws-encryption-sdk-specification/client-apis/decrypt.md#plaintext
+//= specification/client-apis/decrypt.md#plaintext
 //= type=implication
 //= reason=SafeWrite accepts incremental writes, so each decrypted frame is flushed to the output as it's produced without buffering the full plaintext
 //# This operation MAY [stream](streaming.md) the plaintext as output.
-//= aws-encryption-sdk-specification/client-apis/decrypt.md#plaintext
+//= specification/client-apis/decrypt.md#plaintext
 //= type=implication
 //= reason=The implementation streams plaintext output incrementally via SafeWrite, so it does not require buffering the full plaintext in memory
 //# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
@@ -111,7 +121,7 @@ pub async fn decrypt_stream(
     result
 }
 
-//= aws-encryption-sdk-specification/client-apis/client.md#decrypt
+//= specification/client-apis/client.md#decrypt
 //= type=implication
 //# The AWS Encryption SDK Client MUST provide an [decrypt](./decrypt.md#input) function
 //# that adheres to [decrypt](./decrypt.md).
@@ -219,6 +229,12 @@ async fn internal_decrypt(
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //# Until the [header is verified](#verify-the-header), this operation MUST NOT
     //# release any parsed information from the header.
+    //= specification/client-apis/decrypt.md#verify-the-header
+    //= reason=After step_verify_header succeeds, the header is verified and parsed info can be released
+    //# - A streamed Decrypt operation SHOULD release the parsed [encryption context](#encryption-context),
+    //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id),
+    //# and [other header information](#parsed-header)
+    //# as soon as tag verification succeeds.
     let mut state = step_verify_header(state, net_v4_retry_policy)?;
 
     //= specification/client-apis/decrypt.md#behavior
@@ -240,7 +256,7 @@ async fn internal_decrypt(
     serialize_functions::write_bytes(plaintext, &last_frame)?;
 
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
-    //# Any plaintext decrypted from [unframed data](../data-format/message-body.md#un-framed-data) or
+    //# Any plaintext decrypted from [unframed data](../data-format/message-body.md#nonframed-data) or
     //# a final frame in a streamed Decrypt operation MUST NOT be released until [signature verification](#verify-the-signature)
     //# successfully completes.
     let mut ec = state.encryption_context_to_only_authenticate;
@@ -327,12 +343,18 @@ async fn step_get_decryption_materials(
             val_err("Stored header algorithm suite does not match decryption algorithm suite"),
         );
     }
-    //= specification/client-apis/decrypt.md#v2-header-deserialization
-    //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST be deserialized according to the
-    //# [Authentication Tag](../data-format/message-header.md#authentication-tag) specification.
     //= specification/client-apis/decrypt.md#v1-header-deserialization
-    //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST be deserialized according to the
-    //# [Authentication Tag](../data-format/message-header.md#authentication-tag) specification.
+    //= reason=read_header_auth_tag dispatches to V1 or V2 based on suite.message_version
+    //# The Decrypt operation MUST then deserialize the
+    //# [Header Authentication Version 1.0](../data-format/message-header.md#header-authentication-version-10):
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
+    //= reason=read_header_auth_tag dispatches to V1 or V2 based on suite.message_version
+    //# The Decrypt operation MUST then deserialize the
+    //# [Header Authentication Version 2.0](../data-format/message-header.md#header-authentication-version-20):
+    //= specification/client-apis/decrypt.md#v2-header-deserialization
+    //# - The Decrypt operation MUST deserialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
+    //= specification/client-apis/decrypt.md#v1-header-deserialization
+    //# - The Decrypt operation MUST deserialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
     let header_auth = header_auth::read_header_auth_tag(ciphertext, suite, &mut sig_digest)?;
 
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
@@ -485,20 +507,20 @@ fn step_decrypt_body(
     //# The Decrypt operation MUST use the [content type](../data-format/message-header.md#content-type) field parsed from the
     //# message header to determine whether the operation will deserialize the message bytes as
     //# [framed data](../data-format/message-body.md#framed-data) or
-    //# [un-framed data](../data-format/message-body.md#non-framed-data).
+    //# [nonframed data](../data-format/message-body.md#nonframed-data).
     let key = state.derived_data_keys.data_key.clone();
     let last_frame = match state.header.body.content_type() {
         ContentType::NonFramed => {
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
-            //# Non-framed data deserialization MUST conform to the [Non-Framed Data](../data-format/message-body.md#non-framed-data) specification.
-            //= specification/client-apis/decrypt.md#un-framed-message-body-decryption
-            //= reason=read_and_decrypt_non_framed_message_body deserializes and decrypts per the non-framed data specification
-            //# If a message has the [non-framed](../data-format/message-body.md#non-framed-data) content type,
+            //# nonframed data deserialization MUST conform to the [nonframed Data](../data-format/message-body.md#nonframed-data) specification.
+            //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
+            //= reason=read_and_decrypt_non_framed_message_body deserializes and decrypts per the nonframed data specification
+            //# If a message has the [nonframed](../data-format/message-body.md#nonframed-data) content type,
             //# the Decrypt operation MUST deserialize the message body according to the
-            //# [non-framed data specification](../data-format/message-body.md#non-framed-data)
-            //= specification/data-format/message-body.md#non-framed-data
+            //# [nonframed data specification](../data-format/message-body.md#nonframed-data)
+            //= specification/data-format/message-body.md#nonframed-data
             //= reason=read_and_decrypt_non_framed_message_body reads IV, content length, content, and auth tag in order
-            //# Non-framed data MUST consist of, in order,
+            //# nonframed data MUST consist of, in order,
             //# IV,
             //# Encrypted Content Length,
             //# Encrypted Content,
@@ -509,7 +531,7 @@ fn step_decrypt_body(
         }
         ContentType::Framed => {
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
-            //# Any plaintext decrypted from [unframed data](../data-format/message-body.md#un-framed-data) or
+            //# Any plaintext decrypted from [unframed data](../data-format/message-body.md#nonframed-data) or
             //# a final frame in a streamed Decrypt operation MUST NOT be released until [signature verification](#verify-the-signature)
             //# successfully completes.
             let fail_if_multi_frame = state.dec_mat.verification_key.is_some() && safety_needed.yes();
