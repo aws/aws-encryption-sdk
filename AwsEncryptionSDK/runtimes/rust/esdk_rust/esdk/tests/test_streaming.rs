@@ -15,6 +15,31 @@ async fn test_streaming_encrypt_decrypt_round_trip() {
     //# The AWS Encryption SDK MAY provide APIs that enable streamed [encryption](encrypt.md)
     //# and [decryption](decrypt.md).
 
+    //= specification/client-apis/streaming.md#inputs
+    //= type=test
+    //= reason=encrypt_stream accepts a SafeRead (Cursor) as input, proving the operation accepts input within a streaming framework
+    //# In order to support streaming, the operation MUST accept some input within a streaming framework.
+
+    //= specification/client-apis/streaming.md#inputs
+    //= type=test
+    //= reason=the Cursor implements Read; encrypt_stream reads bytes from it incrementally, making them consumable
+    //# - There MUST be a mechanism for input bytes to become consumable.
+
+    //= specification/client-apis/streaming.md#inputs
+    //= type=test
+    //= reason=the Cursor returns Ok(0) at EOF; encrypt_stream completes successfully, proving the EOF mechanism works
+    //# - There MUST be a mechanism to indicate that there are no more input bytes.
+
+    //= specification/client-apis/streaming.md#outputs
+    //= type=test
+    //= reason=encrypt_stream writes ciphertext to a Vec<u8> via SafeWrite; the non-empty assertion proves output was produced within the streaming framework
+    //# In order to support streaming, the operation MUST produce some output within a streaming framework.
+
+    //= specification/client-apis/streaming.md#outputs
+    //= type=test
+    //= reason=the Vec<u8> receives bytes via SafeWrite::write(), which is the mechanism for releasing output bytes
+    //# - There MUST be a mechanism for output bytes to be released.
+
     let keyring = test_keyring().await;
     let plaintext = b"hello streaming world";
 
@@ -108,6 +133,11 @@ async fn test_streaming_completion_only_after_output_end() {
     //= type=test
     //= reason=decrypt_stream returns Ok only after all plaintext bytes have been written to the SafeWrite output; the assertion that decrypted == plaintext proves output was complete before success was indicated
     //# Operations MUST NOT indicate completion or success until an end to the output has been indicated.
+
+    //= specification/client-apis/streaming.md#outputs
+    //= type=test
+    //= reason=after decrypt_stream returns Ok, all output is present in the Vec<u8>, proving the end-of-output mechanism works
+    //# - There MUST be a mechanism to indicate that the entire output has been released.
 
     let keyring = test_keyring().await;
     let plaintext = b"completion test payload";
