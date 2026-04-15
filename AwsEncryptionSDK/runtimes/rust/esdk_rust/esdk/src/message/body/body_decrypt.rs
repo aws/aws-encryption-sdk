@@ -57,14 +57,14 @@ pub(crate) fn read_and_decrypt_framed_message_body(
 
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //= reason=read_u32 reads the first 4 bytes which serve as both the Sequence Number End check and the Sequence Number for regular frames
-        //# The Decrypt operation MUST deserialize the [Sequence Number End](../data-format/message-body.md#sequence-number-end).
+        //# - The Decrypt operation MUST deserialize the [Sequence Number End](../data-format/message-body.md#sequence-number-end).
+
+        //= specification/data-format/message-body.md#sequence-number-end
+        //# The length of the sequence number end field MUST be 4 bytes.
 
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //= reason=read_u32 reads the first 4 bytes as a UInt32, which is the sequence number for regular frames
         //# - The Decrypt operation MUST deserialize the [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number).
-
-        //= specification/data-format/message-body.md#sequence-number-end
-        //# The length of the sequence number end field MUST be 4 bytes.
         let seq_num = read_u32(ciphertext, sig_digest)?;
         //= specification/data-format/message-body.md#regular-frame-sequence-number
         //# The length of the serialized sequence number field MUST be 4 bytes.
