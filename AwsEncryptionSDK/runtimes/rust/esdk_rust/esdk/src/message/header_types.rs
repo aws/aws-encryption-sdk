@@ -80,6 +80,7 @@ pub(crate) fn read_msg_type(
         val if val == MessageType::TypeCustomerAed as u8 => Ok(MessageType::TypeCustomerAed),
         //= specification/data-format/message-header.md#type
         //# The type (hex) of this field MUST be a value that exists in the following table:
+
         //= specification/client-apis/decrypt.md#v1-header-deserialization
         //# The value MUST be a [supported type](../data-format/message-header.md#supported-types).
         _ => ser_err("Unsupported Message Type"),
@@ -117,6 +118,7 @@ pub(crate) fn read_content_type(
         val if val == ContentType::Framed as u8 => Ok(ContentType::Framed),
         //= specification/client-apis/decrypt.md#v2-header-deserialization
         //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
+
         //= specification/client-apis/decrypt.md#v1-header-deserialization
         //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
         _ => ser_err("Unsupported Content Type"),

@@ -20,6 +20,7 @@ pub(crate) fn read_esdk_suite_id(
     //= specification/data-format/message-header.md#algorithm-suite-id
     //# The value (hex) of this field MUST be a value that exists in the
     //# [Supported Algorithm Suites](../framework/algorithm-suites.md#supported-algorithm-suites) table.
+
     //= specification/data-format/message-header.md#algorithm-suite-id
     //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
     let suite = aws_mpl_legacy::suites::get_algorithm_suite_info(esdk_suite_id_bytes)?;

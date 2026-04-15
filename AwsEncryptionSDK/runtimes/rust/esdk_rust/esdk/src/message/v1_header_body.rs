@@ -48,6 +48,7 @@ pub(crate) fn write_v1_header_body(
     // Version
     //= specification/client-apis/encrypt.md#v1-header
     //# - The Encrypt operation MUST serialize the [Version](../data-format/message-header.md#version).
+
     //= specification/client-apis/encrypt.md#v1-header
     //# The value MUST correspond to [1.0](../data-format/message-header.md#supported-versions).
     write_msg_format_version(
@@ -60,6 +61,7 @@ pub(crate) fn write_v1_header_body(
     // Type
     //= specification/client-apis/encrypt.md#v1-header
     //# - The Encrypt operation MUST serialize the [Type](../data-format/message-header.md#type).
+
     //= specification/client-apis/encrypt.md#v1-header
     //# The value MUST correspond to [Customer Authenticated Encrypted Data](../data-format/message-header.md#supported-types).
     write_msg_type(w, body.message_type)?;
@@ -67,6 +69,7 @@ pub(crate) fn write_v1_header_body(
     // Algorithm Suite ID
     //= specification/client-apis/encrypt.md#v1-header
     //# - The Encrypt operation MUST serialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
+
     //= specification/client-apis/encrypt.md#v1-header
     //# The value MUST correspond to the [algorithm suite](../framework/algorithm-suites.md) used in this behavior.
     write_esdk_suite_id(w, &body.algorithm_suite)?;
@@ -74,6 +77,7 @@ pub(crate) fn write_v1_header_body(
     // Message ID
     //= specification/client-apis/encrypt.md#v1-header
     //# - The Encrypt operation MUST serialize the [Message ID](../data-format/message-header.md#message-id).
+
     //= specification/client-apis/encrypt.md#v1-header
     //# The process used to generate this identifier MUST use a good source of randomness
     //# to make the chance of duplicate identifiers negligible.
@@ -82,6 +86,7 @@ pub(crate) fn write_v1_header_body(
     // AAD
     //= specification/client-apis/encrypt.md#v1-header
     //# - The Encrypt operation MUST serialize the [AAD](../data-format/message-header.md#aad).
+
     //= specification/client-apis/encrypt.md#v1-header
     //# The value MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
     //# in the [encryption materials](../framework/structures.md#encryption-materials),
@@ -93,6 +98,7 @@ pub(crate) fn write_v1_header_body(
     // Encrypted Data Keys
     //= specification/client-apis/encrypt.md#v1-header
     //# - The Encrypt operation MUST serialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
+
     //= specification/client-apis/encrypt.md#v1-header
     //# The value MUST be the serialization of the
     //# [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials).
@@ -101,6 +107,7 @@ pub(crate) fn write_v1_header_body(
     // Content Type
     //= specification/client-apis/encrypt.md#v1-header
     //# - The Encrypt operation MUST serialize the [Content Type](../data-format/message-header.md#content-type).
+
     //= specification/client-apis/encrypt.md#v1-header
     //# The value MUST be [02](../data-format/message-header.md#supported-content-types).
     write_content_type(w, body.content_type)?;
@@ -113,6 +120,7 @@ pub(crate) fn write_v1_header_body(
     // IV Length
     //= specification/client-apis/encrypt.md#v1-header
     //# - The Encrypt operation MUST serialize the [IV Length](../data-format/message-header.md#iv-length).
+
     //= specification/client-apis/encrypt.md#v1-header
     //# The value MUST match the [IV length](../framework/algorithm-suites.md#iv-length)
     //# specified by the [algorithm suite](../framework/algorithm-suites.md).
@@ -120,6 +128,7 @@ pub(crate) fn write_v1_header_body(
     //= specification/data-format/message-header.md#iv-length
     //# This value MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the
     //# [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
+
     //= specification/data-format/message-header.md#iv-length
     //# The length of the serialized IV length field MUST be 1 byte.
     write_u8(
@@ -132,6 +141,7 @@ pub(crate) fn write_v1_header_body(
     // Frame Length
     //= specification/client-apis/encrypt.md#v1-header
     //# - The Encrypt operation MUST serialize the [Frame Length](../data-format/message-header.md#frame-length).
+
     //= specification/client-apis/encrypt.md#v1-header
     //# The value MUST be the value of the frame size determined above.
     let frame_len = body.frame_length;
@@ -165,6 +175,7 @@ pub(crate) fn read_v1_header_iv_length(
 ) -> Result<u8, Error> {
     //= specification/data-format/message-header.md#iv-length
     //# The length of the serialized IV length field MUST be 1 byte.
+
     //= specification/data-format/message-header.md#iv-length
     //# The IV length MUST be interpreted as a UInt8.
     let raw = read_u8(r, raw)?;
@@ -209,6 +220,7 @@ pub(crate) fn read_v1_header_body(
     let header_iv_length = read_v1_header_iv_length(r, algorithm_suite, raw)?;
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //# - The Decrypt operation MUST deserialize the [Frame Length](../data-format/message-header.md#frame-length).
+
     //= specification/data-format/message-header.md#frame-length
     //# The length of the serialized frame length field MUST be 4 bytes.
     let frame_length_raw = read_u32(r, raw)?;

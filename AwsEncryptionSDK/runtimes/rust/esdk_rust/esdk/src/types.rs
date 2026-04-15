@@ -102,10 +102,12 @@ pub fn mpl() -> aws_mpl_legacy::dafny::client::Client {
 //= specification/client-apis/streaming.md#outputs
 //= type=implication
 //# In order to support streaming, the operation MUST produce some output within a streaming framework.
+
 //= specification/client-apis/streaming.md#outputs
 //= type=implication
 //= reason=SafeWrite wraps std::io::Write; write() pushes bytes to the consumer immediately
 //# - There MUST be a mechanism for output bytes to be released.
+
 //= specification/client-apis/streaming.md#outputs
 //= type=implication
 //= reason=SafeWrite wraps std::io::Write; the operation returning Ok(()) signals that all output has been written
@@ -119,13 +121,16 @@ impl<T: std::io::Write + Send + Sync + std::fmt::Debug> SafeWrite for T {}
 //= reason=SafeRead wraps std::io::Read, enabling incremental consumption; the implementation does not require holding the entire input in memory
 //# If an implementation requires holding the entire input in memory in order to perform the operation,
 //# that implementation SHOULD NOT provide an API that allows the caller to stream the operation.
+
 //= specification/client-apis/streaming.md#inputs
 //= type=implication
 //# In order to support streaming, the operation MUST accept some input within a streaming framework.
+
 //= specification/client-apis/streaming.md#inputs
 //= type=implication
 //= reason=SafeRead wraps std::io::Read; read() returns bytes as they become available
 //# - There MUST be a mechanism for input bytes to become consumable.
+
 //= specification/client-apis/streaming.md#inputs
 //= type=implication
 //= reason=SafeRead wraps std::io::Read; read() returning Ok(0) signals EOF
@@ -221,19 +226,25 @@ impl ::std::fmt::Display for NetV400RetryPolicy {
 /// Input for [`encrypt`](crate::encrypt).
 //= specification/client-apis/encrypt.md#input
 //# - The input to the Encrypt operation MUST accept a required [plaintext](#plaintext) argument.
+
 //= specification/client-apis/encrypt.md#input
 //# - The input to the Encrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
+
 //= specification/client-apis/encrypt.md#input
 //# - The input to the Encrypt operation MUST accept an optional [Algorithm Suite](#algorithm-suite) argument.
+
 //= specification/client-apis/encrypt.md#input
 //# - The input to the Encrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
+
 //= specification/client-apis/encrypt.md#input
 //# - The input to the Encrypt operation MUST accept an optional [Frame Length](#frame-length) argument.
+
 //= specification/client-apis/encrypt.md#input
 //= type=implication
 //= reason=EncryptInput has plaintext: &[u8] (always known length) and no plaintext_length_bound field, so a caller cannot specify both
 //# Implementations SHOULD ensure that a caller is not able to specify both a [plaintext](#plaintext)
 //# with known length and a [Plaintext Length Bound](#plaintext-length-bound) by construction.
+
 //= specification/client-apis/encrypt.md#input
 //= type=implication
 //= reason=EncryptInput has plaintext: &[u8] (always known length) and no plaintext_length_bound field, making it impossible to specify both
@@ -264,6 +275,7 @@ pub struct EncryptInput<'a> {
     //= specification/client-apis/client.md#initialization
     //# - On client initialization,
     //# the caller MUST have the option to provide a [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys).
+
     //= specification/client-apis/client.md#initialization
     //# If no [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys) is provided
     //# the default MUST result in no limit on the number of encrypted data keys (aside from the limit imposed by the [message format](../format/message-header.md)).
@@ -336,6 +348,7 @@ impl<'a> EncryptInput<'a> {
     pub(crate) fn validate(&self) -> Result<(), Error> {
         //= specification/client-apis/encrypt.md#input
         //# The Encrypt operation MUST validate that exactly one keyring or CMM was provided by the caller.
+
         //= specification/client-apis/encrypt.md#input
         //# If the caller does not provide exactly one of a keyring or CMM, the Encrypt operation MUST fail.
         if self.source.is_none() {
@@ -434,6 +447,7 @@ pub struct DecryptInput<'a> {
     /// data to be decrypted
     //= specification/client-apis/decrypt.md#input
     //# - The input to the Decrypt operation MUST accept a required [Encrypted Message](#encrypted-message) argument.
+
     //= specification/client-apis/decrypt.md#encrypted-message
     //# The input encrypted message MUST be a sequence of bytes in the
     //# [message format](../data-format/message.md) specified by the AWS Encryption SDK.
@@ -445,6 +459,7 @@ pub struct DecryptInput<'a> {
     /// The source of cryptographic materials
     //= specification/client-apis/decrypt.md#input
     //# - The input to the Decrypt operation MUST accept an optional [Cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
+
     //= specification/client-apis/decrypt.md#input
     //= type=implication
     //= reason=source is Option<MaterialSource>, making CMM/keyring optional by construction
@@ -552,6 +567,7 @@ impl<'a> DecryptInput<'a> {
     pub(crate) fn validate(&self) -> Result<(), Error> {
         //= specification/client-apis/decrypt.md#input
         //# The Decrypt operation MUST validate that exactly one of a keyring or CMM was provided by the caller.
+
         //= specification/client-apis/decrypt.md#input
         //# If the caller does not provide exactly one of a keyring or CMM, the Decrypt operation MUST fail.
         if self.source.is_none() {

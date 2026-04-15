@@ -38,13 +38,14 @@ pub(crate) fn write_header_body(w: &mut dyn SafeWrite, body: &HeaderBody) -> Res
     }
 }
 
-//= aws-encryption-sdk-specification/client-apis/decrypt.md#parse-the-header
+//= specification/client-apis/decrypt.md#parse-the-header
 //= type=implication
 //= reason=SafeRead (std::io::Read) only supports sequential consumption with no skip/seek,
 //= reason=so reading from it inherently processes all consumable bytes until a valid header is formed.
 //# This operation MUST attempt to deserialize all consumable encrypted message bytes
 //# until it has successfully deserialized a valid [message header](../data-format/message-header.md).
-//= aws-encryption-sdk-specification/client-apis/decrypt.md#v2-header-deserialization
+
+//= specification/client-apis/decrypt.md#v2-header-deserialization
 //= type=implication
 //= reason=SafeRead (std::io::Read) only supports sequential consumption with no skip/seek,
 //= reason=so reading from it inherently processes all consumable bytes until a valid header is formed.
@@ -60,8 +61,10 @@ pub(crate) fn read_header_body(
     //= reason=Every read method reads the next available bytes and does not jump out of sequence
     //# Given encrypted message bytes, this operation MUST process those bytes sequentially,
     //# deserializing those bytes according to the [message format](../data-format/message.md).
+
     //= specification/client-apis/decrypt.md#parse-the-header
     //# Each header field MUST be deserialized according to its specification in the [message header](../data-format/message-header.md):
+
     //= specification/client-apis/decrypt.md#parse-the-header
     //# The [Version](../data-format/message-header.md#version) field MUST be deserialized first.
     let version = read_msg_format_version(ciphertext, raw_header)?;

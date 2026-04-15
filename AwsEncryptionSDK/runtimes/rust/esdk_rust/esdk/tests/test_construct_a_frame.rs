@@ -15,6 +15,7 @@ async fn test_construct_frame_cipherkey_and_plaintext() {
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The cipherkey MUST be the derived data key
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The plaintext MUST be the next subsequence of consumable plaintext bytes that have not yet been encrypted.
@@ -32,10 +33,12 @@ async fn test_construct_frame_aad_and_iv() {
     //# [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# specified by the [algorithm suite](../framework/algorithm-suites.md),
     //# with the following inputs:
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
     //# constructed according to the [Message Body AAD](../data-format/message-body-aad.md) specification, as follows:
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The IV MUST be the [sequence number](../data-format/message-body-aad.md#sequence-number)
@@ -145,6 +148,7 @@ async fn test_construct_frame_regular_frame_plaintext_equals_frame_length() {
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - For a regular frame the length of this plaintext MUST equal the frame length.
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - For a regular frame the length of this plaintext subsequence MUST equal the frame length.
@@ -161,6 +165,7 @@ async fn test_construct_frame_final_frame_remaining_plaintext() {
     //# - For a final frame this MUST be the length of the remaining plaintext bytes
     //# which have not yet been encrypted,
     //# whose length MUST be equal to or less than the frame length.
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - For a final frame this MUST be the remaining plaintext bytes which have not yet been encrypted,
@@ -187,15 +192,19 @@ async fn test_construct_frame_serialization_regular_and_final() {
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# The Encrypt operation MUST serialize a regular frame or final frame with the following specifics:
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# For a regular frame, the serialization MUST follow the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# For a final frame, the serialization MUST follow the [Final Frame](../data-format/message-body.md#final-frame) specification.
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# For a regular frame, each field MUST be serialized according to its specification:
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# For a final frame, each field MUST be serialized according to its specification:
@@ -210,9 +219,11 @@ async fn test_construct_frame_sequence_number_serialized() {
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The Encrypt operation MUST serialize the [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number).
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# The value MUST be the sequence number of this frame.
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The Encrypt operation MUST serialize the [Sequence Number](../data-format/message-body.md#final-frame-sequence-number).
@@ -226,9 +237,11 @@ async fn test_construct_frame_iv_serialized() {
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The Encrypt operation MUST serialize the [IV](../data-format/message-body.md#regular-frame-iv).
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# The value MUST be the IV used when calculating the encrypted content for this frame.
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The Encrypt operation MUST serialize the [IV](../data-format/message-body.md#final-frame-iv).
@@ -242,6 +255,7 @@ async fn test_construct_frame_final_frame_has_endframe_marker() {
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The Encrypt operation MUST serialize the [Sequence Number End](../data-format/message-body.md#sequence-number-end).
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The Encrypt operation MUST serialize the [Sequence Number End](../data-format/message-body.md#sequence-number-end).
@@ -256,6 +270,7 @@ async fn test_construct_frame_final_frame_content_length_serialized() {
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The Encrypt operation MUST serialize the [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length).
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The Encrypt operation MUST serialize the [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length).
@@ -285,18 +300,23 @@ async fn test_construct_frame_auth_tag_serialized() {
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The Encrypt operation MUST serialize the [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content).
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# The value MUST be the encrypted content calculated for this frame.
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag).
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# The value MUST be the authentication tag output when calculating the encrypted content for this frame.
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The Encrypt operation MUST serialize the [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content).
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag).

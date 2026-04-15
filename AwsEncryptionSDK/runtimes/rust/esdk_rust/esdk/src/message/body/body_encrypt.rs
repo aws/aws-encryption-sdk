@@ -51,6 +51,7 @@ pub(crate) fn construct_frame(
         //= specification/client-apis/encrypt.md#construct-a-frame
         //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be the sequence
         //# number of the frame being encrypted.
+
         //= specification/data-format/message-body-aad.md#sequence-number
         //= reason=The sequence_number parameter is the frame sequence number passed from encrypt_and_serialize_body
         //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
@@ -58,6 +59,7 @@ pub(crate) fn construct_frame(
         //= specification/client-apis/encrypt.md#construct-a-frame
         //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
         //# equal to the length of the plaintext being encrypted.
+
         //= specification/data-format/message-body-aad.md#content-length
         //= reason=plaintext.len() is the length of the plaintext being encrypted in this frame
         //# - For [framed data](message-body.md#framed-data), this value MUST equal the length, in bytes,
@@ -70,11 +72,13 @@ pub(crate) fn construct_frame(
     //# - The IV MUST be the [sequence number](../data-format/message-body-aad.md#sequence-number)
     //# used in the message body AAD for this frame,
     //# padded to the [IV length](../data-format/message-header.md#iv-length).
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# The Encrypt operation MUST serialize a regular frame or final frame with the following specifics:
     iv_seq(input.sequence_number, iv);
     //= specification/data-format/message-body.md#regular-frame-iv
     //# Each frame in the [Framed Data](#framed-data) MUST include an IV that is unique within the message.
+
     //= specification/data-format/message-body.md#final-frame-iv
     //# A generated IV MUST be a unique IV within the message.
     let _iv_is_unique = &iv;
@@ -86,6 +90,7 @@ pub(crate) fn construct_frame(
         //= specification/client-apis/encrypt.md#construct-a-frame
         //= reason=The following lines serialize SeqNumEnd, SeqNum, IV, EncContentLen, EncContent, and AuthTag in order per the Final Frame spec
         //# For a final frame, each field MUST be serialized according to its specification:
+
         //= specification/data-format/message-body.md#final-frame
         //# A final frame MUST consist of, in order,
         //# Sequence Number End,
@@ -94,6 +99,7 @@ pub(crate) fn construct_frame(
         //# Encrypted Content Length,
         //# Encrypted Content,
         //# and Authentication Tag.
+
         //= specification/client-apis/encrypt.md#construct-a-frame
         //# - [Sequence Number End](../data-format/message-body.md#sequence-number-end): MUST be serialized according to the
         //# [Sequence Number End](../data-format/message-body.md#sequence-number-end) specification.
@@ -112,6 +118,7 @@ pub(crate) fn construct_frame(
     //# - [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number): MUST be serialized according to the
     //# [Regular Frame Sequence Number](../data-format/message-body.md#regular-frame-sequence-number) specification.
     //# The value MUST be the sequence number of this frame.
+
     //= specification/data-format/message-body.md#regular-frame-sequence-number
     //# The sequence number MUST be interpreted as a UInt32.
     write_u32(frame_buf, input.sequence_number)?;
@@ -119,6 +126,7 @@ pub(crate) fn construct_frame(
     //= reason=write_u32 above serializes the sequence number for both regular and final frames in this shared code path
     //# - [Sequence Number](../data-format/message-body.md#final-frame-sequence-number): MUST be serialized according to the
     //# [Final Frame Sequence Number](../data-format/message-body.md#final-frame-sequence-number) specification.
+
     //= specification/data-format/message-body.md#final-frame-sequence-number
     //= reason=write_u32 serializes the sequence number as a UInt32, same type as the regular frame sequence number
     //# The Final Frame Sequence Number MUST be interpreted as the same type as the
@@ -133,6 +141,7 @@ pub(crate) fn construct_frame(
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# - [IV](../data-format/message-body.md#regular-frame-iv): MUST be serialized according to the
     //# [Regular Frame IV](../data-format/message-body.md#regular-frame-iv) specification.
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# The value MUST be the IV used when calculating the encrypted content for this frame.
     write_bytes(frame_buf, iv)?;
@@ -140,6 +149,7 @@ pub(crate) fn construct_frame(
     //= reason=write_bytes above serializes the IV for both regular and final frames in this shared code path
     //# - [IV](../data-format/message-body.md#final-frame-iv): MUST be serialized according to the
     //# [Final Frame IV](../data-format/message-body.md#final-frame-iv) specification.
+
     //= specification/data-format/message-body.md#final-frame-iv
     //= reason=iv is &[u8], interpreted as raw bytes
     //# The IV MUST be interpreted as bytes.
@@ -148,6 +158,7 @@ pub(crate) fn construct_frame(
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# - [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length): MUST be serialized according to the
     //# [Final Frame Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length) specification.
+
     //= specification/data-format/message-body.md#final-frame
     //# A final frame MUST only differ from a regular frame by the addition of the
     //# Sequence Number End
@@ -190,6 +201,7 @@ pub(crate) fn construct_frame(
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# - [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content): MUST be serialized according to the
     //# [Regular Frame Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content) specification.
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# The value MUST be the encrypted content calculated for this frame.
     let _encrypted_content_written = ();
@@ -197,6 +209,7 @@ pub(crate) fn construct_frame(
     //= reason=aes_encrypt writes encrypted content to frame_buf for both regular and final frames in this shared code path
     //# - [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content): MUST be serialized according to the
     //# [Final Frame Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content) specification.
+
     //= specification/data-format/message-body.md#final-frame-encrypted-content
     //= reason=aes_encrypt output bytes are written directly to frame_buf, interpreted as raw bytes
     //# The encrypted content MUST be interpreted as bytes.
@@ -204,6 +217,7 @@ pub(crate) fn construct_frame(
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# - [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag): MUST be serialized according to the
     //# [Regular Frame Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag) specification.
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# The value MUST be the authentication tag output when calculating the encrypted content for this frame.
     let _authentication_tag_written = ();
@@ -211,6 +225,7 @@ pub(crate) fn construct_frame(
     //= reason=aes_encrypt writes the authentication tag to frame_buf for both regular and final frames in this shared code path
     //# - [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag): MUST be serialized according to the
     //# [Final Frame Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag) specification.
+
     //= specification/data-format/message-body.md#final-frame-authentication-tag
     //= reason=aes_encrypt output tag bytes are written directly to frame_buf, interpreted as raw bytes
     //# The authentication tag MUST be interpreted as bytes.
@@ -219,6 +234,7 @@ pub(crate) fn construct_frame(
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= reason=Frame is fully serialized into frame_buf before being written to ciphertext; frame_buf.clear() at function start and write_bytes(ciphertext, frame_buf) here ensure atomic release
     //# The serialized frame bytes MUST NOT be released until the entire frame has been serialized.
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //# If the Encrypt operation is streaming the encrypted message and
     //# the entire frame has been serialized,
@@ -254,6 +270,7 @@ pub(crate) fn encrypt_and_serialize_body(
     //= specification/data-format/message-body.md#regular-frame-sequence-number
     //= reason=START_SEQUENCE_NUMBER is defined as 1
     //# Framed Data MUST start at Sequence Number 1.
+
     //= specification/client-apis/encrypt.md#construct-a-frame
     //= reason=START_SEQUENCE_NUMBER is defined as 1
     //# If this is the first frame sequentially, the sequence number value MUST be 1.
@@ -275,6 +292,7 @@ pub(crate) fn encrypt_and_serialize_body(
         //= specification/client-apis/encrypt.md#construct-the-body
         //# - If there are not enough input consumable plaintext bytes to create a new regular frame,
         //# then this operation MUST [construct a final frame](#construct-a-frame)
+
         //= specification/data-format/message-body.md#final-frame
         //= reason=When in_size < frame_length on the first iteration, the loop breaks immediately to construct a single final frame
         //# - When the length of the Plaintext is less than the Frame Length,
@@ -288,6 +306,7 @@ pub(crate) fn encrypt_and_serialize_body(
         //# such that creating a regular frame processes all consumable bytes,
         //# then this operation MUST [construct either a final frame or regular frame](#construct-a-frame)
         //# with the remaining plaintext.
+
         //= specification/data-format/message-body.md#final-frame
         //# - When the length of the Plaintext is an exact multiple of the Frame Length
         //# (including if it is equal to the frame length),
@@ -301,6 +320,7 @@ pub(crate) fn encrypt_and_serialize_body(
         //# such that creating a regular frame does not processes all consumable bytes,
         //# then this operation MUST [construct a regular frame](#construct-a-frame)
         //# using the consumable plaintext bytes.
+
         //= specification/data-format/message-body.md#framed-data
         //# - The number of frames in a single message MUST be less than or equal to `2^32 - 1`.
         if sequence_number == ENDFRAME_SEQUENCE_NUMBER {
@@ -315,6 +335,7 @@ pub(crate) fn encrypt_and_serialize_body(
             //= specification/client-apis/encrypt.md#plaintext-length-bound
             //# If this input is provided, this operation MUST NOT encrypt a plaintext with length
             //# greater than this value.
+
             //= specification/client-apis/encrypt.md#construct-the-body
             //# If [Plaintext Length Bound](#plaintext-length-bound) was specified on input
             //# and this operation determines at any time that the plaintext being encrypted
@@ -327,6 +348,7 @@ pub(crate) fn encrypt_and_serialize_body(
 
         //= specification/client-apis/encrypt.md#construct-the-body
         //# Regular frame serialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
+
         //= specification/data-format/message-body.md#regular-frame
         //# A regular frame MUST consist of, in order,
         //# Sequence Number,
@@ -339,9 +361,11 @@ pub(crate) fn encrypt_and_serialize_body(
                 //= specification/client-apis/encrypt.md#construct-a-frame
                 //= reason=plaintext_frame is exactly frame_length bytes (the full buffer read from input)
                 //# - For a regular frame the length of this plaintext MUST equal the frame length.
+
                 //= specification/client-apis/encrypt.md#construct-a-frame
                 //= reason=plaintext_frame is exactly frame_length bytes for a regular frame
                 //# - For a regular frame the length of this plaintext subsequence MUST equal the frame length.
+
                 //= specification/data-format/message-body.md#regular-frame-encrypted-content
                 //# The length of the encrypted content of a Regular Frame MUST be equal to the Frame Length.
                 plaintext: &plaintext_frame,
@@ -357,6 +381,7 @@ pub(crate) fn encrypt_and_serialize_body(
 
         //= specification/data-format/message-body.md#regular-frame-sequence-number
         //# Subsequent frames MUST be in order and MUST contain an increment of 1 from the previous frame.
+
         //= specification/client-apis/encrypt.md#construct-a-frame
         //# Otherwise, the sequence number value MUST be 1 greater than the value of the sequence number
         //# of the previous frame.
@@ -389,6 +414,7 @@ pub(crate) fn encrypt_and_serialize_body(
     //# If an end to the input has been indicated, there are no more consumable plaintext bytes to process,
     //# and a final frame has not yet been constructed,
     //# this operation MUST [construct an empty final frame](#construct-a-frame).
+
     //= specification/client-apis/encrypt.md#construct-the-body
     //# Final frame serialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
     construct_frame(
@@ -400,6 +426,7 @@ pub(crate) fn encrypt_and_serialize_body(
             //# - For a final frame this MUST be the length of the remaining plaintext bytes
             //# which have not yet been encrypted,
             //# whose length MUST be equal to or less than the frame length.
+
             //= specification/client-apis/encrypt.md#construct-a-frame
             //= reason=plaintext_frame[0..in_size] is the remaining unencrypted bytes, where in_size <= frame_length
             //# - For a final frame this MUST be the remaining plaintext bytes which have not yet been encrypted,

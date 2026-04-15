@@ -20,20 +20,25 @@ async fn test_verify_header_v2_round_trip() {
     //# this operation MUST validate the [message header body](../data-format/message-header.md#header-body)
     //# by using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# to decrypt with the following inputs:
+
     //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - The AAD MUST be the concatenation of the serialized [message header body](../data-format/message-header.md#header-body)
     //# and the serialization of encryption context to only authenticate.
+
     //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# For message format version [2.0](../data-format/message-header.md#supported-versions)
     //# the IV MUST be 0.
+
     //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - the cipherkey MUST be the derived data key
+
     //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - the ciphertext MUST be an empty byte array
+
     //= specification/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - the tag MUST be the value serialized in the message header's

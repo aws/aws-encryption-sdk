@@ -49,20 +49,24 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //# the Decrypt operation MUST use the first 4 bytes of a frame to determine
         //# whether the operation will deserialize the frame as a [final frame](../data-format/message-body.md#final-frame)
         //# or [regular frame](../data-format/message-body.md#regular-frame).
+
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //# The Decrypt operation MUST inspect the first 4 bytes of each frame.
 
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //= reason=read_u32 reads the first 4 bytes which serve as both the Sequence Number End check and the Sequence Number for regular frames
         //# The Decrypt operation MUST deserialize the [Sequence Number End](../data-format/message-body.md#sequence-number-end).
+
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //= reason=read_u32 reads the first 4 bytes as a UInt32, which is the sequence number for regular frames
         //# - The Decrypt operation MUST deserialize the [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number).
+
         //= specification/data-format/message-body.md#sequence-number-end
         //# The length of the sequence number end field MUST be 4 bytes.
         let seq_num = read_u32(ciphertext, sig_digest)?;
         //= specification/data-format/message-body.md#regular-frame-sequence-number
         //# The length of the serialized sequence number field MUST be 4 bytes.
+
         //= specification/data-format/message-body.md#regular-frame-sequence-number
         //# The sequence number MUST be interpreted as a UInt32.
         let _seq_num_is_u32: u32 = seq_num;
@@ -70,26 +74,31 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //# If the first 4 bytes have a value of 0xFFFFFFFF,
         //# the Decrypt operation MUST treat them as the [Sequence Number End](../data-format/message-body.md#sequence-number-end)
         //# and deserialize the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
+
         //= specification/data-format/message-body.md#sequence-number-end
         //# The sequence number end MUST be interpreted as bytes.
+
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //= reason=The ENDFRAME_SEQUENCE_NUMBER constant equals 0xFFFFFFFF, validated by the if-guard below
         //# The value MUST be `0xFFFFFFFF`.
         if seq_num == ENDFRAME_SEQUENCE_NUMBER {
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //# Final frame deserialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
+
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //# For a final frame, each field MUST be deserialized according to its specification:
 
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //= reason=read_u32 reads the final frame sequence number after the ENDFRAME marker
             //# - The Decrypt operation MUST deserialize the [Sequence Number](../data-format/message-body.md#final-frame-sequence-number).
+
             //= specification/data-format/message-body.md#final-frame-sequence-number
             //# The Final Frame Sequence Number MUST be interpreted as the same type as the
             //# [Regular Frame Sequence Number](#regular-frame-sequence-number).
             let seq_num: u32 = read_u32(ciphertext, sig_digest)?;
             //= specification/data-format/message-body.md#regular-frame-sequence-number
             //# The length of the serialized sequence number field MUST be 4 bytes.
+
             //= specification/data-format/message-body.md#regular-frame-sequence-number
             //# The sequence number MUST be interpreted as a UInt32.
             let _seq_num_is_u32: u32 = seq_num;
@@ -99,18 +108,23 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //= reason=read_bytes reads IV bytes from the final frame
             //# - The Decrypt operation MUST deserialize the [IV](../data-format/message-body.md#final-frame-iv).
+
             //= specification/data-format/message-body.md#final-frame-iv
             //# The length of the IV field MUST be equal to the IV length of the [algorithm suite](../framework/algorithm-suites.md) that generated the message.
+
             //= specification/data-format/message-body.md#final-frame-iv
             //# The IV MUST be interpreted as bytes.
             read_bytes(ciphertext, &mut iv, sig_digest)?;
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //= reason=read_seq_u32_bounded reads the encrypted content length field from the final frame
             //# - The Decrypt operation MUST deserialize the [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length).
+
             //= specification/data-format/message-body.md#final-frame-encrypted-content-length
             //# The length of the serialized encrypted content length field MUST be 4 bytes.
+
             //= specification/data-format/message-body.md#final-frame-encrypted-content-length
             //# The encrypted content length MUST be a UInt32.
+
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //# The Decrypt operation MUST ensure that the length of the encrypted content field is
             //# less than or equal to the frame length deserialized in the message header.
@@ -131,15 +145,18 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //= reason=enc_content holds the encrypted content bytes deserialized from the final frame by read_seq_u32_bounded
             //# - The Decrypt operation MUST deserialize the [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content).
+
             //= specification/data-format/message-body.md#final-frame-encrypted-content
             //# The encrypted content MUST be interpreted as bytes.
             let _enc_content_is_bytes = &enc_content;
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //= reason=read_bytes reads the authentication tag bytes from the final frame
             //# - The Decrypt operation MUST deserialize the [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag).
+
             //= specification/data-format/message-body.md#final-frame-authentication-tag
             //# The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
             //# specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
+
             //= specification/data-format/message-body.md#final-frame-authentication-tag
             //# The authentication tag MUST be interpreted as bytes.
             read_bytes(ciphertext, &mut auth_tag, sig_digest)?;
@@ -154,6 +171,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be constructed
                 //# according to [Message Body AAD](../data-format/message-body-aad.md) depending on
                 //# whether the bytes being decrypted are a regular frame, final frame, or nonframed data.
+
                 //= specification/data-format/message-body-aad.md#body-aad-content
                 //= reason=BodyAADContent::FinalFrame maps to "AWSKMSEncryptionClient Final Frame"
                 //# - The [final frame](message-body.md#final-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Final Frame`.
@@ -165,6 +183,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 seq_num,
                 //= specification/client-apis/decrypt.md#decrypt-the-message-body
                 //# If this is a final frame, this SHOULD be determined by using the [final frame encrypted content length](../data-format/message-body.md#final-frame-encrypted-content-length).
+
                 //= specification/data-format/message-body-aad.md#content-length
                 //# - For the [final frame](message-body.md#final-frame), this value MUST be greater than or equal to
                 //# 0 and less than or equal to the value of the [frame length](message-header.md#frame-length)
@@ -177,6 +196,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             );
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //# If this decryption fails, this operation MUST immediately halt and fail.
+
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //# Once at least a single frame is deserialized (or the entire body in the nonframed case),
             //# the Decrypt operation MUST decrypt and authenticate the frame (or body) using the
@@ -221,6 +241,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             }
             //= specification/data-format/message-body.md#final-frame
             //# Framed data MUST contain exactly one final frame.
+
             //= specification/data-format/message-body.md#final-frame
             //# The final frame MUST be the last frame.
             return Ok(result);
@@ -232,6 +253,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //# - If the streamed Decrypt operation is using an algorithm suite with a signature algorithm,
         //# all plaintext decrypted from regular frames SHOULD be released as soon as the above calculation,
         //# including tag verification, succeeds.
+
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //# - If the streamed Decrypt operation is using an algorithm suite without a signature algorithm,
         //# plaintext SHOULD be released as soon as the above calculation, including tag verification,
@@ -245,6 +267,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         }
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //# Regular frame deserialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
+
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //# For a regular frame, each field MUST be deserialized according to its specification:
         let _regular_frame = ();
@@ -256,6 +279,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //= reason=read_bytes reads IV bytes from the regular frame
         //# - The Decrypt operation MUST deserialize the [IV](../data-format/message-body.md#regular-frame-iv).
+
         //= specification/data-format/message-body.md#regular-frame-iv
         //# The IV MUST be interpreted as bytes.
         read_bytes(ciphertext, &mut iv, sig_digest)?;
@@ -267,18 +291,21 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //= reason=read_bytes reads the encrypted content bytes from the regular frame
         //# - The Decrypt operation MUST deserialize the [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content).
+
         //= specification/data-format/message-body.md#regular-frame-encrypted-content
         //# The encrypted content MUST be interpreted as bytes.
         read_bytes(ciphertext, &mut enc_content, sig_digest)?;
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //= reason=read_bytes reads the authentication tag bytes from the regular frame
         //# - The Decrypt operation MUST deserialize the [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag).
+
         //= specification/data-format/message-body.md#regular-frame-authentication-tag
         //# The authentication tag MUST be interpreted as bytes.
         read_bytes(ciphertext, &mut auth_tag, sig_digest)?;
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
         //# equal to the length of the plaintext that was encrypted.
+
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
         //# constructed according to the [Message Body AAD](../data-format/message-body-aad.md) specification, as follows:
@@ -293,6 +320,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be constructed
             //# according to [Message Body AAD](../data-format/message-body-aad.md) depending on
             //# whether the bytes being decrypted are a regular frame, final frame, or nonframed data.
+
             //= specification/data-format/message-body-aad.md#body-aad-content
             //= reason=BodyAADContent::RegularFrame maps to "AWSKMSEncryptionClient Frame"
             //# - The [regular frames](message-body.md#regular-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Frame`.
@@ -301,6 +329,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             //= reason=seq_num is the sequence number deserialized from this frame via read_u32
             //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be the sequence
             //# number deserialized from the frame being decrypted.
+
             //= specification/data-format/message-body-aad.md#sequence-number
             //= reason=seq_num is the frame sequence number read from the regular frame
             //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
@@ -308,6 +337,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //# If this is a regular frame, this SHOULD be determined by using the [frame length](../data-format/message-header.md#frame-length)
             //# deserialized from the message header.
+
             //= specification/data-format/message-body-aad.md#content-length
             //# - For [regular frames](message-body.md#regular-frame), this value MUST equal the value of
             //# the [frame length](message-header.md#frame-length) field in the message header.
@@ -322,8 +352,10 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //# the Decrypt operation MUST decrypt and authenticate the frame (or body) using the
         //# [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
         //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
+
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //# If this decryption fails, this operation MUST immediately halt and fail.
+
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //# This operation MUST NOT release any unauthenticated plaintext.
         aes_decrypt(
@@ -339,6 +371,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             //= specification/client-apis/decrypt.md#decrypt-the-message-body
             //= reason=auth_tag is the authentication tag deserialized from the frame
             //# - The tag MUST be the authentication tag deserialized from the frame or body.
+
             //= specification/data-format/message-body.md#final-frame-authentication-tag
             //= reason=aes_decrypt validates the decryption against this provided auth_tag
             //# It MUST be used to authenticate the final frame.
@@ -366,6 +399,7 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     //= type=exception
     //= reason=The ESDK only encrypts framed data; nonframed write path is not implemented
     //# A generated IV MUST be a unique IV within the message.
+
     //= specification/data-format/message-header.md#frame-length
     //# When the [content type](#content-type) is nonframed, the value of this field MUST be 0.
     if header.body.frame_length() != 0 {
@@ -383,6 +417,7 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     // IV
     //= specification/data-format/message-body.md#nonframed-data-iv
     //# The length of the IV field MUST be [IV Length](message-header.md#iv-length) bytes.
+
     //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= reason=iv is deserialized here and passed to aes_decrypt below
     //# - The IV MUST be the [IV](../data-format/message-body.md#nonframed-data-iv) deserialized from the message body.
@@ -397,6 +432,7 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     //= reason=SAFE_MAX_ENCRYPT equals 2^36 - 32; read_seq_u64_bounded rejects values above this limit
     //# The value of this field MUST NOT be greater than `2^36 - 32`, or 64 gibibytes (64 GiB),
     //# due to restrictions imposed by the [implemented algorithms](../framework/algorithm-suites.md).
+
     //= specification/data-format/message-body.md#nonframed-data-encrypted-content-length
     //= reason=read_seq_u64_bounded reads 8 bytes as a u64
     //# The encrypted content length MUST be interpreted as a UInt64.
@@ -423,6 +459,7 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     // Authentication Tag
     //= specification/data-format/message-body.md#nonframed-data-authentication-tag
     //# The length of the serialized authentication tag field MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
+
     //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= reason=auth_tag is deserialized here and passed to aes_decrypt below
     //# - The tag MUST be the [Authentication Tag](../data-format/message-body.md#nonframed-data-authentication-tag) deserialized from the message body.
@@ -442,6 +479,7 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
         //= specification/data-format/message-body-aad.md#body-aad-content
         //= reason=BodyAADContent::SingleBlock maps to "AWSKMSEncryptionClient Single Block"
         //# - [Non-framed data](message-body.md#non-framed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
+
         //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
         //= reason=BodyAADContent::SingleBlock maps to the nonframed data value
         //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST use the value for
@@ -449,9 +487,11 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
         BodyAADContent::SingleBlock,
         //= specification/data-format/message-body-aad.md#sequence-number
         //# For [non-framed data](message-body.md#non-framed-data), the value of this field MUST be `1`.
+
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //= reason=NONFRAMED_SEQUENCE_NUMBER is defined as 1
         //# If this is nonframed data, this value MUST be 1.
+
         //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
         //= reason=NONFRAMED_SEQUENCE_NUMBER is the constant 1
         //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be `1`.
@@ -462,9 +502,11 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
         //= specification/data-format/message-body-aad.md#content-length
         //# - For [non-framed data](message-body.md#non-framed-data), this value MUST equal the length, in bytes,
         //# of the plaintext data provided to the algorithm for encryption.
+
         //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
         //= reason=enc_content.len() equals the length of the encrypted content
         //# - The [content length](../data-format/message-body-aad.md#content-length) MUST equal the length of the encrypted content.
+
         //= specification/client-apis/decrypt.md#decrypt-the-message-body
         //= reason=enc_content.len() is the nonframed data encrypted content length deserialized from the body
         //# If this is nonframed data, this SHOULD be determined by using the [nonframed data encrypted content length](../data-format/message-body.md#nonframed-data-encrypted-content-length).
@@ -481,6 +523,7 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     //= reason=aes_decrypt is called with the algorithm suite's authenticated encryption algorithm
     //# and decrypt it using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
+
     //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= reason=The ? operator propagates the decryption error, halting the operation immediately
     //# If this decryption fails, this operation MUST immediately halt and fail.

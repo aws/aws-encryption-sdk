@@ -64,6 +64,7 @@ pub(crate) fn write_aad_section(
     let bytes = get_length(data);
     //= specification/data-format/message-header.md#key-value-pairs-length
     //# The length of the serialized key value pairs length field MUST be 2 bytes.
+
     //= specification/data-format/message-header.md#key-value-pairs-length
     //# The key value pairs length MUST be interpreted as a UInt16.
     let Ok(bytes_u16) = u16::try_from(bytes) else {

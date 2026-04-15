@@ -41,6 +41,7 @@ pub(crate) fn write_header_auth_tag_v1(
             //# The V1 Header Authentication MUST consist of, in order,
             //# IV,
             //# and Authentication Tag.
+
             //= specification/client-apis/encrypt.md#v1-authentication-tag
             //# - The Encrypt operation MUST serialize the [IV](../data-format/message-header.md#iv).
             //# The value MUST be the IV used in the calculation above,
@@ -63,6 +64,7 @@ pub(crate) fn write_header_auth_tag_v2(
         } => {
             //= specification/data-format/message-header.md#header-authentication-version-2-0
             //# The V2 Header Authentication MUST consist of the Authentication Tag only.
+
             //= specification/client-apis/encrypt.md#v2-authentication-tag
             //# - The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
             //# The value MUST be the authentication tag calculated above.
@@ -90,6 +92,7 @@ pub(crate) fn read_header_auth_tag_v1(
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= reason=read_vec reads the IV bytes from the V1 header authentication section
     //# - The Decrypt operation MUST deserialize the [IV](../data-format/message-header.md#iv).
+
     //= specification/data-format/message-header.md#iv
     //# The length of the serialized IV MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
     let iv_len = get_iv_length(suite) as usize;
@@ -98,6 +101,7 @@ pub(crate) fn read_header_auth_tag_v1(
     let header_iv = read_vec(r, iv_len, raw)?;
     //= specification/data-format/message-header.md#authentication-tag
     //# The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
+
     //= specification/data-format/message-header.md#authentication-tag
     //# The authentication tag MUST be interpreted as bytes.
     let header_auth_tag = read_vec(r, get_tag_length(suite) as usize, raw)?;
@@ -113,6 +117,7 @@ pub(crate) fn read_header_auth_tag_v2(
 ) -> Result<HeaderAuth, Error> {
     //= specification/data-format/message-header.md#authentication-tag
     //# The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
+
     //= specification/data-format/message-header.md#authentication-tag
     //# The authentication tag MUST be interpreted as bytes.
     let header_auth_tag = read_vec(r, get_tag_length(suite) as usize, raw)?;

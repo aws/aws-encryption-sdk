@@ -134,18 +134,23 @@ async fn test_decrypt_final_frame_deserialization() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# Final frame deserialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
+
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# For a final frame, each field MUST be deserialized according to its specification:
+
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Sequence Number](../data-format/message-body.md#final-frame-sequence-number).
+
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The Decrypt operation MUST deserialize the [IV](../data-format/message-body.md#final-frame-iv).
+
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content).
+
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag).
@@ -364,21 +369,27 @@ async fn test_decrypt_frame_fields_deserialized_correctly() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# For a regular frame, each field MUST be deserialized according to its specification:
+
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# The Decrypt operation MUST deserialize the [Sequence Number End](../data-format/message-body.md#sequence-number-end).
+
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number).
+
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The Decrypt operation MUST deserialize the [IV](../data-format/message-body.md#regular-frame-iv).
+
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length).
+
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content).
+
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag).
@@ -396,15 +407,18 @@ async fn test_decrypt_aad_constructed_correctly() {
     //= type=test
     //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
     //# constructed according to the [Message Body AAD](../data-format/message-body-aad.md) specification, as follows:
+
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The [message ID](../data-format/message-body-aad.md#message-id) MUST be the same as the
     //# [message ID](../data-format/message-header.md#message-id) deserialized from the header of this message.
+
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be constructed
     //# according to [Message Body AAD](../data-format/message-body-aad.md) depending on
     //# whether the bytes being decrypted are a regular frame, final frame, or nonframed data.
+
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be the sequence
@@ -437,12 +451,15 @@ async fn test_decrypt_aes_inputs_correct() {
     //# - The IV MUST be the [sequence number](../data-format/message-body-aad.md#sequence-number)
     //# used in the message body AAD above,
     //# padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
+
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The cipherkey MUST be the derived data key
+
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The ciphertext MUST be the encrypted content deserialized from the frame or body.
+
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The tag MUST be the authentication tag deserialized from the frame or body.
@@ -585,6 +602,7 @@ async fn test_unframed_decrypt_deserializes_and_decrypts() {
     //# If a message has the [nonframed](../data-format/message-body.md#nonframed-data) content type,
     //# the Decrypt operation MUST deserialize the message body according to the
     //# [nonframed data specification](../data-format/message-body.md#nonframed-data)
+
     //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# and decrypt it using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)

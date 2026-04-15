@@ -27,6 +27,7 @@ async fn test_regular_frame_serialization_conforms_to_spec() {
     //= specification/data-format/message-body.md#final-frame
     //= type=test
     //# The final frame MUST be the last frame.
+
     //= specification/client-apis/encrypt.md#construct-the-body
     //= type=test
     //# The encrypted message output by the Encrypt operation MUST have a message body equal
@@ -58,6 +59,7 @@ async fn test_end_of_input_processing() {
     //= type=test
     //# When the end of the input is indicated,
     //# this operation MUST perform the following until all consumable plaintext bytes are processed:
+
     //= specification/data-format/message-body.md#final-frame
     //= type=test
     //# The length of the plaintext to be encrypted in the Final Frame MUST be
@@ -83,6 +85,7 @@ async fn test_exact_frame_length_constructs_final_or_regular() {
     //# such that creating a regular frame processes all consumable bytes,
     //# then this operation MUST [construct either a final frame or regular frame](#construct-a-frame)
     //# with the remaining plaintext.
+
     //= specification/data-format/message-body.md#final-frame
     //= type=test
     //# - When the length of the Plaintext is an exact multiple of the Frame Length

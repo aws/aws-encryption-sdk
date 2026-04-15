@@ -20,44 +20,57 @@ async fn test_v2_header_fields_deserialized() {
     //# If the version is [2.0](../data-format/message-header.md#supported-versions),
     //# the remaining header fields MUST be deserialized according to the
     //# [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
+
     //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# The header deserialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10)
     //# or [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification,
     //# depending on the [Version](../data-format/message-header.md#version) field.
+
     //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# Each header field MUST be deserialized according to its specification in the [message header](../data-format/message-header.md):
+
     //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# The [Version](../data-format/message-header.md#version) field MUST be deserialized first.
+
     //= specification/client-apis/decrypt.md#parse-the-header
     //= type=test
     //# The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
+
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
+
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Message ID](../data-format/message-header.md#message-id).
+
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [AAD](../data-format/message-header.md#aad).
+
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
+
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Content Type](../data-format/message-header.md#content-type).
+
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
+
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Frame Length](../data-format/message-header.md#frame-length).
+
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data).
+
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
@@ -85,36 +98,47 @@ async fn test_v1_header_fields_deserialized() {
     //# If the version is [1.0](../data-format/message-header.md#supported-versions),
     //# the remaining header fields MUST be deserialized according to the
     //# [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
+
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Type](../data-format/message-header.md#type).
+
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //# The value MUST be a [supported type](../data-format/message-header.md#supported-types).
+
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
+
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Message ID](../data-format/message-header.md#message-id).
+
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [AAD](../data-format/message-header.md#aad).
+
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
+
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Content Type](../data-format/message-header.md#content-type).
+
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Reserved](../data-format/message-header.md#reserved).
+
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [IV Length](../data-format/message-header.md#iv-length).
+
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Frame Length](../data-format/message-header.md#frame-length).
+
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //# - The Decrypt operation MUST deserialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
@@ -165,6 +189,7 @@ async fn test_unsupported_content_type_rejected() {
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
+
     //= specification/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
@@ -275,15 +300,19 @@ async fn test_decrypt_steps_in_order() {
     //= specification/client-apis/decrypt.md#behavior
     //= type=test
     //# - Decrypt operation Step 1 MUST be [Parse the header](#parse-the-header)
+
     //= specification/client-apis/decrypt.md#behavior
     //= type=test
     //# - Decrypt operation Step 2 MUST be [Get the decryption materials](#get-the-decryption-materials)
+
     //= specification/client-apis/decrypt.md#behavior
     //= type=test
     //# - Decrypt operation Step 3 MUST be [Verify the header](#verify-the-header)
+
     //= specification/client-apis/decrypt.md#behavior
     //= type=test
     //# - Decrypt operation Step 4 MUST be [Decrypt the message body](#decrypt-the-message-body)
+
     //= specification/client-apis/decrypt.md#behavior
     //= type=test
     //# - Decrypt operation Step 5 MUST be [Verify the signature](#verify-the-signature)

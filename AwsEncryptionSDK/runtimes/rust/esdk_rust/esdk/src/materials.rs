@@ -40,9 +40,11 @@ pub(crate) async fn create_cmm_from_input(
             //# If instead the caller supplied a [keyring](../framework/keyring-interface.md),
             //# this behavior MUST use a [default CMM](../framework/default-cmm.md)
             //# constructed using the caller-supplied keyring as input.
+
             //= specification/client-apis/decrypt.md#keyring
             //# If the Keyring is provided as the input, the client MUST construct a [default CMM](../framework/default-cmm.md) that uses this keyring,
             //# to obtain the [decryption materials](../framework/structures.md#decryption-materials) that is required for decryption.
+
             //= specification/client-apis/decrypt.md#keyring
             //= reason=The default CMM constructed above will obtain decryption materials when decrypt_materials is called on it
             //# This default CMM constructed from the keyring MUST obtain the decryption materials required for decryption.
@@ -137,6 +139,7 @@ pub(crate) async fn get_modern_decryption_materials(
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# The call to the CMM's [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) operation
     //# MUST be constructed as follows:
+
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# - Algorithm Suite ID: This MUST be the parsed
     //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
@@ -161,12 +164,14 @@ pub(crate) async fn get_modern_decryption_materials(
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
     //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
+
     //= specification/client-apis/decrypt.md#cryptographic-materials-manager
     //# This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
     let materials = cmm.decrypt_materials(&input).await?;
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
     //# decrypt MUST yield an error.
+
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) decrypt MUST yield an error.
@@ -193,8 +198,10 @@ pub(crate) async fn get_legacy_decryption_materials(
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
     //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
+
     //= specification/client-apis/decrypt.md#cryptographic-materials-manager
     //# This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
+
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# The call to the CMM's [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) operation
     //# MUST be constructed as follows:
@@ -229,6 +236,7 @@ pub(crate) async fn get_legacy_decryption_materials(
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
     //# decrypt MUST yield an error.
+
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //# If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) decrypt MUST yield an error.
@@ -277,6 +285,7 @@ pub(crate) async fn get_modern_encryption_materials(
     input.commitment_policy = aws_mpl_legacy::commitment::CommitmentPolicy::Esdk(commitment_policy);
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
     //# - Encryption Context: If provided, this MUST be the [input encryption context](#encryption-context).
+
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
     //= reason=Encryption context is empty by default
     //# Otherwise, this MUST be an empty encryption context.
@@ -284,6 +293,7 @@ pub(crate) async fn get_modern_encryption_materials(
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
     //# - Max Plaintext Length: If the [input plaintext](#plaintext) has known length,
     //# this length MUST be used.
+
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
     //= reason=max_plaintext_length is Option; None means the field is not set on the input
     //# If no Plaintext Length Bound is provided, this field MUST NOT be included.
@@ -329,6 +339,7 @@ pub(crate) async fn get_legacy_encryption_materials(
         //= reason=The caller resolves known length vs Plaintext Length Bound before calling; this receives the resolved value
         //# If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
         //# was provided, this MUST be the [Plaintext Length Bound](#plaintext-length-bound).
+
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
         //= reason=max_plaintext_length is Option; .set_ with None means the field is not set
         //# If no Plaintext Length Bound is provided, this field MUST NOT be included.

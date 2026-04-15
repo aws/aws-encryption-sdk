@@ -15,57 +15,74 @@ use aws_mpl_legacy::suites::DerivationAlgorithm;
 //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
 //# the remaining header fields MUST be serialized according to the
 //# [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
+
+//= specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# The serialization order MUST follow the [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification.
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
+
+//= specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# - The Encrypt operation MUST serialize the [Version](../data-format/message-header.md#version).
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
+
+//= specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# The value MUST correspond to [2.0](../data-format/message-header.md#supported-versions).
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
+
+//= specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# - The Encrypt operation MUST serialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
+
+//= specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# The value MUST correspond to the [algorithm suite](../framework/algorithm-suites.md) used in this behavior.
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
+
+//= specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# - The Encrypt operation MUST serialize the [Message ID](../data-format/message-header.md#message-id).
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
+
+//= specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# The process used to generate this identifier MUST use a good source of randomness
 //# to make the chance of duplicate identifiers negligible.
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
+
+//= specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# - The Encrypt operation MUST serialize the [AAD](../data-format/message-header.md#aad).
+
 //= specification/client-apis/encrypt.md#v2-header
 //# The value MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
 //# in the [encryption materials](../framework/structures.md#encryption-materials),
 //# and this serialization MUST NOT contain any key value pairs listed in
 //# the [encryption material's](../framework/structures.md#encryption-materials)
 //# [required encryption context keys](../framework/structures.md#required-encryption-context-keys).
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
+
+//= specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# - The Encrypt operation MUST serialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
+
 //= specification/client-apis/encrypt.md#v2-header
 //# The value MUST be the serialization of the
 //# [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials).
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
+
+//= specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# - The Encrypt operation MUST serialize the [Content Type](../data-format/message-header.md#content-type).
+
 //= specification/client-apis/encrypt.md#v2-header
 //# The value MUST be [02](../data-format/message-header.md#supported-content-types).
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
+
+//= specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# - The Encrypt operation MUST serialize the [Frame Length](../data-format/message-header.md#frame-length).
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
+
+//= specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# The value MUST be the value of the frame size determined above.
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#v2-header
+
+//= specification/client-apis/encrypt.md#v2-header
 //= type=implication
 //# - The Encrypt operation MUST serialize the [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data).
+
 //= specification/client-apis/encrypt.md#v2-header
 //# The value MUST be the value of the [commit key](../framework/algorithm-suites.md#commit-key)
 //# derived according to the [algorithm suites commit key derivation settings](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
@@ -107,6 +124,7 @@ pub(crate) fn write_v2_header_body(
     // Frame Length
     //= specification/data-format/message-header.md#frame-length
     //# The length of the serialized frame length field MUST be 4 bytes.
+
     //= specification/data-format/message-header.md#frame-length
     //# The frame length MUST be interpreted as a UInt32.
     write_u32(w, body.frame_length)?;
@@ -152,8 +170,10 @@ pub(crate) fn read_v2_header_body(
     let content_type = read_content_type(r, raw)?;
     //= specification/client-apis/decrypt.md#v2-header-deserialization
     //# - The Decrypt operation MUST deserialize the [Frame Length](../data-format/message-header.md#frame-length).
+
     //= specification/data-format/message-header.md#frame-length
     //# The length of the serialized frame length field MUST be 4 bytes.
+
     //= specification/data-format/message-header.md#frame-length
     //# The frame length MUST be interpreted as a UInt32.
     let frame_length = read_u32(r, raw)?;

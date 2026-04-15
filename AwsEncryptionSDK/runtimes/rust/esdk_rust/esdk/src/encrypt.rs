@@ -71,6 +71,7 @@ pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
     Ok(EncryptOutput {
         //= specification/client-apis/encrypt.md#output
         //# - The output of the Encrypt operation MUST include an [encrypted message](#encrypted-message) value.
+
         //= specification/client-apis/encrypt.md#encrypted-message
         //# This MUST be a sequence of bytes
         //# and conform to the [message format specification](../data-format/message.md).
@@ -80,27 +81,31 @@ pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
         encryption_context: out.encryption_context,
         //= specification/client-apis/encrypt.md#output
         //# - The output of the Encrypt operation MUST include an [algorithm suite](#algorithm-suite) value.
+
         //= specification/client-apis/encrypt.md#algorithm-suite-1
         //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
         algorithm_suite_id: out.algorithm_suite_id,
     })
 }
 
-//= aws-encryption-sdk-specification/client-apis/streaming.md#overview
+//= specification/client-apis/streaming.md#overview
 //= type=implication
 //= reason=encrypt_stream provides a streaming encryption API via SafeRead/SafeWrite
 //# The AWS Encryption SDK MAY provide APIs that enable streamed [encryption](encrypt.md)
 //# and [decryption](decrypt.md).
-//= aws-encryption-sdk-specification/client-apis/streaming.md#overview
+
+//= specification/client-apis/streaming.md#overview
 //= type=implication
 //= reason=encrypt_stream reads plaintext incrementally via SafeRead and writes ciphertext incrementally via SafeWrite, never buffering the full input
 //# APIs that support streaming of the encrypt or decrypt operation SHOULD allow customers
 //# to be able to process arbitrarily large inputs with a finite amount of working memory.
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#plaintext
+
+//= specification/client-apis/encrypt.md#plaintext
 //= type=implication
 //= reason=SafeRead accepts incremental reads, so callers can stream the encrypted message without buffering it entirely in memory
 //# This input MAY be [streamed](streaming.md) to this operation.
-//= aws-encryption-sdk-specification/client-apis/encrypt.md#encrypted-message
+
+//= specification/client-apis/encrypt.md#encrypted-message
 //= type=implication
 //= reason=SafeWrite accepts incremental writes, so each decrypted frame is flushed to the output as it's produced without buffering the full ciphertext
 //# This operation MAY [stream](streaming.md) the encrypted message.
@@ -160,6 +165,7 @@ async fn internal_encrypt(
 
     //= specification/client-apis/encrypt.md#behavior
     //# - Encrypt operation Step 1 MUST be [Get the encryption materials](#get-the-encryption-materials)
+
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
     //# To construct the [encrypted message](#encrypted-message),
     //# some fields MUST be constructed using information obtained
@@ -176,6 +182,7 @@ async fn internal_encrypt(
 
     //= specification/client-apis/encrypt.md#behavior
     //# - Encrypt operation step 2 MUST be [Construct the header](#construct-the-header)
+
     //= specification/client-apis/encrypt.md#construct-the-header
     //# Before encrypting input plaintext,
     //# this operation MUST serialize the [message header body](../data-format/message-header.md).
@@ -190,6 +197,7 @@ async fn internal_encrypt(
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
         //# The frame length used in the procedures described below MUST be the input [frame length](#frame-length),
         //# if supplied.
+
         //= specification/client-apis/encrypt.md#get-the-encryption-materials
         //# If no input frame length is supplied, the default frame length MUST be used.
         frame_length,
@@ -199,6 +207,7 @@ async fn internal_encrypt(
 
     //= specification/client-apis/encrypt.md#behavior
     //# - Encrypt operation step 3 MUST be [Construct the body](#construct-the-body)
+
     //= specification/data-format/message.md#structure
     //# - The [Message Body](message-body.md) MUST follow the Message Header
     step_construct_body(
@@ -236,6 +245,7 @@ async fn internal_encrypt(
     //= specification/client-apis/encrypt.md#behavior
     //# Any data that is not specified within the [message format](../data-format/message.md)
     //# MUST NOT be added to the output message.
+
     //= specification/client-apis/streaming.md#outputs
     //= reason=All bytes have been written to the SafeWrite before Ok is returned; success is only indicated after output is complete
     //# Operations MUST NOT indicate completion or success until an end to the output has been indicated.
@@ -280,6 +290,7 @@ async fn step_get_encryption_materials(
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
     //# This operation MUST obtain this set of [encryption materials](../framework/structures.md#encryption-materials)
     //# by calling [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) on a [CMM](../framework/cmm-interface.md).
+
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
     //# The call to [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials)
     //# on that CMM MUST be constructed as follows:
@@ -314,6 +325,7 @@ async fn step_get_encryption_materials(
     //# The [algorithm suite](../framework/algorithm-suites.md) used in all aspects of this operation
     //# MUST be the algorithm suite in the [encryption materials](../framework/structures.md#encryption-materials)
     //# returned from the [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) call.
+
     //= specification/client-apis/encrypt.md#get-the-encryption-materials
     //= reason=The code uses materials.algorithm_suite regardless of what was requested; the CMM may return a different suite
     //# Note that the algorithm suite in the retrieved encryption materials MAY be different
@@ -380,6 +392,7 @@ fn step_construct_header(
     //= specification/client-apis/encrypt.md#authentication-tag
     //# The encrypted message output by the Encrypt operation MUST have a message header equal
     //# to the message header calculated in this step.
+
     //= specification/client-apis/encrypt.md#authentication-tag
     //# If the message headers are not equal, the Encrypt operation MUST fail.
     Ok(header)
@@ -397,6 +410,7 @@ fn step_construct_body(
     //= specification/client-apis/encrypt.md#construct-the-body
     //# The encrypted message output by the Encrypt operation MUST have a message body equal
     //# to the message body calculated in this step.
+
     //= specification/client-apis/encrypt.md#construct-the-body
     //= reason=The body is written directly to the output buffer by encrypt_and_serialize_body, making inequality structurally impossible
     //# If the message bodies are not equal, the Encrypt operation MUST fail.
@@ -426,6 +440,7 @@ fn step_construct_signature(
             //= specification/data-format/message-footer.md#overview
             //# When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
             //# the [message](message.md) MUST contain a footer.
+
             //= specification/data-format/message.md#structure
             //# If the [message header](message-header.md) contains an [algorithm suite](../framework/algorithm-suites.md) in the
             //# [algorithm suite ID](message-header.md#algorithm-suite-id) field that contains a
@@ -548,6 +563,7 @@ fn build_header_for_encrypt(
     //# After serializing the message header body,
     //# this operation MUST calculate an [authentication tag](../data-format/message-header.md#authentication-tag)
     //# over the message header body.
+
     //= specification/data-format/message-header.md#authentication-tag
     //# The authentication tag MUST be interpreted as bytes.
     let header_auth = build_header_auth_tag(

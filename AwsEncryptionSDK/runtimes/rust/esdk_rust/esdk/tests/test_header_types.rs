@@ -16,6 +16,7 @@ async fn test_version_v2_value() {
     //= specification/data-format/message-header.md#supported-versions
     //= type=test
     //# The supported versions MUST be:
+
     //= specification/data-format/message-header.md#supported-versions
     //= type=test
     //# - Hex value `02` MUST be version 2.0
@@ -37,6 +38,7 @@ async fn test_type_customer_aed_value() {
     //= specification/data-format/message-header.md#supported-types
     //= type=test
     //# The supported types MUST be:
+
     //= specification/data-format/message-header.md#supported-types
     //= type=test
     //# - `80` MUST be Customer Authenticated Encrypted Data

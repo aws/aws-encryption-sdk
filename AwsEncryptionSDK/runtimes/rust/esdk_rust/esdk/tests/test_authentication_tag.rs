@@ -251,6 +251,7 @@ async fn test_auth_tag_tampered_header_fails_decrypt() {
     //= type=test
     //# The encrypted message output by the Encrypt operation MUST have a message header equal
     //# to the message header calculated in this step.
+
     //= specification/client-apis/encrypt.md#authentication-tag
     //= type=test
     //# If the message headers are not equal, the Encrypt operation MUST fail.

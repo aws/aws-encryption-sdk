@@ -65,6 +65,7 @@ async fn test_encrypted_data_key_count_is_2_bytes_uint16() {
         //= specification/data-format/message-header.md#encrypted-data-key-count
         //= type=test
         //# The length of the serialized encrypted data key count MUST be 2 bytes.
+
         //= specification/data-format/message-header.md#encrypted-data-key-count
         //= type=test
         //# The encrypted data key count MUST be interpreted as a UInt16.
@@ -204,6 +205,7 @@ async fn test_key_provider_id_length_matches_data() {
         //= specification/data-format/message-header.md#key-provider-id-length
         //= type=test
         //# The length of the serialized key provider ID length field MUST be 2 bytes.
+
         //= specification/data-format/message-header.md#key-provider-id-length
         //= type=test
         //# The key provider ID length MUST be interpreted as a UInt16.
@@ -245,6 +247,7 @@ async fn test_key_provider_information_length_field_is_2_bytes_uint16() {
         //= specification/data-format/message-header.md#key-provider-information-length
         //= type=test
         //# The length of the serialized key provider information length field MUST be 2 bytes.
+
         //= specification/data-format/message-header.md#key-provider-information-length
         //= type=test
         //# The key provider information length MUST be interpreted as a UInt16.
@@ -310,6 +313,7 @@ async fn test_encrypted_data_key_length_field_is_2_bytes_uint16() {
         //= specification/data-format/message-header.md#encrypted-data-key-length
         //= type=test
         //# The length of the serialized encrypted data key length field MUST be 2 bytes.
+
         //= specification/data-format/message-header.md#encrypted-data-key-length
         //= type=test
         //# The encrypted data key length MUST be interpreted as a UInt16.

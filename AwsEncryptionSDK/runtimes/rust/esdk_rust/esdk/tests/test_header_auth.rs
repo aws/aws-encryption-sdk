@@ -47,6 +47,7 @@ async fn test_v1_encrypt_header_auth_tag_serialization() {
     //# - The Encrypt operation MUST serialize the [IV](../data-format/message-header.md#iv).
     //# The value MUST be the IV used in the calculation above,
     //# padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
+
     //= specification/client-apis/encrypt.md#v1-authentication-tag
     //= type=test
     //# - The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
@@ -62,6 +63,7 @@ async fn test_v2_encrypt_header_auth_tag_serialization() {
     //# With the authentication tag calculated,
     //# if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
     //# this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-2-0) with the following specifics:
+
     //= specification/client-apis/encrypt.md#v2-authentication-tag
     //= type=test
     //# - The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).

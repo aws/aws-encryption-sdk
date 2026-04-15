@@ -18,6 +18,7 @@ async fn test_obtain_decryption_materials_via_cmm() {
     //= type=test
     //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
     //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
+
     //= specification/client-apis/decrypt.md#cryptographic-materials-manager
     //= type=test
     //# This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
@@ -232,6 +233,7 @@ async fn test_commit_key_derived_and_validated() {
     //# If the [algorithm suite](../framework/algorithm-suites.md#algorithm-suites-encryption-key-derivation-settings) supports [key commitment](../framework/algorithm-suites.md#key-commitment)
     //# then the [commit key](../framework/algorithm-suites.md#commit-key) MUST be derived from the plaintext data key
     //# using the [commit key derivation](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
+
     //= specification/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# The derived commit key MUST equal the commit key stored in the message header.
