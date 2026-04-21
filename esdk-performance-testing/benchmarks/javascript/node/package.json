@@ -1,0 +1,17 @@
+{
+  "name": "esdk-node-benchmark",
+  "version": "1.0.0",
+  "description": "Performance benchmark for AWS Encryption SDK (ESDK) Node.js implementation",
+  "main": "src/main.js",
+  "scripts": {
+    "benchmark": "node --expose-gc src/main.js",
+    "quick": "node --expose-gc src/main.js --quick"
+  },
+  "dependencies": {
+    "@aws-crypto/client-node": "4.2.2",
+    "commander": "12.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
