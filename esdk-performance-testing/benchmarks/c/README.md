@@ -49,12 +49,12 @@ sudo apt-get install libyaml-dev libjson-c-dev
 
 ## CLI Options
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `-c, --config` | Path to test configuration YAML | `../../config/test-scenarios.yaml` |
-| `-o, --output` | Path to output results JSON | `../../results/raw-data/c_results.json` |
-| `-q, --quick` | Run quick test with reduced iterations | off |
-| `-h, --help` | Show help message | |
+| Flag           | Description                            | Default                                 |
+| -------------- | -------------------------------------- | --------------------------------------- |
+| `-c, --config` | Path to test configuration YAML        | `../../config/test-scenarios.yaml`      |
+| `-o, --output` | Path to output results JSON            | `../../results/raw-data/c_results.json` |
+| `-q, --quick`  | Run quick test with reduced iterations | off                                     |
+| `-h, --help`   | Show help message                      |                                         |
 
 ## Test Types
 
