@@ -18,7 +18,7 @@ require (
 	github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives v0.3.0
 	github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library v0.3.0
 	github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk v0.3.0
-	github.com/dafny-lang/DafnyRuntimeGo/v4 v4.11.2
+	github.com/dafny-lang/DafnyRuntimeGo/v4 v4.11.3
 
 )
 
