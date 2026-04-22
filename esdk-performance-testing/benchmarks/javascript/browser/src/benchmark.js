@@ -144,7 +144,9 @@ function getConfig() {
   if (window.__BENCHMARK_CONFIG__) {
     return window.__BENCHMARK_CONFIG__;
   }
-  throw new Error("No config injected. Run via the launcher (node src/launcher.js).");
+  throw new Error(
+    "No config injected. Run via the launcher (node src/launcher.js).",
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -156,7 +158,10 @@ function withTimeout(promise, ms, label) {
   return Promise.race([
     promise,
     new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms),
+      setTimeout(
+        () => reject(new Error(`${label} timed out after ${ms}ms`)),
+        ms,
+      ),
     ),
   ]);
 }
@@ -173,11 +178,8 @@ async function main() {
   log("Starting comprehensive ESDK benchmark suite");
 
   const results = [];
-  const {
-    createThroughputResult,
-    createMemoryResult,
-    createConcurrentResult,
-  } = createBrowserResultFactories();
+  const { createThroughputResult, createMemoryResult, createConcurrentResult } =
+    createBrowserResultFactories();
 
   // Throughput
   if (config.testTypes.includes("throughput")) {
@@ -224,7 +226,9 @@ async function main() {
           `Memory ${size}B`,
         );
         results.push(result);
-        log(`Memory test completed: ${result.peak_memory_mb.toFixed(2)} MB peak`);
+        log(
+          `Memory test completed: ${result.peak_memory_mb.toFixed(2)} MB peak`,
+        );
       } catch (e) {
         log(`Memory test failed: ${e.message}`);
       }

@@ -63,7 +63,9 @@ async function runThroughputTest(
       data,
     );
     if (!Number.isFinite(encryptMs) || !Number.isFinite(decryptMs)) {
-      throw new Error(`Invalid timing data: encryptMs=${encryptMs}, decryptMs=${decryptMs}`);
+      throw new Error(
+        `Invalid timing data: encryptMs=${encryptMs}, decryptMs=${decryptMs}`,
+      );
     }
     const e2eMs = platform.nowMs() - start;
 
@@ -216,7 +218,12 @@ async function runMemoryTest(
     `- Total Allocations: ${overallPeakAllocs.toFixed(2)} MB (max across all runs)`,
   );
 
-  return createMemoryResult(dataSize, overallPeakDelta, memoryEfficiency, overallPeakAllocs);
+  return createMemoryResult(
+    dataSize,
+    overallPeakDelta,
+    memoryEfficiency,
+    overallPeakAllocs,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -250,7 +257,13 @@ async function runConcurrentTest(
   const workerPromises = [];
   for (let w = 0; w < concurrency; w++) {
     workerPromises.push(
-      workerFunction(keyring, data, iterationsPerWorker, runEncryptDecryptCycle, platform),
+      workerFunction(
+        keyring,
+        data,
+        iterationsPerWorker,
+        runEncryptDecryptCycle,
+        platform,
+      ),
     );
   }
 

@@ -28,12 +28,18 @@ async function main() {
     .option(
       "--config <path>",
       "Path to test configuration file",
-      require("path").resolve(SCRIPT_DIR, "../../../../config/test-scenarios.yaml"),
+      require("path").resolve(
+        SCRIPT_DIR,
+        "../../../../config/test-scenarios.yaml",
+      ),
     )
     .option(
       "--output <path>",
       "Path to output results file",
-      require("path").resolve(SCRIPT_DIR, "../../../../results/raw-data/node_results.json"),
+      require("path").resolve(
+        SCRIPT_DIR,
+        "../../../../results/raw-data/node_results.json",
+      ),
     )
     .option("--quick", "Run quick test with reduced iterations", false);
 

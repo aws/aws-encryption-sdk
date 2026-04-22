@@ -29,7 +29,9 @@ const PER_TEST_TIMEOUT_MS = 300000;
 const program = new Command();
 program
   .name("esdk-browser-benchmark")
-  .description("ESDK Browser Performance Benchmark (headless Chrome via Puppeteer)")
+  .description(
+    "ESDK Browser Performance Benchmark (headless Chrome via Puppeteer)",
+  )
   .option(
     "--config <path>",
     "Path to test configuration file",
@@ -81,7 +83,8 @@ function loadBrowserConfig(yamlPath, isQuick) {
   const sizes = [];
   if (cfg.data_sizes) {
     for (const cat of ["small", "medium", "large"]) {
-      if (Array.isArray(cfg.data_sizes[cat])) sizes.push(...cfg.data_sizes[cat]);
+      if (Array.isArray(cfg.data_sizes[cat]))
+        sizes.push(...cfg.data_sizes[cat]);
     }
   }
   return {

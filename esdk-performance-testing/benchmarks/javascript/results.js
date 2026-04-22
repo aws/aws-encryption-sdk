@@ -11,7 +11,12 @@ const { average, percentile } = require("./utils");
 // ---------------------------------------------------------------------------
 
 function createResultFactories(language, platformOverrides = {}) {
-  function createThroughputResult(timingData, dataSize, iterations, wallClockSec) {
+  function createThroughputResult(
+    timingData,
+    dataSize,
+    iterations,
+    wallClockSec,
+  ) {
     const sorted = [...timingData.endToEndTimes].sort((a, b) => a - b);
     const avgEncrypt = average(timingData.encryptTimes);
     const avgDecrypt = average(timingData.decryptTimes);
@@ -33,7 +38,12 @@ function createResultFactories(language, platformOverrides = {}) {
     });
   }
 
-  function createMemoryResult(dataSize, peakMemoryMb, memoryEfficiencyRatio, totalAllocationsMb) {
+  function createMemoryResult(
+    dataSize,
+    peakMemoryMb,
+    memoryEfficiencyRatio,
+    totalAllocationsMb,
+  ) {
     return createBenchmarkResult(language, {
       ...platformOverrides,
       test_name: "memory",
