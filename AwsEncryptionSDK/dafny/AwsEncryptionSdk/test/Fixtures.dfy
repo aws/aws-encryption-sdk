@@ -56,7 +56,7 @@ module Fixtures {
         encryptionContext := map[keyB := valB, keyA := valA];
       case C =>
         encryptionContext := map[keyC := valC];
-      case CE =>
+      case CD =>
         encryptionContext := map[keyC := valC, keyD := valD];
     }
   }
@@ -91,7 +91,7 @@ module Fixtures {
         encryptionContextKeys := [keyB, keyA];
       case C =>
         encryptionContextKeys := [keyC];
-      case CE =>
+      case CD =>
         encryptionContextKeys := [keyC, keyD];
     }
   }
@@ -120,7 +120,7 @@ module Fixtures {
         encryptionContext := map[keyB := valA, keyA := valB];
       case C =>
         encryptionContext := map[keyC := valA];
-      case CE =>
+      case CD =>
         encryptionContext := map[keyC := valA, keyD := valB];
     }
   }
