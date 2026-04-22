@@ -43,7 +43,7 @@ impl EsdkBenchmark {
 
         // Decrypt
         let decrypt_start = Instant::now();
-        let _decrypt_output = self
+        let decrypt_output = self
             .esdk_client
             .decrypt()
             .keyring(self.raw_keyring.clone())
@@ -51,6 +51,12 @@ impl EsdkBenchmark {
             .send()
             .await?;
         let decrypt_duration = decrypt_start.elapsed().as_secs_f64() * 1000.0;
+
+        // Verify data integrity
+        let decrypted_plaintext = decrypt_output.plaintext.unwrap();
+        if data != decrypted_plaintext.as_ref() {
+            return Err(anyhow::anyhow!("data integrity check failed"));
+        }
 
         Ok((encrypt_duration, decrypt_duration))
     }
@@ -345,13 +351,19 @@ impl EsdkBenchmark {
 
         // Decrypt
         let decrypt_start = Instant::now();
-        let _decrypt_output = esdk_client
+        let decrypt_output = esdk_client
             .decrypt()
             .keyring(keyring.clone())
             .ciphertext(encrypt_output.ciphertext.unwrap())
             .send()
             .await?;
         let decrypt_duration = decrypt_start.elapsed().as_secs_f64() * 1000.0;
+
+        // Verify data integrity
+        let decrypted_plaintext = decrypt_output.plaintext.unwrap();
+        if data != decrypted_plaintext.as_ref() {
+            return Err(anyhow::anyhow!("data integrity check failed"));
+        }
 
         Ok((encrypt_duration, decrypt_duration))
     }
@@ -397,7 +409,7 @@ impl EsdkBenchmark {
                     let encrypt_output = esdk_client
                         .encrypt()
                         .keyring(keyring.clone())
-                        .plaintext(worker_data)
+                        .plaintext(worker_data.clone())
                         .encryption_context(encryption_context)
                         .send()
                         .await
@@ -424,6 +436,16 @@ impl EsdkBenchmark {
                                 e
                             )
                         })?;
+
+                    // Verify data integrity
+                    let decrypted_plaintext = _decrypt_output.plaintext.unwrap();
+                    if worker_data != decrypted_plaintext.as_ref() {
+                        return Err(anyhow::anyhow!(
+                            "Worker {} iteration {} data integrity check failed",
+                            worker_id,
+                            j
+                        ));
+                    }
 
                     worker_times.push(iter_start.elapsed().as_secs_f64() * 1000.0);
                 }
