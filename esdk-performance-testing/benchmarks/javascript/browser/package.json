@@ -1,0 +1,20 @@
+{
+  "name": "esdk-browser-benchmark",
+  "version": "1.0.0",
+  "description": "Performance benchmark for AWS Encryption SDK (ESDK) Browser implementation — runs in headless Chrome",
+  "scripts": {
+    "benchmark": "node src/launcher.js",
+    "quick": "node src/launcher.js --quick"
+  },
+  "dependencies": {
+    "@aws-crypto/client-browser": "4.2.2",
+    "buffer": "6.0.3",
+    "commander": "12.1.0",
+    "esbuild": "0.20.2",
+    "js-yaml": "4.1.1",
+    "puppeteer": "22.15.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
