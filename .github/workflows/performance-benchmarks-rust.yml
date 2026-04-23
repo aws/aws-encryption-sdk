@@ -2,6 +2,9 @@
 name: Performance Benchmarks Rust
 
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/performance-benchmarks-rust.yml"
   workflow_call:
     inputs:
       dafny:
@@ -21,12 +24,7 @@ jobs:
       matrix:
         library: [AwsEncryptionSDK]
         benchmark-dir: [esdk-performance-testing]
-        os: [
-            ubuntu-22.04,
-            # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
-            # macos-15,
-          ]
-    runs-on: ${{ matrix.os }}
+    runs-on: codebuild-AWS-ESDK-Performance-${{ github.run_id }}-${{ github.run_attempt }}
     permissions:
       id-token: write
       contents: read
@@ -53,46 +51,42 @@ jobs:
         with:
           components: rustfmt
 
-      - name: Setup Dafny
-        uses: ./mpl/.github/actions/setup_dafny
-        with:
-          dafny-version: 4.10.0
+      #- name: Setup Dafny
+      #  uses: ./mpl/.github/actions/setup_dafny
+      #  with:
+      #    dafny-version: 4.10.0
 
-      - name: Setup Java 17 for codegen
-        uses: actions/setup-java@v5
-        with:
-          distribution: "corretto"
-          java-version: "17"
+      #- name: Setup Java 17 for codegen
+      #  uses: actions/setup-java@v5
+      #  with:
+      #    distribution: "corretto"
+      #    java-version: "17"
 
-      - name: Setup NASM for Windows (aws-lc-sys)
-        if: matrix.os == 'windows-latest'
-        uses: ilammy/setup-nasm@v1
+      #- name: Install Smithy-Dafny codegen dependencies
+      #  uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
 
-      - name: Install Smithy-Dafny codegen dependencies
-        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+      #- name: Regenerate code using smithy-dafny if necessary
+      #  if: ${{ inputs.regenerate-code }}
+      #  uses: ./.github/actions/polymorph_codegen
+      #  with:
+      #    dafny: ${{ env.DAFNY_VERSION }}
+      #    library: ${{ matrix.library }}
+      #    diff-generated-code: false
+      #    update-and-regenerate-mpl: true
 
-      - name: Regenerate code using smithy-dafny if necessary
-        if: ${{ inputs.regenerate-code }}
-        uses: ./.github/actions/polymorph_codegen
-        with:
-          dafny: ${{ env.DAFNY_VERSION }}
-          library: ${{ matrix.library }}
-          diff-generated-code: false
-          update-and-regenerate-mpl: true
+      #- name: Run make polymorph_rust
+      #  shell: bash
+      #  working-directory: ${{ matrix.library }}
+      #  run: |
+      #    make polymorph_rust
 
-      - name: Run make polymorph_rust
-        shell: bash
-        working-directory: ${{ matrix.library }}
-        run: |
-          make polymorph_rust
-
-      - name: Compile ${{ matrix.library }} implementation
-        shell: bash
-        working-directory: ${{ matrix.library }}
-        run: |
-          # This works because `node` is installed by default on GHA runners
-          CORES=$(node -e 'console.log(os.cpus().length)')
-          make transpile_rust CORES=$CORES
+      #- name: Compile ${{ matrix.library }} implementation
+      #  shell: bash
+      #  working-directory: ${{ matrix.library }}
+      #  run: |
+      #    # This works because `node` is installed by default on GHA runners
+      #    CORES=$(node -e 'console.log(os.cpus().length)')
+      #    make transpile_rust CORES=$CORES
 
       - name: Run Performance Benchmarks - Quick Mode
         shell: bash

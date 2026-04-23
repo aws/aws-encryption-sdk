@@ -2,11 +2,15 @@
 name: Performance Benchmarks Net
 
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/performance-benchmarks-net.yml"
   workflow_call:
     inputs:
       dafny:
         description: "The Dafny version to run"
         required: true
+        default: '4.9.0'
         type: string
       regenerate-code:
         description: "Regenerate code using smithy-dafny"
@@ -59,7 +63,7 @@ jobs:
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
         with:
-          dafny-version: ${{ inputs.dafny }}
+          dafny-version: ${{ inputs.dafny.default }}
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
