@@ -43,7 +43,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.38.9 // indirect
 	github.com/aws/smithy-go v1.23.1 // indirect
-	github.com/dafny-lang/DafnyRuntimeGo/v4 v4.11.2 // indirect
+	github.com/dafny-lang/DafnyRuntimeGo/v4 v4.11.3 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
