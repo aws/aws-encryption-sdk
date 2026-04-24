@@ -44,47 +44,75 @@ jobs:
 
       # TestVectors will call KMS
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: InterOpTests
-          role-duration-seconds: 7200
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: InterOpTests
+            role-duration-seconds: 7200
+          attempt_limit: 3
+          attempt_delay: 2000
 
-      - uses: actions/checkout@v6
+      - uses: Wandalen/wretry.action@master
         with:
-          submodules: "recursive"
+          action: actions/checkout@v6
+          with: |
+            submodules: recursive
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Install OpenSSL
         if: matrix.os != 'ubuntu-22.04' && matrix.language == 'c'
-        run: brew install openssl
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: brew install openssl
 
       - name: Install dependencies
-        if: matrix.os != 'ubuntu-22.04'	&& matrix.language == 'c'
-        run: brew install json-c
+        if: matrix.os != 'ubuntu-22.04' && matrix.language == 'c'
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: brew install json-c
 
       - name: Install LibCurl
         if: matrix.os == 'ubuntu-22.04' && matrix.language == 'c'
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install libcurl4-openssl-dev --fix-missing
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          shell: bash
+          command: |
+            sudo apt-get update
+            sudo apt-get install libcurl4-openssl-dev --fix-missing
 
       - name: Checkout C-ESDK
         if: matrix.language == 'c'
-        uses: actions/checkout@v6
+        uses: Wandalen/wretry.action@master
         with:
-          repository: "aws/aws-encryption-sdk-c"
-          path: ./${{ matrix.library }}/aws-encryption-sdk-c
-          submodules: recursive
+          action: actions/checkout@v6
+          with: |
+            repository: aws/aws-encryption-sdk-c
+            path: ./${{ matrix.library }}/aws-encryption-sdk-c
+            submodules: recursive
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Checkout AWS C++ SDK
         if: matrix.language == 'c'
-        uses: actions/checkout@v6
+        uses: Wandalen/wretry.action@master
         with:
-          repository: "aws/aws-sdk-cpp"
-          path: ./${{ matrix.library }}/aws-encryption-sdk-c/aws-sdk-cpp
-          submodules: recursive
+          action: actions/checkout@v6
+          with: |
+            repository: aws/aws-sdk-cpp
+            path: ./${{ matrix.library }}/aws-encryption-sdk-c/aws-sdk-cpp
+            submodules: recursive
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Build and install aws-sdk-cpp (with retry)
         if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
@@ -149,46 +177,74 @@ jobs:
         # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
         if: matrix.language == 'net'
-        uses: actions/setup-dotnet@v5
+        uses: Wandalen/wretry.action@master
         with:
-          dotnet-version: ${{ matrix.dotnet-version }}
+          action: actions/setup-dotnet@v5
+          with: |
+            dotnet-version: ${{ matrix.dotnet-version }}
+          attempt_limit: 3
+          attempt_delay: 2000
 
       # Setup Java 8
       - name: Setup Java 8
         if: matrix.language == 'java'
-        uses: actions/setup-java@v5
+        uses: Wandalen/wretry.action@master
         with:
-          distribution: "corretto"
-          java-version: 17
+          action: actions/setup-java@v5
+          with: |
+            distribution: corretto
+            java-version: 17
+          attempt_limit: 3
+          attempt_delay: 2000
 
       # Setup Java in Rust is needed for running polymorph
       - name: Setup Java 17
         if: matrix.language == 'java' || matrix.language == 'rust'
-        uses: actions/setup-java@v5
+        uses: Wandalen/wretry.action@master
         with:
-          distribution: "corretto"
-          java-version: 17
+          action: actions/setup-java@v5
+          with: |
+            distribution: corretto
+            java-version: 17
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup Python for running tests
         if: matrix.language == 'python'
-        uses: actions/setup-python@v6
+        uses: Wandalen/wretry.action@master
         with:
-          python-version: 3.11
-          architecture: x64
-      - run: |
-          python -m pip install --upgrade pip
-          pip install --upgrade tox
-          pip install poetry
+          action: actions/setup-python@v6
+          with: |
+            python-version: 3.11
+            architecture: x64
+          attempt_limit: 3
+          attempt_delay: 2000
+      - uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: |
+            python -m pip install --upgrade pip
+            pip install --upgrade tox
+            pip install poetry
 
       - name: Setup Rust Toolchain for GitHub CI
         if: matrix.language == 'rust'
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+        uses: Wandalen/wretry.action@master
         with:
-          components: rustfmt
+          action: actions-rust-lang/setup-rust-toolchain@v1
+          with: |
+            components: rustfmt
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup NASM for Windows in Rust (aws-lc-sys)
         if: matrix.language == 'rust' && matrix.os == 'windows-latest'
-        uses: ilammy/setup-nasm@v1
+        uses: Wandalen/wretry.action@master
+        with:
+          action: ilammy/setup-nasm@v1
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup Dafny Rust
         if: matrix.language == 'rust'
@@ -334,77 +390,117 @@ jobs:
 
       # TestVectors will call KMS
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: InterOpTests
-          role-duration-seconds: 7200
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: InterOpTests
+            role-duration-seconds: 7200
+          attempt_limit: 3
+          attempt_delay: 2000
 
-      - uses: actions/checkout@v6
+      - uses: Wandalen/wretry.action@master
         with:
-          submodules: "recursive"
+          action: actions/checkout@v6
+          with: |
+            submodules: recursive
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Install OpenSSL
         if: matrix.os != 'ubuntu-22.04' && matrix.decrypting_language == 'c'
-        run: brew install openssl
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: brew install openssl
 
       - name: Install dependencies
-        if: matrix.os != 'ubuntu-22.04'	&& matrix.decrypting_language == 'c'
-        run: brew install json-c
+        if: matrix.os != 'ubuntu-22.04' && matrix.decrypting_language == 'c'
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: brew install json-c
 
       - name: Install LibCurl
         if: matrix.os == 'ubuntu-22.04' && matrix.decrypting_language == 'c'
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install libcurl4-openssl-dev --fix-missing
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          shell: bash
+          command: |
+            sudo apt-get update
+            sudo apt-get install libcurl4-openssl-dev --fix-missing
 
       - name: Checkout C-ESDK
         if: matrix.decrypting_language == 'c'
-        uses: actions/checkout@v6
+        uses: Wandalen/wretry.action@master
         with:
-          repository: "aws/aws-encryption-sdk-c"
-          path: ./${{ matrix.library }}/aws-encryption-sdk-c
-          submodules: recursive
+          action: actions/checkout@v6
+          with: |
+            repository: aws/aws-encryption-sdk-c
+            path: ./${{ matrix.library }}/aws-encryption-sdk-c
+            submodules: recursive
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Checkout AWS C++ SDK
         if: matrix.decrypting_language == 'c'
-        uses: actions/checkout@v6
+        uses: Wandalen/wretry.action@master
         with:
-          repository: "aws/aws-sdk-cpp"
-          path: ./${{ matrix.library }}/aws-encryption-sdk-c/aws-sdk-cpp
-          submodules: recursive
+          action: actions/checkout@v6
+          with: |
+            repository: aws/aws-sdk-cpp
+            path: ./${{ matrix.library }}/aws-encryption-sdk-c/aws-sdk-cpp
+            submodules: recursive
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Build and install aws-sdk-cpp
         if: matrix.decrypting_language == 'c' && matrix.os != 'ubuntu-22.04'
-        working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
-        run: |
-          pwd
-          ls
-          # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
-          perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
-          mkdir -p aws-encryption-sdk-c/build-aws-sdk-cpp || true
-          mkdir -p install || true
-          cd build-aws-sdk-cpp
-          cmake -G Xcode -DTARGET_ARCH="APPLE" -DBUILD_SHARED_LIBS=ON -DBUILD_ONLY="kms" -DENABLE_UNITY_BUILD=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/aws-encryption-sdk-c/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/aws-encryption-sdk-c/install ../aws-sdk-cpp
-          xcodebuild -target ALL_BUILD
-          xcodebuild -target install
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 30
+          max_attempts: 3
+          retry_on: error
+          shell: bash
+          command: |
+            cd ./${{ matrix.library }}/aws-encryption-sdk-c
+            pwd
+            ls
+            # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
+            perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
+            mkdir -p aws-encryption-sdk-c/build-aws-sdk-cpp || true
+            mkdir -p install || true
+            cd build-aws-sdk-cpp
+            cmake -G Xcode -DTARGET_ARCH="APPLE" -DBUILD_SHARED_LIBS=ON -DBUILD_ONLY="kms" -DENABLE_UNITY_BUILD=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/aws-encryption-sdk-c/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/aws-encryption-sdk-c/install ../aws-sdk-cpp
+            xcodebuild -target ALL_BUILD
+            xcodebuild -target install
 
       - name: Build and install aws-sdk-cpp
         if: matrix.os == 'ubuntu-22.04' && matrix.decrypting_language == 'c'
-        working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
-        run: |
-          pwd
-          ls
-          # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
-          perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
-          mkdir -p build-aws-sdk-cpp || true
-          mkdir -p install || true
-          cd build-aws-sdk-cpp
-          cmake -DBUILD_SHARED_LIBS=ON -DBUILD_ONLY="kms" -DENABLE_UNITY_BUILD=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install ../aws-sdk-cpp
-          make
-          make install
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 30
+          max_attempts: 3
+          retry_on: error
+          shell: bash
+          command: |
+            cd ./${{ matrix.library }}/aws-encryption-sdk-c
+            pwd
+            ls
+            # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
+            perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
+            mkdir -p build-aws-sdk-cpp || true
+            mkdir -p install || true
+            cd build-aws-sdk-cpp
+            cmake -DBUILD_SHARED_LIBS=ON -DBUILD_ONLY="kms" -DENABLE_UNITY_BUILD=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install ../aws-sdk-cpp
+            make
+            make install
 
       - name: Build C-ESDK
         if: matrix.decrypting_language == 'c' && matrix.os != 'ubuntu-22.04'
@@ -431,46 +527,74 @@ jobs:
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
         if: matrix.decrypting_language == 'net'
-        uses: actions/setup-dotnet@v5
+        uses: Wandalen/wretry.action@master
         with:
-          dotnet-version: ${{ matrix.dotnet-version }}
+          action: actions/setup-dotnet@v5
+          with: |
+            dotnet-version: ${{ matrix.dotnet-version }}
+          attempt_limit: 3
+          attempt_delay: 2000
 
       # Setup Java in Rust is needed for running polymorph
       - name: Setup Java 8
         if: matrix.decrypting_language == 'java'
-        uses: actions/setup-java@v5
+        uses: Wandalen/wretry.action@master
         with:
-          distribution: "corretto"
-          java-version: 8
+          action: actions/setup-java@v5
+          with: |
+            distribution: corretto
+            java-version: 8
+          attempt_limit: 3
+          attempt_delay: 2000
 
       # Setup Java in Rust is needed for running polymorph
       - name: Setup Java 17
         if: matrix.decrypting_language == 'java' || matrix.decrypting_language == 'rust'
-        uses: actions/setup-java@v5
+        uses: Wandalen/wretry.action@master
         with:
-          distribution: "corretto"
-          java-version: 17
+          action: actions/setup-java@v5
+          with: |
+            distribution: corretto
+            java-version: 17
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup Python for running tests
         if: matrix.decrypting_language == 'python'
-        uses: actions/setup-python@v6
+        uses: Wandalen/wretry.action@master
         with:
-          python-version: 3.11
-          architecture: x64
-      - run: |
-          python -m pip install --upgrade pip
-          pip install --upgrade tox
-          pip install poetry
+          action: actions/setup-python@v6
+          with: |
+            python-version: 3.11
+            architecture: x64
+          attempt_limit: 3
+          attempt_delay: 2000
+      - uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: |
+            python -m pip install --upgrade pip
+            pip install --upgrade tox
+            pip install poetry
 
       - name: Setup Rust Toolchain for GitHub CI
         if: matrix.decrypting_language == 'rust'
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+        uses: Wandalen/wretry.action@master
         with:
-          components: rustfmt
+          action: actions-rust-lang/setup-rust-toolchain@v1
+          with: |
+            components: rustfmt
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup NASM for Windows in Rust (aws-lc-sys)
         if: matrix.decrypting_language == 'rust' && matrix.os == 'windows-latest'
-        uses: ilammy/setup-nasm@v1
+        uses: Wandalen/wretry.action@master
+        with:
+          action: ilammy/setup-nasm@v1
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup Dafny Rust
         if: matrix.decrypting_language == 'rust'
@@ -560,18 +684,26 @@ jobs:
 
       # TestVectors will call KMS
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: InterOpTests
-          role-duration-seconds: 7200
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: InterOpTests
+            role-duration-seconds: 7200
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v8
+        uses: Wandalen/wretry.action@master
         with:
-          name: ${{matrix.os}}_vector_artifact_java_${{github.sha}}
-          path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+          action: actions/download-artifact@v8
+          with: |
+            name: ${{matrix.os}}_vector_artifact_java_${{github.sha}}
+            path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Decrypt Encrypt Manifest
         if: matrix.decrypting_language != 'c'
@@ -590,18 +722,26 @@ jobs:
 
       # TestVectors will call KMS
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: InterOpTests
-          role-duration-seconds: 7200
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: InterOpTests
+            role-duration-seconds: 7200
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v8
+        uses: Wandalen/wretry.action@master
         with:
-          name: ${{matrix.os}}_vector_artifact_net_${{github.sha}}
-          path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+          action: actions/download-artifact@v8
+          with: |
+            name: ${{matrix.os}}_vector_artifact_net_${{github.sha}}
+            path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Decrypt Encrypt Manifest
         if: matrix.decrypting_language != 'c'
@@ -620,18 +760,26 @@ jobs:
 
       # TestVectors will call KMS
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: InterOpTests
-          role-duration-seconds: 7200
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: InterOpTests
+            role-duration-seconds: 7200
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v8
+        uses: Wandalen/wretry.action@master
         with:
-          name: ${{matrix.os}}_vector_artifact_rust_${{github.sha}}
-          path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+          action: actions/download-artifact@v8
+          with: |
+            name: ${{matrix.os}}_vector_artifact_rust_${{github.sha}}
+            path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Decrypt Encrypt Manifest
         if: matrix.decrypting_language != 'c'
@@ -650,18 +798,26 @@ jobs:
 
       # TestVectors will call KMS
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: InterOpTests
-          role-duration-seconds: 7200
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: InterOpTests
+            role-duration-seconds: 7200
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v8
+        uses: Wandalen/wretry.action@master
         with:
-          name: ${{matrix.os}}_vector_artifact_python_${{github.sha}}
-          path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+          action: actions/download-artifact@v8
+          with: |
+            name: ${{matrix.os}}_vector_artifact_python_${{github.sha}}
+            path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Decrypt Encrypt Manifest
         if: matrix.decrypting_language != 'c'
@@ -680,18 +836,26 @@ jobs:
 
       # TestVectors will call KMS
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: InterOpTests
-          role-duration-seconds: 7200
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: InterOpTests
+            role-duration-seconds: 7200
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v8
+        uses: Wandalen/wretry.action@master
         with:
-          name: ${{matrix.os}}_vector_artifact_go_${{github.sha}}
-          path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+          action: actions/download-artifact@v8
+          with: |
+            name: ${{matrix.os}}_vector_artifact_go_${{github.sha}}
+            path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Decrypt Encrypt Manifest
         if: matrix.decrypting_language != 'c'
@@ -710,18 +874,26 @@ jobs:
 
       # TestVectors will call KMS
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: InterOpTests
-          role-duration-seconds: 7200
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: InterOpTests
+            role-duration-seconds: 7200
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v8
+        uses: Wandalen/wretry.action@master
         with:
-          name: ${{matrix.os}}_vector_artifact_c_${{github.sha}}
-          path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+          action: actions/download-artifact@v8
+          with: |
+            name: ${{matrix.os}}_vector_artifact_c_${{github.sha}}
+            path: ./${{matrix.library}}/runtimes/${{matrix.decrypting_language}}
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Decrypt Encrypt Manifest
         if: matrix.decrypting_language != 'c'

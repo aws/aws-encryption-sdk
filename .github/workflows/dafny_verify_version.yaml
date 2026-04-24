@@ -16,10 +16,18 @@ jobs:
     outputs:
       version: ${{ steps.read_property.outputs.dafnyVerifyVersion }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: Wandalen/wretry.action@master
+        with:
+          action: actions/checkout@v6
+          attempt_limit: 3
+          attempt_delay: 2000
       - name: Read version from Properties-file
         id: read_property
-        uses: christian-draeger/read-properties@1.1.1
+        uses: Wandalen/wretry.action@master
         with:
-          path: "./project.properties"
-          properties: "dafnyVerifyVersion"
+          action: christian-draeger/read-properties@1.1.1
+          with: |
+            path: "./project.properties"
+            properties: "dafnyVerifyVersion"
+          attempt_limit: 3
+          attempt_delay: 2000

@@ -36,19 +36,31 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v6
+      - uses: Wandalen/wretry.action@master
+        with:
+          action: actions/checkout@v6
+          attempt_limit: 3
+          attempt_delay: 2000
       - name: Init Submodules
-        shell: bash
-        run: |
-          git submodule update --init libraries
-          git submodule update --init --recursive mpl
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          shell: bash
+          command: |
+            git submodule update --init libraries
+            git submodule update --init --recursive mpl
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: GoTests
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: GoTests
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
@@ -60,12 +72,20 @@ jobs:
 
       - name: Setup NASM for Windows (aws-lc-sys)
         if: matrix.os == 'windows-latest'
-        uses: ilammy/setup-nasm@v1
+        uses: Wandalen/wretry.action@master
+        with:
+          action: ilammy/setup-nasm@v1
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Install Go
-        uses: actions/setup-go@v6
+        uses: Wandalen/wretry.action@master
         with:
-          go-version: ${{ matrix.go-version }}
+          action: actions/setup-go@v6
+          with: |
+            go-version: ${{ matrix.go-version }}
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Compile ${{ matrix.library }} implementation
         shell: bash

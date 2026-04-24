@@ -83,18 +83,26 @@ jobs:
     steps:
       # We need access to the role that is able to get CI Bot Creds
       - name: Configure AWS Credentials for Release
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::587316601012:role/GitHub-CI-CI-Bot-Credential-Access-Role-us-west-2
-          role-session-name: Dafny_Issue_Blocker
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::587316601012:role/GitHub-CI-CI-Bot-Credential-Access-Role-us-west-2
+            role-session-name: Dafny_Issue_Blocker
+          attempt_limit: 3
+          attempt_delay: 2000
 
       # Use AWS Secrets Manger GHA to retrieve CI Bot Creds
       - name: Get CI Bot Creds Secret
-        uses: aws-actions/aws-secretsmanager-get-secrets@v2
+        uses: Wandalen/wretry.action@master
         with:
-          secret-ids: Github/aws-crypto-tools-ci-bot
-          parse-json-secrets: true
+          action: aws-actions/aws-secretsmanager-get-secrets@v2
+          with: |
+            secret-ids: Github/aws-crypto-tools-ci-bot
+            parse-json-secrets: true
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Create release blocker on dafny-lang/dafny
         env:

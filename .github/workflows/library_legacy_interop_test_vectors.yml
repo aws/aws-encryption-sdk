@@ -51,30 +51,46 @@ jobs:
         run: |
           git config --global core.longpaths true
 
-      - uses: actions/checkout@v6
+      - uses: Wandalen/wretry.action@master
         with:
-          submodules: "recursive"
+          action: actions/checkout@v6
+          with: |
+            submodules: "recursive"
+          attempt_limit: 3
+          attempt_delay: 2000
 
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
         if: matrix.language == 'net'
-        uses: actions/setup-dotnet@v5
+        uses: Wandalen/wretry.action@master
         with:
-          dotnet-version: ${{ matrix.dotnet-version }}
+          action: actions/setup-dotnet@v5
+          with: |
+            dotnet-version: ${{ matrix.dotnet-version }}
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup Java 8
         if: matrix.language == 'java'
-        uses: actions/setup-java@v5
+        uses: Wandalen/wretry.action@master
         with:
-          distribution: "corretto"
-          java-version: 8
+          action: actions/setup-java@v5
+          with: |
+            distribution: "corretto"
+            java-version: 8
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup Java 17
         if: matrix.language == 'java'
-        uses: actions/setup-java@v5
+        uses: Wandalen/wretry.action@master
         with:
-          distribution: "corretto"
-          java-version: 17
+          action: actions/setup-java@v5
+          with: |
+            distribution: "corretto"
+            java-version: 17
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
@@ -83,14 +99,22 @@ jobs:
 
       - name: Setup Python for running tests
         if: matrix.language == 'python'
-        uses: actions/setup-python@v6
+        uses: Wandalen/wretry.action@master
         with:
-          python-version: 3.11
-          architecture: x64
-      - run: |
-          python -m pip install --upgrade pip
-          pip install --upgrade tox
-          pip install poetry
+          action: actions/setup-python@v6
+          with: |
+            python-version: 3.11
+            architecture: x64
+          attempt_limit: 3
+          attempt_delay: 2000
+      - uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: |
+            python -m pip install --upgrade pip
+            pip install --upgrade tox
+            pip install poetry
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
@@ -133,11 +157,15 @@ jobs:
 
       # TestVectors will call KMS
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: LegacyInterOpTests
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: LegacyInterOpTests
+          attempt_limit: 3
+          attempt_delay: 2000
 
       # Extract test vector zips
       - name: Unzip legacy test vectors

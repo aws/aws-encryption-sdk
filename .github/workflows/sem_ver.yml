@@ -15,28 +15,44 @@ jobs:
         run: |
           git config --global core.longpaths true
 
-      - uses: actions/checkout@v6
+      - uses: Wandalen/wretry.action@master
         with:
-          submodules: recursive
+          action: actions/checkout@v6
+          with: |
+            submodules: recursive
+          attempt_limit: 3
+          attempt_delay: 2000
       # We need access to the role that is able to get CI Bot Creds
       - name: Configure AWS Credentials for Release
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::587316601012:role/GitHub-CI-CI-Bot-Credential-Access-Role-us-west-2
-          role-session-name: CI_Bot_Release
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::587316601012:role/GitHub-CI-CI-Bot-Credential-Access-Role-us-west-2
+            role-session-name: CI_Bot_Release
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Upgrade Node
-        uses: actions/setup-node@v6
+        uses: Wandalen/wretry.action@master
         with:
-          node-version: 21
+          action: actions/setup-node@v6
+          with: |
+            node-version: 21
+          attempt_limit: 3
+          attempt_delay: 2000
 
       # Use AWS Secrets Manger GHA to retrieve CI Bot Creds
       - name: Get CI Bot Creds Secret
-        uses: aws-actions/aws-secretsmanager-get-secrets@v2
+        uses: Wandalen/wretry.action@master
         with:
-          secret-ids: Github/aws-crypto-tools-ci-bot
-          parse-json-secrets: true
+          action: aws-actions/aws-secretsmanager-get-secrets@v2
+          with: |
+            secret-ids: Github/aws-crypto-tools-ci-bot
+            parse-json-secrets: true
+          attempt_limit: 3
+          attempt_delay: 2000
 
       # Log in as the CI Bot
       - name: Log in as CI Bot
@@ -48,6 +64,14 @@ jobs:
 
       # Test to see if we can setup semantic release
       - name: Test Semantic Release Installation
-        uses: actions/checkout@v6
-      - run: |
-          make setup_semantic_release
+        uses: Wandalen/wretry.action@master
+        with:
+          action: actions/checkout@v6
+          attempt_limit: 3
+          attempt_delay: 2000
+      - uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: |
+            make setup_semantic_release
