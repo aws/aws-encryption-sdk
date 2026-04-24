@@ -69,7 +69,7 @@ jobs:
           git rev-parse HEAD
 
       - name: Install Smithy-Dafny codegen dependencies
-        uses: aws/aws-cryptographic-material-providers-library/.github/actions/install_smithy_dafny_codegen_dependencies@main
+        uses: ./submodules/MaterialProviders/.github/actions/install_smithy_dafny_codegen_dependencies
 
       - name: Install Go
         uses: actions/setup-go@v6
