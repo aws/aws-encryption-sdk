@@ -57,7 +57,7 @@ jobs:
           dafny-version: ${{ inputs.dafny }}
 
       - name: Install Smithy-Dafny codegen dependencies
-        uses: ./submodules/MaterialProviders/.github/actions/install_smithy_dafny_codegen_dependencies
+        uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
 
       - name: Setup NASM for Windows (aws-lc-sys)
         if: matrix.os == 'windows-latest'

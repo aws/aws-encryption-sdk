@@ -61,7 +61,7 @@ jobs:
           java-version: "17"
 
       - name: Install Smithy-Dafny codegen dependencies
-        uses: ./submodules/MaterialProviders/.github/actions/install_smithy_dafny_codegen_dependencies
+        uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
 
       - name: Install Go
         uses: actions/setup-go@v6
@@ -69,7 +69,7 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       - name: Install Smithy-Dafny codegen dependencies
-        uses: ./submodules/MaterialProviders/.github/actions/install_smithy_dafny_codegen_dependencies
+        uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
 
       - uses: ./.github/actions/polymorph_codegen
         with:
