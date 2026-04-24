@@ -48,7 +48,7 @@ jobs:
           dafny-version: ${{ inputs.dafny }}
 
       - name: Install Smithy-Dafny codegen dependencies
-        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+        uses: aws/aws-cryptographic-material-providers-library/.github/actions/install_smithy_dafny_codegen_dependencies@main
 
       - name: Regenerate code using smithy-dafny if necessary
         if: ${{ inputs.regenerate-code }}

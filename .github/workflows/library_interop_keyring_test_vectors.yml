@@ -203,7 +203,7 @@ jobs:
           dafny-version: ${{ inputs.dafny }}
 
       - name: Install Smithy-Dafny codegen dependencies
-        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+        uses: aws/aws-cryptographic-material-providers-library/.github/actions/install_smithy_dafny_codegen_dependencies@main
 
       - name: Regenerate code using smithy-dafny if necessary
         if: ${{ inputs.regenerate-code }}
@@ -234,7 +234,7 @@ jobs:
 
       - name: Install Smithy-Dafny codegen dependencies
         if: matrix.language == 'rust'
-        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+        uses: aws/aws-cryptographic-material-providers-library/.github/actions/install_smithy_dafny_codegen_dependencies@main
 
       - name: Run make polymorph_rust
         if: matrix.language == 'rust'
@@ -485,7 +485,7 @@ jobs:
           dafny-version: ${{ inputs.dafny }}
 
       - name: Install Smithy-Dafny codegen dependencies
-        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+        uses: aws/aws-cryptographic-material-providers-library/.github/actions/install_smithy_dafny_codegen_dependencies@main
 
       - name: Regenerate code using smithy-dafny if necessary
         if: ${{ inputs.regenerate-code }}
@@ -516,7 +516,7 @@ jobs:
 
       - name: Install Smithy-Dafny codegen dependencies
         if: matrix.decrypting_language == 'rust'
-        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+        uses: aws/aws-cryptographic-material-providers-library/.github/actions/install_smithy_dafny_codegen_dependencies@main
 
       - name: Run make polymorph_rust
         if: matrix.decrypting_language == 'rust'
