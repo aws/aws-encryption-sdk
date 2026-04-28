@@ -1,0 +1,43 @@
+'$schema' = "https://awslabs.github.io/duvet/config/v0.4.0.json"
+
+[[source]]
+pattern = "./src/**/*.rs"
+
+[[source]]
+pattern = "./tests/**/*.rs"
+
+[[source]]
+pattern = "./.duvet/compliance_exceptions/**/*.txt"
+
+[[specification]]
+source = "specification/data-format/message-header.md"
+
+[[specification]]
+source = "specification/data-format/message-footer.md"
+
+[[specification]]
+source = "specification/data-format/message-body.md"
+
+[[specification]]
+source = "specification/data-format/message-body-aad.md"
+
+[[specification]]
+source = "specification/data-format/message.md"
+
+[[specification]]
+source = "specification/client-apis/client.md"
+
+[[specification]]
+source = "specification/client-apis/decrypt.md"
+
+[[specification]]
+source = "specification/client-apis/encrypt.md"
+
+[[specification]]
+source = "specification/client-apis/streaming.md"
+
+[report.html]
+enabled = true
+
+[report.snapshot]
+enabled = true

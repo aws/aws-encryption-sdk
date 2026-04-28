@@ -1,0 +1,105 @@
+target = "specification/client-apis/encrypt.md#construct-the-body"
+
+# Construct the body
+#
+# The encrypted message output by the Encrypt operation MUST have a message body equal
+# to the message body calculated in this step.
+# If the message bodies are not equal, the Encrypt operation MUST fail.
+# 
+# If [Plaintext Length Bound](#plaintext-length-bound) was specified on input
+# and this operation determines at any time that the plaintext being encrypted
+# has a length greater than this value,
+# this operation MUST immediately fail.
+# 
+# Before the end of the input is indicated,
+# this operation MUST process as much of the consumable bytes as possible
+# by [constructing regular frames](#construct-a-frame).
+# 
+# When the end of the input is indicated,
+# this operation MUST perform the following until all consumable plaintext bytes are processed:
+# 
+# - If there are exactly enough consumable plaintext bytes to create one regular frame,
+#   such that creating a regular frame processes all consumable bytes,
+#   then this operation MUST [construct either a final frame or regular frame](#construct-a-frame)
+#   with the remaining plaintext.
+# - If there are enough input plaintext bytes consumable to create a new regular frame,
+#   such that creating a regular frame does not processes all consumable bytes,
+#   then this operation MUST [construct a regular frame](#construct-a-frame)
+#   using the consumable plaintext bytes.
+# - If there are not enough input consumable plaintext bytes to create a new regular frame,
+#   then this operation MUST [construct a final frame](#construct-a-frame)
+# 
+# If an end to the input has been indicated, there are no more consumable plaintext bytes to process,
+# and a final frame has not yet been constructed,
+# this operation MUST [construct an empty final frame](#construct-a-frame).
+
+[[spec]]
+level = "MUST"
+quote = '''
+The encrypted message output by the Encrypt operation MUST have a message body equal
+to the message body calculated in this step.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If the message bodies are not equal, the Encrypt operation MUST fail.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If [Plaintext Length Bound](#plaintext-length-bound) was specified on input
+and this operation determines at any time that the plaintext being encrypted
+has a length greater than this value,
+this operation MUST immediately fail.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+Before the end of the input is indicated,
+this operation MUST process as much of the consumable bytes as possible
+by [constructing regular frames](#construct-a-frame).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+When the end of the input is indicated,
+this operation MUST perform the following until all consumable plaintext bytes are processed:
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- If there are exactly enough consumable plaintext bytes to create one regular frame,
+such that creating a regular frame processes all consumable bytes,
+then this operation MUST [construct either a final frame or regular frame](#construct-a-frame)
+with the remaining plaintext.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- If there are enough input plaintext bytes consumable to create a new regular frame,
+such that creating a regular frame does not processes all consumable bytes,
+then this operation MUST [construct a regular frame](#construct-a-frame)
+using the consumable plaintext bytes.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- If there are not enough input consumable plaintext bytes to create a new regular frame,
+then this operation MUST [construct a final frame](#construct-a-frame)
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If an end to the input has been indicated, there are no more consumable plaintext bytes to process,
+and a final frame has not yet been constructed,
+this operation MUST [construct an empty final frame](#construct-a-frame).
+'''
+

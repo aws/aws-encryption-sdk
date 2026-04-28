@@ -1,0 +1,119 @@
+target = "specification/client-apis/decrypt.md#v1-header-deserialization"
+
+# V1 Header Deserialization
+#
+# If the value of the deserialized version field is [1.0](../data-format/message-header.md#supported-versions),
+# the remaining header fields MUST be deserialized according to the
+# [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
+# 
+# - MUST deserialize the [Type](../data-format/message-header.md#type).
+#   The value MUST be a [supported type](../data-format/message-header.md#supported-types).
+# - MUST deserialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
+# - MUST deserialize the [Message ID](../data-format/message-header.md#message-id).
+# - MUST deserialize the [AAD](../data-format/message-header.md#aad).
+# - MUST deserialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
+# - MUST deserialize the [Content Type](../data-format/message-header.md#content-type).
+#   The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
+# - MUST deserialize the [Reserved](../data-format/message-header.md#reserved).
+# - MUST deserialize the [IV Length](../data-format/message-header.md#iv-length).
+# - MUST deserialize the [Frame Length](../data-format/message-header.md#frame-length).
+# 
+# The Decrypt operation MUST then deserialize the
+# [Header Authentication Version 1.0](../data-format/message-header.md#header-authentication-version-10):
+# 
+# - MUST deserialize the [IV](../data-format/message-header.md#iv).
+# - MUST deserialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
+
+[[spec]]
+level = "MUST"
+quote = '''
+If the value of the deserialized version field is [1.0](../data-format/message-header.md#supported-versions),
+the remaining header fields MUST be deserialized according to the
+[Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- MUST deserialize the [Type](../data-format/message-header.md#type).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The value MUST be a [supported type](../data-format/message-header.md#supported-types).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- MUST deserialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- MUST deserialize the [Message ID](../data-format/message-header.md#message-id).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- MUST deserialize the [AAD](../data-format/message-header.md#aad).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- MUST deserialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- MUST deserialize the [Content Type](../data-format/message-header.md#content-type).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- MUST deserialize the [Reserved](../data-format/message-header.md#reserved).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- MUST deserialize the [IV Length](../data-format/message-header.md#iv-length).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- MUST deserialize the [Frame Length](../data-format/message-header.md#frame-length).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The Decrypt operation MUST then deserialize the
+[Header Authentication Version 1.0](../data-format/message-header.md#header-authentication-version-10):
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- MUST deserialize the [IV](../data-format/message-header.md#iv).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- MUST deserialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
+'''
+

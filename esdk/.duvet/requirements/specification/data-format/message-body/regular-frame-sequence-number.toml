@@ -1,0 +1,35 @@
+target = "specification/data-format/message-body.md#regular-frame-sequence-number"
+
+# Regular Frame Sequence Number
+#
+# The Frame sequence number.  
+# It is an incremental counter number for the frames.  
+# Framed Data MUST start at Sequence Number 1.  
+# Subsequent frames MUST be in order and MUST contain an increment of 1 from the previous frame.
+# The length of the serialized sequence number field MUST be 4 bytes.
+# The sequence number MUST be interpreted as a UInt32.
+
+[[spec]]
+level = "MUST"
+quote = '''
+Framed Data MUST start at Sequence Number 1.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+Subsequent frames MUST be in order and MUST contain an increment of 1 from the previous frame.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized sequence number field MUST be 4 bytes.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The sequence number MUST be interpreted as a UInt32.
+'''
+

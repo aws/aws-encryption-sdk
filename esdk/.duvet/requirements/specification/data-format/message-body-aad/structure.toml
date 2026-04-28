@@ -1,0 +1,30 @@
+target = "specification/data-format/message-body-aad.md#structure"
+
+# Structure
+#
+# The following table is a non-normative representation of the normative requirements in this section.
+# The bytes are appended in the order shown.
+# 
+# | Field            | Length (bytes) | Interpreted as |
+# | ---------------- | -------------- | -------------- |
+# | Message ID       | Variable.      | Bytes          |
+# | Body AAD Content | Variable.      | UTF-8 Bytes    |
+# | Sequence Number  | 4              | UInt32         |
+# | Content Length   | 8              | UInt64         |
+# 
+# The message body AAD MUST consist of, in order,
+# Message ID,
+# Body AAD Content,
+# Sequence Number,
+# and Content Length.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The message body AAD MUST consist of, in order,
+Message ID,
+Body AAD Content,
+Sequence Number,
+and Content Length.
+'''
+

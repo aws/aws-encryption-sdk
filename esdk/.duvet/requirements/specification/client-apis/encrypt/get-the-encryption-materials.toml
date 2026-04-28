@@ -1,0 +1,232 @@
+target = "specification/client-apis/encrypt.md#get-the-encryption-materials"
+
+# Get the encryption materials
+#
+# If an [input algorithm suite](#algorithm-suite) is provided
+# that is not supported by the [commitment policy](client.md#commitment-policy)
+# configured in the [client](client.md) encrypt MUST yield an error.
+# 
+# To construct the [encrypted message](#encrypted-message),
+# some fields MUST be constructed using information obtained
+# from a set of valid [encryption materials](../framework/structures.md#encryption-materials).
+# This operation MUST obtain this set of [encryption materials](../framework/structures.md#encryption-materials)
+# by calling [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) on a [CMM](../framework/cmm-interface.md).
+# The CMM used MUST be the input CMM, if supplied.
+# If instead the caller supplied a [keyring](../framework/keyring-interface.md),
+# this behavior MUST use a [default CMM](../framework/default-cmm.md)
+# constructed using the caller-supplied keyring as input.
+# The call to [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials)
+# on that CMM MUST be constructed as follows:
+# 
+# - Encryption Context: If provided, this MUST be the [input encryption context](#encryption-context).
+#   Otherwise, this MUST be an empty encryption context.
+# - Commitment Policy: This MUST be the [commitment policy](client.md#commitment-policy) configured in the [client](client.md) exposing this encrypt function.
+# - Algorithm Suite: If provided, this MUST be the [input algorithm suite](#algorithm-suite).
+#   If no Algorithm Suite is provided, this field MUST NOT be included.
+# - Max Plaintext Length: If the [input plaintext](#plaintext) has known length,
+#   this length MUST be used.
+#   If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
+#   was provided, this MUST be the [Plaintext Length Bound](#plaintext-length-bound).
+#   If no Plaintext Length Bound is provided, this field MUST NOT be included.
+# 
+# The [algorithm suite](../framework/algorithm-suites.md) used in all aspects of this operation
+# MUST be the algorithm suite in the [encryption materials](../framework/structures.md#encryption-materials)
+# returned from the [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) call.
+# Note that the algorithm suite in the retrieved encryption materials MAY be different
+# from the [input algorithm suite](#algorithm-suite).
+# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
+# encrypt MUST yield an error.
+# If this [algorithm suite](../framework/algorithm-suites.md) is not supported by the [commitment policy](client.md#commitment-policy)
+# configured in the [client](client.md) encrypt MUST yield an error.
+# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys) on the [encryption materials](../framework/structures.md#encryption-materials)
+# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md) encrypt MUST yield an error.
+# 
+# The data key used as input for all encryption described below MUST be a data key derived from the plaintext data key
+# included in the [encryption materials](../framework/structures.md#encryption-materials).
+# The algorithm used to derive a data key from the plaintext data key MUST be
+# the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
+# [algorithm suite](../framework/algorithm-suites.md) defined above.
+# This document refers to the output of the key derivation algorithm as the derived data key.
+# Note:
+# 
+# - If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
+#   then the derived data key MUST be the same as the plaintext data key.
+# - If the key derivation algorithm is [HKDF](../framework/algorithm-suites.md#hkdf),
+#   the derivation process used MUST be the process described in [HKDF Encryption Key](../transitive-requirements.md#hkdf-encryption-key).
+# 
+# The frame length used in the procedures described below MUST be the input [frame length](#frame-length),
+# if supplied.
+# If no input frame length is supplied, the default frame length MUST be used.
+
+[[spec]]
+level = "MUST"
+quote = '''
+If an [input algorithm suite](#algorithm-suite) is provided
+that is not supported by the [commitment policy](client.md#commitment-policy)
+configured in the [client](client.md) encrypt MUST yield an error.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+To construct the [encrypted message](#encrypted-message),
+some fields MUST be constructed using information obtained
+from a set of valid [encryption materials](../framework/structures.md#encryption-materials).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+This operation MUST obtain this set of [encryption materials](../framework/structures.md#encryption-materials)
+by calling [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) on a [CMM](../framework/cmm-interface.md).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The CMM used MUST be the input CMM, if supplied.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If instead the caller supplied a [keyring](../framework/keyring-interface.md),
+this behavior MUST use a [default CMM](../framework/default-cmm.md)
+constructed using the caller-supplied keyring as input.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The call to [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials)
+on that CMM MUST be constructed as follows:
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Encryption Context: If provided, this MUST be the [input encryption context](#encryption-context).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+Otherwise, this MUST be an empty encryption context.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Commitment Policy: This MUST be the [commitment policy](client.md#commitment-policy) configured in the [client](client.md) exposing this encrypt function.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Algorithm Suite: If provided, this MUST be the [input algorithm suite](#algorithm-suite).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If no Algorithm Suite is provided, this field MUST NOT be included.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Max Plaintext Length: If the [input plaintext](#plaintext) has known length,
+this length MUST be used.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
+was provided, this MUST be the [Plaintext Length Bound](#plaintext-length-bound).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If no Plaintext Length Bound is provided, this field MUST NOT be included.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The [algorithm suite](../framework/algorithm-suites.md) used in all aspects of this operation
+MUST be the algorithm suite in the [encryption materials](../framework/structures.md#encryption-materials)
+returned from the [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) call.
+'''
+
+[[spec]]
+level = "MAY"
+quote = '''
+Note that the algorithm suite in the retrieved encryption materials MAY be different
+from the [input algorithm suite](#algorithm-suite).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
+encrypt MUST yield an error.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If this [algorithm suite](../framework/algorithm-suites.md) is not supported by the [commitment policy](client.md#commitment-policy)
+configured in the [client](client.md) encrypt MUST yield an error.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys) on the [encryption materials](../framework/structures.md#encryption-materials)
+is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md) encrypt MUST yield an error.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The data key used as input for all encryption described below MUST be a data key derived from the plaintext data key
+included in the [encryption materials](../framework/structures.md#encryption-materials).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The algorithm used to derive a data key from the plaintext data key MUST be
+the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
+[algorithm suite](../framework/algorithm-suites.md) defined above.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
+then the derived data key MUST be the same as the plaintext data key.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- If the key derivation algorithm is [HKDF](../framework/algorithm-suites.md#hkdf),
+the derivation process used MUST be the process described in [HKDF Encryption Key](../transitive-requirements.md#hkdf-encryption-key).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The frame length used in the procedures described below MUST be the input [frame length](#frame-length),
+if supplied.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If no input frame length is supplied, the default frame length MUST be used.
+'''
+

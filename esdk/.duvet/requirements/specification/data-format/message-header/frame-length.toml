@@ -1,0 +1,27 @@
+target = "specification/data-format/message-header.md#frame-length"
+
+# Frame Length
+#
+# The length of the [encrypted content](message-body.md#regular-frame-encrypted-content) within each [regular frame](message-body.md#regular-frame) of framed content.
+# The length of the serialized frame length field MUST be 4 bytes.
+# The frame length MUST be interpreted as a UInt32.
+# When the [content type](#content-type) is nonframed, the value of this field MUST be 0.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized frame length field MUST be 4 bytes.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The frame length MUST be interpreted as a UInt32.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+When the [content type](#content-type) is nonframed, the value of this field MUST be 0.
+'''
+

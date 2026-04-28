@@ -1,0 +1,20 @@
+target = "specification/data-format/message-header.md#key-provider-id-length"
+
+# Key Provider ID Length
+#
+# The length of the key provider ID.
+# The length of the serialized key provider ID length field MUST be 2 bytes.
+# The key provider ID length MUST be interpreted as a UInt16.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized key provider ID length field MUST be 2 bytes.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The key provider ID length MUST be interpreted as a UInt16.
+'''
+

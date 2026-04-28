@@ -1,0 +1,36 @@
+target = "specification/data-format/message-body-aad.md#sequence-number"
+
+# Sequence Number
+#
+# The sequence number of the data this message body AAD belongs to.
+# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
+# For a regular frame this is the [Regular Frame Sequence Number](message-body.md#regular-frame-sequence-number).
+# For a final frame this is the [Final Frame Sequence Number](message-body.md#final-frame-sequence-number).
+# For [nonframed data](message-body.md#nonframed-data), the value of this field MUST be `1`.
+# The length of the sequence number field MUST be 4 bytes.
+# The sequence number field MUST be interpreted as a UInt32.
+
+[[spec]]
+level = "MUST"
+quote = '''
+For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+For [nonframed data](message-body.md#nonframed-data), the value of this field MUST be `1`.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the sequence number field MUST be 4 bytes.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The sequence number field MUST be interpreted as a UInt32.
+'''
+

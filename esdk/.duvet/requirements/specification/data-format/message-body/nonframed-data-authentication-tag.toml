@@ -1,0 +1,21 @@
+target = "specification/data-format/message-body.md#nonframed-data-authentication-tag"
+
+# Nonframed Data Authentication Tag
+#
+# The authentication value for the body.
+# It is used to authenticate the message body.
+# The length of the serialized authentication tag field MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
+# The authentication tag value MUST be interpreted as bytes.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized authentication tag field MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The authentication tag value MUST be interpreted as bytes.
+'''
+

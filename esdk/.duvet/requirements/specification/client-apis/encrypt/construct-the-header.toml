@@ -1,0 +1,21 @@
+target = "specification/client-apis/encrypt.md#construct-the-header"
+
+# Construct the header
+#
+# Before encrypting input plaintext,
+# this operation MUST serialize the [message header body](../data-format/message-header.md).
+# The [message format version](../data-format/message-header.md#supported-versions) MUST be the value associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites).
+
+[[spec]]
+level = "MUST"
+quote = '''
+Before encrypting input plaintext,
+this operation MUST serialize the [message header body](../data-format/message-header.md).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The [message format version](../data-format/message-header.md#supported-versions) MUST be the value associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites).
+'''
+

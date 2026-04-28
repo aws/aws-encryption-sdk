@@ -1,0 +1,29 @@
+target = "specification/data-format/message-body.md#final-frame-authentication-tag"
+
+# Final Frame Authentication Tag
+#
+# The authentication value for the final frame.  
+# It MUST be used to authenticate the final frame.
+# The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
+# specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
+# The authentication tag MUST be interpreted as bytes.
+
+[[spec]]
+level = "MUST"
+quote = '''
+It MUST be used to authenticate the final frame.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
+specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The authentication tag MUST be interpreted as bytes.
+'''
+

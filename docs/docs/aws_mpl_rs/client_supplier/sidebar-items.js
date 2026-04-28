@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["create_default_client_supplier"],"struct":["CreateDefaultClientSupplierInput","GetClientInput"],"trait":["ClientSupplier"],"type":["ClientSupplierRef"]};

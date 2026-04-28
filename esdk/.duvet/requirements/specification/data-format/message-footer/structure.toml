@@ -1,0 +1,24 @@
+target = "specification/data-format/message-footer.md#structure"
+
+# Structure
+#
+# The following table is a non-normative representation of the normative requirements in this section.
+# The bytes are appended in the order shown.
+# 
+# | Field            | Length (bytes) | Interpreted as |
+# | ---------------- | -------------- | -------------- |
+# | Signature Length | 2              | UInt16         |
+# | Signature        | Variable.      | Bytes          |
+# 
+# The message footer MUST consist of, in order,
+# Signature Length,
+# and Signature.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The message footer MUST consist of, in order,
+Signature Length,
+and Signature.
+'''
+

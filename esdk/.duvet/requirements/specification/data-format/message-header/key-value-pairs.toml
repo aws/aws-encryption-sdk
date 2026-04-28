@@ -1,0 +1,23 @@
+target = "specification/data-format/message-header.md#key-value-pairs"
+
+# Key Value Pairs
+#
+# The encoding of the key-value pairs of the [encryption context](../framework/structures.md#encryption-context).
+# The encryption context key-value pairs MUST be serialized according to its [specification for serialization](../framework/structures.md#serialization).
+# 
+# When the [encryption context](../framework/structures.md#encryption-context) is empty,
+# this field MUST NOT be included in the [AAD](#aad).
+
+[[spec]]
+level = "MUST"
+quote = '''
+The encryption context key-value pairs MUST be serialized according to its [specification for serialization](../framework/structures.md#serialization).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+When the [encryption context](../framework/structures.md#encryption-context) is empty,
+this field MUST NOT be included in the [AAD](#aad).
+'''
+

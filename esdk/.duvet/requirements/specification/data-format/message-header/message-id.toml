@@ -1,0 +1,46 @@
+target = "specification/data-format/message-header.md#message-id"
+
+# Message ID
+#
+# A Message ID uniquely identifies the [message](message.md).
+# While implementations cannot guarantee complete uniqueness,
+# implementations MUST use a good source of randomness when generating message IDs in order to make
+# the chance of duplicate IDs negligible.
+# The length of the serialized message ID MUST be 16 bytes for [version 1.0](#header-body-version-10) headers.
+# The length of the serialized message ID MUST be 32 bytes for [version 2.0](#header-body-version-20) headers.
+# The message ID MUST be interpreted as bytes.
+# 
+# The purpose of the message ID is to:
+# 
+# - Protect against accidental reuse of a derived data key or the wearing out of derived data keys in
+#   the AWS Encryption SDK
+# - Uniquely identify the [message](message.md)
+# - Bind the message header to the [message body](message-body.md)
+# - Provide a mechanism to securely reuse a data key with multiple messages
+
+[[spec]]
+level = "MUST"
+quote = '''
+While implementations cannot guarantee complete uniqueness,
+implementations MUST use a good source of randomness when generating message IDs in order to make
+the chance of duplicate IDs negligible.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized message ID MUST be 16 bytes for [version 1.0](#header-body-version-10) headers.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized message ID MUST be 32 bytes for [version 2.0](#header-body-version-20) headers.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The message ID MUST be interpreted as bytes.
+'''
+

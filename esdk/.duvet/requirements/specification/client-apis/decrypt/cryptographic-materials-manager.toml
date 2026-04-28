@@ -1,0 +1,14 @@
+target = "specification/client-apis/decrypt.md#cryptographic-materials-manager"
+
+# Cryptographic Materials Manager
+#
+# A CMM that implements the [CMM interface](../framework/cmm-interface.md).
+# 
+# This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
+
+[[spec]]
+level = "MUST"
+quote = '''
+This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
+'''
+

@@ -1,0 +1,31 @@
+target = "specification/client-apis/encrypt.md#v2-authentication-tag"
+
+# V2 Authentication Tag
+#
+# With the authentication tag calculated,
+# if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
+# this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-2-0) with the following specifics:
+# 
+# - The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
+#   The value MUST be the authentication tag calculated above.
+
+[[spec]]
+level = "MUST"
+quote = '''
+With the authentication tag calculated,
+if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
+this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-2-0) with the following specifics:
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The value MUST be the authentication tag calculated above.
+'''
+

@@ -1,0 +1,27 @@
+target = "specification/data-format/message-body.md#sequence-number-end"
+
+# Sequence Number End
+#
+# An indicator for the Final Frame.  
+# The value MUST be encoded as the 4 bytes `FF FF FF FF` in hexadecimal notation.
+# The length of the sequence number end field MUST be 4 bytes.
+# The sequence number end MUST be interpreted as bytes.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The value MUST be encoded as the 4 bytes `FF FF FF FF` in hexadecimal notation.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the sequence number end field MUST be 4 bytes.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The sequence number end MUST be interpreted as bytes.
+'''
+

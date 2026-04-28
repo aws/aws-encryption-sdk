@@ -1,0 +1,49 @@
+target = "specification/data-format/message-header.md#header-body-version-2-0"
+
+# Header Body Version 2.0
+#
+# The value of the `Version` field MUST be `02` in the Version 2.0 header body.
+# 
+# The following table is a non-normative representation of the normative requirements for a Version 2.0 header.
+# 
+# | Field                                         | Length (bytes)                                                                    | Interpreted as                                                                                |
+# | --------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+# | [Version](#version)                           | 1                                                                                 | See [Supported Versions](#supported-versions)                                                 |
+# | [Algorithm Suite ID](#algorithm-suite-id)     | 2                                                                                 | See [Supported Algorithm Suites](../framework/algorithm-suites.md#supported-algorithm-suites) |
+# | [Message ID](#message-id)                     | 32                                                                                | Bytes                                                                                         |
+# | [AAD](#aad)                                   | Variable. [Self-describing](#aad).                                                | [AAD](#aad)                                                                                   |
+# | [Encrypted Data Keys](#encrypted-data-keys)   | Variable. Determined by the number of encrypted data keys and the length of each. | [Encrypted Data Keys](#encrypted-data-keys)                                                   |
+# | [Content Type](#content-type)                 | 1                                                                                 | See [Supported Types](#supported-content-types)                                               |
+# | [Frame Length](#frame-length)                 | 4                                                                                 | UInt32                                                                                        |
+# | [Algorithm Suite Data](#algorithm-suite-data) | Variable. Determined by the Algorithm Suite ID                                    | See [Algorithm Suite Data](../framework/algorithm-suites.md#algorithm-suite-data)             |
+# 
+# The V2 Header Body MUST consist of, in order,
+# Version,
+# Algorithm Suite ID,
+# Message ID,
+# AAD,
+# Encrypted Data Keys,
+# Content Type,
+# Frame Length,
+# and Algorithm Suite Data.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The value of the `Version` field MUST be `02` in the Version 2.0 header body.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The V2 Header Body MUST consist of, in order,
+Version,
+Algorithm Suite ID,
+Message ID,
+AAD,
+Encrypted Data Keys,
+Content Type,
+Frame Length,
+and Algorithm Suite Data.
+'''
+

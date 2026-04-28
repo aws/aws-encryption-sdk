@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["format_power2","format_power2f"]};

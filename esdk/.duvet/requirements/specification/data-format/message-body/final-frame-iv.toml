@@ -1,0 +1,28 @@
+target = "specification/data-format/message-body.md#final-frame-iv"
+
+# Final Frame IV
+#
+# The initialization vector for the final frame.  
+# A generated IV MUST be a unique IV within the message.
+# The length of the IV field MUST be equal to the IV length of the [algorithm suite](../framework/algorithm-suites.md) that generated the message.
+# The IV MUST be interpreted as bytes.
+# Note: This IV is different from the [Header IV](message-header.md#iv).
+
+[[spec]]
+level = "MUST"
+quote = '''
+A generated IV MUST be a unique IV within the message.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the IV field MUST be equal to the IV length of the [algorithm suite](../framework/algorithm-suites.md) that generated the message.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The IV MUST be interpreted as bytes.
+'''
+

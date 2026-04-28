@@ -1,0 +1,20 @@
+[package]
+name = "aws-mpl-primitives"
+version = "0.1.0"
+edition = "2024"
+keywords = ["cryptography", "security", "encryption"]
+categories = ["cryptography"]
+license = "ISC AND (Apache-2.0 OR ISC)"
+description = "aws-mpl-primitives is a convenient wrapper for aws-lc-rs. Not intended for public consumption."
+repository = "https://github.com/aws/aws-client-encryption-rust/aws-mpl-primitives/"
+authors = ["AWS-CryptoTools"]
+documentation = "https://docs.rs/crate/aws-mpl-primitives"
+readme = "README.md"
+
+[dependencies]
+aws-lc-rs = { version = "1.15.4", default-features = false }
+
+[features]
+default = ["aws-lc-rs/aws-lc-sys"]
+fips = ["aws-lc-rs/fips"]
+track = []

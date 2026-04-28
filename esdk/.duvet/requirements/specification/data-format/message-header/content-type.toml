@@ -1,0 +1,13 @@
+target = "specification/data-format/message-header.md#content-type"
+
+# Content Type
+#
+# The content type of the [message body](message-body.md).
+# The length of the serialized content type field MUST be 1 byte.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized content type field MUST be 1 byte.
+'''
+

@@ -1,0 +1,8 @@
+[workspace]
+resolver = "3"
+members = [
+   "prim",
+   "mpl",
+   "esdk",
+   "aws-esdk-cxx"
+]

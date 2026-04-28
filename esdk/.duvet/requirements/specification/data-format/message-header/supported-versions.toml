@@ -1,0 +1,34 @@
+target = "specification/data-format/message-header.md#supported-versions"
+
+# Supported Versions
+#
+# The supported versions MUST be:
+# 
+# - Hex value `01` MUST be version 1.0
+# - Hex value `02` MUST be version 2.0
+# 
+# The following table is a non-normative representation of the supported versions.
+# 
+# | Value (hex) | Version |
+# | ----------- | ------- |
+# | 01          | 1.0     |
+# | 02          | 2.0     |
+
+[[spec]]
+level = "MUST"
+quote = '''
+The supported versions MUST be:
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Hex value `01` MUST be version 1.0
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Hex value `02` MUST be version 2.0
+'''
+

@@ -1,0 +1,20 @@
+//= specification/client-apis/encrypt.md#plaintext
+//= type=exception
+//= reason=This implementation does support streaming via SafeRead and does not require holding the entire plaintext in memory, so the condition does not apply
+//# If an implementation requires holding the input entire plaintext in memory in order to perform this operation,
+//# that implementation SHOULD NOT provide an API that allows this input to be streamed.
+
+//= specification/client-apis/encrypt.md#output
+//= type=exception
+//= reason=Only a SHOULD; parsed header is not spec'ed out
+//# Encrypt operation output SHOULD include a [Parsed Header](#parsed-header) value.
+
+//= specification/client-apis/encrypt.md#encryption-context-1
+//= type=exception
+//= reason=Only a MAY; does not implement header parsing
+//# This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.
+
+//= specification/client-apis/encrypt.md#algorithm-suite-1
+//= type=exception
+//= reason=Only a MAY; does not implement header parsing
+//# This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.

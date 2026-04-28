@@ -1,0 +1,33 @@
+target = "specification/client-apis/decrypt.md#output"
+
+# Output
+#
+# - Decrypt operation output MUST include a [Plaintext](#plaintext) value.
+# - Decrypt operation output MUST include an [encryption context](#encryption-context) value.
+# - Decrypt operation output MUST include an [algorithm suite](#algorithm-suite) value.
+# - Decrypt operation output SHOULD include a [Parsed Header](#parsed-header) value.
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Decrypt operation output MUST include a [Plaintext](#plaintext) value.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Decrypt operation output MUST include an [encryption context](#encryption-context) value.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Decrypt operation output MUST include an [algorithm suite](#algorithm-suite) value.
+'''
+
+[[spec]]
+level = "SHOULD"
+quote = '''
+- Decrypt operation output SHOULD include a [Parsed Header](#parsed-header) value.
+'''
+
