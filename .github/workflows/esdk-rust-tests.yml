@@ -37,4 +37,11 @@ jobs:
           components: rustfmt
 
       - name: Run ESDK tests
-        run: cargo test --release -p aws-esdk
+        run: |
+          cat > Cargo.toml << 'WKSP'
+          [workspace]
+          resolver = "3"
+          members = ["prim", "mpl", "esdk"]
+          WKSP
+          rm -f Cargo.lock
+          cargo test --release -p aws-esdk
