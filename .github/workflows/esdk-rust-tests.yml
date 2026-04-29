@@ -21,6 +21,14 @@ jobs:
 
       - uses: actions/checkout@v5
 
+      - name: Clone Dafny MPL to expected path
+        run: |
+          # mpl/Cargo.toml references ../../../../../mpl/AwsCryptographicMaterialProviders/runtimes/rust
+          # From the repo root that resolves 5 levels up from mpl/, i.e. 4 levels up from repo root.
+          # On GHA the repo is at $GITHUB_WORKSPACE, so we clone to the resolved absolute path.
+          MPL_TARGET="$(cd "$GITHUB_WORKSPACE" && cd ../../../.. && pwd)/mpl"
+          git clone --depth 1 https://github.com/aws/aws-cryptographic-material-providers-library-dafny.git "$MPL_TARGET"
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v5
         with:
