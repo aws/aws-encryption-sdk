@@ -58,4 +58,8 @@ jobs:
           EOF
 
       - name: Run ESDK tests
-        run: cargo test --release -p aws-esdk
+        run: |
+          # The checked-in Cargo.lock has path entries from a different layout.
+          # Regenerate it so the resolved paths match this CI environment.
+          rm -f Cargo.lock
+          cargo test --release -p aws-esdk
