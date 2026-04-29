@@ -21,14 +21,15 @@ jobs:
 
       - uses: actions/checkout@v5
 
-      - name: Clone Dafny MPL to expected path
+      - name: Make Dafny MPL available
         run: |
-          # mpl/Cargo.toml has: path = "../../../../../mpl/AwsCryptographicMaterialProviders/runtimes/rust"
-          # From mpl/ inside the repo, that's 5 levels up then into mpl/. We resolve the
-          # absolute target path and create parent dirs as needed (writable under /home/runner).
-          TARGET_DIR="$(cd mpl && python3 -c "import os; print(os.path.abspath('../../../../../mpl'))")"
-          mkdir -p "$(dirname "$TARGET_DIR")"
-          git clone --depth 1 https://github.com/aws/aws-cryptographic-material-providers-library-dafny.git "$TARGET_DIR"
+          # mpl/Cargo.toml references:
+          #   path = "../../../../../mpl/AwsCryptographicMaterialProviders/runtimes/rust"
+          # From the repo root's mpl/ dir, that resolves to /home/mpl/... on GHA.
+          # GHA runners have passwordless sudo, so we can create the directory there.
+          sudo git clone --depth 1 \
+            https://github.com/aws/aws-cryptographic-material-providers-library-dafny.git \
+            /home/mpl
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v5
