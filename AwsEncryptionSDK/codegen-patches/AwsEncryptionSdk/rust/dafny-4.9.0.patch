@@ -1,0 +1,17 @@
+diff --git a/releases/rust/esdk/src/validation.rs b/releases/rust/esdk/src/validation.rs
+index 4e6cc348..1166b2e7 100644
+--- a/releases/rust/esdk/src/validation.rs
++++ b/releases/rust/esdk/src/validation.rs
+@@ -332,6 +332,12 @@ pub(crate) fn validate_aws_Pcryptography_PencryptionSdk_HEncryptInput_Dplaintext
+     }
+     let input = input.as_ref().unwrap();
+ 
++    if input.as_ref().len() > 134_217_728 {
++        return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::invalid_field(
++            "plaintext",
++            format!("plaintext size {} bytes exceeds the maximum allowed size of 128 MB", input.as_ref().len()),
++        ));
++    }
+     Ok(())
+ }
+ pub(crate) fn validate_aws_Pcryptography_PencryptionSdk_HEncryptOutput(

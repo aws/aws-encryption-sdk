@@ -7,6 +7,7 @@ mod alloc;
 mod benchmark;
 mod config;
 mod results;
+mod size_limit_smoke_test;
 mod tests;
 
 use anyhow::Result;
