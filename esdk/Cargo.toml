@@ -22,7 +22,7 @@ base64 = { version = "0.22.1", optional = true }
 aws-sdk-kms = "1.98.0"
 aws-sdk-dynamodb = "1.103.0"
 aws-config = { version = "1.8.12", optional = true }
-aws-mpl-legacy = { path = "../mpl" }
+aws-mpl-legacy = { package = "aws-mpl-native", path = "../mpl" }
 aws-lc-rs = { version = "1.15.4", default-features = false }
 async-trait = "0.1.89"
 serde_json = { version = "1.0.149", optional = true }

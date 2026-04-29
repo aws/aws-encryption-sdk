@@ -1,0 +1,3 @@
+[submodule "dafny-mpl"]
+	path = dafny-mpl
+	url = https://github.com/aws/aws-cryptographic-material-providers-library-dafny.git

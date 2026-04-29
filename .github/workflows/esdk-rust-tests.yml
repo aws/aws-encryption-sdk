@@ -21,15 +21,8 @@ jobs:
 
       - uses: actions/checkout@v5
 
-      - name: Make Dafny MPL available
-        run: |
-          # mpl/Cargo.toml references:
-          #   path = "../../../../../mpl/AwsCryptographicMaterialProviders/runtimes/rust"
-          # From the repo root's mpl/ dir, that resolves to /home/mpl/... on GHA.
-          # GHA runners have passwordless sudo, so we can create the directory there.
-          sudo git clone --depth 1 --recurse-submodules \
-            https://github.com/aws/aws-cryptographic-material-providers-library-dafny.git \
-            /home/mpl
+      - name: Init Submodules
+        run: git submodule update --init --recursive dafny-mpl
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v5
@@ -43,23 +36,5 @@ jobs:
         with:
           components: rustfmt
 
-      - name: Trim workspace to esdk only
-        run: |
-          # The workspace Cargo.toml lists members that may not be buildable in CI.
-          # Narrow it to just the crates esdk needs: prim, mpl, esdk.
-          cat > Cargo.toml << 'EOF'
-          [workspace]
-          resolver = "3"
-          members = [
-            "prim",
-            "mpl",
-            "esdk",
-          ]
-          EOF
-
       - name: Run ESDK tests
-        run: |
-          # The checked-in Cargo.lock has path entries from a different layout.
-          # Regenerate it so the resolved paths match this CI environment.
-          rm -f Cargo.lock
-          cargo test --release -p aws-esdk
+        run: cargo test --release -p aws-esdk
