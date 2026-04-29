@@ -43,6 +43,19 @@ jobs:
         with:
           components: rustfmt
 
+      - name: Trim workspace to esdk only
+        run: |
+          # The workspace Cargo.toml lists members that may not be buildable in CI.
+          # Narrow it to just the crates esdk needs: prim, mpl, esdk.
+          cat > Cargo.toml << 'EOF'
+          [workspace]
+          resolver = "3"
+          members = [
+            "prim",
+            "mpl",
+            "esdk",
+          ]
+          EOF
+
       - name: Run ESDK tests
-        working-directory: esdk
-        run: cargo test --release
+        run: cargo test --release -p aws-esdk
