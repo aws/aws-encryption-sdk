@@ -27,7 +27,7 @@ jobs:
           #   path = "../../../../../mpl/AwsCryptographicMaterialProviders/runtimes/rust"
           # From the repo root's mpl/ dir, that resolves to /home/mpl/... on GHA.
           # GHA runners have passwordless sudo, so we can create the directory there.
-          sudo git clone --depth 1 \
+          sudo git clone --depth 1 --recurse-submodules \
             https://github.com/aws/aws-cryptographic-material-providers-library-dafny.git \
             /home/mpl
 
