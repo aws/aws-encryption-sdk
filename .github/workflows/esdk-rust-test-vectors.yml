@@ -48,10 +48,10 @@ jobs:
       - name: Run Rust encrypt → decrypt round-trip
         run: |
           ./target/release/test_vector encrypt \
-            --manifest-path esdk/test_vectors_rust/encrypt-manifest.json \
-            --decrypt-manifest-path esdk/test_vectors_rust/decrypt-manifest.json
+            --manifest-path esdk/test_vectors_rust \
+            --decrypt-manifest-path esdk/test_vectors_rust
           ./target/release/test_vector decrypt \
-            --manifest-path esdk/test_vectors_rust/ \
+            --manifest-path esdk/test_vectors_rust \
             --manifest-name decrypt-manifest.json
 
       - name: Decrypt Java-generated test vectors
