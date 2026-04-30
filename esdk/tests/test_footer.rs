@@ -139,8 +139,8 @@ async fn test_footer_structure_v1_and_v2_signing_suites() {
             "{label}: first 2 bytes must be the signature length"
         );
         assert!(
-            (64..=104).contains(&sig_len),
-            "{label}: ECDSA P-384 DER signature length must be in range 64..=104, got {sig_len}"
+            (102..=104).contains(&sig_len),
+            "{label}: ECDSA P-384 DER signature length must be in range 102..=104, got {sig_len}"
         );
     }
 }

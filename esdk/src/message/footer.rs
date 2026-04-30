@@ -26,7 +26,10 @@ pub(crate) fn write_footer(w: &mut dyn SafeWrite, signature: &[u8]) -> Result<()
     //= specification/client-apis/encrypt.md#construct-the-signature
     //# The value MUST be the length of the output of the signature calculation above.
     let Ok(len) = u16::try_from(signature.len()) else {
-        return ser_err("Sequence length too long for 16 bits");
+        return ser_err(format!(
+            "Signature length {} exceeds u16::MAX",
+            signature.len()
+        ));
     };
 
     //= specification/client-apis/encrypt.md#construct-the-signature
