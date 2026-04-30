@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Message footer serialization/deserialization.
-//! Maps to data-format/message-footer.md
 
 use super::serialize_functions::{read_u16, read_vec, write_bytes, write_u16};
 use super::{Error, ser_err};
