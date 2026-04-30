@@ -1,0 +1,67 @@
+name: ESDK Rust Test Vectors
+
+on:
+  push:
+    branches:
+      - aws-crypto-rust/unreviewed
+
+jobs:
+  test-vectors:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Support longpaths on Git checkout
+        run: git config --global core.longpaths true
+
+      - uses: actions/checkout@v5
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+          role-session-name: EsdkRustTestVectors
+
+      - name: Setup Rust Toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: rustfmt
+
+      - name: Setup workspace
+        run: |
+          cat > Cargo.toml << 'WKSP'
+          [workspace]
+          resolver = "3"
+          members = ["prim", "mpl", "esdk"]
+          WKSP
+          rm -f Cargo.lock
+
+      - name: Build test_vector binary
+        run: cargo build --release -p aws-esdk --features test_vectors --bin test_vector
+
+      - name: Run Rust encrypt → decrypt round-trip
+        run: |
+          ./target/release/test_vector encrypt \
+            --manifest-path esdk/test_vectors_rust/encrypt-manifest.json \
+            --decrypt-manifest-path esdk/test_vectors_rust/decrypt-manifest.json
+          ./target/release/test_vector decrypt \
+            --manifest-path esdk/test_vectors_rust/ \
+            --manifest-name decrypt-manifest.json
+
+      - name: Decrypt Java-generated test vectors
+        run: |
+          ./target/release/test_vector decrypt \
+            --manifest-path esdk/test_vectors_java/ \
+            --manifest-name decrypt-manifest.json
+
+      - name: Decrypt Python-generated test vectors
+        run: |
+          ./target/release/test_vector decrypt \
+            --manifest-path esdk/test_vectors_python/ \
+            --manifest-name decrypt_message.json
