@@ -18,7 +18,7 @@ name = "aws_mpl_legacy"
 async-trait = "0.1.89"
 zeroize = "1.8.2"
 aws-mpl-primitives = { path = "../prim" }
-aws-mpl-dafny = { package = "aws-mpl-legacy", path = "../dafny-mpl/AwsCryptographicMaterialProviders/runtimes/rust" }
+aws-mpl-dafny = { package = "aws-mpl-legacy", version = "0.2.0" }
 aws-sdk-kms = { version = "1.98.0", optional = true }
 aws-sdk-dynamodb = { version = "1.103.0", optional = true }
 
