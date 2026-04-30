@@ -17,6 +17,7 @@ async fn test_footer_present_with_signing_suite() {
         //= type=test
         //# When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
         //# the [message](message.md) MUST contain a footer.
+        //
         //= specification/data-format/message.md#structure
         //= type=test
         //# If the [message header](message-header.md) contains an [algorithm suite](../framework/algorithm-suites.md) in the
@@ -37,6 +38,7 @@ async fn test_footer_signature_length_is_two_bytes() {
         ("V2", encrypt_with_signing_suite(b"sig length 2 bytes test").await),
     ] {
         let (offset, sig_len) = find_footer_offset(&ct);
+
         //= specification/data-format/message-footer.md#signature-length
         //= type=test
         //# The length of the signature length field MUST be 2 bytes.
@@ -55,6 +57,7 @@ async fn test_footer_signature_length_is_uint16() {
         ("V2", encrypt_with_signing_suite(b"sig length uint16 test").await),
     ] {
         let (offset, sig_len) = find_footer_offset(&ct);
+
         //= specification/data-format/message-footer.md#signature-length
         //= type=test
         //# The signature length value MUST be a UInt16.
