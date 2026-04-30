@@ -7,7 +7,6 @@ mod fixtures;
 mod test_helpers;
 
 use aws_esdk::*;
-use fixtures::*;
 use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
