@@ -755,6 +755,28 @@ pub fn parse_edk_section(ct: &[u8], version: Version) -> ParsedEdkSection {
 /// Uses AlgAes256GcmHkdfSha512CommitKey (0x0478), V2 header, NonFramed content type.
 /// The wrapping key is `[0u8; 32]` matching the test_keyring() configuration.
 pub fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
+    build_nonframed_message_with_aad_overrides(
+        plaintext,
+        /* aad_seq_number */ 1,
+        /* aad_content_str */ b"AWSKMSEncryptionClient Single Block",
+        /* aad_content_length */ plaintext.len() as u64,
+    )
+}
+
+/// Build a complete nonframed encrypted message where the AAD fed to AES-GCM
+/// can be independently controlled from what the spec requires. Used for
+/// negative-tampering tests: if the real decryptor reconstructs its AAD
+/// strictly per spec (message_id + "AWSKMSEncryptionClient Single Block" +
+/// seq=1 + plaintext_length), then any message produced with overridden
+/// AAD fields will fail authentication. The body IV is always the spec IV
+/// (sequence 1 padded to 12 bytes) so the decryptor's IV reconstruction
+/// matches; only the AAD differs.
+pub fn build_nonframed_message_with_aad_overrides(
+    plaintext: &[u8],
+    aad_seq_number: u32,
+    aad_content_str: &[u8],
+    aad_content_length: u64,
+) -> Vec<u8> {
     use aws_lc_rs::aead::{AES_256_GCM, Aad, LessSafeKey, Nonce, UnboundKey};
     use aws_lc_rs::hkdf::{HKDF_SHA512, Salt};
 
@@ -827,9 +849,9 @@ pub fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
     // Build nonframed body
     let mut body_aad = Vec::new();
     body_aad.extend_from_slice(&message_id);
-    body_aad.extend_from_slice(b"AWSKMSEncryptionClient Single Block");
-    body_aad.extend_from_slice(&1u32.to_be_bytes());
-    body_aad.extend_from_slice(&(plaintext.len() as u64).to_be_bytes());
+    body_aad.extend_from_slice(aad_content_str);
+    body_aad.extend_from_slice(&aad_seq_number.to_be_bytes());
+    body_aad.extend_from_slice(&aad_content_length.to_be_bytes());
 
     let mut body_iv = [0u8; 12];
     body_iv[8..].copy_from_slice(&1u32.to_be_bytes());
@@ -935,4 +957,13 @@ pub async fn decrypt_nonframed(msg: &[u8]) -> Vec<u8> {
     let mut dec_input = DecryptInput::with_legacy_keyring(msg, EncryptionContext::new(), keyring);
     dec_input.commitment_policy = EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
     decrypt(&dec_input).await.unwrap().plaintext
+}
+
+/// Attempt to decrypt a nonframed message, returning the DecryptOutput or an error string.
+/// Used for negative tests that expect authentication failure.
+pub async fn try_decrypt_nonframed(msg: &[u8]) -> Result<Vec<u8>, String> {
+    let keyring = test_keyring().await;
+    let mut dec_input = DecryptInput::with_legacy_keyring(msg, EncryptionContext::new(), keyring);
+    dec_input.commitment_policy = EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
+    decrypt(&dec_input).await.map(|o| o.plaintext).map_err(|e| e.to_string())
 }
