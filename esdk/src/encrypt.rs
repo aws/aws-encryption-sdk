@@ -472,6 +472,7 @@ fn step_construct_signature(
             //# the [message](message.md) MUST contain a footer.
             footer::write_footer(
                 //= specification/data-format/message-footer.md#signature
+                //= type=implication
                 //= reason=ciphertext is the concatenation of header and body
                 //# This signature MUST be calculated over both the [message header](message-header.md) and the [message body](message-body.md),
                 //# in the order of serialization.

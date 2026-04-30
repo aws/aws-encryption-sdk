@@ -966,3 +966,37 @@ async fn test_plaintext_exact_multiple_of_frame_length() {
     let result = round_trip_framed(&pt, frame_length).await;
     assert_eq!(result, pt, "round-trip must succeed for exact multiple of frame length");
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_message_begins_with_header() {
+    //= specification/data-format/message.md#structure
+    //= type=test
+    //# - The message MUST begin with [Message Header](message-header.md)
+    let ct_v1 = encrypt_with_v1_signing_suite(b"header first test").await;
+    assert_eq!(
+        ct_v1[0], 0x01,
+        "V1 message must begin with header version byte 0x01"
+    );
+
+    let ct_v2 = encrypt_with_signing_suite(b"header first test").await;
+    assert_eq!(
+        ct_v2[0], 0x02,
+        "V2 message must begin with header version byte 0x02"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_message_body_follows_header() {
+    // A successful round-trip decrypt proves the body follows the header,
+    // because the decryptor parses header then body in sequence.
+    //= specification/data-format/message.md#structure
+    //= type=test
+    //= reason=a successful round-trip decrypt proves body follows header, because the decryptor parses header then body sequentially and would fail if they were misordered
+    //# - The [Message Body](message-body.md) MUST follow the Message Header
+    let pt = b"body follows header test";
+    let result = round_trip_signing(pt).await;
+    assert_eq!(
+        result, pt,
+        "successful decrypt proves message body follows header in serialization order"
+    );
+}

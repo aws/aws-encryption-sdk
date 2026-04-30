@@ -7,7 +7,6 @@ mod fixtures;
 mod test_helpers;
 
 use aws_esdk::*;
-use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
@@ -24,22 +23,9 @@ async fn test_footer_present_with_signing_suite() {
     //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm), the message MUST also contain a
     //# [message footer](message-footer.md) serialized after the [message body](message-body.md).
     let ct_signing = encrypt_with_signing_suite(b"footer presence test").await;
-    let ct_no_signing = encrypt_without_signing_suite(b"footer presence test").await;
-
-    // The signing ciphertext must be longer than the non-signing one
-    // because it contains the footer (2-byte length + signature bytes).
     assert!(
-        ct_signing.len() > ct_no_signing.len(),
-        "signing suite ciphertext ({}) must be longer than non-signing ({}) due to footer",
-        ct_signing.len(),
-        ct_no_signing.len()
-    );
-
-    // Verify the footer is parseable: find the 2-byte length + signature at the end
-    let (_, sig_len) = find_footer_offset(&ct_signing);
-    assert!(
-        (64..=104).contains(&sig_len),
-        "ECDSA P-384 DER signature length must be in range 64..=104, got {sig_len}"
+        has_footer(&ct_signing),
+        "signing suite ciphertext must contain a footer"
     );
 }
 
@@ -80,78 +66,14 @@ async fn test_footer_signature_length_is_uint16() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_footer_signature_calculated_over_header_and_body() {
-    // A successful round-trip decrypt with a signing suite proves the signature
-    // was correctly calculated over header+body, because decrypt verifies it.
-    //= specification/data-format/message-footer.md#signature
-    //= type=test
-    //= reason=a successful round-trip decrypt with a signing suite proves the signature was correctly calculated over header+body, because decrypt verifies it
-    //# This signature MUST be calculated over both the [message header](message-header.md) and the [message body](message-body.md),
-    //# in the order of serialization.
-    let pt = b"signature over header and body test";
-    let result = round_trip_signing(pt).await;
-    assert_eq!(
-        result, pt,
-        "successful decrypt proves signature was calculated over header+body in serialization order"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_no_footer_without_signing_suite() {
-    // Encrypt with non-signing suite and verify successful round-trip decrypt.
-    // If a footer were present, the decryptor (which knows the suite has no signature)
-    // would either fail or leave trailing bytes. A successful decrypt proves no footer.
     //= specification/data-format/message.md#structure
     //= type=test
-    //= reason=a successful round-trip decrypt with a non-signing suite proves no footer is present, because if a footer were appended the decryptor would fail on trailing bytes or misparse the body
     //# If the algorithm suite does not contain a signature algorithm, the message MUST NOT contain a message footer.
-    let keyring = test_keyring().await;
-    let mut enc_input = EncryptInput::with_legacy_keyring(
-        b"no footer test",
-        EncryptionContext::new(),
-        keyring.clone(),
-    );
-    enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let pt = decrypt(&dec_input).await.unwrap().plaintext;
-    assert_eq!(
-        pt, b"no footer test",
-        "successful round-trip with non-signing suite proves no footer is present"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_message_begins_with_header() {
-    //= specification/data-format/message.md#structure
-    //= type=test
-    //# - The message MUST begin with [Message Header](message-header.md)
-    let ct_v1 = encrypt_with_v1_signing_suite(b"header first test").await;
-    assert_eq!(
-        ct_v1[0], 0x01,
-        "V1 message must begin with header version byte 0x01"
-    );
-
-    let ct_v2 = encrypt_with_signing_suite(b"header first test").await;
-    assert_eq!(
-        ct_v2[0], 0x02,
-        "V2 message must begin with header version byte 0x02"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_message_body_follows_header() {
-    // A successful round-trip decrypt proves the body follows the header,
-    // because the decryptor parses header then body in sequence.
-    //= specification/data-format/message.md#structure
-    //= type=test
-    //= reason=a successful round-trip decrypt proves body follows header, because the decryptor parses header then body sequentially and would fail if they were misordered
-    //# - The [Message Body](message-body.md) MUST follow the Message Header
-    let pt = b"body follows header test";
-    let result = round_trip_signing(pt).await;
-    assert_eq!(
-        result, pt,
-        "successful decrypt proves message body follows header in serialization order"
+    let ct = encrypt_without_signing_suite(b"no footer test").await;
+    assert!(
+        !has_footer(&ct),
+        "non-signing suite ciphertext must not contain a footer"
     );
 }
 
@@ -224,20 +146,6 @@ async fn test_footer_structure_v1_and_v2_signing_suites() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_footer_signature_interpreted_as_bytes() {
-    //= specification/data-format/message-footer.md#signature
-    //= type=test
-    //= reason=successful round-trip decrypt with signing suite proves signature bytes are correctly written and read back
-    //# The signature MUST be interpreted as bytes.
-    let pt = b"signature bytes interpretation test";
-    let result = round_trip_signing(pt).await;
-    assert_eq!(
-        result, pt,
-        "successful round-trip proves signature is correctly interpreted as bytes"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_unrecognized_algorithm_suite_errors() {
     //= specification/data-format/message.md#structure
     //= type=test
@@ -250,8 +158,10 @@ async fn test_unrecognized_algorithm_suite_errors() {
     ct[2] = 0xFF;
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let err = decrypt(&dec_input).await.unwrap_err();
+    let err_msg = err.to_string();
     assert!(
-        decrypt(&dec_input).await.is_err(),
-        "unrecognized algorithm suite ID must cause an error"
+        err_msg.contains("AlgorithmSuiteInfo"),
+        "error must mention algorithm suite info, got: {err_msg}"
     );
 }
