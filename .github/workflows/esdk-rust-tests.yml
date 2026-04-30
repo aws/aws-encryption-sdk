@@ -22,9 +22,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Init Submodules
-        run: |
-          git submodule update --init libraries
-          git submodule update --init --recursive mpl
+        run: git submodule update --init --recursive dafny-mpl
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v5
@@ -39,24 +37,27 @@ jobs:
           components: rustfmt
 
       - name: Setup Dafny
-        uses: ./mpl/.github/actions/setup_dafny
+        uses: ./dafny-mpl/.github/actions/setup_dafny
         with:
           dafny-version: 4.10.0
 
-      - name: Install Smithy-Dafny codegen dependencies
-        uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
+      - name: Setup Java 17 for codegen
+        uses: actions/setup-java@v5
+        with:
+          distribution: "corretto"
+          java-version: "17"
+          cache: "gradle"
 
-      - name: Run make polymorph_rust
-        shell: bash
-        working-directory: AwsEncryptionSDK
-        run: make polymorph_rust
+      - name: Install smithy-dafny codegen dependencies
+        run: make -C dafny-mpl/smithy-dafny mvn_local_deploy_polymorph_dependencies
 
-      - name: Compile AwsEncryptionSDK implementation
-        shell: bash
-        working-directory: AwsEncryptionSDK
+      - name: Generate MPL Rust bindings
+        run: make -C dafny-mpl/AwsCryptographicMaterialProviders polymorph_rust
+
+      - name: Transpile MPL Dafny to Rust
         run: |
-          CORES=$(node -e 'console.log(os.cpus().length)')
-          make transpile_rust CORES=$CORES
+          CORES=$(nproc)
+          make -C dafny-mpl/AwsCryptographicMaterialProviders transpile_rust CORES=$CORES
 
       - name: Run ESDK tests
         run: |
