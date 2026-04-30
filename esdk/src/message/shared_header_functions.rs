@@ -22,7 +22,19 @@ pub(crate) fn read_esdk_suite_id(
     //# [Supported Algorithm Suites](../framework/algorithm-suites.md#supported-algorithm-suites) table.
     //= specification/data-format/message-header.md#algorithm-suite-id
     //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
-    let suite = aws_mpl_legacy::suites::get_algorithm_suite_info(esdk_suite_id_bytes)?;
+    let suite = aws_mpl_legacy::suites::get_algorithm_suite_info(esdk_suite_id_bytes)
+        .map_err(|e| {
+            let msg = format!(
+                "Unrecognized or unsupported algorithm suite ID: 0x{:02X}{:02X}",
+                esdk_suite_id_bytes[0], esdk_suite_id_bytes[1]
+            );
+            Error {
+                kind: crate::error::ErrorKind::ValidationError,
+                message: msg,
+                backtrace: std::sync::Arc::new(std::backtrace::Backtrace::capture()),
+                cause: Some(std::sync::Arc::new(e)),
+            }
+        })?;
     Ok(suite)
 }
 

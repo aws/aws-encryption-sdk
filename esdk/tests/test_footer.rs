@@ -161,7 +161,7 @@ async fn test_unrecognized_algorithm_suite_errors() {
     let err = decrypt(&dec_input).await.unwrap_err();
     let err_msg = err.to_string();
     assert!(
-        err_msg.contains("AlgorithmSuiteInfo"),
-        "error must mention algorithm suite info, got: {err_msg}"
+        err_msg.contains("algorithm suite ID"),
+        "error must mention algorithm suite ID, got: {err_msg}"
     );
 }
