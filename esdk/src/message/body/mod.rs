@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //! Message body encryption and decryption.
 
-mod body_aad;
+pub(crate) mod body_aad;
 mod body_decrypt;
 mod body_encrypt;
 

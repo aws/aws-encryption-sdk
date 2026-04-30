@@ -98,3 +98,14 @@ pub(crate) mod key_derivation;
 pub(crate) mod legacy_compat;
 pub(crate) mod materials;
 pub(crate) mod message;
+
+/// Internal items exposed solely so integration tests under `tests/` can
+/// construct and assert on exact byte outputs of non-public serialization
+/// helpers. Not part of the public API. Do not use.
+///
+/// Everything in this module is exempt from semantic versioning and may be
+/// changed, renamed, or removed at any time.
+#[doc(hidden)]
+pub mod __test_internals {
+    pub use crate::message::body::body_aad::{body_aad, BodyAADContent};
+}
