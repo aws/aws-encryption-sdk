@@ -8,7 +8,6 @@ mod test_helpers;
 
 use aws_esdk::*;
 use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
-use fixtures::*;
 use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
