@@ -97,7 +97,7 @@ async fn test_auth_tag_required_ec_filtering_v1() {
     //# [required encryption context keys](../framework/structures.md#required-encryption-context-keys)
     //# serialized according to the [encryption context serialization specification](../framework/structures.md#serialization).
     let ec = std::collections::HashMap::from([
-        ("aws-crypto-public-key".to_string(), "testval".to_string()),
+        ("test-public-key".to_string(), "testval".to_string()),
         ("user-key".to_string(), "user-val".to_string()),
     ]);
     let pt = b"v1 required ec filtering";
@@ -117,7 +117,7 @@ async fn test_auth_tag_required_ec_filtering_v2() {
     //# [required encryption context keys](../framework/structures.md#required-encryption-context-keys)
     //# serialized according to the [encryption context serialization specification](../framework/structures.md#serialization).
     let ec = std::collections::HashMap::from([
-        ("aws-crypto-public-key".to_string(), "testval".to_string()),
+        ("test-public-key".to_string(), "testval".to_string()),
         ("user-key".to_string(), "user-val".to_string()),
     ]);
     let pt = b"v2 required ec filtering";
