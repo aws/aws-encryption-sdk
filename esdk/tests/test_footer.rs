@@ -17,7 +17,6 @@ async fn test_footer_present_with_signing_suite() {
         //= type=test
         //# When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
         //# the [message](message.md) MUST contain a footer.
-        //
         //= specification/data-format/message.md#structure
         //= type=test
         //# If the [message header](message-header.md) contains an [algorithm suite](../framework/algorithm-suites.md) in the
