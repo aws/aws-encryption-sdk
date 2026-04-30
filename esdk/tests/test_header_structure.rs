@@ -18,10 +18,10 @@ async fn test_header_big_endian_format() {
         let ct = encrypt_with_version(b"big-endian header test", version, keyring).await;
         // The Algorithm Suite ID is a multi-byte field at a known offset.
         // V1: offset 2..4 (after Version + Type), AlgAes256GcmIv12Tag16HkdfSha256 = 0x0178
-        // V2: offset 1..3 (after Version), AlgAes256GcmHkdfSha512CommitKey = 0x0478
+        // V2: offset 1..3 (after Version), AlgAes256GcmHkdfSha512CommitKeyEcdsaP384 = 0x0578
         let (offset, expected_hi, expected_lo) = match version {
             Version::V1 => (2, 0x01u8, 0x78u8),
-            Version::V2 => (1, 0x04u8, 0x78u8),
+            Version::V2 => (1, 0x05u8, 0x78u8),
         };
         assert_eq!(
             ct[offset], expected_hi,
