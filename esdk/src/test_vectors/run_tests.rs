@@ -79,8 +79,8 @@ pub async fn encrypt_test_vectors(
     decrypt_path: &str,
     _test_name: &str,
 ) -> Result<()> {
-    let _ = std::fs::remove_dir_all(format!("{encrypt_path}/plaintexts"));
-    let _ = std::fs::remove_dir_all(format!("{encrypt_path}/ciphertexts"));
+    drop(std::fs::remove_dir_all(format!("{encrypt_path}/plaintexts")));
+    drop(std::fs::remove_dir_all(format!("{encrypt_path}/ciphertexts")));
     let decrypt_manifest = format!("{encrypt_path}/decrypt-manifest.json");
     let json_data_base = read_json("encrypt-manifest.json", encrypt_path)?;
     let Some(json_data) = json_data_base.as_object() else {
