@@ -43,7 +43,7 @@ jobs:
           rm -f Cargo.lock
 
       - name: Build test_vector binary
-        run: cargo build --release -p aws-esdk --features test_vectors --bin test_vector
+        run: cargo build --release -p aws-esdk --features "test_vectors,kms,ddb,legacy" --bin test_vector
 
       - name: Run Rust encrypt → decrypt round-trip
         run: |

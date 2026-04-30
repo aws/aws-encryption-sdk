@@ -11,7 +11,9 @@ use aws_mpl_legacy::primitives::generate_random_bytes;
 use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use serde_json::Value as JsonValue;
 
+#[cfg(feature = "legacy")]
 use super::do_decrypt::get_legacy_cmm;
+#[cfg(feature = "legacy")]
 use crate::mpl;
 
 pub(crate) fn write_file(filename: &str, data: &[u8], dir: &str) -> Result<()> {
@@ -149,6 +151,7 @@ pub(crate) async fn run_encrypt_tests(
     res: &mut TestResults,
     dir: &str,
 ) -> Result<JsonValue> {
+    #[cfg(feature = "legacy")]
     let mpl = mpl();
     let kms = make_kms_map().await;
 
@@ -180,17 +183,20 @@ pub(crate) async fn run_encrypt_tests(
                 res.fail(test, &e);
             }
         }
-        let cmm = get_legacy_cmm(&test.encrypt_key_description, keys, &mpl, &kms).await?;
-        match run_encrypt_test(test, cmm, plaintexts, dir).await {
-            Ok(x) => match x {
-                TestStatus::Ok(j) => {
-                    res.legacy_passed += 1;
-                    out_tests[test.name.clone()] = j;
+        #[cfg(feature = "legacy")]
+        {
+            let cmm = get_legacy_cmm(&test.encrypt_key_description, keys, &mpl, &kms).await?;
+            match run_encrypt_test(test, cmm, plaintexts, dir).await {
+                Ok(x) => match x {
+                    TestStatus::Ok(j) => {
+                        res.legacy_passed += 1;
+                        out_tests[test.name.clone()] = j;
+                    }
+                    _ => res.legacy_skipped += 1,
+                },
+                Err(e) => {
+                    res.fail_legacy(test, &e);
                 }
-                _ => res.legacy_skipped += 1,
-            },
-            Err(e) => {
-                res.fail_legacy(test, &e);
             }
         }
     }

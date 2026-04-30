@@ -125,6 +125,7 @@ impl TestResults {
             test.decrypt_key_description.encryption_algorithm
         );
     }
+    #[cfg(feature = "legacy")]
     pub(crate) fn fail_legacy(&mut self, test: &EncryptTest, e: &anyhow::Error) {
         self.legacy_failed += 1;
         self.record_failure(" Legacy", test, e);
