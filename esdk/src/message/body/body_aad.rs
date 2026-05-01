@@ -34,11 +34,7 @@ const fn body_aad_content_type_string(bc: BodyAADContent) -> &'static str {
     }
 }
 
-/// Build a body IV by writing `sequence_number` as big-endian bytes into the
-/// last 4 bytes of `result`. The caller is expected to hand in a zeroed
-/// buffer sized to the algorithm suite's IV length (12 bytes for all current
-/// suites), which yields the spec-defined IV: leading zero padding followed
-/// by the 4-byte sequence number.
+/// Writes `sequence_number` as big-endian into the last 4 bytes of `result`.
 pub(crate) fn iv_seq(sequence_number: u32, result: &mut [u8]) {
     debug_assert!(
         result.len() >= 4,
