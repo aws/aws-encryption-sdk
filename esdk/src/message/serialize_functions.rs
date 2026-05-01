@@ -1,6 +1,10 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //! Low-level byte read/write primitives for message serialization.
+//!
+//! The `raw` SafeWrite parameter on every `read_*` function tees the consumed
+//! bytes into a mirror buffer so callers can reconstruct the exact raw header
+//! bytes used for authentication and signing.
 
 use super::{Error, ser_err};
 use crate::error::ErrorKind;
@@ -26,6 +30,7 @@ fn ser_io(e: std::io::Error) -> Error {
     }
 }
 
+/// Read up to `buf.len()` bytes; returns the number actually read (may be < len on EOF).
 pub(crate) fn read_up_to(this: &mut dyn SafeRead, buf: &mut [u8]) -> Result<usize, Error> {
     let mut curr: usize = 0;
     loop {
@@ -45,6 +50,7 @@ pub(crate) fn read_up_to(this: &mut dyn SafeRead, buf: &mut [u8]) -> Result<usiz
     }
 }
 
+/// Like `read_up_to`, but `first` is a one-byte peek already consumed by the caller.
 pub(crate) fn read_up_to_peek(
     this: &mut dyn SafeRead,
     buf: &mut [u8],
@@ -80,6 +86,7 @@ pub(crate) fn write_bytes(w: &mut dyn SafeWrite, data: &[u8]) -> Result<(), Erro
     Ok(())
 }
 
+// Big-endian fixed-width writers.
 pub(crate) fn write_u8(w: &mut dyn SafeWrite, data: u8) -> Result<(), Error> {
     write_bytes(w, &[data])
 }
@@ -90,6 +97,7 @@ pub(crate) fn write_u32(w: &mut dyn SafeWrite, data: u32) -> Result<(), Error> {
     write_bytes(w, &data.to_be_bytes())
 }
 
+/// Read exactly `buf.len()` bytes and mirror them into `raw`.
 pub(crate) fn read_bytes(
     r: &mut dyn SafeRead,
     buf: &mut [u8],
@@ -99,6 +107,7 @@ pub(crate) fn read_bytes(
     write_bytes(raw, buf)
 }
 
+/// Read exactly `length` bytes into a fresh Vec.
 pub(crate) fn read_vec(
     r: &mut dyn SafeRead,
     length: usize,
@@ -109,12 +118,15 @@ pub(crate) fn read_vec(
     Ok(result)
 }
 
+// Big-endian fixed-width readers. Each mirrors the consumed bytes into `raw`.
 pub(crate) fn read_u8(r: &mut dyn SafeRead, raw: &mut dyn SafeWrite) -> Result<u8, Error> {
     let mut result = [0u8; 1];
     read_bytes(r, &mut result, raw)?;
     Ok(result[0])
 }
 
+/// Read one byte, returning `Ok(None)` on clean EOF. Does NOT mirror into a
+/// raw buffer (used for streaming peek).
 pub(crate) fn read_opt_u8(r: &mut dyn SafeRead) -> Result<Option<u8>, Error> {
     let mut result = [0u8; 1];
     match r.read_exact(&mut result) {
@@ -142,6 +154,7 @@ pub(crate) fn read_u64(r: &mut dyn SafeRead, raw: &mut dyn SafeWrite) -> Result<
     Ok(u64::from_be_bytes(result))
 }
 
+/// Read a UInt16 length prefix followed by that many bytes.
 pub(crate) fn read_seq_u16(
     r: &mut dyn SafeRead,
     raw: &mut dyn SafeWrite,
@@ -150,6 +163,8 @@ pub(crate) fn read_seq_u16(
     read_vec(r, usize::from(len), raw)
 }
 
+/// Read a UInt32 length prefix followed by that many bytes into `data`,
+/// rejecting lengths above `bound`.
 pub(crate) fn read_seq_u32_bounded(
     r: &mut dyn SafeRead,
     bound: u32,
@@ -168,6 +183,8 @@ pub(crate) fn read_seq_u32_bounded(
     read_bytes(r, &mut data[..], raw)
 }
 
+/// Read a UInt64 length prefix followed by that many bytes, rejecting lengths
+/// above `bound`.
 pub(crate) fn read_seq_u64_bounded(
     r: &mut dyn SafeRead,
     bound: u64,
@@ -184,6 +201,7 @@ pub(crate) fn read_seq_u64_bounded(
     read_vec(r, len_usize, raw)
 }
 
+/// Read a UInt16-prefixed UTF-8 string.
 pub(crate) fn read_str_u16(r: &mut dyn SafeRead, raw: &mut dyn SafeWrite) -> Result<String, Error> {
     let len = read_u16(r, raw)?;
     let result = read_vec(r, usize::from(len), raw)?;
