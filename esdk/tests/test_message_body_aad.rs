@@ -359,7 +359,7 @@ async fn test_body_aad_sequence_number_framed_rejects_tampered_seq() {
         .expect_err("tampering frame 1's sequence number must cause decrypt to fail");
     //= specification/data-format/message-body-aad.md#sequence-number
     //= type=test
-    //= reason=Flipping a bit in the frame-header sequence-number field makes the decryptor see an out-of-order sequence number (0 instead of the expected 1). The decryptor's sequence-ordering check rejects it before the body is handed to AES-GCM — which still proves the decryptor is reading and acting on the frame-header sequence number, i.e. the number used to compute the AAD is the one that was written into the frame.
+    //= reason=Tampered frame sequence number is rejected by the decryptor.
     //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
     let err_str = err.to_string();
     assert!(
