@@ -22,18 +22,26 @@ async fn test_encrypted_data_keys_ordering() {
         //# Encrypted Data Key Count,
         //# and Encrypted Data Key Entries.
         let ct = encrypt_with_version(b"ordering test", version, keyring.clone()).await;
+        let edk_section_start = skip_to_edk_section(&ct, version);
         let parsed = parse_edk_section(&ct, version);
-        // Count field comes first, then entries follow immediately
-        assert_eq!(parsed.edk_count, 1);
-        assert_eq!(parsed.edks.len(), 1);
-        // The entries start at edk_count_offset + 2 (right after the 2-byte count)
-        let entries_start = parsed.edk_count_offset + 2;
-        // First entry's provider_id_len is at entries_start
+
+        // 1. Encrypted Data Key Count (2 bytes)
+        let count = u16::from_be_bytes([ct[edk_section_start], ct[edk_section_start + 1]]);
+        assert_eq!(
+            count, 1,
+            "{version:?}: count field (first 2 bytes of the EDK section) must equal 1"
+        );
+        assert_eq!(parsed.edk_count, count);
+
+        // 2. Encrypted Data Key Entries (immediately after the count)
+        let entries_start = edk_section_start + 2;
+        // The entry begins with its Key Provider ID Length; the count is not repeated.
         let first_pid_len = u16::from_be_bytes([ct[entries_start], ct[entries_start + 1]]);
         assert_eq!(
             first_pid_len, parsed.edks[0].provider_id_len,
             "{version:?}: EDK entries must immediately follow the count field"
         );
+        assert_eq!(parsed.edks.len(), count as usize);
     }
 }
 
