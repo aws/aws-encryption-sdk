@@ -16,16 +16,20 @@ pub(crate) fn write_edks(w: &mut dyn SafeWrite, edks: &[EncryptedDataKey]) -> Re
     //# The Encrypted Data Keys MUST consist of, in order,
     //# Encrypted Data Key Count,
     //# and Encrypted Data Key Entries.
-    let Ok(edk_count) = u16::try_from(edks.len()) else {
-        return ser_err("Count too large for UInt16");
-    };
+
+    // Encrypted Data Key Count
 
     //= specification/data-format/message-header.md#encrypted-data-key-count
     //# The length of the serialized encrypted data key count MUST be 2 bytes.
     //
     //= specification/data-format/message-header.md#encrypted-data-key-count
     //# The encrypted data key count MUST be interpreted as a UInt16.
+    let Ok(edk_count) = u16::try_from(edks.len()) else {
+        return ser_err("Count too large for UInt16");
+    };
     write_u16(w, edk_count)?;
+
+    // Encrypted Data Key Entries
 
     for edk in edks {
         write_edk(w, edk)?;
@@ -42,6 +46,9 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
     //# Key Provider Information,
     //# Encrypted Data Key Length,
     //# and Encrypted Data Key.
+
+    // Key Provider ID Length and Key Provider ID
+
     let kp_id_bytes = edk.key_provider_id.as_bytes();
 
     //= specification/data-format/message-header.md#key-provider-id-length
@@ -62,6 +69,8 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
     //# The key provider ID MUST be interpreted as UTF-8 encoded bytes.
     write_bytes(w, kp_id_bytes)?;
 
+    // Key Provider Information Length and Key Provider Information
+
     //= specification/data-format/message-header.md#key-provider-information-length
     //# The key provider information length MUST be interpreted as a UInt16.
     let Ok(kp_info_len) = u16::try_from(edk.key_provider_info.len()) else {
@@ -79,6 +88,8 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
     //= specification/data-format/message-header.md#key-provider-information
     //# The key provider information MUST be interpreted as bytes.
     write_bytes(w, &edk.key_provider_info)?;
+
+    // Encrypted Data Key Length and Encrypted Data Key
 
     //= specification/data-format/message-header.md#encrypted-data-key-length
     //# The encrypted data key length MUST be interpreted as a UInt16.
@@ -112,7 +123,9 @@ pub(crate) fn read_edks(
     //# The Encrypted Data Keys MUST consist of, in order,
     //# Encrypted Data Key Count,
     //# and Encrypted Data Key Entries.
-    //
+
+    // Encrypted Data Key Count
+
     //= specification/data-format/message-header.md#encrypted-data-key-count
     //# The length of the serialized encrypted data key count MUST be 2 bytes.
     //
@@ -131,6 +144,8 @@ pub(crate) fn read_edks(
         //# decrypt MUST process no more bytes and yield an error.
         return ser_err("Ciphertext encrypted data keys exceed maximum encrypted data keys limit");
     }
+
+    // Encrypted Data Key Entries
 
     let mut edks = Vec::with_capacity(usize::from(count));
     for _ in 0..count {
@@ -151,7 +166,9 @@ pub(crate) fn read_edk(
     //# Key Provider Information,
     //# Encrypted Data Key Length,
     //# and Encrypted Data Key.
-    //
+
+    // Key Provider ID Length and Key Provider ID
+
     //= specification/data-format/message-header.md#key-provider-id-length
     //# The key provider ID length MUST be interpreted as a UInt16.
     //
@@ -166,6 +183,8 @@ pub(crate) fn read_edk(
     //# The key provider ID MUST be interpreted as UTF-8 encoded bytes.
     let provider_id = read_str_u16(r, raw)?;
 
+    // Key Provider Information Length and Key Provider Information
+
     //= specification/data-format/message-header.md#key-provider-information-length
     //# The key provider information length MUST be interpreted as a UInt16.
     //
@@ -179,6 +198,8 @@ pub(crate) fn read_edk(
     //= specification/data-format/message-header.md#key-provider-information
     //# The key provider information MUST be interpreted as bytes.
     let provider_info = read_seq_u16(r, raw)?;
+
+    // Encrypted Data Key Length and Encrypted Data Key
 
     //= specification/data-format/message-header.md#encrypted-data-key-length
     //# The encrypted data key length MUST be interpreted as a UInt16.
