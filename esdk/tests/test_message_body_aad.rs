@@ -14,19 +14,22 @@
 //! 1. **Positive decryption of a known-authority nonframed vector.** The
 //!    ESDK specification forbids encryptors from producing new nonframed
 //!    messages, so the Rust SDK's encrypt path CANNOT produce one. To
-//!    exercise the nonframed decrypt path end-to-end with a trusted input,
-//!    we use a vector that was produced by aws-encryption-sdk-python (an
-//!    independently implemented, audited reference producer from before the
-//!    "MUST NOT encrypt nonframed" rule landed) and is distributed in the
-//!    public `aws-encryption-sdk-test-vectors` GitHub repository at
-//!    <https://github.com/awslabs/aws-encryption-sdk-test-vectors>. The
-//!    fact that our SDK can decrypt this external vector is positive
+//!    exercise the nonframed decrypt path end-to-end with trusted inputs,
+//!    we use vectors that were produced by aws-encryption-sdk-python (an
+//!    independently implemented, audited reference producer) and are
+//!    distributed in the public `aws-encryption-sdk-test-vectors` GitHub
+//!    repository at
+//!    <https://github.com/awslabs/aws-encryption-sdk-test-vectors>. We
+//!    anchor on BOTH a V1 vector (python-1.3.5, suite 0x0178, 16-byte
+//!    message ID) and a V2 vector (python-2.0.0, suite 0x0478, 32-byte
+//!    message ID) so that every cross-version body-AAD claim is covered.
+//!    The fact that our SDK can decrypt these external vectors is positive
 //!    evidence that our body-AAD reconstruction matches the Python
-//!    reference's.
+//!    reference's for each header version.
 //!
 //! 2. **Negative tampering against a self-built nonframed message.** The
-//!    external vector is immutable — we cannot produce variants of it with
-//!    deliberately wrong AAD fields. For negative tests we use
+//!    external vectors are immutable — we cannot produce variants of them
+//!    with deliberately wrong AAD fields. For negative tests we use
 //!    `build_nonframed_message_with_aad_overrides`, a test helper that
 //!    builds a nonframed message with a caller-supplied AAD. Feeding such a
 //!    message into the real decrypt() path and observing AES-GCM
@@ -269,73 +272,91 @@ fn test_body_aad_content_length_is_8_bytes_uint64_be() {
 // End-to-end tests: caller contracts on body_aad's inputs.
 // -----------------------------------------------------------------------------
 
-// --- Positive nonframed tests, anchored on the external authority vector ---
+// --- Positive nonframed tests, anchored on the external authority vectors ---
+//
+// Each test loops over both V1 and V2 header versions using the two external
+// nonframed vectors from aws-encryption-sdk-test-vectors. Looping proves the
+// body-AAD claim holds for messages produced by an independent reference
+// against BOTH header versions in use.
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_sequence_number_nonframed_is_one() {
     //= specification/data-format/message-body-aad.md#sequence-number
     //= type=test
-    //= reason=Positive evidence via external authority. The Rust SDK cannot produce nonframed messages (the spec forbids it), so we anchor on a nonframed vector produced by aws-encryption-sdk-python 2.3.0 (distributed in the public aws-encryption-sdk-test-vectors repository). Parsing the ciphertext shows the body IV's low 4 bytes encode sequence number 1; the AAD the encryptor used must have also specified sequence 1 for AES-GCM authentication to have succeeded when our Rust SDK decrypts it. Paired with the negative tests below (AAD seq != 1 → auth failure), this proves our decryptor's AAD reconstruction uses exactly seq=1 for nonframed bodies.
+    //= reason=Positive evidence via external authority. For each message version (V1 suite 0x0178 from aws-encryption-sdk-python 1.3.5; V2 suite 0x0478 from aws-encryption-sdk-python 2.0.0), we parse the external vector's body IV and confirm its low 4 bytes encode sequence number 1. The AAD that the Python encryptor used must have also specified sequence 1 for AES-GCM authentication to have succeeded when our Rust SDK decrypts it. Paired with the negative tests below (AAD seq != 1 → auth failure), this proves our decryptor's AAD reconstruction uses exactly seq=1 for nonframed bodies in both header versions.
     //# For [nonframed data](message-body.md#nonframed-data), the value of this field MUST be `1`.
+    for version in VERSIONS {
+        // Sanity-check the anchor: parse the external ciphertext's body IV and
+        // confirm its low 4 bytes encode sequence number 1.
+        let parsed = parse_external_nonframed_body(external_nonframed_ct(version), version);
+        let iv_seq = u32::from_be_bytes([
+            parsed.iv[8], parsed.iv[9], parsed.iv[10], parsed.iv[11],
+        ]);
+        assert_eq!(
+            iv_seq, 1,
+            "{version:?}: external vector's body IV must encode seq=1"
+        );
 
-    // Sanity-check the anchor: parse the external ciphertext's body IV and
-    // confirm its low 4 bytes encode sequence number 1. This is what the
-    // body_aad MUST contain for decryption to succeed.
-    let parsed = parse_v1_nonframed_body(EXTERNAL_NONFRAMED_CT);
-    let iv_seq = u32::from_be_bytes([
-        parsed.iv[8], parsed.iv[9], parsed.iv[10], parsed.iv[11],
-    ]);
-    assert_eq!(iv_seq, 1, "external vector's body IV must encode seq=1");
-
-    // Decrypting successfully proves the AAD also used seq=1.
-    let pt = decrypt_external_nonframed_vector().await;
-    assert_eq!(
-        pt, EXTERNAL_NONFRAMED_PT,
-        "external nonframed vector must decrypt to the expected plaintext"
-    );
+        // Decrypting successfully proves the AAD also used seq=1.
+        let pt = decrypt_external_nonframed_vector(version).await;
+        assert_eq!(
+            pt, external_nonframed_pt(version),
+            "{version:?}: external nonframed vector must decrypt to the expected plaintext"
+        );
+    }
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_content_length_nonframed_equals_plaintext_length() {
     //= specification/data-format/message-body-aad.md#content-length
     //= type=test
-    //= reason=Positive evidence via external authority. The aws-encryption-sdk-python 2.3.0 nonframed vector carries an explicit 8-byte encrypted-content-length field in its body header. Parsing shows that field equals the plaintext length (10240). For AES-GCM authentication to succeed when our Rust SDK decrypts this vector, the AAD that the Python encryptor used must have had the same value — proving our decryptor's AAD reconstruction uses the encrypted content length for nonframed data.
+    //= reason=Positive evidence via external authority. For each message version (V1 from aws-encryption-sdk-python 1.3.5; V2 from aws-encryption-sdk-python 2.0.0), the external nonframed vector carries an explicit 8-byte encrypted-content-length field in its body header. Parsing shows that field equals the plaintext length. For AES-GCM authentication to succeed when our Rust SDK decrypts the vector, the AAD that the Python encryptor used must have had the same value — proving our decryptor's AAD reconstruction uses the encrypted content length for nonframed data in both header versions.
     //# - For [nonframed data](message-body.md#nonframed-data), this value MUST equal the length, in bytes, of the plaintext data provided to the algorithm for encryption.
+    for version in VERSIONS {
+        let parsed = parse_external_nonframed_body(external_nonframed_ct(version), version);
+        assert_eq!(
+            parsed.encrypted_content_length,
+            external_nonframed_pt(version).len() as u64,
+            "{version:?}: external vector's encrypted-content-length field must equal plaintext length"
+        );
 
-    let parsed = parse_v1_nonframed_body(EXTERNAL_NONFRAMED_CT);
-    assert_eq!(
-        parsed.encrypted_content_length,
-        EXTERNAL_NONFRAMED_PT.len() as u64,
-        "external vector's encrypted-content-length field must equal plaintext length"
-    );
-
-    let pt = decrypt_external_nonframed_vector().await;
-    assert_eq!(
-        pt, EXTERNAL_NONFRAMED_PT,
-        "decryption succeeding proves AAD used the same content length"
-    );
+        let pt = decrypt_external_nonframed_vector(version).await;
+        assert_eq!(
+            pt, external_nonframed_pt(version),
+            "{version:?}: decryption succeeding proves AAD used the same content length"
+        );
+    }
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_body_aad_message_id_length_matches_v1_header() {
+async fn test_body_aad_message_id_length_matches_header() {
     //= specification/data-format/message-body-aad.md#message-id
     //= type=test
-    //= reason=Positive evidence via external authority. The aws-encryption-sdk-python 2.3.0 nonframed vector is V1-formatted with a 16-byte message ID in its header. Decrypting it with our Rust SDK requires our AAD reconstruction to use that same 16-byte ID (otherwise AES-GCM auth would fail). This anchors the V1 case against an independent reference producer.
+    //= reason=Positive evidence via external authority. For each message version, the external nonframed vector's header carries the version-appropriate message ID length (V1: 16 bytes from aws-encryption-sdk-python 1.3.5; V2: 32 bytes from aws-encryption-sdk-python 2.0.0). Decrypting with our Rust SDK requires our AAD reconstruction to use the same message-ID bytes at the same length (otherwise AES-GCM auth would fail). This anchors both V1 and V2 cases against an independent reference producer.
     //# The length of the Message ID field MUST be equal to the length of the [Message ID](message-header.md#message-id) defined by the message header version.
+    for version in VERSIONS {
+        let ct = external_nonframed_ct(version);
+        // V1 header: Version(1) + Type(1) + AlgSuiteID(2) + MessageID(16)
+        //   -> message ID at bytes [4..20], 16 bytes
+        // V2 header: Version(1) + AlgSuiteID(2) + MessageID(32)
+        //   -> message ID at bytes [3..35], 32 bytes
+        let (start, expected_len) = match version {
+            Version::V1 => (4usize, 16usize),
+            Version::V2 => (3usize, 32usize),
+        };
+        let header_message_id = &ct[start..start + expected_len];
+        assert_eq!(
+            header_message_id.len(),
+            expected_len,
+            "{version:?} header must carry a {expected_len}-byte message ID"
+        );
 
-    // The external vector has V1 format. Parse its header's 16-byte message ID.
-    let header_message_id = &EXTERNAL_NONFRAMED_CT[4..20];
-    assert_eq!(
-        header_message_id.len(),
-        16,
-        "V1 header must carry a 16-byte message ID"
-    );
-
-    let pt = decrypt_external_nonframed_vector().await;
-    assert_eq!(
-        pt, EXTERNAL_NONFRAMED_PT,
-        "V1 decrypt proves AAD used the 16-byte header message ID"
-    );
+        let pt = decrypt_external_nonframed_vector(version).await;
+        assert_eq!(
+            pt, external_nonframed_pt(version),
+            "{version:?} decrypt proves AAD used the {expected_len}-byte header message ID"
+        );
+    }
 }
 
 // --- Negative nonframed tests: tamper AAD fields on self-built messages ---
@@ -545,23 +566,4 @@ async fn test_body_aad_content_length_framed_equals_per_frame_plaintext() {
     );
     let decrypted = round_trip_framed(&pt, frame_length).await;
     assert_eq!(decrypted, pt, "round-trip proves AAD used per-frame plaintext lengths");
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_body_aad_message_id_length_matches_v2_header() {
-    //= specification/data-format/message-body-aad.md#message-id
-    //= type=test
-    //= reason=body_aad takes message_id from its caller; for V2 messages the header contains a 32-byte message ID. The real Rust encryptor produces V2 framed ciphertexts; parsing its header confirms a 32-byte message ID and successful decryption proves the AAD used that same 32-byte value. (An external V2-nonframed reference vector does not exist — the ESDK spec forbids producing new nonframed messages, so no modern producer creates nonframed V2 outputs.)
-    //# The length of the Message ID field MUST be equal to the length of the [Message ID](message-header.md#message-id) defined by the message header version.
-    let pt = b"v2 message id length test";
-    let ct = encrypt_v2(pt).await;
-    // V2 header: Version(1) + AlgSuiteID(2) + MessageID(32)
-    let header_message_id = &ct[3..35];
-    assert_eq!(
-        header_message_id.len(),
-        32,
-        "V2 header must carry a 32-byte message ID"
-    );
-    let decrypted = round_trip(pt).await;
-    assert_eq!(decrypted, pt, "V2 round-trip proves AAD message ID length matches V2 header (32 bytes)");
 }

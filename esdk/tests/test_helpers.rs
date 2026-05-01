@@ -156,6 +156,32 @@ pub async fn encrypt_with_version(
     encrypt(&input).await.unwrap().ciphertext
 }
 
+/// Encrypt with a non-signing algorithm suite for the given version, with a
+/// caller-supplied encryption context. Returns ciphertext bytes.
+///
+/// Non-signing suites are used so the serialized encryption context matches
+/// exactly what the caller provided; signing suites add an
+/// `aws-crypto-public-key` entry that alters the EC seen in the header.
+pub async fn encrypt_no_sign_with_ec(
+    plaintext: &[u8],
+    ec: EncryptionContext,
+    version: Version,
+) -> Vec<u8> {
+    let keyring = test_keyring().await;
+    let mut input = EncryptInput::with_legacy_keyring(plaintext, ec, keyring);
+    match version {
+        Version::V1 => {
+            input.algorithm_suite_id =
+                Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
+            input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+        }
+        Version::V2 => {
+            input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
+        }
+    }
+    encrypt(&input).await.unwrap().ciphertext
+}
+
 /// Decrypt ciphertext with the default test keyring, return full DecryptOutput.
 pub async fn decrypt_ciphertext(ciphertext: &[u8]) -> DecryptOutput {
     let keyring = test_keyring().await;
@@ -173,6 +199,20 @@ pub async fn decrypt_with(
     let mut dec_input =
         DecryptInput::with_legacy_keyring(ciphertext, EncryptionContext::new(), keyring.clone());
     dec_input.commitment_policy = policy;
+    decrypt(&dec_input).await.unwrap()
+}
+
+/// Decrypt a ciphertext that was produced by `encrypt_no_sign_with_ec` (or
+/// otherwise uses a V1 non-committing suite for V1). Returns the full
+/// DecryptOutput so callers can assert on both plaintext and
+/// `encryption_context`.
+pub async fn decrypt_with_version(ciphertext: &[u8], version: Version) -> DecryptOutput {
+    let keyring = test_keyring().await;
+    let mut dec_input =
+        DecryptInput::with_legacy_keyring(ciphertext, EncryptionContext::new(), keyring);
+    if let Version::V1 = version {
+        dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    }
     decrypt(&dec_input).await.unwrap()
 }
 
@@ -969,43 +1009,55 @@ pub async fn try_decrypt_nonframed(msg: &[u8]) -> Result<Vec<u8>, String> {
 }
 
 // -----------------------------------------------------------------------------
-// External nonframed vector from aws-encryption-sdk-test-vectors.
+// External nonframed vectors from aws-encryption-sdk-test-vectors.
 //
 // The Rust SDK's encrypt path cannot produce nonframed messages (the ESDK
 // spec forbids new nonframed encryption), so to exercise the nonframed
-// decrypt path end-to-end we anchor on an externally produced vector.
+// decrypt path end-to-end we anchor on externally produced vectors.
 //
-// Provenance:
-//   Repository: https://github.com/awslabs/aws-encryption-sdk-test-vectors
-//   Archive:    vectors/awses-decrypt/python-2.3.0.zip
-//   Producer:   aws-encryption-sdk-python, version 2.3.0
-//   Test ID:    9b86a9ce-e251-4d71-ba7b-cb83e0766aae
+// Both vectors come from the public
+// `awslabs/aws-encryption-sdk-test-vectors` GitHub repository and use the
+// same raw-AES-256 wrapping key (provider-id `aws-raw-vectors-persistant`,
+// key-id `aes-256`) — a 32-byte static pattern
+// [0x00,0x01,0x02,...,0x28,0x29,0x30,0x31].
 //
-// Characteristics (confirmed by parsing the header bytes):
-//   Version:              0x01  (V1)
-//   Algorithm Suite ID:   0x0178  (AlgAes256GcmIv12Tag16HkdfSha256)
-//   Message ID:           3752b81d96f95561285abd3d015dde82  (16 bytes)
-//   Content Type:         0x01  (NonFramed)
-//   Frame Length:         0
-//   Body IV:              000000000000000000000001
-//                           (low 4 bytes encode sequence number = 1)
-//   Encrypted content length field:  10240 bytes
-//   Plaintext size:                  10240 bytes
-//   Total ciphertext:                10445 bytes
+// V1 vector:
+//   Archive:            vectors/awses-decrypt/python-1.3.5.zip
+//   Producer:           aws-encryption-sdk-python, version 1.3.5
+//                       (predates the "MUST NOT encrypt nonframed" rule)
+//   Test ID:            9b86a9ce-e251-4d71-ba7b-cb83e0766aae
+//   Version byte:       0x01  (V1)
+//   Algorithm Suite ID: 0x0178  (AlgAes256GcmIv12Tag16HkdfSha256,
+//                                 non-committing)
+//   Message ID length:  16 bytes
+//   Plaintext size:     10240 bytes
+//   Ciphertext size:    10445 bytes
 //
-// Wrapping-key setup matches the upstream `keys.json` entry for the
-// `aes-256` raw-AES key in that archive: a 32-byte static pattern
-// [0x00,0x01,0x02,...,0x28,0x29,0x30,0x31] with provider_id
-// "aws-raw-vectors-persistant" and key_name "aes-256".
+// V2 vector:
+//   Archive:            vectors/awses-decrypt/python-2.0.0.zip
+//   Producer:           aws-encryption-sdk-python, version 2.0.0
+//   Test ID:            24cfe457-2c2b-42c6-8bb5-5300e736b18a
+//   Version byte:       0x02  (V2)
+//   Algorithm Suite ID: 0x0478  (AlgAes256GcmHkdfSha512CommitKey,
+//                                 committing, non-signing)
+//   Message ID length:  32 bytes
+//   Plaintext size:     10240 bytes
+//   Ciphertext size:    10475 bytes
 // -----------------------------------------------------------------------------
 
-pub const EXTERNAL_NONFRAMED_CT: &[u8] =
+pub const EXTERNAL_V1_NONFRAMED_CT: &[u8] =
     include_bytes!("fixtures_binary/v1_nonframed_aes256_0178.bin");
-pub const EXTERNAL_NONFRAMED_PT: &[u8] =
+pub const EXTERNAL_V1_NONFRAMED_PT: &[u8] =
     include_bytes!("fixtures_binary/v1_nonframed_plaintext_small.bin");
+
+pub const EXTERNAL_V2_NONFRAMED_CT: &[u8] =
+    include_bytes!("fixtures_binary/v2_nonframed_aes256_0478.bin");
+pub const EXTERNAL_V2_NONFRAMED_PT: &[u8] =
+    include_bytes!("fixtures_binary/v2_nonframed_plaintext_small.bin");
 
 /// The `aes-256` static test key from aws-encryption-sdk-test-vectors'
 /// `keys.json` (base64 `AAECAwQFBgcICRAREhMUFRYXGBkgISIjJCUmJygpMDE=`).
+/// Shared between the V1 and V2 external nonframed vectors above.
 pub const EXTERNAL_AES_256_WRAPPING_KEY: [u8; 32] = [
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
     0x08, 0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15,
@@ -1013,10 +1065,26 @@ pub const EXTERNAL_AES_256_WRAPPING_KEY: [u8; 32] = [
     0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x30, 0x31,
 ];
 
-/// Decrypt the external V1 nonframed vector through the real SDK path.
-/// Returns the decrypted plaintext. Panics on failure — decryption
-/// succeeding IS the positive evidence callers rely on.
-pub async fn decrypt_external_nonframed_vector() -> Vec<u8> {
+/// Return the external nonframed ciphertext bytes for the given message version.
+pub fn external_nonframed_ct(version: Version) -> &'static [u8] {
+    match version {
+        Version::V1 => EXTERNAL_V1_NONFRAMED_CT,
+        Version::V2 => EXTERNAL_V2_NONFRAMED_CT,
+    }
+}
+
+/// Return the expected plaintext bytes for the given external nonframed vector.
+pub fn external_nonframed_pt(version: Version) -> &'static [u8] {
+    match version {
+        Version::V1 => EXTERNAL_V1_NONFRAMED_PT,
+        Version::V2 => EXTERNAL_V2_NONFRAMED_PT,
+    }
+}
+
+/// Decrypt the external nonframed vector for the given message version through
+/// the real SDK path. Returns the decrypted plaintext. Panics on failure —
+/// decryption succeeding IS the positive evidence callers rely on.
+pub async fn decrypt_external_nonframed_vector(version: Version) -> Vec<u8> {
     let keyring = mpl()
         .create_raw_aes_keyring()
         .key_namespace("aws-raw-vectors-persistant")
@@ -1028,36 +1096,47 @@ pub async fn decrypt_external_nonframed_vector() -> Vec<u8> {
         .unwrap();
 
     let mut dec_input = DecryptInput::with_legacy_keyring(
-        EXTERNAL_NONFRAMED_CT,
+        external_nonframed_ct(version),
         EncryptionContext::new(),
         keyring,
     );
-    // Suite 0x0178 is non-committing; allow decrypt under
-    // ForbidEncryptAllowDecrypt to match its vintage.
-    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    // V1 suite 0x0178 is non-committing; V2 suite 0x0478 is committing.
+    dec_input.commitment_policy = match version {
+        Version::V1 => EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
+        Version::V2 => EsdkCommitmentPolicy::RequireEncryptRequireDecrypt,
+    };
     decrypt(&dec_input)
         .await
         .expect("external nonframed vector must decrypt successfully")
         .plaintext
 }
 
-/// Parsed body fields from a V1 nonframed message.
-pub struct V1NonframedBody {
+/// Parsed body fields from an external nonframed message. The nonframed body
+/// layout is identical between V1 and V2 (IV(12) + ContentLength(8) +
+/// Content(N) + Tag(16)); only the preceding header differs.
+pub struct ExternalNonframedBody {
     pub iv: [u8; 12],
     pub encrypted_content_length: u64,
 }
 
-/// Parse the body of a V1 nonframed message.
+/// Parse the body of an external nonframed message for the given version.
 ///
 /// V1 header layout (up to body):
 ///   Version(1) + Type(1) + AlgSuiteID(2) + MessageID(16) + AAD(var)
 ///   + EDKs(var) + ContentType(1) + Reserved(4) + IVLength(1)
 ///   + FrameLength(4) + HeaderAuthIV(12) + HeaderAuthTag(16)
 ///
-/// V1 nonframed body layout:
+/// V2 header layout (up to body):
+///   Version(1) + AlgSuiteID(2) + MessageID(32) + AAD(var) + EDKs(var)
+///   + ContentType(1) + FrameLength(4) + SuiteData(32) + HeaderAuthTag(16)
+///
+/// Nonframed body layout (both versions):
 ///   IV(12) + EncryptedContentLength(8) + EncryptedContent(N) + AuthTag(16)
-pub fn parse_v1_nonframed_body(msg: &[u8]) -> V1NonframedBody {
-    let mut pos: usize = 1 + 1 + 2 + 16; // Version + Type + AlgSuiteID + MessageID
+pub fn parse_external_nonframed_body(msg: &[u8], version: Version) -> ExternalNonframedBody {
+    let mut pos: usize = match version {
+        Version::V1 => 1 + 1 + 2 + 16, // Version + Type + AlgSuiteID + MessageID
+        Version::V2 => 1 + 2 + 32,     // Version + AlgSuiteID + MessageID
+    };
     let aad_byte_len = u16::from_be_bytes([msg[pos], msg[pos + 1]]) as usize;
     pos += 2;
     if aad_byte_len > 0 {
@@ -1073,22 +1152,30 @@ pub fn parse_v1_nonframed_body(msg: &[u8]) -> V1NonframedBody {
         let edk_len = u16::from_be_bytes([msg[pos], msg[pos + 1]]) as usize;
         pos += 2 + edk_len;
     }
-    pos += 1; // ContentType
-    pos += 4; // Reserved
-    pos += 1; // IV length
-    pos += 4; // FrameLength
-    pos += 12; // HeaderAuth IV (V1 has explicit IV)
-    pos += 16; // HeaderAuth tag
+    pos += 1; // Content Type
+    match version {
+        Version::V1 => {
+            pos += 4; // Reserved
+            pos += 1; // IV length
+            pos += 4; // Frame Length
+            pos += IV_LEN; // Header Auth IV (V1 only)
+        }
+        Version::V2 => {
+            pos += 4; // Frame Length
+            pos += 32; // Algorithm Suite Data (commit key)
+        }
+    }
+    pos += TAG_LEN; // Header Auth Tag
 
     // Body
     let mut iv = [0u8; 12];
-    iv.copy_from_slice(&msg[pos..pos + 12]);
-    pos += 12;
+    iv.copy_from_slice(&msg[pos..pos + IV_LEN]);
+    pos += IV_LEN;
     let encrypted_content_length = u64::from_be_bytes([
         msg[pos], msg[pos + 1], msg[pos + 2], msg[pos + 3],
         msg[pos + 4], msg[pos + 5], msg[pos + 6], msg[pos + 7],
     ]);
-    V1NonframedBody {
+    ExternalNonframedBody {
         iv,
         encrypted_content_length,
     }
