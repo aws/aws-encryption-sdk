@@ -67,14 +67,15 @@ async fn test_edk_count_is_big_endian_uint16() {
         let ct = encrypt_with_version(b"count uint16", version, mk.clone()).await;
         let offset = skip_to_edk_section(&ct, version);
 
+        // 2 keyrings → count bytes must be [0x00, 0x02] (big-endian UInt16 for value 2).
+        let count = u16::from_be_bytes([ct[offset], ct[offset + 1]]);
+
         //= specification/data-format/message-header.md#encrypted-data-key-count
         //= type=test
         //# The length of the serialized encrypted data key count MUST be 2 bytes.
         //
         //= specification/data-format/message-header.md#encrypted-data-key-count
         //# The encrypted data key count MUST be interpreted as a UInt16.
-        // 2 keyrings → count bytes must be [0x00, 0x02] (big-endian UInt16 for value 2).
-        let count = u16::from_be_bytes([ct[offset], ct[offset + 1]]);
         assert_eq!(count, 2, "{version:?}: big-endian UInt16 count for 2 keyrings");
         assert_eq!(ct[offset], 0x00, "{version:?}: high byte");
         assert_eq!(ct[offset + 1], 0x02, "{version:?}: low byte");
@@ -118,14 +119,15 @@ async fn test_edk_count_max_enforcement_encrypt() {
     let child = aes_keyring(1).await;
     let mk = multi_keyring(generator, vec![child]).await;
 
-    //= specification/data-format/message-header.md#encrypted-data-key-count
-    //= type=test
-    //= reason=max_encrypted_data_keys on encrypt enforces the upper bound on EDK count before serialization.
-    //# This value MUST be less than or equal to the [maximum number of encrypted data keys](../client-apis/client.md#maximum-number-of-encrypted-data-keys) if the maximum number is configured.
     let mut input =
         EncryptInput::with_legacy_keyring(b"max edk encrypt", EncryptionContext::new(), mk);
     input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(1).unwrap());
     let err = encrypt(&input).await.expect_err("encrypt must fail when EDK count exceeds max");
+
+    //= specification/data-format/message-header.md#encrypted-data-key-count
+    //= type=test
+    //= reason=max_encrypted_data_keys on encrypt enforces the upper bound on EDK count before serialization.
+    //# This value MUST be less than or equal to the [maximum number of encrypted data keys](../client-apis/client.md#maximum-number-of-encrypted-data-keys) if the maximum number is configured.
     assert!(
         err.message.contains("exceed") && err.message.contains("maximum"),
         "error must indicate EDK count exceeds maximum, got: {} ({:?})",
@@ -142,12 +144,12 @@ async fn test_edk_count_max_enforcement_decrypt() {
     let ct = encrypt_with_version(b"max edk decrypt", Version::V2, mk.clone()).await;
     let mut dec = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), mk);
     dec.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(1).unwrap());
+    let err = decrypt(&dec).await.expect_err("decrypt must fail when EDK count exceeds max");
 
     //= specification/data-format/message-header.md#encrypted-data-key-count
     //= type=test
     //= reason=max_encrypted_data_keys on decrypt enforces the upper bound when deserializing the header.
     //# This value MUST be less than or equal to the [maximum number of encrypted data keys](../client-apis/client.md#maximum-number-of-encrypted-data-keys) if the maximum number is configured.
-    let err = decrypt(&dec).await.expect_err("decrypt must fail when EDK count exceeds max");
     assert!(
         err.message.contains("exceed") && err.message.contains("maximum"),
         "error must indicate EDK count exceeds maximum, got: {} ({:?})",
@@ -161,13 +163,14 @@ async fn test_edk_count_at_max_succeeds() {
     let child = aes_keyring(1).await;
     let mk = multi_keyring(generator, vec![child]).await;
 
+    let mut input =
+        EncryptInput::with_legacy_keyring(b"at max", EncryptionContext::new(), mk);
+    input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(2).unwrap());
+
     //= specification/data-format/message-header.md#encrypted-data-key-count
     //= type=test
     //= reason=Setting max equal to actual count verifies the less-than-or-equal semantics.
     //# This value MUST be less than or equal to the [maximum number of encrypted data keys](../client-apis/client.md#maximum-number-of-encrypted-data-keys) if the maximum number is configured.
-    let mut input =
-        EncryptInput::with_legacy_keyring(b"at max", EncryptionContext::new(), mk);
-    input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(2).unwrap());
     assert!(
         encrypt(&input).await.is_ok(),
         "encrypt must succeed when EDK count equals max"
@@ -275,14 +278,15 @@ async fn test_key_provider_id_length_is_big_endian_uint16() {
         let (expected_ns, _) = namespace_and_name(0);
         let expected_len = expected_ns.len() as u16;
 
+        // The first 2 bytes of the entry are the big-endian UInt16 provider ID length.
+        let pid_len = u16::from_be_bytes([ct[edk_start], ct[edk_start + 1]]);
+
         //= specification/data-format/message-header.md#key-provider-id-length
         //= type=test
         //# The length of the serialized key provider ID length field MUST be 2 bytes.
         //
         //= specification/data-format/message-header.md#key-provider-id-length
         //# The key provider ID length MUST be interpreted as a UInt16.
-        // The first 2 bytes of the entry are the big-endian UInt16 provider ID length.
-        let pid_len = u16::from_be_bytes([ct[edk_start], ct[edk_start + 1]]);
         assert_eq!(
             pid_len, expected_len,
             "{version:?}: big-endian UInt16 provider ID length must match namespace length"
@@ -348,6 +352,7 @@ async fn test_key_provider_info_length_is_big_endian_uint16() {
         let pinfo_len_offset = edk_start + 2 + pid_len as usize;
         let parsed = parse_edk_section(&ct, version);
         let edk = &parsed.edks[0];
+        let wire_pinfo_len = u16::from_be_bytes([ct[pinfo_len_offset], ct[pinfo_len_offset + 1]]);
 
         //= specification/data-format/message-header.md#key-provider-information-length
         //= type=test
@@ -355,7 +360,6 @@ async fn test_key_provider_info_length_is_big_endian_uint16() {
         //
         //= specification/data-format/message-header.md#key-provider-information-length
         //# The key provider information length MUST be interpreted as a UInt16.
-        let wire_pinfo_len = u16::from_be_bytes([ct[pinfo_len_offset], ct[pinfo_len_offset + 1]]);
         assert_eq!(
             wire_pinfo_len as usize,
             edk.provider_info.len(),
@@ -421,6 +425,7 @@ async fn test_edk_length_is_big_endian_uint16() {
         let edk_len_offset = edk_start
             + 2 + edk.provider_id_len as usize
             + 2 + edk.provider_info_len as usize;
+        let wire_edk_len = u16::from_be_bytes([ct[edk_len_offset], ct[edk_len_offset + 1]]);
 
         //= specification/data-format/message-header.md#encrypted-data-key-length
         //= type=test
@@ -428,7 +433,6 @@ async fn test_edk_length_is_big_endian_uint16() {
         //
         //= specification/data-format/message-header.md#encrypted-data-key-length
         //# The encrypted data key length MUST be interpreted as a UInt16.
-        let wire_edk_len = u16::from_be_bytes([ct[edk_len_offset], ct[edk_len_offset + 1]]);
         assert_eq!(
             wire_edk_len as usize,
             edk.edk.len(),
