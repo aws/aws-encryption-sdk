@@ -31,6 +31,11 @@ const fn body_aad_content_type_string(bc: BodyAADContent) -> &'static str {
 }
 
 pub(crate) fn iv_seq(sequence_number: u32, result: &mut [u8]) {
+    debug_assert!(
+        result.len() >= 4,
+        "iv_seq: result must have at least 4 bytes of room for the sequence number, got {}",
+        result.len()
+    );
     let pivot = result.len() - 4;
     result[pivot..].copy_from_slice(&sequence_number.to_be_bytes());
 }
