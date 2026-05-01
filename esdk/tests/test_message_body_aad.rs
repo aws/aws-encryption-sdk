@@ -227,10 +227,9 @@ async fn test_body_aad_message_id_length_matches_header() {
             Version::V1 => (4usize, 16usize),
             Version::V2 => (3usize, 32usize),
         };
-        assert_eq!(
-            ct[start..start + expected_len].len(),
-            expected_len,
-            "{version:?} header must carry a {expected_len}-byte message ID"
+        assert!(
+            ct.len() >= start + expected_len,
+            "{version:?} header must be large enough to carry a {expected_len}-byte message ID"
         );
 
         let pt = decrypt_external_nonframed_vector(version).await;
