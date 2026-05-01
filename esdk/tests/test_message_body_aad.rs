@@ -2,11 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Tests for specification/data-format/message-body-aad.md
-//!
-//! Direct byte-level tests of `body_aad()` (via `__test_internals`) are
-//! followed by end-to-end tests that verify the values body_encrypt /
-//! body_decrypt pass to body_aad. See the section headers below for the
-//! per-block rationale.
 
 mod test_helpers;
 
@@ -29,10 +24,6 @@ fn content_str_bytes(bc: BodyAADContent) -> &'static [u8] {
         BodyAADContent::SingleBlock => SINGLE_BLOCK_STR,
     }
 }
-
-// -----------------------------------------------------------------------------
-// Direct byte-level tests of body_aad().
-// -----------------------------------------------------------------------------
 
 #[test]
 fn test_body_aad_structure_ordering() {
@@ -240,10 +231,6 @@ fn test_body_aad_content_length_is_8_bytes_uint64_be() {
     }
 }
 
-// -----------------------------------------------------------------------------
-// End-to-end tests: caller contracts on body_aad's inputs.
-// -----------------------------------------------------------------------------
-
 // --- Positive nonframed tests, anchored on the external authority vectors ---
 //
 // ESDKs are no longer allowed to produce nonframed messages, so we can't
@@ -254,10 +241,6 @@ fn test_body_aad_content_length_is_8_bytes_uint64_be() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_sequence_number_nonframed_is_one() {
-    //= specification/data-format/message-body-aad.md#sequence-number
-    //= type=test
-    //= reason=External nonframed vectors' body IVs encode seq=1; successful decryption proves the AAD also used seq=1.
-    //# For [nonframed data](message-body.md#nonframed-data), the value of this field MUST be `1`.
     for version in VERSIONS {
         let parsed = parse_external_nonframed_body(external_nonframed_ct(version), version);
         let iv_seq = u32::from_be_bytes([
@@ -266,6 +249,10 @@ async fn test_body_aad_sequence_number_nonframed_is_one() {
         assert_eq!(iv_seq, 1, "{version:?}: body IV must encode seq=1");
 
         let pt = decrypt_external_nonframed_vector(version).await;
+        //= specification/data-format/message-body-aad.md#sequence-number
+        //= type=test
+        //= reason=External nonframed vectors' body IVs encode seq=1; successful decryption proves the AAD also used seq=1.
+        //# For [nonframed data](message-body.md#nonframed-data), the value of this field MUST be `1`.
         assert_eq!(
             pt, external_nonframed_pt(version),
             "{version:?}: external nonframed vector must decrypt to the expected plaintext"
@@ -275,10 +262,6 @@ async fn test_body_aad_sequence_number_nonframed_is_one() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_content_length_nonframed_equals_plaintext_length() {
-    //= specification/data-format/message-body-aad.md#content-length
-    //= type=test
-    //= reason=External vectors' body encrypted-content-length field equals plaintext length; successful decryption proves the AAD used the same value.
-    //# - For [nonframed data](message-body.md#nonframed-data), this value MUST equal the length, in bytes, of the plaintext data provided to the algorithm for encryption.
     for version in VERSIONS {
         let parsed = parse_external_nonframed_body(external_nonframed_ct(version), version);
         assert_eq!(
@@ -288,6 +271,10 @@ async fn test_body_aad_content_length_nonframed_equals_plaintext_length() {
         );
 
         let pt = decrypt_external_nonframed_vector(version).await;
+        //= specification/data-format/message-body-aad.md#content-length
+        //= type=test
+        //= reason=External vectors' body encrypted-content-length field equals plaintext length; successful decryption proves the AAD used the same value.
+        //# - For [nonframed data](message-body.md#nonframed-data), this value MUST equal the length, in bytes, of the plaintext data provided to the algorithm for encryption.
         assert_eq!(
             pt, external_nonframed_pt(version),
             "{version:?}: decryption succeeding proves AAD used the same content length"
@@ -297,10 +284,6 @@ async fn test_body_aad_content_length_nonframed_equals_plaintext_length() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_message_id_length_matches_header() {
-    //= specification/data-format/message-body-aad.md#message-id
-    //= type=test
-    //= reason=External V1 vector carries a 16-byte message ID; V2 vector carries 32 bytes. Successful decryption proves the AAD reconstruction used the version-appropriate length.
-    //# The length of the Message ID field MUST be equal to the length of the [Message ID](message-header.md#message-id) defined by the message header version.
     for version in VERSIONS {
         let ct = external_nonframed_ct(version);
         // V1 header: Version(1) + Type(1) + AlgSuiteID(2) + MessageID(16)
@@ -316,6 +299,10 @@ async fn test_body_aad_message_id_length_matches_header() {
         );
 
         let pt = decrypt_external_nonframed_vector(version).await;
+        //= specification/data-format/message-body-aad.md#message-id
+        //= type=test
+        //= reason=External V1 vector carries a 16-byte message ID; V2 vector carries 32 bytes. Successful decryption proves the AAD reconstruction used the version-appropriate length.
+        //# The length of the Message ID field MUST be equal to the length of the [Message ID](message-header.md#message-id) defined by the message header version.
         assert_eq!(
             pt, external_nonframed_pt(version),
             "{version:?} decrypt proves AAD used the {expected_len}-byte header message ID"
@@ -332,10 +319,6 @@ async fn test_body_aad_message_id_length_matches_header() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_sequence_number_nonframed_rejects_non_one() {
-    //= specification/data-format/message-body-aad.md#sequence-number
-    //= type=test
-    //= reason=Nonframed messages built with AAD seq != 1 fail to decrypt — proves the decryptor uses seq=1 exactly.
-    //# For [nonframed data](message-body.md#nonframed-data), the value of this field MUST be `1`.
     let pt = b"nonframed seq tamper test";
     for wrong_seq in [0u32, 2, 100, u32::MAX] {
         let msg = build_nonframed_message_with_aad_overrides(
@@ -345,6 +328,10 @@ async fn test_body_aad_sequence_number_nonframed_rejects_non_one() {
             pt.len() as u64,
         );
         let res = try_decrypt_nonframed(&msg).await;
+        //= specification/data-format/message-body-aad.md#sequence-number
+        //= type=test
+        //= reason=Nonframed messages built with AAD seq != 1 fail to decrypt — proves the decryptor uses seq=1 exactly.
+        //# For [nonframed data](message-body.md#nonframed-data), the value of this field MUST be `1`.
         assert!(
             res.is_err(),
             "nonframed message with AAD seq={wrong_seq} must fail authentication, but decrypted to {:?}",
@@ -355,10 +342,6 @@ async fn test_body_aad_sequence_number_nonframed_rejects_non_one() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_content_nonframed_rejects_wrong_content_string() {
-    //= specification/data-format/message-body-aad.md#body-aad-content
-    //= type=test
-    //= reason=Nonframed messages built with any content string other than the spec literal fail to decrypt — proves the decryptor uses the Single Block literal exactly.
-    //# - [Nonframed data](message-body.md#nonframed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
     let pt = b"nonframed content tamper test";
     for wrong_str in [
         &b"AWSKMSEncryptionClient Frame"[..],
@@ -373,6 +356,10 @@ async fn test_body_aad_content_nonframed_rejects_wrong_content_string() {
             pt.len() as u64,
         );
         let res = try_decrypt_nonframed(&msg).await;
+        //= specification/data-format/message-body-aad.md#body-aad-content
+        //= type=test
+        //= reason=Nonframed messages built with any content string other than the spec literal fail to decrypt — proves the decryptor uses the Single Block literal exactly.
+        //# - [Nonframed data](message-body.md#nonframed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
         assert!(
             res.is_err(),
             "nonframed message with AAD content {:?} must fail authentication, but decrypted to {:?}",
@@ -384,10 +371,6 @@ async fn test_body_aad_content_nonframed_rejects_wrong_content_string() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_content_length_nonframed_rejects_wrong_length() {
-    //= specification/data-format/message-body-aad.md#content-length
-    //= type=test
-    //= reason=Nonframed messages built with AAD content_length != plaintext length fail to decrypt — proves the decryptor uses the plaintext length exactly.
-    //# - For [nonframed data](message-body.md#nonframed-data), this value MUST equal the length, in bytes, of the plaintext data provided to the algorithm for encryption.
     let pt = b"nonframed length tamper test";
     for wrong_len in [0u64, (pt.len() as u64) + 1, (pt.len() as u64) - 1, u64::MAX] {
         let msg = build_nonframed_message_with_aad_overrides(
@@ -397,6 +380,10 @@ async fn test_body_aad_content_length_nonframed_rejects_wrong_length() {
             wrong_len,
         );
         let res = try_decrypt_nonframed(&msg).await;
+        //= specification/data-format/message-body-aad.md#content-length
+        //= type=test
+        //= reason=Nonframed messages built with AAD content_length != plaintext length fail to decrypt — proves the decryptor uses the plaintext length exactly.
+        //# - For [nonframed data](message-body.md#nonframed-data), this value MUST equal the length, in bytes, of the plaintext data provided to the algorithm for encryption.
         assert!(
             res.is_err(),
             "nonframed message with AAD content_length={wrong_len} must fail authentication, but decrypted to {:?}",
@@ -409,10 +396,6 @@ async fn test_body_aad_content_length_nonframed_rejects_wrong_length() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_sequence_number_framed_matches_frame_sequence_number() {
-    //= specification/data-format/message-body-aad.md#sequence-number
-    //= type=test
-    //= reason=Each frame's sequence-number field is written verbatim into the frame header; successful round-trip proves the AAD used the same sequence numbers.
-    //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
     let pt = vec![0xBBu8; 50];
     let frame_length = 10u32;
     let ct = encrypt_with_frame_length(&pt, frame_length).await;
@@ -421,6 +404,10 @@ async fn test_body_aad_sequence_number_framed_matches_frame_sequence_number() {
     assert_eq!(frames.len(), 5, "expected 5 frames (4 regular + 1 final)");
     for (i, frame) in frames.iter().enumerate() {
         let expected_seq = (i + 1) as u32;
+        //= specification/data-format/message-body-aad.md#sequence-number
+        //= type=test
+        //= reason=Each frame's sequence-number field is written verbatim into the frame header; successful round-trip proves the AAD used the same sequence numbers.
+        //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
         assert_eq!(
             frame.0, expected_seq,
             "frame {i}: sequence number field must equal frame's position in sequence"
@@ -432,10 +419,6 @@ async fn test_body_aad_sequence_number_framed_matches_frame_sequence_number() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_sequence_number_framed_rejects_tampered_seq() {
-    //= specification/data-format/message-body-aad.md#sequence-number
-    //= type=test
-    //= reason=Flipping a bit in the frame-header sequence-number field (not the content or tag) makes the decryptor reconstruct an AAD with the tampered seq, causing AES-GCM auth failure — proves the AAD used the frame's actual sequence number.
-    //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
     let pt = vec![0xCDu8; 25];
     let frame_length = 10u32;
     let ct = encrypt_with_frame_length(&pt, frame_length).await;
@@ -466,6 +449,10 @@ async fn test_body_aad_sequence_number_framed_rejects_tampered_seq() {
     let dec_input =
         DecryptInput::with_legacy_keyring(&tampered, EncryptionContext::new(), keyring);
     let res = decrypt(&dec_input).await;
+    //= specification/data-format/message-body-aad.md#sequence-number
+    //= type=test
+    //= reason=Flipping a bit in the frame-header sequence-number field (not the content or tag) makes the decryptor reconstruct an AAD with the tampered seq, causing AES-GCM auth failure — proves the AAD used the frame's actual sequence number.
+    //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
     assert!(
         res.is_err(),
         "tampering frame 1 sequence number from 1 to {tampered_seq} must cause authentication failure, but decryption succeeded"
@@ -474,17 +461,17 @@ async fn test_body_aad_sequence_number_framed_rejects_tampered_seq() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_content_length_regular_frame_equals_frame_length() {
-    //= specification/data-format/message-body-aad.md#content-length
-    //= type=test
-    //= reason=Regular frames carry exactly frame_length encrypted bytes; successful round-trip proves the AAD used frame_length.
-    //# - For [regular frames](message-body.md#regular-frame), this value MUST equal the value of the [frame length](message-header.md#frame-length) field in the message header.
     let pt = vec![0xDDu8; 30];
     let frame_length = 10u32;
     let ct = encrypt_with_frame_length(&pt, frame_length).await;
     let frames = parse_frames(&ct, frame_length);
-    // Regular frames: is_final=false.
     for (i, frame) in frames.iter().enumerate() {
+        // Regular frames: is_final=false.
         if !frame.4 {
+            //= specification/data-format/message-body-aad.md#content-length
+            //= type=test
+            //= reason=Regular frames carry exactly frame_length encrypted bytes; successful round-trip proves the AAD used frame_length.
+            //# - For [regular frames](message-body.md#regular-frame), this value MUST equal the value of the [frame length](message-header.md#frame-length) field in the message header.
             assert_eq!(
                 frame.2.len() as u32, frame_length,
                 "regular frame {i}: encrypted content length must equal frame_length"
@@ -497,15 +484,15 @@ async fn test_body_aad_content_length_regular_frame_equals_frame_length() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_content_length_final_frame_bounded_by_frame_length() {
-    //= specification/data-format/message-body-aad.md#content-length
-    //= type=test
-    //= reason=The final frame's explicit content_length field is bounded by frame_length; successful round-trip proves the AAD used that same bounded length.
-    //# - For the [final frame](message-body.md#final-frame), this value MUST be greater than or equal to 0 and less than or equal to the value of the [frame length](message-header.md#frame-length) field in the message header.
     let pt = vec![0xEEu8; 15];
     let frame_length = 10u32;
     let ct = encrypt_with_frame_length(&pt, frame_length).await;
     let final_content_len = final_frame_content_length(&ct)
         .expect("ciphertext must contain a final frame");
+    //= specification/data-format/message-body-aad.md#content-length
+    //= type=test
+    //= reason=The final frame's explicit content_length field is bounded by frame_length; successful round-trip proves the AAD used that same bounded length.
+    //# - For the [final frame](message-body.md#final-frame), this value MUST be greater than or equal to 0 and less than or equal to the value of the [frame length](message-header.md#frame-length) field in the message header.
     assert!(
         final_content_len <= frame_length,
         "final frame content_length ({final_content_len}) must be <= frame_length ({frame_length})"
@@ -518,16 +505,16 @@ async fn test_body_aad_content_length_final_frame_bounded_by_frame_length() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_content_length_framed_equals_per_frame_plaintext() {
-    //= specification/data-format/message-body-aad.md#content-length
-    //= type=test
-    //= reason=Sum of per-frame content lengths equals plaintext length; successful round-trip proves the AAD used per-frame plaintext lengths, not a single whole-message value.
-    //# - For [framed data](message-body.md#framed-data), this value MUST equal the length, in bytes, of the plaintext being encrypted in this frame.
     let pt = vec![0xCCu8; 25];
     let frame_length = 10u32;
     let ct = encrypt_with_frame_length(&pt, frame_length).await;
     let frames = parse_frames(&ct, frame_length);
     // Regular frames contribute frame_length; final frame contributes its remaining bytes.
     let total: usize = frames.iter().map(|f| f.2.len()).sum();
+    //= specification/data-format/message-body-aad.md#content-length
+    //= type=test
+    //= reason=Sum of per-frame content lengths equals plaintext length; successful round-trip proves the AAD used per-frame plaintext lengths, not a single whole-message value.
+    //# - For [framed data](message-body.md#framed-data), this value MUST equal the length, in bytes, of the plaintext being encrypted in this frame.
     assert_eq!(
         total, pt.len(),
         "sum of per-frame content lengths must equal plaintext length"
