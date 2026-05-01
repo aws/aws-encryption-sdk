@@ -112,6 +112,7 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
     //# The length of the serialized encrypted data key MUST be equal to the value of the [Encrypted Data Key Length](#encrypted-data-key-length) field.
     //
     //= specification/data-format/message-header.md#encrypted-data-key
+    //= type=implication
     //# The encrypted data key MUST be interpreted as bytes.
     write_bytes(w, &edk.ciphertext)
 }
@@ -214,6 +215,7 @@ pub(crate) fn read_edk(
     //# The length of the serialized encrypted data key MUST be equal to the value of the [Encrypted Data Key Length](#encrypted-data-key-length) field.
     //
     //= specification/data-format/message-header.md#encrypted-data-key
+    //= type=implication
     //# The encrypted data key MUST be interpreted as bytes.
     let ciphertext = read_seq_u16(r, raw)?;
 
