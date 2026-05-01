@@ -276,6 +276,11 @@ async fn test_body_aad_content_length_nonframed_rejects_tampered_length() {
             ErrorKind::CryptographicError,
             "{version:?}: expected ErrorKind::CryptographicError (AES-GCM tag mismatch), got {err:?}"
         );
+        let err_str = err.to_string();
+        assert!(
+            err_str.contains("Cryptographic"),
+            "{version:?}: expected display message to contain \"Cryptographic\", got: {err_str}"
+        );
     }
 }
 
@@ -348,6 +353,11 @@ async fn test_body_aad_sequence_number_framed_rejects_tampered_seq() {
         err.kind,
         ErrorKind::SerializationError,
         "expected ErrorKind::SerializationError after tampering frame 1's seq from 1 to {tampered_seq}, got {err:?}"
+    );
+    let err_str = err.to_string();
+    assert!(
+        err_str.contains("Sequence number out of order"),
+        "expected display message to contain \"Sequence number out of order\" after tampering frame 1's seq from 1 to {tampered_seq}, got: {err_str}"
     );
 }
 
