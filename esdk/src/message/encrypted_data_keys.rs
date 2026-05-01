@@ -47,7 +47,7 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
     //# Encrypted Data Key Length,
     //# and Encrypted Data Key.
 
-    // Key Provider ID Length and Key Provider ID
+    // Key Provider ID Length
 
     let kp_id_bytes = edk.key_provider_id.as_bytes();
 
@@ -61,6 +61,8 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
     //# The length of the serialized key provider ID length field MUST be 2 bytes.
     write_u16(w, kp_id_len)?;
 
+    // Key Provider ID
+
     //= specification/data-format/message-header.md#key-provider-id
     //= reason=The length field is derived from the same byte slice that is serialized, so they are equal by construction.
     //# The length of the serialized key provider ID MUST be equal to the value of the [Key Provider ID Length](#key-provider-id-length) field.
@@ -69,7 +71,7 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
     //# The key provider ID MUST be interpreted as UTF-8 encoded bytes.
     write_bytes(w, kp_id_bytes)?;
 
-    // Key Provider Information Length and Key Provider Information
+    // Key Provider Information Length
 
     //= specification/data-format/message-header.md#key-provider-information-length
     //# The key provider information length MUST be interpreted as a UInt16.
@@ -81,6 +83,8 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
     //# The length of the serialized key provider information length field MUST be 2 bytes.
     write_u16(w, kp_info_len)?;
 
+    // Key Provider Information
+
     //= specification/data-format/message-header.md#key-provider-information
     //= reason=The length field is derived from the same byte slice that is serialized, so they are equal by construction.
     //# The length of the serialized key provider information MUST be equal to the value of the [Key Provider Information Length](#key-provider-information-length) field.
@@ -89,7 +93,7 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
     //# The key provider information MUST be interpreted as bytes.
     write_bytes(w, &edk.key_provider_info)?;
 
-    // Encrypted Data Key Length and Encrypted Data Key
+    // Encrypted Data Key Length
 
     //= specification/data-format/message-header.md#encrypted-data-key-length
     //# The encrypted data key length MUST be interpreted as a UInt16.
@@ -101,6 +105,8 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
     //# The length of the serialized encrypted data key length field MUST be 2 bytes.
     write_u16(w, edk_len)?;
 
+    // Encrypted Data Key
+
     //= specification/data-format/message-header.md#encrypted-data-key
     //= reason=The length field is derived from the same byte slice that is serialized, so they are equal by construction.
     //# The length of the serialized encrypted data key MUST be equal to the value of the [Encrypted Data Key Length](#encrypted-data-key-length) field.
@@ -110,10 +116,6 @@ pub(crate) fn write_edk(w: &mut dyn SafeWrite, edk: &EncryptedDataKey) -> Result
     write_bytes(w, &edk.ciphertext)
 }
 
-//= specification/client-apis/decrypt.md#v1-header-deserialization
-//# - MUST deserialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
-//= specification/client-apis/decrypt.md#v2-header-deserialization
-//# - MUST deserialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
 pub(crate) fn read_edks(
     r: &mut dyn SafeRead,
     max_edks: Option<std::num::NonZeroUsize>,
