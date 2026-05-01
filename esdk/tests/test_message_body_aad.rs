@@ -49,6 +49,11 @@ const SINGLE_BLOCK_STR: &[u8] = b"AWSKMSEncryptionClient Single Block";
 // -----------------------------------------------------------------------------
 // External nonframed vector from aws-encryption-sdk-test-vectors.
 //
+// Why this vector (short): the Rust SDK's encrypt path cannot produce
+// nonframed messages, so to exercise the nonframed decrypt path end-to-end
+// we anchor on an externally produced one. See section (1) of the file
+// doc-comment above for the full rationale.
+//
 // Provenance:
 //   Repository: https://github.com/awslabs/aws-encryption-sdk-test-vectors
 //   Archive:    vectors/awses-decrypt/python-2.3.0.zip
