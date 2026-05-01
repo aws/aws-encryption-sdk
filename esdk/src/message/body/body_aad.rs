@@ -1,12 +1,16 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+
 //! Message body AAD (additional authenticated data) construction.
 
 #[doc(hidden)]
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum BodyAADContent {
+    /// Regular frame in framed data.
     RegularFrame,
+    /// Final frame in framed data.
     FinalFrame,
+    /// Whole-body nonframed data.
     SingleBlock,
 }
 
@@ -30,6 +34,11 @@ const fn body_aad_content_type_string(bc: BodyAADContent) -> &'static str {
     }
 }
 
+/// Build a body IV by writing `sequence_number` as big-endian bytes into the
+/// last 4 bytes of `result`. The caller is expected to hand in a zeroed
+/// buffer sized to the algorithm suite's IV length (12 bytes for all current
+/// suites), which yields the spec-defined IV: leading zero padding followed
+/// by the 4-byte sequence number.
 pub(crate) fn iv_seq(sequence_number: u32, result: &mut [u8]) {
     debug_assert!(
         result.len() >= 4,
@@ -40,8 +49,9 @@ pub(crate) fn iv_seq(sequence_number: u32, result: &mut [u8]) {
     result[pivot..].copy_from_slice(&sequence_number.to_be_bytes());
 }
 
-// Serializes the Message Body AAD
-
+// Serialize the Message Body AAD into `result`, per message-body-aad.md.
+// Called once per frame on encrypt and decrypt to build the AES-GCM AAD for
+// that frame (or for the whole body in the nonframed case).
 #[doc(hidden)]
 pub fn body_aad(
     message_id: &[u8],
