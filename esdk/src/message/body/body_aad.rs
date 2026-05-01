@@ -45,9 +45,7 @@ pub(crate) fn iv_seq(sequence_number: u32, result: &mut [u8]) {
     result[pivot..].copy_from_slice(&sequence_number.to_be_bytes());
 }
 
-// Serialize the Message Body AAD into `result`, per message-body-aad.md.
-// Called once per frame on encrypt and decrypt to build the AES-GCM AAD for
-// that frame (or for the whole body in the nonframed case).
+/// Serialize the Message Body AAD into `result`, per message-body-aad.md.
 #[doc(hidden)]
 pub fn body_aad(
     message_id: &[u8],
@@ -80,20 +78,28 @@ pub fn body_aad(
         message_id.len()
     );
 
+    // Message ID
+
     //= specification/data-format/message-body-aad.md#message-id
     //# This MUST be the [message ID](message-header.md#message-id) stored in the header of the message.
     result.extend_from_slice(message_id);
+
+    // Body AAD Content
 
     //= specification/data-format/message-body-aad.md#body-aad-content
     //= reason=Rust &str is guaranteed UTF-8; .as_bytes() produces the UTF-8 encoding
     //# The body AAD content value MUST be encoded as UTF-8 bytes.
     result.extend_from_slice(body_aad_content_type_string(bc).as_bytes());
 
+    // Sequence Number
+
     //= specification/data-format/message-body-aad.md#sequence-number
     //= reason=u32::to_be_bytes() produces exactly 4 bytes
     //# The length of the sequence number field MUST be 4 bytes.
     let seq_bytes = sequence_number.to_be_bytes();
     result.extend_from_slice(&seq_bytes);
+
+    // Content Length
 
     //= specification/data-format/message-body-aad.md#content-length
     //= reason=u64::to_be_bytes() produces exactly 8 bytes
