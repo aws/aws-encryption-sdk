@@ -953,7 +953,7 @@ pub async fn decrypt_external_nonframed_vector(version: Version) -> Vec<u8> {
 pub async fn try_decrypt_external_nonframed(
     version: Version,
     msg: &[u8],
-) -> Result<Vec<u8>, String> {
+) -> Result<Vec<u8>, Error> {
     let keyring = mpl()
         .create_raw_aes_keyring()
         .key_namespace("aws-raw-vectors-persistant")
@@ -971,10 +971,7 @@ pub async fn try_decrypt_external_nonframed(
         Version::V1 => EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
         Version::V2 => EsdkCommitmentPolicy::RequireEncryptRequireDecrypt,
     };
-    decrypt(&dec_input)
-        .await
-        .map(|o| o.plaintext)
-        .map_err(|e| e.to_string())
+    decrypt(&dec_input).await.map(|o| o.plaintext)
 }
 
 /// Parsed body fields from an external nonframed message. The nonframed body
