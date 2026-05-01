@@ -168,20 +168,16 @@ async fn test_nonframed_content_length_from_encrypted_content_length() {
     //= type=test
     //= reason=Successful nonframed decrypt proves the content length in AAD was determined from the nonframed data encrypted content length field
     //# If this is nonframed data, this MUST be determined by using the [nonframed data encrypted content length](../data-format/message-body.md#nonframed-data-encrypted-content-length).
-    let pt = b"nonframed content length test";
-    let ct = build_nonframed_message(pt);
-    // Verify the encrypted content length field is present and correct
-    let body = parse_nonframed_body(&ct);
+    // Defer to the external V2 nonframed vector from aws-encryption-sdk-test-vectors.
+    let body = parse_nonframed_body(EXTERNAL_V2_NONFRAMED_CT);
     assert_eq!(
         body.encrypted_content_length as usize,
-        pt.len(),
+        EXTERNAL_V2_NONFRAMED_PT.len(),
         "encrypted content length field must equal plaintext length"
     );
-    // Successful decrypt proves the content length was used correctly in AAD
-    let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt.to_vec());
+    // Successful decrypt proves the content length was used correctly in AAD.
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
+    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
 }
 
 #[tokio::test(flavor = "multi_thread")]

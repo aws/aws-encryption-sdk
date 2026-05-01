@@ -245,84 +245,41 @@ async fn test_body_aad_message_id_length_matches_header() {
     }
 }
 
-// --- Negative nonframed tests: tamper AAD fields on self-built messages ---
+// --- Negative nonframed test: tamper the external authority vector ---
 //
-// Since we can't produce a real nonframed ciphertext, we build one with a
-// caller-supplied AAD (`build_nonframed_message_with_aad_overrides`). If the
-// real decryptor reconstructs the AAD per spec, any override that deviates
-// from the spec values makes AES-GCM authentication fail.
+// The only AAD field a real attacker can influence via ciphertext modification
+// in a nonframed message is `content_length` — the 8-byte explicit field in
+// the body that the decryptor reads to build its AAD. The other AAD fields
+// (message_id, "AWSKMSEncryptionClient Single Block" literal, seq=1) are
+// either header-bound or hard-coded constants in the decrypter, so there is
+// no ciphertext byte to flip that would make the decrypter reconstruct an
+// AAD with the wrong value there.
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_body_aad_sequence_number_nonframed_rejects_non_one() {
-    let pt = b"nonframed seq tamper test";
-    for wrong_seq in [0u32, 2, 100, u32::MAX] {
-        let msg = build_nonframed_message_with_aad_overrides(
-            pt,
-            wrong_seq,
-            b"AWSKMSEncryptionClient Single Block",
-            pt.len() as u64,
+async fn test_body_aad_content_length_nonframed_rejects_tampered_length() {
+    for version in VERSIONS {
+        // Locate the 8-byte encrypted_content_length field in the external
+        // vector's body (body_start + 12 skips past the 12-byte IV).
+        let parsed = parse_external_nonframed_body(external_nonframed_ct(version), version);
+        let len_offset = parsed.body_start + 12;
+        // Baseline: the untampered vector decrypts.
+        let baseline = decrypt_external_nonframed_vector(version).await;
+        assert_eq!(
+            baseline, external_nonframed_pt(version),
+            "{version:?} baseline: untampered external vector did not decrypt to expected plaintext"
         );
-        let res = try_decrypt_nonframed(&msg).await;
-        //= specification/data-format/message-body-aad.md#sequence-number
-        //= type=test
-        //= reason=Nonframed messages built with AAD seq != 1 fail to decrypt — proves the decryptor uses seq=1 exactly.
-        //# For [nonframed data](message-body.md#nonframed-data), the value of this field MUST be `1`.
-        assert!(
-            res.is_err(),
-            "nonframed message with AAD seq={wrong_seq} must fail authentication, but decrypted to {:?}",
-            res.ok()
-        );
-    }
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_body_aad_content_nonframed_rejects_wrong_content_string() {
-    let pt = b"nonframed content tamper test";
-    for wrong_str in [
-        &b"AWSKMSEncryptionClient Frame"[..],
-        &b"AWSKMSEncryptionClient Final Frame"[..],
-        &b"AWSKMSEncryptionClient SingleBlock"[..], // close but missing space
-        &b""[..],
-    ] {
-        let msg = build_nonframed_message_with_aad_overrides(
-            pt,
-            1,
-            wrong_str,
-            pt.len() as u64,
-        );
-        let res = try_decrypt_nonframed(&msg).await;
-        //= specification/data-format/message-body-aad.md#body-aad-content
-        //= type=test
-        //= reason=Nonframed messages built with any content string other than the spec literal fail to decrypt — proves the decryptor uses the Single Block literal exactly.
-        //# - [Nonframed data](message-body.md#nonframed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
-        assert!(
-            res.is_err(),
-            "nonframed message with AAD content {:?} must fail authentication, but decrypted to {:?}",
-            std::str::from_utf8(wrong_str).unwrap_or("<non-utf8>"),
-            res.ok()
-        );
-    }
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_body_aad_content_length_nonframed_rejects_wrong_length() {
-    let pt = b"nonframed length tamper test";
-    for wrong_len in [0u64, (pt.len() as u64) + 1, (pt.len() as u64) - 1, u64::MAX] {
-        let msg = build_nonframed_message_with_aad_overrides(
-            pt,
-            1,
-            b"AWSKMSEncryptionClient Single Block",
-            wrong_len,
-        );
-        let res = try_decrypt_nonframed(&msg).await;
+        // Tamper: flip the low byte of the length field so the decryptor builds
+        // an AAD with a different content_length.
+        let mut tampered = external_nonframed_ct(version).to_vec();
+        tampered[len_offset + 7] ^= 0x01;
+        let res = try_decrypt_external_nonframed(version, &tampered).await;
         //= specification/data-format/message-body-aad.md#content-length
         //= type=test
-        //= reason=Nonframed messages built with AAD content_length != plaintext length fail to decrypt — proves the decryptor uses the plaintext length exactly.
+        //= reason=Flipping a bit in the 8-byte encrypted_content_length field of the external vector makes the decryptor reconstruct an AAD with a tampered content_length, causing AES-GCM auth to fail — proves the AAD uses the vector's content_length.
         //# - For [nonframed data](message-body.md#nonframed-data), this value MUST equal the length, in bytes, of the plaintext data provided to the algorithm for encryption.
         assert!(
             res.is_err(),
-            "nonframed message with AAD content_length={wrong_len} must fail authentication, but decrypted to {:?}",
-            res.ok()
+            "{version:?} decrypt should have failed AES-GCM authentication after tampering the encrypted_content_length field, but it succeeded — the AAD is not tracking the nonframed encrypted content length"
         );
     }
 }

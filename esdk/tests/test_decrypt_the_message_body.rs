@@ -10,120 +10,6 @@ use aws_esdk::*;
 use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use test_helpers::*;
 
-/// Build a complete nonframed encrypted message from scratch.
-///
-/// Uses AlgAes256GcmHkdfSha512CommitKey (0x0478), V2 header, NonFramed content type.
-/// The wrapping key is `[0u8; 32]` matching the test_keyring() configuration.
-fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
-    use aws_lc_rs::aead::{AES_256_GCM, Aad, LessSafeKey, Nonce, UnboundKey};
-    use aws_lc_rs::hkdf::{HKDF_SHA512, Salt};
-
-    let wrapping_key = [0u8; 32];
-    let plaintext_data_key = [0x42u8; 32];
-    let message_id = [0xAAu8; 32];
-    let edk_iv: [u8; 12] = [
-        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C,
-    ];
-    let alg_suite_id: [u8; 2] = [0x04, 0x78];
-
-    // --- Wrap the data key (raw AES keyring format) ---
-    // EDK AAD = serialized encryption context (empty → [])
-    let key = UnboundKey::new(&AES_256_GCM, &wrapping_key).unwrap();
-    let key = LessSafeKey::new(key);
-    let nonce = Nonce::try_assume_unique_for_key(&edk_iv).unwrap();
-    let mut edk_ct = plaintext_data_key.to_vec();
-    let edk_tag = key
-        .seal_in_place_separate_tag(nonce, Aad::from(&[] as &[u8]), &mut edk_ct)
-        .unwrap();
-    let mut edk_ciphertext = edk_ct;
-    edk_ciphertext.extend_from_slice(edk_tag.as_ref());
-
-    // EDK key_provider_info = key_name + tag_len_bits(u32be) + iv_len_bytes(u32be) + iv
-    let key_name = b"child0 Name";
-    let key_namespace = b"child0 Namespace";
-    let mut provider_info = Vec::new();
-    provider_info.extend_from_slice(key_name);
-    provider_info.extend_from_slice(&128u32.to_be_bytes()); // tag length in bits
-    provider_info.extend_from_slice(&12u32.to_be_bytes()); // IV length in bytes
-    provider_info.extend_from_slice(&edk_iv);
-
-    // --- Derive keys (V2 HKDF-SHA512 with commitment) ---
-    let salt = Salt::new(HKDF_SHA512, &message_id);
-    let prk = salt.extract(&plaintext_data_key);
-    let mut data_key = [0u8; 32];
-    let info_key: &[&[u8]] = &[&alg_suite_id, b"DERIVEKEY"];
-    let okm = prk.expand(info_key, &AES_256_GCM).unwrap();
-    okm.fill(&mut data_key).unwrap();
-    let mut commit_key = [0u8; 32];
-    let info_commit: &[&[u8]] = &[b"COMMITKEY"];
-    let okm2 = prk.expand(info_commit, &AES_256_GCM).unwrap();
-    okm2.fill(&mut commit_key).unwrap();
-
-    // --- Build V2 header body ---
-    let mut header_body = Vec::new();
-    header_body.push(0x02); // Version 2.0
-    header_body.extend_from_slice(&alg_suite_id); // Algorithm Suite ID
-    header_body.extend_from_slice(&message_id); // Message ID (32 bytes for V2)
-    header_body.extend_from_slice(&0u16.to_be_bytes()); // AAD: empty EC → key_value_pairs_length = 0
-    // EDKs: count(2) + 1 EDK
-    header_body.extend_from_slice(&1u16.to_be_bytes()); // EDK count = 1
-    // EDK entry: provider_id_len(2) + provider_id + provider_info_len(2) + provider_info + edk_len(2) + edk
-    header_body.extend_from_slice(&(key_namespace.len() as u16).to_be_bytes());
-    header_body.extend_from_slice(key_namespace);
-    header_body.extend_from_slice(&(provider_info.len() as u16).to_be_bytes());
-    header_body.extend_from_slice(&provider_info);
-    header_body.extend_from_slice(&(edk_ciphertext.len() as u16).to_be_bytes());
-    header_body.extend_from_slice(&edk_ciphertext);
-    header_body.push(0x01); // Content Type: NonFramed
-    header_body.extend_from_slice(&0u32.to_be_bytes()); // Frame Length: 0 for nonframed
-    header_body.extend_from_slice(&commit_key); // Algorithm Suite Data (commitment key)
-
-    // --- Compute header auth (V2: IV=zeros, AAD=header_body, empty ciphertext) ---
-    let header_auth_iv = [0u8; 12];
-    let key = UnboundKey::new(&AES_256_GCM, &data_key).unwrap();
-    let key = LessSafeKey::new(key);
-    let nonce = Nonce::try_assume_unique_for_key(&header_auth_iv).unwrap();
-    let mut empty = Vec::new();
-    let header_auth_tag = key
-        .seal_in_place_separate_tag(nonce, Aad::from(&header_body[..]), &mut empty)
-        .unwrap();
-
-    // --- Build nonframed body ---
-    // Body AAD: message_id + "AWSKMSEncryptionClient Single Block" + seq_num(4, be) + content_len(8, be)
-    let mut body_aad = Vec::new();
-    body_aad.extend_from_slice(&message_id);
-    body_aad.extend_from_slice(b"AWSKMSEncryptionClient Single Block");
-    body_aad.extend_from_slice(&1u32.to_be_bytes()); // sequence number = 1
-    body_aad.extend_from_slice(&(plaintext.len() as u64).to_be_bytes()); // content length
-
-    // Body IV: sequence number padded to 12 bytes with zeros
-    let mut body_iv = [0u8; 12];
-    body_iv[8..].copy_from_slice(&1u32.to_be_bytes());
-
-    // Encrypt the plaintext
-    let key = UnboundKey::new(&AES_256_GCM, &data_key).unwrap();
-    let key = LessSafeKey::new(key);
-    let nonce = Nonce::try_assume_unique_for_key(&body_iv).unwrap();
-    let mut body_ct = plaintext.to_vec();
-    let body_tag = key
-        .seal_in_place_separate_tag(nonce, Aad::from(&body_aad[..]), &mut body_ct)
-        .unwrap();
-
-    // --- Assemble the full message ---
-    let mut message = Vec::new();
-    // Header body
-    message.extend_from_slice(&header_body);
-    // Header auth (V2: tag only, no IV)
-    message.extend_from_slice(header_auth_tag.as_ref());
-    // nonframed body: IV(12) + content_length(8) + encrypted_content(N) + auth_tag(16)
-    message.extend_from_slice(&body_iv);
-    message.extend_from_slice(&(body_ct.len() as u64).to_be_bytes());
-    message.extend_from_slice(&body_ct);
-    message.extend_from_slice(body_tag.as_ref());
-
-    message
-}
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_regular_frame_deserialization() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
@@ -506,18 +392,12 @@ async fn test_decrypt_aad_constructed_correctly() {
 async fn test_decrypt_unframed_sequence_number_is_one() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
+    //= reason=Decrypt output of the external V2 nonframed vector matches the expected plaintext, which can only happen if the decryptor used sequence number 1 in its AAD reconstruction.
     //# If this is nonframed data, this value MUST be 1.
-    // Construct a nonframed message with sequence number 1 in the AAD.
-    // If a different sequence number were used, authenticated decryption would fail.
-    let pt = b"unframed seq test";
-    let ct = build_nonframed_message(pt);
-    let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap();
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
     assert_eq!(
-        result.plaintext,
-        pt.to_vec(),
-        "nonframed decrypt proves sequence number 1 is used in AAD"
+        result, EXTERNAL_V2_NONFRAMED_PT,
+        "nonframed decrypt output did not match expected plaintext — AAD sequence number is not 1"
     );
 }
 
@@ -656,17 +536,11 @@ async fn test_decrypt_nonframed_content_length_determines_aad() {
     //= specification/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# If this is nonframed data, this MUST be determined by using the [nonframed data encrypted content length](../data-format/message-body.md#nonframed-data-encrypted-content-length).
-    // The nonframed message was constructed with content_length = plaintext.len() in the AAD.
-    // If the wrong content length source were used, authenticated decryption would fail.
-    let pt = b"nonframed content length test";
-    let ct = build_nonframed_message(pt);
-    let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap();
+    // Successful decryption of the external V2 nonframed vector implies the decryptor's AAD content length matched what the external producer used — which, for that vector, is the nonframed data encrypted content length.
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
     assert_eq!(
-        result.plaintext,
-        pt.to_vec(),
-        "nonframed decrypt proves content length in AAD uses nonframed encrypted content length"
+        result, EXTERNAL_V2_NONFRAMED_PT,
+        "nonframed decrypt output did not match expected plaintext — AAD content length did not come from the nonframed encrypted content length field"
     );
 }
 
@@ -704,17 +578,13 @@ async fn test_decrypt_nonframed_deserialization_conforms_to_spec() {
     //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# Nonframed data deserialization MUST conform to the [Nonframed Data](../data-format/message-body.md#nonframed-data) specification.
-    // Construct a nonframed message from scratch and decrypt it.
-    // Successful decryption proves the nonframed deserialization conforms to the spec.
-    let pt = b"nonframed conformance test";
-    let ct = build_nonframed_message(pt);
-    let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap();
+    // Successful decryption of the external V2 nonframed vector (produced by
+    // aws-encryption-sdk-python 2.0.0) proves our nonframed deserialization
+    // conforms to the spec.
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
     assert_eq!(
-        result.plaintext,
-        pt.to_vec(),
-        "nonframed round-trip proves deserialization conforms to nonframed Data spec"
+        result, EXTERNAL_V2_NONFRAMED_PT,
+        "nonframed decrypt output did not match expected plaintext — nonframed deserialization does not conform to spec"
     );
 }
 
@@ -727,12 +597,8 @@ async fn test_unframed_decrypt_deserializes_and_decrypts() {
     //# [nonframed data specification](../data-format/message-body.md#nonframed-data)
     //# and decrypt it using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
-    let pt = b"nonframed appendix test";
-    let ct = build_nonframed_message(pt);
-    let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt.to_vec());
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
+    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -740,14 +606,10 @@ async fn test_unframed_decrypt_iv_from_body() {
     //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The IV MUST be the [IV](../data-format/message-body.md#nonframed-data-iv) deserialized from the message body.
-    // Successful authenticated decryption of a nonframed message proves the IV
-    // was correctly deserialized from the body and used for decryption.
-    let pt = b"iv test payload";
-    let ct = build_nonframed_message(pt);
-    let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt.to_vec());
+    // Successful authenticated decryption of the external V2 nonframed vector
+    // proves the IV was correctly deserialized from the body.
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
+    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -755,12 +617,8 @@ async fn test_unframed_decrypt_ciphertext_from_body() {
     //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The ciphertext MUST be the [Encrypted Content](../data-format/message-body.md#nonframed-data-encrypted-content) deserialized from the message body.
-    let pt = b"ciphertext input test";
-    let ct = build_nonframed_message(pt);
-    let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt.to_vec());
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
+    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -769,12 +627,8 @@ async fn test_unframed_decrypt_cipherkey_is_derived_data_key() {
     //= type=test
     //# - The cipherkey MUST be the derived data key.
     // Successful decryption proves the derived data key was used as the cipherkey.
-    let pt = b"cipherkey test";
-    let ct = build_nonframed_message(pt);
-    let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt.to_vec());
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
+    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -782,12 +636,8 @@ async fn test_unframed_decrypt_tag_from_body() {
     //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The tag MUST be the [Authentication Tag](../data-format/message-body.md#nonframed-data-authentication-tag) deserialized from the message body.
-    let pt = b"auth tag test";
-    let ct = build_nonframed_message(pt);
-    let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt.to_vec());
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
+    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -796,14 +646,12 @@ async fn test_unframed_decrypt_aad_body_aad_content() {
     //= type=test
     //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST use the value for
     //# [nonframed data](../data-format/message-body-aad.md#body-aad-content).
-    // The nonframed message was constructed with "AWSKMSEncryptionClient Single Block".
-    // If the wrong AAD content string were used, authenticated decryption would fail.
-    let pt = b"aad content test";
-    let ct = build_nonframed_message(pt);
-    let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt.to_vec());
+    // External V2 nonframed vector was produced with the spec-required
+    // "AWSKMSEncryptionClient Single Block" body AAD content. If our
+    // decryptor reconstructed a different content value, AES-GCM auth
+    // would fail and decryption would not return the expected plaintext.
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
+    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -811,14 +659,9 @@ async fn test_unframed_decrypt_aad_sequence_number_is_one() {
     //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be `1`.
-    // The nonframed message was constructed with sequence number 1 in the AAD.
-    // If a different sequence number were used, authenticated decryption would fail.
-    let pt = b"seq num one test";
-    let ct = build_nonframed_message(pt);
-    let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt.to_vec());
+    // External V2 nonframed vector was produced with sequence number 1 in the AAD.
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
+    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -826,14 +669,9 @@ async fn test_unframed_decrypt_aad_content_length_equals_encrypted_content_lengt
     //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The [content length](../data-format/message-body-aad.md#content-length) MUST equal the length of the plaintext.
-    // The nonframed message was constructed with content_length = plaintext.len() in the AAD.
-    // If the wrong content length were used, authenticated decryption would fail.
-    let pt = b"content length test payload";
-    let ct = build_nonframed_message(pt);
-    let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt.to_vec());
+    // External V2 nonframed vector's AAD content_length equals its plaintext length.
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
+    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -841,15 +679,12 @@ async fn test_unframed_decrypt_fails_on_tampered_auth_tag() {
     //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# If this decryption fails, this operation MUST immediately halt and fail.
-    // Tamper with the authentication tag in a nonframed message. Decrypt must fail.
-    let pt = b"tamper test";
-    let mut ct = build_nonframed_message(pt);
+    // Tamper with the authentication tag in the external V2 nonframed vector. Decrypt must fail.
+    let mut ct = EXTERNAL_V2_NONFRAMED_CT.to_vec();
     // The auth tag is the last 16 bytes of the message
     let last = ct.len() - 1;
     ct[last] ^= 0xFF;
-    let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await;
+    let result = try_decrypt_external_nonframed(Version::V2, &ct).await;
     assert!(
         result.is_err(),
         "tampered nonframed auth tag must cause immediate decryption failure"
@@ -862,12 +697,8 @@ async fn test_unframed_decrypt_aad_constructed_correctly() {
     //= type=test
     //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
     //# constructed with:
-    // Successful authenticated decryption of a nonframed message proves the AAD
-    // was constructed correctly per the message-body-aad spec.
-    let pt = b"aad construction test";
-    let ct = build_nonframed_message(pt);
-    let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt.to_vec());
+    // Successful authenticated decryption of the external V2 nonframed vector
+    // proves the AAD was constructed correctly per the message-body-aad spec.
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
+    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
 }

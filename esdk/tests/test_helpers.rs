@@ -790,133 +790,6 @@ pub fn parse_edk_section(ct: &[u8], version: Version) -> ParsedEdkSection {
     }
 }
 
-/// Build a complete nonframed encrypted message from scratch.
-///
-/// Uses AlgAes256GcmHkdfSha512CommitKey (0x0478), V2 header, NonFramed content type.
-/// The wrapping key is `[0u8; 32]` matching the test_keyring() configuration.
-pub fn build_nonframed_message(plaintext: &[u8]) -> Vec<u8> {
-    build_nonframed_message_with_aad_overrides(
-        plaintext,
-        /* aad_seq_number */ 1,
-        /* aad_content_str */ b"AWSKMSEncryptionClient Single Block",
-        /* aad_content_length */ plaintext.len() as u64,
-    )
-}
-
-/// Build a complete nonframed encrypted message where the AAD fed to AES-GCM
-/// can be independently controlled from what the spec requires. Used for
-/// negative-tampering tests: if the real decryptor reconstructs its AAD
-/// strictly per spec (message_id + "AWSKMSEncryptionClient Single Block" +
-/// seq=1 + plaintext_length), then any message produced with overridden
-/// AAD fields will fail authentication. The body IV is always the spec IV
-/// (sequence 1 padded to 12 bytes) so the decryptor's IV reconstruction
-/// matches; only the AAD differs.
-pub fn build_nonframed_message_with_aad_overrides(
-    plaintext: &[u8],
-    aad_seq_number: u32,
-    aad_content_str: &[u8],
-    aad_content_length: u64,
-) -> Vec<u8> {
-    use aws_lc_rs::aead::{AES_256_GCM, Aad, LessSafeKey, Nonce, UnboundKey};
-    use aws_lc_rs::hkdf::{HKDF_SHA512, Salt};
-
-    let wrapping_key = [0u8; 32];
-    let plaintext_data_key = [0x42u8; 32];
-    let message_id = [0xAAu8; 32];
-    let edk_iv: [u8; 12] = [
-        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C,
-    ];
-    let alg_suite_id: [u8; 2] = [0x04, 0x78];
-
-    // Wrap the data key (raw AES keyring format)
-    let key = UnboundKey::new(&AES_256_GCM, &wrapping_key).unwrap();
-    let key = LessSafeKey::new(key);
-    let nonce = Nonce::try_assume_unique_for_key(&edk_iv).unwrap();
-    let mut edk_ct = plaintext_data_key.to_vec();
-    let edk_tag = key
-        .seal_in_place_separate_tag(nonce, Aad::from(&[] as &[u8]), &mut edk_ct)
-        .unwrap();
-    let mut edk_ciphertext = edk_ct;
-    edk_ciphertext.extend_from_slice(edk_tag.as_ref());
-
-    let key_name = b"child0 Name";
-    let key_namespace = b"child0 Namespace";
-    let mut provider_info = Vec::new();
-    provider_info.extend_from_slice(key_name);
-    provider_info.extend_from_slice(&128u32.to_be_bytes());
-    provider_info.extend_from_slice(&12u32.to_be_bytes());
-    provider_info.extend_from_slice(&edk_iv);
-
-    // Derive keys (V2 HKDF-SHA512 with commitment)
-    let salt = Salt::new(HKDF_SHA512, &message_id);
-    let prk = salt.extract(&plaintext_data_key);
-    let mut data_key = [0u8; 32];
-    let info_key: &[&[u8]] = &[&alg_suite_id, b"DERIVEKEY"];
-    let okm = prk.expand(info_key, &AES_256_GCM).unwrap();
-    okm.fill(&mut data_key).unwrap();
-    let mut commit_key = [0u8; 32];
-    let info_commit: &[&[u8]] = &[b"COMMITKEY"];
-    let okm2 = prk.expand(info_commit, &AES_256_GCM).unwrap();
-    okm2.fill(&mut commit_key).unwrap();
-
-    // Build V2 header body
-    let mut header_body = Vec::new();
-    header_body.push(0x02);
-    header_body.extend_from_slice(&alg_suite_id);
-    header_body.extend_from_slice(&message_id);
-    header_body.extend_from_slice(&0u16.to_be_bytes());
-    header_body.extend_from_slice(&1u16.to_be_bytes());
-    header_body.extend_from_slice(&(key_namespace.len() as u16).to_be_bytes());
-    header_body.extend_from_slice(key_namespace);
-    header_body.extend_from_slice(&(provider_info.len() as u16).to_be_bytes());
-    header_body.extend_from_slice(&provider_info);
-    header_body.extend_from_slice(&(edk_ciphertext.len() as u16).to_be_bytes());
-    header_body.extend_from_slice(&edk_ciphertext);
-    header_body.push(0x01); // Content Type: NonFramed
-    header_body.extend_from_slice(&0u32.to_be_bytes()); // Frame Length: 0 for nonframed
-    header_body.extend_from_slice(&commit_key);
-
-    // Compute header auth
-    let header_auth_iv = [0u8; 12];
-    let key = UnboundKey::new(&AES_256_GCM, &data_key).unwrap();
-    let key = LessSafeKey::new(key);
-    let nonce = Nonce::try_assume_unique_for_key(&header_auth_iv).unwrap();
-    let mut empty = Vec::new();
-    let header_auth_tag = key
-        .seal_in_place_separate_tag(nonce, Aad::from(&header_body[..]), &mut empty)
-        .unwrap();
-
-    // Build nonframed body
-    let mut body_aad = Vec::new();
-    body_aad.extend_from_slice(&message_id);
-    body_aad.extend_from_slice(aad_content_str);
-    body_aad.extend_from_slice(&aad_seq_number.to_be_bytes());
-    body_aad.extend_from_slice(&aad_content_length.to_be_bytes());
-
-    let mut body_iv = [0u8; 12];
-    body_iv[8..].copy_from_slice(&1u32.to_be_bytes());
-
-    let key = UnboundKey::new(&AES_256_GCM, &data_key).unwrap();
-    let key = LessSafeKey::new(key);
-    let nonce = Nonce::try_assume_unique_for_key(&body_iv).unwrap();
-    let mut body_ct = plaintext.to_vec();
-    let body_tag = key
-        .seal_in_place_separate_tag(nonce, Aad::from(&body_aad[..]), &mut body_ct)
-        .unwrap();
-
-    // Assemble the full message
-    let mut message = Vec::new();
-    message.extend_from_slice(&header_body);
-    message.extend_from_slice(header_auth_tag.as_ref());
-    // nonframed body: IV(12) + content_length(8) + encrypted_content(N) + auth_tag(16)
-    message.extend_from_slice(&body_iv);
-    message.extend_from_slice(&(body_ct.len() as u64).to_be_bytes());
-    message.extend_from_slice(&body_ct);
-    message.extend_from_slice(body_tag.as_ref());
-
-    message
-}
-
 /// Parsed fields from a nonframed message body.
 pub struct NonframedBody {
     pub body_start: usize,
@@ -989,23 +862,6 @@ pub fn parse_nonframed_body(msg: &[u8]) -> NonframedBody {
         encrypted_content,
         auth_tag,
     }
-}
-
-/// Decrypt a nonframed message and return the plaintext.
-pub async fn decrypt_nonframed(msg: &[u8]) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut dec_input = DecryptInput::with_legacy_keyring(msg, EncryptionContext::new(), keyring);
-    dec_input.commitment_policy = EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
-    decrypt(&dec_input).await.unwrap().plaintext
-}
-
-/// Attempt to decrypt a nonframed message, returning the DecryptOutput or an error string.
-/// Used for negative tests that expect authentication failure.
-pub async fn try_decrypt_nonframed(msg: &[u8]) -> Result<Vec<u8>, String> {
-    let keyring = test_keyring().await;
-    let mut dec_input = DecryptInput::with_legacy_keyring(msg, EncryptionContext::new(), keyring);
-    dec_input.commitment_policy = EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
-    decrypt(&dec_input).await.map(|o| o.plaintext).map_err(|e| e.to_string())
 }
 
 // -----------------------------------------------------------------------------
@@ -1085,6 +941,19 @@ pub fn external_nonframed_pt(version: Version) -> &'static [u8] {
 /// the real SDK path. Returns the decrypted plaintext. Panics on failure —
 /// decryption succeeding IS the positive evidence callers rely on.
 pub async fn decrypt_external_nonframed_vector(version: Version) -> Vec<u8> {
+    try_decrypt_external_nonframed(version, external_nonframed_ct(version))
+        .await
+        .expect("external nonframed vector must decrypt successfully")
+}
+
+/// Attempt to decrypt a (possibly tampered) nonframed message using the
+/// external-vector keyring appropriate for `version`. Used for negative
+/// tampering tests that flip bytes in an external authority vector and expect
+/// AES-GCM authentication to fail.
+pub async fn try_decrypt_external_nonframed(
+    version: Version,
+    msg: &[u8],
+) -> Result<Vec<u8>, String> {
     let keyring = mpl()
         .create_raw_aes_keyring()
         .key_namespace("aws-raw-vectors-persistant")
@@ -1095,11 +964,8 @@ pub async fn decrypt_external_nonframed_vector(version: Version) -> Vec<u8> {
         .await
         .unwrap();
 
-    let mut dec_input = DecryptInput::with_legacy_keyring(
-        external_nonframed_ct(version),
-        EncryptionContext::new(),
-        keyring,
-    );
+    let mut dec_input =
+        DecryptInput::with_legacy_keyring(msg, EncryptionContext::new(), keyring);
     // V1 suite 0x0178 is non-committing; V2 suite 0x0478 is committing.
     dec_input.commitment_policy = match version {
         Version::V1 => EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
@@ -1107,14 +973,16 @@ pub async fn decrypt_external_nonframed_vector(version: Version) -> Vec<u8> {
     };
     decrypt(&dec_input)
         .await
-        .expect("external nonframed vector must decrypt successfully")
-        .plaintext
+        .map(|o| o.plaintext)
+        .map_err(|e| e.to_string())
 }
 
 /// Parsed body fields from an external nonframed message. The nonframed body
 /// layout is identical between V1 and V2 (IV(12) + ContentLength(8) +
 /// Content(N) + Tag(16)); only the preceding header differs.
 pub struct ExternalNonframedBody {
+    /// Byte offset in the full message where the body's IV begins.
+    pub body_start: usize,
     pub iv: [u8; 12],
     pub encrypted_content_length: u64,
 }
@@ -1168,6 +1036,7 @@ pub fn parse_external_nonframed_body(msg: &[u8], version: Version) -> ExternalNo
     pos += TAG_LEN; // Header Auth Tag
 
     // Body
+    let body_start = pos;
     let mut iv = [0u8; 12];
     iv.copy_from_slice(&msg[pos..pos + IV_LEN]);
     pos += IV_LEN;
@@ -1176,6 +1045,7 @@ pub fn parse_external_nonframed_body(msg: &[u8], version: Version) -> ExternalNo
         msg[pos + 4], msg[pos + 5], msg[pos + 6], msg[pos + 7],
     ]);
     ExternalNonframedBody {
+        body_start,
         iv,
         encrypted_content_length,
     }

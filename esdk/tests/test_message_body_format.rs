@@ -12,27 +12,25 @@ use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use test_helpers::*;
 
 // The ESDK always uses framed encryption, so nonframed deserialization
-// is tested by the decrypt path using build_nonframed_message().
+// is exercised by parsing/decrypting the external V2 nonframed vector from
+// aws-encryption-sdk-test-vectors.
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_nonframed_data_serialization_order() {
     //= specification/data-format/message-body.md#nonframed-data
     //= type=test
-    //= reason=builds a nonframed message and verifies fields appear in order: IV, content length, content, auth tag
+    //= reason=parsing the external V2 nonframed vector sequentially reads IV, content length, content, and auth tag; successful decrypt confirms the fields are consumed in order.
     //# Nonframed data MUST consist of, in order,
     //# IV,
     //# Encrypted Content Length,
     //# Encrypted Content,
     //# and Authentication Tag.
-    let pt = b"nonframed order test";
-    let msg = build_nonframed_message(pt);
-    let body = parse_nonframed_body(&msg);
-    // Fields are parsed sequentially from body_start: IV(12) + ContentLen(8) + Content(N) + Tag(16)
-    // If order were wrong, parse_nonframed_body would read garbage and decrypt would fail.
-    let result = decrypt_nonframed(&msg).await;
+    let msg = EXTERNAL_V2_NONFRAMED_CT;
+    let body = parse_nonframed_body(msg);
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
     assert_eq!(
-        result, pt,
-        "round-trip proves nonframed body fields are in correct order"
+        result, EXTERNAL_V2_NONFRAMED_PT,
+        "decrypt output did not match expected plaintext — nonframed body fields are not being consumed in the spec-required order"
     );
     // Also verify the parsed field sizes are consistent
     assert_eq!(body.iv.len(), IV_LEN);
@@ -49,8 +47,7 @@ async fn test_nonframed_iv_length() {
     //= specification/data-format/message-body.md#nonframed-data-iv
     //= type=test
     //# The length of the IV field MUST be [IV Length](message-header.md#iv-length) bytes.
-    let msg = build_nonframed_message(b"iv length test");
-    let body = parse_nonframed_body(&msg);
+    let body = parse_nonframed_body(EXTERNAL_V2_NONFRAMED_CT);
     assert_eq!(
         body.iv.len(),
         IV_LEN,
@@ -62,19 +59,17 @@ async fn test_nonframed_iv_length() {
 async fn test_nonframed_iv_interpreted_as_bytes() {
     //= specification/data-format/message-body.md#nonframed-data-iv
     //= type=test
-    //= reason=successful authenticated decryption proves the IV bytes were correctly interpreted
+    //= reason=successful authenticated decryption of the external V2 nonframed vector proves the IV bytes were correctly interpreted.
     //# The IV MUST be interpreted as bytes.
     //
     //= specification/data-format/message-body.md#nonframed-data-iv
     //= type=test
     //= reason=nonframed messages contain a single IV, so uniqueness within the message is trivially satisfied
     //# A generated IV MUST be a unique IV within the message.
-    let pt = b"iv bytes test";
-    let msg = build_nonframed_message(pt);
-    let result = decrypt_nonframed(&msg).await;
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
     assert_eq!(
-        result, pt,
-        "round-trip proves nonframed IV is interpreted as bytes"
+        result, EXTERNAL_V2_NONFRAMED_PT,
+        "decrypt output did not match expected plaintext — nonframed IV was not interpreted as bytes"
     );
 }
 
@@ -82,15 +77,12 @@ async fn test_nonframed_iv_interpreted_as_bytes() {
 async fn test_nonframed_encrypted_content_length_uint64() {
     //= specification/data-format/message-body.md#nonframed-data-encrypted-content-length
     //= type=test
-    //= reason=parses the 8-byte content length field as big-endian u64 and verifies it matches the plaintext length
+    //= reason=parses the 8-byte content length field of the external V2 nonframed vector as big-endian u64 and verifies it matches the known plaintext length.
     //# The encrypted content length MUST be interpreted as a UInt64.
-    let pt = b"content length uint64 test";
-    let msg = build_nonframed_message(pt);
-    let body = parse_nonframed_body(&msg);
-    // The content length is read as u64 from 8 big-endian bytes
+    let body = parse_nonframed_body(EXTERNAL_V2_NONFRAMED_CT);
     assert_eq!(
         body.encrypted_content_length,
-        pt.len() as u64,
+        EXTERNAL_V2_NONFRAMED_PT.len() as u64,
         "encrypted content length interpreted as UInt64 must equal plaintext length"
     );
 }
@@ -99,12 +91,10 @@ async fn test_nonframed_encrypted_content_length_uint64() {
 async fn test_nonframed_encrypted_content_length_max_value() {
     //= specification/data-format/message-body.md#nonframed-data-encrypted-content-length
     //= type=test
-    //= reason=verifies the content length in a valid message is within the 2^36-32 limit
+    //= reason=verifies the content length in the external V2 nonframed vector is within the 2^36-32 limit.
     //# The value of this field MUST NOT be greater than `2^36 - 32`, or 64 gibibytes (64 GiB),
     //# due to restrictions imposed by the [implemented algorithms](../framework/algorithm-suites.md).
-    let pt = b"max value test";
-    let msg = build_nonframed_message(pt);
-    let body = parse_nonframed_body(&msg);
+    let body = parse_nonframed_body(EXTERNAL_V2_NONFRAMED_CT);
     let max_allowed: u64 = (1u64 << 36) - 32;
     assert!(
         body.encrypted_content_length <= max_allowed,
@@ -119,8 +109,7 @@ async fn test_nonframed_encrypted_content_length_field_8_bytes() {
     //= specification/data-format/message-body.md#nonframed-data-encrypted-content-length
     //= type=test
     //# The length of the Encrypted Content Length field MUST be 8 bytes.
-    let msg = build_nonframed_message(b"8 bytes test");
-    let body = parse_nonframed_body(&msg);
+    let body = parse_nonframed_body(EXTERNAL_V2_NONFRAMED_CT);
     assert_eq!(
         body.encrypted_content_length_bytes.len(),
         8,
@@ -132,11 +121,9 @@ async fn test_nonframed_encrypted_content_length_field_8_bytes() {
 async fn test_nonframed_encrypted_content_length_matches_content() {
     //= specification/data-format/message-body.md#nonframed-data-encrypted-content
     //= type=test
-    //= reason=parses the content length field and verifies the encrypted content byte count matches
+    //= reason=parses the external V2 nonframed vector's content length field and verifies the encrypted content byte count matches.
     //# The length of the serialized encrypted content field MUST be equal to the value of the [Encrypted Content Length](#nonframed-data-encrypted-content-length) field.
-    let pt = b"content length match test";
-    let msg = build_nonframed_message(pt);
-    let body = parse_nonframed_body(&msg);
+    let body = parse_nonframed_body(EXTERNAL_V2_NONFRAMED_CT);
     assert_eq!(
         body.encrypted_content.len(),
         body.encrypted_content_length as usize,
@@ -148,14 +135,12 @@ async fn test_nonframed_encrypted_content_length_matches_content() {
 async fn test_nonframed_encrypted_content_interpreted_as_bytes() {
     //= specification/data-format/message-body.md#nonframed-data-encrypted-content
     //= type=test
-    //= reason=successful authenticated decryption proves the encrypted content bytes were correctly interpreted
+    //= reason=successful authenticated decryption of the external V2 nonframed vector proves the encrypted content bytes were correctly interpreted.
     //# The encrypted content value MUST be interpreted as bytes.
-    let pt = b"content bytes test";
-    let msg = build_nonframed_message(pt);
-    let result = decrypt_nonframed(&msg).await;
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
     assert_eq!(
-        result, pt,
-        "round-trip proves nonframed encrypted content is interpreted as bytes"
+        result, EXTERNAL_V2_NONFRAMED_PT,
+        "decrypt output did not match expected plaintext — nonframed encrypted content was not interpreted as bytes"
     );
 }
 
@@ -163,10 +148,9 @@ async fn test_nonframed_encrypted_content_interpreted_as_bytes() {
 async fn test_nonframed_auth_tag_length() {
     //= specification/data-format/message-body.md#nonframed-data-authentication-tag
     //= type=test
-    //= reason=parses the auth tag from the nonframed body and verifies its length matches the algorithm suite's tag length (16 bytes for AES-256-GCM)
+    //= reason=parses the auth tag from the external V2 nonframed vector and verifies its length matches the algorithm suite's tag length (16 bytes for AES-256-GCM).
     //# The length of the serialized authentication tag field MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
-    let msg = build_nonframed_message(b"auth tag length test");
-    let body = parse_nonframed_body(&msg);
+    let body = parse_nonframed_body(EXTERNAL_V2_NONFRAMED_CT);
     assert_eq!(
         body.auth_tag.len(),
         TAG_LEN,
@@ -178,14 +162,12 @@ async fn test_nonframed_auth_tag_length() {
 async fn test_nonframed_auth_tag_interpreted_as_bytes() {
     //= specification/data-format/message-body.md#nonframed-data-authentication-tag
     //= type=test
-    //= reason=successful authenticated decryption proves the auth tag bytes were correctly interpreted
+    //= reason=successful authenticated decryption of the external V2 nonframed vector proves the auth tag bytes were correctly interpreted.
     //# The authentication tag value MUST be interpreted as bytes.
-    let pt = b"auth tag bytes test";
-    let msg = build_nonframed_message(pt);
-    let result = decrypt_nonframed(&msg).await;
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
     assert_eq!(
-        result, pt,
-        "round-trip proves nonframed auth tag is interpreted as bytes"
+        result, EXTERNAL_V2_NONFRAMED_PT,
+        "decrypt output did not match expected plaintext — nonframed auth tag was not interpreted as bytes"
     );
 }
 
