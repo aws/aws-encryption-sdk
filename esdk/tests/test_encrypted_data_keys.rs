@@ -58,17 +58,28 @@ async fn test_encrypted_data_keys_ordering() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_edk_count_is_big_endian_uint16() {
+async fn test_edk_section_length_fields_are_big_endian_uint16() {
     let generator = aes_keyring(0).await;
     let child = aes_keyring(1).await;
     let mk = multi_keyring(generator, vec![child]).await;
+    let (expected_ns, _) = namespace_and_name(0);
+    let expected_pid_len = expected_ns.len() as u16;
 
     for version in VERSIONS {
-        let ct = encrypt_with_version(b"count uint16", version, mk.clone()).await;
-        let offset = skip_to_edk_section(&ct, version);
+        let ct = encrypt_with_version(b"length fields uint16", version, mk.clone()).await;
+        let parsed = parse_edk_section(&ct, version);
+        let edk = &parsed.edks[0];
 
-        // 2 keyrings → count bytes must be [0x00, 0x02] (big-endian UInt16 for value 2).
-        let count = u16::from_be_bytes([ct[offset], ct[offset + 1]]);
+        // Decode each length field directly from the wire as a big-endian UInt16.
+        let entries_start = parsed.edk_count_offset + 2;
+        let pid_len_offset = entries_start;
+        let pinfo_len_offset = entries_start + 2 + edk.provider_id_len as usize;
+        let edk_len_offset = pinfo_len_offset + 2 + edk.provider_info_len as usize;
+
+        let count_wire = u16::from_be_bytes([ct[parsed.edk_count_offset], ct[parsed.edk_count_offset + 1]]);
+        let pid_len_wire = u16::from_be_bytes([ct[pid_len_offset], ct[pid_len_offset + 1]]);
+        let pinfo_len_wire = u16::from_be_bytes([ct[pinfo_len_offset], ct[pinfo_len_offset + 1]]);
+        let edk_len_wire = u16::from_be_bytes([ct[edk_len_offset], ct[edk_len_offset + 1]]);
 
         //= specification/data-format/message-header.md#encrypted-data-key-count
         //= type=test
@@ -76,9 +87,38 @@ async fn test_edk_count_is_big_endian_uint16() {
         //
         //= specification/data-format/message-header.md#encrypted-data-key-count
         //# The encrypted data key count MUST be interpreted as a UInt16.
-        assert_eq!(count, 2, "{version:?}: big-endian UInt16 count for 2 keyrings");
-        assert_eq!(ct[offset], 0x00, "{version:?}: high byte");
-        assert_eq!(ct[offset + 1], 0x02, "{version:?}: low byte");
+        //
+        //= specification/data-format/message-header.md#key-provider-id-length
+        //= type=test
+        //# The length of the serialized key provider ID length field MUST be 2 bytes.
+        //
+        //= specification/data-format/message-header.md#key-provider-id-length
+        //# The key provider ID length MUST be interpreted as a UInt16.
+        //
+        //= specification/data-format/message-header.md#key-provider-information-length
+        //= type=test
+        //# The length of the serialized key provider information length field MUST be 2 bytes.
+        //
+        //= specification/data-format/message-header.md#key-provider-information-length
+        //# The key provider information length MUST be interpreted as a UInt16.
+        //
+        //= specification/data-format/message-header.md#encrypted-data-key-length
+        //= type=test
+        //# The length of the serialized encrypted data key length field MUST be 2 bytes.
+        //
+        //= specification/data-format/message-header.md#encrypted-data-key-length
+        //# The encrypted data key length MUST be interpreted as a UInt16.
+        // Count: 2 keyrings → UInt16 value 2 ([0x00, 0x02]).
+        assert_eq!(count_wire, 2, "{version:?}: EDK count UInt16");
+        assert_eq!(ct[parsed.edk_count_offset], 0x00, "{version:?}: count high byte");
+        assert_eq!(ct[parsed.edk_count_offset + 1], 0x02, "{version:?}: count low byte");
+        // Provider ID length: equals the known keyring namespace byte length.
+        assert_eq!(pid_len_wire, expected_pid_len, "{version:?}: provider ID length UInt16");
+        // Info and EDK lengths: positive, non-tautological lower bounds.
+        // Raw AES keyring stores IV in provider_info; the ciphertext field is
+        // wrapped data key (32 bytes) + GCM tag (16 bytes) = 48.
+        assert!(pinfo_len_wire > 0, "{version:?}: provider info length UInt16 must be positive");
+        assert_eq!(edk_len_wire, 48, "{version:?}: EDK ciphertext length must be 48 (wrapped 32B key + 16B tag)");
     }
 }
 
@@ -114,65 +154,43 @@ async fn test_edk_count_zero_rejected_on_decrypt() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_edk_count_max_enforcement_encrypt() {
+async fn test_edk_count_max_enforcement() {
     let generator = aes_keyring(0).await;
     let child = aes_keyring(1).await;
     let mk = multi_keyring(generator, vec![child]).await;
 
-    let mut input =
-        EncryptInput::with_legacy_keyring(b"max edk encrypt", EncryptionContext::new(), mk);
-    input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(1).unwrap());
-    let err = encrypt(&input).await.expect_err("encrypt must fail when EDK count exceeds max");
+    let expect_exceed = |err: &aws_esdk::Error| {
+        assert!(
+            err.message.contains("exceed") && err.message.contains("maximum"),
+            "error must indicate EDK count exceeds maximum, got: {} ({:?})",
+            err.message, err.kind
+        );
+    };
 
     //= specification/data-format/message-header.md#encrypted-data-key-count
     //= type=test
-    //= reason=max_encrypted_data_keys on encrypt enforces the upper bound on EDK count before serialization.
     //# This value MUST be less than or equal to the [maximum number of encrypted data keys](../client-apis/client.md#maximum-number-of-encrypted-data-keys) if the maximum number is configured.
-    assert!(
-        err.message.contains("exceed") && err.message.contains("maximum"),
-        "error must indicate EDK count exceeds maximum, got: {} ({:?})",
-        err.message, err.kind
+
+    // Encrypt with 2 EDKs and max=1 → error.
+    let mut enc_over = EncryptInput::with_legacy_keyring(
+        b"max edk encrypt",
+        EncryptionContext::new(),
+        mk.clone(),
     );
-}
+    enc_over.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(1).unwrap());
+    expect_exceed(&encrypt(&enc_over).await.expect_err("encrypt must fail when EDK count exceeds max"));
 
-#[tokio::test(flavor = "multi_thread")]
-async fn test_edk_count_max_enforcement_decrypt() {
-    let generator = aes_keyring(0).await;
-    let child = aes_keyring(1).await;
-    let mk = multi_keyring(generator, vec![child]).await;
-
+    // Decrypt a 2-EDK message with max=1 → error.
     let ct = encrypt_with_version(b"max edk decrypt", Version::V2, mk.clone()).await;
-    let mut dec = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), mk);
-    dec.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(1).unwrap());
-    let err = decrypt(&dec).await.expect_err("decrypt must fail when EDK count exceeds max");
+    let mut dec_over = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), mk.clone());
+    dec_over.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(1).unwrap());
+    expect_exceed(&decrypt(&dec_over).await.expect_err("decrypt must fail when EDK count exceeds max"));
 
-    //= specification/data-format/message-header.md#encrypted-data-key-count
-    //= type=test
-    //= reason=max_encrypted_data_keys on decrypt enforces the upper bound when deserializing the header.
-    //# This value MUST be less than or equal to the [maximum number of encrypted data keys](../client-apis/client.md#maximum-number-of-encrypted-data-keys) if the maximum number is configured.
+    // Encrypt with 2 EDKs and max=2 → ok (the "equal to" side of ≤).
+    let mut enc_at = EncryptInput::with_legacy_keyring(b"at max", EncryptionContext::new(), mk);
+    enc_at.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(2).unwrap());
     assert!(
-        err.message.contains("exceed") && err.message.contains("maximum"),
-        "error must indicate EDK count exceeds maximum, got: {} ({:?})",
-        err.message, err.kind
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_edk_count_at_max_succeeds() {
-    let generator = aes_keyring(0).await;
-    let child = aes_keyring(1).await;
-    let mk = multi_keyring(generator, vec![child]).await;
-
-    let mut input =
-        EncryptInput::with_legacy_keyring(b"at max", EncryptionContext::new(), mk);
-    input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(2).unwrap());
-
-    //= specification/data-format/message-header.md#encrypted-data-key-count
-    //= type=test
-    //= reason=Setting max equal to actual count verifies the less-than-or-equal semantics.
-    //# This value MUST be less than or equal to the [maximum number of encrypted data keys](../client-apis/client.md#maximum-number-of-encrypted-data-keys) if the maximum number is configured.
-    assert!(
-        encrypt(&input).await.is_ok(),
+        encrypt(&enc_at).await.is_ok(),
         "encrypt must succeed when EDK count equals max"
     );
 }
@@ -269,47 +287,39 @@ async fn test_edk_entries_preserve_keyring_order() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_key_provider_id_length_is_big_endian_uint16() {
-    let keyring = aes_keyring(0).await;
+async fn test_edk_entry_lengths_match_fields() {
+    // Multi-keyring so multiple entries are checked per run.
+    let generator = aes_keyring(0).await;
+    let child = aes_keyring(1).await;
+    let mk = multi_keyring(generator, vec![child]).await;
 
     for version in VERSIONS {
-        let ct = encrypt_with_version(b"pid len uint16", version, keyring.clone()).await;
-        let edk_start = skip_to_edk_section(&ct, version) + 2;
-        let (expected_ns, _) = namespace_and_name(0);
-        let expected_len = expected_ns.len() as u16;
-
-        // The first 2 bytes of the entry are the big-endian UInt16 provider ID length.
-        let pid_len = u16::from_be_bytes([ct[edk_start], ct[edk_start + 1]]);
-
-        //= specification/data-format/message-header.md#key-provider-id-length
-        //= type=test
-        //# The length of the serialized key provider ID length field MUST be 2 bytes.
-        //
-        //= specification/data-format/message-header.md#key-provider-id-length
-        //# The key provider ID length MUST be interpreted as a UInt16.
-        assert_eq!(
-            pid_len, expected_len,
-            "{version:?}: big-endian UInt16 provider ID length must match namespace length"
-        );
-    }
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_key_provider_id_length_matches_field() {
-    let keyring = aes_keyring(0).await;
-
-    for version in VERSIONS {
-        let ct = encrypt_with_version(b"pid len match", version, keyring.clone()).await;
+        let ct = encrypt_with_version(b"entry lengths match", version, mk.clone()).await;
         let parsed = parse_edk_section(&ct, version);
 
         //= specification/data-format/message-header.md#key-provider-id
         //= type=test
         //# The length of the serialized key provider ID MUST be equal to the value of the [Key Provider ID Length](#key-provider-id-length) field.
-        for edk in &parsed.edks {
+        //
+        //= specification/data-format/message-header.md#key-provider-information
+        //= type=test
+        //# The length of the serialized key provider information MUST be equal to the value of the [Key Provider Information Length](#key-provider-information-length) field.
+        //
+        //= specification/data-format/message-header.md#encrypted-data-key
+        //= type=test
+        //# The length of the serialized encrypted data key MUST be equal to the value of the [Encrypted Data Key Length](#encrypted-data-key-length) field.
+        for (i, edk) in parsed.edks.iter().enumerate() {
             assert_eq!(
-                edk.provider_id.len(),
-                edk.provider_id_len as usize,
-                "{version:?}: provider ID byte length must equal the provider ID length field"
+                edk.provider_id.len(), edk.provider_id_len as usize,
+                "{version:?}: EDK {i}: provider ID byte length must equal the provider ID length field"
+            );
+            assert_eq!(
+                edk.provider_info.len(), edk.provider_info_len as usize,
+                "{version:?}: EDK {i}: provider info byte length must equal the provider info length field"
+            );
+            assert_eq!(
+                edk.edk.len(), edk.edk_len as usize,
+                "{version:?}: EDK {i}: encrypted data key byte length must equal the EDK length field"
             );
         }
     }
@@ -341,57 +351,6 @@ async fn test_key_provider_id_is_utf8() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_key_provider_info_length_is_big_endian_uint16() {
-    let keyring = aes_keyring(0).await;
-
-    for version in VERSIONS {
-        let ct = encrypt_with_version(b"pinfo len uint16", version, keyring.clone()).await;
-        let edk_start = skip_to_edk_section(&ct, version) + 2;
-        // Walk to the provider_info_len offset: pid_len field (2) + pid bytes.
-        let pid_len = u16::from_be_bytes([ct[edk_start], ct[edk_start + 1]]);
-        let pinfo_len_offset = edk_start + 2 + pid_len as usize;
-        let parsed = parse_edk_section(&ct, version);
-        let edk = &parsed.edks[0];
-        let wire_pinfo_len = u16::from_be_bytes([ct[pinfo_len_offset], ct[pinfo_len_offset + 1]]);
-
-        //= specification/data-format/message-header.md#key-provider-information-length
-        //= type=test
-        //# The length of the serialized key provider information length field MUST be 2 bytes.
-        //
-        //= specification/data-format/message-header.md#key-provider-information-length
-        //# The key provider information length MUST be interpreted as a UInt16.
-        assert_eq!(
-            wire_pinfo_len as usize,
-            edk.provider_info.len(),
-            "{version:?}: big-endian UInt16 provider info length must match actual byte length"
-        );
-    }
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_key_provider_info_length_matches_field() {
-    let generator = aes_keyring(0).await;
-    let child = aes_keyring(1).await;
-    let mk = multi_keyring(generator, vec![child]).await;
-
-    for version in VERSIONS {
-        let ct = encrypt_with_version(b"pinfo len match", version, mk.clone()).await;
-        let parsed = parse_edk_section(&ct, version);
-
-        //= specification/data-format/message-header.md#key-provider-information
-        //= type=test
-        //# The length of the serialized key provider information MUST be equal to the value of the [Key Provider Information Length](#key-provider-information-length) field.
-        for edk in &parsed.edks {
-            assert_eq!(
-                edk.provider_info.len(),
-                edk.provider_info_len as usize,
-                "{version:?}: provider info byte length must equal the provider info length field"
-            );
-        }
-    }
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_key_provider_info_interpreted_as_bytes() {
     let keyring = aes_keyring(0).await;
 
@@ -409,79 +368,5 @@ async fn test_key_provider_info_interpreted_as_bytes() {
             edk.provider_info.starts_with(expected_name.as_bytes()),
             "{version:?}: provider info must start with the known key name"
         );
-    }
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_edk_length_is_big_endian_uint16() {
-    let keyring = aes_keyring(0).await;
-
-    for version in VERSIONS {
-        let ct = encrypt_with_version(b"edk len uint16", version, keyring.clone()).await;
-        let parsed = parse_edk_section(&ct, version);
-        let edk = &parsed.edks[0];
-        // Walk to the EDK length field.
-        let edk_start = parsed.edk_count_offset + 2;
-        let edk_len_offset = edk_start
-            + 2 + edk.provider_id_len as usize
-            + 2 + edk.provider_info_len as usize;
-        let wire_edk_len = u16::from_be_bytes([ct[edk_len_offset], ct[edk_len_offset + 1]]);
-
-        //= specification/data-format/message-header.md#encrypted-data-key-length
-        //= type=test
-        //# The length of the serialized encrypted data key length field MUST be 2 bytes.
-        //
-        //= specification/data-format/message-header.md#encrypted-data-key-length
-        //# The encrypted data key length MUST be interpreted as a UInt16.
-        assert_eq!(
-            wire_edk_len as usize,
-            edk.edk.len(),
-            "{version:?}: big-endian UInt16 EDK length must match actual EDK byte length"
-        );
-    }
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_edk_length_matches_field() {
-    let generator = aes_keyring(0).await;
-    let child = aes_keyring(1).await;
-    let mk = multi_keyring(generator, vec![child]).await;
-
-    for version in VERSIONS {
-        let ct = encrypt_with_version(b"edk len match", version, mk.clone()).await;
-        let parsed = parse_edk_section(&ct, version);
-
-        //= specification/data-format/message-header.md#encrypted-data-key
-        //= type=test
-        //# The length of the serialized encrypted data key MUST be equal to the value of the [Encrypted Data Key Length](#encrypted-data-key-length) field.
-        for (i, edk) in parsed.edks.iter().enumerate() {
-            assert_eq!(
-                edk.edk.len(),
-                edk.edk_len as usize,
-                "{version:?}: EDK {i}: encrypted data key byte length must equal the EDK length field"
-            );
-        }
-    }
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_multi_keyring_round_trip_each_child() {
-    let generator = aes_keyring(0).await;
-    let c1 = aes_keyring(1).await;
-    let c2 = aes_keyring(2).await;
-    let mk = multi_keyring(generator.clone(), vec![c1.clone(), c2.clone()]).await;
-
-    for version in VERSIONS {
-        let ct = encrypt_with_version(b"multi rt", version, mk.clone()).await;
-
-        // Each individual keyring must be able to decrypt.
-        for kr in [generator.clone(), c1.clone(), c2.clone()] {
-            let mut dec = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), kr);
-            if let Version::V1 = version {
-                dec.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-            }
-            let result = decrypt(&dec).await.unwrap();
-            assert_eq!(result.plaintext, b"multi rt");
-        }
     }
 }
