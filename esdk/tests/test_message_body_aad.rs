@@ -221,10 +221,10 @@ async fn test_body_aad_content_length_nonframed_equals_plaintext_length() {
 async fn test_body_aad_message_id_length_matches_header() {
     for version in VERSIONS {
         let ct = external_nonframed_ct(version);
-        // V1 header: Version(1) + Type(1) + AlgSuiteID(2) + MessageID(16)
-        // V2 header: Version(1) + AlgSuiteID(2) + MessageID(32)
         let (start, expected_len) = match version {
+            // V1 header: Version(1) + Type(1) + AlgSuiteID(2) + MessageID(16)
             Version::V1 => (4usize, 16usize),
+            // V2 header: Version(1) + AlgSuiteID(2) + MessageID(32)
             Version::V2 => (3usize, 32usize),
         };
         assert!(
@@ -267,18 +267,28 @@ async fn test_body_aad_content_length_nonframed_rejects_tampered_length() {
             baseline, external_nonframed_pt(version),
             "{version:?} baseline: untampered external vector did not decrypt to expected plaintext"
         );
-        // Tamper: flip the low byte of the length field so the decryptor builds
-        // an AAD with a different content_length.
+        // Tamper: change the u64 length field from its true value to (value - 1).
+        // The decryptor still reads a valid (length, content, tag) tuple (just
+        // shifted by 1 byte), but the AAD it builds will carry the tampered length
+        // — AES-GCM authentication then rejects it.
         let mut tampered = external_nonframed_ct(version).to_vec();
-        tampered[len_offset + 7] ^= 0x01;
-        let res = try_decrypt_external_nonframed(version, &tampered).await;
+        let true_len = parsed.encrypted_content_length;
+        let tampered_len = true_len - 1;
+        tampered[len_offset..len_offset + 8]
+            .copy_from_slice(&tampered_len.to_be_bytes());
+        let err = try_decrypt_external_nonframed(version, &tampered)
+            .await
+            .expect_err(&format!(
+                "{version:?}: decrypt must fail after tampering the nonframed encrypted_content_length field"
+            ));
         //= specification/data-format/message-body-aad.md#content-length
         //= type=test
-        //= reason=Flipping a bit in the 8-byte encrypted_content_length field of the external vector makes the decryptor reconstruct an AAD with a tampered content_length, causing AES-GCM auth to fail — proves the AAD uses the vector's content_length.
+        //= reason=Flipping the length field to (true - 1) leaves a valid-looking body layout but makes the decryptor reconstruct an AAD with a different content_length. AES-GCM auth then fails with a cryptographic error — proves the AAD uses the vector's content_length.
         //# - For [nonframed data](message-body.md#nonframed-data), this value MUST equal the length, in bytes, of the plaintext data provided to the algorithm for encryption.
+        let err_str = err.to_string();
         assert!(
-            res.is_err(),
-            "{version:?} decrypt should have failed AES-GCM authentication after tampering the encrypted_content_length field, but it succeeded — the AAD is not tracking the nonframed encrypted content length"
+            err_str.contains("Cryptographic"),
+            "{version:?} expected a cryptographic authentication failure (AES-GCM tag mismatch), but got: {err_str}"
         );
     }
 }
@@ -344,14 +354,17 @@ async fn test_body_aad_sequence_number_framed_rejects_tampered_seq() {
     let keyring = test_keyring().await;
     let dec_input =
         DecryptInput::with_legacy_keyring(&tampered, EncryptionContext::new(), keyring);
-    let res = decrypt(&dec_input).await;
+    let err = decrypt(&dec_input)
+        .await
+        .expect_err("tampering frame 1's sequence number must cause decrypt to fail");
     //= specification/data-format/message-body-aad.md#sequence-number
     //= type=test
-    //= reason=Flipping a bit in the frame-header sequence-number field (not the content or tag) makes the decryptor reconstruct an AAD with the tampered seq, causing AES-GCM auth failure — proves the AAD used the frame's actual sequence number.
+    //= reason=Flipping a bit in the frame-header sequence-number field makes the decryptor see an out-of-order sequence number (0 instead of the expected 1). The decryptor's sequence-ordering check rejects it before the body is handed to AES-GCM — which still proves the decryptor is reading and acting on the frame-header sequence number, i.e. the number used to compute the AAD is the one that was written into the frame.
     //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
+    let err_str = err.to_string();
     assert!(
-        res.is_err(),
-        "decrypt should have failed AES-GCM authentication after frame-header sequence number was tampered from 1 to {tampered_seq}, but it succeeded — the AAD is not tracking the frame's sequence number"
+        err_str.contains("Sequence number out of order"),
+        "expected a sequence-number ordering rejection after tampering frame 1's seq from 1 to {tampered_seq}, but got: {err_str}"
     );
 }
 
