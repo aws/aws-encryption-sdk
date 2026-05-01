@@ -51,10 +51,11 @@ async fn test_aad_serialization_order() {
         //# Key Value Pairs Length,
         //# and Key Value Pairs.
 
-        // Primary assertion: the encrypt path lays out KVP Length first, followed by KVP data.
+        // 1. Key Value Pairs Length (2 bytes at the AAD offset)
         let kvp_len = u16::from_be_bytes([ct[off], ct[off + 1]]) as usize;
         assert!(kvp_len > 0, "{version:?}: non-empty EC must have non-zero KVP length");
-        // KVP data follows immediately after the 2-byte length field (count is first).
+
+        // 2. Key Value Pairs (immediately follow the length field)
         let kvp_count_offset = off + 2;
         let kvp_count =
             u16::from_be_bytes([ct[kvp_count_offset], ct[kvp_count_offset + 1]]) as usize;
