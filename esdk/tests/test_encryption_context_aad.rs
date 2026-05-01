@@ -8,8 +8,6 @@ mod fixtures;
 mod test_helpers;
 
 use aws_esdk::*;
-use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
-use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use fixtures::*;
 use test_helpers::*;
 
@@ -25,32 +23,18 @@ fn aad_offset(version: Version) -> usize {
     }
 }
 
-/// Encrypt with a non-signing suite (so the header EC matches what we provide —
-/// signing suites add `aws-crypto-public-key` to the EC). V1 uses forbid-commit policy.
-async fn encrypt_no_sign(pt: &[u8], ec: EncryptionContext, version: Version) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut input = EncryptInput::with_legacy_keyring(pt, ec, keyring);
-    match version {
-        Version::V1 => {
-            input.algorithm_suite_id =
-                Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
-            input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-        }
-        Version::V2 => {
-            input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
-        }
+/// Assert that every (key, value) pair in `expected` is present in `actual`.
+/// Used to verify the encryption context survives the round trip intact,
+/// while ignoring any keys the SDK may add (e.g. `aws-crypto-public-key`
+/// for signing suites — not used by these tests, but the check is defensive).
+fn assert_ec_contains(actual: &EncryptionContext, expected: &EncryptionContext, version: Version) {
+    for (k, v) in expected {
+        assert_eq!(
+            actual.get(k),
+            Some(v),
+            "{version:?}: decrypted EC missing or mismatched for key {k:?}"
+        );
     }
-    encrypt(&input).await.unwrap().ciphertext
-}
-
-async fn decrypt_roundtrip(ct: &[u8], version: Version) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let mut dec_input =
-        DecryptInput::with_legacy_keyring(ct, EncryptionContext::new(), keyring);
-    if let Version::V1 = version {
-        dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    }
-    decrypt(&dec_input).await.unwrap().plaintext
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -58,7 +42,7 @@ async fn test_aad_serialization_order() {
     for version in VERSIONS {
         let ec = small_encryption_context(SmallEncryptionContextVariation::AB);
         let pt = b"aad serialization order";
-        let ct = encrypt_no_sign(pt, ec.clone(), version).await;
+        let ct = encrypt_no_sign_with_ec(pt, ec.clone(), version).await;
         let off = aad_offset(version);
 
         //= specification/data-format/message-header.md#aad
@@ -67,7 +51,7 @@ async fn test_aad_serialization_order() {
         //# Key Value Pairs Length,
         //# and Key Value Pairs.
 
-        // KVP Length field comes first at the AAD offset.
+        // Primary assertion: the encrypt path lays out KVP Length first, followed by KVP data.
         let kvp_len = u16::from_be_bytes([ct[off], ct[off + 1]]) as usize;
         assert!(kvp_len > 0, "{version:?}: non-empty EC must have non-zero KVP length");
         // KVP data follows immediately after the 2-byte length field (count is first).
@@ -76,9 +60,10 @@ async fn test_aad_serialization_order() {
             u16::from_be_bytes([ct[kvp_count_offset], ct[kvp_count_offset + 1]]) as usize;
         assert_eq!(kvp_count, 2, "{version:?}: AB encryption context has 2 key-value pairs");
 
-        // Round-trip proves the ordering is correct end-to-end.
-        let pt_out = decrypt_roundtrip(&ct, version).await;
-        assert_eq!(pt_out, pt, "{version:?}: round-trip plaintext mismatch");
+        // Cross-check: the decrypt path recovers the same encryption context, which is
+        // only possible if the on-wire ordering agreed with the spec on both sides.
+        let dec = decrypt_with_version(&ct, version).await;
+        assert_ec_contains(&dec.encryption_context, &ec, version);
     }
 }
 
@@ -87,7 +72,7 @@ async fn test_aad_key_value_pairs_length_field_size() {
     for version in VERSIONS {
         let ec = small_encryption_context(SmallEncryptionContextVariation::A);
         let pt = b"kvp length field size";
-        let ct = encrypt_no_sign(pt, ec.clone(), version).await;
+        let ct = encrypt_no_sign_with_ec(pt, ec.clone(), version).await;
         let off = aad_offset(version);
 
         //= specification/data-format/message-header.md#key-value-pairs-length
@@ -99,8 +84,10 @@ async fn test_aad_key_value_pairs_length_field_size() {
         // For "A" (keyA=valA): key_len(2) + key(4) + val_len(2) + val(4) = 12 bytes of pair data.
         assert_eq!(kvp_len, 12, "{version:?}: KVP length for single pair keyA=valA must be 12");
 
-        let pt_out = decrypt_roundtrip(&ct, version).await;
-        assert_eq!(pt_out, pt, "{version:?}: round-trip plaintext mismatch");
+        // Cross-check: the decrypted EC matches what we encrypted, confirming the 2-byte
+        // length field was parsed correctly on the decrypt side too.
+        let dec = decrypt_with_version(&ct, version).await;
+        assert_ec_contains(&dec.encryption_context, &ec, version);
     }
 }
 
@@ -109,7 +96,7 @@ async fn test_aad_key_value_pairs_length_uint16() {
     for version in VERSIONS {
         let ec = small_encryption_context(SmallEncryptionContextVariation::A);
         let pt = b"kvp length uint16";
-        let ct = encrypt_no_sign(pt, ec.clone(), version).await;
+        let ct = encrypt_no_sign_with_ec(pt, ec.clone(), version).await;
         let off = aad_offset(version);
 
         //= specification/data-format/message-header.md#key-value-pairs-length
@@ -121,8 +108,10 @@ async fn test_aad_key_value_pairs_length_uint16() {
         // keyA=valA: key_len(2) + key(4) + val_len(2) + val(4) = 12.
         assert_eq!(kvp_len, 12, "{version:?}: UInt16 KVP length for keyA=valA must be 12");
 
-        let pt_out = decrypt_roundtrip(&ct, version).await;
-        assert_eq!(pt_out, pt, "{version:?}: round-trip plaintext mismatch");
+        // Cross-check: the decrypted EC round-trips, confirming both sides agree that
+        // the field is a big-endian UInt16.
+        let dec = decrypt_with_version(&ct, version).await;
+        assert_ec_contains(&dec.encryption_context, &ec, version);
     }
 }
 
@@ -131,7 +120,7 @@ async fn test_aad_empty_encryption_context_length_zero() {
     for version in VERSIONS {
         let ec = small_encryption_context(SmallEncryptionContextVariation::Empty);
         let pt = b"empty ec length zero";
-        let ct = encrypt_no_sign(pt, ec.clone(), version).await;
+        let ct = encrypt_no_sign_with_ec(pt, ec.clone(), version).await;
         let off = aad_offset(version);
 
         //= specification/data-format/message-header.md#key-value-pairs-length
@@ -146,8 +135,14 @@ async fn test_aad_empty_encryption_context_length_zero() {
             "{version:?}: empty EC KVP length low byte must be 0"
         );
 
-        let pt_out = decrypt_roundtrip(&ct, version).await;
-        assert_eq!(pt_out, pt, "{version:?}: round-trip plaintext mismatch");
+        // Cross-check: decrypt returns an empty encryption context (non-signing suite
+        // means the SDK added no entries of its own).
+        let dec = decrypt_with_version(&ct, version).await;
+        assert!(
+            dec.encryption_context.is_empty(),
+            "{version:?}: decrypted EC must be empty, got {:?}",
+            dec.encryption_context
+        );
     }
 }
 
@@ -156,7 +151,7 @@ async fn test_aad_key_value_pairs_serialization() {
     for version in VERSIONS {
         let ec = small_encryption_context(SmallEncryptionContextVariation::AB);
         let pt = b"kvp serialization";
-        let ct = encrypt_no_sign(pt, ec.clone(), version).await;
+        let ct = encrypt_no_sign_with_ec(pt, ec.clone(), version).await;
         let off = aad_offset(version);
 
         //= specification/data-format/message-header.md#key-value-pairs
@@ -194,8 +189,9 @@ async fn test_aad_key_value_pairs_serialization() {
         assert_eq!(key2, "keyB", "{version:?}: second key in sorted order");
         assert_eq!(val2, "valB", "{version:?}: second value");
 
-        let pt_out = decrypt_roundtrip(&ct, version).await;
-        assert_eq!(pt_out, pt, "{version:?}: round-trip plaintext mismatch");
+        // Cross-check: decrypted EC contains the same key/value pairs we encrypted.
+        let dec = decrypt_with_version(&ct, version).await;
+        assert_ec_contains(&dec.encryption_context, &ec, version);
     }
 }
 
@@ -204,7 +200,7 @@ async fn test_aad_empty_encryption_context_no_kvp_field() {
     for version in VERSIONS {
         let ec = small_encryption_context(SmallEncryptionContextVariation::Empty);
         let pt = b"empty ec no kvp";
-        let ct = encrypt_no_sign(pt, ec.clone(), version).await;
+        let ct = encrypt_no_sign_with_ec(pt, ec.clone(), version).await;
         let off = aad_offset(version);
 
         //= specification/data-format/message-header.md#key-value-pairs
@@ -224,7 +220,12 @@ async fn test_aad_empty_encryption_context_no_kvp_field() {
             "{version:?}: EDK count must be at least 1, proving no KVP field between AAD length and EDKs"
         );
 
-        let pt_out = decrypt_roundtrip(&ct, version).await;
-        assert_eq!(pt_out, pt, "{version:?}: round-trip plaintext mismatch");
+        // Cross-check: decrypt recovers an empty encryption context.
+        let dec = decrypt_with_version(&ct, version).await;
+        assert!(
+            dec.encryption_context.is_empty(),
+            "{version:?}: decrypted EC must be empty, got {:?}",
+            dec.encryption_context
+        );
     }
 }
