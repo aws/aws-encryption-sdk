@@ -331,6 +331,9 @@ async fn test_body_aad_content_length_nonframed_rejects_wrong_length() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_sequence_number_framed_matches_frame_sequence_number() {
+    // The frame-header sequence number is observable in the ciphertext; the
+    // AAD sequence number is not. This test proves the former. The companion
+    // test `_framed_rejects_tampered_seq` proves the AAD must equal it.
     let pt = vec![0xBBu8; 50];
     let frame_length = 10u32;
     let ct = encrypt_with_frame_length(&pt, frame_length).await;
@@ -341,15 +344,13 @@ async fn test_body_aad_sequence_number_framed_matches_frame_sequence_number() {
         let expected_seq = (i + 1) as u32;
         //= specification/data-format/message-body-aad.md#sequence-number
         //= type=test
-        //= reason=Each frame's sequence-number field is written verbatim into the frame header; successful round-trip proves the AAD used the same sequence numbers.
+        //= reason=Each frame's header carries a sequence number 1..=N (observable by parsing). The AAD sequence number must equal the frame's — proven by the companion tampering test.
         //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
         assert_eq!(
             frame.0, expected_seq,
             "frame {i}: sequence number field must equal frame's position in sequence"
         );
     }
-    let decrypted = round_trip_framed(&pt, frame_length).await;
-    assert_eq!(decrypted, pt, "round-trip proves body AAD used matching frame sequence numbers");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -357,7 +358,8 @@ async fn test_body_aad_sequence_number_framed_rejects_tampered_seq() {
     let pt = vec![0xCDu8; 25];
     let frame_length = 10u32;
     let ct = encrypt_with_frame_length(&pt, frame_length).await;
-    // Confirm baseline: untampered ciphertext decrypts.
+    // Baseline sanity check: the untampered ciphertext decrypts cleanly, so
+    // any failure below can be attributed to the tamper, not pre-existing breakage.
     let ok = round_trip_framed(&pt, frame_length).await;
     assert_eq!(ok, pt, "baseline: untampered ciphertext must decrypt");
 
@@ -396,6 +398,11 @@ async fn test_body_aad_sequence_number_framed_rejects_tampered_seq() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_content_length_regular_frame_equals_frame_length() {
+    // Evidence chain: parsing proves each regular frame's encrypted content
+    // is frame_length bytes; round-tripping proves the encryptor's AAD and
+    // the decryptor's reconstructed AAD both used that value (any mismatch
+    // between what was encrypted and the AAD content_length would cause
+    // AES-GCM auth failure).
     let pt = vec![0xDDu8; 30];
     let frame_length = 10u32;
     let ct = encrypt_with_frame_length(&pt, frame_length).await;
@@ -405,7 +412,7 @@ async fn test_body_aad_content_length_regular_frame_equals_frame_length() {
         if !frame.4 {
             //= specification/data-format/message-body-aad.md#content-length
             //= type=test
-            //= reason=Regular frames carry exactly frame_length encrypted bytes; successful round-trip proves the AAD used frame_length.
+            //= reason=Parsing shows each regular frame carries exactly frame_length encrypted bytes; successful round-trip proves the AAD content_length matched (any mismatch would fail AES-GCM auth).
             //# - For [regular frames](message-body.md#regular-frame), this value MUST equal the value of the [frame length](message-header.md#frame-length) field in the message header.
             assert_eq!(
                 frame.2.len() as u32, frame_length,
@@ -414,11 +421,15 @@ async fn test_body_aad_content_length_regular_frame_equals_frame_length() {
         }
     }
     let decrypted = round_trip_framed(&pt, frame_length).await;
-    assert_eq!(decrypted, pt, "round-trip proves AAD used frame_length for regular frames");
+    assert_eq!(decrypted, pt, "round-trip corroborates the AAD used frame_length at both ends");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_content_length_final_frame_bounded_by_frame_length() {
+    // Evidence chain: parsing shows the final frame's content_length is in
+    // [0, frame_length]. The round-trip corroborates that the decryptor's
+    // AAD agreed with the encryptor's — but the bound itself is established
+    // purely from the parsed field.
     let pt = vec![0xEEu8; 15];
     let frame_length = 10u32;
     let ct = encrypt_with_frame_length(&pt, frame_length).await;
@@ -426,7 +437,7 @@ async fn test_body_aad_content_length_final_frame_bounded_by_frame_length() {
         .expect("ciphertext must contain a final frame");
     //= specification/data-format/message-body-aad.md#content-length
     //= type=test
-    //= reason=The final frame's explicit content_length field is bounded by frame_length; successful round-trip proves the AAD used that same bounded length.
+    //= reason=Parsing the final frame's explicit content_length field shows it lies in [0, frame_length]; round-trip corroborates the AAD used the same value (mismatch would fail AES-GCM auth).
     //# - For the [final frame](message-body.md#final-frame), this value MUST be greater than or equal to 0 and less than or equal to the value of the [frame length](message-header.md#frame-length) field in the message header.
     assert!(
         final_content_len <= frame_length,
@@ -435,11 +446,16 @@ async fn test_body_aad_content_length_final_frame_bounded_by_frame_length() {
     // 15 bytes with frame_length=10 -> one regular frame (10) + final frame (5).
     assert_eq!(final_content_len, 5, "final frame should hold remaining 5 bytes");
     let decrypted = round_trip_framed(&pt, frame_length).await;
-    assert_eq!(decrypted, pt, "round-trip proves AAD used bounded final-frame length");
+    assert_eq!(decrypted, pt, "round-trip corroborates AAD used the bounded final-frame length");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_content_length_framed_equals_per_frame_plaintext() {
+    // Evidence chain: summing each frame's encrypted byte count recovers the
+    // plaintext length, proving per-frame content_length values are
+    // per-frame plaintext lengths (not a single whole-message value). The
+    // round-trip corroborates that the AAD used those same per-frame values
+    // (any mismatch on any frame would fail AES-GCM auth).
     let pt = vec![0xCCu8; 25];
     let frame_length = 10u32;
     let ct = encrypt_with_frame_length(&pt, frame_length).await;
@@ -448,12 +464,12 @@ async fn test_body_aad_content_length_framed_equals_per_frame_plaintext() {
     let total: usize = frames.iter().map(|f| f.2.len()).sum();
     //= specification/data-format/message-body-aad.md#content-length
     //= type=test
-    //= reason=Sum of per-frame content lengths equals plaintext length; successful round-trip proves the AAD used per-frame plaintext lengths, not a single whole-message value.
+    //= reason=Sum of per-frame content lengths equals plaintext length, showing per-frame (not whole-message) sizing. Round-trip corroborates the AAD used those same per-frame values.
     //# - For [framed data](message-body.md#framed-data), this value MUST equal the length, in bytes, of the plaintext being encrypted in this frame.
     assert_eq!(
         total, pt.len(),
         "sum of per-frame content lengths must equal plaintext length"
     );
     let decrypted = round_trip_framed(&pt, frame_length).await;
-    assert_eq!(decrypted, pt, "round-trip proves AAD used per-frame plaintext lengths");
+    assert_eq!(decrypted, pt, "round-trip corroborates the AAD used per-frame plaintext lengths");
 }
