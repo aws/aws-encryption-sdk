@@ -15,16 +15,6 @@ const REGULAR_FRAME_STR: &[u8] = b"AWSKMSEncryptionClient Frame";
 const FINAL_FRAME_STR: &[u8] = b"AWSKMSEncryptionClient Final Frame";
 const SINGLE_BLOCK_STR: &[u8] = b"AWSKMSEncryptionClient Single Block";
 
-/// Returns the expected body AAD content string for each variant,
-/// used for slicing the serialized output.
-fn content_str_bytes(bc: BodyAADContent) -> &'static [u8] {
-    match bc {
-        BodyAADContent::RegularFrame => REGULAR_FRAME_STR,
-        BodyAADContent::FinalFrame => FINAL_FRAME_STR,
-        BodyAADContent::SingleBlock => SINGLE_BLOCK_STR,
-    }
-}
-
 #[test]
 fn test_body_aad_structure_ordering() {
     //= specification/data-format/message-body-aad.md#structure
@@ -75,116 +65,61 @@ fn test_body_aad_structure_ordering() {
 }
 
 #[test]
-fn test_body_aad_message_id_is_copied_verbatim_v1_length() {
-    let msg_id: [u8; 16] = [
-        0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
-        0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF,
-    ];
-    let mut out = Vec::new();
-    body_aad(&msg_id, BodyAADContent::RegularFrame, 1, 100, &mut out);
-    //= specification/data-format/message-body-aad.md#message-id
-    //= type=test
-    //# This MUST be the [message ID](message-header.md#message-id) stored in the header of the message.
-    //
-    //= specification/data-format/message-body-aad.md#message-id
-    //= type=test
-    //# The length of the Message ID field MUST be equal to the length of the [Message ID](message-header.md#message-id) defined by the message header version.
-    assert_eq!(&out[..16], &msg_id, "V1 (16-byte) message ID must be copied verbatim");
-}
-
-#[test]
-fn test_body_aad_message_id_is_copied_verbatim_v2_length() {
-    let mut msg_id = [0u8; 32];
-    for (i, b) in msg_id.iter_mut().enumerate() {
-        *b = i as u8;
+fn test_body_aad_message_id_is_copied_verbatim() {
+    // V1 uses 16-byte message IDs; V2 uses 32-byte. Exercise both so the
+    // "length matches header version" claim is proven at each valid length.
+    for msg_id_len in [16usize, 32] {
+        let msg_id: Vec<u8> = (0..msg_id_len).map(|i| i as u8).collect();
+        let mut out = Vec::new();
+        body_aad(&msg_id, BodyAADContent::RegularFrame, 1, 100, &mut out);
+        //= specification/data-format/message-body-aad.md#message-id
+        //= type=test
+        //# This MUST be the [message ID](message-header.md#message-id) stored in the header of the message.
+        //
+        //= specification/data-format/message-body-aad.md#message-id
+        //= type=test
+        //# The length of the Message ID field MUST be equal to the length of the [Message ID](message-header.md#message-id) defined by the message header version.
+        assert_eq!(
+            &out[..msg_id_len], msg_id.as_slice(),
+            "{msg_id_len}-byte message ID must be copied verbatim"
+        );
     }
-    let mut out = Vec::new();
-    body_aad(&msg_id, BodyAADContent::SingleBlock, 1, 100, &mut out);
-    //= specification/data-format/message-body-aad.md#message-id
-    //= type=test
-    //# This MUST be the [message ID](message-header.md#message-id) stored in the header of the message.
-    //
-    //= specification/data-format/message-body-aad.md#message-id
-    //= type=test
-    //# The length of the Message ID field MUST be equal to the length of the [Message ID](message-header.md#message-id) defined by the message header version.
-    assert_eq!(&out[..32], &msg_id, "V2 (32-byte) message ID must be copied verbatim");
 }
 
 #[test]
-fn test_body_aad_content_regular_frame_value() {
-    let msg_id = [0u8; 16];
+fn test_body_aad_content_values_match_spec_literals() {
+    let msg_id_16 = [0u8; 16];
+    let msg_id_32 = [0u8; 32];
+
     let mut out = Vec::new();
-    body_aad(&msg_id, BodyAADContent::RegularFrame, 1, 0, &mut out);
-    let start = msg_id.len();
-    let end = start + REGULAR_FRAME_STR.len();
+    body_aad(&msg_id_16, BodyAADContent::RegularFrame, 1, 0, &mut out);
     //= specification/data-format/message-body-aad.md#body-aad-content
     //= type=test
     //# - The [regular frames](message-body.md#regular-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Frame`.
     assert_eq!(
-        &out[start..end],
+        &out[msg_id_16.len()..msg_id_16.len() + REGULAR_FRAME_STR.len()],
         REGULAR_FRAME_STR,
-        "regular frame content value must be exactly `AWSKMSEncryptionClient Frame`"
     );
-}
 
-#[test]
-fn test_body_aad_content_final_frame_value() {
-    let msg_id = [0u8; 16];
     let mut out = Vec::new();
-    body_aad(&msg_id, BodyAADContent::FinalFrame, 1, 0, &mut out);
-    let start = msg_id.len();
-    let end = start + FINAL_FRAME_STR.len();
+    body_aad(&msg_id_16, BodyAADContent::FinalFrame, 1, 0, &mut out);
     //= specification/data-format/message-body-aad.md#body-aad-content
     //= type=test
     //# - The [final frame](message-body.md#final-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Final Frame`.
     assert_eq!(
-        &out[start..end],
+        &out[msg_id_16.len()..msg_id_16.len() + FINAL_FRAME_STR.len()],
         FINAL_FRAME_STR,
-        "final frame content value must be exactly `AWSKMSEncryptionClient Final Frame`"
     );
-}
 
-#[test]
-fn test_body_aad_content_single_block_value() {
-    let msg_id = [0u8; 32];
     let mut out = Vec::new();
-    body_aad(&msg_id, BodyAADContent::SingleBlock, 1, 0, &mut out);
-    let start = msg_id.len();
-    let end = start + SINGLE_BLOCK_STR.len();
+    body_aad(&msg_id_32, BodyAADContent::SingleBlock, 1, 0, &mut out);
     //= specification/data-format/message-body-aad.md#body-aad-content
     //= type=test
     //# - [Nonframed data](message-body.md#nonframed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
     assert_eq!(
-        &out[start..end],
+        &out[msg_id_32.len()..msg_id_32.len() + SINGLE_BLOCK_STR.len()],
         SINGLE_BLOCK_STR,
-        "nonframed content value must be exactly `AWSKMSEncryptionClient Single Block`"
     );
-}
-
-#[test]
-fn test_body_aad_content_utf8_encoded() {
-    let msg_id = [0u8; 16];
-    for bc in [
-        BodyAADContent::RegularFrame,
-        BodyAADContent::FinalFrame,
-        BodyAADContent::SingleBlock,
-    ] {
-        let mut out = Vec::new();
-        body_aad(&msg_id, bc, 1, 0, &mut out);
-        let start = msg_id.len();
-        let expected = content_str_bytes(bc);
-        let end = start + expected.len();
-        //= specification/data-format/message-body-aad.md#body-aad-content
-        //= type=test
-        //# The body AAD content value MUST be encoded as UTF-8 bytes.
-        // All three literal strings are ASCII (a strict subset of UTF-8); asserting that
-        // the serialized bytes equal the `.as_bytes()` of a Rust `str` proves the
-        // encoding is UTF-8 by Rust's type-system guarantees.
-        // `expected` is `str::as_bytes()` output — valid UTF-8 by construction.
-        std::str::from_utf8(&out[start..end])
-            .expect("serialized content bytes must be valid UTF-8");
-        assert_eq!(&out[start..end], expected, "{bc:?}: UTF-8 encoded bytes must match literal");
-    }
 }
 
 #[test]
