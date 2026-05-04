@@ -81,44 +81,49 @@ async fn test_edk_section_length_fields_are_big_endian_uint16() {
         let pinfo_len_wire = u16::from_be_bytes([ct[pinfo_len_offset], ct[pinfo_len_offset + 1]]);
         let edk_len_wire = u16::from_be_bytes([ct[edk_len_offset], ct[edk_len_offset + 1]]);
 
+        // EDK count: 2 keyrings → UInt16 value 2 ([0x00, 0x02]).
         //= specification/data-format/message-header.md#encrypted-data-key-count
         //= type=test
         //# The length of the serialized encrypted data key count MUST be 2 bytes.
         //
         //= specification/data-format/message-header.md#encrypted-data-key-count
+        //= type=test
         //# The encrypted data key count MUST be interpreted as a UInt16.
-        //
+        assert_eq!(count_wire, 2, "{version:?}: EDK count UInt16 value");
+        assert_eq!(ct[parsed.edk_count_offset], 0x00, "{version:?}: EDK count high byte");
+        assert_eq!(ct[parsed.edk_count_offset + 1], 0x02, "{version:?}: EDK count low byte");
+
+        // Key provider ID length: the UInt16 at this offset equals the known keyring namespace byte length.
         //= specification/data-format/message-header.md#key-provider-id-length
         //= type=test
         //# The length of the serialized key provider ID length field MUST be 2 bytes.
         //
         //= specification/data-format/message-header.md#key-provider-id-length
+        //= type=test
         //# The key provider ID length MUST be interpreted as a UInt16.
-        //
+        assert_eq!(pid_len_wire, expected_pid_len, "{version:?}: provider ID length UInt16 value");
+
+        // Key provider information length: the UInt16 at this offset must be positive for a raw AES keyring
+        // (which packs key name + bit length + IV length + IV into provider info).
         //= specification/data-format/message-header.md#key-provider-information-length
         //= type=test
         //# The length of the serialized key provider information length field MUST be 2 bytes.
         //
         //= specification/data-format/message-header.md#key-provider-information-length
+        //= type=test
         //# The key provider information length MUST be interpreted as a UInt16.
-        //
+        assert!(pinfo_len_wire > 0, "{version:?}: provider info length UInt16 must be positive");
+
+        // Encrypted data key length: raw AES keyring stores IV in provider_info; the ciphertext field is
+        // wrapped data key (32 bytes) + GCM tag (16 bytes) = 48.
         //= specification/data-format/message-header.md#encrypted-data-key-length
         //= type=test
         //# The length of the serialized encrypted data key length field MUST be 2 bytes.
         //
         //= specification/data-format/message-header.md#encrypted-data-key-length
+        //= type=test
         //# The encrypted data key length MUST be interpreted as a UInt16.
-        // Count: 2 keyrings → UInt16 value 2 ([0x00, 0x02]).
-        assert_eq!(count_wire, 2, "{version:?}: EDK count UInt16");
-        assert_eq!(ct[parsed.edk_count_offset], 0x00, "{version:?}: count high byte");
-        assert_eq!(ct[parsed.edk_count_offset + 1], 0x02, "{version:?}: count low byte");
-        // Provider ID length: equals the known keyring namespace byte length.
-        assert_eq!(pid_len_wire, expected_pid_len, "{version:?}: provider ID length UInt16");
-        // Info and EDK lengths: positive, non-tautological lower bounds.
-        // Raw AES keyring stores IV in provider_info; the ciphertext field is
-        // wrapped data key (32 bytes) + GCM tag (16 bytes) = 48.
-        assert!(pinfo_len_wire > 0, "{version:?}: provider info length UInt16 must be positive");
-        assert_eq!(edk_len_wire, 48, "{version:?}: EDK ciphertext length must be 48 (wrapped 32B key + 16B tag)");
+        assert_eq!(edk_len_wire, 48, "{version:?}: EDK ciphertext length UInt16 value (wrapped 32B key + 16B tag)");
     }
 }
 
@@ -297,26 +302,26 @@ async fn test_edk_entry_lengths_match_fields() {
         let ct = encrypt_with_version(b"entry lengths match", version, mk.clone()).await;
         let parsed = parse_edk_section(&ct, version);
 
-        //= specification/data-format/message-header.md#key-provider-id
-        //= type=test
-        //# The length of the serialized key provider ID MUST be equal to the value of the [Key Provider ID Length](#key-provider-id-length) field.
-        //
-        //= specification/data-format/message-header.md#key-provider-information
-        //= type=test
-        //# The length of the serialized key provider information MUST be equal to the value of the [Key Provider Information Length](#key-provider-information-length) field.
-        //
-        //= specification/data-format/message-header.md#encrypted-data-key
-        //= type=test
-        //# The length of the serialized encrypted data key MUST be equal to the value of the [Encrypted Data Key Length](#encrypted-data-key-length) field.
         for (i, edk) in parsed.edks.iter().enumerate() {
+            //= specification/data-format/message-header.md#key-provider-id
+            //= type=test
+            //# The length of the serialized key provider ID MUST be equal to the value of the [Key Provider ID Length](#key-provider-id-length) field.
             assert_eq!(
                 edk.provider_id.len(), edk.provider_id_len as usize,
                 "{version:?}: EDK {i}: provider ID byte length must equal the provider ID length field"
             );
+
+            //= specification/data-format/message-header.md#key-provider-information
+            //= type=test
+            //# The length of the serialized key provider information MUST be equal to the value of the [Key Provider Information Length](#key-provider-information-length) field.
             assert_eq!(
                 edk.provider_info.len(), edk.provider_info_len as usize,
                 "{version:?}: EDK {i}: provider info byte length must equal the provider info length field"
             );
+
+            //= specification/data-format/message-header.md#encrypted-data-key
+            //= type=test
+            //# The length of the serialized encrypted data key MUST be equal to the value of the [Encrypted Data Key Length](#encrypted-data-key-length) field.
             assert_eq!(
                 edk.edk.len(), edk.edk_len as usize,
                 "{version:?}: EDK {i}: encrypted data key byte length must equal the EDK length field"
