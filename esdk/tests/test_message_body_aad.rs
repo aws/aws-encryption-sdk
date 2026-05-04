@@ -168,6 +168,10 @@ fn test_body_aad_content_length_is_8_bytes_uint64_be() {
 
 // --- Positive nonframed tests, anchored on the external authority vectors ---
 
+// ESDKs are forbidden from producing new nonframed messages,
+// but are required to read existing nonframed messages.
+// Use one reference nonframed message from test vectors for both V1 and V2 message formats.
+
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_sequence_number_nonframed_is_one() {
     for version in VERSIONS {
@@ -175,6 +179,7 @@ async fn test_body_aad_sequence_number_nonframed_is_one() {
         let iv_seq = u32::from_be_bytes([
             parsed.iv[8], parsed.iv[9], parsed.iv[10], parsed.iv[11],
         ]);
+        // The message under test MUST have seq=1 already
         assert_eq!(iv_seq, 1, "{version:?}: body IV must encode seq=1");
 
         let pt = decrypt_external_nonframed_vector(version).await;
@@ -193,6 +198,7 @@ async fn test_body_aad_sequence_number_nonframed_is_one() {
 async fn test_body_aad_content_length_nonframed_equals_plaintext_length() {
     for version in VERSIONS {
         let parsed = parse_external_nonframed_body(external_nonframed_ct(version), version);
+        // The message under test MUST have a valid length field already
         assert_eq!(
             parsed.encrypted_content_length,
             external_nonframed_pt(version).len() as u64,
@@ -221,6 +227,7 @@ async fn test_body_aad_message_id_length_matches_header() {
             // V2 header: Version(1) + AlgSuiteID(2) + MessageID(32)
             Version::V2 => (3usize, 32usize),
         };
+        // The message under test MUST have a valid length already
         assert!(
             ct.len() >= start + expected_len,
             "{version:?} header must be large enough to carry a {expected_len}-byte message ID"
@@ -284,7 +291,7 @@ async fn test_body_aad_content_length_nonframed_rejects_tampered_length() {
     }
 }
 
-// --- Framed tests (the real Rust encryptor produces framed ciphertexts) ---
+// --- Framed tests ---
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_body_aad_sequence_number_framed_matches_frame_sequence_number() {
