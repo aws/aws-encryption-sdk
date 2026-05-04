@@ -80,17 +80,17 @@ pub(crate) fn from_canonical_pairs(pairs: ESDKCanonicalEncryptionContext) -> ESD
 /// True iff `ec` fits the on-wire encoding: pair count, each key/value length,
 /// and total serialized length all fit in a UInt16.
 pub(crate) fn is_esdk_encryption_context(ec: &EncryptionContext) -> bool {
-    if ec.len() >= usize::from(u16::MAX) {
+    if ec.len() > usize::from(u16::MAX) {
         return false;
     }
-    if length(ec) >= ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH {
+    if length(ec) > ESDK_CANONICAL_ENCRYPTION_CONTEXT_MAX_LENGTH {
         return false;
     }
     for (key, value) in ec {
-        if key.len() >= usize::from(u16::MAX) {
+        if key.len() > usize::from(u16::MAX) {
             return false;
         }
-        if value.len() >= usize::from(u16::MAX) {
+        if value.len() > usize::from(u16::MAX) {
             return false;
         }
     }
@@ -106,7 +106,7 @@ pub(crate) fn is_esdk_encrypted_data_key(edk: &EncryptedDataKey) -> bool {
 
 /// True iff the EDK count and each entry fit in UInt16.
 pub(crate) fn is_esdk_encrypted_data_keys(edks: &[EncryptedDataKey]) -> bool {
-    if edks.len() >= usize::from(u16::MAX) {
+    if edks.len() > usize::from(u16::MAX) {
         return false;
     }
     for edk in edks {

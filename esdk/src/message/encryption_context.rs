@@ -19,14 +19,28 @@ pub(crate) fn read_canonical_ec(
         return Ok(Vec::new());
     }
 
-    // Count, then `count` (key, value) pairs.
+    // Count, then `count` (key, value) pairs. Track bytes consumed so we can
+    // reject a message whose length field disagrees with the parsed contents.
     let count = usize::from(read_u16(r, raw)?);
+    let mut consumed: usize = 2; // the Key Value Pair Count field we just read
     let mut result: ESDKCanonicalEncryptionContext = Vec::with_capacity(count);
     for _ in 0..count {
         let key = read_str_u16(r, raw)?;
+        consumed += 2 + key.len();
         let value = read_str_u16(r, raw)?;
+        consumed += 2 + value.len();
         result.push((key, value));
     }
+
+    // PROPOSED
+    //= spec/data-format/message-header.md#key-value-pairs-length
+    //# The key value pairs length value MUST equal the number of bytes consumed
+    //# by deserializing the Key Value Pairs field. A decryptor MUST reject a
+    //# message whose key value pairs length does not match the deserialized size.
+    if consumed != bytes {
+        return ser_err("Encryption context length field does not match parsed contents");
+    }
+
     Ok(result)
 }
 
@@ -36,7 +50,7 @@ pub(crate) fn write_empty_ec_or_write_aad(
     data: &ESDKCanonicalEncryptionContext,
 ) -> Result<(), Error> {
     if data.is_empty() {
-        //= specification/data-format/message-header.md#key-value-pairs
+        //= spec/data-format/message-header.md#key-value-pairs
         //# When the [encryption context](../framework/structures.md#encryption-context) is empty,
         //# this field MUST NOT be included in the [AAD](#aad).
         Ok(())
@@ -60,31 +74,37 @@ pub(crate) fn write_aad_section(
     w: &mut dyn SafeWrite,
     data: &ESDKCanonicalEncryptionContext,
 ) -> Result<(), Error> {
-    //= specification/data-format/message-header.md#aad
-    //# The AAD MUST consist of, in order,
-    //# Key Value Pairs Length,
-    //# and Key Value Pairs.
     if data.is_empty() {
-        //= specification/data-format/message-header.md#key-value-pairs-length
+        //= spec/data-format/message-header.md#key-value-pairs-length
         //# When the [encryption context](../framework/structures.md#encryption-context) is empty, the value of this field MUST be 0.
         write_u16(w, 0)?;
         return Ok(());
     }
 
-    // Key Value Pairs Length.
-    let bytes = get_length(data);
+    //= spec/data-format/message-header.md#aad
+    //# The AAD MUST consist of, in order,
+    //# Key Value Pairs Length,
+    //# and Key Value Pairs.
 
-    //= specification/data-format/message-header.md#key-value-pairs-length
+    // Key Value Pairs Length: covers the Key Value Pair Count field plus all pairs.
+
+    // PROPOSED
+    //= spec/data-format/message-header.md#key-value-pairs-length
+    //# The key value pairs length value MUST equal the byte length of the Key Value Pair Count field plus all Key Value Pair entries.
+    let bytes = 2 + get_length(data); // 2 for the Key Value Pair Count UInt16.
+
+    //= spec/data-format/message-header.md#key-value-pairs-length
     //# The length of the serialized key value pairs length field MUST be 2 bytes.
-
-    //= specification/data-format/message-header.md#key-value-pairs-length
+    //
+    //= spec/data-format/message-header.md#key-value-pairs-length
     //# The key value pairs length MUST be interpreted as a UInt16.
     let Ok(bytes_u16) = u16::try_from(bytes) else {
         return ser_err("value too large for u16");
     };
     write_u16(w, bytes_u16)?;
 
-    // Key Value Pairs.
+    // Key Value Pairs
+
     write_aad(w, data)
 }
 
@@ -100,7 +120,7 @@ pub(crate) fn write_aad(
     write_u16(w, data_len)?;
 
     for pair in data {
-        //= specification/data-format/message-header.md#key-value-pairs
+        //= spec/data-format/message-header.md#key-value-pairs
         //# The encryption context key-value pairs MUST be serialized according to its [specification for serialization](../framework/structures.md#serialization).
 
         // Key: length + UTF-8 bytes.

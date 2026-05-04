@@ -198,8 +198,8 @@ async fn test_unsupported_content_type_v1_rejected() {
     let aad_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
     pos += 2; // past key_value_pairs_length
     if aad_len > 0 {
-        // key_value_pair_count(2) + actual pairs data
-        pos += 2 + aad_len;
+        // aad_len already includes the 2-byte key_value_pair_count
+        pos += aad_len;
     }
     // Skip EDK section: edk_count(2) + each EDK
     let edk_count = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
@@ -250,7 +250,8 @@ async fn test_unsupported_content_type_v2_rejected() {
     let aad_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
     pos += 2; // past key_value_pairs_length
     if aad_len > 0 {
-        pos += 2 + aad_len;
+        // aad_len already includes the 2-byte key_value_pair_count
+        pos += aad_len;
     }
     // Skip EDK section: edk_count(2) + each EDK
     let edk_count = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;

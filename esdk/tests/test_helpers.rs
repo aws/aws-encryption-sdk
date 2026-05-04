@@ -418,11 +418,11 @@ pub fn parse_v1_trailing_offsets(ct: &[u8]) -> (usize, usize, usize, usize) {
     // V1 header: Version(1) + Type(1) + AlgSuiteID(2) + MessageID(16) = 20 fixed bytes
     let mut pos: usize = 20;
 
-    // AAD: 2-byte length, then if non-zero: 2-byte kv_count + aad_byte_len bytes
+    // AAD: 2-byte length, then if non-zero: aad_byte_len bytes (which include the 2-byte kv_count)
     let aad_byte_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
     pos += 2;
     if aad_byte_len > 0 {
-        pos += 2 + aad_byte_len;
+        pos += aad_byte_len;
     }
 
     // EDKs: 2-byte count, then for each: provider_id(2+len) + provider_info(2+len) + ciphertext(2+len)
@@ -481,7 +481,7 @@ pub fn parse_v2_header_field_offsets(ct: &[u8]) -> Vec<(&'static str, usize, usi
     let aad_byte_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
     pos += 2;
     if aad_byte_len > 0 {
-        pos += 2 + aad_byte_len;
+        pos += aad_byte_len;
     }
     fields.push(("AAD", aad_start, pos));
 
@@ -540,11 +540,11 @@ pub fn parse_v2_header_field_offsets(ct: &[u8]) -> Vec<(&'static str, usize, usi
 pub fn parse_header_offsets(ct: &[u8]) -> (usize, usize, usize) {
     let mut pos: usize = 1 + 2 + 32; // skip Version, AlgSuiteID, MessageID
 
-    // AAD: 2-byte length, then if non-zero: 2-byte kv_count + aad_byte_len bytes
+    // AAD: 2-byte length, then if non-zero: aad_byte_len bytes (which include the 2-byte kv_count)
     let aad_byte_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
     pos += 2;
     if aad_byte_len > 0 {
-        pos += 2 + aad_byte_len;
+        pos += aad_byte_len;
     }
 
     // EDK count offset
@@ -573,11 +573,11 @@ pub fn parse_header_offsets(ct: &[u8]) -> (usize, usize, usize) {
 pub fn content_type_offset_v2(ct: &[u8]) -> usize {
     let mut pos: usize = 1 + 2 + 32; // skip Version, AlgSuiteID, MessageID
 
-    // AAD: 2-byte length, then if non-zero: 2-byte kv_count + aad_byte_len bytes
+    // AAD: 2-byte length, then if non-zero: aad_byte_len bytes (which include the 2-byte kv_count)
     let aad_byte_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
     pos += 2;
     if aad_byte_len > 0 {
-        pos += 2 + aad_byte_len;
+        pos += aad_byte_len;
     }
 
     // EDKs: 2-byte count, then for each: provider_id(2+len) + provider_info(2+len) + ciphertext(2+len)
@@ -653,8 +653,8 @@ pub fn edk_count_offset(ct: &[u8], version: Version) -> usize {
             let pos = 20;
             let aad_byte_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
             if aad_byte_len > 0 {
-                // 2 (aad_byte_len field) + 2 (kv_count) + aad_byte_len
-                pos + 2 + 2 + aad_byte_len
+                // 2 (aad_byte_len field) + aad_byte_len (already includes kv_count)
+                pos + 2 + aad_byte_len
             } else {
                 pos + 2
             }
@@ -664,7 +664,7 @@ pub fn edk_count_offset(ct: &[u8], version: Version) -> usize {
             let aad_byte_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
             pos += 2;
             if aad_byte_len > 0 {
-                pos += 2 + aad_byte_len;
+                pos += aad_byte_len;
             }
             pos
         }
@@ -746,11 +746,11 @@ pub fn skip_to_edk_section(ct: &[u8], version: Version) -> usize {
         Version::V1 => 1 + 1 + 2 + 16, // 20
         Version::V2 => 1 + 2 + 32,     // 35
     };
-    // AAD: 2-byte length, then if non-zero: 2-byte kv_count + aad_byte_len bytes
+    // AAD: 2-byte length, then if non-zero: aad_byte_len bytes (which include the 2-byte kv_count)
     let aad_byte_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
     pos += 2;
     if aad_byte_len > 0 {
-        pos += 2 + aad_byte_len;
+        pos += aad_byte_len;
     }
     pos
 }
@@ -808,7 +808,7 @@ pub fn parse_nonframed_body(msg: &[u8]) -> NonframedBody {
     let aad_byte_len = u16::from_be_bytes([msg[pos], msg[pos + 1]]) as usize;
     pos += 2;
     if aad_byte_len > 0 {
-        pos += 2 + aad_byte_len;
+        pos += aad_byte_len;
     }
     // EDKs
     let edk_count = u16::from_be_bytes([msg[pos], msg[pos + 1]]) as usize;
@@ -1005,7 +1005,7 @@ pub fn parse_external_nonframed_body(msg: &[u8], version: Version) -> ExternalNo
     let aad_byte_len = u16::from_be_bytes([msg[pos], msg[pos + 1]]) as usize;
     pos += 2;
     if aad_byte_len > 0 {
-        pos += 2 + aad_byte_len;
+        pos += aad_byte_len;
     }
     let edk_count = u16::from_be_bytes([msg[pos], msg[pos + 1]]) as usize;
     pos += 2;

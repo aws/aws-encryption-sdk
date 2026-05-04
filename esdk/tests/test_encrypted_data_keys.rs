@@ -1,7 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for the Encrypted Data Keys sections of specification/data-format/message-header.md
+//! Tests for the Encrypted Data Keys sections of spec/data-format/message-header.md
 
 mod fixtures;
 mod test_helpers;
@@ -27,7 +27,7 @@ async fn test_encrypted_data_keys_ordering() {
         ("triple", triple, 3u16),
     ] {
         for version in VERSIONS {
-            //= specification/data-format/message-header.md#encrypted-data-keys
+            //= spec/data-format/message-header.md#encrypted-data-keys
             //= type=test
             //# The Encrypted Data Keys MUST consist of, in order,
             //# Encrypted Data Key Count,
@@ -82,11 +82,11 @@ async fn test_edk_section_length_fields_are_big_endian_uint16() {
         let edk_len_wire = u16::from_be_bytes([ct[edk_len_offset], ct[edk_len_offset + 1]]);
 
         // EDK count: 2 keyrings → UInt16 value 2 ([0x00, 0x02]).
-        //= specification/data-format/message-header.md#encrypted-data-key-count
+        //= spec/data-format/message-header.md#encrypted-data-key-count
         //= type=test
         //# The length of the serialized encrypted data key count MUST be 2 bytes.
         //
-        //= specification/data-format/message-header.md#encrypted-data-key-count
+        //= spec/data-format/message-header.md#encrypted-data-key-count
         //= type=test
         //# The encrypted data key count MUST be interpreted as a UInt16.
         assert_eq!(count_wire, 2, "{version:?}: EDK count UInt16 value");
@@ -94,33 +94,33 @@ async fn test_edk_section_length_fields_are_big_endian_uint16() {
         assert_eq!(ct[parsed.edk_count_offset + 1], 0x02, "{version:?}: EDK count low byte");
 
         // Key provider ID length: the UInt16 at this offset equals the known keyring namespace byte length.
-        //= specification/data-format/message-header.md#key-provider-id-length
+        //= spec/data-format/message-header.md#key-provider-id-length
         //= type=test
         //# The length of the serialized key provider ID length field MUST be 2 bytes.
         //
-        //= specification/data-format/message-header.md#key-provider-id-length
+        //= spec/data-format/message-header.md#key-provider-id-length
         //= type=test
         //# The key provider ID length MUST be interpreted as a UInt16.
         assert_eq!(pid_len_wire, expected_pid_len, "{version:?}: provider ID length UInt16 value");
 
         // Key provider information length: the UInt16 at this offset must be positive for a raw AES keyring
         // (which packs key name + bit length + IV length + IV into provider info).
-        //= specification/data-format/message-header.md#key-provider-information-length
+        //= spec/data-format/message-header.md#key-provider-information-length
         //= type=test
         //# The length of the serialized key provider information length field MUST be 2 bytes.
         //
-        //= specification/data-format/message-header.md#key-provider-information-length
+        //= spec/data-format/message-header.md#key-provider-information-length
         //= type=test
         //# The key provider information length MUST be interpreted as a UInt16.
         assert!(pinfo_len_wire > 0, "{version:?}: provider info length UInt16 must be positive");
 
         // Encrypted data key length: raw AES keyring stores IV in provider_info; the ciphertext field is
         // wrapped data key (32 bytes) + GCM tag (16 bytes) = 48.
-        //= specification/data-format/message-header.md#encrypted-data-key-length
+        //= spec/data-format/message-header.md#encrypted-data-key-length
         //= type=test
         //# The length of the serialized encrypted data key length field MUST be 2 bytes.
         //
-        //= specification/data-format/message-header.md#encrypted-data-key-length
+        //= spec/data-format/message-header.md#encrypted-data-key-length
         //= type=test
         //# The encrypted data key length MUST be interpreted as a UInt16.
         assert_eq!(edk_len_wire, 48, "{version:?}: EDK ciphertext length UInt16 value (wrapped 32B key + 16B tag)");
@@ -143,7 +143,7 @@ async fn test_edk_count_zero_rejected_on_decrypt() {
             dec.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
         }
 
-        //= specification/data-format/message-header.md#encrypted-data-key-count
+        //= spec/data-format/message-header.md#encrypted-data-key-count
         //= type=test
         //= reason=Tampering the count to 0 and verifying decrypt rejects it proves the >0 constraint is enforced on the deserialization path.
         //# This value MUST be greater than 0.
@@ -172,7 +172,7 @@ async fn test_edk_count_max_enforcement() {
         );
     };
 
-    //= specification/data-format/message-header.md#encrypted-data-key-count
+    //= spec/data-format/message-header.md#encrypted-data-key-count
     //= type=test
     //# This value MUST be less than or equal to the [maximum number of encrypted data keys](../client-apis/client.md#maximum-number-of-encrypted-data-keys) if the maximum number is configured.
 
@@ -209,7 +209,7 @@ async fn test_edk_entry_field_order() {
         let edk_start = skip_to_edk_section(&ct, version) + 2; // skip count
         let mut pos = edk_start;
 
-        //= specification/data-format/message-header.md#encrypted-data-key-entries
+        //= spec/data-format/message-header.md#encrypted-data-key-entries
         //= type=test
         //# Each Encrypted Data Key Entry MUST consist of, in order,
         //# Key Provider ID Length,
@@ -274,7 +274,7 @@ async fn test_edk_entries_preserve_keyring_order() {
         let ct = encrypt_with_version(b"order check", version, mk.clone()).await;
         let parsed = parse_edk_section(&ct, version);
 
-        //= specification/data-format/message-header.md#encrypted-data-keys
+        //= spec/data-format/message-header.md#encrypted-data-keys
         //= type=test
         //= reason=Verifying that EDK provider IDs appear in generator-then-children order proves entries are serialized in the order they appear in the encryption materials, exercising the "Entries" component of the Count+Entries structure.
         //# The Encrypted Data Keys MUST consist of, in order,
@@ -303,7 +303,7 @@ async fn test_edk_entry_lengths_match_fields() {
         let parsed = parse_edk_section(&ct, version);
 
         for (i, edk) in parsed.edks.iter().enumerate() {
-            //= specification/data-format/message-header.md#key-provider-id
+            //= spec/data-format/message-header.md#key-provider-id
             //= type=test
             //# The length of the serialized key provider ID MUST be equal to the value of the [Key Provider ID Length](#key-provider-id-length) field.
             assert_eq!(
@@ -311,7 +311,7 @@ async fn test_edk_entry_lengths_match_fields() {
                 "{version:?}: EDK {i}: provider ID byte length must equal the provider ID length field"
             );
 
-            //= specification/data-format/message-header.md#key-provider-information
+            //= spec/data-format/message-header.md#key-provider-information
             //= type=test
             //# The length of the serialized key provider information MUST be equal to the value of the [Key Provider Information Length](#key-provider-information-length) field.
             assert_eq!(
@@ -319,7 +319,7 @@ async fn test_edk_entry_lengths_match_fields() {
                 "{version:?}: EDK {i}: provider info byte length must equal the provider info length field"
             );
 
-            //= specification/data-format/message-header.md#encrypted-data-key
+            //= spec/data-format/message-header.md#encrypted-data-key
             //= type=test
             //# The length of the serialized encrypted data key MUST be equal to the value of the [Encrypted Data Key Length](#encrypted-data-key-length) field.
             assert_eq!(
@@ -340,7 +340,7 @@ async fn test_key_provider_id_is_utf8() {
         let ct = encrypt_with_version(b"pid utf8", version, mk.clone()).await;
         let parsed = parse_edk_section(&ct, version);
 
-        //= specification/data-format/message-header.md#key-provider-id
+        //= spec/data-format/message-header.md#key-provider-id
         //= type=test
         //# The key provider ID MUST be interpreted as UTF-8 encoded bytes.
         for (i, edk) in parsed.edks.iter().enumerate() {
@@ -366,7 +366,7 @@ async fn test_key_provider_info_interpreted_as_bytes() {
         // Provider info for raw AES keyring starts with the key name.
         let (_, expected_name) = namespace_and_name(0);
 
-        //= specification/data-format/message-header.md#key-provider-information
+        //= spec/data-format/message-header.md#key-provider-information
         //= type=test
         //# The key provider information MUST be interpreted as bytes.
         assert!(
