@@ -90,7 +90,7 @@ pub(crate) fn write_aad_section(
 
     // PROPOSED
     //= spec/data-format/message-header.md#key-value-pairs-length
-    //# The key value pairs length value MUST equal the byte length of the Key Value Pair Count field plus all Key Value Pair entries.
+    //# The Key Value Pairs Length value MUST be the byte length of the serialized Key Value Pairs field, where the Key Value Pairs field consists of the Key Value Pair Count followed by the Key Value Pair entries.
     let bytes = 2 + get_length(data); // 2 for the Key Value Pair Count UInt16.
 
     //= spec/data-format/message-header.md#key-value-pairs-length
