@@ -1,7 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for specification/data-format/message-header.md#aad,
+//! Tests for spec/data-format/message-header.md#aad,
 //! #key-value-pairs-length, and #key-value-pairs
 
 mod fixtures;
@@ -25,8 +25,7 @@ fn aad_offset(version: Version) -> usize {
 
 /// Assert that every (key, value) pair in `expected` is present in `actual`.
 /// Used to verify the encryption context survives the round trip intact,
-/// while ignoring any keys the SDK may add (e.g. `aws-crypto-public-key`
-/// for signing suites — not used by these tests, but the check is defensive).
+/// while ignoring any keys the SDK may add (e.g. `aws-crypto-public-key`)
 fn assert_ec_contains(actual: &EncryptionContext, expected: &EncryptionContext, version: Version) {
     for (k, v) in expected {
         assert_eq!(
@@ -45,7 +44,7 @@ async fn test_aad_serialization_order() {
         let ct = encrypt_no_sign_with_ec(pt, ec.clone(), version).await;
         let off = aad_offset(version);
 
-        //= specification/data-format/message-header.md#aad
+        //= spec/data-format/message-header.md#aad
         //= type=test
         //# The AAD MUST consist of, in order,
         //# Key Value Pairs Length,
@@ -76,14 +75,17 @@ async fn test_aad_key_value_pairs_length_field_size() {
         let ct = encrypt_no_sign_with_ec(pt, ec.clone(), version).await;
         let off = aad_offset(version);
 
-        //= specification/data-format/message-header.md#key-value-pairs-length
+        //= spec/data-format/message-header.md#key-value-pairs-length
         //= type=test
         //# The length of the serialized key value pairs length field MUST be 2 bytes.
 
         // The KVP length field occupies exactly 2 bytes at [off..off+2].
         let kvp_len = u16::from_be_bytes([ct[off], ct[off + 1]]) as usize;
-        // For "A" (keyA=valA): key_len(2) + key(4) + val_len(2) + val(4) = 12 bytes of pair data.
-        assert_eq!(kvp_len, 12, "{version:?}: KVP length for single pair keyA=valA must be 12");
+        // For "A" (keyA=valA) the Key Value Pairs field is:
+        // count(2) + key_len(2) + key(4) + val_len(2) + val(4) = 14 bytes.
+        // The length field covers the entire Key Value Pairs structure, including
+        // the Key Value Pair Count.
+        assert_eq!(kvp_len, 14, "{version:?}: KVP length for single pair keyA=valA must be 14");
 
         // Cross-check: the decrypted EC matches what we encrypted, confirming the 2-byte
         // length field was parsed correctly on the decrypt side too.
@@ -100,14 +102,14 @@ async fn test_aad_key_value_pairs_length_uint16() {
         let ct = encrypt_no_sign_with_ec(pt, ec.clone(), version).await;
         let off = aad_offset(version);
 
-        //= specification/data-format/message-header.md#key-value-pairs-length
+        //= spec/data-format/message-header.md#key-value-pairs-length
         //= type=test
         //# The key value pairs length MUST be interpreted as a UInt16.
 
         // Read the 2 bytes as big-endian u16 and verify the value.
         let kvp_len = u16::from_be_bytes([ct[off], ct[off + 1]]);
-        // keyA=valA: key_len(2) + key(4) + val_len(2) + val(4) = 12.
-        assert_eq!(kvp_len, 12, "{version:?}: UInt16 KVP length for keyA=valA must be 12");
+        // keyA=valA: count(2) + key_len(2) + key(4) + val_len(2) + val(4) = 14.
+        assert_eq!(kvp_len, 14, "{version:?}: UInt16 KVP length for keyA=valA must be 14");
 
         // Cross-check: the decrypted EC round-trips, confirming both sides agree that
         // the field is a big-endian UInt16.
@@ -124,7 +126,7 @@ async fn test_aad_empty_encryption_context_length_zero() {
         let ct = encrypt_no_sign_with_ec(pt, ec.clone(), version).await;
         let off = aad_offset(version);
 
-        //= specification/data-format/message-header.md#key-value-pairs-length
+        //= spec/data-format/message-header.md#key-value-pairs-length
         //= type=test
         //# When the [encryption context](../framework/structures.md#encryption-context) is empty, the value of this field MUST be 0.
 
@@ -155,7 +157,7 @@ async fn test_aad_key_value_pairs_serialization() {
         let ct = encrypt_no_sign_with_ec(pt, ec.clone(), version).await;
         let off = aad_offset(version);
 
-        //= specification/data-format/message-header.md#key-value-pairs
+        //= spec/data-format/message-header.md#key-value-pairs
         //= type=test
         //# The encryption context key-value pairs MUST be serialized according to its [specification for serialization](../framework/structures.md#serialization).
 
@@ -204,7 +206,7 @@ async fn test_aad_empty_encryption_context_no_kvp_field() {
         let ct = encrypt_no_sign_with_ec(pt, ec.clone(), version).await;
         let off = aad_offset(version);
 
-        //= specification/data-format/message-header.md#key-value-pairs
+        //= spec/data-format/message-header.md#key-value-pairs
         //= type=test
         //# When the [encryption context](../framework/structures.md#encryption-context) is empty,
         //# this field MUST NOT be included in the [AAD](#aad).
