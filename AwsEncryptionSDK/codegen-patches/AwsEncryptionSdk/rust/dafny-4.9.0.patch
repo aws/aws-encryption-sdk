@@ -1,10 +1,14 @@
-diff --git a/releases/rust/esdk/src/validation.rs b/releases/rust/esdk/src/validation.rs
-index 4e6cc348..1166b2e7 100644
---- a/releases/rust/esdk/src/validation.rs
-+++ b/releases/rust/esdk/src/validation.rs
-@@ -332,6 +332,12 @@ pub(crate) fn validate_aws_Pcryptography_PencryptionSdk_HEncryptInput_Dplaintext
-     }
-     let input = input.as_ref().unwrap();
+diff --git a/AwsEncryptionSDK/runtimes/rust/src/validation.rs b/AwsEncryptionSDK/runtimes/rust/src/validation.rs
+--- a/AwsEncryptionSDK/runtimes/rust/src/validation.rs
++++ b/AwsEncryptionSDK/runtimes/rust/src/validation.rs
+@@ -263,11 +263,17 @@ pub(crate) fn validate_aws_Pcryptography_PencryptionSdk_HEncryptInput_Dplaintext
+         "plaintext is required but was not specified",
+     ));
+ }
+ if input.is_none() {
+   return ::std::result::Result::Ok(());
+ }
+ let input = input.as_ref().unwrap();
  
 +    if input.as_ref().len() > 134_217_728 {
 +        return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::invalid_field(
@@ -12,6 +16,6 @@ index 4e6cc348..1166b2e7 100644
 +            format!("plaintext size {} bytes exceeds the maximum allowed size of 128 MB", input.as_ref().len()),
 +        ));
 +    }
-     Ok(())
+   Ok(())
  }
- pub(crate) fn validate_aws_Pcryptography_PencryptionSdk_HEncryptOutput(
+ pub(crate) fn validate_aws_Pcryptography_PencryptionSdk_HEncryptOutput(input: &crate::types::EncryptOutput)

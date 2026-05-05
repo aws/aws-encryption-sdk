@@ -21,7 +21,7 @@ jobs:
       matrix:
         library: [AwsEncryptionSDK]
         os: [
-            windows-latest,
+            # windows-latest, #TODO: Windows aren't fully supported.
             ubuntu-22.04,
             # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
             # macos-15,
