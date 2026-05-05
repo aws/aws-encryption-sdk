@@ -108,6 +108,21 @@ restore_directories:
 		fi \
 	done
 
+# Go codegen (smithy-dafny) does not yet support handlePatching unlike
+# Java, .NET, and Rust. Apply Go patches manually after codegen runs.
+# TODO: Remove this once handlePatching is added to generateGo() in
+# smithy-dafny CodegenEngine.java.
+_polymorph_go: apply_go_patches
+apply_go_patches:
+	@if [ -d "codegen-patches/AwsEncryptionSdk/go" ]; then \
+		for patch in codegen-patches/AwsEncryptionSdk/go/*.patch; do \
+			if [ -f "$$patch" ]; then \
+				echo "Applying Go patch: $$patch"; \
+				git apply -v "$$patch"; \
+			fi \
+		done \
+	fi
+
 PYTHON_MODULE_NAME=aws_encryption_sdk_dafny
 
 TRANSLATION_RECORD_PYTHON := \

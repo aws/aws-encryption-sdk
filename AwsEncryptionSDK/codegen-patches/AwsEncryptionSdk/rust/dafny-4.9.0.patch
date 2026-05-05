@@ -1,0 +1,21 @@
+diff --git a/AwsEncryptionSDK/runtimes/rust/src/validation.rs b/AwsEncryptionSDK/runtimes/rust/src/validation.rs
+--- a/AwsEncryptionSDK/runtimes/rust/src/validation.rs
++++ b/AwsEncryptionSDK/runtimes/rust/src/validation.rs
+@@ -263,11 +263,17 @@ pub(crate) fn validate_aws_Pcryptography_PencryptionSdk_HEncryptInput_Dplaintext
+         "plaintext is required but was not specified",
+     ));
+ }
+ if input.is_none() {
+   return ::std::result::Result::Ok(());
+ }
+ let input = input.as_ref().unwrap();
+ 
++    if input.as_ref().len() > 134_217_728 {
++        return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::invalid_field(
++            "plaintext",
++            format!("plaintext size {} bytes exceeds the maximum allowed size of 128 MB", input.as_ref().len()),
++        ));
++    }
+   Ok(())
+ }
+ pub(crate) fn validate_aws_Pcryptography_PencryptionSdk_HEncryptOutput(input: &crate::types::EncryptOutput)

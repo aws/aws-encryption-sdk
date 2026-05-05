@@ -593,6 +593,13 @@ impl EsdkBenchmark {
         } else {
             info!("Skipping concurrency tests (not in test_types)");
         }
+
+        if self.should_run_test_type("size_limits", is_quick_mode) {
+            self.run_size_limit_smoke_test().await?;
+        } else {
+            info!("Skipping size limit smoke tests (not in test_types)");
+        }
+
         info!(
             "Benchmark suite completed. Total results: {}",
             self.results.len()
