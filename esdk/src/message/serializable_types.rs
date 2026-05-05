@@ -52,6 +52,11 @@ pub(crate) const fn get_encrypt_key_length(a: &AlgorithmSuite) -> u8 {
 // Uint16-2-2-1 for the value data
 
 /// Serialized byte length of the key-value-pairs body (no outer length prefix).
+///
+/// Accumulates in `usize` and casts to `u64` on return. Per the ESDK message
+/// format, the AAD's maximum allowed length is `2^16 - 1` bytes, so a legal
+/// encryption context never produces a sum that overflows even a 16-bit
+/// accumulator — the `usize` sum and `as u64` cast are safe by construction.
 pub(crate) fn length(encryption_context: &ESDKEncryptionContext) -> u64 {
     let mut length: usize = 0;
     for (key, value) in encryption_context {
