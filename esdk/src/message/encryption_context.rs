@@ -34,9 +34,7 @@ pub(crate) fn read_canonical_ec(
 
     // PROPOSED
     //= spec/data-format/message-header.md#key-value-pairs-length
-    //# The key value pairs length value MUST equal the number of bytes consumed
-    //# by deserializing the Key Value Pairs field. A decryptor MUST reject a
-    //# message whose key value pairs length does not match the deserialized size.
+    //# A decryptor MUST reject a message whose Key Value Pairs Length value does not equal the byte length of the deserialized Key Value Pairs field.
     if consumed != bytes {
         return ser_err("Encryption context length field does not match parsed contents");
     }
