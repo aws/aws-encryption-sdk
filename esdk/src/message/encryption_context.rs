@@ -50,8 +50,8 @@ pub(crate) fn write_empty_ec_or_write_aad(
 fn get_length(data: &ESDKCanonicalEncryptionContext) -> usize {
     let mut length = 0;
     for pair in data {
-        // 2 (key len) + 2 (val len) + key bytes + val bytes.
-        length += 4 + pair.0.len() + pair.1.len();
+        // key_len(2) + key bytes + val_len(2) + val bytes.
+        length += 2 + pair.0.len() + 2 + pair.1.len();
     }
     length
 }
