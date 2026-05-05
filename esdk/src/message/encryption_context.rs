@@ -19,24 +19,13 @@ pub(crate) fn read_canonical_ec(
         return Ok(Vec::new());
     }
 
-    // Count, then `count` (key, value) pairs. Track bytes consumed so we can
-    // reject a message whose length field disagrees with the parsed contents.
+    // Count, then `count` (key, value) pairs.
     let count = usize::from(read_u16(r, raw)?);
-    let mut consumed: usize = 2; // the Key Value Pair Count field we just read
     let mut result: ESDKCanonicalEncryptionContext = Vec::with_capacity(count);
     for _ in 0..count {
         let key = read_str_u16(r, raw)?;
-        consumed += 2 + key.len();
         let value = read_str_u16(r, raw)?;
-        consumed += 2 + value.len();
         result.push((key, value));
-    }
-
-    // PROPOSED
-    //= spec/data-format/message-header.md#key-value-pairs-length
-    //# A decryptor MUST reject a message whose Key Value Pairs Length value does not equal the byte length of the deserialized Key Value Pairs field.
-    if consumed != bytes {
-        return ser_err("Encryption context length field does not match parsed contents");
     }
 
     Ok(result)
