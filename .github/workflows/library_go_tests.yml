@@ -57,6 +57,8 @@ jobs:
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
+        with:
+          mpl-submodule-path: mpl/
 
       - name: Setup NASM for Windows (aws-lc-sys)
         if: matrix.os == 'windows-latest'

@@ -62,6 +62,8 @@ jobs:
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
+        with:
+          mpl-submodule-path: mpl/
 
       - name: Install Go
         uses: actions/setup-go@v6
@@ -70,6 +72,8 @@ jobs:
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
+        with:
+          mpl-submodule-path: mpl/
 
       - uses: ./.github/actions/polymorph_codegen
         with:

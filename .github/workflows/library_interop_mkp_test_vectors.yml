@@ -121,6 +121,8 @@ jobs:
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
+        with:
+          mpl-submodule-path: mpl/
 
       - name: Regenerate code using smithy-dafny if necessary
         if: ${{ inputs.regenerate-code }}
@@ -152,6 +154,8 @@ jobs:
       - name: Install Smithy-Dafny codegen dependencies
         if: matrix.language == 'rust'
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
+        with:
+          mpl-submodule-path: mpl/
 
       - name: Run make polymorph_rust
         if: matrix.language == 'rust'
@@ -307,6 +311,8 @@ jobs:
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
+        with:
+          mpl-submodule-path: mpl/
 
       - name: Regenerate code using smithy-dafny if necessary
         if: ${{ inputs.regenerate-code }}
@@ -338,6 +344,8 @@ jobs:
       - name: Install Smithy-Dafny codegen dependencies
         if: matrix.decrypting_language == 'rust'
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
+        with:
+          mpl-submodule-path: mpl/
 
       - name: Run make polymorph_rust
         if: matrix.decrypting_language == 'rust'
@@ -731,6 +739,8 @@ jobs:
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
+        with:
+          mpl-submodule-path: mpl/
 
       - name: Regenerate code using smithy-dafny if necessary
         if: ${{ inputs.regenerate-code }}
@@ -762,6 +772,8 @@ jobs:
       - name: Install Smithy-Dafny codegen dependencies
         if: matrix.decrypting_language == 'rust'
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
+        with:
+          mpl-submodule-path: mpl/
 
       - name: Run make polymorph_rust
         if: matrix.decrypting_language == 'rust'

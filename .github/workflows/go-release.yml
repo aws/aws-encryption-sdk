@@ -53,6 +53,8 @@ jobs:
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
+        with:
+          mpl-submodule-path: mpl/
 
       - name: Configure Git
         run: |
