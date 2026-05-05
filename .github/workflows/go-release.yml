@@ -19,7 +19,7 @@ jobs:
 
   go-release:
     needs: get-dafny-version
-    runs-on: macos-15
+    runs-on: macos-latest
     permissions:
       contents: write
       id-token: write
