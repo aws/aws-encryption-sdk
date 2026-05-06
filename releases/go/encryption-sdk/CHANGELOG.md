@@ -1,5 +1,7 @@
 # Changelog
 
+## [releases/go/encryption-sdk/v0.3.0] - 2026-05-06
+
 ## [releases/go/encryption-sdk/v0.3.0] - 2025-10-29
 
 ### Performance
