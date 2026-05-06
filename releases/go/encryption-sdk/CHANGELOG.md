@@ -1,6 +1,11 @@
 # Changelog
 
-## [releases/go/encryption-sdk/v0.3.0] - 2026-05-06
+## [releases/go/encryption-sdk/v0.4.0] - 2026-05-06
+
+### Maintenance
+
+- _(go)_ feat: Add plaintext size limits (#896)
+- _(go)_ chore: upgrade dafny runtime go v4.11.3
 
 ## [releases/go/encryption-sdk/v0.3.0] - 2025-10-29
 
