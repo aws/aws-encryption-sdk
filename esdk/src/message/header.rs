@@ -173,6 +173,10 @@ pub(crate) fn validate_suite_data(
 }
 
 /// Write the message header (body + auth tag) to the output stream.
+//= spec/data-format/message-header.md#structure
+//# The header MUST consist of, in order,
+//# Header Body,
+//# and Header Authentication.
 pub(crate) fn write_header(
     header: &HeaderInfo,
     ciphertext: &mut dyn SafeWrite,

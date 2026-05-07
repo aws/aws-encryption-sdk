@@ -20,6 +20,17 @@ pub(crate) fn write_v2_header_body(
     w: &mut dyn SafeWrite,
     body: &V2HeaderBody,
 ) -> Result<(), Error> {
+    //= spec/data-format/message-header.md#header-body-version-2-0
+    //# The V2 Header Body MUST consist of, in order,
+    //# Version,
+    //# Algorithm Suite ID,
+    //# Message ID,
+    //# AAD,
+    //# Encrypted Data Keys,
+    //# Content Type,
+    //# Frame Length,
+    //# and Algorithm Suite Data.
+    //
     //= spec/client-apis/encrypt.md#v2-header
     //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
     //# the remaining header fields MUST be serialized according to the
@@ -83,6 +94,10 @@ pub(crate) fn write_v2_header_body(
     //# - MUST serialize the [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data).
     //# The value MUST be the value of the [commit key](../framework/algorithm-suites.md#commit-key)
     //# derived according to the [algorithm suites commit key derivation settings](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
+    //
+    //= spec/data-format/message-header.md#algorithm-suite-data
+    //= type=implication
+    //# The algorithm suite data MUST be interpreted as bytes.
     write_bytes(w, &body.suite_data)
 }
 
@@ -106,26 +121,56 @@ pub(crate) fn read_v2_header_body(
     //# Given encrypted message bytes, this operation MUST process those bytes sequentially,
     //# deserializing those bytes according to the [message format](../data-format/message.md).
 
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //# If the value of the deserialized version field is [2.0](../data-format/message-header.md#supported-versions),
+    //# the remaining header fields MUST be deserialized according to the
+    //# [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
+
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //# - MUST deserialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
     let algorithm_suite = read_esdk_suite_id(r, raw)?;
     if !has_hkdf(&algorithm_suite.commitment) {
         return ser_err("Algorithm suite must support commitment");
     }
 
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //# - MUST deserialize the [Message ID](../data-format/message-header.md#message-id).
     let message_id = read_message_id_v2(r, raw)?;
 
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //# - MUST deserialize the [AAD](../data-format/message-header.md#aad).
     let encryption_context: Vec<(String, String)> = read_canonical_ec(r, raw)?;
 
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //# - MUST deserialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
     let encrypted_data_keys = read_edks(r, max_edks, raw)?;
 
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //# - MUST deserialize the [Content Type](../data-format/message-header.md#content-type).
     let content_type = read_content_type(r, raw)?;
 
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //# - MUST deserialize the [Frame Length](../data-format/message-header.md#frame-length).
     let frame_length = read_u32(r, raw)?;
 
     let len = get_hkdf(&algorithm_suite.commitment)?.output_key_length;
     let Ok(len_usize) = usize::try_from(len) else {
         return ser_err("Algorithm suite data length exceeds platform capacity");
     };
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //# - MUST deserialize the [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data).
+    //
+    //= spec/data-format/message-header.md#algorithm-suite-data
+    //= type=implication
+    //# The algorithm suite data MUST be interpreted as bytes.
     let suite_data = read_vec(r, len_usize, raw)?;
+
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //= type=implication
+    //= reason=std::io::Read blocks until bytes are available or EOF; the sequential read calls above inherently wait for consumable bytes
+    //# This operation MUST wait if it doesn't have enough consumable encrypted message bytes to
+    //# deserialize the next field of the message header until enough input bytes become consumable or
+    //# the caller indicates an end to the encrypted message.
 
     Ok(V2HeaderBody {
         algorithm_suite: algorithm_suite.clone(),
