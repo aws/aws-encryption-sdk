@@ -1,0 +1,14 @@
+target = "spec/data-format/message-header.md#reserved"
+
+# Reserved
+#
+# A reserved sequence of 4 bytes
+# that MUST have the value (hex) of `00 00 00 00`.
+
+[[spec]]
+level = "MUST"
+quote = '''
+A reserved sequence of 4 bytes
+that MUST have the value (hex) of `00 00 00 00`.
+'''
+

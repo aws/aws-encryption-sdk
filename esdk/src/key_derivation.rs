@@ -3,7 +3,6 @@
 //! Key derivation for V1 (HKDF-extract) and V2 (HKDF-expand) algorithm suites.
 
 use super::{Error, val_err};
-use crate::message::header_types::MessageId;
 use crate::message::serializable_types::get_encrypt_key_length;
 use aws_mpl_legacy::suites::AlgorithmSuite;
 use aws_mpl_legacy::suites::DerivationAlgorithm;
@@ -59,7 +58,7 @@ fn digest_length(alg: aws_mpl_legacy::primitives::DigestAlg) -> Result<usize, Er
 // Derives a single data key from an input plaintext data key, using "v1"-style
 // key derivation (that is, no key commitment).
 pub(crate) fn derive_key(
-    message_id: &MessageId,
+    message_id: &[u8],
     plaintext_data_key: &[u8],
     suite: &AlgorithmSuite,
     // TODO Post-#619: Refactor, breaking Net v4.0.0 logic out into independent method
@@ -73,22 +72,22 @@ pub(crate) fn derive_key(
         plaintext_data_key.len()
     ));
 
-    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //# The algorithm used to derive a data key from the plaintext data key MUST be
     //# the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
     //# [algorithm suite](../framework/algorithm-suites.md) defined above.
     match &suite.kdf {
-        //= specification/client-apis/encrypt.md#get-the-encryption-materials
+        //= spec/client-apis/encrypt.md#get-the-encryption-materials
         //# - If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
         //# then the derived data key MUST be the same as the plaintext data key.
-        //= specification/client-apis/decrypt.md#get-the-decryption-materials
+        //= spec/client-apis/decrypt.md#get-the-decryption-materials
         //# If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
         //# then the derived data key MUST be the same as the plaintext data key.
         DerivationAlgorithm::Identity => Ok(ExpandedKeyMaterial {
             data_key: Zeroizing::new(plaintext_data_key.to_vec()),
             commitment_key: None,
         }),
-        //= specification/client-apis/encrypt.md#get-the-encryption-materials
+        //= spec/client-apis/encrypt.md#get-the-encryption-materials
         //# - If the key derivation algorithm is [HKDF](../framework/algorithm-suites.md#hkdf),
         //# the derivation process used MUST be the process described in [HKDF Encryption Key](../transitive-requirements.md#hkdf-encryption-key).
         DerivationAlgorithm::Hkdf(hkdf) => {
@@ -129,7 +128,7 @@ const KEY_LABEL: &str = "DERIVEKEY";
 // Derives keys from an input plaintext data key, using "v2"-style
 // key derivation (that is, including key commitment).
 pub(crate) fn expand_key_material(
-    message_id: &MessageId,
+    message_id: &[u8],
     plaintext_key: &[u8],
     suite: &AlgorithmSuite,
 ) -> Result<ExpandedKeyMaterial, Error> {
@@ -184,7 +183,7 @@ pub(crate) fn expand_key_material(
 // Derives key material for encryption/decryption. Delegates out to specific methods
 // based on the input algorithm suite.
 pub(crate) fn derive_keys(
-    message_id: &MessageId,
+    message_id: &[u8],
     plaintext_key: &[u8],
     suite: &AlgorithmSuite,
     on_net_v4_retry: bool,

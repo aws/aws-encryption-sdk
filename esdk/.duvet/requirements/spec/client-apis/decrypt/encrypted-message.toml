@@ -1,0 +1,40 @@
+target = "spec/client-apis/decrypt.md#encrypted-message"
+
+# Encrypted Message
+#
+# The encrypted message to decrypt.
+# The input encrypted message MUST be a sequence of bytes in the
+# [message format](../data-format/message.md) specified by the AWS Encryption SDK.
+# The encrypted message contains the list of [encrypted data keys](../data-format/message-header.md#encrypted-data-keys),
+# [encryption context](../data-format/message-header.md#aad), if provided during encryption,
+# [encrypted content](../data-format/message-body.md#encrypted-content) and
+# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id) among other metadata.
+# Each key in the encrypted data key list is an encrypted version of the single plaintext data key that was used to encrypt the plaintext.
+# The encryption context is the additional authenticated data that was used during encryption.
+# The algorithm suite ID refers to the algorithm suite used to encrypt the message and is required to decrypt the encrypted message.
+# 
+# This input MAY be [streamed](streaming.md) to this operation.
+# 
+# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
+# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The input encrypted message MUST be a sequence of bytes in the
+[message format](../data-format/message.md) specified by the AWS Encryption SDK.
+'''
+
+[[spec]]
+level = "MAY"
+quote = '''
+This input MAY be [streamed](streaming.md) to this operation.
+'''
+
+[[spec]]
+level = "SHOULD"
+quote = '''
+If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
+that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
+'''
+

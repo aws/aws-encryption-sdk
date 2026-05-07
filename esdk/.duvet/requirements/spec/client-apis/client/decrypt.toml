@@ -1,0 +1,14 @@
+target = "spec/client-apis/client.md#decrypt"
+
+# Decrypt
+#
+# The AWS Encryption SDK Client MUST provide an [decrypt](./decrypt.md#input) function
+# that adheres to [decrypt](./decrypt.md).
+
+[[spec]]
+level = "MUST"
+quote = '''
+The AWS Encryption SDK Client MUST provide an [decrypt](./decrypt.md#input) function
+that adheres to [decrypt](./decrypt.md).
+'''
+

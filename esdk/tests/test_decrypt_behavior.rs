@@ -1,7 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for specification/client-apis/decrypt.md#behavior
+//! Tests for spec/client-apis/decrypt.md#behavior
 
 mod fixtures;
 mod test_helpers;
@@ -12,7 +12,7 @@ use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_skips_signature_step_for_non_signing_algorithm() {
-    //= specification/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
     //= type=test
     //# - If the message header does not contain an algorithm suite including a signature algorithm,
     //# the Decrypt operation MUST NOT perform this step.
@@ -34,7 +34,7 @@ async fn test_decrypt_skips_signature_step_for_non_signing_algorithm() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_non_streaming_decrypt_holds_output_until_completion() {
-    //= specification/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
     //= type=test
     //# If the input encrypted message is not being [streamed](streaming.md) to this operation,
     //# all output MUST NOT be released until after these steps complete successfully.
@@ -53,7 +53,7 @@ async fn test_non_streaming_decrypt_holds_output_until_completion() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_output_not_released_until_indicated() {
-    //= specification/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
     //= type=test
     //# - Output MUST NOT be released until otherwise indicated.
     // Streaming decrypt with a signing suite: output is held back until
@@ -80,7 +80,7 @@ async fn test_streaming_output_not_released_until_indicated() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_halts_on_incomplete_message() {
-    //= specification/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
     //= type=test
     //# - If all bytes have been provided and this operation
     //# is unable to complete the above steps with the consumable encrypted message bytes,
@@ -104,7 +104,7 @@ async fn test_decrypt_halts_on_incomplete_message() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_fails_with_trailing_bytes_after_message() {
-    //= specification/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
     //= type=test
     //# - If this operation successfully completes the above steps
     //# but there are consumable bytes which are intended to be decrypted,
@@ -128,7 +128,7 @@ async fn test_decrypt_fails_with_trailing_bytes_after_message() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_fails_for_multi_frame_signed_without_override() {
-    //= specification/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
     //= type=test
     //# - The ESDK MUST provide a configuration option that causes the decryption operation
     //# to fail immediately after parsing the header if a signed algorithm suite is used.
@@ -173,7 +173,7 @@ async fn test_streaming_fails_for_multi_frame_signed_without_override() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_signing_suite_must_perform_signature_step() {
-    //= specification/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
     //= type=test
     //# - If the message header contains an algorithm suite including a
     //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),

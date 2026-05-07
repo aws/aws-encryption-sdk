@@ -1,4 +1,4 @@
-.PHONY: clippy test examples
+.PHONY: clippy test examples duvet
 
 clippy:
 	cargo clippy --tests --examples # redundant with one of the below. Probably ddb.
@@ -17,3 +17,6 @@ test:
 
 examples:
 	echo no mpl examples yet
+
+duvet:
+	@echo "no duvet annotations for mpl"

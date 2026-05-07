@@ -1,7 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for missing duvet annotations in specification/client-apis/decrypt.md
+//! Tests for missing duvet annotations in spec/client-apis/decrypt.md
 //! Covers V1/V2 header auth deserialization, streamed header release,
 //! frame inspection, sequence number end validation, nonframed content length,
 //! and footer/signature wait requirements.
@@ -16,7 +16,7 @@ use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_auth_deserialized() {
-    //= specification/client-apis/decrypt.md#v1-header-deserialization
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //= reason=Successful V1 round-trip proves the Header Authentication Version 1.0 (IV + Auth Tag) was deserialized
     //# The Decrypt operation MUST then deserialize the
@@ -41,7 +41,7 @@ async fn test_v1_header_auth_deserialized() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_auth_iv_deserialized() {
-    //= specification/client-apis/decrypt.md#v1-header-deserialization
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //= reason=Successful V1 round-trip with header verification proves the IV was deserialized from the V1 header auth
     //# - MUST deserialize the [IV](../data-format/message-header.md#iv).
@@ -65,7 +65,7 @@ async fn test_v1_header_auth_iv_deserialized() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v2_header_auth_deserialized() {
-    //= specification/client-apis/decrypt.md#v2-header-deserialization
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //= reason=Successful V2 round-trip proves the Header Authentication Version 2.0 (Auth Tag only) was deserialized
     //# The Decrypt operation MUST then deserialize the
@@ -87,7 +87,7 @@ async fn test_v2_header_auth_deserialized() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streamed_release_parsed_header_after_verification() {
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //= reason=Successful streaming decrypt returns encryption context and algorithm suite, proving they were released after header verification
     //# - A streamed Decrypt operation SHOULD release the parsed [encryption context](#encryption-context),
@@ -128,7 +128,7 @@ async fn test_streamed_release_parsed_header_after_verification() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_inspect_first_4_bytes_of_each_frame() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=Multi-frame decrypt with 3 regular frames + 1 final frame proves the first 4 bytes of each frame are inspected to determine frame type
     //# The Decrypt operation MUST inspect the first 4 bytes of each frame.
@@ -142,7 +142,7 @@ async fn test_inspect_first_4_bytes_of_each_frame() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_sequence_number_end_value_is_0xffffffff() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=Parsing the raw ciphertext confirms the final frame starts with 0xFFFFFFFF, and successful decrypt proves this value was validated
     //# The value MUST be `0xFFFFFFFF`.
@@ -164,7 +164,7 @@ async fn test_sequence_number_end_value_is_0xffffffff() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_nonframed_content_length_from_encrypted_content_length() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=Successful nonframed decrypt proves the content length in AAD was determined from the nonframed data encrypted content length field
     //# If this is nonframed data, this MUST be determined by using the [nonframed data encrypted content length](../data-format/message-body.md#nonframed-data-encrypted-content-length).
@@ -182,7 +182,7 @@ async fn test_nonframed_content_length_from_encrypted_content_length() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streamed_header_fed_to_signature_algorithm() {
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //= reason=Successful signing-suite round-trip proves the serialized header was fed to the signature algorithm during deserialization
     //# - The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
@@ -212,7 +212,7 @@ async fn test_streamed_header_fed_to_signature_algorithm() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_footer_wait_for_bytes() {
-    //= specification/client-apis/decrypt.md#verify-the-signature
+    //= spec/client-apis/decrypt.md#verify-the-signature
     //= type=test
     //= reason=Successful signing-suite decrypt proves the operation waited for enough footer bytes to deserialize the signature
     //# If there are not enough consumable bytes to deserialize the message footer and
@@ -245,7 +245,7 @@ async fn test_footer_wait_for_bytes() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_footer_wait_truncated_message_fails() {
-    //= specification/client-apis/decrypt.md#verify-the-signature
+    //= spec/client-apis/decrypt.md#verify-the-signature
     //= type=test
     //= reason=Truncating the footer proves the operation waits for footer bytes and fails when they are not available
     //# If there are not enough consumable bytes to deserialize the message footer and

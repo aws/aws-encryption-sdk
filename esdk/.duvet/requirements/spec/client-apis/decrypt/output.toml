@@ -1,0 +1,26 @@
+target = "spec/client-apis/decrypt.md#output"
+
+# Output
+#
+# The client MUST return as output to this operation:
+# 
+# - [Plaintext](#plaintext)
+# - [Encryption Context](#encryption-context)
+# - [Algorithm Suite](#algorithm-suite)
+# 
+# The client SHOULD return as an output:
+# 
+# - [Parsed Header](#parsed-header)
+
+[[spec]]
+level = "MUST"
+quote = '''
+The client MUST return as output to this operation:
+'''
+
+[[spec]]
+level = "SHOULD"
+quote = '''
+The client SHOULD return as an output:
+'''
+

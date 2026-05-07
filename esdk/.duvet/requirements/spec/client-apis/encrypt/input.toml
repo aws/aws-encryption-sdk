@@ -1,0 +1,99 @@
+target = "spec/client-apis/encrypt.md#input"
+
+# Input
+#
+# Required arguments:
+# 
+# - The input to the Encrypt operation MUST accept a required [plaintext](#plaintext) argument.
+# - The input to the Encrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
+#   The keyring and CMM inputs SHOULD be optional.
+#   The Encrypt operation MUST validate that exactly one keyring or CMM was provided by the caller.
+#   If the caller does not provide exactly one of a keyring or CMM, the Encrypt operation MUST fail.
+# 
+# Optional arguments:
+# 
+# - The input to the Encrypt operation MUST accept an optional [Algorithm Suite](#algorithm-suite) argument.
+# - The input to the Encrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
+# - The input to the Encrypt operation MUST accept an optional [Frame Length](#frame-length) argument.
+# 
+# If the [plaintext](#plaintext) is of unknown length, the caller MAY also input a
+# [Plaintext Length Bound](#plaintext-length-bound).
+# 
+# Implementations SHOULD ensure that a caller is not able to specify both a [plaintext](#plaintext)
+# with known length and a [Plaintext Length Bound](#plaintext-length-bound) by construction.
+# If a caller is able to specify both an input [plaintext](#plaintext) with known length and
+# a [Plaintext Length Bound](#plaintext-length-bound),
+# the [Plaintext Length Bound](#plaintext-length-bound) MUST NOT be used during the Encrypt operation
+# and MUST be ignored.
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The input to the Encrypt operation MUST accept a required [plaintext](#plaintext) argument.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The input to the Encrypt operation MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
+'''
+
+[[spec]]
+level = "SHOULD"
+quote = '''
+The keyring and CMM inputs SHOULD be optional.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The Encrypt operation MUST validate that exactly one keyring or CMM was provided by the caller.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If the caller does not provide exactly one of a keyring or CMM, the Encrypt operation MUST fail.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The input to the Encrypt operation MUST accept an optional [Algorithm Suite](#algorithm-suite) argument.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The input to the Encrypt operation MUST accept an optional [Encryption Context](#encryption-context) argument.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The input to the Encrypt operation MUST accept an optional [Frame Length](#frame-length) argument.
+'''
+
+[[spec]]
+level = "MAY"
+quote = '''
+If the [plaintext](#plaintext) is of unknown length, the caller MAY also input a
+[Plaintext Length Bound](#plaintext-length-bound).
+'''
+
+[[spec]]
+level = "SHOULD"
+quote = '''
+Implementations SHOULD ensure that a caller is not able to specify both a [plaintext](#plaintext)
+with known length and a [Plaintext Length Bound](#plaintext-length-bound) by construction.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If a caller is able to specify both an input [plaintext](#plaintext) with known length and
+a [Plaintext Length Bound](#plaintext-length-bound),
+the [Plaintext Length Bound](#plaintext-length-bound) MUST NOT be used during the Encrypt operation
+and MUST be ignored.
+'''
+

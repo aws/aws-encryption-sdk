@@ -10,31 +10,31 @@ pattern = "./tests/**/*.rs"
 pattern = "./.duvet/compliance_exceptions/**/*.txt"
 
 [[specification]]
-source = "specification/data-format/message-header.md"
+source = "spec/data-format/message-header.md"
 
 [[specification]]
-source = "specification/data-format/message-footer.md"
+source = "spec/data-format/message-footer.md"
 
 [[specification]]
-source = "specification/data-format/message-body.md"
+source = "spec/data-format/message-body.md"
 
 [[specification]]
-source = "specification/data-format/message-body-aad.md"
+source = "spec/data-format/message-body-aad.md"
 
 [[specification]]
-source = "specification/data-format/message.md"
+source = "spec/data-format/message.md"
 
 [[specification]]
-source = "specification/client-apis/client.md"
+source = "spec/client-apis/client.md"
 
 [[specification]]
-source = "specification/client-apis/decrypt.md"
+source = "spec/client-apis/decrypt.md"
 
 [[specification]]
-source = "specification/client-apis/encrypt.md"
+source = "spec/client-apis/encrypt.md"
 
 [[specification]]
-source = "specification/client-apis/streaming.md"
+source = "spec/client-apis/streaming.md"
 
 [report.html]
 enabled = true

@@ -27,7 +27,7 @@ async fn test_encrypt_decrypt() {
     let ec = EncryptionContext::new();
     let encrypt_input = EncryptInput::with_legacy_keyring(asdf.as_bytes(), ec, kms_keyring);
 
-    //= specification/client-apis/client.md#encrypt
+    //= spec/client-apis/client.md#encrypt
     //= type=test
     //# The AWS Encryption SDK Client MUST provide an [encrypt](./encrypt.md#input) function
     //# that adheres to [encrypt](./encrypt.md).
@@ -36,7 +36,7 @@ async fn test_encrypt_decrypt() {
 
     let decrypt_input = DecryptInput::from_encrypt(&esdk_ciphertext, &encrypt_input);
 
-    //= specification/client-apis/client.md#decrypt
+    //= spec/client-apis/client.md#decrypt
     //= type=test
     //# The AWS Encryption SDK Client MUST provide an [decrypt](./decrypt.md#input) function
     //# that adheres to [decrypt](./decrypt.md).
@@ -77,10 +77,10 @@ async fn test_bad_decrypt_input() {
     decrypt_input.source = None;
     let bad_decrypt_output = decrypt(&decrypt_input).await;
 
-    //= specification/client-apis/decrypt.md#input
+    //= spec/client-apis/decrypt.md#input
     //= type=test
     //# The Decrypt operation MUST validate that exactly one of a keyring or CMM was provided by the caller.
-    //= specification/client-apis/decrypt.md#input
+    //= spec/client-apis/decrypt.md#input
     //= type=test
     //# If the caller does not provide exactly one of a keyring or CMM, the Decrypt operation MUST fail.
     let err = bad_decrypt_output.expect_err("decrypt must fail when source = None");
@@ -193,7 +193,7 @@ async fn test_encrypt_decrypt_bad_ec() {
     let encrypt_input = EncryptInput::with_legacy_keyring(asdf, encryption_context, kms_keyring);
     let encrypt_output = encrypt(&encrypt_input).await;
 
-    //= specification/client-apis/encrypt.md#encryption-context
+    //= spec/client-apis/encrypt.md#encryption-context
     //= type=test
     //# If the input encryption context contains any entries with a key beginning with `aws-crypto-`,
     //# the encryption operation MUST fail.
@@ -229,10 +229,10 @@ async fn test_bad_encrypt_input() {
     encrypt_input.source = None;
     let encrypt_output = encrypt(&encrypt_input).await;
 
-    //= specification/client-apis/encrypt.md#input
+    //= spec/client-apis/encrypt.md#input
     //= type=test
     //# The Encrypt operation MUST validate that exactly one keyring or CMM was provided by the caller.
-    //= specification/client-apis/encrypt.md#input
+    //= spec/client-apis/encrypt.md#input
     //= type=test
     //# If the caller does not provide exactly one of a keyring or CMM, the Encrypt operation MUST fail.
     let err = encrypt_output.expect_err("encrypt must fail when source = None");

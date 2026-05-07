@@ -93,7 +93,7 @@ async fn test_encrypt_uses_cmm_suite_not_input_suite() {
     let out = encrypt(&enc_input).await.unwrap();
 
     // Output must reflect the CMM's suite, not the caller's.
-    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //# Note that the algorithm suite in the retrieved encryption materials MAY be different
     //# from the [input algorithm suite](#algorithm-suite).

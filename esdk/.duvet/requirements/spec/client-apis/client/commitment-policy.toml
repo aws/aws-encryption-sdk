@@ -1,0 +1,12 @@
+target = "spec/client-apis/client.md#commitment-policy"
+
+# Commitment Policy
+#
+# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
+'''
+

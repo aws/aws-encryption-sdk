@@ -44,7 +44,7 @@ async fn test_encrypt_non_committing_with_require_policy_fails() {
     enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
     enc_input.commitment_policy = EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
     let result = encrypt(&enc_input).await;
-    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //# If this [algorithm suite](../framework/algorithm-suites.md) is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) encrypt MUST yield an error.
@@ -70,7 +70,7 @@ async fn test_decrypt_non_committing_with_require_policy_fails() {
     let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     dec_input.commitment_policy = EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
     let result = decrypt(&dec_input).await;
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) decrypt MUST yield an error.

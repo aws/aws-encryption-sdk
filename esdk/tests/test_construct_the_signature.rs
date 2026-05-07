@@ -9,7 +9,7 @@ use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_signing_suite_produces_footer() {
-    //= specification/client-apis/encrypt.md#construct-the-signature
+    //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //# If the [algorithm suite](../framework/algorithm-suites.md) contains a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
     //# this operation MUST calculate a signature over the message,
@@ -25,7 +25,7 @@ async fn test_signing_suite_produces_footer() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_signature_uses_signing_algorithm() {
-    //= specification/client-apis/encrypt.md#construct-the-signature
+    //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //# To calculate a signature, this operation MUST use the [signature algorithm](../framework/algorithm-suites.md#signature-algorithm)
     //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following input:
@@ -42,7 +42,7 @@ async fn test_signature_uses_signing_algorithm() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_signature_key_is_signing_key() {
-    //= specification/client-apis/encrypt.md#construct-the-signature
+    //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //# - the signature key MUST be the [signing key](../framework/structures.md#signing-key) in the [encryption materials](../framework/structures.md#encryption-materials)
 
@@ -56,7 +56,7 @@ async fn test_signature_key_is_signing_key() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_signature_input_is_header_plus_body() {
-    //= specification/client-apis/encrypt.md#construct-the-signature
+    //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //# - the input to sign MUST be the concatenation of the serialization of the [message header](../data-format/message-header.md) and [message body](../data-format/message-body.md)
 
@@ -72,7 +72,7 @@ async fn test_signature_input_is_header_plus_body() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_footer_serialization() {
-    //= specification/client-apis/encrypt.md#construct-the-signature
+    //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //# The order for message footer serialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
 
@@ -82,7 +82,7 @@ async fn test_footer_serialization() {
     // Footer format: [sig_len: 2 bytes big-endian] [signature: sig_len bytes]
     // Verify the two-byte length field at `offset` correctly describes the remaining bytes.
 
-    //= specification/client-apis/encrypt.md#construct-the-signature
+    //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //# - MUST serialize the [Signature Length](../data-format/message-footer.md#signature-length).
     let declared_len = u16::from_be_bytes([ct[offset], ct[offset + 1]]);
@@ -91,7 +91,7 @@ async fn test_footer_serialization() {
         "signature length field must be parseable as a big-endian u16"
     );
 
-    //= specification/client-apis/encrypt.md#construct-the-signature
+    //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //# The value MUST be the length of the output of the signature calculation above.
     assert_eq!(
@@ -100,7 +100,7 @@ async fn test_footer_serialization() {
         "signature length value must equal the number of trailing signature bytes"
     );
 
-    //= specification/client-apis/encrypt.md#construct-the-signature
+    //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //# - MUST serialize the [Signature](../data-format/message-footer.md#signature).
     let signature_bytes = &ct[offset + 2..];
@@ -110,7 +110,7 @@ async fn test_footer_serialization() {
         "signature bytes must match the declared length"
     );
 
-    //= specification/client-apis/encrypt.md#construct-the-signature
+    //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //# The value MUST be the output of the signature calculation above.
     // Non-zero signature bytes prove actual signature content (not padding)
@@ -122,7 +122,7 @@ async fn test_footer_serialization() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_footer_equals_calculated() {
-    //= specification/client-apis/encrypt.md#construct-the-signature
+    //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //# The encrypted message output by this operation MUST have a message footer equal
     //# to the message footer calculated in this step.
@@ -139,7 +139,7 @@ async fn test_footer_equals_calculated() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_no_signature_without_signing_suite() {
-    //= specification/client-apis/encrypt.md#behavior
+    //= spec/client-apis/encrypt.md#behavior
     //= type=test
     //# - If the materials do not have an algorithm suite including a signature algorithm,
     //# the Encrypt operation MUST NOT construct a signature.

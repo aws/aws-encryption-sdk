@@ -34,3 +34,6 @@ test:
 	./main
 	make main_release
 	./main_release
+
+duvet:
+	@echo "no duvet annotations for aws-esdk-cxx"

@@ -14,7 +14,7 @@ use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_step_failure_must_halt_and_indicate_failure() {
-    //= specification/client-apis/encrypt.md#behavior
+    //= spec/client-apis/encrypt.md#behavior
     //= type=test
     //= reason=Providing a non-committing suite with RequireEncryptRequireDecrypt causes step 1 to fail; the error propagates to the caller
     //# If any of these steps fails, this operation MUST halt and indicate a failure to the caller.
@@ -36,7 +36,7 @@ async fn test_step_failure_must_halt_and_indicate_failure() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_plaintext_length_bound_used_for_unknown_length() {
-    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //= reason=Calling encrypt_stream with data_size=Some(100) passes the bound as max_plaintext_length; success proves the bound was used
     //# If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
@@ -66,7 +66,7 @@ async fn test_plaintext_length_bound_used_for_unknown_length() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_no_plaintext_length_bound_field_not_included() {
-    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //= reason=Calling encrypt_stream with data_size=None omits the max_plaintext_length field; success proves the field was not included
     //# If no Plaintext Length Bound is provided, this field MUST NOT be included.
@@ -95,7 +95,7 @@ async fn test_no_plaintext_length_bound_field_not_included() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_esdk_supported_algorithm_suite_accepted() {
-    //= specification/client-apis/encrypt.md#get-the-encryption-materials
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //= reason=All EsdkAlgorithmSuiteId variants are ESDK-supported by construction; the public API only accepts EsdkAlgorithmSuiteId, so non-ESDK suites cannot be passed. A successful encrypt with an explicit ESDK suite proves the check passes for supported suites.
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
@@ -117,7 +117,7 @@ async fn test_esdk_supported_algorithm_suite_accepted() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_header_bytes_not_released_until_fully_serialized() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=A successful round-trip proves the header was fully serialized before release; if partial header bytes were released, decrypt would fail to parse the header
     //# The serialized bytes MUST NOT be released until the entire message header has been serialized.
@@ -131,7 +131,7 @@ async fn test_header_bytes_not_released_until_fully_serialized() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_header_released_after_serialization() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=The encrypt_stream function writes the complete header to the output before body serialization begins; a successful decrypt proves the header was released
     //# If this operation is streaming the encrypted message and
@@ -166,7 +166,7 @@ async fn test_streaming_header_released_after_serialization() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_signature_algorithm_receives_serialized_header() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=A successful round-trip with a signing suite proves the header was input to the signature algorithm; decrypt verifies the signature over header+body
     //# If the algorithm suite contains a signature algorithm and
@@ -183,7 +183,7 @@ async fn test_signature_algorithm_receives_serialized_header() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_message_bodies_not_equal_must_fail() {
-    //= specification/client-apis/encrypt.md#construct-the-body
+    //= spec/client-apis/encrypt.md#construct-the-body
     //= type=test
     //= reason=The body is written directly to the output buffer, making inequality structurally impossible; a successful round-trip proves the output body equals the calculated body
     //# If the message bodies are not equal, the Encrypt operation MUST fail.
@@ -217,7 +217,7 @@ async fn test_message_bodies_not_equal_must_fail() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_signature_algorithm_receives_serialized_frame() {
-    //= specification/client-apis/encrypt.md#construct-a-frame
+    //= spec/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //= reason=A successful round-trip with a signing suite proves each frame was input to the signature algorithm; decrypt verifies the signature over header+body (all frames)
     //# If the algorithm suite contains a signature algorithm and
@@ -244,7 +244,7 @@ async fn test_signature_algorithm_receives_serialized_frame() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_header_and_body_may_already_be_input_to_signature() {
-    //= specification/client-apis/encrypt.md#construct-the-signature
+    //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //= reason=A successful round-trip with a signing suite proves the header and body were already input to the signature during previous steps (header serialization and body serialization)
     //# Note that the message header and message body MAY have already been input during previous steps.
@@ -258,7 +258,7 @@ async fn test_header_and_body_may_already_be_input_to_signature() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_footer_bytes_not_released_until_fully_serialized() {
-    //= specification/client-apis/encrypt.md#construct-the-signature
+    //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //= reason=A successful round-trip with a signing suite proves the footer was fully serialized before release; if partial footer bytes were released, decrypt would fail to parse the footer
     //# The above serialized bytes MUST NOT be released until the entire message footer has been serialized.
@@ -272,7 +272,7 @@ async fn test_footer_bytes_not_released_until_fully_serialized() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_footer_serialized_releases_all_bytes() {
-    //= specification/client-apis/encrypt.md#construct-the-signature
+    //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //= reason=A successful round-trip with a signing suite proves all serialized bytes (header, body, footer) were released after footer serialization
     //# Once the entire message footer has been serialized,
@@ -308,7 +308,7 @@ async fn test_footer_serialized_releases_all_bytes() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_must_not_encrypt_using_nonframed_content_type() {
-    //= specification/client-apis/encrypt.md#nonframed-message-body-encryption
+    //= spec/client-apis/encrypt.md#nonframed-message-body-encryption
     //= type=test
     //= reason=All encryptions produce framed content (content type 0x02); verifying the content type byte in the header proves nonframed is never used
     //# Implementations of the AWS Encryption SDK MUST NOT encrypt using the nonframed content type.

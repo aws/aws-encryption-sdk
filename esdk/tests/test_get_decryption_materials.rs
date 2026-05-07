@@ -1,7 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for specification/client-apis/decrypt.md#get-the-decryption-materials
+//! Tests for spec/client-apis/decrypt.md#get-the-decryption-materials
 
 mod fixtures;
 mod test_helpers;
@@ -14,12 +14,12 @@ use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_obtain_decryption_materials_via_cmm() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //= reason=successful round-trip decrypt proves the CMM was called to obtain decryption materials; without a valid CMM call the data key would not be available and decryption would fail
     //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
     //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
-    //= specification/client-apis/decrypt.md#cryptographic-materials-manager
+    //= spec/client-apis/decrypt.md#cryptographic-materials-manager
     //= type=test
     //= reason=successful decrypt proves the CMM obtained the required decryption materials; if the CMM failed to obtain them the decrypt would fail
     //# This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
@@ -30,7 +30,7 @@ async fn test_obtain_decryption_materials_via_cmm() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_call_constructed_as_follows() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //= reason=successful round-trip decrypt proves the CMM Decrypt Materials call was constructed correctly; any malformed call would fail to produce valid decryption materials
     //# The call to the CMM's [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) operation
@@ -42,7 +42,7 @@ async fn test_cmm_call_constructed_as_follows() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_call_algorithm_suite_id() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //= reason=successful decrypt implies the CMM was invoked with the algorithm suite ID from the parsed header; if a different suite ID were passed the decrypt materials would not match the data keys in the ciphertext and the decrypt would fail
     //# - Algorithm Suite ID: This MUST be the parsed
@@ -55,7 +55,7 @@ async fn test_cmm_call_algorithm_suite_id() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_call_commitment_policy() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //= reason=successful decrypt implies the commitment policy from the client was passed to the CMM; if a wrong policy were passed the CMM would either reject or accept suites incorrectly
     //# - Commitment Policy: This MUST be the commitment policy configured on the client.
@@ -66,7 +66,7 @@ async fn test_cmm_call_commitment_policy() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_call_encrypted_data_keys() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //= reason=successful decrypt implies the encrypted data keys from the header were passed to the CMM; if different EDKs were passed the CMM could not unwrap the correct data key
     //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header.md#encrypted-data-keys)
@@ -78,7 +78,7 @@ async fn test_cmm_call_encrypted_data_keys() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_call_encryption_context() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //= reason=successful decrypt implies the encryption context parsed from the header was passed to the CMM; if a different EC were passed the resulting AAD would not match the ciphertext's AAD and AES-GCM tag verification would fail
     //# - Encryption Context: This MUST be the parsed [encryption context](../data-format/message-header.md#aad)
@@ -91,7 +91,7 @@ async fn test_cmm_call_encryption_context() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_call_reproduced_encryption_context() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //= reason=successful decrypt implies the input encryption context was passed as the reproduced EC to the CMM; if a different value were passed the CMM would reject the materials request
     //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
@@ -102,7 +102,7 @@ async fn test_cmm_call_reproduced_encryption_context() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_fails_with_wrong_keyring() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
     //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
@@ -132,7 +132,7 @@ async fn test_decrypt_fails_with_wrong_keyring() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_pre_cmm_commitment_policy_check() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# If the parsed [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
     //# is not supported by the [commitment policy](client.md#commitment-policy)
@@ -159,7 +159,7 @@ async fn test_pre_cmm_commitment_policy_check() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_used_is_input_cmm() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# The CMM used MUST be the input CMM, if supplied.
     let keyring = aes_keyring(0).await;
@@ -179,7 +179,7 @@ async fn test_cmm_used_is_input_cmm() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_default_cmm_constructed_from_keyring() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# If a CMM is not supplied as the input, the decrypt operation MUST construct a [default CMM](../framework/default-cmm.md)
     //# from the input [keyring](../framework/keyring-interface.md).
@@ -196,7 +196,7 @@ async fn test_default_cmm_constructed_from_keyring() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_data_key_derived_from_plaintext_data_key() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# The data key used as input for all decryption described below MUST be a data key derived from the plaintext data key
     //# included in the [decryption materials](../framework/structures.md#decryption-materials).
@@ -221,7 +221,7 @@ async fn test_data_key_derived_from_plaintext_data_key() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_algorithm_suite_from_decryption_materials() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# The algorithm suite used as input for all decryption described below MUST be the algorithm suite
     //# included in the [decryption materials](../framework/structures.md#decryption-materials).
@@ -245,12 +245,12 @@ async fn test_algorithm_suite_from_decryption_materials() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_commit_key_derived_and_validated() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# If the [algorithm suite](../framework/algorithm-suites.md#algorithm-suites-encryption-key-derivation-settings) supports [key commitment](../framework/algorithm-suites.md#key-commitment)
     //# then the [commit key](../framework/algorithm-suites.md#commit-key) MUST be derived from the plaintext data key
     //# using the [commit key derivation](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# The derived commit key MUST equal the commit key stored in the message header.
     let keyring = aes_keyring(0).await;
@@ -273,7 +273,7 @@ async fn test_commit_key_derived_and_validated() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_kdf_algorithm_from_materials_suite() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# The algorithm suite used to derive a data key from the plaintext data key MUST be
     //# the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
@@ -300,7 +300,7 @@ async fn test_kdf_algorithm_from_materials_suite() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unsupported_esdk_algorithm_suite_yields_error() {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //= reason=get_esdk_id rejects non-ESDK suite IDs; a valid round-trip proves ESDK suites pass, and tampering the suite ID to a non-ESDK value triggers the error path
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)

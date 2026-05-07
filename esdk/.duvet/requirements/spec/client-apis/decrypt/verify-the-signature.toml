@@ -1,0 +1,73 @@
+target = "spec/client-apis/decrypt.md#verify-the-signature"
+
+# Verify the signature
+#
+# If the algorithm suite has a signature algorithm,
+# this operation MUST verify the message footer using the specified signature algorithm.
+# 
+# After deserializing the body, this operation MUST deserialize the next encrypted message bytes
+# as the [message footer](../data-format/message-footer.md).
+# 
+# If there are not enough consumable bytes to deserialize the message footer and
+# the caller has not yet indicated an end to the encrypted message,
+# this operation MUST wait for enough bytes to become consumable or for the caller
+# to indicate an end to the encrypted message.
+# 
+# Once the message footer is deserialized, this operation MUST use the
+# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm)
+# from the [algorithm suite](../framework/algorithm-suites.md) in the decryption materials to
+# verify the encrypted message, with the following inputs:
+# 
+# - The verification key is the [verification key](../framework/structures.md#verification-key)
+#   in the decryption materials.
+# - The input to verify is the concatenation of the serialization of the
+#   [message header](../data-format/message-header.md) and [message body](../data-format/message-body.md).
+# 
+# Note that the message header and message body MAY have already been input during previous steps.
+# 
+# If this verification is not successful, this operation MUST immediately halt and fail.
+
+[[spec]]
+level = "MUST"
+quote = '''
+If the algorithm suite has a signature algorithm,
+this operation MUST verify the message footer using the specified signature algorithm.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+After deserializing the body, this operation MUST deserialize the next encrypted message bytes
+as the [message footer](../data-format/message-footer.md).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If there are not enough consumable bytes to deserialize the message footer and
+the caller has not yet indicated an end to the encrypted message,
+this operation MUST wait for enough bytes to become consumable or for the caller
+to indicate an end to the encrypted message.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+Once the message footer is deserialized, this operation MUST use the
+[signature algorithm](../framework/algorithm-suites.md#signature-algorithm)
+from the [algorithm suite](../framework/algorithm-suites.md) in the decryption materials to
+verify the encrypted message, with the following inputs:
+'''
+
+[[spec]]
+level = "MAY"
+quote = '''
+Note that the message header and message body MAY have already been input during previous steps.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If this verification is not successful, this operation MUST immediately halt and fail.
+'''
+

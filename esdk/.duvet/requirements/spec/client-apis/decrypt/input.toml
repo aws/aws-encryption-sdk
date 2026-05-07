@@ -1,0 +1,35 @@
+target = "spec/client-apis/decrypt.md#input"
+
+# Input
+#
+# The client MUST require the following as inputs to this operation:
+# 
+# - [Encrypted Message](#encrypted-message)
+# 
+# The client MUST require exactly one of the following types of inputs:
+# 
+# - [Cryptographic Materials Manager (CMM)](../framework/cmm-interface.md)
+# - [Keyring](../framework/keyring-interface.md)
+# 
+# The following inputs to this behavior MUST be OPTIONAL:
+# 
+# - [Encryption Context](#encryption-context)
+
+[[spec]]
+level = "MUST"
+quote = '''
+The client MUST require the following as inputs to this operation:
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The client MUST require exactly one of the following types of inputs:
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The following inputs to this behavior MUST be OPTIONAL:
+'''
+

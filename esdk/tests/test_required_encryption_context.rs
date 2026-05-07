@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Tests for the Required Encryption Context CMM feature.
-//! Covers specification/client-apis/encrypt.md#get-the-encryption-materials
-//! and specification/client-apis/decrypt.md#get-the-decryption-materials,
+//! Covers spec/client-apis/encrypt.md#get-the-encryption-materials
+//! and spec/client-apis/decrypt.md#get-the-decryption-materials,
 //! focusing on the reproduced encryption context passed through the CMM.
 
 mod fixtures;
@@ -86,7 +86,7 @@ async fn get_hierarchical_keyring(mpl: &MplClient) -> KeyringRef {
         .unwrap()
 }
 
-//= specification/client-apis/decrypt.md#get-the-decryption-materials
+//= spec/client-apis/decrypt.md#get-the-decryption-materials
 //= type=test
 //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
 #[tokio::test(flavor = "multi_thread")]
@@ -142,7 +142,7 @@ async fn test_repr_encryption_context_with_same_ec_happy_case() {
     assert_eq!(decrypt_output.plaintext, asdf);
 }
 
-//= specification/client-apis/encrypt.md#get-the-encryption-materials
+//= spec/client-apis/encrypt.md#get-the-encryption-materials
 //= type=test
 //# The CMM used MUST be the input CMM, if supplied.
 #[tokio::test(flavor = "multi_thread")]
@@ -198,7 +198,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     let encrypt_output = encrypt(&encrypt_input).await.unwrap();
     let esdk_ciphertext = encrypt_output.ciphertext;
 
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
     let mut decrypt_input = DecryptInput::with_legacy_keyring(

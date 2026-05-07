@@ -72,7 +72,7 @@ async fn test_net_retry_flag() {
 
 #[test]
 fn test_commitment_policy_uses_mpl_type() {
-    //= specification/client-apis/client.md#commitment-policy
+    //= spec/client-apis/client.md#commitment-policy
     //= type=test
     //# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
     let policy: aws_mpl_legacy::commitment::EsdkCommitmentPolicy =
@@ -87,7 +87,7 @@ fn test_commitment_policy_uses_mpl_type() {
 
 #[test]
 fn test_commitment_policy_is_immutable() {
-    //= specification/client-apis/client.md#initialization
+    //= spec/client-apis/client.md#initialization
     //= type=test
     //# Once a [commitment policy](#commitment-policy) has been set it SHOULD be immutable.
     let input = EncryptInput::default();
@@ -103,7 +103,7 @@ fn test_commitment_policy_is_immutable() {
 
 #[test]
 fn test_encrypt_input_default_commitment_policy() {
-    //= specification/client-apis/client.md#initialization
+    //= spec/client-apis/client.md#initialization
     //= type=test
     //# If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
     let input = EncryptInput::default();
@@ -115,7 +115,7 @@ fn test_encrypt_input_default_commitment_policy() {
 
 #[test]
 fn test_decrypt_input_default_commitment_policy() {
-    //= specification/client-apis/client.md#initialization
+    //= spec/client-apis/client.md#initialization
     //= type=test
     //# If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
     let input = DecryptInput::default();
@@ -127,7 +127,7 @@ fn test_decrypt_input_default_commitment_policy() {
 
 #[test]
 fn test_encrypt_input_default_max_edks_is_none() {
-    //= specification/client-apis/client.md#initialization
+    //= spec/client-apis/client.md#initialization
     //= type=test
     //# If no [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys) is provided
     //# the default MUST result in no limit on the number of encrypted data keys (aside from the limit imposed by the [message format](../format/message-header.md)).
@@ -137,7 +137,7 @@ fn test_encrypt_input_default_max_edks_is_none() {
 
 #[test]
 fn test_decrypt_input_default_max_edks_is_none() {
-    //= specification/client-apis/client.md#initialization
+    //= spec/client-apis/client.md#initialization
     //= type=test
     //# If no [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys) is provided
     //# the default MUST result in no limit on the number of encrypted data keys (aside from the limit imposed by the [message format](../format/message-header.md)).
@@ -147,7 +147,7 @@ fn test_decrypt_input_default_max_edks_is_none() {
 
 #[test]
 fn test_encrypt_input_custom_commitment_policy() {
-    //= specification/client-apis/client.md#initialization
+    //= spec/client-apis/client.md#initialization
     //= type=test
     //# - On client initialization,
     //# the caller MUST have the option to provide a [commitment policy](#commitment-policy).
@@ -162,7 +162,7 @@ fn test_encrypt_input_custom_commitment_policy() {
 
 #[test]
 fn test_encrypt_input_custom_max_edks() {
-    //= specification/client-apis/client.md#initialization
+    //= spec/client-apis/client.md#initialization
     //= type=test
     //# - On client initialization,
     //# the caller MUST have the option to provide a [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys).
@@ -173,10 +173,10 @@ fn test_encrypt_input_custom_max_edks() {
 
 #[test]
 fn test_encrypt_input_accepts_plaintext() {
-    //= specification/client-apis/encrypt.md#input
+    //= spec/client-apis/encrypt.md#input
     //= type=test
     //# - Encrypt operation input MUST accept a required [plaintext](#plaintext) argument.
-    //= specification/client-apis/encrypt.md#plaintext
+    //= spec/client-apis/encrypt.md#plaintext
     //= type=test
     //# This MUST be a sequence of bytes.
     let plaintext = b"hello world";
@@ -187,7 +187,7 @@ fn test_encrypt_input_accepts_plaintext() {
 
 #[test]
 fn test_encrypt_input_accepts_cmm_and_keyring() {
-    //= specification/client-apis/encrypt.md#input
+    //= spec/client-apis/encrypt.md#input
     //= type=test
     //= reason=source is Option<MaterialSource> which accepts CMM or keyring variants; constructing a keyring requires async KMS/MPL setup
     //# - Encrypt operation input MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
@@ -197,7 +197,7 @@ fn test_encrypt_input_accepts_cmm_and_keyring() {
 
 #[test]
 fn test_encrypt_input_accepts_optional_algorithm_suite() {
-    //= specification/client-apis/encrypt.md#input
+    //= spec/client-apis/encrypt.md#input
     //= type=test
     //# - Encrypt operation input MUST accept an optional [Algorithm Suite](#algorithm-suite) argument.
     let mut input = EncryptInput::default();
@@ -212,7 +212,7 @@ fn test_encrypt_input_accepts_optional_algorithm_suite() {
 
 #[test]
 fn test_encrypt_input_accepts_optional_encryption_context() {
-    //= specification/client-apis/encrypt.md#input
+    //= spec/client-apis/encrypt.md#input
     //= type=test
     //# - Encrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
     let mut input = EncryptInput::default();
@@ -225,7 +225,7 @@ fn test_encrypt_input_accepts_optional_encryption_context() {
 
 #[test]
 fn test_encrypt_input_accepts_optional_frame_length() {
-    //= specification/client-apis/encrypt.md#input
+    //= spec/client-apis/encrypt.md#input
     //= type=test
     //# - Encrypt operation input MUST accept an optional [Frame Length](#frame-length) argument.
     let mut input = EncryptInput::default();
@@ -235,10 +235,10 @@ fn test_encrypt_input_accepts_optional_frame_length() {
 
 #[test]
 fn test_decrypt_input_accepts_encrypted_message() {
-    //= specification/client-apis/decrypt.md#input
+    //= spec/client-apis/decrypt.md#input
     //= type=test
     //# - Decrypt operation input MUST accept a required [Encrypted Message](#encrypted-message) argument.
-    //= specification/client-apis/decrypt.md#encrypted-message
+    //= spec/client-apis/decrypt.md#encrypted-message
     //= type=test
     //# The input encrypted message MUST be a sequence of bytes in the
     //# [message format](../data-format/message.md) specified by the AWS Encryption SDK.
@@ -250,7 +250,7 @@ fn test_decrypt_input_accepts_encrypted_message() {
 
 #[test]
 fn test_decrypt_input_accepts_cmm_and_keyring() {
-    //= specification/client-apis/decrypt.md#input
+    //= spec/client-apis/decrypt.md#input
     //= type=test
     //= reason=source is Option<MaterialSource> which accepts CMM or keyring variants; constructing a keyring requires async KMS/MPL setup
     //# - Decrypt operation input MUST accept an optional [Cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
@@ -260,7 +260,7 @@ fn test_decrypt_input_accepts_cmm_and_keyring() {
 
 #[test]
 fn test_decrypt_input_accepts_optional_encryption_context() {
-    //= specification/client-apis/decrypt.md#input
+    //= spec/client-apis/decrypt.md#input
     //= type=test
     //# - Decrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
     let mut input = DecryptInput::default();
@@ -273,7 +273,7 @@ fn test_decrypt_input_accepts_optional_encryption_context() {
 
 #[test]
 fn test_frame_length_rejects_zero() {
-    //= specification/client-apis/encrypt.md#frame-length
+    //= spec/client-apis/encrypt.md#frame-length
     //= type=test
     //# This value MUST be greater than 0 and MUST NOT exceed the value 2^32 - 1.
     assert!(FrameLength::new(0).is_err());
@@ -281,7 +281,7 @@ fn test_frame_length_rejects_zero() {
 
 #[test]
 fn test_frame_length_accepts_max_u32() {
-    //= specification/client-apis/encrypt.md#frame-length
+    //= spec/client-apis/encrypt.md#frame-length
     //= type=test
     //# This value MUST be greater than 0 and MUST NOT exceed the value 2^32 - 1.
     let fl = FrameLength::new(u32::MAX).unwrap();
@@ -290,7 +290,7 @@ fn test_frame_length_accepts_max_u32() {
 
 #[test]
 fn test_frame_length_default_is_4096() {
-    //= specification/client-apis/encrypt.md#frame-length
+    //= spec/client-apis/encrypt.md#frame-length
     //= type=test
     //# This value MUST default to 4096 bytes.
     assert_eq!(FrameLength::default().0.get(), 4096);
@@ -298,7 +298,7 @@ fn test_frame_length_default_is_4096() {
 
 #[test]
 fn test_encrypt_input_keyring_cmm_optional_by_construction() {
-    //= specification/client-apis/encrypt.md#input
+    //= spec/client-apis/encrypt.md#input
     //= type=test
     //= reason=EncryptInput.source is Option<MaterialSource>, so keyring/CMM are optional by construction
     //# The keyring and CMM inputs SHOULD be optional.
@@ -308,7 +308,7 @@ fn test_encrypt_input_keyring_cmm_optional_by_construction() {
 
 #[test]
 fn test_encrypt_input_cannot_specify_both_known_length_and_plaintext_length_bound() {
-    //= specification/client-apis/encrypt.md#input
+    //= spec/client-apis/encrypt.md#input
     //= type=test
     //= reason=EncryptInput has plaintext: &[u8] (always known length) and no plaintext_length_bound field, so a caller cannot specify both
     //# Implementations SHOULD ensure that a caller is not able to specify both a [plaintext](#plaintext)
@@ -321,7 +321,7 @@ fn test_encrypt_input_cannot_specify_both_known_length_and_plaintext_length_boun
 
 #[test]
 fn test_encrypt_input_plaintext_length_bound_ignored_when_known_length() {
-    //= specification/client-apis/encrypt.md#input
+    //= spec/client-apis/encrypt.md#input
     //= type=test
     //= reason=EncryptInput has plaintext: &[u8] (always known length) and no plaintext_length_bound field, making it impossible to specify both
     //# If a caller is able to specify both an input [plaintext](#plaintext) with known length and

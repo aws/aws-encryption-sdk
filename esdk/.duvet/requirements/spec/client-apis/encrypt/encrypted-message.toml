@@ -1,0 +1,24 @@
+target = "spec/client-apis/encrypt.md#encrypted-message"
+
+# Encrypted Message
+#
+# An encrypted form of the input [plaintext](#plaintext),
+# encrypted according to the [behavior specified below](#behavior).
+# This MUST be a sequence of bytes
+# and conform to the [message format specification](../data-format/message.md).
+# 
+# This operation MAY [stream](streaming.md) the encrypted message.
+
+[[spec]]
+level = "MUST"
+quote = '''
+This MUST be a sequence of bytes
+and conform to the [message format specification](../data-format/message.md).
+'''
+
+[[spec]]
+level = "MAY"
+quote = '''
+This operation MAY [stream](streaming.md) the encrypted message.
+'''
+

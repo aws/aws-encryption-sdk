@@ -1,7 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for specification/client-apis/decrypt.md#decrypt-the-message-body
+//! Tests for spec/client-apis/decrypt.md#decrypt-the-message-body
 
 mod fixtures;
 mod test_helpers;
@@ -12,7 +12,7 @@ use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_regular_frame_deserialization() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# Regular frame deserialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
     // Multi-frame message: 30 bytes with frame_length=10 → 2 regular frames + 1 final frame.
@@ -27,31 +27,31 @@ async fn test_decrypt_regular_frame_deserialization() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_final_frame_deserialization() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# Final frame deserialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# For a final frame, each field MUST be deserialized according to its specification:
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - MUST deserialize the [Sequence Number End](../data-format/message-body.md#sequence-number-end).
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# The value MUST be `0xFFFFFFFF`.
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - MUST deserialize the [Sequence Number](../data-format/message-body.md#final-frame-sequence-number).
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - MUST deserialize the [IV](../data-format/message-body.md#final-frame-iv).
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - MUST deserialize the [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length).
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - MUST deserialize the [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content).
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - MUST deserialize the [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag).
     // Single-frame message: 5 bytes with frame_length=10 → 1 final frame only.
@@ -66,7 +66,7 @@ async fn test_decrypt_final_frame_deserialization() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_uses_first_4_bytes_to_determine_frame_type() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# If deserializing [framed data](../data-format/message-body.md#framed-data),
     //# the Decrypt operation MUST use the first 4 bytes of a frame to determine
@@ -83,7 +83,7 @@ async fn test_decrypt_uses_first_4_bytes_to_determine_frame_type() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_inspects_first_4_bytes_of_each_frame() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# The Decrypt operation MUST inspect the first 4 bytes of each frame.
     // Multi-frame: 40 bytes / 10-byte frames → 3 regular + 1 final.
@@ -99,7 +99,7 @@ async fn test_decrypt_inspects_first_4_bytes_of_each_frame() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_final_frame_detected_by_endframe_marker() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# If the first 4 bytes have a value of 0xFFFFFFFF,
     //# the Decrypt operation MUST treat them as the [Sequence Number End](../data-format/message-body.md#sequence-number-end)
@@ -116,7 +116,7 @@ async fn test_decrypt_final_frame_detected_by_endframe_marker() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_regular_frame_detected_without_endframe() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# Otherwise, the Decrypt operation MUST treat them as the [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number)
     //# and deserialize the following bytes according to the [regular frame spec](../data-format/message-body.md#regular-frame).
@@ -131,7 +131,7 @@ async fn test_decrypt_regular_frame_detected_without_endframe() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_final_frame_content_length_validation() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# MUST ensure that the length of the encrypted content field is
     //# less than or equal to the frame length deserialized in the message header.
@@ -159,7 +159,7 @@ async fn test_decrypt_final_frame_content_length_validation() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_authenticates_each_frame() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# Once at least a single frame is deserialized (or the entire body in the nonframed case),
     //# the Decrypt operation MUST decrypt and authenticate the frame (or body) using the
@@ -176,7 +176,7 @@ async fn test_decrypt_authenticates_each_frame() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_first_frame_sequence_number_is_one() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=AES-GCM tag verification binds the AAD to the ciphertext; if the first frame's sequence number in the AAD were not 1 the tag check would fail
     //# If this is framed data and the first frame sequentially, this value MUST be 1.
@@ -193,7 +193,7 @@ async fn test_decrypt_first_frame_sequence_number_is_one() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_sequence_numbers_increment() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=AES-GCM tag verification binds the AAD to the ciphertext; if any frame's sequence number were not previous+1 the tag check would fail for that frame
     //# Otherwise, this value MUST be 1 greater than the value of the sequence number
@@ -210,7 +210,7 @@ async fn test_decrypt_sequence_numbers_increment() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_content_length_in_aad() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=AES-GCM tag verification binds the AAD to the ciphertext; if the content length in the AAD did not equal the plaintext length the tag check would fail
     //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
@@ -227,7 +227,7 @@ async fn test_decrypt_content_length_in_aad() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_fails_on_tampered_auth_tag() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# If this decryption fails, this operation MUST immediately halt and fail.
     // Tamper with the authentication tag of the first frame. Decrypt must fail.
@@ -249,7 +249,7 @@ async fn test_decrypt_fails_on_tampered_auth_tag() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_no_unauthenticated_plaintext_released() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# This operation MUST NOT release any unauthenticated plaintext.
     // Tamper with encrypted content in the first frame. Decrypt must fail
@@ -271,7 +271,7 @@ async fn test_decrypt_no_unauthenticated_plaintext_released() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_streaming_releases_regular_frames() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - If the streamed Decrypt operation is using an algorithm suite with a signature algorithm,
     //# all plaintext decrypted from regular frames SHOULD be released as soon as the above calculation,
@@ -297,7 +297,7 @@ async fn test_decrypt_streaming_releases_regular_frames() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_body_deserialized_after_header() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# Once the message header is successfully parsed, the next sequential bytes
     //# MUST be deserialized according to the [message body spec](../data-format/message-body.md).
@@ -313,7 +313,7 @@ async fn test_decrypt_body_deserialized_after_header() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_content_type_determines_framed_or_nonframed() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# The Decrypt operation MUST use the [content type](../data-format/message-header.md#content-type) field parsed from the
     //# message header to determine whether the operation will deserialize the message bytes as
@@ -330,19 +330,19 @@ async fn test_decrypt_content_type_determines_framed_or_nonframed() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_frame_fields_deserialized_correctly() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# For a regular frame, each field MUST be deserialized according to its specification:
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - MUST deserialize the [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number).
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - MUST deserialize the [IV](../data-format/message-body.md#regular-frame-iv).
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - MUST deserialize the [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content).
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - MUST deserialize the [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag).
     // Multi-frame round-trip: 2 regular frames + 1 final frame.
@@ -357,23 +357,23 @@ async fn test_decrypt_frame_fields_deserialized_correctly() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_aad_constructed_correctly() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=AES-GCM is authenticated encryption; any deviation in the AAD (message ID, body AAD content, sequence number) would cause tag verification to fail, so successful decrypt proves AAD was constructed correctly
     //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
     //# constructed according to the [Message Body AAD](../data-format/message-body-aad.md) specification, as follows:
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=AES-GCM tag verification binds the AAD to the ciphertext; if the message ID in the AAD differed from the header's message ID the tag check would fail
     //# - The [message ID](../data-format/message-body-aad.md#message-id) MUST be the same as the
     //# [message ID](../data-format/message-header.md#message-id) deserialized from the header of this message.
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=AES-GCM tag verification binds the AAD to the ciphertext; if the body AAD content string were wrong for the frame type the tag check would fail
     //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be constructed
     //# according to [Message Body AAD](../data-format/message-body-aad.md) depending on
     //# whether the bytes being decrypted are a regular frame, final frame, or nonframed data.
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=AES-GCM tag verification binds the AAD to the ciphertext; if the sequence number in the AAD differed from the frame's sequence number the tag check would fail
     //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be the sequence
@@ -390,7 +390,7 @@ async fn test_decrypt_aad_constructed_correctly() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_unframed_sequence_number_is_one() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=Decrypt output of the external V2 nonframed vector matches the expected plaintext, which can only happen if the decryptor used sequence number 1 in its AAD reconstruction.
     //# If this is nonframed data, this value MUST be 1.
@@ -403,21 +403,21 @@ async fn test_decrypt_unframed_sequence_number_is_one() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_aes_inputs_correct() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=AES-GCM is a keyed MAC; if the IV were not the zero-padded sequence number the nonce would be wrong and tag verification would fail
     //# - The IV MUST be the [sequence number](../data-format/message-body-aad.md#sequence-number)
     //# used in the message body AAD above,
     //# padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=AES-GCM is a keyed MAC; if the cipherkey were not the derived data key the decryption would produce garbage and tag verification would fail
     //# - The cipherkey MUST be the derived data key
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=AES-GCM is a keyed MAC; if the ciphertext input were not the deserialized encrypted content the decryption would fail tag verification
     //# - The ciphertext MUST be the encrypted content deserialized from the frame or body.
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=AES-GCM is a keyed MAC; if the tag were not the deserialized authentication tag the tag verification would fail
     //# - The tag MUST be the authentication tag deserialized from the frame or body.
@@ -433,7 +433,7 @@ async fn test_decrypt_aes_inputs_correct() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_wait_for_bytes() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# If there could still be message body left to deserialize and decrypt,
     //# this operation MUST either wait for more of the encrypted message bytes to become consumable,
@@ -451,7 +451,7 @@ async fn test_decrypt_wait_for_bytes() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_streaming_without_signature_releases() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - If the streamed Decrypt operation is using an algorithm suite without a signature algorithm,
     //# plaintext SHOULD be released as soon as the above calculation, including tag verification,
@@ -474,7 +474,7 @@ async fn test_decrypt_streaming_without_signature_releases() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_streaming_feeds_signature_algorithm() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# - The streamed Decrypt operation SHOULD input the serialized frame to the signature algorithm as soon as it is deserialized,
     //# such that the serialized frame isn't required to remain in memory to complete
@@ -499,7 +499,7 @@ async fn test_decrypt_streaming_feeds_signature_algorithm() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_regular_frame_content_length_uses_frame_length() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=AES-GCM tag verification binds the AAD to the ciphertext; if regular frames used a content length other than the header's frame length the tag check would fail
     //# If this is a regular frame, this MUST be determined by using the [frame length](../data-format/message-header.md#frame-length)
@@ -516,7 +516,7 @@ async fn test_decrypt_regular_frame_content_length_uses_frame_length() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_final_frame_content_length_uses_encrypted_content_length() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=AES-GCM tag verification binds the AAD to the ciphertext; if the final frame used frame_length instead of the actual encrypted content length the tag check would fail
     //# If this is a final frame, this MUST be determined by using the [final frame encrypted content length](../data-format/message-body.md#final-frame-encrypted-content-length).
@@ -533,7 +533,7 @@ async fn test_decrypt_final_frame_content_length_uses_encrypted_content_length()
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_nonframed_content_length_determines_aad() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# If this is nonframed data, this MUST be determined by using the [nonframed data encrypted content length](../data-format/message-body.md#nonframed-data-encrypted-content-length).
     // Successful decryption of the external V2 nonframed vector implies the decryptor's AAD content length matched what the external producer used — which, for that vector, is the nonframed data encrypted content length.
@@ -546,7 +546,7 @@ async fn test_decrypt_nonframed_content_length_determines_aad() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_final_frame_held_until_signature_verification() {
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //# Any plaintext decrypted from [nonframed data](../data-format/message-body.md#nonframed-data) or
     //# a final frame in a streamed Decrypt operation MUST NOT be released until [signature verification](#verify-the-signature)
@@ -575,7 +575,7 @@ async fn test_decrypt_final_frame_held_until_signature_verification() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_nonframed_deserialization_conforms_to_spec() {
-    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
+    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# Nonframed data deserialization MUST conform to the [Nonframed Data](../data-format/message-body.md#nonframed-data) specification.
     // Successful decryption of the external V2 nonframed vector (produced by
@@ -590,7 +590,7 @@ async fn test_decrypt_nonframed_deserialization_conforms_to_spec() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_deserializes_and_decrypts() {
-    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
+    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# If a message has the [nonframed](../data-format/message-body.md#nonframed-data) content type,
     //# the Decrypt operation MUST deserialize the message body according to the
@@ -603,7 +603,7 @@ async fn test_unframed_decrypt_deserializes_and_decrypts() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_iv_from_body() {
-    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
+    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The IV MUST be the [IV](../data-format/message-body.md#nonframed-data-iv) deserialized from the message body.
     // Successful authenticated decryption of the external V2 nonframed vector
@@ -614,7 +614,7 @@ async fn test_unframed_decrypt_iv_from_body() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_ciphertext_from_body() {
-    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
+    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The ciphertext MUST be the [Encrypted Content](../data-format/message-body.md#nonframed-data-encrypted-content) deserialized from the message body.
     let result = decrypt_external_nonframed_vector(Version::V2).await;
@@ -623,7 +623,7 @@ async fn test_unframed_decrypt_ciphertext_from_body() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_cipherkey_is_derived_data_key() {
-    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
+    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The cipherkey MUST be the derived data key.
     // Successful decryption proves the derived data key was used as the cipherkey.
@@ -633,7 +633,7 @@ async fn test_unframed_decrypt_cipherkey_is_derived_data_key() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_tag_from_body() {
-    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
+    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The tag MUST be the [Authentication Tag](../data-format/message-body.md#nonframed-data-authentication-tag) deserialized from the message body.
     let result = decrypt_external_nonframed_vector(Version::V2).await;
@@ -642,7 +642,7 @@ async fn test_unframed_decrypt_tag_from_body() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_aad_body_aad_content() {
-    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
+    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST use the value for
     //# [nonframed data](../data-format/message-body-aad.md#body-aad-content).
@@ -656,7 +656,7 @@ async fn test_unframed_decrypt_aad_body_aad_content() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_aad_sequence_number_is_one() {
-    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
+    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be `1`.
     // External V2 nonframed vector was produced with sequence number 1 in the AAD.
@@ -666,7 +666,7 @@ async fn test_unframed_decrypt_aad_sequence_number_is_one() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_aad_content_length_equals_encrypted_content_length() {
-    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
+    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The [content length](../data-format/message-body-aad.md#content-length) MUST equal the length of the plaintext.
     // External V2 nonframed vector's AAD content_length equals its plaintext length.
@@ -676,7 +676,7 @@ async fn test_unframed_decrypt_aad_content_length_equals_encrypted_content_lengt
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_fails_on_tampered_auth_tag() {
-    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
+    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# If this decryption fails, this operation MUST immediately halt and fail.
     // Tamper with the authentication tag in the external V2 nonframed vector. Decrypt must fail.
@@ -693,7 +693,7 @@ async fn test_unframed_decrypt_fails_on_tampered_auth_tag() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_aad_constructed_correctly() {
-    //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
+    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
     //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
     //# constructed with:

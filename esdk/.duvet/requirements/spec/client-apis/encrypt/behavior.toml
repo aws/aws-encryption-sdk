@@ -1,0 +1,74 @@
+target = "spec/client-apis/encrypt.md#behavior"
+
+# Behavior
+#
+# The Encrypt operation is divided into several distinct steps:
+# 
+# - Encrypt operation Step 1 MUST be [Get the encryption materials](#get-the-encryption-materials)
+# - Encrypt operation step 2 MUST be [Construct the header](#construct-the-header)
+# - Encrypt operation step 3 MUST be [Construct the body](#construct-the-body)
+# - Encrypt operation step 4 MUST be [Construct the signature](#construct-the-signature)
+#   - If the [encryption materials gathered](#get-the-encryption-materials) has a algorithm suite
+#     including a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
+#     the Encrypt operation MUST perform this step.
+#   - If the materials do not have an algorithm suite including a signature algorithm,
+#     the Encrypt operation MUST NOT construct a signature.
+# 
+# These steps calculate and serialize the components of the output [encrypted message](#encrypted-message).
+# Any data that is not specified within the [message format](../data-format/message.md)
+# MUST NOT be added to the output message.
+# 
+# If any of these steps fails, this operation MUST halt and indicate a failure to the caller.
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Encrypt operation Step 1 MUST be [Get the encryption materials](#get-the-encryption-materials)
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Encrypt operation step 2 MUST be [Construct the header](#construct-the-header)
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Encrypt operation step 3 MUST be [Construct the body](#construct-the-body)
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Encrypt operation step 4 MUST be [Construct the signature](#construct-the-signature)
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- If the [encryption materials gathered](#get-the-encryption-materials) has a algorithm suite
+including a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
+the Encrypt operation MUST perform this step.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- If the materials do not have an algorithm suite including a signature algorithm,
+the Encrypt operation MUST NOT construct a signature.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+Any data that is not specified within the [message format](../data-format/message.md)
+MUST NOT be added to the output message.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If any of these steps fails, this operation MUST halt and indicate a failure to the caller.
+'''
+

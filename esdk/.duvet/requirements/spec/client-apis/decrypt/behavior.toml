@@ -1,0 +1,93 @@
+target = "spec/client-apis/decrypt.md#behavior"
+
+# Behavior
+#
+# The Decrypt operation is divided into several distinct steps:
+# 
+# - [Parse the header](#parse-the-header)
+# - [Get the decryption materials](#get-the-decryption-materials)
+# - [Verify the header](#verify-the-header)
+# - [Decrypt the message body](#decrypt-the-message-body)
+# - [Verify the signature](#verify-the-signature)
+#   - If the message header contains an algorithm suite including a
+#     [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
+#     this operation MUST perform this step.
+#     Otherwise this operation MUST NOT perform this step.
+# 
+# This operation MUST perform all the above steps unless otherwise specified,
+# and it MUST perform them in the above order.
+# 
+# If the input encrypted message is not being [streamed](streaming.md) to this operation,
+# all output MUST NOT be released until after these steps complete successfully.
+# 
+# If the input encrypted message is being [streamed](streaming.md) to this operation:
+# 
+# - Output MUST NOT be released until otherwise indicated.
+# - If all bytes have been provided and this operation
+#   is unable to complete the above steps with the consumable encrypted message bytes,
+#   this operation MUST halt and indicate a failure to the caller.
+# - If this operation successfully completes the above steps
+#   but there are consumable bytes which are intended to be decrypted,
+#   this operation MUST fail.
+# - The ESDK MUST provide a configuration option that causes the decryption operation
+#   to fail immediately after parsing the header if a signed algorithm suite is used.
+#   This can be used to ensure that data not yet [verified as signed data](#security-considerations)
+#   is never released early.
+
+[[spec]]
+level = "MUST"
+quote = '''
+- If the message header contains an algorithm suite including a
+[signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
+this operation MUST perform this step.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+Otherwise this operation MUST NOT perform this step.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+This operation MUST perform all the above steps unless otherwise specified,
+and it MUST perform them in the above order.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If the input encrypted message is not being [streamed](streaming.md) to this operation,
+all output MUST NOT be released until after these steps complete successfully.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Output MUST NOT be released until otherwise indicated.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- If all bytes have been provided and this operation
+is unable to complete the above steps with the consumable encrypted message bytes,
+this operation MUST halt and indicate a failure to the caller.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- If this operation successfully completes the above steps
+but there are consumable bytes which are intended to be decrypted,
+this operation MUST fail.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The ESDK MUST provide a configuration option that causes the decryption operation
+to fail immediately after parsing the header if a signed algorithm suite is used.
+'''
+

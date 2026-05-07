@@ -1,7 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for specification/client-apis/decrypt.md#verify-the-header
+//! Tests for spec/client-apis/decrypt.md#verify-the-header
 
 mod fixtures;
 mod test_helpers;
@@ -24,32 +24,32 @@ async fn test_verify_header_v2_round_trip() {
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# Once a valid message header is deserialized and decryption materials are available,
     //# this operation MUST validate the [message header body](../data-format/message-header.md#header-body)
     //# by using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# to decrypt with the following inputs:
     //
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - The AAD MUST be the concatenation of the serialized [message header body](../data-format/message-header.md#header-body)
     //# and the serialization of encryption context to only authenticate.
     //
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# For message format version [2.0](../data-format/message-header.md#supported-versions)
     //# the IV MUST be 0.
     //
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - the cipherkey MUST be the derived data key
     //
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - the ciphertext MUST be an empty byte array
     //
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - the tag MUST be the value serialized in the message header's
     //# [authentication tag field](../data-format/message-header.md#authentication-tag)
@@ -74,7 +74,7 @@ async fn test_verify_header_v1_round_trip() {
 
     let mut dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# - For message format version [1.0](../data-format/message-header.md#supported-versions)
     //# the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header.md#iv).
@@ -99,7 +99,7 @@ async fn test_verify_header_fails_on_tampered_header() {
 
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     let result = decrypt(&dec_input).await;
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# If this tag verification fails, this operation MUST immediately halt and fail.
     assert!(
@@ -138,7 +138,7 @@ async fn test_verify_header_encryption_context_to_only_authenticate() {
 
     // Decrypt with the reproduced encryption context — proves the EC filtering is correct
     let dec_input = DecryptInput::with_legacy_keyring(&ct, reproduced_ec, keyring);
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# The encryption context to only authenticate MUST be the [encryption context](../framework/structures.md#encryption-context)
     //# in the [decryption materials](../framework/structures.md#decryption-materials)
@@ -176,7 +176,7 @@ async fn test_streamed_signed_output_not_signed_until_complete() {
     let mut stream_input =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
     stream_input.i_accept_the_danger = true;
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# However, if the streamed Decrypt operation is using an algorithm suite with a signature algorithm
     //# all released output MUST NOT be considered signed data until

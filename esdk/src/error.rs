@@ -77,6 +77,16 @@ pub(crate) fn val_err(msg: impl Into<String>) -> Error {
 }
 
 #[track_caller]
+pub(crate) fn val_err_with_cause(msg: impl Into<String>, cause: impl std::error::Error + Send + Sync + 'static) -> Error {
+    Error {
+        kind: ErrorKind::ValidationError,
+        message: msg.into(),
+        backtrace: Arc::new(Backtrace::capture()),
+        cause: Some(Arc::new(cause)),
+    }
+}
+
+#[track_caller]
 pub(crate) fn esdk_err(msg: impl Into<String>) -> Error {
     Error {
         kind: ErrorKind::Esdk,

@@ -1,0 +1,14 @@
+target = "spec/client-apis/client.md#encrypt"
+
+# Encrypt
+#
+# The AWS Encryption SDK Client MUST provide an [encrypt](./encrypt.md#input) function
+# that adheres to [encrypt](./encrypt.md).
+
+[[spec]]
+level = "MUST"
+quote = '''
+The AWS Encryption SDK Client MUST provide an [encrypt](./encrypt.md#input) function
+that adheres to [encrypt](./encrypt.md).
+'''
+

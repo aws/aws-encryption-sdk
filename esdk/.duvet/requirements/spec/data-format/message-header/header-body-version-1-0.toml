@@ -1,0 +1,27 @@
+target = "spec/data-format/message-header.md#header-body-version-1-0"
+
+# Header Body Version 1.0
+#
+# The following table describes the fields that form the Version 1.0 header body.
+# The value of the `Version` field MUST be `01` in the Version 1.0 header body.
+# The bytes are appended in the order shown.
+# 
+# | Field                                       | Length (bytes)                                                                    | Interpreted as                                                                                |
+# | ------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+# | [Version](#version)                         | 1                                                                                 | See [Supported Versions](#supported-versions)                                                 |
+# | [Type](#type)                               | 1                                                                                 | See [Supported Types](#supported-types)                                                       |
+# | [Algorithm Suite ID](#algorithm-suite-id)   | 2                                                                                 | See [Supported Algorithm Suites](../framework/algorithm-suites.md#supported-algorithm-suites) |
+# | [Message ID](#message-id)                   | 16                                                                                | Bytes                                                                                         |
+# | [AAD](#aad)                                 | Variable. [Self-describing](#aad).                                                | [AAD](#aad)                                                                                   |
+# | [Encrypted Data Keys](#encrypted-data-keys) | Variable. Determined by the number of encrypted data keys and the length of each. | [Encrypted Data Keys](#encrypted-data-keys)                                                   |
+# | [Content Type](#content-type)               | 1                                                                                 | See [Supported Types](#supported-content-types)                                               |
+# | [Reserved](#reserved)                       | 4                                                                                 | See [Reserved](#reserved)                                                                     |
+# | [IV Length](#iv-length)                     | 1                                                                                 | UInt8                                                                                         |
+# | [Frame Length](#frame-length)               | 4                                                                                 | UInt32                                                                                        |
+
+[[spec]]
+level = "MUST"
+quote = '''
+The value of the `Version` field MUST be `01` in the Version 1.0 header body.
+'''
+

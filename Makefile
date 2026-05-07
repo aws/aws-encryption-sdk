@@ -1,4 +1,4 @@
-.PHONY: clippy test examples
+.PHONY: clippy test examples duvet
 
 clippy:
 	cd prim && make clippy
@@ -15,3 +15,9 @@ test:
 examples:
 	cd mpl && make examples
 	cd esdk && make examples
+
+duvet:
+	cd prim && make duvet
+	cd mpl && make duvet
+	cd esdk && make duvet
+	cd aws-esdk-cxx && make duvet

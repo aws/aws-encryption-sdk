@@ -1,4 +1,4 @@
-.PHONY: clippy test
+.PHONY: clippy test duvet
 
 clippy:
 	cargo clippy --tests --examples
@@ -10,3 +10,6 @@ test:
 	cargo test
 	cargo test --features track
 	cargo test --features fips
+
+duvet:
+	@echo "no duvet annotations for prim"

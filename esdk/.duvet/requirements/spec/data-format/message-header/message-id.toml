@@ -1,0 +1,31 @@
+target = "spec/data-format/message-header.md#message-id"
+
+# Message ID
+#
+# A Message ID MUST uniquely identify the [message](message.md).
+# While implementations cannot guarantee complete uniqueness,
+# implementations MUST use a good source of randomness when generating messages IDs in order to make
+# the chance of duplicate IDs negligible.
+# 
+# The purpose of the message ID is to:
+# 
+# - Protect against accidental reuse of a derived data key or the wearing out of derived data keys in
+#   the AWS Encryption SDK
+# - Uniquely identify the [message](message.md)
+# - Bind the message header to the [message body](message-body.md)
+# - Provide a mechanism to securely reuse a data key with multiple messages
+
+[[spec]]
+level = "MUST"
+quote = '''
+A Message ID MUST uniquely identify the [message](message.md).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+While implementations cannot guarantee complete uniqueness,
+implementations MUST use a good source of randomness when generating messages IDs in order to make
+the chance of duplicate IDs negligible.
+'''
+

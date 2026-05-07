@@ -13,7 +13,7 @@ use test_helpers::*;
 async fn test_decrypt_rejects_base64_encoded_input() {
     // Construct input starting with 0x41 ('A') — the first byte of Base64-encoded
     // version 0x01 type 0x80 (per the spec table: "01 80" → "AY..." → "41 59...")
-    //= specification/client-apis/decrypt.md#encrypted-message-format
+    //= spec/client-apis/decrypt.md#encrypted-message-format
     //= type=test
     //# To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version)
     //# and [types](../data-format/message-header.md#type)

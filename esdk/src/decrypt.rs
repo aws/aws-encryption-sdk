@@ -45,29 +45,29 @@ impl ProtectionNeeded {
     }
 }
 
-//= specification/client-apis/decrypt.md#encrypted-message
+//= spec/client-apis/decrypt.md#encrypted-message
 //= type=implication
 //= reason=SafeRead accepts incremental reads, so callers can stream the encrypted message without buffering it entirely in memory
 //# This input MAY be [streamed](streaming.md) to this operation.
 //
-//= specification/client-apis/decrypt.md#encrypted-message
+//= spec/client-apis/decrypt.md#encrypted-message
 //= type=implication
 //= reason=The implementation does not require holding the entire encrypted message in memory; it processes bytes incrementally via SafeRead
 //# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
 //# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
 //
-//= specification/client-apis/decrypt.md#plaintext
+//= spec/client-apis/decrypt.md#plaintext
 //= type=implication
 //= reason=SafeWrite accepts incremental writes, so each decrypted frame is flushed to the output as it's produced without buffering the full plaintext
 //# This operation MAY [stream](streaming.md) the plaintext as output.
 //
-//= specification/client-apis/decrypt.md#plaintext
+//= spec/client-apis/decrypt.md#plaintext
 //= type=implication
 //= reason=The implementation streams plaintext output incrementally via SafeWrite, so it does not require buffering the full plaintext in memory
 //# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
 //# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
 //
-//= specification/client-apis/decrypt.md#security-considerations
+//= spec/client-apis/decrypt.md#security-considerations
 //= type=implication
 //= reason=decrypt_stream returns DecryptStreamOutput only on Ok; any error aborts and the caller is responsible for not trusting plaintext released via SafeWrite. Signature verification (step 5) runs before Ok is returned, so successful completion implies the plaintext is signed-data-valid.
 //# If this operation is [streaming](streaming.md) output to the caller
@@ -75,20 +75,20 @@ impl ProtectionNeeded {
 //# any released plaintext MUST NOT be considered signed data until this operation finishes
 //# successfully.
 //
-//= specification/client-apis/decrypt.md#verify-the-header
+//= spec/client-apis/decrypt.md#verify-the-header
 //= type=implication
 //= reason=decrypt_stream only returns Ok after step_verify_signature succeeds; before that, any plaintext released to SafeWrite is unverified-signed-data by contract.
 //# However, if the streamed Decrypt operation is using an algorithm suite with a signature algorithm
 //# all released output MUST NOT be considered signed data until
 //# this operation successfully completes.
 //
-//= specification/client-apis/decrypt.md#security-considerations
+//= spec/client-apis/decrypt.md#security-considerations
 //= type=implication
 //= reason=This is a caller obligation documented in the operation's contract; the API returns Ok only when processing is complete and callers MUST NOT treat streamed bytes as final until then.
 //# This means that callers that process such released plaintext MUST NOT consider any processing successful
 //# until this operation completes successfully.
 //
-//= specification/client-apis/decrypt.md#security-considerations
+//= spec/client-apis/decrypt.md#security-considerations
 //= type=implication
 //= reason=Caller obligation on failure; decrypt_stream returns Err on any failure and does not finalize the plaintext, so callers are contractually bound to discard released bytes.
 //# Additionally, if this operation fails, callers MUST discard the released plaintext and encryption context
@@ -104,7 +104,7 @@ pub async fn decrypt_stream(
 ) -> Result<DecryptStreamOutput, Error> {
     input.validate()?;
 
-    //= specification/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
     //= type=exception
     //= reason=The configuration option i_accept_the_danger is provided. The ESDK interprets "fail immediately after parsing the header if a signed algorithm suite is used" as "fail when partial plaintext release would be unsafe": for single-frame signed messages the final frame is buffered until after signature verification, so no unsafe release occurs; for multi-frame signed messages, step_decrypt_body fails up front when i_accept_the_danger is false.
     //# - The ESDK MUST provide a configuration option that causes the decryption operation
@@ -124,7 +124,7 @@ pub async fn decrypt_stream(
     .await
 }
 
-//= specification/client-apis/client.md#decrypt
+//= spec/client-apis/client.md#decrypt
 //# The AWS Encryption SDK Client MUST provide an [decrypt](./decrypt.md#input) function
 //# that adheres to [decrypt](./decrypt.md).
 /// Decrypt slice into Vec
@@ -135,7 +135,7 @@ pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
     input.validate()?;
     let mut cursor: std::io::Cursor<&[u8]> = std::io::Cursor::new(input.ciphertext);
 
-    //= specification/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
     //= reason=Plaintext is buffered into this local Vec; no bytes are released to the caller until the function returns Ok with the populated Vec.
     //# If the input encrypted message is not being [streamed](streaming.md) to this operation,
     //# all output MUST NOT be released until after these steps complete successfully.
@@ -157,7 +157,7 @@ pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
         return Err(esdk_err("Ciphertext length does not fit in u64"));
     };
     if cursor.position() != ciphertext_len {
-        //= specification/client-apis/decrypt.md#behavior
+        //= spec/client-apis/decrypt.md#behavior
         //# - If this operation successfully completes the above steps
         //# but there are consumable bytes which are intended to be decrypted,
         //# this operation MUST fail.
@@ -165,26 +165,26 @@ pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
     }
 
     Ok(DecryptOutput {
-        //= specification/client-apis/decrypt.md#output
+        //= spec/client-apis/decrypt.md#output
         //# - Decrypt operation output MUST include a [Plaintext](#plaintext) value.
         plaintext,
-        //= specification/client-apis/decrypt.md#output
+        //= spec/client-apis/decrypt.md#output
         //# - Decrypt operation output MUST include an [encryption context](#encryption-context) value.
         //
-        //= specification/client-apis/decrypt.md#encryption-context
+        //= spec/client-apis/decrypt.md#encryption-context
         //= type=exception
         //= reason=The encryption context is returned directly as a field, not via a parsed header struct
         //# This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.
         encryption_context: out.encryption_context,
-        //= specification/client-apis/decrypt.md#output
+        //= spec/client-apis/decrypt.md#output
         //# - Decrypt operation output MUST include an [algorithm suite](#algorithm-suite) value.
         //
-        //= specification/client-apis/decrypt.md#algorithm-suite
+        //= spec/client-apis/decrypt.md#algorithm-suite
         //= type=exception
         //= reason=The algorithm suite is returned directly as a field, not via a parsed header struct
         //# This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.
         algorithm_suite_id: out.algorithm_suite_id,
-        //= specification/client-apis/decrypt.md#output
+        //= spec/client-apis/decrypt.md#output
         //= type=exception
         //= reason=Parsed header is not spec'ed out; this is a SHOULD, not a MUST
         //# - Decrypt operation output SHOULD include a [Parsed Header](#parsed-header) value.
@@ -201,12 +201,12 @@ struct DecryptState {
 }
 
 #[expect(clippy::too_many_arguments)]
-//= specification/client-apis/decrypt.md#behavior
+//= spec/client-apis/decrypt.md#behavior
 //= type=implication
 //= reason=Output is written to the `plaintext` SafeWrite only: (a) inside step_decrypt_body for intermediate frames (gated by ProtectionNeeded for signed multi-frame), and (b) for the last frame via serialize_functions::write_bytes after step_verify_signature succeeds. The returned DecryptStreamOutput is only produced on the Ok path at the end of the function.
 //# - Output MUST NOT be released until otherwise indicated.
 //
-//= specification/client-apis/decrypt.md#behavior
+//= spec/client-apis/decrypt.md#behavior
 //= type=implication
 //= reason=Every step call propagates errors via `?`; any failure to parse, verify, or decrypt causes internal_decrypt to return Err, halting the operation and indicating failure to the caller.
 //# - If all bytes have been provided and this operation
@@ -222,12 +222,12 @@ async fn internal_decrypt(
     max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
     commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<DecryptStreamOutput, Error> {
-    //= specification/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
     //# - Decrypt operation Step 1 MUST be [Parse the header](#parse-the-header)
     let (header_body, raw_header, sig_digest) =
         step_parse_header(ciphertext, max_encrypted_data_keys)?;
 
-    //= specification/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
     //# - Decrypt operation Step 2 MUST be [Get the decryption materials](#get-the-decryption-materials)
     let state = step_get_decryption_materials(
         ciphertext,
@@ -240,12 +240,12 @@ async fn internal_decrypt(
     )
     .await?;
 
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
     //# decrypt MUST yield an error.
     let _esdk_id = get_esdk_id(state.header.suite.id)?;
 
-    //= specification/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
     //= reason=Defense-in-depth: the spec gates signature verification on the algorithm suite's signature algorithm, so verification_key from the CMM must be present iff the suite has one. An invariant mismatch indicates a misbehaving CMM; fail closed rather than silently skip verification.
     //# - If the message header contains an algorithm suite including a
     //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
@@ -260,33 +260,33 @@ async fn internal_decrypt(
         ));
     }
 
-    //= specification/client-apis/decrypt.md#v2-header-deserialization
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
     //= reason=The header's parsed info is kept in the DecryptState local (not released) until step_verify_header returns Ok below; only after that can the caller observe parsed values via the returned DecryptStreamOutput.
     //# Until the [header is verified](#verify-the-header), this operation MUST NOT
     //# release any parsed information from the header.
 
-    //= specification/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
     //# - Decrypt operation Step 3 MUST be [Verify the header](#verify-the-header)
     let mut state = step_verify_header(state, net_v4_retry_policy)?;
 
-    //= specification/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
     //# - Decrypt operation Step 4 MUST be [Decrypt the message body](#decrypt-the-message-body)
     let last_frame = step_decrypt_body(ciphertext, plaintext, &mut state, &safety_needed)?;
 
-    //= specification/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
     //# - Decrypt operation Step 5 MUST be [Verify the signature](#verify-the-signature)
     step_verify_signature(ciphertext, &state)?;
 
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //# Any plaintext decrypted from [nonframed data](../data-format/message-body.md#nonframed-data) or
     //# a final frame in a streamed Decrypt operation MUST NOT be released until [signature verification](#verify-the-signature)
     //# successfully completes.
 
-    //= specification/client-apis/decrypt.md#authenticated-data
+    //= spec/client-apis/decrypt.md#authenticated-data
     //# This operation MUST NOT release any unauthenticated plaintext or unauthenticated associated data.
     serialize_functions::write_bytes(plaintext, &last_frame)?;
 
-    //= specification/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
     //= type=exception
     //= reason=SafeRead is std::io::Read and does not expose an "all bytes provided" signal for unbounded streams. For bounded ciphertext, the non-streaming decrypt() wrapper enforces this by comparing cursor position to input length; for truly streamed inputs, the caller is responsible for not supplying extra bytes. Detecting trailing bytes here would require an extra read that blocks on unbounded streams.
     //# - If this operation successfully completes the above steps
@@ -302,11 +302,11 @@ async fn internal_decrypt(
         ec.insert(k, v);
     }
 
-    //= specification/client-apis/streaming.md#outputs
+    //= spec/client-apis/streaming.md#outputs
     //= reason=All bytes have been written to the SafeWrite before Ok is returned; success is only indicated after output is complete
     //# Operations MUST NOT indicate completion or success until an end to the output has been indicated.
     //
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //= reason=The parsed encryption context and algorithm suite ID are released here via the returned DecryptStreamOutput, which happens only after step_verify_header succeeded earlier in this function.
     //# - A streamed Decrypt operation SHOULD release the parsed [encryption context](#encryption-context),
     //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id),
@@ -314,7 +314,7 @@ async fn internal_decrypt(
     //# as soon as tag verification succeeds.
     Ok(DecryptStreamOutput {
         encryption_context: ec,
-        //= specification/client-apis/decrypt.md#algorithm-suite
+        //= spec/client-apis/decrypt.md#algorithm-suite
         //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
         algorithm_suite_id: get_esdk_id(state.header.suite.id)?,
     })
@@ -329,7 +329,7 @@ fn step_parse_header(
     let header_body =
         header::read_header_body(ciphertext, max_encrypted_data_keys, &mut raw_header)?;
 
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //= reason=sig_digest is fed the serialized header bytes immediately after deserialization, so the raw header does not need to remain in memory for signature verification
     //# - The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
     //# such that the serialized header isn't required to remain in memory to [verify the signature](#verify-the-signature).
@@ -349,15 +349,15 @@ async fn step_get_decryption_materials(
     commitment_policy: EsdkCommitmentPolicy,
     mut sig_digest: DigestWriter,
 ) -> Result<DecryptState, Error> {
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //# The CMM used MUST be the input CMM, if supplied.
     //
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //# If a CMM is not supplied as the input, the decrypt operation MUST construct a [default CMM](../framework/default-cmm.md)
     //# from the input [keyring](../framework/keyring-interface.md).
     let cmm = materials::create_cmm_from_input(input_source).await?;
 
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //# If the parsed [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
     //# is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) decrypt MUST yield an error.
@@ -377,7 +377,7 @@ async fn step_get_decryption_materials(
     )
     .await?;
 
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //# The algorithm suite used as input for all decryption described below MUST be the algorithm suite
     //# included in the [decryption materials](../framework/structures.md#decryption-materials).
     let suite = &dec_mat.algorithm_suite;
@@ -388,28 +388,28 @@ async fn step_get_decryption_materials(
         ));
     }
 
-    //= specification/client-apis/decrypt.md#v1-header-deserialization
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
     //= reason=read_header_auth_tag dispatches to V1 or V2 based on suite.message_version
     //# The Decrypt operation MUST then deserialize the
     //# [Header Authentication Version 1.0](../data-format/message-header.md#header-authentication-version-10):
     //
-    //= specification/client-apis/decrypt.md#v2-header-deserialization
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
     //= reason=read_header_auth_tag dispatches to V1 or V2 based on suite.message_version
     //# The Decrypt operation MUST then deserialize the
     //# [Header Authentication Version 2.0](../data-format/message-header.md#header-authentication-version-20):
     let header_auth =
-        //= specification/client-apis/decrypt.md#v1-header-deserialization
+        //= spec/client-apis/decrypt.md#v1-header-deserialization
         //# - MUST deserialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
         //
-        //= specification/client-apis/decrypt.md#v2-header-deserialization
+        //= spec/client-apis/decrypt.md#v2-header-deserialization
         //# - MUST deserialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
         header_auth::read_header_auth_tag(ciphertext, suite, &mut sig_digest)?;
 
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //# The data key used as input for all decryption described below MUST be a data key derived from the plaintext data key
     //# included in the [decryption materials](../framework/structures.md#decryption-materials).
 
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //# The algorithm suite used to derive a data key from the plaintext data key MUST be
     //# the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
     //# [algorithm suite](../framework/algorithm-suites.md) associated with
@@ -429,12 +429,12 @@ async fn step_get_decryption_materials(
         return Err(val_err("Invalid commitment values found in header body"));
     }
 
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //# If the [algorithm suite](../framework/algorithm-suites.md#algorithm-suites-encryption-key-derivation-settings) supports [key commitment](../framework/algorithm-suites.md#key-commitment)
     //# then the [commit key](../framework/algorithm-suites.md#commit-key) MUST be derived from the plaintext data key
     //# using the [commit key derivation](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
     if v2_header_body::has_hkdf(&suite.commitment) {
-        //= specification/client-apis/decrypt.md#get-the-decryption-materials
+        //= spec/client-apis/decrypt.md#get-the-decryption-materials
         //# The derived commit key MUST equal the commit key stored in the message header.
         header::validate_suite_data(
             suite,
@@ -471,7 +471,7 @@ fn step_verify_header(
     mut state: DecryptState,
     net_v4_retry_policy: NetV400RetryPolicy,
 ) -> Result<DecryptState, Error> {
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //# The encryption context to only authenticate MUST be the [encryption context](../framework/structures.md#encryption-context)
     //# in the [decryption materials](../framework/structures.md#decryption-materials)
     //# filtered to only contain key value pairs listed in
@@ -486,32 +486,32 @@ fn step_verify_header(
         &canonical_req_encryption_context,
     )?;
 
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //# Once a valid message header is deserialized and decryption materials are available,
     //# this operation MUST validate the [message header body](../data-format/message-header.md#header-body)
     //# by using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# to decrypt with the following inputs:
     let mut maybe_header_auth = aes_decrypt(
         body::get_encrypt(&state.header.suite)?,
-        //= specification/client-apis/decrypt.md#verify-the-header
+        //= spec/client-apis/decrypt.md#verify-the-header
         //# - the cipherkey MUST be the derived data key
         &state.derived_data_keys.data_key,
-        //= specification/client-apis/decrypt.md#verify-the-header
+        //= spec/client-apis/decrypt.md#verify-the-header
         //# - the ciphertext MUST be an empty byte array
         &[],
-        //= specification/client-apis/decrypt.md#verify-the-header
+        //= spec/client-apis/decrypt.md#verify-the-header
         //# - the tag MUST be the value serialized in the message header's
         //# [authentication tag field](../data-format/message-header.md#authentication-tag)
         state.header.header_auth.header_auth_tag(),
-        //= specification/client-apis/decrypt.md#verify-the-header
+        //= spec/client-apis/decrypt.md#verify-the-header
         //# - For message format version [1.0](../data-format/message-header.md#supported-versions)
         //# the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header.md#iv).
         //
-        //= specification/client-apis/decrypt.md#verify-the-header
+        //= spec/client-apis/decrypt.md#verify-the-header
         //# For message format version [2.0](../data-format/message-header.md#supported-versions)
         //# the IV MUST be 0.
         state.header.header_auth.header_iv(),
-        //= specification/client-apis/decrypt.md#verify-the-header
+        //= spec/client-apis/decrypt.md#verify-the-header
         //# - The AAD MUST be the concatenation of the serialized [message header body](../data-format/message-header.md#header-body)
         //# and the serialization of encryption context to only authenticate.
         &[
@@ -557,7 +557,7 @@ fn step_verify_header(
         );
     }
 
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //# If this tag verification fails, this operation MUST immediately halt and fail.
     maybe_header_auth?;
 
@@ -573,21 +573,21 @@ fn step_decrypt_body(
 ) -> Result<Vec<u8>, Error> {
     let key = state.derived_data_keys.data_key.clone();
 
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //# Once the message header is successfully parsed, the next sequential bytes
     //# MUST be deserialized according to the [message body spec](../data-format/message-body.md).
 
-    //= specification/client-apis/decrypt.md#decrypt-the-message-body
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //# The Decrypt operation MUST use the [content type](../data-format/message-header.md#content-type) field parsed from the
     //# message header to determine whether the operation will deserialize the message bytes as
     //# [framed data](../data-format/message-body.md#framed-data) or
     //# [nonframed data](../data-format/message-body.md#nonframed-data).
     let last_frame = match state.header.body.content_type() {
         ContentType::NonFramed => {
-            //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
+            //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
             //# Nonframed data deserialization MUST conform to the [Nonframed Data](../data-format/message-body.md#nonframed-data) specification.
             //
-            //= specification/client-apis/decrypt.md#nonframed-message-body-decryption
+            //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
             //= reason=read_and_decrypt_non_framed_message_body deserializes and decrypts per the nonframed data specification
             //# If a message has the [nonframed](../data-format/message-body.md#nonframed-data) content type,
             //# the Decrypt operation MUST deserialize the message body according to the
@@ -619,37 +619,37 @@ fn step_decrypt_body(
 
 // Step 5: Verify the signature
 fn step_verify_signature(ciphertext: &mut dyn SafeRead, state: &DecryptState) -> Result<(), Error> {
-    //= specification/client-apis/decrypt.md#verify-the-signature
+    //= spec/client-apis/decrypt.md#verify-the-signature
     //# If the algorithm suite has a signature algorithm,
     //# the Decrypt operation MUST verify the message footer using the specified signature algorithm.
     //
-    //= specification/client-apis/decrypt.md#verify-the-signature
+    //= spec/client-apis/decrypt.md#verify-the-signature
     //# After deserializing the body, the Decrypt operation MUST deserialize the next encrypted message bytes
     //# as the [message footer](../data-format/message-footer.md).
     if state.dec_mat.verification_key.is_some() {
         let mut noop = NoopWriter;
 
-        //= specification/client-apis/decrypt.md#verify-the-signature
+        //= spec/client-apis/decrypt.md#verify-the-signature
         //# Once the message footer is deserialized, the Decrypt operation MUST use the
         //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm)
         //# from the [algorithm suite](../framework/algorithm-suites.md) in the decryption materials to
         //# verify the encrypted message, with the following inputs:
         verify_signature(
             ciphertext,
-            //= specification/client-apis/decrypt.md#verify-the-signature
+            //= spec/client-apis/decrypt.md#verify-the-signature
             //# - The input to verify MUST be the concatenation of the serialization of the
             //# [message header](../data-format/message-header.md) and [message body](../data-format/message-body.md).
             state.sig_digest.context.clone().ok_or_else(|| {
                 val_err("Signature digest context must be present for signature verification")
             })?,
-            //= specification/client-apis/decrypt.md#verify-the-signature
+            //= spec/client-apis/decrypt.md#verify-the-signature
             //# - The verification key MUST be the [verification key](../framework/structures.md#verification-key)
             //# in the decryption materials.
             state.dec_mat.clone(),
             &mut noop,
         )?;
     } else {
-        //= specification/client-apis/decrypt.md#behavior
+        //= spec/client-apis/decrypt.md#behavior
         //# - If the message header does not contain an algorithm suite including a signature algorithm,
         //# the Decrypt operation MUST NOT perform this step.
         return Ok(());
@@ -692,7 +692,7 @@ fn verify_signature(
         return Ok(());
     }
 
-    //= specification/client-apis/decrypt.md#verify-the-signature
+    //= spec/client-apis/decrypt.md#verify-the-signature
     //= reason=blocking read on the input stream implicitly waits for enough bytes
     //# If there are not enough consumable bytes to deserialize the message footer and
     //# the caller has not yet indicated an end to the encrypted message,
@@ -711,7 +711,7 @@ fn verify_signature(
     )?;
 
     if !valid {
-        //= specification/client-apis/decrypt.md#verify-the-signature
+        //= spec/client-apis/decrypt.md#verify-the-signature
         //# If this verification is not successful, this operation MUST immediately halt and fail.
         return Err(esdk_err("Signature verification failed"));
     }

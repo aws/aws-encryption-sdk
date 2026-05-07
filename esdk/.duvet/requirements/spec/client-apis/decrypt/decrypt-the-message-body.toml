@@ -1,0 +1,218 @@
+target = "spec/client-apis/decrypt.md#decrypt-the-message-body"
+
+# Decrypt the message body
+#
+# Once the message header is successfully parsed, the next sequential bytes
+# MUST be deserialized according to the [message body spec](../data-format/message-body.md).
+# 
+# While there MAY still be message body left to deserialize and decrypt,
+# this operation MUST either wait for more of the encrypted message bytes to become consumable,
+# wait for the end to the encrypted message to be indicated,
+# or to deserialize and/or decrypt the consumable bytes.
+# 
+# The [content type](../data-format/message-header.md#content-type) field parsed from the
+# message header above determines whether these bytes MUST be deserialized as
+# [framed data](../data-format/message-body.md#framed-data) or
+# [un-framed data](../data-format/message-body.md#un-framed-data).
+# 
+# If deserializing [framed data](../data-format/message-body.md#framed-data),
+# this operation MUST use the first 4 bytes of a frame to determine if the frame
+# MUST be deserialized as a [final frame](../data-format/message-body.md#final-frame)
+# or [regular frame](../fata-format/message-body/md#regular-frame).
+# If the first 4 bytes have a value of 0xFFFF,
+# then this MUST be deserialized as the [sequence number end](../data-format/message-header.md#sequence-number-end)
+# and the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
+# Otherwise, this MUST be deserialized as the [sequence number](../data-format/message-header.md#sequence-number)
+# and the following bytes according to the [regular frame spec](../data-format/message-body.md#regular-frame).
+# 
+# If deserializing a [final frame](../data-format/message-body.md#final-frame),
+# this operation MUST ensure that the length of the encrypted content field is
+# less than or equal to the frame length deserialized in the message header.
+# 
+# Once at least a single frame is deserialized (or the entire body in the un-framed case),
+# this operation MUST decrypt and authenticate the frame (or body) using the
+# [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
+# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
+# 
+# - The AAD is the serialized [message body AAD](../data-format/message-body-aad.md),
+#   constructed as follows:
+#   - The [message ID](../data-format/message-body-aad.md#message-id) is the same as the
+#     [message ID](../data-frame/message-header.md#message-id) deserialized from the header of this message.
+#   - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) depends on
+#     whether the thing being decrypted is a regular frame, final frame, or un-framed data.
+#     Refer to [Message Body AAD](../data-format/message-body-aad.md) specification for more information.
+#   - The [sequence number](../data-format/message-body-aad.md#sequence-number) is the sequence
+#     number deserialized from the frame being decrypted.
+#     If this is un-framed data, this value MUST be 1.
+#     If this is framed data and the first frame sequentially, this value MUST be 1.
+#     Otherwise, this value MUST be 1 greater than the value of the sequence number
+#     of the previous frame.
+#   - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
+#     equal to the length of the plaintext that was encrypted.
+#     This can be determined by using the [frame length](../data-format/message-header.md#frame-length)
+#     deserialized from the message header if this is a regular frame,
+#     or the [encrypted content length](../data-format/message-body.md#encrypted-content-length)
+#     otherwise.
+# - The IV is the [sequence number](../data-format/message-body-aad.md#sequence-number)
+#   used in the message body AAD above,
+#   padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
+# - The cipherkey is the derived data key
+# - The ciphertext is the [encrypted content](../data-format/message-body.md#encrypted-content).
+# - the tag is the value serialized in the
+#   [authentication tag field](../data-format/message-body.md#authentication-tag)
+#   in the message body or frame.
+# 
+# If this decryption fails, this operation MUST immediately halt and fail.
+# This operation MUST NOT release any unauthenticated plaintext.
+# 
+# If the input encrypted message is being [streamed](streaming.md) to this operation:
+# 
+# - If this operation is using an algorithm suite without a signature algorithm,
+#   plaintext SHOULD be released as soon as the above calculation, including tag verification,
+#   succeeds.
+# - If this operation is using an algorithm suite with a signature algorithm,
+#   all plaintext decrypted from regular frames SHOULD be released as soon as the above calculation,
+#   including tag verification, succeeds.
+#   Any plaintext decrypted from [unframed data](../data-format/message-body.md#un-framed-data) or
+#   a final frame MUST NOT be released until [signature verification](#verify-the-signature)
+#   successfully completes.
+# - This operation SHOULD input the serialized frame to the signature algorithm as soon as it is deserialized,
+#   such that the serialized frame isn't required to remain in memory to complete
+#   the [signature verification](#verify-the-signature).
+
+[[spec]]
+level = "MUST"
+quote = '''
+Once the message header is successfully parsed, the next sequential bytes
+MUST be deserialized according to the [message body spec](../data-format/message-body.md).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+While there MAY still be message body left to deserialize and decrypt,
+this operation MUST either wait for more of the encrypted message bytes to become consumable,
+wait for the end to the encrypted message to be indicated,
+or to deserialize and/or decrypt the consumable bytes.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The [content type](../data-format/message-header.md#content-type) field parsed from the
+message header above determines whether these bytes MUST be deserialized as
+[framed data](../data-format/message-body.md#framed-data) or
+[un-framed data](../data-format/message-body.md#un-framed-data).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If deserializing [framed data](../data-format/message-body.md#framed-data),
+this operation MUST use the first 4 bytes of a frame to determine if the frame
+MUST be deserialized as a [final frame](../data-format/message-body.md#final-frame)
+or [regular frame](../fata-format/message-body/md#regular-frame).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If the first 4 bytes have a value of 0xFFFF,
+then this MUST be deserialized as the [sequence number end](../data-format/message-header.md#sequence-number-end)
+and the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+Otherwise, this MUST be deserialized as the [sequence number](../data-format/message-header.md#sequence-number)
+and the following bytes according to the [regular frame spec](../data-format/message-body.md#regular-frame).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If deserializing a [final frame](../data-format/message-body.md#final-frame),
+this operation MUST ensure that the length of the encrypted content field is
+less than or equal to the frame length deserialized in the message header.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+Once at least a single frame is deserialized (or the entire body in the un-framed case),
+this operation MUST decrypt and authenticate the frame (or body) using the
+[authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
+specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If this is un-framed data, this value MUST be 1.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If this is framed data and the first frame sequentially, this value MUST be 1.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+Otherwise, this value MUST be 1 greater than the value of the sequence number
+of the previous frame.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
+equal to the length of the plaintext that was encrypted.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If this decryption fails, this operation MUST immediately halt and fail.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+This operation MUST NOT release any unauthenticated plaintext.
+'''
+
+[[spec]]
+level = "SHOULD"
+quote = '''
+- If this operation is using an algorithm suite without a signature algorithm,
+plaintext SHOULD be released as soon as the above calculation, including tag verification,
+succeeds.
+'''
+
+[[spec]]
+level = "SHOULD"
+quote = '''
+- If this operation is using an algorithm suite with a signature algorithm,
+all plaintext decrypted from regular frames SHOULD be released as soon as the above calculation,
+including tag verification, succeeds.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+Any plaintext decrypted from [unframed data](../data-format/message-body.md#un-framed-data) or
+a final frame MUST NOT be released until [signature verification](#verify-the-signature)
+successfully completes.
+'''
+
+[[spec]]
+level = "SHOULD"
+quote = '''
+- This operation SHOULD input the serialized frame to the signature algorithm as soon as it is deserialized,
+such that the serialized frame isn't required to remain in memory to complete
+the [signature verification](#verify-the-signature).
+'''
+

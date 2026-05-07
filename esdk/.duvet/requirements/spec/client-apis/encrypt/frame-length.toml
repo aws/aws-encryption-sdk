@@ -1,0 +1,20 @@
+target = "spec/client-apis/encrypt.md#frame-length"
+
+# Frame Length
+#
+# The [frame length](../data-format/message-header.md#frame-length) to use for [framed data](../data-format/message-body.md).
+# This value MUST be greater than 0 and MUST NOT exceed the value 2^32 - 1.
+# This value MUST default to 4096 bytes.
+
+[[spec]]
+level = "MUST"
+quote = '''
+This value MUST be greater than 0 and MUST NOT exceed the value 2^32 - 1.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+This value MUST default to 4096 bytes.
+'''
+

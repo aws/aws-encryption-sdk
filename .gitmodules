@@ -1,3 +1,6 @@
 [submodule "dafny-mpl"]
 	path = dafny-mpl
 	url = https://github.com/aws/aws-cryptographic-material-providers-library-dafny.git
+[submodule "aws-encryption-sdk-specification"]
+	path = spec
+	url = https://github.com/awslabs/aws-encryption-sdk-specification.git

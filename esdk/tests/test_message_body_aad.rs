@@ -1,7 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for specification/data-format/message-body-aad.md
+//! Tests for spec/data-format/message-body-aad.md
 
 mod test_helpers;
 
@@ -17,7 +17,7 @@ const SINGLE_BLOCK_STR: &[u8] = b"AWSKMSEncryptionClient Single Block";
 
 #[test]
 fn test_body_aad_structure_ordering() {
-    //= specification/data-format/message-body-aad.md#structure
+    //= spec/data-format/message-body-aad.md#structure
     //= type=test
     //# The message body AAD MUST consist of, in order,
     //# Message ID,
@@ -72,11 +72,11 @@ fn test_body_aad_message_id_is_copied_verbatim() {
         let msg_id: Vec<u8> = (0..msg_id_len).map(|i| i as u8).collect();
         let mut out = Vec::new();
         body_aad(&msg_id, BodyAADContent::RegularFrame, 1, 100, &mut out);
-        //= specification/data-format/message-body-aad.md#message-id
+        //= spec/data-format/message-body-aad.md#message-id
         //= type=test
         //# This MUST be the [message ID](message-header.md#message-id) stored in the header of the message.
         //
-        //= specification/data-format/message-body-aad.md#message-id
+        //= spec/data-format/message-body-aad.md#message-id
         //= type=test
         //# The length of the Message ID field MUST be equal to the length of the [Message ID](message-header.md#message-id) defined by the message header version.
         assert_eq!(
@@ -93,7 +93,7 @@ fn test_body_aad_content_values_match_spec_literals() {
 
     let mut out = Vec::new();
     body_aad(&msg_id_16, BodyAADContent::RegularFrame, 1, 0, &mut out);
-    //= specification/data-format/message-body-aad.md#body-aad-content
+    //= spec/data-format/message-body-aad.md#body-aad-content
     //= type=test
     //# - The [regular frames](message-body.md#regular-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Frame`.
     assert_eq!(
@@ -103,7 +103,7 @@ fn test_body_aad_content_values_match_spec_literals() {
 
     let mut out = Vec::new();
     body_aad(&msg_id_16, BodyAADContent::FinalFrame, 1, 0, &mut out);
-    //= specification/data-format/message-body-aad.md#body-aad-content
+    //= spec/data-format/message-body-aad.md#body-aad-content
     //= type=test
     //# - The [final frame](message-body.md#final-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Final Frame`.
     assert_eq!(
@@ -113,7 +113,7 @@ fn test_body_aad_content_values_match_spec_literals() {
 
     let mut out = Vec::new();
     body_aad(&msg_id_32, BodyAADContent::SingleBlock, 1, 0, &mut out);
-    //= specification/data-format/message-body-aad.md#body-aad-content
+    //= spec/data-format/message-body-aad.md#body-aad-content
     //= type=test
     //# - [Nonframed data](message-body.md#nonframed-data) MUST use the value `AWSKMSEncryptionClient Single Block`.
     assert_eq!(
@@ -129,11 +129,11 @@ fn test_body_aad_sequence_number_is_4_bytes_uint32_be() {
         let mut out = Vec::new();
         body_aad(&msg_id, BodyAADContent::RegularFrame, seq, 0, &mut out);
         let start = msg_id.len() + REGULAR_FRAME_STR.len();
-        //= specification/data-format/message-body-aad.md#sequence-number
+        //= spec/data-format/message-body-aad.md#sequence-number
         //= type=test
         //# The length of the sequence number field MUST be 4 bytes.
         //
-        //= specification/data-format/message-body-aad.md#sequence-number
+        //= spec/data-format/message-body-aad.md#sequence-number
         //= type=test
         //# The sequence number field MUST be interpreted as a UInt32.
         assert_eq!(
@@ -151,11 +151,11 @@ fn test_body_aad_content_length_is_8_bytes_uint64_be() {
         let mut out = Vec::new();
         body_aad(&msg_id, BodyAADContent::RegularFrame, 1, len, &mut out);
         let start = msg_id.len() + REGULAR_FRAME_STR.len() + 4;
-        //= specification/data-format/message-body-aad.md#content-length
+        //= spec/data-format/message-body-aad.md#content-length
         //= type=test
         //# The length of the content length field MUST be 8 bytes.
         //
-        //= specification/data-format/message-body-aad.md#content-length
+        //= spec/data-format/message-body-aad.md#content-length
         //= type=test
         //# The content length field MUST be interpreted as a UInt64.
         assert_eq!(
@@ -183,7 +183,7 @@ async fn test_body_aad_sequence_number_nonframed_is_one() {
         assert_eq!(iv_seq, 1, "{version:?}: body IV must encode seq=1");
 
         let pt = decrypt_external_nonframed_vector(version).await;
-        //= specification/data-format/message-body-aad.md#sequence-number
+        //= spec/data-format/message-body-aad.md#sequence-number
         //= type=test
         //= reason=External vector's body IV encodes seq=1; decrypt succeeds, so AAD matched.
         //# For [nonframed data](message-body.md#nonframed-data), the value of this field MUST be `1`.
@@ -206,7 +206,7 @@ async fn test_body_aad_content_length_nonframed_equals_plaintext_length() {
         );
 
         let pt = decrypt_external_nonframed_vector(version).await;
-        //= specification/data-format/message-body-aad.md#content-length
+        //= spec/data-format/message-body-aad.md#content-length
         //= type=test
         //= reason=External vector's content-length field equals plaintext length; decrypt succeeds.
         //# - For [nonframed data](message-body.md#nonframed-data), this value MUST equal the length, in bytes, of the plaintext data provided to the algorithm for encryption.
@@ -234,7 +234,7 @@ async fn test_body_aad_message_id_length_matches_header() {
         );
 
         let pt = decrypt_external_nonframed_vector(version).await;
-        //= specification/data-format/message-body-aad.md#message-id
+        //= spec/data-format/message-body-aad.md#message-id
         //= type=test
         //= reason=V1 and V2 external vectors use 16- and 32-byte message IDs respectively; both decrypt.
         //# The length of the Message ID field MUST be equal to the length of the [Message ID](message-header.md#message-id) defined by the message header version.
@@ -274,7 +274,7 @@ async fn test_body_aad_content_length_nonframed_rejects_tampered_length() {
             .expect_err(&format!(
                 "{version:?}: decrypt must fail after tampering the nonframed encrypted_content_length field"
             ));
-        //= specification/data-format/message-body-aad.md#content-length
+        //= spec/data-format/message-body-aad.md#content-length
         //= type=test
         //= reason=Tampered content_length causes AES-GCM auth failure.
         //# - For [nonframed data](message-body.md#nonframed-data), this value MUST equal the length, in bytes, of the plaintext data provided to the algorithm for encryption.
@@ -303,7 +303,7 @@ async fn test_body_aad_sequence_number_framed_matches_frame_sequence_number() {
     assert_eq!(frames.len(), 5, "expected 5 frames (4 regular + 1 final)");
     for (i, frame) in frames.iter().enumerate() {
         let expected_seq = (i + 1) as u32;
-        //= specification/data-format/message-body-aad.md#sequence-number
+        //= spec/data-format/message-body-aad.md#sequence-number
         //= type=test
         //= reason=Frame headers carry 1..N; companion test proves AAD uses them.
         //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
@@ -352,7 +352,7 @@ async fn test_body_aad_sequence_number_framed_rejects_tampered_seq() {
     let err = decrypt(&dec_input)
         .await
         .expect_err("tampering frame 1's sequence number must cause decrypt to fail");
-    //= specification/data-format/message-body-aad.md#sequence-number
+    //= spec/data-format/message-body-aad.md#sequence-number
     //= type=test
     //= reason=Tampered frame sequence number is rejected by the decryptor.
     //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
@@ -377,7 +377,7 @@ async fn test_body_aad_content_length_regular_frame_equals_frame_length() {
     for (i, frame) in frames.iter().enumerate() {
         // Regular frames: is_final=false.
         if !frame.4 {
-            //= specification/data-format/message-body-aad.md#content-length
+            //= spec/data-format/message-body-aad.md#content-length
             //= type=test
             //= reason=Each regular frame's encrypted content is frame_length bytes; round-trip corroborates AAD.
             //# - For [regular frames](message-body.md#regular-frame), this value MUST equal the value of the [frame length](message-header.md#frame-length) field in the message header.
@@ -402,7 +402,7 @@ async fn test_body_aad_content_length_final_frame_bounded_by_frame_length() {
     let ct = encrypt_with_frame_length(&pt, frame_length).await;
     let final_content_len = final_frame_content_length(&ct)
         .expect("ciphertext must contain a final frame");
-    //= specification/data-format/message-body-aad.md#content-length
+    //= spec/data-format/message-body-aad.md#content-length
     //= type=test
     //= reason=Final frame's content_length lies in [0, frame_length]; round-trip corroborates.
     //# - For the [final frame](message-body.md#final-frame), this value MUST be greater than or equal to 0 and less than or equal to the value of the [frame length](message-header.md#frame-length) field in the message header.
@@ -428,7 +428,7 @@ async fn test_body_aad_content_length_framed_equals_per_frame_plaintext() {
     let frames = parse_frames(&ct, frame_length);
     // Regular frames contribute frame_length; final frame contributes its remaining bytes.
     let total: usize = frames.iter().map(|f| f.2.len()).sum();
-    //= specification/data-format/message-body-aad.md#content-length
+    //= spec/data-format/message-body-aad.md#content-length
     //= type=test
     //= reason=Per-frame content lengths sum to plaintext length; round-trip corroborates.
     //# - For [framed data](message-body.md#framed-data), this value MUST equal the length, in bytes, of the plaintext being encrypted in this frame.

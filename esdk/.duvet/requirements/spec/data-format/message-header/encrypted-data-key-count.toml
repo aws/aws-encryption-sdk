@@ -1,0 +1,13 @@
+target = "spec/data-format/message-header.md#encrypted-data-key-count"
+
+# Encrypted Data Key Count
+#
+# The number of encrypted data keys.
+# This value MUST be greater than 0.
+
+[[spec]]
+level = "MUST"
+quote = '''
+This value MUST be greater than 0.
+'''
+

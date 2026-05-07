@@ -1,8 +1,8 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for specification/client-apis/decrypt.md#get-the-decryption-materials
-//! and specification/client-apis/decrypt.md#input,
+//! Tests for spec/client-apis/decrypt.md#get-the-decryption-materials
+//! and spec/client-apis/decrypt.md#input,
 //! focusing on the Reproduced Encryption Context requirement.
 
 mod fixtures;
@@ -43,7 +43,7 @@ async fn test_encryption_context_on_decrypt() {
 
     let esdk_ciphertext = encrypt_output.ciphertext;
 
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
     let decrypt_output = decrypt(&DecryptInput::with_legacy_keyring(
@@ -95,7 +95,7 @@ async fn test_encryption_context_on_decrypt_failure() {
 
     let esdk_ciphertext = encrypt_output.ciphertext;
 
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
     let decrypt_output = decrypt(&DecryptInput::with_legacy_keyring(
@@ -141,7 +141,7 @@ async fn test_mismatched_encryption_context_on_decrypt() {
 
     let esdk_ciphertext = encrypt_output.ciphertext;
 
-    //= specification/client-apis/decrypt.md#get-the-decryption-materials
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
     //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
     let mut decrypt_input = DecryptInput::with_legacy_keyring(
@@ -162,7 +162,7 @@ async fn test_mismatched_encryption_context_on_decrypt() {
     // Test that if we supply the right ec we will succeed.
     let _ = decrypt(&decrypt_input).await.unwrap();
 
-    //= specification/client-apis/decrypt.md#input
+    //= spec/client-apis/decrypt.md#input
     //= type=test
     //# - Decrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
     decrypt_input.encryption_context = EncryptionContext::new();

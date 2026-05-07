@@ -1,7 +1,7 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for encrypt.md#authentication-tag, #v1-authentication-tag, #v2-authentication-tag
+//! Tests for encrypt.md#authentication-tag
 
 mod test_helpers;
 
@@ -11,7 +11,7 @@ use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_calculated_over_header_body_v1() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=decrypt independently recomputes the auth tag over the header body and rejects mismatches, so a successful round-trip proves the auth tag was calculated over the header body
     //# After serializing the message header body,
@@ -24,7 +24,7 @@ async fn test_auth_tag_calculated_over_header_body_v1() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_calculated_over_header_body_v2() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=decrypt independently recomputes the auth tag over the header body and rejects mismatches, so a successful round-trip proves the auth tag was calculated over the header body
     //# After serializing the message header body,
@@ -37,7 +37,7 @@ async fn test_auth_tag_calculated_over_header_body_v2() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_uses_authenticated_encryption_algorithm_v1() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=decrypt uses the algorithm suite's authenticated encryption algorithm to verify the tag; a successful round-trip proves the correct algorithm was used
     //# The value of this MUST be the output of the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
@@ -49,7 +49,7 @@ async fn test_auth_tag_uses_authenticated_encryption_algorithm_v1() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_uses_authenticated_encryption_algorithm_v2() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=decrypt uses the algorithm suite's authenticated encryption algorithm to verify the tag; a successful round-trip proves the correct algorithm was used
     //# The value of this MUST be the output of the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
@@ -61,7 +61,7 @@ async fn test_auth_tag_uses_authenticated_encryption_algorithm_v2() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_aad_is_header_body_concat_required_ec_v1() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=decrypt recomputes the AAD as header body + required EC serialization and verifies the tag; a successful round-trip with non-empty EC proves the AAD was correctly constructed
     //# - The AAD MUST be the concatenation of the serialized [message header body](../data-format/message-header.md#header-body)
@@ -74,7 +74,7 @@ async fn test_auth_tag_aad_is_header_body_concat_required_ec_v1() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_aad_is_header_body_concat_required_ec_v2() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=decrypt recomputes the AAD as header body + required EC serialization and verifies the tag; a successful round-trip with non-empty EC proves the AAD was correctly constructed
     //# - The AAD MUST be the concatenation of the serialized [message header body](../data-format/message-header.md#header-body)
@@ -87,7 +87,7 @@ async fn test_auth_tag_aad_is_header_body_concat_required_ec_v2() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_required_ec_filtering_v1() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=decrypt recomputes the required EC filtering and uses it in AAD verification; a successful round-trip with non-empty EC proves the filtering was applied correctly
     //# The encryption context to only authenticate MUST be the [encryption context](../framework/structures.md#encryption-context)
@@ -107,7 +107,7 @@ async fn test_auth_tag_required_ec_filtering_v1() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_required_ec_filtering_v2() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=decrypt recomputes the required EC filtering and uses it in AAD verification; a successful round-trip with non-empty EC proves the filtering was applied correctly
     //# The encryption context to only authenticate MUST be the [encryption context](../framework/structures.md#encryption-context)
@@ -127,7 +127,7 @@ async fn test_auth_tag_required_ec_filtering_v2() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_iv_is_zero_v1() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=decrypt recomputes the auth tag with IV=0; if encrypt used a different IV the tag would not match and round-trip would fail
     //# - The IV MUST have a value of 0.
@@ -138,7 +138,7 @@ async fn test_auth_tag_iv_is_zero_v1() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_iv_is_zero_v2() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=decrypt recomputes the auth tag with IV=0; if encrypt used a different IV the tag would not match and round-trip would fail
     //# - The IV MUST have a value of 0.
@@ -149,7 +149,7 @@ async fn test_auth_tag_iv_is_zero_v2() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_cipherkey_is_derived_data_key_v1() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=decrypt recomputes the auth tag using the derived data key; if encrypt used a different key the tag would not match and round-trip would fail
     //# - The cipherkey MUST be the derived data key
@@ -160,7 +160,7 @@ async fn test_auth_tag_cipherkey_is_derived_data_key_v1() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_cipherkey_is_derived_data_key_v2() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=decrypt recomputes the auth tag using the derived data key; if encrypt used a different key the tag would not match and round-trip would fail
     //# - The cipherkey MUST be the derived data key
@@ -171,7 +171,7 @@ async fn test_auth_tag_cipherkey_is_derived_data_key_v2() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_plaintext_is_empty_v1() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=decrypt recomputes the auth tag with empty plaintext; if encrypt used non-empty plaintext the tag would not match and round-trip would fail
     //# - The plaintext MUST be an empty byte array
@@ -182,7 +182,7 @@ async fn test_auth_tag_plaintext_is_empty_v1() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_plaintext_is_empty_v2() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=decrypt recomputes the auth tag with empty plaintext; if encrypt used non-empty plaintext the tag would not match and round-trip would fail
     //# - The plaintext MUST be an empty byte array
@@ -193,7 +193,7 @@ async fn test_auth_tag_plaintext_is_empty_v2() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_header_equality_v1() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=a successful round-trip confirms the serialized header matches the calculated header because decrypt authenticates the header and would fail if they differed
     //# The encrypted message output by the Encrypt operation MUST have a message header equal
@@ -205,7 +205,7 @@ async fn test_auth_tag_header_equality_v1() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_header_equality_v2() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //= reason=a successful round-trip confirms the serialized header matches the calculated header because decrypt authenticates the header and would fail if they differed
     //# The encrypted message output by the Encrypt operation MUST have a message header equal
@@ -217,7 +217,7 @@ async fn test_auth_tag_header_equality_v2() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_tampered_header_fails_decrypt_v1() {
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# If this tag verification fails, this operation MUST immediately halt and fail.
     let mut ct = encrypt_v1(b"v1 tamper test").await;
@@ -234,7 +234,7 @@ async fn test_auth_tag_tampered_header_fails_decrypt_v1() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_tampered_header_fails_decrypt_v2() {
-    //= specification/client-apis/decrypt.md#verify-the-header
+    //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# If this tag verification fails, this operation MUST immediately halt and fail.
     let mut ct = encrypt_v2(b"v2 tamper test").await;
@@ -249,7 +249,7 @@ async fn test_auth_tag_tampered_header_fails_decrypt_v2() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_auth_tag_serialized_bytes_not_released_until_complete_v2() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //# The serialized bytes MUST NOT be released until the entire message header has been serialized.
     // Encrypt returns the full ciphertext only after the header (body + auth tag) is complete.
@@ -266,7 +266,7 @@ async fn test_auth_tag_serialized_bytes_not_released_until_complete_v2() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v2_header_auth_tag_is_16_bytes_after_header_body() {
-    //= specification/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //# After serializing the message header body,
     //# this operation MUST calculate an [authentication tag](../data-format/message-header.md#authentication-tag)
@@ -293,7 +293,7 @@ async fn test_v2_header_auth_tag_is_16_bytes_after_header_body() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_auth_has_iv_then_tag() {
-    //= specification/client-apis/encrypt.md#v1-authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //# With the authentication tag calculated,
     //# if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
@@ -310,26 +310,20 @@ async fn test_v1_header_auth_has_iv_then_tag() {
     let iv_bytes = &ct[header_body_end..header_body_end + IV_LEN];
     let tag_bytes = &ct[header_body_end + IV_LEN..header_body_end + IV_LEN + TAG_LEN];
 
-    //= specification/client-apis/encrypt.md#v1-authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
-    //# - MUST serialize the [IV](../data-format/message-header.md#iv).
-    assert_eq!(iv_bytes.len(), IV_LEN, "V1 header auth IV must be {} bytes", IV_LEN);
-
-    //= specification/client-apis/encrypt.md#v1-authentication-tag
-    //= type=test
-    //# The value MUST be the IV used in the calculation above,
+    //# - [IV](../data-format/message-header.md#iv): MUST have the value of the IV used in the calculation above,
     //# padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
+    assert_eq!(iv_bytes.len(), IV_LEN, "V1 header auth IV must be {} bytes", IV_LEN);
     assert!(
         iv_bytes.iter().all(|&b| b == 0),
         "V1 header auth IV must be all zeros (IV=0 padded to IV length)"
     );
 
-    //= specification/client-apis/encrypt.md#v1-authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
-    //# - MUST serialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
-    //= specification/client-apis/encrypt.md#v1-authentication-tag
-    //= type=test
-    //# The value MUST be the authentication tag calculated above.
+    //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
+    //# of the authentication tag calculated above.
     assert_eq!(tag_bytes.len(), TAG_LEN, "V1 header auth tag must be {} bytes", TAG_LEN);
     assert!(
         tag_bytes.iter().any(|&b| b != 0),
@@ -339,7 +333,7 @@ async fn test_v1_header_auth_has_iv_then_tag() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v2_header_auth_has_tag_only() {
-    //= specification/client-apis/encrypt.md#v2-authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
     //# With the authentication tag calculated,
     //# if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
@@ -348,12 +342,10 @@ async fn test_v2_header_auth_has_tag_only() {
     let fields = parse_v2_header_field_offsets(&ct);
     let header_body_end = fields.last().expect("must have header fields").2;
 
-    //= specification/client-apis/encrypt.md#v2-authentication-tag
+    //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
-    //# - The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
-    //= specification/client-apis/encrypt.md#v2-authentication-tag
-    //= type=test
-    //# The value MUST be the authentication tag calculated above.
+    //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
+    //# of the authentication tag calculated above.
     let tag_bytes = &ct[header_body_end..header_body_end + TAG_LEN];
     assert_eq!(tag_bytes.len(), TAG_LEN, "V2 header auth tag must be {} bytes", TAG_LEN);
     assert!(

@@ -8,18 +8,18 @@ use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_encrypt_decrypt_round_trip() {
-    //= specification/client-apis/streaming.md#overview
+    //= spec/client-apis/streaming.md#overview
     //= type=test
     //= reason=encrypt_stream and decrypt_stream provide streaming encryption and decryption APIs; a successful round-trip proves both exist and work
     //# The AWS Encryption SDK MAY provide APIs that enable streamed [encryption](encrypt.md)
     //# and [decryption](decrypt.md).
     //
-    //= specification/client-apis/encrypt.md#plaintext
+    //= spec/client-apis/encrypt.md#plaintext
     //= type=test
     //= reason=encrypt_stream reads plaintext from a SafeRead (Cursor) incrementally, proving the plaintext MAY be streamed to the encrypt operation
     //# This input MAY be [streamed](streaming.md) to this operation.
     //
-    //= specification/client-apis/encrypt.md#encrypted-message
+    //= spec/client-apis/encrypt.md#encrypted-message
     //= type=test
     //= reason=encrypt_stream writes the encrypted message to a SafeWrite (Vec<u8>) frame-by-frame, proving the encrypted message MAY be streamed
     //# This operation MAY [stream](streaming.md) the encrypted message.
@@ -30,19 +30,19 @@ async fn test_streaming_encrypt_decrypt_round_trip() {
     let ec = EncryptionContext::new();
     let enc_input = EncryptStreamInput::with_legacy_keyring(ec.clone(), keyring.clone());
 
-    //= specification/client-apis/streaming.md#inputs
+    //= spec/client-apis/streaming.md#inputs
     //= type=test
     //= reason=the Cursor implements Read; encrypt_stream reads bytes from it incrementally, making them consumable
     //# - There MUST be a mechanism for input bytes to become consumable.
     //
-    //= specification/client-apis/streaming.md#inputs
+    //= spec/client-apis/streaming.md#inputs
     //= type=test
     //= reason=the Cursor returns Ok(0) at EOF; encrypt_stream completes successfully, proving the EOF mechanism works
     //# - There MUST be a mechanism to indicate that there are no more input bytes.
     let mut pt_cursor = std::io::Cursor::new(&plaintext[..]);
     let mut ciphertext: Vec<u8> = Vec::new();
 
-    //= specification/client-apis/streaming.md#inputs
+    //= spec/client-apis/streaming.md#inputs
     //= type=test
     //= reason=encrypt_stream accepts a SafeRead (Cursor) as input, proving the operation accepts input within a streaming framework
     //# In order to support streaming, the operation MUST accept some input within a streaming framework.
@@ -57,12 +57,12 @@ async fn test_streaming_encrypt_decrypt_round_trip() {
     let mut ct_cursor = std::io::Cursor::new(&ciphertext[..]);
     let mut decrypted: Vec<u8> = Vec::new();
 
-    //= specification/client-apis/streaming.md#outputs
+    //= spec/client-apis/streaming.md#outputs
     //= type=test
     //= reason=the Vec<u8> receives bytes via SafeWrite::write(), which is the mechanism for releasing output bytes
     //# - There MUST be a mechanism for output bytes to be released.
     //
-    //= specification/client-apis/streaming.md#outputs
+    //= spec/client-apis/streaming.md#outputs
     //= type=test
     //= reason=decrypt_stream writes output to a Vec<u8> via SafeWrite; the non-empty result proves output was produced within the streaming framework
     //# In order to support streaming, the operation MUST produce some output within a streaming framework.
@@ -73,13 +73,13 @@ async fn test_streaming_encrypt_decrypt_round_trip() {
     assert_eq!(decrypted, plaintext, "round-trip plaintext must match");
 }
 
-//= specification/client-apis/streaming.md#overview
+//= spec/client-apis/streaming.md#overview
 //= type=test
 //= reason=encrypts and decrypts a multi-frame payload via streaming APIs, demonstrating that arbitrarily large inputs can be processed frame-by-frame with finite memory
 //# APIs that support streaming of the encrypt or decrypt operation SHOULD allow customers
 //# to be able to process arbitrarily large inputs with a finite amount of working memory.
 //
-//= specification/client-apis/streaming.md#overview
+//= spec/client-apis/streaming.md#overview
 //= type=test
 //= reason=the streaming APIs accept SafeRead/SafeWrite (incremental I/O), proving the implementation does not require holding the entire input in memory
 //# If an implementation requires holding the entire input in memory in order to perform the operation,
@@ -114,7 +114,7 @@ async fn test_streaming_finite_working_memory() {
     );
 }
 
-//= specification/client-apis/streaming.md#outputs
+//= spec/client-apis/streaming.md#outputs
 //= type=test
 //= reason=decrypt_stream returns Ok only after all plaintext bytes have been written to the SafeWrite output; the assertion that decrypted == plaintext proves output was complete before success was indicated
 //# Operations MUST NOT indicate completion or success until an end to the output has been indicated.
@@ -137,7 +137,7 @@ async fn test_streaming_completion_only_after_output_end() {
     let result = decrypt_stream(&mut ct_cursor, &mut decrypted, &dec_input).await;
     assert!(result.is_ok(), "decrypt_stream must succeed");
 
-    //= specification/client-apis/streaming.md#outputs
+    //= spec/client-apis/streaming.md#outputs
     //= type=test
     //= reason=after decrypt_stream returns Ok, all output is present in the Vec<u8>, proving the end-of-output mechanism works
     //# - There MUST be a mechanism to indicate that the entire output has been released.
@@ -150,7 +150,7 @@ async fn test_streaming_completion_only_after_output_end() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_encrypt_does_not_require_full_plaintext_in_memory() {
-    //= specification/client-apis/encrypt.md#plaintext
+    //= spec/client-apis/encrypt.md#plaintext
     //= type=test
     //= reason=encrypt_stream processes frames incrementally via SafeRead/SafeWrite without holding the entire plaintext in memory, so providing a streaming API is correct
     //# If an implementation requires holding the input entire plaintext in memory in order to perform this operation,

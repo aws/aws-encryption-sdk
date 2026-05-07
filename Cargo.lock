@@ -163,6 +163,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "aws-esdk-cxx-stub"
+version = "0.0.0"
+
+[[package]]
 name = "aws-lc-fips-sys"
 version = "0.13.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -183,7 +187,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7b7b6141e96a8c160799cc2d5adecd5cbbe5054cb8c7c4af53da0f83bb7ad256"
 dependencies = [
  "aws-lc-fips-sys",
- "aws-lc-sys 0.37.0",
+ "aws-lc-sys",
  "untrusted 0.7.1",
  "zeroize",
 ]
@@ -201,32 +205,21 @@ dependencies = [
 ]
 
 [[package]]
-name = "aws-lc-sys"
-version = "0.39.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83a25cf98105baa966497416dbd42565ce3a8cf8dbfd59803ec9ad46f3126399"
-dependencies = [
- "cc",
- "cmake",
- "dunce",
- "fs_extra",
-]
-
-[[package]]
 name = "aws-mpl-legacy"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f04a638979445d746294e965c877b36c9eb037ce3291a43fd62b8f4a70f5813"
 dependencies = [
  "aws-config",
- "aws-lc-fips-sys",
  "aws-lc-rs",
- "aws-lc-sys 0.39.1",
+ "aws-lc-sys",
  "aws-sdk-dynamodb",
  "aws-sdk-kms",
  "aws-smithy-runtime-api",
  "aws-smithy-types",
  "chrono",
  "cpu-time",
- "dafny_runtime",
+ "dafny-runtime",
  "dashmap",
  "futures",
  "pem",
@@ -828,8 +821,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "dafny_runtime"
-version = "0.1.0"
+name = "dafny-runtime"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "00ff59e5bdeafe83af48ddf5c7cb8ff233253aea4161f650e91c3bb0277c8a47"
 dependencies = [
  "itertools 0.14.0",
  "num",

@@ -36,6 +36,6 @@ examples:
 	cargo run --example main --no-default-features --features legacy,test_vectors
 
 duvet:
-	@test -e specification || ln -s ../../../../../aws-encryption-sdk-specification/ specification
+	@test -e spec || ln -s ../spec spec
 	rm -rf .duvet/reports .duvet/requirements
 	duvet report
