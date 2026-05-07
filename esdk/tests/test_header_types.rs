@@ -12,13 +12,9 @@ use test_helpers::*;
 #[tokio::test(flavor = "multi_thread")]
 async fn test_version_v2_value() {
     let ct = encrypt_v2(b"v2 version test").await;
-    //= specification/data-format/message-header.md#version
+    //= spec/data-format/message-header.md#version-1
     //= type=test
-    //# The length of the serialized version field MUST be 1 byte.
-    //
-    //= specification/data-format/message-header.md#supported-versions
-    //= type=test
-    //# - Hex value `02` MUST be version 2.0
+    //# The version (hex) of this field MUST be a value that exists in the following table:
     assert_eq!(
         ct[0], 0x02,
         "V2 ciphertext must start with version byte 0x02"
@@ -28,13 +24,9 @@ async fn test_version_v2_value() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_version_v1_value() {
     let ct = encrypt_v1(b"v1 version test").await;
-    //= specification/data-format/message-header.md#version
+    //= spec/data-format/message-header.md#version-1
     //= type=test
-    //# The length of the serialized version field MUST be 1 byte.
-    //
-    //= specification/data-format/message-header.md#supported-versions
-    //= type=test
-    //# - Hex value `01` MUST be version 1.0
+    //# The version (hex) of this field MUST be a value that exists in the following table:
     assert_eq!(
         ct[0], 0x01,
         "V1 ciphertext must start with version byte 0x01"
@@ -44,13 +36,9 @@ async fn test_version_v1_value() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_type_customer_aed_value() {
     let ct = encrypt_v1(b"type test").await;
-    //= specification/data-format/message-header.md#type
+    //= spec/data-format/message-header.md#type
     //= type=test
-    //# The length of the serialized type field MUST be 1 byte.
-    //
-    //= specification/data-format/message-header.md#supported-types
-    //= type=test
-    //# - `80` MUST be Customer Authenticated Encrypted Data
+    //# The type (hex) of this field MUST be a value that exists in the following table:
     assert_eq!(
         ct[1], 0x80,
         "V1 ciphertext must have type byte 0x80 at offset 1"
@@ -66,13 +54,9 @@ async fn test_content_type_framed_value() {
             Version::V1 => parse_v1_trailing_offsets(&ct).0,
             Version::V2 => content_type_offset_v2(&ct),
         };
-        //= specification/data-format/message-header.md#content-type
+        //= spec/data-format/message-header.md#content-type
         //= type=test
-        //# The length of the serialized content type field MUST be 1 byte.
-        //
-        //= specification/data-format/message-header.md#supported-content-types
-        //= type=test
-        //# - `02` for [Framed](message-body.md#framed-data)
+        //# The value (hex) of this field MUST be a value that exists in the following table:
         assert_eq!(ct[offset], 0x02, "{version:?}: framed content type must be 0x02");
     }
 }
@@ -90,10 +74,11 @@ async fn test_content_type_nonframed_value() {
 
         let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone());
         let err = decrypt(&dec_input).await.unwrap_err();
+        assert!(matches!(err.kind, ErrorKind::SerializationError), "{version:?}: expected SerializationError, got {:?}", err.kind);
         let msg = format!("{err}");
-        //= specification/data-format/message-header.md#supported-content-types
+        //= spec/data-format/message-header.md#content-type
         //= type=test
-        //# - `01` for [Nonframed](message-body.md#nonframed-data)
+        //# The value (hex) of this field MUST be a value that exists in the following table:
         assert!(
             !msg.contains("Unsupported Content Type"),
             "{version:?}: 0x01 must be accepted as a valid content type, got: {msg}"
@@ -120,21 +105,14 @@ async fn test_content_type_invalid_value_rejected() {
         ct[offset] = 0x00;
 
         let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone());
-        //= specification/data-format/message-header.md#supported-content-types
+        //= spec/data-format/message-header.md#content-type
         //= type=test
-        //# The supported content types MUST be:
-        //
-        //= specification/client-apis/decrypt.md#v2-header-deserialization
-        //= type=test
-        //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
-        //
-        //= specification/client-apis/decrypt.md#v1-header-deserialization
-        //= type=test
-        //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
+        //# The value (hex) of this field MUST be a value that exists in the following table:
         let err = decrypt(&dec_input).await.unwrap_err();
+        assert!(matches!(err.kind, ErrorKind::SerializationError), "{version:?}: expected SerializationError, got {:?}", err.kind);
         let msg = format!("{err}");
         assert!(
-            msg.contains("Content Type"),
+            msg.contains("content type"),
             "{version:?}: invalid content type 0x00 must be rejected with content type error, got: {msg}"
         );
     }
@@ -148,10 +126,11 @@ async fn test_base64_input_rejected() {
 
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let err = decrypt(&dec_input).await.unwrap_err();
+    assert!(matches!(err.kind, ErrorKind::SerializationError), "expected SerializationError, got {:?}", err.kind);
     let msg = format!("{err}");
-    //= specification/client-apis/decrypt.md#encrypted-message-format
+    //= spec/client-apis/decrypt.md#encrypted-message-format
     //= type=test
-    //# To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version)
+    //# To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version-1)
     //# and [types](../data-format/message-header.md#type)
     //# and fail with a more specific error message.
     assert!(
@@ -167,17 +146,14 @@ async fn test_unsupported_version_rejected() {
     ct[0] = 0x03;
 
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    //= specification/data-format/message-header.md#supported-versions
+    //= spec/data-format/message-header.md#version-1
     //= type=test
-    //# The supported versions MUST be:
-    //
-    //= specification/client-apis/decrypt.md#parse-the-header
-    //= type=test
-    //# The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
+    //# The version (hex) of this field MUST be a value that exists in the following table:
     let err = decrypt(&dec_input).await.unwrap_err();
+    assert!(matches!(err.kind, ErrorKind::SerializationError), "expected SerializationError, got {:?}", err.kind);
     let msg = format!("{err}");
     assert!(
-        msg.contains("Version"),
+        msg.contains("version"),
         "unsupported version 0x03 must be rejected with version error, got: {msg}"
     );
 }
@@ -189,17 +165,14 @@ async fn test_unsupported_type_rejected_v1() {
     ct[1] = 0x00;
 
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    //= specification/data-format/message-header.md#supported-types
+    //= spec/data-format/message-header.md#type
     //= type=test
-    //# The supported types MUST be:
-    //
-    //= specification/client-apis/decrypt.md#v1-header-deserialization
-    //= type=test
-    //# The value MUST be a [supported type](../data-format/message-header.md#supported-types).
+    //# The type (hex) of this field MUST be a value that exists in the following table:
     let err = decrypt(&dec_input).await.unwrap_err();
+    assert!(matches!(err.kind, ErrorKind::SerializationError), "expected SerializationError, got {:?}", err.kind);
     let msg = format!("{err}");
     assert!(
-        msg.contains("Message Type"),
+        msg.contains("message type"),
         "unsupported type 0x00 must be rejected with type error, got: {msg}"
     );
 }

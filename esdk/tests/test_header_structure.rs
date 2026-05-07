@@ -1,14 +1,15 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tests for specification/data-format/message-header.md
+//! Tests for spec/data-format/message-header.md
 
+mod fixtures;
 mod test_helpers;
 
 use aws_esdk::*;
 use test_helpers::*;
 
-//= specification/data-format/message-header.md#structure
+//= spec/data-format/message-header.md#structure
 //= type=test
 //# The message header is a sequence of bytes that MUST be in big-endian format.
 #[tokio::test(flavor = "multi_thread")]
@@ -34,11 +35,6 @@ async fn test_header_big_endian_format() {
     }
 }
 
-//= specification/data-format/message-header.md#structure
-//= type=test
-//# The header MUST consist of, in order,
-//# Header Body,
-//# and Header Authentication.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_header_serialization_order() {
     for version in VERSIONS {
@@ -82,7 +78,7 @@ async fn test_header_serialization_order() {
     }
 }
 
-//= specification/data-format/message-header.md#encrypted-data-key-count
+//= spec/data-format/message-header.md#encrypted-data-key-count
 //= type=test
 //# This value MUST be greater than 0.
 #[tokio::test(flavor = "multi_thread")]
@@ -117,7 +113,7 @@ async fn test_encrypted_data_key_count_greater_than_zero() {
     }
 }
 
-//= specification/data-format/message-header.md#algorithm-suite-data
+//= spec/data-format/message-header.md#algorithm-suite-data
 //= type=test
 //# The length of the suite data field MUST be equal to the [Algorithm Suite Data Length](../framework/algorithm-suites.md#algorithm-suite-data-length) value
 //# of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
@@ -139,10 +135,6 @@ async fn test_suite_data_length_matches_algorithm_suite() {
     );
 }
 
-//= specification/data-format/message-header.md#algorithm-suite-data
-//= type=test
-//= reason=verifying the suite data is exactly 32 raw bytes with high entropy confirms it is interpreted as bytes, not as a string or integer
-//# The algorithm suite data MUST be interpreted as bytes.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_suite_data_interpreted_as_bytes() {
     let ct = encrypt_default(b"suite data bytes test")
@@ -157,16 +149,16 @@ async fn test_suite_data_interpreted_as_bytes() {
     assert_eq!(suite_data.len(), 32, "suite data must be exactly 32 bytes");
     // Key commitment is a cryptographic hash — it should not be valid UTF-8 text.
     // Verify it has byte values outside printable ASCII range.
-    let non_ascii_count = suite_data.iter().filter(|&&b| b > 0x7E || b < 0x20).count();
+    let non_ascii_count = suite_data
+        .iter()
+        .filter(|&&b| !(0x20..=0x7E).contains(&b))
+        .count();
     assert!(
         non_ascii_count > 0,
         "suite data should contain non-ASCII bytes (raw key commitment, not a string)"
     );
 }
 
-//= specification/data-format/message-header.md#frame-length
-//= type=test
-//# The length of the serialized frame length field MUST be 4 bytes.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_frame_length_field_is_4_bytes() {
     for version in VERSIONS {
@@ -198,62 +190,96 @@ async fn test_frame_length_field_is_4_bytes() {
     }
 }
 
-//= specification/data-format/message-header.md#frame-length
+//= spec/data-format/message-header.md#frame-length
 //= type=test
-//# The frame length MUST be interpreted as a UInt32.
+//# When the [content type](#content-type) is non-framed, the value of this field MUST be 0.
 #[tokio::test(flavor = "multi_thread")]
-async fn test_frame_length_serialized_as_uint32() {
+async fn test_nonframed_frame_length_must_be_zero() {
     for version in VERSIONS {
         let keyring = test_keyring().await;
-        let ct = encrypt_with_version(b"frame length uint32 test", version, keyring).await;
-        let frame_length_offset = match version {
+        let ct =
+            encrypt_with_version(b"frame length test", version, keyring.clone()).await;
+
+        let (content_type_offset, frame_length_offset) = match version {
             Version::V1 => {
-                let (_, _, _, fl_off) = parse_v1_trailing_offsets(&ct);
-                fl_off
+                let (ct_off, _, _, fl_off) = parse_v1_trailing_offsets(&ct);
+                (ct_off, fl_off)
             }
             Version::V2 => {
-                let (_, _, fl_off) = parse_header_offsets(&ct);
-                fl_off
+                let (_, ct_off, fl_off) = parse_header_offsets(&ct);
+                (ct_off, fl_off)
             }
         };
-        let frame_length = u32::from_be_bytes([
-            ct[frame_length_offset],
-            ct[frame_length_offset + 1],
-            ct[frame_length_offset + 2],
-            ct[frame_length_offset + 3],
-        ]);
-        assert_eq!(
-            frame_length, 4096,
-            "{version:?}: default frame length should be 4096 when serialized as UInt32"
+
+        // Set content type to NonFramed (0x01) and frame length to a non-zero value
+        let mut tampered = ct.clone();
+        tampered[content_type_offset] = 0x01;
+        tampered[frame_length_offset] = 0x00;
+        tampered[frame_length_offset + 1] = 0x00;
+        tampered[frame_length_offset + 2] = 0x10;
+        tampered[frame_length_offset + 3] = 0x00;
+
+        let mut dec_input = DecryptInput::with_legacy_keyring(
+            &tampered,
+            EncryptionContext::new(),
+            keyring.clone(),
+        );
+        if let Version::V1 = version {
+            dec_input.commitment_policy =
+                aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+        }
+        assert!(
+            decrypt(&dec_input).await.is_err(),
+            "{version:?}: nonframed content with non-zero frame length must be rejected"
         );
     }
 }
 
-//= specification/data-format/message-header.md#frame-length
-//= type=test
-//# When the [content type](#content-type) is nonframed, the value of this field MUST be 0.
+// Negative test for the `read_header_body` sanity check that framed content
+// must carry a non-zero Frame Length. The spec does not explicitly require this
+// (it only requires Frame Length = 0 when content type is non-framed), but a
+// framed frame length of 0 is a degenerate wire format that the implementation
+// rejects during header deserialization, before header-auth verification.
 #[tokio::test(flavor = "multi_thread")]
-async fn test_nonframed_frame_length_must_be_zero() {
-    let keyring = test_keyring().await;
-    let input = EncryptInput::with_legacy_keyring(
-        b"frame length test",
-        EncryptionContext::new(),
-        keyring.clone(),
-    );
-    let mut ct = encrypt(&input).await.unwrap().ciphertext;
+async fn test_framed_frame_length_must_be_positive() {
+    for version in VERSIONS {
+        let keyring = test_keyring().await;
+        let ct = encrypt_with_version(b"framed zero frame length test", version, keyring.clone())
+            .await;
 
-    let (_, content_type_offset, frame_length_offset) = parse_header_offsets(&ct);
+        let (content_type_offset, frame_length_offset) = match version {
+            Version::V1 => {
+                let (ct_off, _, _, fl_off) = parse_v1_trailing_offsets(&ct);
+                (ct_off, fl_off)
+            }
+            Version::V2 => {
+                let (_, ct_off, fl_off) = parse_header_offsets(&ct);
+                (ct_off, fl_off)
+            }
+        };
 
-    // Set content type to NonFramed (0x01) and frame length to a non-zero value
-    ct[content_type_offset] = 0x01;
-    ct[frame_length_offset] = 0x00;
-    ct[frame_length_offset + 1] = 0x00;
-    ct[frame_length_offset + 2] = 0x10;
-    ct[frame_length_offset + 3] = 0x00;
+        // Sanity-check that the fixture is framed content (ContentType = 0x02).
+        assert_eq!(
+            ct[content_type_offset], 0x02,
+            "{version:?}: fixture should be framed content"
+        );
 
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    assert!(
-        decrypt(&dec_input).await.is_err(),
-        "nonframed content with non-zero frame length must be rejected"
-    );
+        // Tamper: set frame length to 0 while leaving content type framed.
+        let mut tampered = ct.clone();
+        tampered[frame_length_offset] = 0x00;
+        tampered[frame_length_offset + 1] = 0x00;
+        tampered[frame_length_offset + 2] = 0x00;
+        tampered[frame_length_offset + 3] = 0x00;
+
+        let mut dec_input =
+            DecryptInput::with_legacy_keyring(&tampered, EncryptionContext::new(), keyring.clone());
+        if let Version::V1 = version {
+            dec_input.commitment_policy =
+                aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+        }
+        assert!(
+            decrypt(&dec_input).await.is_err(),
+            "{version:?}: framed content with zero frame length must be rejected"
+        );
+    }
 }
