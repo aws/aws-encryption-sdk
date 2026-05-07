@@ -62,7 +62,7 @@ pub(crate) fn write_footer(w: &mut dyn SafeWrite, signature: &[u8]) -> Result<()
 
 /// Read a message footer, returning the signature bytes.
 pub(crate) fn read_footer(r: &mut dyn SafeRead, raw: &mut dyn SafeWrite) -> Result<Vec<u8>, Error> {
-    //= specification/client-apis/decrypt.md#verify-the-signature
+    //= spec/client-apis/decrypt.md#verify-the-signature
     //# The order for message footer deserialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
     //
     //= specification/data-format/message-footer.md#structure
