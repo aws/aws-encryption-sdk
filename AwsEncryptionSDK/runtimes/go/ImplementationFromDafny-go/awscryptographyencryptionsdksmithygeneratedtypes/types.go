@@ -87,6 +87,9 @@ type EncryptInput struct {
 }
 
 func (input EncryptInput) Validate() error {
+	if len(input.Plaintext) > 1_073_741_824 {
+		return fmt.Errorf("plaintext size %d bytes exceeds the maximum allowed size of 1 GB", len(input.Plaintext))
+	}
 	if input.Aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_Validate() != nil {
 		return input.Aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_Validate()
 	}

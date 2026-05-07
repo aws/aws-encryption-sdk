@@ -86,7 +86,7 @@ jobs:
           path: ./${{ matrix.library }}/aws-encryption-sdk-c/aws-sdk-cpp
           submodules: recursive
 
-      - name: Build and install aws-sdk-cpp (with retry)
+      - name: Build and install aws-sdk-cpp (with retry) for NOT ubuntu
         if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
         uses: nick-fields/retry@v3
         with:
@@ -105,7 +105,7 @@ jobs:
             xcodebuild -target ALL_BUILD
             xcodebuild -target install
 
-      - name: Build and install aws-sdk-cpp (with retry)
+      - name: Build and install aws-sdk-cpp (with retry) for ubuntu
         if: matrix.os == 'ubuntu-22.04' && matrix.language == 'c'
         uses: nick-fields/retry@v3
         with:
@@ -380,35 +380,47 @@ jobs:
           path: ./${{ matrix.library }}/aws-encryption-sdk-c/aws-sdk-cpp
           submodules: recursive
 
-      - name: Build and install aws-sdk-cpp
+      - name: Build and install aws-sdk-cpp (with retry) for NOT ubuntu
         if: matrix.decrypting_language == 'c' && matrix.os != 'ubuntu-22.04'
-        working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
-        run: |
-          pwd
-          ls
-          # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
-          perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
-          mkdir -p aws-encryption-sdk-c/build-aws-sdk-cpp || true
-          mkdir -p install || true
-          cd build-aws-sdk-cpp
-          cmake -G Xcode -DTARGET_ARCH="APPLE" -DBUILD_SHARED_LIBS=ON -DBUILD_ONLY="kms" -DENABLE_UNITY_BUILD=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/aws-encryption-sdk-c/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/aws-encryption-sdk-c/install ../aws-sdk-cpp
-          xcodebuild -target ALL_BUILD
-          xcodebuild -target install
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 30
+          max_attempts: 3
+          retry_on: error
+          shell: bash
+          command: |
+            cd ./${{ matrix.library }}/aws-encryption-sdk-c
+            pwd
+            ls
+            # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
+            perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
+            mkdir -p aws-encryption-sdk-c/build-aws-sdk-cpp || true
+            mkdir -p install || true
+            cd build-aws-sdk-cpp
+            cmake -G Xcode -DTARGET_ARCH="APPLE" -DBUILD_SHARED_LIBS=ON -DBUILD_ONLY="kms" -DENABLE_UNITY_BUILD=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/aws-encryption-sdk-c/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/aws-encryption-sdk-c/install ../aws-sdk-cpp
+            xcodebuild -target ALL_BUILD
+            xcodebuild -target install
 
-      - name: Build and install aws-sdk-cpp
+      - name: Build and install aws-sdk-cpp (with retry) for ubuntu
         if: matrix.os == 'ubuntu-22.04' && matrix.decrypting_language == 'c'
-        working-directory: ./${{ matrix.library }}/aws-encryption-sdk-c
-        run: |
-          pwd
-          ls
-          # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
-          perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
-          mkdir -p build-aws-sdk-cpp || true
-          mkdir -p install || true
-          cd build-aws-sdk-cpp
-          cmake -DBUILD_SHARED_LIBS=ON -DBUILD_ONLY="kms" -DENABLE_UNITY_BUILD=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install ../aws-sdk-cpp
-          make
-          make install
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 30
+          max_attempts: 3
+          retry_on: error
+          shell: bash
+          command: |
+            cd ./${{ matrix.library }}/aws-encryption-sdk-c
+            pwd
+            ls
+            # remove the following line once aws-sdk-cpp fixes linux-shared/SimpleUDP.cpp
+            perl -i -p -e 's/"-Werror"//' aws-sdk-cpp/cmake/compiler_settings.cmake
+            mkdir -p build-aws-sdk-cpp || true
+            mkdir -p install || true
+            cd build-aws-sdk-cpp
+            cmake -DBUILD_SHARED_LIBS=ON -DBUILD_ONLY="kms" -DENABLE_UNITY_BUILD=ON -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install -DCMAKE_PREFIX_PATH=${{github.workspace}}/TestVectors/aws-encryption-sdk-c/install ../aws-sdk-cpp
+            make
+            make install
 
       - name: Build C-ESDK
         if: matrix.decrypting_language == 'c' && matrix.os != 'ubuntu-22.04'
