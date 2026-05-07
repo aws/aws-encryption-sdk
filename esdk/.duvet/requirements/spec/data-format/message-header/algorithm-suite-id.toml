@@ -3,9 +3,16 @@ target = "spec/data-format/message-header.md#algorithm-suite-id"
 # Algorithm Suite ID
 #
 # The identifier for the algorithm suite used when generating the message.
+# The length of the serialized algorithm suite ID field MUST be 2 bytes.
 # The value (hex) of this field MUST be a value that exists in the
 # [Supported Algorithm Suites](../framework/algorithm-suites.md#supported-algorithm-suites) table.
 # This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized algorithm suite ID field MUST be 2 bytes.
+'''
 
 [[spec]]
 level = "MUST"

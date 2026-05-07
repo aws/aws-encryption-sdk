@@ -1,0 +1,18 @@
+target = "spec/data-format/message-header.md#header-authentication-version-2-0"
+
+# Header Authentication Version 2.0
+#
+# The following table is a non-normative representation of the normative requirements in this section.
+# 
+# | Field                                     | Length, in bytes                                                                                                                                                                              | Interpreted as |
+# | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+# | [Authentication Tag](#authentication-tag) | Variable. Determined by the byte value of the authentication tag of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field. | Bytes          |
+# 
+# The V2 Header Authentication MUST consist of the Authentication Tag only.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The V2 Header Authentication MUST consist of the Authentication Tag only.
+'''
+

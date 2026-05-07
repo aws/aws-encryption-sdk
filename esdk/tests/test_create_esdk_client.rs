@@ -190,7 +190,7 @@ fn test_encrypt_input_accepts_cmm_and_keyring() {
     //= spec/client-apis/encrypt.md#input
     //= type=test
     //= reason=source is Option<MaterialSource> which accepts CMM or keyring variants; constructing a keyring requires async KMS/MPL setup
-    //# - Encrypt operation input MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
+    //# - Encrypt operation input MUST accept an optional [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
     let input = EncryptInput::default();
     assert!(input.source.is_none());
 }
@@ -301,7 +301,7 @@ fn test_encrypt_input_keyring_cmm_optional_by_construction() {
     //= spec/client-apis/encrypt.md#input
     //= type=test
     //= reason=EncryptInput.source is Option<MaterialSource>, so keyring/CMM are optional by construction
-    //# The keyring and CMM inputs SHOULD be optional.
+    //# - Encrypt operation input MUST accept an optional [keyring](../framework/keyring-interface.md) argument.
     let input = EncryptInput::default();
     assert!(input.source.is_none(), "source must default to None, proving keyring/CMM are optional");
 }

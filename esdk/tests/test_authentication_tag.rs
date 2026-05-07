@@ -229,7 +229,11 @@ async fn test_auth_tag_tampered_header_fails_decrypt_v1() {
     let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     dec_input.commitment_policy =
         aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    assert!(decrypt(&dec_input).await.is_err(), "V1 tampered header must fail decryption");
+    let err = decrypt(&dec_input).await.expect_err("V1 tampered header must fail decryption");
+    assert!(
+        matches!(err.kind, ErrorKind::CryptographicError),
+        "V1: expected CryptographicError, got {:?}", err.kind
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -244,7 +248,11 @@ async fn test_auth_tag_tampered_header_fails_decrypt_v2() {
     }
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    assert!(decrypt(&dec_input).await.is_err(), "V2 tampered header must fail decryption");
+    let err = decrypt(&dec_input).await.expect_err("V2 tampered header must fail decryption");
+    assert!(
+        matches!(err.kind, ErrorKind::ValidationError),
+        "V2: expected ValidationError, got {:?}", err.kind
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -295,9 +303,8 @@ async fn test_v2_header_auth_tag_is_16_bytes_after_header_body() {
 async fn test_v1_header_auth_has_iv_then_tag() {
     //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
-    //# With the authentication tag calculated,
-    //# if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
-    //# this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-1-0) with the following specifics:
+    //# The encrypted message output by the Encrypt operation MUST have a message header equal
+    //# to the message header calculated in this step.
     let ct = encrypt_v1(b"raw byte v1 auth tag").await;
     // V1 header: Version(1) + AlgSuiteID(2) + MessageID(16) + AAD(variable) + EDKs(variable)
     //            + ContentType(1) + Reserved(4) + IVLength(1) + FrameLength(4)
@@ -312,8 +319,7 @@ async fn test_v1_header_auth_has_iv_then_tag() {
 
     //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
-    //# - [IV](../data-format/message-header.md#iv): MUST have the value of the IV used in the calculation above,
-    //# padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
+    //# - The IV MUST have a value of 0.
     assert_eq!(iv_bytes.len(), IV_LEN, "V1 header auth IV must be {} bytes", IV_LEN);
     assert!(
         iv_bytes.iter().all(|&b| b == 0),
@@ -322,8 +328,7 @@ async fn test_v1_header_auth_has_iv_then_tag() {
 
     //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
-    //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
-    //# of the authentication tag calculated above.
+    //# - The plaintext MUST be an empty byte array
     assert_eq!(tag_bytes.len(), TAG_LEN, "V1 header auth tag must be {} bytes", TAG_LEN);
     assert!(
         tag_bytes.iter().any(|&b| b != 0),
@@ -335,17 +340,14 @@ async fn test_v1_header_auth_has_iv_then_tag() {
 async fn test_v2_header_auth_has_tag_only() {
     //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
-    //# With the authentication tag calculated,
-    //# if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
-    //# this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-2-0) with the following specifics:
+    //# If the message headers are not equal, the Encrypt operation MUST fail.
     let ct = encrypt_v2(b"raw byte v2 tag only").await;
     let fields = parse_v2_header_field_offsets(&ct);
     let header_body_end = fields.last().expect("must have header fields").2;
 
     //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
-    //# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
-    //# of the authentication tag calculated above.
+    //# - The cipherkey MUST be the derived data key
     let tag_bytes = &ct[header_body_end..header_body_end + TAG_LEN];
     assert_eq!(tag_bytes.len(), TAG_LEN, "V2 header auth tag must be {} bytes", TAG_LEN);
     assert!(

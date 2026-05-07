@@ -1,0 +1,22 @@
+target = "spec/data-format/message-header.md#supported-content-types"
+
+# Supported Content Types
+#
+# The supported content types MUST be:
+# 
+# - `01` for [Nonframed](message-body.md#nonframed-data)
+# - `02` for [Framed](message-body.md#framed-data)
+# 
+# The following table is a non-normative representation of the supported content types.
+# 
+# | Value (hex) | Content Type                                |
+# | ----------- | ------------------------------------------- |
+# | 01          | [Nonframed](message-body.md#nonframed-data) |
+# | 02          | [Framed](message-body.md#framed-data)       |
+
+[[spec]]
+level = "MUST"
+quote = '''
+The supported content types MUST be:
+'''
+

@@ -13,7 +13,7 @@ use test_helpers::*;
 async fn test_regular_frame_serialization_conforms_to_spec() {
     //= spec/client-apis/encrypt.md#construct-a-frame
     //= type=test
-    //# This operation MUST serialize a regular frame or final frame with the following specifics:
+    //# The Encrypt operation MUST serialize a regular frame or final frame with the following specifics:
     // 30 bytes with frame_length=10 → 2 regular frames + 1 final frame (10 bytes)
     let pt = vec![0xAAu8; 30];
     let ct = encrypt_with_frame_length(&pt, 10).await;

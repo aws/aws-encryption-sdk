@@ -14,8 +14,9 @@ use test_helpers::*;
 async fn test_v1_header_serialized() {
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
-    //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
-    //# then the [message header body](../data-format/message-header.md#header-body-version-1-0) MUST be serialized with the following specifics:
+    //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0,
+    //# the remaining header fields MUST be serialized according to the
+    //# [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
     let pt = b"test v1 header";
     let ct = encrypt_v1_with_ec(pt, EncryptionContext::new()).await;
     // V1 header starts with version byte 0x01
@@ -26,8 +27,8 @@ async fn test_v1_header_serialized() {
 async fn test_v1_header_version() {
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [Version](../data-format/message-header.md#version-1): MUST have a value corresponding to
-    //# [1.0](../data-format/message-header.md#supported-versions)
+    //# - MUST serialize the [Version](../data-format/message-header.md#version).
+    //# The value MUST correspond to [1.0](../data-format/message-header.md#supported-versions).
     //
     //= spec/data-format/message-header.md#header-body-version-1-0
     //= type=test
@@ -40,8 +41,8 @@ async fn test_v1_header_version() {
 async fn test_v1_header_type() {
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [Type](../data-format/message-header.md#type): MUST have a value corresponding to
-    //# [Customer Authenticated Encrypted Data](../data-format/message-header.md#supported-types)
+    //# - MUST serialize the [Type](../data-format/message-header.md#type).
+    //# The value MUST correspond to [Customer Authenticated Encrypted Data](../data-format/message-header.md#supported-types).
     let ct = encrypt_v1_with_ec(b"type test", EncryptionContext::new()).await;
     // Type field is at offset 1, value 0x80 = Customer Authenticated Encrypted Data
     assert_eq!(ct[1], 0x80, "Type field must be 0x80 (Customer AED)");
@@ -51,8 +52,8 @@ async fn test_v1_header_type() {
 async fn test_v1_header_algorithm_suite_id() {
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST correspond to
-    //# the [algorithm suite](../framework/algorithm-suites.md) used in this behavior
+    //# - MUST serialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
+    //# The value MUST correspond to the [algorithm suite](../framework/algorithm-suites.md) used in this behavior.
     let ct = encrypt_v1_with_ec(b"suite test", EncryptionContext::new()).await;
 
     //= spec/data-format/message-header.md#algorithm-suite-id
@@ -74,8 +75,9 @@ async fn test_v1_header_algorithm_suite_id() {
 async fn test_v1_header_message_id() {
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [Message ID](../data-format/message-header.md#message-id): The process used to generate
-    //# this identifier MUST use a good source of randomness to make the chance of duplicate identifiers negligible.
+    //# - MUST serialize the [Message ID](../data-format/message-header.md#message-id).
+    //# The process used to generate this identifier MUST use a good source of randomness
+    //# to make the chance of duplicate identifiers negligible.
     let ct1 = encrypt_v1_with_ec(b"msg id test", EncryptionContext::new()).await;
     let ct2 = encrypt_v1_with_ec(b"msg id test", EncryptionContext::new()).await;
     // Message ID is 16 bytes at offset 4
@@ -85,7 +87,7 @@ async fn test_v1_header_message_id() {
     //= spec/data-format/message-header.md#message-id
     //= type=test
     //# While implementations cannot guarantee complete uniqueness,
-    //# implementations MUST use a good source of randomness when generating messages IDs in order to make
+    //# implementations MUST use a good source of randomness when generating message IDs in order to make
     //# the chance of duplicate IDs negligible.
     assert_ne!(msg_id_1, msg_id_2, "Message IDs must be unique (random)");
 }
@@ -94,7 +96,8 @@ async fn test_v1_header_message_id() {
 async fn test_v1_header_aad() {
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [AAD](../data-format/message-header.md#aad): MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
+    //# - MUST serialize the [AAD](../data-format/message-header.md#aad).
+    //# The value MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
     //# in the [encryption materials](../framework/structures.md#encryption-materials),
     //# and this serialization MUST NOT contain any key value pairs listed in
     //# the [encryption material's](../framework/structures.md#encryption-materials)
@@ -118,8 +121,9 @@ async fn test_v1_header_aad() {
 async fn test_v1_header_encrypted_data_keys() {
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-key-entries): MUST be the serialization of the
-    //# [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials)
+    //# - MUST serialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
+    //# The value MUST be the serialization of the
+    //# [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials).
     let pt = b"edk test";
     let ct = encrypt_v1_with_ec(pt, EncryptionContext::new()).await;
     // Parse past AAD to find EDK count
@@ -138,7 +142,8 @@ async fn test_v1_header_encrypted_data_keys() {
 async fn test_v1_header_content_type() {
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [Content Type](../data-format/message-header.md#content-type): MUST be [02](../data-format/message-header.md#supported-content-types)
+    //# - MUST serialize the [Content Type](../data-format/message-header.md#content-type).
+    //# The value MUST be [02](../data-format/message-header.md#supported-content-types).
     let ct = encrypt_v1_with_ec(b"content type test", EncryptionContext::new()).await;
     let (ct_offset, _, _, _) = parse_v1_trailing_offsets(&ct);
     assert_eq!(ct[ct_offset], 0x02, "Content Type must be 0x02 (framed)");
@@ -163,8 +168,9 @@ async fn test_v1_header_reserved() {
 async fn test_v1_header_iv_length() {
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [IV Length](../data-format/message-header.md#iv-length): MUST match the [IV length](../framework/algorithm-suites.md#iv-length)
-    //# specified by the [algorithm suite](../framework/algorithm-suites.md)
+    //# - MUST serialize the [IV Length](../data-format/message-header.md#iv-length).
+    //# The value MUST match the [IV length](../framework/algorithm-suites.md#iv-length)
+    //# specified by the [algorithm suite](../framework/algorithm-suites.md).
     let ct = encrypt_v1_with_ec(b"iv length test", EncryptionContext::new()).await;
     let (_, _, iv_length_offset, _) = parse_v1_trailing_offsets(&ct);
     // AlgAes256GcmIv12Tag16HkdfSha256 has IV length 12
@@ -178,7 +184,8 @@ async fn test_v1_header_iv_length() {
 async fn test_v1_header_frame_length() {
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
-    //# - [Frame Length](../data-format/message-header.md#frame-length): MUST be the value of the frame size determined above.
+    //# - MUST serialize the [Frame Length](../data-format/message-header.md#frame-length).
+    //# The value MUST be the value of the frame size determined above.
     let ct = encrypt_v1_with_ec(b"frame length test", EncryptionContext::new()).await;
     let (_, _, _, frame_length_offset) = parse_v1_trailing_offsets(&ct);
     let frame_length = u32::from_be_bytes([

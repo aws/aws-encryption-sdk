@@ -1,0 +1,20 @@
+target = "spec/data-format/message-header.md#encrypted-data-key-length"
+
+# Encrypted Data Key Length
+#
+# The length of the encrypted data key.
+# The length of the serialized encrypted data key length field MUST be 2 bytes.
+# The encrypted data key length MUST be interpreted as a UInt16.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized encrypted data key length field MUST be 2 bytes.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The encrypted data key length MUST be interpreted as a UInt16.
+'''
+

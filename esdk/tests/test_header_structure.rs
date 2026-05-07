@@ -106,9 +106,12 @@ async fn test_encrypted_data_key_count_greater_than_zero() {
             dec_input.commitment_policy =
                 aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
         }
+        let err = decrypt(&dec_input).await.expect_err(
+            &format!("{version:?}: EDK count of 0 must be rejected"),
+        );
         assert!(
-            decrypt(&dec_input).await.is_err(),
-            "{version:?}: EDK count of 0 must be rejected"
+            matches!(err.kind, ErrorKind::SerializationError),
+            "{version:?}: expected SerializationError, got {:?}", err.kind
         );
     }
 }
@@ -192,7 +195,7 @@ async fn test_frame_length_field_is_4_bytes() {
 
 //= spec/data-format/message-header.md#frame-length
 //= type=test
-//# When the [content type](#content-type) is non-framed, the value of this field MUST be 0.
+//# When the [content type](#content-type) is nonframed, the value of this field MUST be 0.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_nonframed_frame_length_must_be_zero() {
     for version in VERSIONS {
@@ -228,9 +231,12 @@ async fn test_nonframed_frame_length_must_be_zero() {
             dec_input.commitment_policy =
                 aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
         }
+        let err = decrypt(&dec_input).await.expect_err(
+            &format!("{version:?}: nonframed content with non-zero frame length must be rejected"),
+        );
         assert!(
-            decrypt(&dec_input).await.is_err(),
-            "{version:?}: nonframed content with non-zero frame length must be rejected"
+            matches!(err.kind, ErrorKind::SerializationError),
+            "{version:?}: expected SerializationError, got {:?}", err.kind
         );
     }
 }
@@ -240,6 +246,9 @@ async fn test_nonframed_frame_length_must_be_zero() {
 // (it only requires Frame Length = 0 when content type is non-framed), but a
 // framed frame length of 0 is a degenerate wire format that the implementation
 // rejects during header deserialization, before header-auth verification.
+//= spec/data-format/message-header.md#frame-length
+//= type=test
+//# When the [content type](#content-type) is nonframed, the value of this field MUST be 0.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_framed_frame_length_must_be_positive() {
     for version in VERSIONS {
@@ -277,9 +286,12 @@ async fn test_framed_frame_length_must_be_positive() {
             dec_input.commitment_policy =
                 aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
         }
+        let err = decrypt(&dec_input).await.expect_err(
+            &format!("{version:?}: framed content with zero frame length must be rejected"),
+        );
         assert!(
-            decrypt(&dec_input).await.is_err(),
-            "{version:?}: framed content with zero frame length must be rejected"
+            matches!(err.kind, ErrorKind::SerializationError),
+            "{version:?}: expected SerializationError, got {:?}", err.kind
         );
     }
 }

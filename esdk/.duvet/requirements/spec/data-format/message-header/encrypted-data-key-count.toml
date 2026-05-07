@@ -3,11 +3,32 @@ target = "spec/data-format/message-header.md#encrypted-data-key-count"
 # Encrypted Data Key Count
 #
 # The number of encrypted data keys.
+# The length of the serialized encrypted data key count MUST be 2 bytes.
+# The encrypted data key count MUST be interpreted as a UInt16.
 # This value MUST be greater than 0.
+# This value MUST be less than or equal to the [maximum number of encrypted data keys](../client-apis/client.md#maximum-number-of-encrypted-data-keys) if the maximum number is configured.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized encrypted data key count MUST be 2 bytes.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The encrypted data key count MUST be interpreted as a UInt16.
+'''
 
 [[spec]]
 level = "MUST"
 quote = '''
 This value MUST be greater than 0.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+This value MUST be less than or equal to the [maximum number of encrypted data keys](../client-apis/client.md#maximum-number-of-encrypted-data-keys) if the maximum number is configured.
 '''
 

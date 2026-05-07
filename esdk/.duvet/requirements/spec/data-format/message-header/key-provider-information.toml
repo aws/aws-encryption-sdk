@@ -1,0 +1,21 @@
+target = "spec/data-format/message-header.md#key-provider-information"
+
+# Key Provider Information
+#
+# The key provider information.
+# The length of the serialized key provider information MUST be equal to the value of the [Key Provider Information Length](#key-provider-information-length) field.
+# The key provider information MUST be interpreted as bytes.
+# See [the specification for encrypted data keys](../framework/structures.md#encrypted-data-key).
+
+[[spec]]
+level = "MUST"
+quote = '''
+The length of the serialized key provider information MUST be equal to the value of the [Key Provider Information Length](#key-provider-information-length) field.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The key provider information MUST be interpreted as bytes.
+'''
+

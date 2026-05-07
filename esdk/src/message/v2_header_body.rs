@@ -21,13 +21,14 @@ pub(crate) fn write_v2_header_body(
     body: &V2HeaderBody,
 ) -> Result<(), Error> {
     //= spec/client-apis/encrypt.md#v2-header
-    //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0
-    //# then the [message header body](../data-format/message-header.md#header-body-version-1-0) MUST be serialized with the following specifics:
+    //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
+    //# the remaining header fields MUST be serialized according to the
+    //# [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
 
     // Version
     //= spec/client-apis/encrypt.md#v2-header
-    //# - [Version](../data-format/message-header.md#version-1): MUST have a value corresponding to
-    //# [2.0](../data-format/message-header.md#supported-versions)
+    //# - MUST serialize the [Version](../data-format/message-header.md#version).
+    //# The value MUST correspond to [2.0](../data-format/message-header.md#supported-versions).
     write_msg_format_version(
         w,
         //= spec/data-format/message-header.md#header-body-version-2-0
@@ -37,19 +38,21 @@ pub(crate) fn write_v2_header_body(
 
     // Algorithm Suite ID
     //= spec/client-apis/encrypt.md#v2-header
-    //# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST correspond to
-    //# the [algorithm suite](../framework/algorithm-suites.md) used in this behavior
+    //# - MUST serialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
+    //# The value MUST correspond to the [algorithm suite](../framework/algorithm-suites.md) used in this behavior.
     write_esdk_suite_id(w, &body.algorithm_suite)?;
 
     // Message ID
     //= spec/client-apis/encrypt.md#v2-header
-    //# - [Message ID](../data-format/message-header.md#message-id): The process used to generate
-    //# this identifier MUST use a good source of randomness to make the chance of duplicate identifiers negligible.
+    //# - MUST serialize the [Message ID](../data-format/message-header.md#message-id).
+    //# The process used to generate this identifier MUST use a good source of randomness
+    //# to make the chance of duplicate identifiers negligible.
     write_message_id(w, &body.message_id)?;
 
     // AAD
     //= spec/client-apis/encrypt.md#v2-header
-    //# - [AAD](../data-format/message-header.md#aad): MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
+    //# - MUST serialize the [AAD](../data-format/message-header.md#aad).
+    //# The value MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
     //# in the [encryption materials](../framework/structures.md#encryption-materials),
     //# and this serialization MUST NOT contain any key value pairs listed in
     //# the [encryption material's](../framework/structures.md#encryption-materials)
@@ -58,23 +61,27 @@ pub(crate) fn write_v2_header_body(
 
     // Encrypted Data Keys
     //= spec/client-apis/encrypt.md#v2-header
-    //# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-key-entries): MUST be the serialization of the
-    //# [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials)
+    //# - MUST serialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
+    //# The value MUST be the serialization of the
+    //# [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials).
     write_edks(w, &body.encrypted_data_keys)?;
 
     // Content Type
     //= spec/client-apis/encrypt.md#v2-header
-    //# - [Content Type](../data-format/message-header.md#content-type): MUST be [02](../data-format/message-header.md#supported-content-types)
+    //# - MUST serialize the [Content Type](../data-format/message-header.md#content-type).
+    //# The value MUST be [02](../data-format/message-header.md#supported-content-types).
     write_content_type(w, body.content_type)?;
 
     // Frame Length
     //= spec/client-apis/encrypt.md#v2-header
-    //# - [Frame Length](../data-format/message-header.md#frame-length): MUST be the value of the frame size determined above.
+    //# - MUST serialize the [Frame Length](../data-format/message-header.md#frame-length).
+    //# The value MUST be the value of the frame size determined above.
     write_u32(w, body.frame_length)?;
 
     // Algorithm Suite Data
     //= spec/client-apis/encrypt.md#v2-header
-    //# - [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data): MUST be the value of the [commit key](../framework/algorithm-suites.md#commit-key)
+    //# - MUST serialize the [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data).
+    //# The value MUST be the value of the [commit key](../framework/algorithm-suites.md#commit-key)
     //# derived according to the [algorithm suites commit key derivation settings](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
     write_bytes(w, &body.suite_data)
 }

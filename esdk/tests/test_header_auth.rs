@@ -26,6 +26,12 @@ fn v2_header_auth_offset(ct: &[u8]) -> usize {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_auth_structure() {
+    //= spec/client-apis/encrypt.md#v1-authentication-tag
+    //= type=test
+    //= reason=Raw-byte inspection proves V1 header auth is serialized as IV(12 zeros) then Tag(16 bytes), matching the V1 header authentication spec
+    //# With the authentication tag calculated,
+    //# if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
+    //# this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-1-0) with the following specifics:
     let ct = encrypt_v1(b"v1 header auth structure").await;
     assert_eq!(ct[0], 0x01, "must be V1 message");
     let auth_start = v1_header_auth_offset(&ct);
@@ -33,18 +39,29 @@ async fn test_v1_header_auth_structure() {
     let iv_bytes = &ct[auth_start..auth_start + IV_LEN];
     let tag_bytes = &ct[auth_start + IV_LEN..auth_start + IV_LEN + TAG_LEN];
 
+    //= spec/client-apis/encrypt.md#v1-authentication-tag
+    //= type=test
+    //# - MUST serialize the [IV](../data-format/message-header.md#iv).
     assert_eq!(iv_bytes.len(), IV_LEN, "V1 header auth IV must be {IV_LEN} bytes");
 
-    //= spec/client-apis/encrypt.md#authentication-tag
+    //= spec/client-apis/encrypt.md#v1-authentication-tag
     //= type=test
-    //# - The IV MUST have a value of 0.
+    //# The value MUST be the IV used in the calculation above,
+    //# padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
     assert!(
         iv_bytes.iter().all(|&b| b == 0),
         "V1 header auth IV must be all zeros (padded to IV length with 0)"
     );
 
+    //= spec/client-apis/encrypt.md#v1-authentication-tag
+    //= type=test
+    //# - MUST serialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
     assert_eq!(tag_bytes.len(), TAG_LEN, "V1 header auth tag must be {TAG_LEN} bytes");
 
+    //= spec/client-apis/encrypt.md#v1-authentication-tag
+    //= type=test
+    //= reason=Tag is non-zero proving it is a real AEAD output (the authentication tag calculated above)
+    //# The value MUST be the authentication tag calculated above.
     assert!(
         tag_bytes.iter().any(|&b| b != 0),
         "V1 header auth tag must not be all zeros"
@@ -61,21 +78,34 @@ async fn test_v1_header_auth_structure() {
     //= type=test
     //= reason=Successful decrypt proves the IV used for header verification was the value serialized in the header's IV field.
     //# - For message format version [1.0](../data-format/message-header.md#supported-versions)
-    //# the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header#iv).
+    //# the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header.md#iv).
     let result = decrypt_with_version(&ct, Version::V1).await;
     assert_eq!(result.plaintext, b"v1 header auth structure", "V1 round-trip must succeed");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v2_header_auth_structure() {
+    //= spec/client-apis/encrypt.md#v2-authentication-tag
+    //= type=test
+    //= reason=Raw-byte inspection proves V2 header auth is serialized as Tag only (no IV), matching the V2 header authentication spec
+    //# With the authentication tag calculated,
+    //# if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
+    //# this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-2-0) with the following specifics:
     let ct = encrypt_v2(b"v2 header auth structure").await;
     assert_eq!(ct[0], 0x02, "must be V2 message");
     let auth_start = v2_header_auth_offset(&ct);
 
     let tag_bytes = &ct[auth_start..auth_start + TAG_LEN];
 
+    //= spec/client-apis/encrypt.md#v2-authentication-tag
+    //= type=test
+    //# - The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
     assert_eq!(tag_bytes.len(), TAG_LEN, "V2 header auth tag must be {TAG_LEN} bytes");
 
+    //= spec/client-apis/encrypt.md#v2-authentication-tag
+    //= type=test
+    //= reason=Tag is non-zero proving it is a real AEAD output (the authentication tag calculated above)
+    //# The value MUST be the authentication tag calculated above.
     assert!(
         tag_bytes.iter().any(|&b| b != 0),
         "V2 header auth tag must not be all zeros"

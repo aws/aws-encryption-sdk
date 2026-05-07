@@ -13,8 +13,9 @@ async fn test_v2_header_body_serialization_order() {
     //= spec/client-apis/encrypt.md#v2-header
     //= type=test
     //= reason=parses raw ciphertext bytes and verifies all 8 V2 header fields appear in spec order with no gaps
-    //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0
-    //# then the [message header body](../data-format/message-header.md#header-body-version-1-0) MUST be serialized with the following specifics:
+    //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
+    //# the remaining header fields MUST be serialized according to the
+    //# [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
     let ct = encrypt_default(b"test plaintext").await.ciphertext;
     let fields = parse_v2_header_field_offsets(&ct);
 
@@ -63,8 +64,9 @@ async fn test_v2_header_serialized() {
     //= spec/client-apis/encrypt.md#v2-header
     //= type=test
     //= reason=verifies V2 header has all 8 fields by parsing raw bytes and confirming version byte, suite ID, and field count
-    //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0
-    //# then the [message header body](../data-format/message-header.md#header-body-version-1-0) MUST be serialized with the following specifics:
+    //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
+    //# the remaining header fields MUST be serialized according to the
+    //# [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
     let ct = encrypt_default(b"test v2 header").await.ciphertext;
     assert_eq!(ct[0], 0x02, "first byte must be V2 version 0x02");
     let fields = parse_v2_header_field_offsets(&ct);
@@ -79,8 +81,8 @@ async fn test_v2_header_version() {
     //
     //= spec/client-apis/encrypt.md#v2-header
     //= type=test
-    //# - [Version](../data-format/message-header.md#version-1): MUST have a value corresponding to
-    //# [2.0](../data-format/message-header.md#supported-versions)
+    //# - MUST serialize the [Version](../data-format/message-header.md#version).
+    //# The value MUST correspond to [2.0](../data-format/message-header.md#supported-versions).
     let ct = encrypt_default(b"version test").await.ciphertext;
     assert_eq!(ct[0], 0x02, "Version field must be 0x02 for V2");
 }
@@ -96,8 +98,8 @@ async fn test_v2_header_algorithm_suite_id() {
 
     //= spec/client-apis/encrypt.md#v2-header
     //= type=test
-    //# - [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id): MUST correspond to
-    //# the [algorithm suite](../framework/algorithm-suites.md) used in this behavior
+    //# - MUST serialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
+    //# The value MUST correspond to the [algorithm suite](../framework/algorithm-suites.md) used in this behavior.
     assert_eq!(end - start, 2, "Algorithm Suite ID must be 2 bytes");
 
     //= spec/data-format/message-header.md#algorithm-suite-id
@@ -128,8 +130,9 @@ async fn test_v2_header_message_id() {
 
     //= spec/client-apis/encrypt.md#v2-header
     //= type=test
-    //# - [Message ID](../data-format/message-header.md#message-id): The process used to generate
-    //# this identifier MUST use a good source of randomness to make the chance of duplicate identifiers negligible.
+    //# - MUST serialize the [Message ID](../data-format/message-header.md#message-id).
+    //# The process used to generate this identifier MUST use a good source of randomness
+    //# to make the chance of duplicate identifiers negligible.
     assert_eq!(end1 - start1, 32, "V2 Message ID must be 32 bytes");
     assert_eq!(end2 - start2, 32, "V2 Message ID must be serialized as 32 bytes");
 
@@ -137,7 +140,7 @@ async fn test_v2_header_message_id() {
     //= type=test
     //= reason=two encryptions of the same plaintext produce different message IDs, confirming randomness
     //# While implementations cannot guarantee complete uniqueness,
-    //# implementations MUST use a good source of randomness when generating messages IDs in order to make
+    //# implementations MUST use a good source of randomness when generating message IDs in order to make
     //# the chance of duplicate IDs negligible.
     let msg_id_1 = &ct1[*start1..*end1];
     let msg_id_2 = &ct2[*start2..*end2];
@@ -155,7 +158,8 @@ async fn test_v2_header_aad() {
     //= spec/client-apis/encrypt.md#v2-header
     //= type=test
     //= reason=round-trip with a non-empty encryption context proves AAD was serialized and deserialized correctly
-    //# - [AAD](../data-format/message-header.md#aad): MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
+    //# - MUST serialize the [AAD](../data-format/message-header.md#aad).
+    //# The value MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
     //# in the [encryption materials](../framework/structures.md#encryption-materials),
     //# and this serialization MUST NOT contain any key value pairs listed in
     //# the [encryption material's](../framework/structures.md#encryption-materials)
@@ -185,8 +189,9 @@ async fn test_v2_header_encrypted_data_keys() {
     //= spec/client-apis/encrypt.md#v2-header
     //= type=test
     //= reason=round-trip proves EDKs were serialized correctly since decrypt must use them to recover the data key
-    //# - [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-key-entries): MUST be the serialization of the
-    //# [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials)
+    //# - MUST serialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
+    //# The value MUST be the serialization of the
+    //# [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials).
     assert!(
         end - start > 2,
         "Encrypted Data Keys field must have non-trivial length"
@@ -210,7 +215,8 @@ async fn test_v2_header_content_type() {
 
     //= spec/client-apis/encrypt.md#v2-header
     //= type=test
-    //# - [Content Type](../data-format/message-header.md#content-type): MUST be [02](../data-format/message-header.md#supported-content-types)
+    //# - MUST serialize the [Content Type](../data-format/message-header.md#content-type).
+    //# The value MUST be [02](../data-format/message-header.md#supported-content-types).
     assert_eq!(end - start, 1, "Content Type field must be 1 byte");
     assert_eq!(
         ct[*start], 0x02,
@@ -230,7 +236,8 @@ async fn test_v2_header_frame_length() {
 
     //= spec/client-apis/encrypt.md#v2-header
     //= type=test
-    //# - [Frame Length](../data-format/message-header.md#frame-length): MUST be the value of the frame size determined above.
+    //# - MUST serialize the [Frame Length](../data-format/message-header.md#frame-length).
+    //# The value MUST be the value of the frame size determined above.
     assert_eq!(end - start, 4, "Frame Length field must be 4 bytes");
 
     let frame_len = u32::from_be_bytes([ct[*start], ct[start + 1], ct[start + 2], ct[start + 3]]);
@@ -256,7 +263,8 @@ async fn test_v2_header_algorithm_suite_data() {
     //= spec/client-apis/encrypt.md#v2-header
     //= type=test
     //= reason=verifies the algorithm suite data (commit key) is 32 bytes in the raw V2 header and round-trip proves correctness
-    //# - [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data): MUST be the value of the [commit key](../framework/algorithm-suites.md#commit-key)
+    //# - MUST serialize the [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data).
+    //# The value MUST be the value of the [commit key](../framework/algorithm-suites.md#commit-key)
     //# derived according to the [algorithm suites commit key derivation settings](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
     assert_eq!(
         end - start,
