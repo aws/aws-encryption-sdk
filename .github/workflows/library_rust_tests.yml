@@ -34,24 +34,40 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v6
+      - uses: Wandalen/wretry.action@master
+        with:
+          action: actions/checkout@v6
+          attempt_limit: 3
+          attempt_delay: 2000
       - name: Init Submodules
-        shell: bash
-        run: |
-          git submodule update --init libraries
-          git submodule update --init --recursive mpl
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          shell: bash
+          command: |
+            git submodule update --init libraries
+            git submodule update --init --recursive mpl
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: RustTests
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: RustTests
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup Rust Toolchain for GitHub CI
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+        uses: Wandalen/wretry.action@master
         with:
-          components: rustfmt, clippy
+          action: actions-rust-lang/setup-rust-toolchain@v1
+          with: |
+            components: rustfmt, clippy
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
@@ -59,14 +75,22 @@ jobs:
           dafny-version: 4.10.0
 
       - name: Setup Java 17 for codegen
-        uses: actions/setup-java@v5
+        uses: Wandalen/wretry.action@master
         with:
-          distribution: "corretto"
-          java-version: "17"
+          action: actions/setup-java@v5
+          with: |
+            distribution: "corretto"
+            java-version: "17"
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup NASM for Windows (aws-lc-sys)
         if: matrix.os == 'windows-latest'
-        uses: ilammy/setup-nasm@v1
+        uses: Wandalen/wretry.action@master
+        with:
+          action: ilammy/setup-nasm@v1
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies
@@ -133,24 +157,40 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v6
+      - uses: Wandalen/wretry.action@master
+        with:
+          action: actions/checkout@v6
+          attempt_limit: 3
+          attempt_delay: 2000
       - name: Init Submodules
-        shell: bash
-        run: |
-          git submodule update --init libraries
-          git submodule update --init --recursive mpl
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          shell: bash
+          command: |
+            git submodule update --init libraries
+            git submodule update --init --recursive mpl
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: RustTestVectors
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: RustTestVectors
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup Rust Toolchain for GitHub CI
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+        uses: Wandalen/wretry.action@master
         with:
-          components: rustfmt
+          action: actions-rust-lang/setup-rust-toolchain@v1
+          with: |
+            components: rustfmt
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
@@ -158,14 +198,22 @@ jobs:
           dafny-version: 4.10.0
 
       - name: Setup Java 17 for codegen
-        uses: actions/setup-java@v5
+        uses: Wandalen/wretry.action@master
         with:
-          distribution: "corretto"
-          java-version: "17"
+          action: actions/setup-java@v5
+          with: |
+            distribution: "corretto"
+            java-version: "17"
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup NASM for Windows (aws-lc-sys)
         if: matrix.os == 'windows-latest'
-        uses: ilammy/setup-nasm@v1
+        uses: Wandalen/wretry.action@master
+        with:
+          action: ilammy/setup-nasm@v1
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./.github/actions/install_smithy_dafny_codegen_dependencies

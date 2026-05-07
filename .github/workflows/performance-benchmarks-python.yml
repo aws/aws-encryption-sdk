@@ -20,31 +20,56 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v6
+      - uses: Wandalen/wretry.action@master
+        with:
+          action: actions/checkout@v6
+          attempt_limit: 3
+          attempt_delay: 2000
       - name: Init Submodules
-        shell: bash
-        run: |
-          git submodule update --init libraries
-          git submodule update --init --recursive mpl
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          shell: bash
+          command: |
+            git submodule update --init libraries
+            git submodule update --init --recursive mpl
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: GoTests
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: GoTests
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup Python ${{ matrix.python-version }} for running tests
-        uses: actions/setup-python@v6
+        uses: Wandalen/wretry.action@master
         with:
-          python-version: ${{ matrix.python-version }}
-          architecture: x64
+          action: actions/setup-python@v6
+          with: |
+            python-version: ${{ matrix.python-version }}
+            architecture: x64
+          attempt_limit: 3
+          attempt_delay: 2000
+
+      - name: Install Python Dependencies
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          shell: bash
+          command: |
+            pip install -r requirements.txt
+        working-directory: ./${{matrix.benchmark-dir}}/benchmarks/python
 
       - name: Run Performance Benchmarks - Quick Mode
         shell: bash
         working-directory: ./${{matrix.benchmark-dir}}/benchmarks/python
         run: |
-          pip install -r requirements.txt
           python esdk_benchmark.py --quick
 
       - name: Parse and Format Logs

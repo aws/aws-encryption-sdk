@@ -30,21 +30,33 @@ jobs:
           git config --global core.longpaths true
 
       - name: Configure AWS Credentials for Tests
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: GoReleaseTest
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: GoReleaseTest
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: Wandalen/wretry.action@master
         with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          action: actions/checkout@v6
+          with: |
+            fetch-depth: 0
+            token: ${{ secrets.GITHUB_TOKEN }}
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Update submodules
-        run: |
-          git submodule update --init --recursive
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: |
+            git submodule update --init --recursive
 
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny

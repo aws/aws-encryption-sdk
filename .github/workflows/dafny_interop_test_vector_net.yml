@@ -45,15 +45,23 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v6
+      - uses: Wandalen/wretry.action@master
         with:
-          submodules: recursive
-          fetch-depth: 0
+          action: actions/checkout@v6
+          with: |
+            submodules: recursive
+            fetch-depth: 0
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup .NET Core SDK 6
-        uses: actions/setup-dotnet@v5
+        uses: Wandalen/wretry.action@master
         with:
-          dotnet-version: "6.0.x"
+          action: actions/setup-dotnet@v5
+          with: |
+            dotnet-version: "6.0.x"
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup MPL Dafny
         uses: ./mpl/.github/actions/setup_dafny
@@ -61,24 +69,35 @@ jobs:
           dafny-version: ${{ inputs.mpl-dafny }}
 
       - name: Update MPL submodule
-        working-directory: mpl
-        run: |
-          git fetch
-          git checkout ${{inputs.mpl-commit}}
-          git pull
-          git submodule update --init --recursive
-          git rev-parse HEAD
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: |
+            cd mpl
+            git fetch
+            git checkout ${{inputs.mpl-commit}}
+            git pull
+            git submodule update --init --recursive
+            git rev-parse HEAD
 
       - name: Download Dependencies
-        working-directory: AwsEncryptionSDK
-        run: make setup_net
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: cd AwsEncryptionSDK && make setup_net
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: NetTests
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: NetTests
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Compile MPL with Dafny ${{inputs.mpl-dafny}}
         shell: bash
@@ -103,15 +122,18 @@ jobs:
           make transpile_test_net
 
       - name: Fetch Python 2.3.0 Test Vectors
-        working-directory: ./
-        shell: bash
-        run: |
-          PYTHON_23_VECTOR_PATH=$GITHUB_WORKSPACE/python23/vectors
-          mkdir -p $PYTHON_23_VECTOR_PATH
-          DOWNLOAD_NAME=python23.zip
-          curl --no-progress-meter --output $DOWNLOAD_NAME --location $VECTORS_URL
-          unzip -o -qq $DOWNLOAD_NAME  -d $PYTHON_23_VECTOR_PATH
-          rm  $DOWNLOAD_NAME
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          shell: bash
+          command: |
+            PYTHON_23_VECTOR_PATH=$GITHUB_WORKSPACE/python23/vectors
+            mkdir -p $PYTHON_23_VECTOR_PATH
+            DOWNLOAD_NAME=python23.zip
+            curl --no-progress-meter --output $DOWNLOAD_NAME --location $VECTORS_URL
+            unzip -o -qq $DOWNLOAD_NAME  -d $PYTHON_23_VECTOR_PATH
+            rm  $DOWNLOAD_NAME
 
       - name: Decrypt Python 2.3.0 Test Vectors on .net48 (Windows ONLY)
         working-directory: ./AwsEncryptionSDK/runtimes/net/TestVectorsNative/TestVectors
@@ -152,15 +174,23 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v6
+      - uses: Wandalen/wretry.action@master
         with:
-          submodules: recursive
-          fetch-depth: 0
+          action: actions/checkout@v6
+          with: |
+            submodules: recursive
+            fetch-depth: 0
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup .NET Core SDK 6
-        uses: actions/setup-dotnet@v5
+        uses: Wandalen/wretry.action@master
         with:
-          dotnet-version: "6.0.x"
+          action: actions/setup-dotnet@v5
+          with: |
+            dotnet-version: "6.0.x"
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup MPL Dafny
         uses: ./mpl/.github/actions/setup_dafny
@@ -168,24 +198,35 @@ jobs:
           dafny-version: ${{ inputs.mpl-dafny }}
 
       - name: Update MPL submodule
-        working-directory: mpl
-        run: |
-          git fetch
-          git checkout ${{inputs.mpl-commit}}
-          git pull
-          git submodule update --init --recursive
-          git rev-parse HEAD
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: |
+            cd mpl
+            git fetch
+            git checkout ${{inputs.mpl-commit}}
+            git pull
+            git submodule update --init --recursive
+            git rev-parse HEAD
 
       - name: Download Dependencies
-        working-directory: AwsEncryptionSDK
-        run: make setup_net
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: cd AwsEncryptionSDK && make setup_net
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: NetTests
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: NetTests
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Compile MPL with Dafny ${{inputs.mpl-dafny}}
         shell: bash
@@ -251,19 +292,31 @@ jobs:
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v6
+      - uses: Wandalen/wretry.action@master
+        with:
+          action: actions/checkout@v6
+          attempt_limit: 3
+          attempt_delay: 2000
       - name: Init Submodules
-        shell: bash
-        run: |
-          git submodule update --init libraries
-          git submodule update --init --recursive mpl
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          shell: bash
+          command: |
+            git submodule update --init libraries
+            git submodule update --init --recursive mpl
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: Wandalen/wretry.action@master
         with:
-          aws-region: us-west-2
-          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
-          role-session-name: NetTests
+          action: aws-actions/configure-aws-credentials@v6
+          with: |
+            aws-region: us-west-2
+            role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+            role-session-name: NetTests
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Set up Dirs
         working-directory: ./AwsEncryptionSDK
@@ -272,20 +325,32 @@ jobs:
           mkdir -p $NET_41_VECTOR_PATH
 
       - name: Download Encrypt Manifest Artifact
-        uses: actions/download-artifact@v8
+        uses: Wandalen/wretry.action@master
         with:
-          name: ${{matrix.os}}_mpl-${{inputs.mpl-dafny}}_esdk-${{inputs.esdk-dafny}}_vectors
-          path: AwsEncryptionSDK/net41/vectors
+          action: actions/download-artifact@v8
+          with: |
+            name: ${{matrix.os}}_mpl-${{inputs.mpl-dafny}}_esdk-${{inputs.esdk-dafny}}_vectors
+            path: AwsEncryptionSDK/net41/vectors
+          attempt_limit: 3
+          attempt_delay: 2000
 
-      - uses: actions/setup-node@v6
+      - uses: Wandalen/wretry.action@master
         with:
-          node-version: 17
+          action: actions/setup-node@v6
+          with: |
+            node-version: 17
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Install deps
-        run: |
-          openssl version
-          npm install @aws-crypto/integration-node
-          npm install fast-xml-parser
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          command: |
+            openssl version
+            npm install @aws-crypto/integration-node
+            npm install fast-xml-parser
 
       - name: Decrypt Generated Test Vectors with ESDK-JS
         working-directory: ./AwsEncryptionSDK

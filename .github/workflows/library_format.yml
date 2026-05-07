@@ -32,9 +32,13 @@ jobs:
         run: |
           git config --global core.longpaths true
 
-      - uses: actions/checkout@v6
+      - uses: Wandalen/wretry.action@master
         with:
-          submodules: recursive
+          action: actions/checkout@v6
+          with: |
+            submodules: recursive
+          attempt_limit: 3
+          attempt_delay: 2000
 
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
