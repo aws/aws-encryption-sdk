@@ -448,6 +448,14 @@ func (b *ESDKBenchmark) RunAllBenchmarks() error {
 		log.Println("Skipping concurrency tests (not in test_types)")
 	}
 
+	if b.shouldRunTestType("size_limits") {
+		if err := b.runSizeLimitSmokeTest(); err != nil {
+			return fmt.Errorf("size limit smoke test failed: %w", err)
+		}
+	} else {
+		log.Println("Skipping size limit smoke tests (not in test_types)")
+	}
+
 	log.Printf("Benchmark suite completed. Total results: %d", len(b.Results))
 	return nil
 }

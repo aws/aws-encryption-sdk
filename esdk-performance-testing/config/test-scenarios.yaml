@@ -31,6 +31,15 @@ quick_config:
     - "throughput"
     - "memory"
     - "concurrency"
+    - "size_limits"
+
+# Size limits for smoke testing (bytes)
+# These are the maximum plaintext/ciphertext sizes before the library returns an error
+size_limits:
+  rust:
+    max_bytes: 134217728 # 128MB
+  go:
+    max_bytes: 1073741824 # 1GB
 
 # Test iterations for statistical significance
 iterations:

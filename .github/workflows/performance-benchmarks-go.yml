@@ -21,7 +21,7 @@ jobs:
       matrix:
         library: [AwsEncryptionSDK]
         benchmark-dir: [esdk-performance-testing]
-        go-version: ["1.23", "1.24", "1.25"]
+        go-version: ["1.24", "1.25"]
         os: [
             # Sed script doesn't work properly on windows
             # windows-latest,

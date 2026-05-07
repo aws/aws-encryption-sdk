@@ -332,6 +332,12 @@ pub(crate) fn validate_aws_Pcryptography_PencryptionSdk_HEncryptInput_Dplaintext
     }
     let input = input.as_ref().unwrap();
 
+    if input.as_ref().len() > 134_217_728 {
+        return ::std::result::Result::Err(::aws_smithy_types::error::operation::BuildError::invalid_field(
+            "plaintext",
+            format!("plaintext size {} bytes exceeds the maximum allowed size of 128 MB", input.as_ref().len()),
+        ));
+    }
     Ok(())
 }
 pub(crate) fn validate_aws_Pcryptography_PencryptionSdk_HEncryptOutput(

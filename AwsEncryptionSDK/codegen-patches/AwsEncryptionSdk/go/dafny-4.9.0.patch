@@ -1,0 +1,14 @@
+diff --git a/AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/awscryptographyencryptionsdksmithygeneratedtypes/types.go b/AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/awscryptographyencryptionsdksmithygeneratedtypes/types.go
+index 7afb9571..8002497e 100644
+--- a/AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/awscryptographyencryptionsdksmithygeneratedtypes/types.go
++++ b/AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/awscryptographyencryptionsdksmithygeneratedtypes/types.go
+@@ -87,6 +87,9 @@ type EncryptInput struct {
+ }
+ 
+ func (input EncryptInput) Validate() error {
++	if len(input.Plaintext) > 1_073_741_824 {
++		return fmt.Errorf("plaintext size %d bytes exceeds the maximum allowed size of 1 GB", len(input.Plaintext))
++	}
+ 	if input.Aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_Validate() != nil {
+ 		return input.Aws_cryptography_encryptionSdk_EncryptInput_encryptionContext_Validate()
+ 	}
