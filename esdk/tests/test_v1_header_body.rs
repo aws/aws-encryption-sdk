@@ -116,19 +116,66 @@ async fn test_v1_header_aad() {
     //# and this serialization MUST NOT contain any key value pairs listed in
     //# the [encryption material's](../framework/structures.md#encryption-materials)
     //# [required encryption context keys](../framework/structures.md#required-encryption-context-keys).
-    let ec = std::collections::HashMap::from([("key1".to_string(), "val1".to_string())]);
-    let pt = b"aad test";
-    let ct = encrypt_v1_with_ec(pt, ec.clone()).await;
-    // AAD starts at offset 20 (after Version+Type+AlgSuiteID+MessageID)
-    // With one key-value pair, the AAD length field must be non-zero
+
+    // Set up an encryption context with two keys: one that will be "required" (excluded from header)
+    // and one that will be written to the header normally.
+    let ec = std::collections::HashMap::from([
+        ("written_key".to_string(), "written_val".to_string()),
+        ("required_key".to_string(), "required_val".to_string()),
+    ]);
+    let required_ec_keys = vec!["required_key".to_string()];
+
+    let keyring = test_keyring().await;
+    let default_cmm = mpl()
+        .create_default_cryptographic_materials_manager()
+        .keyring(keyring.clone())
+        .send()
+        .await
+        .unwrap();
+    let req_cmm = mpl()
+        .create_required_encryption_context_cmm()
+        .underlying_cmm(default_cmm)
+        .required_encryption_context_keys(required_ec_keys)
+        .send()
+        .await
+        .unwrap();
+
+    let pt = b"aad required ec test";
+    let mut enc_input = EncryptInput::with_legacy_cmm(pt, ec.clone(), req_cmm);
+    enc_input.algorithm_suite_id = Some(aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
+    enc_input.commitment_policy = aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    // The AAD section of the header is at offset 20 (after Version+Type+AlgSuiteID+MessageID).
+    // Search the raw header bytes for the required key — it MUST NOT appear.
+    let required_key_bytes = b"required_key";
+    let written_key_bytes = b"written_key";
+
+    // Find the AAD section and check within it
     let aad_byte_len = u16::from_be_bytes([ct[20], ct[21]]) as usize;
-    assert!(aad_byte_len > 0, "AAD byte length must be non-zero when encryption context is provided");
-    // Round-trip proves the AAD content matches what decrypt expects
-    let result = round_trip_v1(pt, ec).await;
-    assert_eq!(
-        result, pt,
-        "round-trip with EC proves AAD serialized correctly"
+    let aad_section = &ct[20..20 + 2 + aad_byte_len];
+
+    // The written key MUST be present in the AAD
+    assert!(
+        aad_section.windows(written_key_bytes.len()).any(|w| w == written_key_bytes),
+        "written_key must appear in the header AAD"
     );
+
+    // The required key MUST NOT be present in the AAD
+    assert!(
+        !aad_section.windows(required_key_bytes.len()).any(|w| w == required_key_bytes),
+        "required_key must NOT appear in the header AAD"
+    );
+
+    // Round-trip proves the message is still valid when required EC is supplied on decrypt
+    let mut dec_input = DecryptInput::with_legacy_keyring(
+        &ct,
+        std::collections::HashMap::from([("required_key".to_string(), "required_val".to_string())]),
+        keyring,
+    );
+    dec_input.commitment_policy = aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    let result = decrypt(&dec_input).await.unwrap();
+    assert_eq!(result.plaintext, pt, "round-trip with required EC proves correctness");
 }
 
 #[tokio::test(flavor = "multi_thread")]

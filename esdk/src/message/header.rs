@@ -37,27 +37,35 @@ pub(crate) struct HeaderInfo {
 //# The message header is a sequence of bytes that MUST be in big-endian format.
 pub(crate) fn write_header_body(w: &mut dyn SafeWrite, body: &HeaderBody) -> Result<(), Error> {
     match body {
+        //= spec/client-apis/encrypt.md#v1-header
+        //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0,
+        //# the remaining header fields MUST be serialized according to the
+        //# [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
         HeaderBody::V1Body(x) => write_v1_header_body(w, x),
+        //= spec/client-apis/encrypt.md#v2-header
+        //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
+        //# the remaining header fields MUST be serialized according to the
+        //# [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
         HeaderBody::V2Body(x) => write_v2_header_body(w, x),
     }
 }
 
-//= spec/client-apis/decrypt.md#parse-the-header
-//# This operation MUST attempt to deserialize all consumable encrypted message bytes until it has
-//# successfully deserialized a valid [message header](../data-format/message-header.md).
-//
-//= spec/client-apis/decrypt.md#parse-the-header
-//= reason=SafeRead (std::io::Read) only supports sequential consumption with no skip/seek, so reading from it inherently processes all consumable bytes until a valid header is formed.
-//# The [Version](../data-format/message-header.md#version) field MUST be deserialized first.
 pub(crate) fn read_header_body(
     ciphertext: &mut dyn SafeRead,
     max_edks: Option<std::num::NonZeroUsize>,
     raw_header: &mut dyn SafeWrite,
 ) -> Result<HeaderBody, Error> {
     //= spec/client-apis/decrypt.md#parse-the-header
+    //# This operation MUST attempt to deserialize all consumable encrypted message bytes until it has
+    //# successfully deserialized a valid [message header](../data-format/message-header.md).
+    //
+    //= spec/client-apis/decrypt.md#parse-the-header
     //= reason=Every read method reads the next available bytes and does not jump out of sequence
     //# Given encrypted message bytes, this operation MUST process those bytes sequentially,
     //# deserializing those bytes according to the [message format](../data-format/message.md).
+
+    //= spec/client-apis/decrypt.md#parse-the-header
+    //# The [Version](../data-format/message-header.md#version) field MUST be deserialized first.
     let version = read_msg_format_version(ciphertext, raw_header)?;
 
     //= spec/client-apis/decrypt.md#parse-the-header
@@ -65,11 +73,19 @@ pub(crate) fn read_header_body(
     //# or [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification,
     //# depending on the [Version](../data-format/message-header.md#version) field in the message header.
     let result = match version {
+        //= spec/client-apis/decrypt.md#v1-header-deserialization
+        //# If the value of the deserialized version field is [1.0](../data-format/message-header.md#supported-versions),
+        //# the remaining header fields MUST be deserialized according to the
+        //# [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
         MessageFormatVersion::V1 => {
             let body = read_v1_header_body(ciphertext, max_edks, raw_header)?;
             HeaderBody::V1Body(body)
         }
 
+        //= spec/client-apis/decrypt.md#v2-header-deserialization
+        //# If the value of the deserialized version field is [2.0](../data-format/message-header.md#supported-versions),
+        //# the remaining header fields MUST be deserialized according to the
+        //# [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
         MessageFormatVersion::V2 => {
             let body = read_v2_header_body(ciphertext, max_edks, raw_header)?;
             HeaderBody::V2Body(body)
@@ -173,19 +189,24 @@ pub(crate) fn validate_suite_data(
 }
 
 /// Write the message header (body + auth tag) to the output stream.
-//= spec/data-format/message-header.md#structure
-//# The header MUST consist of, in order,
-//# Header Body,
-//# and Header Authentication.
 pub(crate) fn write_header(
     header: &HeaderInfo,
     ciphertext: &mut dyn SafeWrite,
     sig_digest: &mut DigestWriter,
 ) -> Result<(), Error> {
     let mut header_buf = Vec::new();
-    // Header body
+
+    //= spec/data-format/message-header.md#structure
+    //# The header MUST consist of, in order,
+    //# Header Body,
+    //# and Header Authentication.
+
+    // Header Body
+
     serialize_functions::write_bytes(&mut header_buf, &header.raw_header)?;
+
     // Header Authentication
+
     //= spec/client-apis/encrypt.md#authentication-tag
     //# After serializing the message header body,
     //# this operation MUST calculate an [authentication tag](../data-format/message-header.md#authentication-tag)
