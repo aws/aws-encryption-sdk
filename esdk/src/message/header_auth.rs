@@ -29,19 +29,23 @@ pub(crate) fn write_header_auth_tag(
         _ => ser_err("Unexpected message version"),
     }
 }
+
 pub(crate) fn write_header_auth_tag_v1(
     w: &mut dyn SafeWrite,
     header_auth: &HeaderAuth,
 ) -> Result<(), Error> {
-    //= spec/data-format/message-header.md#header-authentication-version-1-0
-    //# The V1 Header Authentication MUST consist of, in order,
-    //# IV,
-    //# and Authentication Tag.
     match header_auth {
         HeaderAuth::AESMac {
             header_iv,
             header_auth_tag,
         } => {
+            //= spec/data-format/message-header.md#header-authentication-version-1-0
+            //# The V1 Header Authentication MUST consist of, in order,
+            //# IV,
+            //# and Authentication Tag.
+
+            // IV
+
             //= spec/client-apis/encrypt.md#v1-authentication-tag
             //# - MUST serialize the [IV](../data-format/message-header.md#iv).
             //
@@ -77,12 +81,15 @@ pub(crate) fn write_header_auth_tag_v2(
     w: &mut dyn SafeWrite,
     header_auth: &HeaderAuth,
 ) -> Result<(), Error> {
-    //= spec/data-format/message-header.md#header-authentication-version-2-0
-    //# The V2 Header Authentication MUST consist of the Authentication Tag only.
     match header_auth {
         HeaderAuth::AESMac {
             header_auth_tag, ..
         } => {
+            //= spec/data-format/message-header.md#header-authentication-version-2-0
+            //# The V2 Header Authentication MUST consist of the Authentication Tag only.
+
+            // Authentication Tag
+
             //= spec/client-apis/encrypt.md#v2-authentication-tag
             //# - The Encrypt operation MUST serialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
             //
@@ -106,7 +113,13 @@ pub(crate) fn read_header_auth_tag(
     raw: &mut dyn SafeWrite,
 ) -> Result<HeaderAuth, Error> {
     match suite.message_version {
+        //= spec/client-apis/decrypt.md#v1-header-deserialization
+        //# The Decrypt operation MUST then deserialize the
+        //# [Header Authentication Version 1.0](../data-format/message-header.md#header-authentication-version-10):
         1 => read_header_auth_tag_v1(r, suite, raw),
+        //= spec/client-apis/decrypt.md#v2-header-deserialization
+        //# The Decrypt operation MUST then deserialize the
+        //# [Header Authentication Version 2.0](../data-format/message-header.md#header-authentication-version-20):
         2 => read_header_auth_tag_v2(r, suite, raw),
         _ => ser_err("Unexpected message version"),
     }
@@ -116,46 +129,62 @@ pub(crate) fn read_header_auth_tag_v1(
     suite: &AlgorithmSuite,
     raw: &mut dyn SafeWrite,
 ) -> Result<HeaderAuth, Error> {
+    //= spec/data-format/message-header.md#header-authentication-version-1-0
+    //# The V1 Header Authentication MUST consist of, in order,
+    //# IV,
+    //# and Authentication Tag.
+
+    // IV
+
+    //= spec/data-format/message-header.md#iv
+    //# The length of the serialized IV MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
     let iv_len = usize::from(get_iv_length(suite));
 
     //= spec/client-apis/decrypt.md#v1-header-deserialization
     //# - MUST deserialize the [IV](../data-format/message-header.md#iv).
     //
     //= spec/data-format/message-header.md#iv
-    //# The length of the serialized IV MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-    //
-    //= spec/data-format/message-header.md#iv
     //= type=implication
     //# The IV MUST be interpreted as bytes.
     let header_iv = read_vec(r, iv_len, raw)?;
+
+    // Authentication Tag
+
+    //= spec/data-format/message-header.md#authentication-tag
+    //# The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
+    let tag_len = usize::from(get_tag_length(suite));
 
     //= spec/client-apis/decrypt.md#v1-header-deserialization
     //# - MUST deserialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
     //
     //= spec/data-format/message-header.md#authentication-tag
-    //# The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-    //
-    //= spec/data-format/message-header.md#authentication-tag
     //= type=implication
     //# The authentication tag MUST be interpreted as bytes.
-    let header_auth_tag = read_vec(r, usize::from(get_tag_length(suite)), raw)?;
+    let header_auth_tag = read_vec(r, tag_len, raw)?;
     Ok(HeaderAuth::AESMac {
         header_iv,
         header_auth_tag,
     })
 }
+
 pub(crate) fn read_header_auth_tag_v2(
     r: &mut dyn SafeRead,
     suite: &AlgorithmSuite,
     raw: &mut dyn SafeWrite,
 ) -> Result<HeaderAuth, Error> {
+    //= spec/data-format/message-header.md#header-authentication-version-2-0
+    //# The V2 Header Authentication MUST consist of the Authentication Tag only.
+
+    // Authentication Tag
+
     //= spec/data-format/message-header.md#authentication-tag
     //# The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-    //
+    let tag_len = usize::from(get_tag_length(suite));
+
     //= spec/data-format/message-header.md#authentication-tag
     //= type=implication
     //# The authentication tag MUST be interpreted as bytes.
-    let header_auth_tag = read_vec(r, usize::from(get_tag_length(suite)), raw)?;
+    let header_auth_tag = read_vec(r, tag_len, raw)?;
     let header_iv = vec![0u8; usize::from(get_iv_length(suite))];
     Ok(HeaderAuth::AESMac {
         header_iv,
