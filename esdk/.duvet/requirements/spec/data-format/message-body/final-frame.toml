@@ -24,17 +24,28 @@ target = "spec/data-format/message-body.md#final-frame"
 #   The first frame is a regular frame,
 #   and the second frame is the final frame with a content length of 0.
 # 
-# The following describes the fields that form the Final Frame Body Structure.  
-# The bytes are appended in the order shown.
+# The following table is a non-normative representation of the normative requirements in this section.
 # 
-# | Field                                                   | Length (bytes)                                                                                               | Interpreted as |
-# | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------- |
-# | [Sequence Number End](#sequence-number-end)             | 4                                                                                                            | Bytes          |
-# | [Sequence Number](#sequence-number)                     | 4                                                                                                            | UInt32         |
-# | [IV](#iv)                                               | [IV Length](message-header.md#iv-length)                                                                     | Bytes          |
-# | [Encrypted Content Length](#encrypted-content-length-1) | 4                                                                                                            | UInt32         |
-# | [Encrypted Content](#encrypted-content)                 | Variable                                                                                                     | Bytes          |
-# | [Authentication Tag](#authentication-tag)               | Algorithm suite ID's [Authentication Tag Length](../framework/algorithm-suites.md#authentication-tag-length) | Bytes          |
+# | Field                                                             | Length (bytes)                                                                                               | Interpreted as |
+# | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------- |
+# | [Sequence Number End](#sequence-number-end)                       | 4                                                                                                            | Bytes          |
+# | [Sequence Number](#final-frame-sequence-number)                   | 4                                                                                                            | UInt32         |
+# | [IV](#final-frame-iv)                                             | [IV Length](message-header.md#iv-length)                                                                     | Bytes          |
+# | [Encrypted Content Length](#final-frame-encrypted-content-length) | 4                                                                                                            | UInt32         |
+# | [Encrypted Content](#final-frame-encrypted-content)               | Variable                                                                                                     | Bytes          |
+# | [Authentication Tag](#final-frame-authentication-tag)             | Algorithm suite ID's [Authentication Tag Length](../framework/algorithm-suites.md#authentication-tag-length) | Bytes          |
+# 
+# A final frame MUST consist of, in order,
+# Sequence Number End,
+# Sequence Number,
+# IV,
+# Encrypted Content Length,
+# Encrypted Content,
+# and Authentication Tag.
+# 
+# A final frame MUST only differ from a regular frame by the addition of the
+# Sequence Number End
+# and Encrypted Content Length.
 
 [[spec]]
 level = "MUST"
@@ -68,5 +79,25 @@ level = "MUST"
 quote = '''
 - When the length of the Plaintext is less than the Frame Length,
 the body MUST contain exactly one frame and that frame MUST be a Final Frame.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+A final frame MUST consist of, in order,
+Sequence Number End,
+Sequence Number,
+IV,
+Encrypted Content Length,
+Encrypted Content,
+and Authentication Tag.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+A final frame MUST only differ from a regular frame by the addition of the
+Sequence Number End
+and Encrypted Content Length.
 '''
 

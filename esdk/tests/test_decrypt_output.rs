@@ -16,6 +16,10 @@ async fn test_decrypt_output_includes_plaintext() {
     //= spec/client-apis/decrypt.md#output
     //= type=test
     //# - Decrypt operation output MUST include a [Plaintext](#plaintext) value.
+    //
+    //= spec/client-apis/decrypt.md#plaintext
+    //= type=test
+    //# This MUST be a sequence of bytes.
     let keyring = test_keyring().await;
     let plaintext = b"test plaintext for output check";
     let enc_input =

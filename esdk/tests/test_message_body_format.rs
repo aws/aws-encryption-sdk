@@ -939,6 +939,9 @@ async fn test_plaintext_exact_multiple_of_frame_length() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_message_begins_with_header() {
     let ct_v1 = encrypt_with_v1_signing_suite(b"header first test").await;
+    //= spec/data-format/message.md#structure
+    //= type=test
+    //# - The message MUST begin with [Message Header](message-header.md)
     assert_eq!(
         ct_v1[0], 0x01,
         "V1 message must begin with header version byte 0x01"
@@ -957,6 +960,10 @@ async fn test_message_body_follows_header() {
     // because the decryptor parses header then body in sequence.
     let pt = b"body follows header test";
     let result = round_trip_signing(pt).await;
+    //= spec/data-format/message.md#structure
+    //= type=test
+    //= reason=Round-trip decrypt proves body follows header: decrypt would fail if message ordering were incorrect.
+    //# - The [Message Body](message-body.md) MUST follow the Message Header
     assert_eq!(
         result, pt,
         "successful decrypt proves message body follows header in serialization order"

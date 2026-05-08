@@ -2,34 +2,51 @@ target = "spec/client-apis/decrypt.md#input"
 
 # Input
 #
-# The client MUST require the following as inputs to this operation:
+# Required arguments:
 # 
-# - [Encrypted Message](#encrypted-message)
+# - Decrypt operation input MUST accept a required [Encrypted Message](#encrypted-message) argument.
 # 
-# The client MUST require exactly one of the following types of inputs:
+# Optional arguments:
 # 
-# - [Cryptographic Materials Manager (CMM)](../framework/cmm-interface.md)
-# - [Keyring](../framework/keyring-interface.md)
-# 
-# The following inputs to this behavior MUST be OPTIONAL:
-# 
-# - [Encryption Context](#encryption-context)
+# - Decrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
+# - Decrypt operation input MUST accept an optional [Cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
+# - Decrypt operation input MUST accept an optional [Keyring](../framework/keyring-interface.md) argument.
+#   The Decrypt operation MUST validate that exactly one of a keyring or CMM was provided by the caller.
+#   If the caller does not provide exactly one of a keyring or CMM, the Decrypt operation MUST fail.
 
 [[spec]]
 level = "MUST"
 quote = '''
-The client MUST require the following as inputs to this operation:
+- Decrypt operation input MUST accept a required [Encrypted Message](#encrypted-message) argument.
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-The client MUST require exactly one of the following types of inputs:
+- Decrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-The following inputs to this behavior MUST be OPTIONAL:
+- Decrypt operation input MUST accept an optional [Cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Decrypt operation input MUST accept an optional [Keyring](../framework/keyring-interface.md) argument.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The Decrypt operation MUST validate that exactly one of a keyring or CMM was provided by the caller.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If the caller does not provide exactly one of a keyring or CMM, the Decrypt operation MUST fail.
 '''
 

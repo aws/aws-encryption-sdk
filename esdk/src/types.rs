@@ -145,7 +145,17 @@ pub use aws_mpl_legacy::EncryptionContext;
 //= spec/client-apis/encrypt.md#output
 //= type=exception
 //= reason=EncryptOutput provides encryption_context and algorithm_suite_id individually instead of a parsed header
-//# Encrypt operation output SHOULD include a [Parsed Header](#parsed-header) value.
+//# - Encrypt operation output SHOULD include a [Parsed Header](#parsed-header) value.
+//
+//= spec/client-apis/encrypt.md#algorithm-suite-1
+//= type=exception
+//= reason=EncryptOutput returns algorithm_suite_id directly rather than via a parsed header
+//# This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.
+//
+//= spec/client-apis/encrypt.md#encryption-context-1
+//= type=exception
+//= reason=EncryptOutput returns encryption_context directly rather than via a parsed header
+//# This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.
 pub struct EncryptOutput {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
     pub algorithm_suite_id: EsdkAlgorithmSuiteId,
@@ -188,6 +198,9 @@ pub struct DecryptOutput {
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
     /// Decrypted plaintext data
+    //= spec/client-apis/decrypt.md#plaintext
+    //= type=implication
+    //# This MUST be a sequence of bytes.
     pub plaintext: Vec<u8>,
 }
 
@@ -240,28 +253,28 @@ impl ::std::fmt::Display for NetV400RetryPolicy {
 pub struct EncryptInput<'a> {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
     //= spec/client-apis/encrypt.md#input
-    //# Encrypt operation input MUST accept an optional [Algorithm Suite](#algorithm-suite) argument.
+    //# - Encrypt operation input MUST accept an optional [Algorithm Suite](#algorithm-suite) argument.
     pub algorithm_suite_id: Option<EsdkAlgorithmSuiteId>,
     /// Key-Value pairs to associate with the encrypted data
     //= spec/client-apis/encrypt.md#input
-    //# Encrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
+    //# - Encrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
     pub encryption_context: EncryptionContext,
     /// Bytes of plaintext data per frame. Default 4096.
     //= spec/client-apis/encrypt.md#input
-    //# Encrypt operation input MUST accept an optional [Frame Length](#frame-length) argument.
+    //# - Encrypt operation input MUST accept an optional [Frame Length](#frame-length) argument.
     pub frame_length: FrameLength,
     /// The source of cryptographic materials
     //= spec/client-apis/encrypt.md#input
-    //# Encrypt operation input MUST accept an optional [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
+    //# - Encrypt operation input MUST accept an optional [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
     //
     //= spec/client-apis/encrypt.md#input
     //= type=implication
     //= reason=source is Option<MaterialSource>, making CMM/keyring optional by construction
-    //# Encrypt operation input MUST accept an optional [keyring](../framework/keyring-interface.md) argument.
+    //# - Encrypt operation input MUST accept an optional [keyring](../framework/keyring-interface.md) argument.
     pub source: Option<MaterialSource>,
     /// data to be encrypted
     //= spec/client-apis/encrypt.md#input
-    //# Encrypt operation input MUST accept a required [plaintext](#plaintext) argument.
+    //# - Encrypt operation input MUST accept a required [plaintext](#plaintext) argument.
     //
     //= spec/client-apis/encrypt.md#plaintext
     //= type=implication
@@ -456,7 +469,7 @@ impl EncryptStreamInput {
 pub struct DecryptInput<'a> {
     /// data to be decrypted
     //= spec/client-apis/decrypt.md#input
-    //# Decrypt operation input MUST accept a required [Encrypted Message](#encrypted-message) argument.
+    //# - Decrypt operation input MUST accept a required [Encrypted Message](#encrypted-message) argument.
     //
     //= spec/client-apis/decrypt.md#encrypted-message
     //# The input encrypted message MUST be a sequence of bytes in the
@@ -464,11 +477,14 @@ pub struct DecryptInput<'a> {
     pub ciphertext: &'a [u8],
     /// Key-Value pairs to associate with the encrypted data
     //= spec/client-apis/decrypt.md#input
-    //# Decrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
+    //# - Decrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
     pub encryption_context: EncryptionContext,
     /// The source of cryptographic materials
     //= spec/client-apis/decrypt.md#input
-    //# Decrypt operation input MUST accept an optional [Cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
+    //# - Decrypt operation input MUST accept an optional [Cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
+    //
+    //= spec/client-apis/decrypt.md#input
+    //# - Decrypt operation input MUST accept an optional [Keyring](../framework/keyring-interface.md) argument.
     pub source: Option<MaterialSource>,
     /// default is `NetV400RetryPolicy::AllowRetry`
     pub net_v4_retry_policy: NetV400RetryPolicy,
@@ -573,6 +589,8 @@ impl<'a> DecryptInput<'a> {
         //= spec/client-apis/decrypt.md#input
         //# The Decrypt operation MUST validate that exactly one of a keyring or CMM was provided by the caller.
         if self.source.is_none() {
+            //= spec/client-apis/decrypt.md#input
+            //# If the caller does not provide exactly one of a keyring or CMM, the Decrypt operation MUST fail.
             Err(val_err("A materials source must be provided"))
         } else {
             Ok(())

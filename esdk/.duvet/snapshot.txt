@@ -1,4 +1,4 @@
-SPECIFICATION: [Client](specification/client-apis/client.md)
+SPECIFICATION: [Client](spec/client-apis/client.md)
   SECTION: [Initialization](#initialization)
     TEXT[!MUST,implementation,test]: - On client initialization,
     TEXT[!MUST,implementation,test]:   the caller MUST have the option to provide a [commitment policy](#commitment-policy).
@@ -20,17 +20,17 @@ SPECIFICATION: [Client](specification/client-apis/client.md)
     TEXT[!MUST,implementation,test]: The AWS Encryption SDK Client MUST provide an [decrypt](./decrypt.md#input) function
     TEXT[!MUST,implementation,test]: that adheres to [decrypt](./decrypt.md).
 
-SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
+SPECIFICATION: [Decrypt](spec/client-apis/decrypt.md)
   SECTION: [Authenticated Data](#authenticated-data)
     TEXT[!MUST,implementation,test]: This operation MUST NOT release any unauthenticated plaintext or unauthenticated associated data.
 
   SECTION: [Input](#input)
     TEXT[!MUST,implementation,test]: - Decrypt operation input MUST accept a required [Encrypted Message](#encrypted-message) argument.
+    TEXT[!MUST,implementation,test]: - Decrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
     TEXT[!MUST,implementation,test]: - Decrypt operation input MUST accept an optional [Cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
-    TEXT[!MUST,implication]: - Decrypt operation input MUST accept an optional [Keyring](../framework/keyring-interface.md) argument.
+    TEXT[!MUST,implementation,test]: - Decrypt operation input MUST accept an optional [Keyring](../framework/keyring-interface.md) argument.
     TEXT[!MUST,implementation,test]:   The Decrypt operation MUST validate that exactly one of a keyring or CMM was provided by the caller.
     TEXT[!MUST,implementation,test]:   If the caller does not provide exactly one of a keyring or CMM, the Decrypt operation MUST fail.
-    TEXT[!MUST,implementation,test]: - Decrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
 
   SECTION: [Encrypted Message](#encrypted-message)
     TEXT[!MUST,implementation,test]: The input encrypted message MUST be a sequence of bytes in the
@@ -59,7 +59,7 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
     TEXT[!SHOULD,exception]: - Decrypt operation output SHOULD include a [Parsed Header](#parsed-header) value.
 
   SECTION: [Plaintext](#plaintext)
-    TEXT[!MUST,implication]: This MUST be a sequence of bytes.
+    TEXT[!MUST,implication,test]: This MUST be a sequence of bytes.
     TEXT[!MAY,implication]: This operation MAY [stream](streaming.md) the plaintext as output.
     TEXT[!SHOULD,implication]: If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
     TEXT[!SHOULD,implication]: that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
@@ -101,7 +101,7 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
     TEXT[!MUST,implementation,test]: successfully deserialized a valid [message header](../data-format/message-header.md).
     TEXT[!MUST,implementation,test]: The header deserialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10)
     TEXT[!MUST,implementation,test]: or [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification,
-    TEXT[!MUST,implementation,test]: depending on the [Version](../data-format/message-header.md#version) field.
+    TEXT[!MUST,implementation,test]: depending on the [Version](../data-format/message-header.md#version) field in the message header.
     TEXT[!MUST,implementation,test]: The [Version](../data-format/message-header.md#version) field MUST be deserialized first.
     TEXT[!MUST,implementation,test]: The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
 
@@ -353,11 +353,11 @@ SPECIFICATION: [Decrypt](specification/client-apis/decrypt.md)
     TEXT[!MUST,implementation,test]:   - The [content length](../data-format/message-body-aad.md#content-length) MUST equal the length of the plaintext.
     TEXT[!MUST,implementation,test]: If this decryption fails, this operation MUST immediately halt and fail.
 
-SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
+SPECIFICATION: [Encrypt](spec/client-apis/encrypt.md)
   SECTION: [Input](#input)
     TEXT[!MUST,implementation,test]: - Encrypt operation input MUST accept a required [plaintext](#plaintext) argument.
-    TEXT[!MUST,implementation,test]: - Encrypt operation input MUST accept a [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) and a [keyring](../framework/keyring-interface.md) argument.
-    TEXT[!SHOULD,implication,test]:   The keyring and CMM inputs SHOULD be optional.
+    TEXT[!MUST,implementation,test]: - Encrypt operation input MUST accept an optional [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
+    TEXT[!MUST,implication,test]: - Encrypt operation input MUST accept an optional [keyring](../framework/keyring-interface.md) argument.
     TEXT[!MUST,implementation,test]:   The Encrypt operation MUST validate that exactly one keyring or CMM was provided by the caller.
     TEXT[!MUST,implementation,test]:   If the caller does not provide exactly one of a keyring or CMM, the Encrypt operation MUST fail.
     TEXT[!MUST,implementation,test]: - Encrypt operation input MUST accept an optional [Algorithm Suite](#algorithm-suite) argument.
@@ -373,11 +373,10 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
     TEXT[!MUST,implication,test]: and MUST be ignored.
 
   SECTION: [Plaintext](#plaintext)
-    TEXT[implication]: The plaintext to encrypt.
     TEXT[!MUST,implication,test]: This MUST be a sequence of bytes.
     TEXT[!MAY,implementation,test]: This input MAY be [streamed](streaming.md) to this operation.
-    TEXT[!SHOULD,implementation,test,exception]: If an implementation requires holding the input entire plaintext in memory in order to perform this operation,
-    TEXT[!SHOULD,implementation,test,exception]: that implementation SHOULD NOT provide an API that allows this input to be streamed.
+    TEXT[!SHOULD,implementation,test]: If an implementation requires holding the input entire plaintext in memory in order to perform this operation,
+    TEXT[!SHOULD,implementation,test]: that implementation SHOULD NOT provide an API that allows this input to be streamed.
 
   SECTION: [Encryption Context](#encryption-context)
     TEXT[!MUST,implementation,test]: If the input encryption context contains any entries with a key beginning with `aws-crypto-`,
@@ -565,7 +564,7 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
     TEXT[!MUST,implementation,test]: the serialized message header MUST be released.
     TEXT[!MUST,implementation,test]: The encrypted message output by the Encrypt operation MUST have a message header equal
     TEXT[!MUST,implementation,test]: to the message header calculated in this step.
-    TEXT[!MUST,implementation]: If the message headers are not equal, the Encrypt operation MUST fail.
+    TEXT[!MUST,implementation,test]: If the message headers are not equal, the Encrypt operation MUST fail.
     TEXT[!MUST,implementation,test]: If the algorithm suite contains a signature algorithm and
     TEXT[!MUST,implementation,test]: this operation is [streaming](streaming.md) the encrypted message output to the caller,
     TEXT[!MUST,implementation,test]: this operation MUST input the serialized header to the signature algorithm as soon as it is serialized,
@@ -698,7 +697,7 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
   SECTION: [Nonframed Message Body Encryption](#nonframed-message-body-encryption)
     TEXT[!MUST,implementation,test]: Implementations of the AWS Encryption SDK MUST NOT encrypt using the nonframed content type.
 
-SPECIFICATION: [Streaming](specification/client-apis/streaming.md)
+SPECIFICATION: [Streaming](spec/client-apis/streaming.md)
   SECTION: [Overview](#overview)
     TEXT[!MAY,implementation,test]: The AWS Encryption SDK MAY provide APIs that enable streamed [encryption](encrypt.md)
     TEXT[!MAY,implementation,test]: and [decryption](decrypt.md).
@@ -718,7 +717,7 @@ SPECIFICATION: [Streaming](specification/client-apis/streaming.md)
     TEXT[!MUST,implication,test]: - There MUST be a mechanism to indicate that the entire output has been released.
     TEXT[!MUST,implementation,test]: Operations MUST NOT indicate completion or success until an end to the output has been indicated.
 
-SPECIFICATION: [Message Body AAD](specification/data-format/message-body-aad.md)
+SPECIFICATION: [Message Body AAD](spec/data-format/message-body-aad.md)
   SECTION: [Structure](#structure)
     TEXT[!MUST,implementation,test]: The message body AAD MUST consist of, in order,
     TEXT[!MUST,implementation,test]: Message ID,
@@ -755,7 +754,7 @@ SPECIFICATION: [Message Body AAD](specification/data-format/message-body-aad.md)
     TEXT[!MUST,implementation,test]:     0 and less than or equal to the value of the [frame length](message-header.md#frame-length)
     TEXT[!MUST,implementation,test]:     field in the message header.
 
-SPECIFICATION: [Message Body](specification/data-format/message-body.md)
+SPECIFICATION: [Message Body](spec/data-format/message-body.md)
   SECTION: [Nonframed Data](#nonframed-data)
     TEXT[!MUST,implementation,test]: Nonframed data MUST consist of, in order,
     TEXT[!MUST,implementation,test]: IV,
@@ -764,7 +763,7 @@ SPECIFICATION: [Message Body](specification/data-format/message-body.md)
     TEXT[!MUST,implementation,test]: and Authentication Tag.
 
   SECTION: [Nonframed Data IV](#nonframed-data-iv)
-    TEXT[!MUST,test,exception]: A generated IV MUST be a unique IV within the message.
+    TEXT[!MUST,exception]: A generated IV MUST be a unique IV within the message.
     TEXT[!MUST,implementation,test]: The length of the IV field MUST be [IV Length](message-header.md#iv-length) bytes.
     TEXT[!MUST,implementation,test]: The IV MUST be interpreted as bytes.
 
@@ -865,7 +864,7 @@ SPECIFICATION: [Message Body](specification/data-format/message-body.md)
     TEXT[!MUST,implementation,test]: specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
     TEXT[!MUST,implementation,test]: The authentication tag MUST be interpreted as bytes.
 
-SPECIFICATION: [Footer Structure](specification/data-format/message-footer.md)
+SPECIFICATION: [Footer Structure](spec/data-format/message-footer.md)
   SECTION: [Overview](#overview)
     TEXT[!MUST,implementation,test]: When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
     TEXT[!MUST,implementation,test]: the [message](message.md) MUST contain a footer.
@@ -880,11 +879,11 @@ SPECIFICATION: [Footer Structure](specification/data-format/message-footer.md)
     TEXT[!MUST,implementation,test]: The signature length value MUST be a UInt16.
 
   SECTION: [Signature](#signature)
-    TEXT[!MUST,implementation,test]: This signature MUST be calculated over both the [message header](message-header.md) and the [message body](message-body.md),
-    TEXT[!MUST,implementation,test]: in the order of serialization.
-    TEXT[!MUST,implementation,test]: The signature MUST be interpreted as bytes.
+    TEXT[!MUST,implication]: This signature MUST be calculated over both the [message header](message-header.md) and the [message body](message-body.md),
+    TEXT[!MUST,implication]: in the order of serialization.
+    TEXT[!MUST,implication]: The signature MUST be interpreted as bytes.
 
-SPECIFICATION: [Message Header](specification/data-format/message-header.md)
+SPECIFICATION: [Message Header](spec/data-format/message-header.md)
   SECTION: [Structure](#structure)
     TEXT[!MUST,implementation,test]: The message header is a sequence of bytes that MUST be in big-endian format.
     TEXT[!MUST,implementation,test]: The header MUST consist of, in order,
@@ -1003,20 +1002,18 @@ SPECIFICATION: [Message Header](specification/data-format/message-header.md)
 
   SECTION: [Encrypted Data Key](#encrypted-data-key)
     TEXT[!MUST,implementation,test]: The length of the serialized encrypted data key MUST be equal to the value of the [Encrypted Data Key Length](#encrypted-data-key-length) field.
-    TEXT[!MUST,implementation,test]: The encrypted data key MUST be interpreted as bytes.
+    TEXT[!MUST,implication]: The encrypted data key MUST be interpreted as bytes.
 
   SECTION: [Content Type](#content-type)
     TEXT[!MUST,implementation,test]: The length of the serialized content type field MUST be 1 byte.
 
   SECTION: [Supported Content Types](#supported-content-types)
     TEXT[!MUST,implementation,test]: The supported content types MUST be:
-    TEXT[implementation,test]: - `01` for [Nonframed](message-body.md#nonframed-data)
-    TEXT[implementation,test]: - `02` for [Framed](message-body.md#framed-data)
 
   SECTION: [Algorithm Suite Data](#algorithm-suite-data)
     TEXT[!MUST,implementation,test]: The length of the suite data field MUST be equal to the [Algorithm Suite Data Length](../framework/algorithm-suites.md#algorithm-suite-data-length) value
     TEXT[!MUST,implementation,test]: of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-    TEXT[!MUST,implementation,test]: The algorithm suite data MUST be interpreted as bytes.
+    TEXT[!MUST,implication]: The algorithm suite data MUST be interpreted as bytes.
 
   SECTION: [Reserved](#reserved)
     TEXT[!MUST,implementation,test]: A reserved sequence of 4 bytes
@@ -1044,13 +1041,13 @@ SPECIFICATION: [Message Header](specification/data-format/message-header.md)
 
   SECTION: [IV](#iv)
     TEXT[!MUST,implementation,test]: The length of the serialized IV MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-    TEXT[!MUST,implementation,test]: The IV MUST be interpreted as bytes.
+    TEXT[!MUST,implication]: The IV MUST be interpreted as bytes.
 
   SECTION: [Authentication Tag](#authentication-tag)
     TEXT[!MUST,implementation,test]: The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-    TEXT[!MUST,implementation,test]: The authentication tag MUST be interpreted as bytes.
+    TEXT[!MUST,implication]: The authentication tag MUST be interpreted as bytes.
 
-SPECIFICATION: [Message](specification/data-format/message.md)
+SPECIFICATION: [Message](spec/data-format/message.md)
   SECTION: [Structure](#structure)
     TEXT[!MUST,implementation,test]: - The message MUST begin with [Message Header](message-header.md)
     TEXT[!MUST,implementation,test]: - The [Message Body](message-body.md) MUST follow the Message Header
@@ -1063,3 +1060,42 @@ SPECIFICATION: [Message](specification/data-format/message.md)
     TEXT[!MUST,implementation,test]: [algorithm suite](../framework/algorithm-suites.md) definition cannot be used to determine whether a
     TEXT[!MUST,implementation,test]: [signature algorithm](../framework/algorithm-suites.md#signature-algorithm) is required, the operation MUST raise
     TEXT[!MUST,implementation,test]: an error and MUST NOT treat any trailing bytes as a valid [message footer](message-footer.md).
+
+SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
+  SECTION: [Plaintext](#plaintext)
+    TEXT[exception]: If an implementation requires holding the input entire plaintext in memory in order to perform this operation,
+    TEXT[exception]: that implementation SHOULD NOT provide an API that allows this input to be streamed.
+
+  SECTION: [Output](#output)
+    TEXT[exception]: Encrypt operation output SHOULD include a [Parsed Header](#parsed-header) value.
+
+  SECTION: [Encryption Context](#encryption-context-1)
+    TEXT[exception]: This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.
+
+  SECTION: [Algorithm Suite](#algorithm-suite-1)
+    TEXT[exception]: This output MAY be satisfied by outputting a [parsed header](#parsed-header) containing this value.
+
+  SECTION: [Construct the signature](#construct-the-signature)
+    TEXT[implementation,test]: The order for message footer serialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
+    TEXT[implementation,test]: - MUST serialize the [Signature Length](../data-format/message-footer.md#signature-length).
+    TEXT[implementation,test]:   The value MUST be the length of the output of the signature calculation above.
+    TEXT[implementation,test]: - MUST serialize the [Signature](../data-format/message-footer.md#signature).
+    TEXT[implementation,test]:   The value MUST be the output of the signature calculation above.
+    TEXT[implementation,test]: The above serialized bytes MUST NOT be released until the entire message footer has been serialized.
+
+SPECIFICATION: [Footer Structure](specification/data-format/message-footer.md)
+  SECTION: [Overview](#overview)
+    TEXT[implementation,test]: When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
+    TEXT[implementation,test]: the [message](message.md) MUST contain a footer.
+
+  SECTION: [Structure](#structure)
+    TEXT[implementation,test]: The message footer MUST consist of, in order,
+    TEXT[implementation,test]: Signature Length,
+    TEXT[implementation,test]: and Signature.
+
+  SECTION: [Signature Length](#signature-length)
+    TEXT[implementation,test]: The length of the signature length field MUST be 2 bytes.
+    TEXT[implementation,test]: The signature length value MUST be a UInt16.
+
+  SECTION: [Signature](#signature)
+    TEXT[implication]: The signature MUST be interpreted as bytes.

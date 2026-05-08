@@ -4,18 +4,16 @@ target = "spec/client-apis/decrypt.md#behavior"
 #
 # The Decrypt operation is divided into several distinct steps:
 # 
-# - [Parse the header](#parse-the-header)
-# - [Get the decryption materials](#get-the-decryption-materials)
-# - [Verify the header](#verify-the-header)
-# - [Decrypt the message body](#decrypt-the-message-body)
-# - [Verify the signature](#verify-the-signature)
+# - Decrypt operation Step 1 MUST be [Parse the header](#parse-the-header)
+# - Decrypt operation Step 2 MUST be [Get the decryption materials](#get-the-decryption-materials)
+# - Decrypt operation Step 3 MUST be [Verify the header](#verify-the-header)
+# - Decrypt operation Step 4 MUST be [Decrypt the message body](#decrypt-the-message-body)
+# - Decrypt operation Step 5 MUST be [Verify the signature](#verify-the-signature)
 #   - If the message header contains an algorithm suite including a
 #     [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
-#     this operation MUST perform this step.
-#     Otherwise this operation MUST NOT perform this step.
-# 
-# This operation MUST perform all the above steps unless otherwise specified,
-# and it MUST perform them in the above order.
+#     the Decrypt operation MUST perform this step.
+#   - If the message header does not contain an algorithm suite including a signature algorithm,
+#     the Decrypt operation MUST NOT perform this step.
 # 
 # If the input encrypted message is not being [streamed](streaming.md) to this operation,
 # all output MUST NOT be released until after these steps complete successfully.
@@ -37,22 +35,46 @@ target = "spec/client-apis/decrypt.md#behavior"
 [[spec]]
 level = "MUST"
 quote = '''
+- Decrypt operation Step 1 MUST be [Parse the header](#parse-the-header)
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Decrypt operation Step 2 MUST be [Get the decryption materials](#get-the-decryption-materials)
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Decrypt operation Step 3 MUST be [Verify the header](#verify-the-header)
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Decrypt operation Step 4 MUST be [Decrypt the message body](#decrypt-the-message-body)
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Decrypt operation Step 5 MUST be [Verify the signature](#verify-the-signature)
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
 - If the message header contains an algorithm suite including a
 [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
-this operation MUST perform this step.
+the Decrypt operation MUST perform this step.
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-Otherwise this operation MUST NOT perform this step.
-'''
-
-[[spec]]
-level = "MUST"
-quote = '''
-This operation MUST perform all the above steps unless otherwise specified,
-and it MUST perform them in the above order.
+- If the message header does not contain an algorithm suite including a signature algorithm,
+the Decrypt operation MUST NOT perform this step.
 '''
 
 [[spec]]

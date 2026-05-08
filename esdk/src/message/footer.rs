@@ -19,6 +19,11 @@ pub(crate) fn write_footer(w: &mut dyn SafeWrite, signature: &[u8]) -> Result<()
     //# The message footer MUST consist of, in order,
     //# Signature Length,
     //# and Signature.
+    //
+    //= spec/data-format/message-footer.md#structure
+    //# The message footer MUST consist of, in order,
+    //# Signature Length,
+    //# and Signature.
 
     // Signature Length
 
@@ -39,6 +44,12 @@ pub(crate) fn write_footer(w: &mut dyn SafeWrite, signature: &[u8]) -> Result<()
     //
     //= specification/data-format/message-footer.md#signature-length
     //# The signature length value MUST be a UInt16.
+    //
+    //= spec/data-format/message-footer.md#signature-length
+    //# The length of the signature length field MUST be 2 bytes.
+    //
+    //= spec/data-format/message-footer.md#signature-length
+    //# The signature length value MUST be a UInt16.
     write_u16(w, len)?;
 
     // Signature
@@ -50,6 +61,10 @@ pub(crate) fn write_footer(w: &mut dyn SafeWrite, signature: &[u8]) -> Result<()
     //# The value MUST be the output of the signature calculation above.
     //
     //= specification/data-format/message-footer.md#signature
+    //= type=implication
+    //# The signature MUST be interpreted as bytes.
+    //
+    //= spec/data-format/message-footer.md#signature
     //= type=implication
     //# The signature MUST be interpreted as bytes.
     write_bytes(w, signature)?;
@@ -69,6 +84,11 @@ pub(crate) fn read_footer(r: &mut dyn SafeRead, raw: &mut dyn SafeWrite) -> Resu
     //# The message footer MUST consist of, in order,
     //# Signature Length,
     //# and Signature.
+    //
+    //= spec/data-format/message-footer.md#structure
+    //# The message footer MUST consist of, in order,
+    //# Signature Length,
+    //# and Signature.
 
     // Signature Length
 
@@ -77,11 +97,21 @@ pub(crate) fn read_footer(r: &mut dyn SafeRead, raw: &mut dyn SafeWrite) -> Resu
     //
     //= specification/data-format/message-footer.md#signature-length
     //# The signature length value MUST be a UInt16.
+    //
+    //= spec/data-format/message-footer.md#signature-length
+    //# The length of the signature length field MUST be 2 bytes.
+    //
+    //= spec/data-format/message-footer.md#signature-length
+    //# The signature length value MUST be a UInt16.
     let len = read_u16(r, raw)?;
 
     // Signature
 
     //= specification/data-format/message-footer.md#signature
+    //= type=implication
+    //# The signature MUST be interpreted as bytes.
+    //
+    //= spec/data-format/message-footer.md#signature
     //= type=implication
     //# The signature MUST be interpreted as bytes.
     read_vec(r, usize::from(len), raw)

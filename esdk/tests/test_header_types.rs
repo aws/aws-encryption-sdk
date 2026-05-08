@@ -39,6 +39,10 @@ async fn test_type_customer_aed_value() {
     //= spec/data-format/message-header.md#type
     //= type=test
     //# The length of the serialized type field MUST be 1 byte.
+    //
+    //= spec/data-format/message-header.md#supported-types
+    //= type=test
+    //# - `80` MUST be Customer Authenticated Encrypted Data
     assert_eq!(
         ct[1], 0x80,
         "V1 ciphertext must have type byte 0x80 at offset 1"
@@ -108,6 +112,10 @@ async fn test_content_type_invalid_value_rejected() {
         //= spec/data-format/message-header.md#content-type
         //= type=test
         //# The length of the serialized content type field MUST be 1 byte.
+        //
+        //= spec/data-format/message-header.md#supported-content-types
+        //= type=test
+        //# The supported content types MUST be:
         let err = decrypt(&dec_input).await.unwrap_err();
         assert!(matches!(err.kind, ErrorKind::SerializationError), "{version:?}: expected SerializationError, got {:?}", err.kind);
         let msg = format!("{err}");
@@ -168,6 +176,10 @@ async fn test_unsupported_type_rejected_v1() {
     //= spec/data-format/message-header.md#type
     //= type=test
     //# The length of the serialized type field MUST be 1 byte.
+    //
+    //= spec/data-format/message-header.md#supported-types
+    //= type=test
+    //# The supported types MUST be:
     let err = decrypt(&dec_input).await.unwrap_err();
     assert!(matches!(err.kind, ErrorKind::SerializationError), "expected SerializationError, got {:?}", err.kind);
     let msg = format!("{err}");

@@ -18,7 +18,12 @@ async fn test_footer_present_with_signing_suite() {
         //# When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
         //# the [message](message.md) MUST contain a footer.
         //
-        //= specification/data-format/message.md#structure
+        //= spec/data-format/message-footer.md#overview
+        //= type=test
+        //# When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
+        //# the [message](message.md) MUST contain a footer.
+        //
+        //= spec/data-format/message.md#structure
         //= type=test
         //# If the [message header](message-header.md) contains an [algorithm suite](../framework/algorithm-suites.md) in the
         //# [algorithm suite ID](message-header.md#algorithm-suite-id) field that contains a
@@ -42,6 +47,10 @@ async fn test_footer_signature_length_is_two_bytes() {
         //= specification/data-format/message-footer.md#signature-length
         //= type=test
         //# The length of the signature length field MUST be 2 bytes.
+        //
+        //= spec/data-format/message-footer.md#signature-length
+        //= type=test
+        //# The length of the signature length field MUST be 2 bytes.
         assert_eq!(
             ct.len() - offset - 2,
             sig_len as usize,
@@ -59,6 +68,10 @@ async fn test_footer_signature_length_is_uint16() {
         let (offset, sig_len) = find_footer_offset(&ct);
 
         //= specification/data-format/message-footer.md#signature-length
+        //= type=test
+        //# The signature length value MUST be a UInt16.
+        //
+        //= spec/data-format/message-footer.md#signature-length
         //= type=test
         //# The signature length value MUST be a UInt16.
         let interpreted = u16::from_be_bytes([ct[offset], ct[offset + 1]]);
@@ -79,7 +92,7 @@ async fn test_no_footer_without_signing_suite() {
         ("V1", encrypt_with_version(b"no footer test", Version::V1, keyring.clone()).await),
         ("V2", encrypt_without_signing_suite(b"no footer test").await),
     ] {
-        //= specification/data-format/message.md#structure
+        //= spec/data-format/message.md#structure
         //= type=test
         //# If the algorithm suite does not contain a signature algorithm, the message MUST NOT contain a message footer.
         assert!(
@@ -99,6 +112,12 @@ async fn test_footer_consists_of_signature_length_then_signature() {
         let footer = &ct[offset..];
 
         //= specification/data-format/message-footer.md#structure
+        //= type=test
+        //# The message footer MUST consist of, in order,
+        //# Signature Length,
+        //# and Signature.
+        //
+        //= spec/data-format/message-footer.md#structure
         //= type=test
         //# The message footer MUST consist of, in order,
         //# Signature Length,
@@ -139,9 +158,15 @@ async fn test_unrecognized_algorithm_suite_errors() {
         let keyring = test_keyring().await;
         let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
         let err = decrypt(&dec_input).await.unwrap_err();
+
+        assert!(
+            matches!(err.kind, ErrorKind::ValidationError),
+            "{label}: expected ValidationError, got {:?}", err.kind
+        );
+
         let err_msg = err.to_string();
 
-        //= specification/data-format/message.md#structure
+        //= spec/data-format/message.md#structure
         //= type=test
         //= reason=All valid algorithm suite IDs map to known signature algorithms; an unrecognized suite ID is rejected at header parsing before the signature algorithm is ever inspected
         //# If the [algorithm suite ID](message-header.md#algorithm-suite-id) is unrecognized or unsupported, or its [algorithm suite](../framework/algorithm-suites.md) definition cannot be used to determine whether a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm) is required, the operation MUST raise an error and MUST NOT treat any trailing bytes as a valid [message footer](message-footer.md).

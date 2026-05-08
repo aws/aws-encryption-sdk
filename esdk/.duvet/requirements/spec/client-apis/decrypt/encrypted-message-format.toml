@@ -7,7 +7,7 @@ target = "spec/client-apis/decrypt.md#encrypted-message-format"
 # (currently they are in fact fixed),
 # the first two bytes of the Base64 encoding of a valid message are also simple to recognize.
 # 
-# To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version-1)
+# To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version)
 # and [types](../data-format/message-header.md#type)
 # and fail with a more specific error message.
 # In particular, the hex values to detect for the current set of versions and types are:
@@ -23,7 +23,7 @@ target = "spec/client-apis/decrypt.md#encrypted-message-format"
 [[spec]]
 level = "SHOULD"
 quote = '''
-To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version-1)
+To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version)
 and [types](../data-format/message-header.md#type)
 and fail with a more specific error message.
 '''

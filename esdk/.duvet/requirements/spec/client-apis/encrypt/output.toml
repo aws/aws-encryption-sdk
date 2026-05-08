@@ -2,32 +2,32 @@ target = "spec/client-apis/encrypt.md#output"
 
 # Output
 #
-# - The output of the Encrypt operation MUST include an [encrypted message](#encrypted-message) value.
-# - The output of the Encrypt operation MUST include an [encryption context](#encryption-context) value.
-# - The output of the Encrypt operation MUST include an [algorithm suite](#algorithm-suite) value.
-# - The output of the Encrypt operation SHOULD include a [Parsed Header](#parsed-header) value.
+# - Encrypt operation output MUST include an [encrypted message](#encrypted-message) value.
+# - Encrypt operation output MUST include an [encryption context](#encryption-context) value.
+# - Encrypt operation output MUST include an [algorithm suite](#algorithm-suite) value.
+# - Encrypt operation output SHOULD include a [Parsed Header](#parsed-header) value.
 
 [[spec]]
 level = "MUST"
 quote = '''
-- The output of the Encrypt operation MUST include an [encrypted message](#encrypted-message) value.
+- Encrypt operation output MUST include an [encrypted message](#encrypted-message) value.
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-- The output of the Encrypt operation MUST include an [encryption context](#encryption-context) value.
+- Encrypt operation output MUST include an [encryption context](#encryption-context) value.
 '''
 
 [[spec]]
 level = "MUST"
 quote = '''
-- The output of the Encrypt operation MUST include an [algorithm suite](#algorithm-suite) value.
+- Encrypt operation output MUST include an [algorithm suite](#algorithm-suite) value.
 '''
 
 [[spec]]
 level = "SHOULD"
 quote = '''
-- The output of the Encrypt operation SHOULD include a [Parsed Header](#parsed-header) value.
+- Encrypt operation output SHOULD include a [Parsed Header](#parsed-header) value.
 '''
 

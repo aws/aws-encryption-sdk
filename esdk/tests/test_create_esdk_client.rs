@@ -254,6 +254,11 @@ fn test_decrypt_input_accepts_cmm_and_keyring() {
     //= type=test
     //= reason=source is Option<MaterialSource> which accepts CMM or keyring variants; constructing a keyring requires async KMS/MPL setup
     //# - Decrypt operation input MUST accept an optional [Cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
+    //
+    //= spec/client-apis/decrypt.md#input
+    //= type=test
+    //= reason=source is Option<MaterialSource> which accepts CMM or keyring variants; constructing a keyring requires async KMS/MPL setup
+    //# - Decrypt operation input MUST accept an optional [Keyring](../framework/keyring-interface.md) argument.
     let input = DecryptInput::default();
     assert!(input.source.is_none());
 }

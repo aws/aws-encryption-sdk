@@ -96,6 +96,11 @@ fn test_body_aad_content_values_match_spec_literals() {
     //= spec/data-format/message-body-aad.md#body-aad-content
     //= type=test
     //# - The [regular frames](message-body.md#regular-frame) in [framed data](message-body.md#framed-data) MUST use the value `AWSKMSEncryptionClient Frame`.
+    //
+    //= spec/data-format/message-body-aad.md#body-aad-content
+    //= type=test
+    //= reason=The assertion compares raw bytes against a known UTF-8 literal; match proves the output is valid UTF-8
+    //# The body AAD content value MUST be encoded as UTF-8 bytes.
     assert_eq!(
         &out[msg_id_16.len()..msg_id_16.len() + REGULAR_FRAME_STR.len()],
         REGULAR_FRAME_STR,

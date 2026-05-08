@@ -37,7 +37,11 @@ pub(crate) fn read_msg_format_version(
     //= spec/client-apis/decrypt.md#parse-the-header
     //# The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
     match version {
+        //= spec/data-format/message-header.md#supported-versions
+        //# - Hex value `01` MUST be version 1.0
         val if val == MessageFormatVersion::V1 as u8 => Ok(MessageFormatVersion::V1),
+        //= spec/data-format/message-header.md#supported-versions
+        //# - Hex value `02` MUST be version 2.0
         val if val == MessageFormatVersion::V2 as u8 => Ok(MessageFormatVersion::V2),
         //= spec/client-apis/decrypt.md#encrypted-message-format
         //# To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version)

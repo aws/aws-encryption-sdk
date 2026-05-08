@@ -64,6 +64,10 @@ async fn test_v1_header_algorithm_suite_id() {
     //= spec/data-format/message-header.md#algorithm-suite-id
     //= type=test
     //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
+    //
+    //= spec/data-format/message-header.md#algorithm-suite-id
+    //= type=test
+    //# The length of the serialized algorithm suite ID field MUST be 2 bytes.
     let suite_id = u16::from_be_bytes([ct[2], ct[3]]);
     assert_eq!(
         suite_id, 0x0178,
@@ -83,6 +87,16 @@ async fn test_v1_header_message_id() {
     // Message ID is 16 bytes at offset 4
     let msg_id_1 = &ct1[4..20];
     let msg_id_2 = &ct2[4..20];
+
+    //= spec/data-format/message-header.md#message-id
+    //= type=test
+    //# The length of the serialized message ID MUST be 16 bytes for [version 1.0](#header-body-version-10) headers.
+    assert_eq!(msg_id_1.len(), 16, "V1 message ID must be 16 bytes");
+
+    //= spec/data-format/message-header.md#message-id
+    //= type=test
+    //# The message ID MUST be interpreted as bytes.
+    assert_eq!(msg_id_1, &ct1[4..20], "V1 message ID must be preserved as raw bytes");
 
     //= spec/data-format/message-header.md#message-id
     //= type=test
@@ -151,6 +165,10 @@ async fn test_v1_header_content_type() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_reserved() {
+    //= spec/client-apis/encrypt.md#v1-header
+    //= type=test
+    //# - MUST serialize the [Reserved](../data-format/message-header.md#reserved).
+    //
     //= spec/data-format/message-header.md#reserved
     //= type=test
     //# A reserved sequence of 4 bytes
@@ -199,6 +217,23 @@ async fn test_v1_header_frame_length() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_serialization_order() {
+    //= spec/client-apis/encrypt.md#v1-header
+    //= type=test
+    //# The serialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification.
+    //
+    //= spec/data-format/message-header.md#header-body-version-1-0
+    //= type=test
+    //# The V1 Header Body MUST consist of, in order,
+    //# Version,
+    //# Type,
+    //# Algorithm Suite ID,
+    //# Message ID,
+    //# AAD,
+    //# Encrypted Data Keys,
+    //# Content Type,
+    //# Reserved,
+    //# IV Length,
+    //# and Frame Length.
     let ct = encrypt_v1_with_ec(b"order test", EncryptionContext::new()).await;
     // Fixed-offset fields
     assert_eq!(ct[0], 0x01, "offset 0: Version");
@@ -233,6 +268,9 @@ async fn test_v1_header_serialization_order() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_version_field_is_1_byte() {
     let ct = encrypt_v1_with_ec(b"version 1 byte test", EncryptionContext::new()).await;
+    //= spec/data-format/message-header.md#version
+    //= type=test
+    //# The length of the serialized version field MUST be 1 byte.
     // Version is at offset 0, Type is at offset 1 — proving version is exactly 1 byte
     assert_eq!(ct[0], 0x01, "version byte must be 0x01");
     assert_eq!(
@@ -270,6 +308,9 @@ async fn test_v1_content_type_field_is_1_byte() {
 async fn test_v1_reserved_field_is_4_bytes() {
     let ct = encrypt_v1_with_ec(b"reserved 4 bytes test", EncryptionContext::new()).await;
     let (_, reserved_offset, iv_length_offset, _) = parse_v1_trailing_offsets(&ct);
+    //= spec/data-format/message-header.md#reserved
+    //= type=test
+    //# The length of the serialized reserved field MUST be 4 bytes.
     assert_eq!(
         iv_length_offset - reserved_offset,
         4,
@@ -281,6 +322,9 @@ async fn test_v1_reserved_field_is_4_bytes() {
 async fn test_v1_iv_length_field_is_1_byte() {
     let ct = encrypt_v1_with_ec(b"iv length 1 byte test", EncryptionContext::new()).await;
     let (_, _, iv_length_offset, frame_length_offset) = parse_v1_trailing_offsets(&ct);
+    //= spec/data-format/message-header.md#iv-length
+    //= type=test
+    //# The length of the serialized IV length field MUST be 1 byte.
     assert_eq!(
         frame_length_offset - iv_length_offset,
         1,
@@ -292,6 +336,9 @@ async fn test_v1_iv_length_field_is_1_byte() {
 async fn test_v1_iv_length_serialized_as_uint8() {
     let ct = encrypt_v1_with_ec(b"iv length uint8 test", EncryptionContext::new()).await;
     let (_, _, iv_length_offset, _) = parse_v1_trailing_offsets(&ct);
+    //= spec/data-format/message-header.md#iv-length
+    //= type=test
+    //# The IV length MUST be interpreted as a UInt8.
     // AlgAes256GcmIv12Tag16HkdfSha256 has IV length 12
     let iv_length = ct[iv_length_offset];
     assert_eq!(
@@ -335,6 +382,9 @@ async fn test_v1_frame_length_field_is_4_bytes() {
 async fn test_v1_frame_length_serialized_as_uint32() {
     let ct = encrypt_v1_with_ec(b"frame length uint32 v1 test", EncryptionContext::new()).await;
     let (_, _, _, frame_length_offset) = parse_v1_trailing_offsets(&ct);
+    //= spec/data-format/message-header.md#frame-length
+    //= type=test
+    //# The frame length MUST be interpreted as a UInt32.
     // Parse as big-endian UInt32
     let frame_length = u32::from_be_bytes([
         ct[frame_length_offset],

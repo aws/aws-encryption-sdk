@@ -19,21 +19,22 @@ target = "spec/client-apis/decrypt.md#get-the-decryption-materials"
 # The call to the CMM's [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) operation
 # MUST be constructed as follows:
 # 
-# - Encryption Context: This is the parsed [encryption context](../data-format/message-header.md#aad)
+# - Encryption Context: This MUST be the parsed [encryption context](../data-format/message-header.md#aad)
 #   from the message header.
-# - Algorithm Suite ID: This is the parsed
+# - Algorithm Suite ID: This MUST be the parsed
 #   [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
 #   from the message header.
-# - Encrypted Data Keys: This is the parsed [encrypted data keys](../data-format/message-header#encrypted-data-keys)
+# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header.md#encrypted-data-keys)
 #   from the message header.
-# - Reproduced Encryption Context: This is the [input](#input) encryption context.
+# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
+# - Commitment Policy: This MUST be the commitment policy configured on the client.
 # 
-# The data key used as input for all decryption described below is a data key derived from the plaintext data key
+# The data key used as input for all decryption described below MUST be a data key derived from the plaintext data key
 # included in the [decryption materials](../framework/structures.md#decryption-materials).
-# The algorithm suite used as input for all decryption described below is a algorithm suite
+# The algorithm suite used as input for all decryption described below MUST be the algorithm suite
 # included in the [decryption materials](../framework/structures.md#decryption-materials).
 # If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
-# encrypt MUST yield an error.
+# decrypt MUST yield an error.
 # If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
 # configured in the [client](client.md) decrypt MUST yield an error.
 # If the [algorithm suite](../framework/algorithm-suites.md#algorithm-suites-encryption-key-derivation-settings) supports [key commitment](../framework/algorithm-suites.md#key-commitment)
@@ -45,8 +46,8 @@ target = "spec/client-apis/decrypt.md#get-the-decryption-materials"
 # [algorithm suite](../framework/algorithm-suites.md) associated with
 # the returned decryption materials.
 # This document refers to the output of the key derivation algorithm as the derived data key.
-# Note that if the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
-# then the derived data key is the same as the plaintext data key.
+# If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
+# then the derived data key MUST be the same as the plaintext data key.
 
 [[spec]]
 level = "MUST"
@@ -86,8 +87,56 @@ MUST be constructed as follows:
 [[spec]]
 level = "MUST"
 quote = '''
+- Encryption Context: This MUST be the parsed [encryption context](../data-format/message-header.md#aad)
+from the message header.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Algorithm Suite ID: This MUST be the parsed
+[algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
+from the message header.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header.md#encrypted-data-keys)
+from the message header.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Commitment Policy: This MUST be the commitment policy configured on the client.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The data key used as input for all decryption described below MUST be a data key derived from the plaintext data key
+included in the [decryption materials](../framework/structures.md#decryption-materials).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+The algorithm suite used as input for all decryption described below MUST be the algorithm suite
+included in the [decryption materials](../framework/structures.md#decryption-materials).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
 If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
-encrypt MUST yield an error.
+decrypt MUST yield an error.
 '''
 
 [[spec]]
@@ -118,5 +167,12 @@ The algorithm suite used to derive a data key from the plaintext data key MUST b
 the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
 [algorithm suite](../framework/algorithm-suites.md) associated with
 the returned decryption materials.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
+then the derived data key MUST be the same as the plaintext data key.
 '''
 

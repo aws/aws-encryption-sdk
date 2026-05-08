@@ -39,6 +39,10 @@ async fn test_v1_header_auth_structure() {
     let iv_bytes = &ct[auth_start..auth_start + IV_LEN];
     let tag_bytes = &ct[auth_start + IV_LEN..auth_start + IV_LEN + TAG_LEN];
 
+    //= spec/data-format/message-header.md#iv
+    //= type=test
+    //# The length of the serialized IV MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
+
     //= spec/client-apis/encrypt.md#v1-authentication-tag
     //= type=test
     //# - MUST serialize the [IV](../data-format/message-header.md#iv).
@@ -67,6 +71,11 @@ async fn test_v1_header_auth_structure() {
         "V1 header auth tag must not be all zeros"
     );
 
+    //= spec/data-format/message-header.md#header-authentication-version-1-0
+    //= type=test
+    //# The V1 Header Authentication MUST consist of, in order,
+    //# IV,
+    //# and Authentication Tag.
     // Verify ordering: IV at auth_start, then tag immediately after
     assert_eq!(
         auth_start + IV_LEN + TAG_LEN,
@@ -111,6 +120,9 @@ async fn test_v2_header_auth_structure() {
         "V2 header auth tag must not be all zeros"
     );
 
+    //= spec/data-format/message-header.md#header-authentication-version-2-0
+    //= type=test
+    //# The V2 Header Authentication MUST consist of the Authentication Tag only.
     // V2 has NO IV — verify the body starts right after the tag
     let after_tag = auth_start + TAG_LEN;
     let next_4 = u32::from_be_bytes([ct[after_tag], ct[after_tag + 1], ct[after_tag + 2], ct[after_tag + 3]]);
@@ -145,6 +157,9 @@ async fn test_header_auth_tag_length_both_versions() {
                 (start, &ct[start..start + TAG_LEN])
             }
         };
+        //= spec/data-format/message-header.md#authentication-tag
+        //= type=test
+        //# The length of the serialized authentication tag MUST be equal to the [authentication tag length](../framework/algorithm-suites.md#authentication-tag-length) of the [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
         assert_eq!(
             tag_bytes.len(),
             TAG_LEN,

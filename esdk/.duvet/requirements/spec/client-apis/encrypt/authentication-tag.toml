@@ -20,22 +20,6 @@ target = "spec/client-apis/encrypt.md#authentication-tag"
 # - The cipherkey MUST be the derived data key
 # - The plaintext MUST be an empty byte array
 # 
-# With the authentication tag calculated,
-# if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
-# this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-2-0) with the following specifics:
-# 
-# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
-#   of the authentication tag calculated above.
-# 
-# With the authentication tag calculated,
-# if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
-# this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-1-0) with the following specifics:
-# 
-# - [IV](../data-format/message-header.md#iv): MUST have the value of the IV used in the calculation above,
-#   padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
-# - [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
-#   of the authentication tag calculated above.
-# 
 # The serialized bytes MUST NOT be released until the entire message header has been serialized.
 # If this operation is streaming the encrypted message and
 # the entire message header has been serialized,
@@ -99,36 +83,6 @@ quote = '''
 level = "MUST"
 quote = '''
 - The plaintext MUST be an empty byte array
-'''
-
-[[spec]]
-level = "MUST"
-quote = '''
-With the authentication tag calculated,
-if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
-this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-2-0) with the following specifics:
-'''
-
-[[spec]]
-level = "MUST"
-quote = '''
-- [Authentication Tag](../data-format/message-header.md#authentication-tag): MUST have the value
-of the authentication tag calculated above.
-'''
-
-[[spec]]
-level = "MUST"
-quote = '''
-With the authentication tag calculated,
-if the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0
-this operation MUST serialize the [message header authentication](../data-format/message-header.md#header-authentication-version-1-0) with the following specifics:
-'''
-
-[[spec]]
-level = "MUST"
-quote = '''
-- [IV](../data-format/message-header.md#iv): MUST have the value of the IV used in the calculation above,
-padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
 '''
 
 [[spec]]

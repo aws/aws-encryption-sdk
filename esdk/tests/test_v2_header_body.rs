@@ -13,9 +13,26 @@ async fn test_v2_header_body_serialization_order() {
     //= spec/client-apis/encrypt.md#v2-header
     //= type=test
     //= reason=parses raw ciphertext bytes and verifies all 8 V2 header fields appear in spec order with no gaps
+    //# The serialization order MUST follow the [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification.
+    //
+    //= spec/client-apis/encrypt.md#v2-header
+    //= type=test
+    //= reason=parses raw ciphertext bytes and verifies all 8 V2 header fields appear in spec order with no gaps
     //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 2.0,
     //# the remaining header fields MUST be serialized according to the
     //# [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
+    //
+    //= spec/data-format/message-header.md#header-body-version-2-0
+    //= type=test
+    //# The V2 Header Body MUST consist of, in order,
+    //# Version,
+    //# Algorithm Suite ID,
+    //# Message ID,
+    //# AAD,
+    //# Encrypted Data Keys,
+    //# Content Type,
+    //# Frame Length,
+    //# and Algorithm Suite Data.
     let ct = encrypt_default(b"test plaintext").await.ciphertext;
     let fields = parse_v2_header_field_offsets(&ct);
 
@@ -133,6 +150,10 @@ async fn test_v2_header_message_id() {
     //# - MUST serialize the [Message ID](../data-format/message-header.md#message-id).
     //# The process used to generate this identifier MUST use a good source of randomness
     //# to make the chance of duplicate identifiers negligible.
+    //
+    //= spec/data-format/message-header.md#message-id
+    //= type=test
+    //# The length of the serialized message ID MUST be 32 bytes for [version 2.0](#header-body-version-20) headers.
     assert_eq!(end1 - start1, 32, "V2 Message ID must be 32 bytes");
     assert_eq!(end2 - start2, 32, "V2 Message ID must be serialized as 32 bytes");
 
