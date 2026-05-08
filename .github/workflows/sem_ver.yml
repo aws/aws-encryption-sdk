@@ -25,6 +25,7 @@ jobs:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::587316601012:role/GitHub-CI-CI-Bot-Credential-Access-Role-us-west-2
           role-session-name: CI_Bot_Release
+          special-characters-workaround: 'true' # Some environments (example: windowsOS) cannot tolerate special characters in a secret key. 
 
       - name: Upgrade Node
         uses: actions/setup-node@v6

@@ -80,6 +80,7 @@ jobs:
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
           role-session-name: NetTests
+          special-characters-workaround: 'true' # Some environments (example: windowsOS) cannot tolerate special characters in a secret key. 
 
       - name: Compile MPL with Dafny ${{inputs.mpl-dafny}}
         shell: bash
