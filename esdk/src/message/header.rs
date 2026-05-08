@@ -1,5 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+
 //! Top-level message header construction and parsing.
 
 use super::header_types::{
@@ -47,9 +48,7 @@ pub(crate) fn write_header_body(w: &mut dyn SafeWrite, body: &HeaderBody) -> Res
 //
 //= spec/client-apis/decrypt.md#parse-the-header
 //= reason=SafeRead (std::io::Read) only supports sequential consumption with no skip/seek, so reading from it inherently processes all consumable bytes until a valid header is formed.
-//# This operation MUST wait if it doesn't have enough consumable encrypted message bytes to
-//# deserialize the next field of the message header until enough input bytes become consumable or
-//# the caller indicates an end to the encrypted message.
+//# The [Version](../data-format/message-header.md#version) field MUST be deserialized first.
 pub(crate) fn read_header_body(
     ciphertext: &mut dyn SafeRead,
     max_edks: Option<std::num::NonZeroUsize>,
@@ -61,6 +60,10 @@ pub(crate) fn read_header_body(
     //# deserializing those bytes according to the [message format](../data-format/message.md).
     let version = read_msg_format_version(ciphertext, raw_header)?;
 
+    //= spec/client-apis/decrypt.md#parse-the-header
+    //# The header deserialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10)
+    //# or [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification,
+    //# depending on the [Version](../data-format/message-header.md#version) field in the message header.
     let result = match version {
         MessageFormatVersion::V1 => {
             let body = read_v1_header_body(ciphertext, max_edks, raw_header)?;
@@ -82,7 +85,7 @@ pub(crate) fn read_header_body(
         ContentType::NonFramed => {
             if result.frame_length() != 0 {
                 //= spec/data-format/message-header.md#frame-length
-                //# When the [content type](#content-type) is non-framed, the value of this field MUST be 0.
+                //# When the [content type](#content-type) is nonframed, the value of this field MUST be 0.
                 return ser_err("Frame length must be zero if content is nonframed");
             }
         }
@@ -117,12 +120,6 @@ pub(crate) fn validate_max_encrypted_data_keys(
 
     if let Some(max) = max_encrypted_data_keys {
         if edks.len() > max.get() {
-            //= spec/client-apis/decrypt.md#parse-the-header
-            //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
-            //# deserialized from the [message header](../data-format/message-header.md)
-            //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
-            //# then as soon as that can be determined during deserializing
-            //# decrypt MUST process no more bytes and yield an error.
             return Err(val_err(format!(
                 "Encrypted data key count {} exceeds configured maximum {}",
                 edks.len(),
@@ -143,12 +140,8 @@ pub(crate) fn generate_message_id(suite: &AlgorithmSuite) -> Result<MessageId, E
 
     //= spec/data-format/message-header.md#message-id
     //= reason=Uniqueness follows from drawing sufficient randomness; the same randomness call satisfies both sub-items.
-    //# A Message ID MUST uniquely identify the [message](message.md).
-    //
-    //= spec/data-format/message-header.md#message-id
-    //= reason=Assuming the MPL uses a good source of randomness
     //# While implementations cannot guarantee complete uniqueness,
-    //# implementations MUST use a good source of randomness when generating messages IDs in order to make
+    //# implementations MUST use a good source of randomness when generating message IDs in order to make
     //# the chance of duplicate IDs negligible.
     aws_mpl_legacy::primitives::generate_random_bytes(&mut rand_bytes)?;
     Ok(rand_bytes)
@@ -180,6 +173,10 @@ pub(crate) fn validate_suite_data(
 }
 
 /// Write the message header (body + auth tag) to the output stream.
+//= spec/data-format/message-header.md#structure
+//# The header MUST consist of, in order,
+//# Header Body,
+//# and Header Authentication.
 pub(crate) fn write_header(
     header: &HeaderInfo,
     ciphertext: &mut dyn SafeWrite,
@@ -189,6 +186,14 @@ pub(crate) fn write_header(
     // Header body
     serialize_functions::write_bytes(&mut header_buf, &header.raw_header)?;
     // Header Authentication
+    //= spec/client-apis/encrypt.md#authentication-tag
+    //# After serializing the message header body,
+    //# this operation MUST calculate an [authentication tag](../data-format/message-header.md#authentication-tag)
+    //# over the message header body.
+    //
+    //= spec/client-apis/encrypt.md#authentication-tag
+    //# The value of this MUST be the output of the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
+    //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
     header_auth::write_header_auth_tag(&mut header_buf, &header.header_auth, &header.suite)?;
     serialize_functions::write_bytes(ciphertext, &header_buf)?;
 

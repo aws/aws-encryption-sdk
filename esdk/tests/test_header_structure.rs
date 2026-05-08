@@ -62,6 +62,11 @@ async fn test_header_serialization_order() {
             }
             Version::V2 => auth_tag_len,
         };
+        //= spec/data-format/message-header.md#structure
+        //= type=test
+        //# The header MUST consist of, in order,
+        //# Header Body,
+        //# and Header Authentication.
         // Verify header auth bytes exist immediately after header body
         assert!(
             ct.len() > header_auth_offset + header_auth_size,
@@ -106,9 +111,12 @@ async fn test_encrypted_data_key_count_greater_than_zero() {
             dec_input.commitment_policy =
                 aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
         }
+        let err = decrypt(&dec_input).await.expect_err(
+            &format!("{version:?}: EDK count of 0 must be rejected"),
+        );
         assert!(
-            decrypt(&dec_input).await.is_err(),
-            "{version:?}: EDK count of 0 must be rejected"
+            matches!(err.kind, ErrorKind::SerializationError),
+            "{version:?}: expected SerializationError, got {:?}", err.kind
         );
     }
 }
@@ -174,6 +182,9 @@ async fn test_frame_length_field_is_4_bytes() {
                 fl_off
             }
         };
+        //= spec/data-format/message-header.md#frame-length
+        //= type=test
+        //# The length of the serialized frame length field MUST be 4 bytes.
         // Parse the 4-byte field and verify it contains the expected default frame length.
         // This proves the field is exactly 4 bytes: if it were shorter or longer,
         // the parsed value would not match 4096.
@@ -192,7 +203,7 @@ async fn test_frame_length_field_is_4_bytes() {
 
 //= spec/data-format/message-header.md#frame-length
 //= type=test
-//# When the [content type](#content-type) is non-framed, the value of this field MUST be 0.
+//# When the [content type](#content-type) is nonframed, the value of this field MUST be 0.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_nonframed_frame_length_must_be_zero() {
     for version in VERSIONS {
@@ -228,9 +239,12 @@ async fn test_nonframed_frame_length_must_be_zero() {
             dec_input.commitment_policy =
                 aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
         }
+        let err = decrypt(&dec_input).await.expect_err(
+            &format!("{version:?}: nonframed content with non-zero frame length must be rejected"),
+        );
         assert!(
-            decrypt(&dec_input).await.is_err(),
-            "{version:?}: nonframed content with non-zero frame length must be rejected"
+            matches!(err.kind, ErrorKind::SerializationError),
+            "{version:?}: expected SerializationError, got {:?}", err.kind
         );
     }
 }
@@ -240,6 +254,9 @@ async fn test_nonframed_frame_length_must_be_zero() {
 // (it only requires Frame Length = 0 when content type is non-framed), but a
 // framed frame length of 0 is a degenerate wire format that the implementation
 // rejects during header deserialization, before header-auth verification.
+//= spec/data-format/message-header.md#frame-length
+//= type=test
+//# When the [content type](#content-type) is nonframed, the value of this field MUST be 0.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_framed_frame_length_must_be_positive() {
     for version in VERSIONS {
@@ -277,9 +294,12 @@ async fn test_framed_frame_length_must_be_positive() {
             dec_input.commitment_policy =
                 aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
         }
+        let err = decrypt(&dec_input).await.expect_err(
+            &format!("{version:?}: framed content with zero frame length must be rejected"),
+        );
         assert!(
-            decrypt(&dec_input).await.is_err(),
-            "{version:?}: framed content with zero frame length must be rejected"
+            matches!(err.kind, ErrorKind::SerializationError),
+            "{version:?}: expected SerializationError, got {:?}", err.kind
         );
     }
 }

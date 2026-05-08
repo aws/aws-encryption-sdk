@@ -13,6 +13,8 @@ pub(crate) fn read_esdk_suite_id(
     r: &mut dyn SafeRead,
     raw: &mut dyn SafeWrite,
 ) -> Result<&'static AlgorithmSuite, Error> {
+    //= spec/data-format/message-header.md#algorithm-suite-id
+    //# The length of the serialized algorithm suite ID field MUST be 2 bytes.
     let mut esdk_suite_id_bytes = [0; 2];
     read_bytes(r, &mut esdk_suite_id_bytes, raw)?;
 
@@ -34,12 +36,16 @@ pub(crate) fn read_message_id_v1(
     r: &mut dyn SafeRead,
     raw: &mut dyn SafeWrite,
 ) -> Result<MessageId, Error> {
+    //= spec/data-format/message-header.md#message-id
+    //# The length of the serialized message ID MUST be 16 bytes for [version 1.0](#header-body-version-10) headers.
     read_vec(r, MESSAGE_ID_LEN_V1, raw)
 }
 pub(crate) fn read_message_id_v2(
     r: &mut dyn SafeRead,
     raw: &mut dyn SafeWrite,
 ) -> Result<MessageId, Error> {
+    //= spec/data-format/message-header.md#message-id
+    //# The length of the serialized message ID MUST be 32 bytes for [version 2.0](#header-body-version-20) headers.
     read_vec(r, MESSAGE_ID_LEN_V2, raw)
 }
 
@@ -47,6 +53,8 @@ pub(crate) fn write_esdk_suite_id(
     w: &mut dyn SafeWrite,
     suite: &AlgorithmSuite,
 ) -> Result<(), Error> {
+    //= spec/data-format/message-header.md#algorithm-suite-id
+    //# The length of the serialized algorithm suite ID field MUST be 2 bytes.
     write_bytes(w, &suite.binary_id[..])
 }
 
