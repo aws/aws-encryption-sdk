@@ -68,7 +68,6 @@ impl ProtectionNeeded {
 //# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
 //
 //= spec/client-apis/decrypt.md#security-considerations
-//= type=implication
 //= reason=decrypt_stream returns DecryptStreamOutput only on Ok; any error aborts and the caller is responsible for not trusting plaintext released via SafeWrite. Signature verification (step 5) runs before Ok is returned, so successful completion implies the plaintext is signed-data-valid.
 //# If this operation is [streaming](streaming.md) output to the caller
 //# and is decrypting messages created with an algorithm suite including a signature algorithm,
@@ -76,20 +75,17 @@ impl ProtectionNeeded {
 //# successfully.
 //
 //= spec/client-apis/decrypt.md#verify-the-header
-//= type=implication
 //= reason=decrypt_stream only returns Ok after step_verify_signature succeeds; before that, any plaintext released to SafeWrite is unverified-signed-data by contract.
 //# However, if the streamed Decrypt operation is using an algorithm suite with a signature algorithm
 //# all released output MUST NOT be considered signed data until
 //# this operation successfully completes.
 //
 //= spec/client-apis/decrypt.md#security-considerations
-//= type=implication
 //= reason=This is a caller obligation documented in the operation's contract; the API returns Ok only when processing is complete and callers MUST NOT treat streamed bytes as final until then.
 //# This means that callers that process such released plaintext MUST NOT consider any processing successful
 //# until this operation completes successfully.
 //
 //= spec/client-apis/decrypt.md#security-considerations
-//= type=implication
 //= reason=Caller obligation on failure; decrypt_stream returns Err on any failure and does not finalize the plaintext, so callers are contractually bound to discard released bytes.
 //# Additionally, if this operation fails, callers MUST discard the released plaintext and encryption context
 //# and MUST rollback any processing done due to the released plaintext or encryption context.
@@ -202,12 +198,10 @@ struct DecryptState {
 
 #[expect(clippy::too_many_arguments)]
 //= spec/client-apis/decrypt.md#behavior
-//= type=implication
 //= reason=Output is written to the `plaintext` SafeWrite only: (a) inside step_decrypt_body for intermediate frames (gated by ProtectionNeeded for signed multi-frame), and (b) for the last frame via serialize_functions::write_bytes after step_verify_signature succeeds. The returned DecryptStreamOutput is only produced on the Ok path at the end of the function.
 //# - Output MUST NOT be released until otherwise indicated.
 //
 //= spec/client-apis/decrypt.md#behavior
-//= type=implication
 //= reason=Every step call propagates errors via `?`; any failure to parse, verify, or decrypt causes internal_decrypt to return Err, halting the operation and indicating failure to the caller.
 //# - If all bytes have been provided and this operation
 //# is unable to complete the above steps with the consumable encrypted message bytes,

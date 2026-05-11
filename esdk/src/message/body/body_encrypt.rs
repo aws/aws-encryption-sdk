@@ -84,11 +84,6 @@ pub(crate) fn construct_frame(
     //
     //= spec/data-format/message-body.md#final-frame-iv
     //# A generated IV MUST be a unique IV within the message.
-    //
-    //= spec/data-format/message-header.md#iv-length
-    //= reason=iv length is determined by get_iv_length from the header's algorithm suite
-    //# This value MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the
-    //# [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
     iv_seq(input.sequence_number, iv);
 
     //= spec/data-format/message-body.md#final-frame
@@ -124,6 +119,7 @@ pub(crate) fn construct_frame(
     //
     //= spec/client-apis/encrypt.md#construct-a-frame
     //# - MUST serialize the [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number).
+    //# The value MUST be the sequence number of this frame.
     //
     //= spec/data-format/message-body.md#regular-frame-sequence-number
     //# The sequence number MUST be interpreted as a UInt32.
@@ -374,8 +370,6 @@ pub(crate) fn encrypt_and_serialize_body(
                 message_id: header.body.message_id(),
                 aad_content: BodyAADContent::RegularFrame,
                 sequence_number,
-                //= spec/client-apis/encrypt.md#construct-a-frame
-                //# Regular frame serialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
                 is_final: false,
             },
             &mut iv,
@@ -447,8 +441,6 @@ pub(crate) fn encrypt_and_serialize_body(
             //= spec/data-format/message-body.md#final-frame-sequence-number
             //# The Final Frame Sequence number MUST be equal to the total number of frames in the Framed Data.
             sequence_number,
-            //= spec/client-apis/encrypt.md#construct-a-frame
-            //# Final frame serialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
             is_final: true,
         },
         &mut iv,

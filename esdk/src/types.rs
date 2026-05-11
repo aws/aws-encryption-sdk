@@ -46,7 +46,6 @@ impl Eq for MaterialSource {}
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// The length of one frame, must be non-zero, defaults to 4096.
 //= spec/data-format/message-body.md#framed-data
-//= type=implication
 //= reason=Max value of a U32 is 2^32 - 1; enforced by construction
 //# - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
 #[expect(clippy::exhaustive_structs)]
@@ -100,38 +99,31 @@ pub fn mpl() -> aws_mpl_legacy::dafny::client::Client {
 
 /// Output Stream
 //= spec/client-apis/streaming.md#outputs
-//= type=implication
 //# In order to support streaming, the operation MUST produce some output within a streaming framework.
 //
 //= spec/client-apis/streaming.md#outputs
-//= type=implication
 //= reason=SafeWrite wraps std::io::Write; write() pushes bytes to the consumer immediately
 //# - There MUST be a mechanism for output bytes to be released.
 pub trait SafeWrite: std::io::Write + Send + Sync + std::fmt::Debug {}
 //= spec/client-apis/streaming.md#outputs
-//= type=implication
 //= reason=SafeWrite wraps std::io::Write; the operation returning Ok(()) signals that all output has been written
 //# - There MUST be a mechanism to indicate that the entire output has been released.
 impl<T: std::io::Write + Send + Sync + std::fmt::Debug> SafeWrite for T {}
 
 /// Input Stream
 //= spec/client-apis/streaming.md#inputs
-//= type=implication
 //# In order to support streaming, the operation MUST accept some input within a streaming framework.
 //
 //= spec/client-apis/streaming.md#inputs
-//= type=implication
 //= reason=SafeRead wraps std::io::Read; read() returns bytes as they become available
 //# - There MUST be a mechanism for input bytes to become consumable.
 pub trait SafeRead: std::io::Read + Send + Sync + std::fmt::Debug {}
 //= spec/client-apis/streaming.md#overview
-//= type=implication
 //= reason=SafeRead wraps std::io::Read, enabling incremental consumption; the implementation does not require holding the entire input in memory
 //# If an implementation requires holding the entire input in memory in order to perform the operation,
 //# that implementation SHOULD NOT provide an API that allows the caller to stream the operation.
 //
 //= spec/client-apis/streaming.md#inputs
-//= type=implication
 //= reason=SafeRead wraps std::io::Read; read() returning Ok(0) signals EOF
 //# - There MUST be a mechanism to indicate that there are no more input bytes.
 impl<T: std::io::Read + Send + Sync + std::fmt::Debug> SafeRead for T {}
@@ -199,7 +191,6 @@ pub struct DecryptOutput {
     pub encryption_context: EncryptionContext,
     /// Decrypted plaintext data
     //= spec/client-apis/decrypt.md#plaintext
-    //= type=implication
     //# This MUST be a sequence of bytes.
     pub plaintext: Vec<u8>,
 }
@@ -238,13 +229,11 @@ impl ::std::fmt::Display for NetV400RetryPolicy {
 #[non_exhaustive]
 /// Input for [`encrypt`](crate::encrypt).
 //= spec/client-apis/encrypt.md#input
-//= type=implication
 //= reason=EncryptInput has plaintext: &[u8] (always known length) and no plaintext_length_bound field, so a caller cannot specify both
 //# Implementations SHOULD ensure that a caller is not able to specify both a [plaintext](#plaintext)
 //# with known length and a [Plaintext Length Bound](#plaintext-length-bound) by construction.
 //
 //= spec/client-apis/encrypt.md#input
-//= type=implication
 //= reason=EncryptInput has plaintext: &[u8] (always known length) and no plaintext_length_bound field, making it impossible to specify both
 //# If a caller is able to specify both an input [plaintext](#plaintext) with known length and
 //# a [Plaintext Length Bound](#plaintext-length-bound),
@@ -268,7 +257,6 @@ pub struct EncryptInput<'a> {
     //# - Encrypt operation input MUST accept an optional [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
     //
     //= spec/client-apis/encrypt.md#input
-    //= type=implication
     //= reason=source is Option<MaterialSource>, making CMM/keyring optional by construction
     //# - Encrypt operation input MUST accept an optional [keyring](../framework/keyring-interface.md) argument.
     pub source: Option<MaterialSource>,
@@ -277,7 +265,6 @@ pub struct EncryptInput<'a> {
     //# - Encrypt operation input MUST accept a required [plaintext](#plaintext) argument.
     //
     //= spec/client-apis/encrypt.md#plaintext
-    //= type=implication
     //# This MUST be a sequence of bytes.
     pub plaintext: &'a [u8],
     /// Default is no limit
@@ -291,17 +278,14 @@ pub struct EncryptInput<'a> {
     pub max_encrypted_data_keys: Option<NonZeroUsize>,
     /// Default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
     //= spec/client-apis/client.md#commitment-policy
-    //= type=implication
     //= reason=commitment_policy field type is EsdkCommitmentPolicy from the Material Providers Library
     //# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
     //
     //= spec/client-apis/client.md#initialization
-    //= type=implication
     //= reason=EsdkCommitmentPolicy's Default impl returns RequireEncryptRequireDecrypt; EncryptInput uses #[derive(Default)]
     //# If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
     //
     //= spec/client-apis/client.md#initialization
-    //= type=implication
     //= reason=once the struct is consumed by encrypt()/decrypt(), the caller cannot mutate the policy
     //# Once a [commitment policy](#commitment-policy) has been set it SHOULD be immutable.
     //
@@ -397,7 +381,6 @@ pub struct EncryptStreamInput {
     /// The expected size of the input data stream.
     /// This is only important if you cmm or keyring care about such things, which most don't.
     //= spec/client-apis/encrypt.md#input
-    //= type=implication
     //= reason=EncryptStreamInput accepts unknown-length plaintext via a stream; data_size serves as the optional Plaintext Length Bound
     //# If the [plaintext](#plaintext) is of unknown length, the caller MAY also input a
     //# [Plaintext Length Bound](#plaintext-length-bound).

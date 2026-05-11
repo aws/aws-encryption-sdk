@@ -186,10 +186,6 @@ pub(crate) async fn get_modern_decryption_materials(
     let materials = cmm.decrypt_materials(&input).await?;
 
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
-    //# decrypt MUST yield an error.
-    //
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //# If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) decrypt MUST yield an error.
     aws_mpl_legacy::commitment::validate_commitment_policy_on_decrypt(
@@ -212,41 +208,17 @@ pub(crate) async fn get_legacy_decryption_materials(
 ) -> Result<DecryptionMaterials, Error> {
     let encryption_context = from_canonical_pairs(header_body.encryption_context().clone());
 
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
-    //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
-    //
-    //= spec/client-apis/decrypt.md#cryptographic-materials-manager
-    //# This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
-    //
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //# The call to the CMM's [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) operation
-    //# MUST be constructed as follows:
     let output = cmm
         .decrypt_materials()
 
-        //= spec/client-apis/decrypt.md#get-the-decryption-materials
-        //# - Algorithm Suite ID: This MUST be the parsed
-        //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
-        //# from the message header.
         .algorithm_suite_id(convert_alg(algorithm_suite_id)?)
 
-        //= spec/client-apis/decrypt.md#get-the-decryption-materials
-        //# - Commitment Policy: This MUST be the commitment policy configured on the client.
         .commitment_policy(convert_commit(commitment_policy)?)
 
-        //= spec/client-apis/decrypt.md#get-the-decryption-materials
-        //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header.md#encrypted-data-keys)
-        //# from the message header.
         .encrypted_data_keys(convert_edks(header_body.encrypted_data_keys())?)
 
-        //= spec/client-apis/decrypt.md#get-the-decryption-materials
-        //# - Encryption Context: This MUST be the parsed [encryption context](../data-format/message-header.md#aad)
-        //# from the message header.
         .encryption_context(encryption_context)
 
-        //= spec/client-apis/decrypt.md#get-the-decryption-materials
-        //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
         .reproduced_encryption_context(reproduced_encryption_context.clone())
         .send()
         .await?;
@@ -257,13 +229,6 @@ pub(crate) async fn get_legacy_decryption_materials(
     let return_materials = materials.clone();
     let mpl = mpl();
 
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
-    //# decrypt MUST yield an error.
-    //
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //# If the algorithm suite is not supported by the [commitment policy](client.md#commitment-policy)
-    //# configured in the [client](client.md) decrypt MUST yield an error.
     mpl.validate_commitment_policy_on_decrypt()
         .algorithm(
             materials
@@ -323,6 +288,10 @@ pub(crate) async fn get_modern_encryption_materials(
     //# this length MUST be used.
     //
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //# If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
+    //# was provided, this MUST be the [Plaintext Length Bound](#plaintext-length-bound).
+    //
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= reason=max_plaintext_length is Option; None means the field is not set on the input
     //# If no Plaintext Length Bound is provided, this field MUST NOT be included.
     input.max_plaintext_length = max_plaintext_length;
@@ -357,23 +326,11 @@ pub(crate) async fn get_legacy_encryption_materials(
     let output = cmm
         .get_encryption_materials()
 
-        //= spec/client-apis/encrypt.md#get-the-encryption-materials
-        //# Otherwise, this MUST be an empty encryption context.
         .encryption_context(encryption_context)
         .commitment_policy(convert_commit(commitment_policy)?)
 
-        //= spec/client-apis/encrypt.md#get-the-encryption-materials
-        //# If no Algorithm Suite is provided, this field MUST NOT be included.
         .set_algorithm_suite_id(algorithm_suite_id.map(convert_alg).transpose()?)
 
-        //= spec/client-apis/encrypt.md#get-the-encryption-materials
-        //= reason=The caller resolves known length vs Plaintext Length Bound before calling; this receives the resolved value
-        //# If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
-        //# was provided, this MUST be the [Plaintext Length Bound](#plaintext-length-bound).
-        //
-        //= spec/client-apis/encrypt.md#get-the-encryption-materials
-        //= reason=max_plaintext_length is Option; .set_ with None means the field is not set
-        //# If no Plaintext Length Bound is provided, this field MUST NOT be included.
         .set_max_plaintext_length(max_plaintext_length_i64)
         .send()
         .await?;
@@ -383,9 +340,6 @@ pub(crate) async fn get_legacy_encryption_materials(
         .ok_or_else(|| val_err("Legacy CMM did not return encryption materials"))?;
     let return_materials = materials.clone();
 
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //# If this [algorithm suite](../framework/algorithm-suites.md) is not supported by the [commitment policy](client.md#commitment-policy)
-    //# configured in the [client](client.md) encrypt MUST yield an error.
     mpl.validate_commitment_policy_on_encrypt()
         .algorithm(
             materials

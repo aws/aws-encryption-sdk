@@ -204,11 +204,6 @@ pub(crate) fn read_v1_header_body(
     //# IV Length,
     //# and Frame Length.
 
-    //= spec/client-apis/decrypt.md#v1-header-deserialization
-    //# If the value of the deserialized version field is [1.0](../data-format/message-header.md#supported-versions),
-    //# the remaining header fields MUST be deserialized according to the
-    //# [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
-
     // Type
 
     //= spec/client-apis/decrypt.md#v1-header-deserialization

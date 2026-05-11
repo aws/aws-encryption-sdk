@@ -526,11 +526,6 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     debug_assert_eq!(auth_tag.len(), get_tag_length(&header.suite) as usize);
     let mut aad = Vec::new();
 
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= reason=body_aad constructs the AAD per the message-body-aad spec
-    //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
-    //# constructed according to the [Message Body AAD](../data-format/message-body-aad.md) specification, as follows:
-    //
     //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
     //# constructed with:
@@ -543,12 +538,6 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
         //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
         //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST use the value for
         //# [nonframed data](../data-format/message-body-aad.md#body-aad-content).
-        //
-        //= spec/client-apis/decrypt.md#decrypt-the-message-body
-        //= reason=BodyAADContent::SingleBlock maps to the nonframed data value
-        //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be constructed
-        //# according to [Message Body AAD](../data-format/message-body-aad.md) depending on
-        //# whether the bytes being decrypted are a regular frame, final frame, or nonframed data.
         BodyAADContent::SingleBlock,
         //= spec/data-format/message-body-aad.md#sequence-number
         //# For [non-framed data](message-body.md#nonframed-data), the value of this field MUST be `1`.
@@ -588,17 +577,6 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
 
     let mut result: Vec<u8> = enc_content.clone();
 
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= reason=aes_decrypt is called with the algorithm suite's authenticated encryption algorithm
-    //# Once at least a single frame is deserialized (or the entire body in the nonframed case),
-    //# the Decrypt operation MUST decrypt and authenticate the frame (or body) using the
-    //# [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
-    //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= reason=The ? operator propagates the decryption error, halting the operation immediately
-    //# If this decryption fails, this operation MUST immediately halt and fail.
-    //
     //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //# If this decryption fails, this operation MUST immediately halt and fail.
     aes_decrypt(

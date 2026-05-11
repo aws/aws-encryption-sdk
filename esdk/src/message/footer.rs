@@ -15,11 +15,6 @@ pub(crate) fn write_footer(w: &mut dyn SafeWrite, signature: &[u8]) -> Result<()
     //= specification/client-apis/encrypt.md#construct-the-signature
     //# The order for message footer serialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
     //
-    //= specification/data-format/message-footer.md#structure
-    //# The message footer MUST consist of, in order,
-    //# Signature Length,
-    //# and Signature.
-    //
     //= spec/data-format/message-footer.md#structure
     //# The message footer MUST consist of, in order,
     //# Signature Length,
@@ -39,12 +34,6 @@ pub(crate) fn write_footer(w: &mut dyn SafeWrite, signature: &[u8]) -> Result<()
     //= specification/client-apis/encrypt.md#construct-the-signature
     //# - MUST serialize the [Signature Length](../data-format/message-footer.md#signature-length).
     //
-    //= specification/data-format/message-footer.md#signature-length
-    //# The length of the signature length field MUST be 2 bytes.
-    //
-    //= specification/data-format/message-footer.md#signature-length
-    //# The signature length value MUST be a UInt16.
-    //
     //= spec/data-format/message-footer.md#signature-length
     //# The length of the signature length field MUST be 2 bytes.
     //
@@ -59,10 +48,6 @@ pub(crate) fn write_footer(w: &mut dyn SafeWrite, signature: &[u8]) -> Result<()
     //
     //= specification/client-apis/encrypt.md#construct-the-signature
     //# The value MUST be the output of the signature calculation above.
-    //
-    //= specification/data-format/message-footer.md#signature
-    //= type=implication
-    //# The signature MUST be interpreted as bytes.
     //
     //= spec/data-format/message-footer.md#signature
     //= type=implication
@@ -80,11 +65,6 @@ pub(crate) fn read_footer(r: &mut dyn SafeRead, raw: &mut dyn SafeWrite) -> Resu
     //= spec/client-apis/decrypt.md#verify-the-signature
     //# The order for message footer deserialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
     //
-    //= specification/data-format/message-footer.md#structure
-    //# The message footer MUST consist of, in order,
-    //# Signature Length,
-    //# and Signature.
-    //
     //= spec/data-format/message-footer.md#structure
     //# The message footer MUST consist of, in order,
     //# Signature Length,
@@ -92,12 +72,6 @@ pub(crate) fn read_footer(r: &mut dyn SafeRead, raw: &mut dyn SafeWrite) -> Resu
 
     // Signature Length
 
-    //= specification/data-format/message-footer.md#signature-length
-    //# The length of the signature length field MUST be 2 bytes.
-    //
-    //= specification/data-format/message-footer.md#signature-length
-    //# The signature length value MUST be a UInt16.
-    //
     //= spec/data-format/message-footer.md#signature-length
     //# The length of the signature length field MUST be 2 bytes.
     //
@@ -107,10 +81,6 @@ pub(crate) fn read_footer(r: &mut dyn SafeRead, raw: &mut dyn SafeWrite) -> Resu
 
     // Signature
 
-    //= specification/data-format/message-footer.md#signature
-    //= type=implication
-    //# The signature MUST be interpreted as bytes.
-    //
     //= spec/data-format/message-footer.md#signature
     //= type=implication
     //# The signature MUST be interpreted as bytes.

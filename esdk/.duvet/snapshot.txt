@@ -4,13 +4,13 @@ SPECIFICATION: [Client](spec/client-apis/client.md)
     TEXT[!MUST,implementation,test]:   the caller MUST have the option to provide a [commitment policy](#commitment-policy).
     TEXT[!MUST,implementation,test]: - On client initialization,
     TEXT[!MUST,implementation,test]:   the caller MUST have the option to provide a [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys).
-    TEXT[!MUST,implication,test]: If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
+    TEXT[!MUST,implementation,test]: If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
     TEXT[!MUST,implementation,test]: If no [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys) is provided
     TEXT[!MUST,implementation,test]: the default MUST result in no limit on the number of encrypted data keys (aside from the limit imposed by the [message format](../format/message-header.md)).
-    TEXT[!SHOULD,implication,test]: Once a [commitment policy](#commitment-policy) has been set it SHOULD be immutable.
+    TEXT[!SHOULD,implementation,test]: Once a [commitment policy](#commitment-policy) has been set it SHOULD be immutable.
 
   SECTION: [Commitment Policy](#commitment-policy)
-    TEXT[!MUST,implication,test]: The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
+    TEXT[!MUST,implementation,test]: The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
 
   SECTION: [Encrypt](#encrypt)
     TEXT[!MUST,implementation,test]: The AWS Encryption SDK Client MUST provide an [encrypt](./encrypt.md#input) function
@@ -59,7 +59,7 @@ SPECIFICATION: [Decrypt](spec/client-apis/decrypt.md)
     TEXT[!SHOULD,exception]: - Decrypt operation output SHOULD include a [Parsed Header](#parsed-header) value.
 
   SECTION: [Plaintext](#plaintext)
-    TEXT[!MUST,implication,test]: This MUST be a sequence of bytes.
+    TEXT[!MUST,implementation,test]: This MUST be a sequence of bytes.
     TEXT[!MAY,implication]: This operation MAY [stream](streaming.md) the plaintext as output.
     TEXT[!SHOULD,implication]: If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
     TEXT[!SHOULD,implication]: that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
@@ -84,10 +84,10 @@ SPECIFICATION: [Decrypt](spec/client-apis/decrypt.md)
     TEXT[!MUST,implementation,test]:     the Decrypt operation MUST NOT perform this step.
     TEXT[!MUST,implementation,test]: If the input encrypted message is not being [streamed](streaming.md) to this operation,
     TEXT[!MUST,implementation,test]: all output MUST NOT be released until after these steps complete successfully.
-    TEXT[!MUST,implication,test]: - Output MUST NOT be released until otherwise indicated.
-    TEXT[!MUST,implication,test]: - If all bytes have been provided and this operation
-    TEXT[!MUST,implication,test]:   is unable to complete the above steps with the consumable encrypted message bytes,
-    TEXT[!MUST,implication,test]:   this operation MUST halt and indicate a failure to the caller.
+    TEXT[!MUST,implementation,test]: - Output MUST NOT be released until otherwise indicated.
+    TEXT[!MUST,implementation,test]: - If all bytes have been provided and this operation
+    TEXT[!MUST,implementation,test]:   is unable to complete the above steps with the consumable encrypted message bytes,
+    TEXT[!MUST,implementation,test]:   this operation MUST halt and indicate a failure to the caller.
     TEXT[!MUST,implementation,test,exception]: - If this operation successfully completes the above steps
     TEXT[!MUST,implementation,test,exception]:   but there are consumable bytes which are intended to be decrypted,
     TEXT[!MUST,implementation,test,exception]:   this operation MUST fail.
@@ -216,9 +216,9 @@ SPECIFICATION: [Decrypt](spec/client-apis/decrypt.md)
     TEXT[!SHOULD,implementation,test]:   [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id),
     TEXT[!SHOULD,implementation,test]:   and [other header information](#parsed-header)
     TEXT[!SHOULD,implementation,test]:   as soon as tag verification succeeds.
-    TEXT[!MUST,implication,test]:   However, if the streamed Decrypt operation is using an algorithm suite with a signature algorithm
-    TEXT[!MUST,implication,test]:   all released output MUST NOT be considered signed data until
-    TEXT[!MUST,implication,test]:   this operation successfully completes.
+    TEXT[!MUST,implementation,test]:   However, if the streamed Decrypt operation is using an algorithm suite with a signature algorithm
+    TEXT[!MUST,implementation,test]:   all released output MUST NOT be considered signed data until
+    TEXT[!MUST,implementation,test]:   this operation successfully completes.
     TEXT[!SHOULD,implementation,test]: - The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
     TEXT[!SHOULD,implementation,test]:   such that the serialized header isn't required to remain in memory to [verify the signature](#verify-the-signature).
 
@@ -325,14 +325,14 @@ SPECIFICATION: [Decrypt](spec/client-apis/decrypt.md)
     TEXT[!MUST,implementation,test]: If this verification is not successful, this operation MUST immediately halt and fail.
 
   SECTION: [Security Considerations](#security-considerations)
-    TEXT[!MUST,implication,test]: If this operation is [streaming](streaming.md) output to the caller
-    TEXT[!MUST,implication,test]: and is decrypting messages created with an algorithm suite including a signature algorithm,
-    TEXT[!MUST,implication,test]: any released plaintext MUST NOT be considered signed data until this operation finishes
-    TEXT[!MUST,implication,test]: successfully.
-    TEXT[!MUST,implication,test]: This means that callers that process such released plaintext MUST NOT consider any processing successful
-    TEXT[!MUST,implication,test]: until this operation completes successfully.
-    TEXT[!MUST,implication,test]: Additionally, if this operation fails, callers MUST discard the released plaintext and encryption context
-    TEXT[!MUST,implication,test]: and MUST rollback any processing done due to the released plaintext or encryption context.
+    TEXT[!MUST,implementation,test]: If this operation is [streaming](streaming.md) output to the caller
+    TEXT[!MUST,implementation,test]: and is decrypting messages created with an algorithm suite including a signature algorithm,
+    TEXT[!MUST,implementation,test]: any released plaintext MUST NOT be considered signed data until this operation finishes
+    TEXT[!MUST,implementation,test]: successfully.
+    TEXT[!MUST,implementation,test]: This means that callers that process such released plaintext MUST NOT consider any processing successful
+    TEXT[!MUST,implementation,test]: until this operation completes successfully.
+    TEXT[!MUST,implementation,test]: Additionally, if this operation fails, callers MUST discard the released plaintext and encryption context
+    TEXT[!MUST,implementation,test]: and MUST rollback any processing done due to the released plaintext or encryption context.
 
   SECTION: [Nonframed Message Body Decryption](#nonframed-message-body-decryption)
     TEXT[!MUST,implementation,test]: Nonframed data deserialization MUST conform to the [Nonframed Data](../data-format/message-body.md#nonframed-data) specification.
@@ -357,23 +357,23 @@ SPECIFICATION: [Encrypt](spec/client-apis/encrypt.md)
   SECTION: [Input](#input)
     TEXT[!MUST,implementation,test]: - Encrypt operation input MUST accept a required [plaintext](#plaintext) argument.
     TEXT[!MUST,implementation,test]: - Encrypt operation input MUST accept an optional [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
-    TEXT[!MUST,implication,test]: - Encrypt operation input MUST accept an optional [keyring](../framework/keyring-interface.md) argument.
+    TEXT[!MUST,implementation,test]: - Encrypt operation input MUST accept an optional [keyring](../framework/keyring-interface.md) argument.
     TEXT[!MUST,implementation,test]:   The Encrypt operation MUST validate that exactly one keyring or CMM was provided by the caller.
     TEXT[!MUST,implementation,test]:   If the caller does not provide exactly one of a keyring or CMM, the Encrypt operation MUST fail.
     TEXT[!MUST,implementation,test]: - Encrypt operation input MUST accept an optional [Algorithm Suite](#algorithm-suite) argument.
     TEXT[!MUST,implementation,test]: - Encrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
     TEXT[!MUST,implementation,test]: - Encrypt operation input MUST accept an optional [Frame Length](#frame-length) argument.
-    TEXT[!MAY,implication]: If the [plaintext](#plaintext) is of unknown length, the caller MAY also input a
-    TEXT[!MAY,implication]: [Plaintext Length Bound](#plaintext-length-bound).
-    TEXT[!SHOULD,implication,test]: Implementations SHOULD ensure that a caller is not able to specify both a [plaintext](#plaintext)
-    TEXT[!SHOULD,implication,test]: with known length and a [Plaintext Length Bound](#plaintext-length-bound) by construction.
-    TEXT[!MUST,implication,test]: If a caller is able to specify both an input [plaintext](#plaintext) with known length and
-    TEXT[!MUST,implication,test]: a [Plaintext Length Bound](#plaintext-length-bound),
-    TEXT[!MUST,implication,test]: the [Plaintext Length Bound](#plaintext-length-bound) MUST NOT be used during the Encrypt operation
-    TEXT[!MUST,implication,test]: and MUST be ignored.
+    TEXT[!MAY,implementation]: If the [plaintext](#plaintext) is of unknown length, the caller MAY also input a
+    TEXT[!MAY,implementation]: [Plaintext Length Bound](#plaintext-length-bound).
+    TEXT[!SHOULD,implementation,test]: Implementations SHOULD ensure that a caller is not able to specify both a [plaintext](#plaintext)
+    TEXT[!SHOULD,implementation,test]: with known length and a [Plaintext Length Bound](#plaintext-length-bound) by construction.
+    TEXT[!MUST,implementation,test]: If a caller is able to specify both an input [plaintext](#plaintext) with known length and
+    TEXT[!MUST,implementation,test]: a [Plaintext Length Bound](#plaintext-length-bound),
+    TEXT[!MUST,implementation,test]: the [Plaintext Length Bound](#plaintext-length-bound) MUST NOT be used during the Encrypt operation
+    TEXT[!MUST,implementation,test]: and MUST be ignored.
 
   SECTION: [Plaintext](#plaintext)
-    TEXT[!MUST,implication,test]: This MUST be a sequence of bytes.
+    TEXT[!MUST,implementation,test]: This MUST be a sequence of bytes.
     TEXT[!MAY,implementation,test]: This input MAY be [streamed](streaming.md) to this operation.
     TEXT[!SHOULD,implementation,test]: If an implementation requires holding the input entire plaintext in memory in order to perform this operation,
     TEXT[!SHOULD,implementation,test]: that implementation SHOULD NOT provide an API that allows this input to be streamed.
@@ -535,8 +535,8 @@ SPECIFICATION: [Encrypt](spec/client-apis/encrypt.md)
     TEXT[!MUST,implementation,test]:   The value MUST be [02](../data-format/message-header.md#supported-content-types).
     TEXT[!MUST,implementation,test]: - MUST serialize the [Reserved](../data-format/message-header.md#reserved).
     TEXT[!MUST,implementation,test]: - MUST serialize the [IV Length](../data-format/message-header.md#iv-length).
-    TEXT[!MUST,implementation,test]:   The value MUST match the [IV length](../framework/algorithm-suites.md#iv-length)
-    TEXT[!MUST,implementation,test]:   specified by the [algorithm suite](../framework/algorithm-suites.md).
+    TEXT[!MUST,test]:   The value MUST match the [IV length](../framework/algorithm-suites.md#iv-length)
+    TEXT[!MUST,test]:   specified by the [algorithm suite](../framework/algorithm-suites.md).
     TEXT[!MUST,implementation,test]: - MUST serialize the [Frame Length](../data-format/message-header.md#frame-length).
     TEXT[!MUST,implementation,test]:   The value MUST be the value of the frame size determined above.
     TEXT[!MUST,implementation,test]: The serialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification.
@@ -701,20 +701,20 @@ SPECIFICATION: [Streaming](spec/client-apis/streaming.md)
   SECTION: [Overview](#overview)
     TEXT[!MAY,implementation,test]: The AWS Encryption SDK MAY provide APIs that enable streamed [encryption](encrypt.md)
     TEXT[!MAY,implementation,test]: and [decryption](decrypt.md).
-    TEXT[!SHOULD,implication,test]: If an implementation requires holding the entire input in memory in order to perform the operation,
-    TEXT[!SHOULD,implication,test]: that implementation SHOULD NOT provide an API that allows the caller to stream the operation.
+    TEXT[!SHOULD,implementation,test]: If an implementation requires holding the entire input in memory in order to perform the operation,
+    TEXT[!SHOULD,implementation,test]: that implementation SHOULD NOT provide an API that allows the caller to stream the operation.
     TEXT[!SHOULD,implementation,test]: APIs that support streaming of the encrypt or decrypt operation SHOULD allow customers
     TEXT[!SHOULD,implementation,test]: to be able to process arbitrarily large inputs with a finite amount of working memory.
 
   SECTION: [Inputs](#inputs)
-    TEXT[!MUST,implication,test]: In order to support streaming, the operation MUST accept some input within a streaming framework.
-    TEXT[!MUST,implication,test]: - There MUST be a mechanism for input bytes to become consumable.
-    TEXT[!MUST,implication,test]: - There MUST be a mechanism to indicate that there are no more input bytes.
+    TEXT[!MUST,implementation,test]: In order to support streaming, the operation MUST accept some input within a streaming framework.
+    TEXT[!MUST,implementation,test]: - There MUST be a mechanism for input bytes to become consumable.
+    TEXT[!MUST,implementation,test]: - There MUST be a mechanism to indicate that there are no more input bytes.
 
   SECTION: [Outputs](#outputs)
-    TEXT[!MUST,implication,test]: In order to support streaming, the operation MUST produce some output within a streaming framework.
-    TEXT[!MUST,implication,test]: - There MUST be a mechanism for output bytes to be released.
-    TEXT[!MUST,implication,test]: - There MUST be a mechanism to indicate that the entire output has been released.
+    TEXT[!MUST,implementation,test]: In order to support streaming, the operation MUST produce some output within a streaming framework.
+    TEXT[!MUST,implementation,test]: - There MUST be a mechanism for output bytes to be released.
+    TEXT[!MUST,implementation,test]: - There MUST be a mechanism to indicate that the entire output has been released.
     TEXT[!MUST,implementation,test]: Operations MUST NOT indicate completion or success until an end to the output has been indicated.
 
 SPECIFICATION: [Message Body AAD](spec/data-format/message-body-aad.md)
@@ -782,7 +782,7 @@ SPECIFICATION: [Message Body](spec/data-format/message-body.md)
     TEXT[!MUST,implementation,test]: The authentication tag value MUST be interpreted as bytes.
 
   SECTION: [Framed Data](#framed-data)
-    TEXT[!MUST,implication,test]: - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
+    TEXT[!MUST,implementation,test]: - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
     TEXT[!MUST,implementation,test]: - The number of frames in a single message MUST be less than or equal to `2^32 - 1`.
 
   SECTION: [Regular Frame](#regular-frame)
@@ -1085,17 +1085,5 @@ SPECIFICATION: [Encrypt](specification/client-apis/encrypt.md)
 
 SPECIFICATION: [Footer Structure](specification/data-format/message-footer.md)
   SECTION: [Overview](#overview)
-    TEXT[implementation,test]: When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
-    TEXT[implementation,test]: the [message](message.md) MUST contain a footer.
-
-  SECTION: [Structure](#structure)
-    TEXT[implementation,test]: The message footer MUST consist of, in order,
-    TEXT[implementation,test]: Signature Length,
-    TEXT[implementation,test]: and Signature.
-
-  SECTION: [Signature Length](#signature-length)
-    TEXT[implementation,test]: The length of the signature length field MUST be 2 bytes.
-    TEXT[implementation,test]: The signature length value MUST be a UInt16.
-
-  SECTION: [Signature](#signature)
-    TEXT[implication]: The signature MUST be interpreted as bytes.
+    TEXT[implementation]: When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
+    TEXT[implementation]: the [message](message.md) MUST contain a footer.
