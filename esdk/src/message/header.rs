@@ -189,32 +189,35 @@ pub(crate) fn validate_suite_data(
 }
 
 /// Write the message header (body + auth tag) to the output stream.
+///
+/// Header bytes are streamed directly to both the ciphertext output and the
+/// signature digest without buffering, so the serialized header is not
+/// required to remain in memory for later signature construction.
 pub(crate) fn write_header(
     header: &HeaderInfo,
     ciphertext: &mut dyn SafeWrite,
     sig_digest: &mut DigestWriter,
 ) -> Result<(), Error> {
-    let mut header_buf = Vec::new();
-
     //= spec/data-format/message-header.md#structure
     //# The header MUST consist of, in order,
     //# Header Body,
     //# and Header Authentication.
 
-    // Header Body
-
-    serialize_functions::write_bytes(&mut header_buf, &header.raw_header)?;
-
-    // Header Authentication
-
-    header_auth::write_header_auth_tag(&mut header_buf, &header.header_auth, &header.suite)?;
-    serialize_functions::write_bytes(ciphertext, &header_buf)?;
+    // Header Body — stream directly to both outputs.
 
     //= spec/client-apis/encrypt.md#authentication-tag
     //# If the algorithm suite contains a signature algorithm and
     //# this operation is [streaming](streaming.md) the encrypted message output to the caller,
     //# this operation MUST input the serialized header to the signature algorithm as soon as it is serialized,
     //# such that the serialized header isn't required to remain in memory to [construct the signature](#construct-the-signature).
-    serialize_functions::write_bytes(sig_digest, &header_buf)?;
+    serialize_functions::write_bytes(ciphertext, &header.raw_header)?;
+    serialize_functions::write_bytes(sig_digest, &header.raw_header)?;
+
+    // Header Authentication — stream directly to both outputs.
+
+    let mut auth_buf = Vec::new();
+    header_auth::write_header_auth_tag(&mut auth_buf, &header.header_auth, &header.suite)?;
+    serialize_functions::write_bytes(ciphertext, &auth_buf)?;
+    serialize_functions::write_bytes(sig_digest, &auth_buf)?;
     Ok(())
 }
