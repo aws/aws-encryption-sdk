@@ -4,6 +4,13 @@ name: PR CI
 on:
   pull_request:
 
+# Concurrency control helps free up runners faster and speed up development.
+# When new commits are pushed in PR, the previous workflow run is cancelled.
+# If you want to not cancel previous workflow then remove this in you PR temporarily. Before merging to main add it back.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   id-token: write
   contents: read
