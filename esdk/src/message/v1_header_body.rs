@@ -159,9 +159,6 @@ pub(crate) fn read_v1_reserved_bytes(
 ) -> Result<(), Error> {
     let mut result = [0; RESERVED_BYTES.len()];
     read_bytes(r, &mut result, raw)?;
-    //= spec/data-format/message-header.md#reserved
-    //# A reserved sequence of 4 bytes
-    //# that MUST have the value (hex) of `00 00 00 00`.
     if result == RESERVED_BYTES {
         Ok(())
     } else {

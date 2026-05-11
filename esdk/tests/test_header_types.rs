@@ -108,6 +108,7 @@ async fn test_content_type_invalid_value_rejected() {
         let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone());
         //= spec/data-format/message-header.md#content-type
         //= type=test
+        //= reason=Tampering a single byte at the content type offset changes the parsed value, proving the field is 1 byte.
         //# The length of the serialized content type field MUST be 1 byte.
         //
         //= spec/data-format/message-header.md#supported-content-types
@@ -154,6 +155,7 @@ async fn test_unsupported_type_rejected_v1() {
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     //= spec/data-format/message-header.md#supported-types
     //= type=test
+    //= reason=Tampering the type byte at offset 1 to an unsupported value proves the field is validated and only the specified types are accepted.
     //# The supported types MUST be:
     let err = decrypt(&dec_input).await.unwrap_err();
     assert!(matches!(err.kind, ErrorKind::SerializationError), "expected SerializationError, got {:?}", err.kind);

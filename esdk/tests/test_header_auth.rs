@@ -128,12 +128,6 @@ async fn test_v2_header_auth_structure() {
     //= type=test
     //= reason=Validated on decrypt. If this weren't the auth tag, decrypt would fail.
     //# The value MUST be the authentication tag calculated above.
-    //
-    //= spec/client-apis/decrypt.md#verify-the-header
-    //= type=test
-    //= reason=Successful round-trip decrypt proves the IV used for V2 header verification was 0.
-    //# For message format version [2.0](../data-format/message-header.md#supported-versions)
-    //# the IV MUST be 0.
     let result = decrypt_ciphertext(&ct).await;
     assert_eq!(result.plaintext, b"v2 header auth structure", "V2 round-trip must succeed");
 }

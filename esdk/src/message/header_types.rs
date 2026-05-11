@@ -1,5 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+
 //! Type definitions for message header fields.
 
 use super::serializable_types::ESDKCanonicalEncryptionContext;
@@ -66,6 +67,8 @@ pub(crate) enum MessageType {
 }
 
 pub(crate) fn write_msg_type(w: &mut dyn SafeWrite, data: MessageType) -> Result<(), Error> {
+    //= spec/data-format/message-header.md#type
+    //# The length of the serialized type field MUST be 1 byte.
     write_u8(w, data as u8)
 }
 
@@ -73,10 +76,10 @@ pub(crate) fn read_msg_type(
     r: &mut dyn SafeRead,
     raw: &mut dyn SafeWrite,
 ) -> Result<MessageType, Error> {
-    let msg_type = read_u8(r, raw)?;
     //= spec/data-format/message-header.md#type
     //# The length of the serialized type field MUST be 1 byte.
-    //
+    let msg_type = read_u8(r, raw)?;
+
     //= spec/client-apis/decrypt.md#v1-header-deserialization
     //# The value MUST be a [supported type](../data-format/message-header.md#supported-types).
     match msg_type {
@@ -95,6 +98,8 @@ pub(crate) enum ContentType {
 }
 
 pub(crate) fn write_content_type(w: &mut dyn SafeWrite, data: ContentType) -> Result<(), Error> {
+    //= spec/data-format/message-header.md#content-type
+    //# The length of the serialized content type field MUST be 1 byte.
     write_u8(w, data as u8)
 }
 

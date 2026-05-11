@@ -170,6 +170,11 @@ pub(crate) fn read_header_auth_tag_v2(
     let tag_len = usize::from(get_tag_length(suite));
 
     let header_auth_tag = read_vec(r, tag_len, raw)?;
+    //= spec/client-apis/decrypt.md#verify-the-header
+    //= type=implication
+    //= reason=Cannot be tested externally because verifying the IV value requires the derived data key (not exposed by the public API). The literal `vec![0u8; ...]` here is the proof.
+    //# For message format version [2.0](../data-format/message-header.md#supported-versions)
+    //# the IV MUST be 0.
     let header_iv = vec![0u8; usize::from(get_iv_length(suite))];
     Ok(HeaderAuth::AESMac {
         header_iv,

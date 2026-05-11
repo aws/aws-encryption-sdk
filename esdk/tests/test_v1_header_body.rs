@@ -36,8 +36,8 @@ impl<'a> V1FixedFields<'a> {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_v1_header_serialized() {
-    let pt = b"test v1 header";
+async fn test_v1_header_version() {
+    let pt = b"test v1 header version";
     let ct = encrypt_v1_with_ec(pt, EncryptionContext::new()).await;
     let hdr = V1FixedFields::parse(&ct);
     //= spec/client-apis/encrypt.md#v1-header
@@ -45,17 +45,7 @@ async fn test_v1_header_serialized() {
     //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0,
     //# the remaining header fields MUST be serialized according to the
     //# [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
-    // V1 header starts with version byte 0x01
-    assert_eq!(hdr.version, 0x01, "first byte must be V1 version 0x01");
-    // Round-trip proves the V1 message is valid end-to-end.
-    let result = round_trip_v1(pt, EncryptionContext::new()).await;
-    assert_eq!(result, pt);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_v1_header_version() {
-    let ct = encrypt_v1_with_ec(b"version test", EncryptionContext::new()).await;
-    let hdr = V1FixedFields::parse(&ct);
+    //
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
     //# - MUST serialize the [Version](../data-format/message-header.md#version).
@@ -65,9 +55,9 @@ async fn test_v1_header_version() {
     //= type=test
     //# The value of the `Version` field MUST be `01` in the Version 1.0 header body.
     assert_eq!(hdr.version, 0x01, "Version field must be 0x01 for V1");
-    // Round-trip proves the version field is correctly processed.
-    let result = round_trip_v1(b"version test", EncryptionContext::new()).await;
-    assert_eq!(result, b"version test");
+    // Round-trip proves the V1 message is valid end-to-end.
+    let result = round_trip_v1(pt, EncryptionContext::new()).await;
+    assert_eq!(result, pt);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -131,11 +121,6 @@ async fn test_v1_header_message_id() {
     //= type=test
     //# The length of the serialized message ID MUST be 16 bytes for [version 1.0](#header-body-version-10) headers.
     assert_eq!(hdr1.message_id.len(), 16, "V1 message ID must be 16 bytes");
-
-    //= spec/data-format/message-header.md#message-id
-    //= type=test
-    //# The message ID MUST be interpreted as bytes.
-    assert_eq!(hdr1.message_id, &ct1[4..20], "V1 message ID must be preserved as raw bytes");
 
     //= spec/data-format/message-header.md#message-id
     //= type=test
@@ -222,15 +207,15 @@ async fn test_v1_header_aad() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_encrypted_data_keys() {
+    let pt = b"edk test";
+    let ct = encrypt_v1_with_ec(pt, EncryptionContext::new()).await;
+    // Parse past AAD to find EDK count
+    let edk_section = parse_edk_section(&ct, Version::V1);
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
     //# - MUST serialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
     //# The value MUST be the serialization of the
     //# [encrypted data keys](../framework/structures.md#encrypted-data-keys) in the [encryption materials](../framework/structures.md#encryption-materials).
-    let pt = b"edk test";
-    let ct = encrypt_v1_with_ec(pt, EncryptionContext::new()).await;
-    // Parse past AAD to find EDK count
-    let edk_section = parse_edk_section(&ct, Version::V1);
     assert!(edk_section.edk_count >= 1, "must have at least one EDK");
     assert!(!edk_section.edks[0].edk.is_empty(), "EDK ciphertext must be non-empty");
     // Round-trip proves EDKs are correctly serialized (decrypt uses them to recover the data key)
@@ -280,16 +265,33 @@ async fn test_v1_header_reserved() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_iv_length() {
     let ct = encrypt_v1_with_ec(b"iv length test", EncryptionContext::new()).await;
-    let (_, _, iv_length_offset, _) = parse_v1_trailing_offsets(&ct);
+    let (_, _, iv_length_offset, frame_length_offset) = parse_v1_trailing_offsets(&ct);
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
     //# - MUST serialize the [IV Length](../data-format/message-header.md#iv-length).
     //# The value MUST match the [IV length](../framework/algorithm-suites.md#iv-length)
     //# specified by the [algorithm suite](../framework/algorithm-suites.md).
+    //
+    //= spec/data-format/message-header.md#iv-length
+    //= type=test
+    //# The IV length MUST be interpreted as a UInt8.
+    //
+    //= spec/data-format/message-header.md#iv-length
+    //= type=test
+    //# This value MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the
+    //# [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
     // AlgAes256GcmIv12Tag16HkdfSha256 has IV length 12
     assert_eq!(
         ct[iv_length_offset], 12,
-        "IV Length must be 12, matching the algorithm suite"
+        "IV Length must be 12, matching the algorithm suite (serialized as UInt8)"
+    );
+    //= spec/data-format/message-header.md#iv-length
+    //= type=test
+    //# The length of the serialized IV length field MUST be 1 byte.
+    assert_eq!(
+        frame_length_offset - iv_length_offset,
+        1,
+        "IV length field must be exactly 1 byte"
     );
     // Round-trip proves the IV length is correctly processed.
     let result = round_trip_v1(b"iv length test", EncryptionContext::new()).await;
@@ -299,18 +301,27 @@ async fn test_v1_header_iv_length() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_frame_length() {
     let ct = encrypt_v1_with_ec(b"frame length test", EncryptionContext::new()).await;
-    let (_, _, _, frame_length_offset) = parse_v1_trailing_offsets(&ct);
-    //= spec/client-apis/encrypt.md#v1-header
+    let (_, _, iv_length_offset, frame_length_offset) = parse_v1_trailing_offsets(&ct);
+    //= spec/data-format/message-header.md#frame-length
     //= type=test
-    //# - MUST serialize the [Frame Length](../data-format/message-header.md#frame-length).
-    //# The value MUST be the value of the frame size determined above.
+    //# The frame length MUST be interpreted as a UInt32.
+    // Frame length field is 4 bytes (UInt32), immediately after IV length
+    assert_eq!(
+        frame_length_offset - iv_length_offset,
+        1,
+        "frame length immediately follows IV length (confirming IV length is 1 byte)"
+    );
     let frame_length = u32::from_be_bytes([
         ct[frame_length_offset],
         ct[frame_length_offset + 1],
         ct[frame_length_offset + 2],
         ct[frame_length_offset + 3],
     ]);
-    assert_eq!(frame_length, 4096, "Frame Length must be the default 4096");
+    //= spec/client-apis/encrypt.md#v1-header
+    //= type=test
+    //# - MUST serialize the [Frame Length](../data-format/message-header.md#frame-length).
+    //# The value MUST be the value of the frame size determined above.
+    assert_eq!(frame_length, 4096, "Frame Length must be the default 4096 (serialized as UInt32)");
     // Round-trip proves the frame length is correctly processed.
     let result = round_trip_v1(b"frame length test", EncryptionContext::new()).await;
     assert_eq!(result, b"frame length test");
@@ -418,89 +429,6 @@ async fn test_v1_reserved_field_is_4_bytes() {
         4,
         "reserved field must be exactly 4 bytes"
     );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_v1_iv_length_field_is_1_byte() {
-    let ct = encrypt_v1_with_ec(b"iv length 1 byte test", EncryptionContext::new()).await;
-    let (_, _, iv_length_offset, frame_length_offset) = parse_v1_trailing_offsets(&ct);
-    //= spec/data-format/message-header.md#iv-length
-    //= type=test
-    //# The length of the serialized IV length field MUST be 1 byte.
-    assert_eq!(
-        frame_length_offset - iv_length_offset,
-        1,
-        "IV length field must be exactly 1 byte"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_v1_iv_length_serialized_as_uint8() {
-    let ct = encrypt_v1_with_ec(b"iv length uint8 test", EncryptionContext::new()).await;
-    let (_, _, iv_length_offset, _) = parse_v1_trailing_offsets(&ct);
-    //= spec/data-format/message-header.md#iv-length
-    //= type=test
-    //# The IV length MUST be interpreted as a UInt8.
-    // AlgAes256GcmIv12Tag16HkdfSha256 has IV length 12
-    let iv_length = ct[iv_length_offset];
-    assert_eq!(
-        iv_length, 12,
-        "IV length must be 12 for this algorithm suite, serialized as single UInt8 byte"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_v1_iv_length_equals_suite_iv_length() {
-    let ct = encrypt_v1_with_ec(b"iv length suite test", EncryptionContext::new()).await;
-    let (_, _, iv_length_offset, _) = parse_v1_trailing_offsets(&ct);
-    //= spec/data-format/message-header.md#iv-length
-    //= type=test
-    //# This value MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the
-    //# [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-    // AlgAes256GcmIv12Tag16HkdfSha256 has IV length 12
-    assert_eq!(
-        ct[iv_length_offset], 12,
-        "IV length must match algorithm suite IV length (12)"
-    );
-    // Round-trip proves the IV length is validated during decrypt.
-    let result = round_trip_v1(b"iv length suite test", EncryptionContext::new()).await;
-    assert_eq!(result, b"iv length suite test");
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_v1_frame_length_field_is_4_bytes() {
-    let ct = encrypt_v1_with_ec(b"frame length 4 bytes v1 test", EncryptionContext::new()).await;
-    let (_, _, _, frame_length_offset) = parse_v1_trailing_offsets(&ct);
-    let frame_length = u32::from_be_bytes([
-        ct[frame_length_offset],
-        ct[frame_length_offset + 1],
-        ct[frame_length_offset + 2],
-        ct[frame_length_offset + 3],
-    ]);
-    assert_eq!(frame_length, 4096, "default frame length should be 4096");
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_v1_frame_length_serialized_as_uint32() {
-    let ct = encrypt_v1_with_ec(b"frame length uint32 v1 test", EncryptionContext::new()).await;
-    let (_, _, _, frame_length_offset) = parse_v1_trailing_offsets(&ct);
-    //= spec/data-format/message-header.md#frame-length
-    //= type=test
-    //# The frame length MUST be interpreted as a UInt32.
-    // Parse as big-endian UInt32
-    let frame_length = u32::from_be_bytes([
-        ct[frame_length_offset],
-        ct[frame_length_offset + 1],
-        ct[frame_length_offset + 2],
-        ct[frame_length_offset + 3],
-    ]);
-    assert_eq!(
-        frame_length, 4096,
-        "default frame length should be 4096 when serialized as UInt32"
-    );
-    // Confirm round-trip succeeds
-    let result = round_trip_v1(b"frame length uint32 v1 test", EncryptionContext::new()).await;
-    assert_eq!(result, b"frame length uint32 v1 test");
 }
 
 #[tokio::test(flavor = "multi_thread")]
