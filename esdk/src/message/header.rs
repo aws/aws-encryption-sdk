@@ -203,7 +203,7 @@ pub(crate) fn write_header(
     //# Header Body,
     //# and Header Authentication.
 
-    // Header Body — stream directly to both outputs.
+    // Header Body
 
     //= spec/client-apis/encrypt.md#authentication-tag
     //# If the algorithm suite contains a signature algorithm and
@@ -213,7 +213,7 @@ pub(crate) fn write_header(
     serialize_functions::write_bytes(ciphertext, &header.raw_header)?;
     serialize_functions::write_bytes(sig_digest, &header.raw_header)?;
 
-    // Header Authentication — stream directly to both outputs.
+    // Header Authentication
 
     let mut auth_buf = Vec::new();
     header_auth::write_header_auth_tag(&mut auth_buf, &header.header_auth, &header.suite)?;
