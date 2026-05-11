@@ -207,14 +207,6 @@ pub(crate) fn write_header(
 
     // Header Authentication
 
-    //= spec/client-apis/encrypt.md#authentication-tag
-    //# After serializing the message header body,
-    //# this operation MUST calculate an [authentication tag](../data-format/message-header.md#authentication-tag)
-    //# over the message header body.
-    //
-    //= spec/client-apis/encrypt.md#authentication-tag
-    //# The value of this MUST be the output of the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
-    //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
     header_auth::write_header_auth_tag(&mut header_buf, &header.header_auth, &header.suite)?;
     serialize_functions::write_bytes(ciphertext, &header_buf)?;
 

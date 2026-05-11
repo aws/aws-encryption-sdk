@@ -139,11 +139,6 @@ pub(crate) fn read_v2_header_body(
     //# Frame Length,
     //# and Algorithm Suite Data.
 
-    //= spec/client-apis/decrypt.md#v2-header-deserialization
-    //# If the value of the deserialized version field is [2.0](../data-format/message-header.md#supported-versions),
-    //# the remaining header fields MUST be deserialized according to the
-    //# [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
-
     // Algorithm Suite ID
 
     //= spec/client-apis/decrypt.md#v2-header-deserialization

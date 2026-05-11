@@ -10,21 +10,52 @@ mod test_helpers;
 use aws_esdk::*;
 use test_helpers::*;
 
+/// V1 header fixed-offset fields.
+/// Layout: Version(1) | Type(1) | AlgSuiteID(2) | MessageID(16) | AAD(variable) | ...
+struct V1FixedFields<'a> {
+    /// Version byte at offset 0.
+    version: u8,
+    /// Type byte at offset 1.
+    msg_type: u8,
+    /// Algorithm Suite ID (big-endian u16) at offset 2..4.
+    suite_id: u16,
+    /// Message ID (16 bytes) at offset 4..20.
+    message_id: &'a [u8],
+}
+
+impl<'a> V1FixedFields<'a> {
+    /// Parse the fixed-offset fields from a V1 ciphertext.
+    fn parse(ct: &'a [u8]) -> Self {
+        Self {
+            version: ct[0],
+            msg_type: ct[1],
+            suite_id: u16::from_be_bytes([ct[2], ct[3]]),
+            message_id: &ct[4..20],
+        }
+    }
+}
+
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_serialized() {
+    let pt = b"test v1 header";
+    let ct = encrypt_v1_with_ec(pt, EncryptionContext::new()).await;
+    let hdr = V1FixedFields::parse(&ct);
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
     //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0,
     //# the remaining header fields MUST be serialized according to the
     //# [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
-    let pt = b"test v1 header";
-    let ct = encrypt_v1_with_ec(pt, EncryptionContext::new()).await;
     // V1 header starts with version byte 0x01
-    assert_eq!(ct[0], 0x01, "first byte must be V1 version 0x01");
+    assert_eq!(hdr.version, 0x01, "first byte must be V1 version 0x01");
+    // Round-trip proves the V1 message is valid end-to-end.
+    let result = round_trip_v1(pt, EncryptionContext::new()).await;
+    assert_eq!(result, pt);
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_version() {
+    let ct = encrypt_v1_with_ec(b"version test", EncryptionContext::new()).await;
+    let hdr = V1FixedFields::parse(&ct);
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
     //# - MUST serialize the [Version](../data-format/message-header.md#version).
@@ -33,29 +64,36 @@ async fn test_v1_header_version() {
     //= spec/data-format/message-header.md#header-body-version-1-0
     //= type=test
     //# The value of the `Version` field MUST be `01` in the Version 1.0 header body.
-    let ct = encrypt_v1_with_ec(b"version test", EncryptionContext::new()).await;
-    assert_eq!(ct[0], 0x01, "Version field must be 0x01 for V1");
+    assert_eq!(hdr.version, 0x01, "Version field must be 0x01 for V1");
+    // Round-trip proves the version field is correctly processed.
+    let result = round_trip_v1(b"version test", EncryptionContext::new()).await;
+    assert_eq!(result, b"version test");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_type() {
+    let ct = encrypt_v1_with_ec(b"type test", EncryptionContext::new()).await;
+    let hdr = V1FixedFields::parse(&ct);
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
     //# - MUST serialize the [Type](../data-format/message-header.md#type).
     //# The value MUST correspond to [Customer Authenticated Encrypted Data](../data-format/message-header.md#supported-types).
-    let ct = encrypt_v1_with_ec(b"type test", EncryptionContext::new()).await;
-    // Type field is at offset 1, value 0x80 = Customer Authenticated Encrypted Data
-    assert_eq!(ct[1], 0x80, "Type field must be 0x80 (Customer AED)");
+    assert_eq!(hdr.msg_type, 0x80, "Type field must be 0x80 (Customer AED)");
+    // Round-trip proves the type field is correctly processed.
+    let result = round_trip_v1(b"type test", EncryptionContext::new()).await;
+    assert_eq!(result, b"type test");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_algorithm_suite_id() {
+    let ct = encrypt_v1_with_ec(b"suite test", EncryptionContext::new()).await;
+    let hdr = V1FixedFields::parse(&ct);
+
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
     //# - MUST serialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
     //# The value MUST correspond to the [algorithm suite](../framework/algorithm-suites.md) used in this behavior.
-    let ct = encrypt_v1_with_ec(b"suite test", EncryptionContext::new()).await;
-
+    //
     //= spec/data-format/message-header.md#algorithm-suite-id
     //= type=test
     //# The value (hex) of this field MUST be a value that exists in the
@@ -68,11 +106,13 @@ async fn test_v1_header_algorithm_suite_id() {
     //= spec/data-format/message-header.md#algorithm-suite-id
     //= type=test
     //# The length of the serialized algorithm suite ID field MUST be 2 bytes.
-    let suite_id = u16::from_be_bytes([ct[2], ct[3]]);
     assert_eq!(
-        suite_id, 0x0178,
+        hdr.suite_id, 0x0178,
         "Algorithm Suite ID must match the suite used"
     );
+    // Round-trip proves the algorithm suite ID is correctly processed.
+    let result = round_trip_v1(b"suite test", EncryptionContext::new()).await;
+    assert_eq!(result, b"suite test");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -84,26 +124,28 @@ async fn test_v1_header_message_id() {
     //# to make the chance of duplicate identifiers negligible.
     let ct1 = encrypt_v1_with_ec(b"msg id test", EncryptionContext::new()).await;
     let ct2 = encrypt_v1_with_ec(b"msg id test", EncryptionContext::new()).await;
-    // Message ID is 16 bytes at offset 4
-    let msg_id_1 = &ct1[4..20];
-    let msg_id_2 = &ct2[4..20];
+    let hdr1 = V1FixedFields::parse(&ct1);
+    let hdr2 = V1FixedFields::parse(&ct2);
 
     //= spec/data-format/message-header.md#message-id
     //= type=test
     //# The length of the serialized message ID MUST be 16 bytes for [version 1.0](#header-body-version-10) headers.
-    assert_eq!(msg_id_1.len(), 16, "V1 message ID must be 16 bytes");
+    assert_eq!(hdr1.message_id.len(), 16, "V1 message ID must be 16 bytes");
 
     //= spec/data-format/message-header.md#message-id
     //= type=test
     //# The message ID MUST be interpreted as bytes.
-    assert_eq!(msg_id_1, &ct1[4..20], "V1 message ID must be preserved as raw bytes");
+    assert_eq!(hdr1.message_id, &ct1[4..20], "V1 message ID must be preserved as raw bytes");
 
     //= spec/data-format/message-header.md#message-id
     //= type=test
     //# While implementations cannot guarantee complete uniqueness,
     //# implementations MUST use a good source of randomness when generating message IDs in order to make
     //# the chance of duplicate IDs negligible.
-    assert_ne!(msg_id_1, msg_id_2, "Message IDs must be unique (random)");
+    assert_ne!(hdr1.message_id, hdr2.message_id, "Message IDs must be unique (random)");
+    // Round-trip proves the message ID is correctly processed.
+    let result = round_trip_v1(b"msg id test", EncryptionContext::new()).await;
+    assert_eq!(result, b"msg id test");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -201,17 +243,22 @@ async fn test_v1_header_encrypted_data_keys() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_content_type() {
+    let ct = encrypt_v1_with_ec(b"content type test", EncryptionContext::new()).await;
+    let (ct_offset, _, _, _) = parse_v1_trailing_offsets(&ct);
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
     //# - MUST serialize the [Content Type](../data-format/message-header.md#content-type).
     //# The value MUST be [02](../data-format/message-header.md#supported-content-types).
-    let ct = encrypt_v1_with_ec(b"content type test", EncryptionContext::new()).await;
-    let (ct_offset, _, _, _) = parse_v1_trailing_offsets(&ct);
     assert_eq!(ct[ct_offset], 0x02, "Content Type must be 0x02 (framed)");
+    // Round-trip proves the content type is correctly processed.
+    let result = round_trip_v1(b"content type test", EncryptionContext::new()).await;
+    assert_eq!(result, b"content type test");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_reserved() {
+    let ct = encrypt_v1_with_ec(b"reserved test", EncryptionContext::new()).await;
+    let (_, reserved_offset, _, _) = parse_v1_trailing_offsets(&ct);
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
     //# - MUST serialize the [Reserved](../data-format/message-header.md#reserved).
@@ -220,39 +267,43 @@ async fn test_v1_header_reserved() {
     //= type=test
     //# A reserved sequence of 4 bytes
     //# that MUST have the value (hex) of `00 00 00 00`.
-    let ct = encrypt_v1_with_ec(b"reserved test", EncryptionContext::new()).await;
-    let (_, reserved_offset, _, _) = parse_v1_trailing_offsets(&ct);
     assert_eq!(
         &ct[reserved_offset..reserved_offset + 4],
         &[0x00, 0x00, 0x00, 0x00],
         "Reserved bytes must be serialized as 00 00 00 00"
     );
+    // Round-trip proves the reserved field is correctly processed.
+    let result = round_trip_v1(b"reserved test", EncryptionContext::new()).await;
+    assert_eq!(result, b"reserved test");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_iv_length() {
+    let ct = encrypt_v1_with_ec(b"iv length test", EncryptionContext::new()).await;
+    let (_, _, iv_length_offset, _) = parse_v1_trailing_offsets(&ct);
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
     //# - MUST serialize the [IV Length](../data-format/message-header.md#iv-length).
     //# The value MUST match the [IV length](../framework/algorithm-suites.md#iv-length)
     //# specified by the [algorithm suite](../framework/algorithm-suites.md).
-    let ct = encrypt_v1_with_ec(b"iv length test", EncryptionContext::new()).await;
-    let (_, _, iv_length_offset, _) = parse_v1_trailing_offsets(&ct);
     // AlgAes256GcmIv12Tag16HkdfSha256 has IV length 12
     assert_eq!(
         ct[iv_length_offset], 12,
         "IV Length must be 12, matching the algorithm suite"
     );
+    // Round-trip proves the IV length is correctly processed.
+    let result = round_trip_v1(b"iv length test", EncryptionContext::new()).await;
+    assert_eq!(result, b"iv length test");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_frame_length() {
+    let ct = encrypt_v1_with_ec(b"frame length test", EncryptionContext::new()).await;
+    let (_, _, _, frame_length_offset) = parse_v1_trailing_offsets(&ct);
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
     //# - MUST serialize the [Frame Length](../data-format/message-header.md#frame-length).
     //# The value MUST be the value of the frame size determined above.
-    let ct = encrypt_v1_with_ec(b"frame length test", EncryptionContext::new()).await;
-    let (_, _, _, frame_length_offset) = parse_v1_trailing_offsets(&ct);
     let frame_length = u32::from_be_bytes([
         ct[frame_length_offset],
         ct[frame_length_offset + 1],
@@ -260,10 +311,16 @@ async fn test_v1_header_frame_length() {
         ct[frame_length_offset + 3],
     ]);
     assert_eq!(frame_length, 4096, "Frame Length must be the default 4096");
+    // Round-trip proves the frame length is correctly processed.
+    let result = round_trip_v1(b"frame length test", EncryptionContext::new()).await;
+    assert_eq!(result, b"frame length test");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_serialization_order() {
+    let ct = encrypt_v1_with_ec(b"order test", EncryptionContext::new()).await;
+    let hdr = V1FixedFields::parse(&ct);
+
     //= spec/client-apis/encrypt.md#v1-header
     //= type=test
     //# The serialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification.
@@ -281,13 +338,11 @@ async fn test_v1_header_serialization_order() {
     //# Reserved,
     //# IV Length,
     //# and Frame Length.
-    let ct = encrypt_v1_with_ec(b"order test", EncryptionContext::new()).await;
     // Fixed-offset fields
-    assert_eq!(ct[0], 0x01, "offset 0: Version");
-    assert_eq!(ct[1], 0x80, "offset 1: Type");
-    let suite_id = u16::from_be_bytes([ct[2], ct[3]]);
-    assert_eq!(suite_id, 0x0178, "offset 2-3: Algorithm Suite ID");
-    assert_eq!(ct[4..20].len(), 16, "offset 4-19: Message ID (16 bytes)");
+    assert_eq!(hdr.version, 0x01, "offset 0: Version");
+    assert_eq!(hdr.msg_type, 0x80, "offset 1: Type");
+    assert_eq!(hdr.suite_id, 0x0178, "offset 2-3: Algorithm Suite ID");
+    assert_eq!(hdr.message_id.len(), 16, "offset 4-19: Message ID (16 bytes)");
     // Variable-length fields (AAD, EDKs) followed by trailing fixed fields
     let (ct_offset, reserved_offset, iv_length_offset, frame_length_offset) =
         parse_v1_trailing_offsets(&ct);
@@ -396,18 +451,18 @@ async fn test_v1_iv_length_serialized_as_uint8() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_iv_length_equals_suite_iv_length() {
+    let ct = encrypt_v1_with_ec(b"iv length suite test", EncryptionContext::new()).await;
+    let (_, _, iv_length_offset, _) = parse_v1_trailing_offsets(&ct);
     //= spec/data-format/message-header.md#iv-length
     //= type=test
     //# This value MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the
     //# [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
-    let ct = encrypt_v1_with_ec(b"iv length suite test", EncryptionContext::new()).await;
-    let (_, _, iv_length_offset, _) = parse_v1_trailing_offsets(&ct);
     // AlgAes256GcmIv12Tag16HkdfSha256 has IV length 12
     assert_eq!(
         ct[iv_length_offset], 12,
         "IV length must match algorithm suite IV length (12)"
     );
-    // Confirm round-trip succeeds, proving the IV length is validated during decrypt
+    // Round-trip proves the IV length is validated during decrypt.
     let result = round_trip_v1(b"iv length suite test", EncryptionContext::new()).await;
     assert_eq!(result, b"iv length suite test");
 }
@@ -450,11 +505,6 @@ async fn test_v1_frame_length_serialized_as_uint32() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_reserved_bytes_tampered_rejected() {
-    //= spec/data-format/message-header.md#reserved
-    //= type=test
-    //= reason=Tampering the reserved bytes to a non-zero value and verifying decrypt rejects it proves the reserved-bytes validation is enforced on the read path.
-    //# A reserved sequence of 4 bytes
-    //# that MUST have the value (hex) of `00 00 00 00`.
     let keyring = test_keyring().await;
     let mut ct = encrypt_v1_with_ec(b"reserved tamper test", EncryptionContext::new()).await;
     let (_, reserved_offset, _, _) = parse_v1_trailing_offsets(&ct);
@@ -467,6 +517,11 @@ async fn test_v1_reserved_bytes_tampered_rejected() {
     dec_input.commitment_policy =
         aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
 
+    //= spec/data-format/message-header.md#reserved
+    //= type=test
+    //= reason=Tampering the reserved bytes to a non-zero value and verifying decrypt rejects it proves the reserved-bytes validation is enforced on the read path.
+    //# A reserved sequence of 4 bytes
+    //# that MUST have the value (hex) of `00 00 00 00`.
     let err = decrypt(&dec_input)
         .await
         .expect_err("decrypt must reject tampered reserved bytes");
@@ -479,11 +534,6 @@ async fn test_v1_reserved_bytes_tampered_rejected() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_iv_length_mismatch_rejected() {
-    //= spec/data-format/message-header.md#iv-length
-    //= type=test
-    //= reason=Tampering the IV length byte to a value that does not match the algorithm suite and verifying decrypt rejects it proves the IV-length validation is enforced on the read path.
-    //# This value MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the
-    //# [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
     let keyring = test_keyring().await;
     let mut ct = encrypt_v1_with_ec(b"iv length tamper test", EncryptionContext::new()).await;
     let (_, _, iv_length_offset, _) = parse_v1_trailing_offsets(&ct);
@@ -497,6 +547,11 @@ async fn test_v1_iv_length_mismatch_rejected() {
     dec_input.commitment_policy =
         aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
 
+    //= spec/data-format/message-header.md#iv-length
+    //= type=test
+    //= reason=Tampering the IV length byte to a value that does not match the algorithm suite and verifying decrypt rejects it proves the IV-length validation is enforced on the read path.
+    //# This value MUST be equal to the [IV length](../framework/algorithm-suites.md#iv-length) value of the
+    //# [algorithm suite](../framework/algorithm-suites.md) specified by the [Algorithm Suite ID](#algorithm-suite-id) field.
     let err = decrypt(&dec_input)
         .await
         .expect_err("decrypt must reject mismatched IV length");
