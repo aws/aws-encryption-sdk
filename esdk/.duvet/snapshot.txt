@@ -205,8 +205,8 @@ SPECIFICATION: [Decrypt](spec/client-apis/decrypt.md)
     TEXT[!MUST,implementation,test]:   serialized according to the [encryption context serialization specification](../framework/structures.md#serialization).
     TEXT[!MUST,implementation,test]: - For message format version [1.0](../data-format/message-header.md#supported-versions)
     TEXT[!MUST,implementation,test]:   the IV MUST be the value serialized in the message header's [IV field](../data-format/message-header.md#iv).
-    TEXT[!MUST,implementation,test]:   For message format version [2.0](../data-format/message-header.md#supported-versions)
-    TEXT[!MUST,implementation,test]:   the IV MUST be 0.
+    TEXT[!MUST,implementation,implication,test]:   For message format version [2.0](../data-format/message-header.md#supported-versions)
+    TEXT[!MUST,implementation,implication,test]:   the IV MUST be 0.
     TEXT[!MUST,implementation,test]: - the cipherkey MUST be the derived data key
     TEXT[!MUST,implementation,test]: - the ciphertext MUST be an empty byte array
     TEXT[!MUST,implementation,test]: - the tag MUST be the value serialized in the message header's
@@ -943,7 +943,7 @@ SPECIFICATION: [Message Header](spec/data-format/message-header.md)
     TEXT[!MUST,implementation,test]: the chance of duplicate IDs negligible.
     TEXT[!MUST,implementation,test]: The length of the serialized message ID MUST be 16 bytes for [version 1.0](#header-body-version-10) headers.
     TEXT[!MUST,implementation,test]: The length of the serialized message ID MUST be 32 bytes for [version 2.0](#header-body-version-20) headers.
-    TEXT[!MUST,implementation,test]: The message ID MUST be interpreted as bytes.
+    TEXT[!MUST,implementation]: The message ID MUST be interpreted as bytes.
 
   SECTION: [AAD](#aad)
     TEXT[!MUST,implementation,test]: The AAD MUST consist of, in order,
