@@ -4,11 +4,14 @@
 #
 # Regenerating `releases/rust/esdk/` and opening a release PR is
 # automated by the `Rust Start Release` workflow (rust-start-release.yml)
-# and should be run before this workflow.
+# and MUST be run before this workflow. Dispatching this workflow without
+# first running `Rust Start Release` (and reviewing/approving the
+# resulting release PR) will publish whatever happens to be committed at
+# `releases/rust/esdk/` and is unsupported.
 #
-# This workflow should be dispatched on the release PR's branch
-# (head ref) BEFORE the PR is merged, so a failed publish or failed
-# smoke test leaves the unmerged PR for cleanup.
+# This workflow MUST be dispatched on the release PR's branch (head ref)
+# BEFORE the PR is merged, so a failed publish or failed smoke test
+# leaves the unmerged PR for cleanup.
 #
 # Authenticates to crates.io with a long-lived API token issued under the
 # Crypto Tools CI bot account, stored in the CARGO_REGISTRY_TOKEN repo
