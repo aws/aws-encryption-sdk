@@ -5,9 +5,11 @@
 # `cargo publish` and `test_published.sh` live in rust-release.yml and
 # should be dispatched on the resulting PR's branch before merging.
 #
-# This workflow does NOT need any crates.io credentials; it only writes
-# to the repo (via secrets.GITHUB_TOKEN) and assumes AWS via OIDC for
-# the tests that start_release.sh runs.
+# This workflow only ever runs against the default branch (`mainline`); the
+# version input must be in N.N.N form. The release branch is pushed and
+# the release PR is opened as the Crypto Tools CI bot (via a PAT pulled
+# from AWS Secrets Manager) so that the resulting PR's `pull_request`
+# event triggers required-checks workflows on the release PR.
 name: Rust Start Release
 
 on:
@@ -23,11 +25,11 @@ permissions: {}
 jobs:
   start-release:
     name: Run start_release.sh and open a release PR
+    if: github.ref == 'refs/heads/mainline'
     runs-on: ubuntu-22.04
     permissions:
       id-token: write
       contents: write
-      pull-requests: write
     steps:
       - name: Validate version input
         shell: bash
@@ -40,7 +42,7 @@ jobs:
             exit 1
           fi
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentials for tests
         uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-region: us-west-2
@@ -54,8 +56,8 @@ jobs:
 
       - uses: actions/checkout@v6
         with:
+          ref: mainline
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Init Submodules
         shell: bash
@@ -121,22 +123,43 @@ jobs:
           fi
           git commit -m "chore(release): aws-esdk v${VERSION}"
 
-      - name: Push release branch
-        shell: bash
-        env:
-          BRANCH: ${{ steps.branch.outputs.name }}
-        run: |
-          set -euo pipefail
-          git push origin "${BRANCH}"
+      # Switch from the testing role to the CI-bot-credential-access role so
+      # we can pull the CI bot's PAT and push/open the PR as the bot. This
+      # makes the resulting PR fire the repo's normal pull_request CI.
+      - name: Configure AWS Credentials for CI bot creds
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::587316601012:role/GitHub-CI-CI-Bot-Credential-Access-Role-us-west-2
+          role-session-name: CI_Bot_RustStartRelease
+          special-characters-workaround: "true"
 
-      - name: Open release PR
+      - name: Get CI Bot Creds Secret
+        uses: aws-actions/aws-secretsmanager-get-secrets@v2
+        with:
+          secret-ids: Github/aws-crypto-tools-ci-bot
+          parse-json-secrets: true
+
+      - name: Push release branch and open release PR as CI bot
         shell: bash
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: ${{ steps.branch.outputs.name }}
           VERSION: ${{ github.event.inputs.version }}
         run: |
           set -euo pipefail
+          # Authenticate gh as the CI bot. Following the pattern used by
+          # semantic_release.yml, write the token to a temp file and feed it
+          # to `gh auth login --with-token`.
+          echo '${{ env.GITHUB_AWS_CRYPTO_TOOLS_CI_BOT_ESDK_RELEASE_TOKEN }}' > token.txt
+          gh auth login --with-token < token.txt
+          rm token.txt
+          gh auth status
+
+          # Push using the bot PAT so the push event is attributed to the bot
+          # and required pull_request CI workflows fire on the resulting PR.
+          REMOTE="https://x-access-token:$(gh auth token)@github.com/${GITHUB_REPOSITORY}.git"
+          git push "${REMOTE}" "${BRANCH}"
+
           gh pr create \
             --base mainline \
             --head "${BRANCH}" \
@@ -146,6 +169,6 @@ jobs:
           Reviewer checklist:
           - Update \`CHANGELOG.md\` inside AwsEncryptionSDK/runtimes/rust/ with the changes for this version.
           - If this is a major version bump, update \`SUPPORT_POLICY.rst\` for Rust.
-          - After approval, dispatch the \`Rust Release\` workflow on this branch (or after merging) to publish to crates.io and run \`test_published.sh\`.
+          - After approval and BEFORE merging, dispatch the \`Rust Release\` workflow on this branch to publish to crates.io and run \`test_published.sh\`.
 
           Do NOT merge this PR before publishing."
