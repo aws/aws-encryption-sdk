@@ -1,22 +1,25 @@
-name: Rust Release (publish to crates.io)
-
-# Publishes the Rust crate in releases/rust/esdk/ to crates.io.
+# This workflow publishes the aws-esdk crate to crates.io and runs the
+# post-publish smoke test against the published version (`cargo publish`
+# and `./test_published.sh N.N.N`).
 #
-# Manual-only trigger. The version to publish is taken from
-# releases/rust/esdk/Cargo.toml; the workflow_dispatch input is an
-# optional safety check.
+# Regenerating `releases/rust/esdk/` and opening a release PR is
+# automated by the `Rust Start Release` workflow (rust-start-release.yml)
+# and should be run before this workflow.
 #
-# Authenticates with a long-lived crates.io API token issued under the
-# Crypto Tools CI bot account. The token is stored in a repository secret
-# named CARGO_REGISTRY_TOKEN, gated by the `crates-io-publish` GitHub
-# environment (configure required reviewers on the environment to add
-# human approval at run time).
+# This workflow should be dispatched on the release PR's branch
+# (head ref) BEFORE the PR is merged, so a failed publish or failed
+# smoke test leaves the unmerged PR for cleanup.
+#
+# Authenticates to crates.io with a long-lived API token issued under the
+# Crypto Tools CI bot account, stored in the CARGO_REGISTRY_TOKEN repo
+# secret and gated by the `crates-io-publish` GitHub environment.
+name: Rust Release
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Optional. If provided, must match Cargo.toml version exactly (e.g. '1.2.5', no leading 'v'). Used as a typo safeguard; if omitted, the version in releases/rust/esdk/Cargo.toml is published as-is."
+        description: "Optional. If provided, must match releases/rust/esdk/Cargo.toml version exactly (N.N.N format, e.g. '1.2.5'). Used as a typo safeguard; if omitted, the version in Cargo.toml is published as-is."
         required: false
         type: string
 
@@ -28,51 +31,87 @@ jobs:
     runs-on: ubuntu-22.04
     environment: crates-io-publish
     permissions:
+      id-token: write
       contents: read
-    defaults:
-      run:
-        working-directory: releases/rust/esdk
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
+      - name: Support longpaths on Git checkout
+        run: |
+          git config --global core.longpaths true
 
-      - name: Setup Rust toolchain
+      - uses: actions/checkout@v6
+
+      - name: Setup Rust Toolchain for GitHub CI
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          cache: false
+          components: rustfmt, clippy
 
       - name: Read crate version from Cargo.toml
         id: cargo
+        shell: bash
+        working-directory: releases/rust/esdk
         run: |
           set -euo pipefail
-          CRATE_VERSION="$(cargo metadata --no-deps --format-version=1 \
-            | python3 -c "import json, sys; print(json.load(sys.stdin)['packages'][0]['version'])")"
-          CRATE_NAME="$(cargo metadata --no-deps --format-version=1 \
-            | python3 -c "import json, sys; print(json.load(sys.stdin)['packages'][0]['name'])")"
+          CRATE_VERSION="$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].version')"
+          CRATE_NAME="$(cargo metadata --no-deps --format-version=1 | jq -r '.packages[0].name')"
           echo "version=${CRATE_VERSION}" >> "$GITHUB_OUTPUT"
           echo "name=${CRATE_NAME}" >> "$GITHUB_OUTPUT"
           echo "Will publish ${CRATE_NAME} v${CRATE_VERSION}"
 
       - name: Verify input version matches Cargo.toml (if provided)
-        if: ${{ inputs.version != '' }}
+        if: ${{ github.event.inputs.version != '' }}
+        shell: bash
         env:
-          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_VERSION: ${{ github.event.inputs.version }}
           CARGO_VERSION: ${{ steps.cargo.outputs.version }}
         run: |
           set -euo pipefail
-          # Strip an optional leading 'v' from the input for convenience.
-          NORMALIZED_INPUT="${INPUT_VERSION#v}"
-          if [ "${NORMALIZED_INPUT}" != "${CARGO_VERSION}" ]; then
-            echo "::error::Input version '${INPUT_VERSION}' (normalized: '${NORMALIZED_INPUT}') does not match Cargo.toml version '${CARGO_VERSION}'."
-            echo "Either fix the input or update Cargo.toml in a separate PR."
+          if [ "${INPUT_VERSION}" != "${CARGO_VERSION}" ]; then
+            echo "::error::Input version '${INPUT_VERSION}' does not match Cargo.toml version '${CARGO_VERSION}'."
             exit 1
           fi
           echo "Input version matches Cargo.toml: ${CARGO_VERSION}"
 
       - name: Cargo publish (dry run)
-        run: cargo publish --dry-run --locked || cargo publish --dry-run
+        shell: bash
+        working-directory: releases/rust/esdk
+        run: cargo publish --dry-run
 
       - name: Cargo publish
+        shell: bash
+        working-directory: releases/rust/esdk
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-        run: cargo publish --locked || cargo publish
+        run: cargo publish
+
+      - name: Configure AWS Credentials for test_published.sh
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::370957321024:role/GitHub-CI-Public-ESDK-Dafny-Role-us-west-2
+          role-session-name: ESDK-Rust-Release-TestPublished
+          special-characters-workaround: "true"
+
+      - name: Wait for new version to be available on crates.io
+        shell: bash
+        env:
+          CRATE_NAME: ${{ steps.cargo.outputs.name }}
+          CRATE_VERSION: ${{ steps.cargo.outputs.version }}
+        run: |
+          set -euo pipefail
+          # crates.io can take a few seconds to surface a freshly-published
+          # version via the sparse index. Poll for up to 5 minutes.
+          for i in $(seq 1 60); do
+            if curl -fsSL "https://crates.io/api/v1/crates/${CRATE_NAME}/${CRATE_VERSION}" >/dev/null 2>&1; then
+              echo "${CRATE_NAME} v${CRATE_VERSION} is available on crates.io"
+              exit 0
+            fi
+            echo "Attempt ${i}: ${CRATE_NAME} v${CRATE_VERSION} not yet available; sleeping 5s"
+            sleep 5
+          done
+          echo "::error::${CRATE_NAME} v${CRATE_VERSION} did not appear on crates.io within 5 minutes"
+          exit 1
+
+      - name: Test the published crate
+        shell: bash
+        working-directory: AwsEncryptionSDK/runtimes/rust
+        run: ./test_published.sh "${{ steps.cargo.outputs.version }}"
