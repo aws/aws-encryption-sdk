@@ -1,0 +1,78 @@
+name: Rust Release (publish to crates.io)
+
+# Publishes the Rust crate in releases/rust/esdk/ to crates.io.
+#
+# Manual-only trigger. The version to publish is taken from
+# releases/rust/esdk/Cargo.toml; the workflow_dispatch input is an
+# optional safety check.
+#
+# Authenticates with a long-lived crates.io API token issued under the
+# Crypto Tools CI bot account. The token is stored in a repository secret
+# named CARGO_REGISTRY_TOKEN, gated by the `crates-io-publish` GitHub
+# environment (configure required reviewers on the environment to add
+# human approval at run time).
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Optional. If provided, must match Cargo.toml version exactly (e.g. '1.2.5', no leading 'v'). Used as a typo safeguard; if omitted, the version in releases/rust/esdk/Cargo.toml is published as-is."
+        required: false
+        type: string
+
+permissions: {}
+
+jobs:
+  publish:
+    name: Publish aws-esdk to crates.io
+    runs-on: ubuntu-22.04
+    environment: crates-io-publish
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: releases/rust/esdk
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          cache: false
+
+      - name: Read crate version from Cargo.toml
+        id: cargo
+        run: |
+          set -euo pipefail
+          CRATE_VERSION="$(cargo metadata --no-deps --format-version=1 \
+            | python3 -c "import json, sys; print(json.load(sys.stdin)['packages'][0]['version'])")"
+          CRATE_NAME="$(cargo metadata --no-deps --format-version=1 \
+            | python3 -c "import json, sys; print(json.load(sys.stdin)['packages'][0]['name'])")"
+          echo "version=${CRATE_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "name=${CRATE_NAME}" >> "$GITHUB_OUTPUT"
+          echo "Will publish ${CRATE_NAME} v${CRATE_VERSION}"
+
+      - name: Verify input version matches Cargo.toml (if provided)
+        if: ${{ inputs.version != '' }}
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          CARGO_VERSION: ${{ steps.cargo.outputs.version }}
+        run: |
+          set -euo pipefail
+          # Strip an optional leading 'v' from the input for convenience.
+          NORMALIZED_INPUT="${INPUT_VERSION#v}"
+          if [ "${NORMALIZED_INPUT}" != "${CARGO_VERSION}" ]; then
+            echo "::error::Input version '${INPUT_VERSION}' (normalized: '${NORMALIZED_INPUT}') does not match Cargo.toml version '${CARGO_VERSION}'."
+            echo "Either fix the input or update Cargo.toml in a separate PR."
+            exit 1
+          fi
+          echo "Input version matches Cargo.toml: ${CARGO_VERSION}"
+
+      - name: Cargo publish (dry run)
+        run: cargo publish --dry-run --locked || cargo publish --dry-run
+
+      - name: Cargo publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: cargo publish --locked || cargo publish
