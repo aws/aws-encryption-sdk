@@ -149,6 +149,9 @@ pub(crate) fn read_edks(
     if let Some(max_edks) = max_edks
         && usize::from(count) > max_edks.get()
     {
+        //= spec/data-format/message-header.md#encrypted-data-key-count
+        //# This value MUST be less than or equal to the [maximum number of encrypted data keys](../client-apis/client.md#maximum-number-of-encrypted-data-keys) if the maximum number is configured.
+        //
         //= spec/client-apis/decrypt.md#v2-header-deserialization
         //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
         //# deserialized from the [message header](../data-format/message-header.md)
