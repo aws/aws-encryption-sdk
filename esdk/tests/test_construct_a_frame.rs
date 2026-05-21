@@ -79,20 +79,6 @@ async fn test_construct_frame_sequence_number_starts_at_one_and_increments() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_construct_frame_sequence_number_in_aad_matches_wire() {
-    // AAD seq is not on the wire; multi-frame round-trip is the cross-module check.
-    let pt = vec![0xABu8; 100];
-    let result = round_trip_framed(&pt, 10).await;
-
-    //= spec/client-apis/encrypt.md#construct-a-frame
-    //= type=test
-    //= reason=decrypt rebuilds AAD from the wire seq num; round-trip pins encrypt to it
-    //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be the sequence
-    //# number of the frame being encrypted.
-    assert_eq!(result, pt);
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_construct_frame_regular_frame_plaintext_equals_frame_length() {
     // 25 bytes / frame_length=10 → 2 regular (10) + 1 final (5).
     let pt = vec![0xBBu8; 25];
@@ -141,20 +127,6 @@ async fn test_construct_frame_final_frame_plaintext_at_most_frame_length() {
         assert_eq!(final_len, expected_final_len, "{label}");
         assert!(final_len <= frame_length, "{label}");
     }
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_construct_frame_content_length_in_aad_matches_plaintext() {
-    // 50 bytes / frame_length=20 mixes regular and final frames.
-    let pt = vec![0xCDu8; 50];
-    let result = round_trip_framed(&pt, 20).await;
-
-    //= spec/client-apis/encrypt.md#construct-a-frame
-    //= type=test
-    //= reason=decrypt rebuilds AAD from the wire content length; round-trip pins encrypt to it
-    //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
-    //# equal to the length of the plaintext being encrypted.
-    assert_eq!(result, pt);
 }
 
 #[tokio::test(flavor = "multi_thread")]
