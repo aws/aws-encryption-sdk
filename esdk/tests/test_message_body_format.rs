@@ -108,11 +108,53 @@ async fn test_nonframed_encrypted_content_length_max_value() {
     //# due to restrictions imposed by the [implemented algorithms](../framework/algorithm-suites.md).
     let body = parse_nonframed_body(EXTERNAL_V2_NONFRAMED_CT);
     let max_allowed: u64 = (1u64 << 36) - 32;
+
+    // The conforming external vector must satisfy the bound.
     assert!(
         body.encrypted_content_length <= max_allowed,
         "encrypted content length {} must not exceed 2^36 - 32 = {}",
         body.encrypted_content_length,
         max_allowed
+    );
+
+    // Baseline: the untampered external vector decrypts successfully.
+    let baseline = try_decrypt_external_nonframed(Version::V2, EXTERNAL_V2_NONFRAMED_CT)
+        .await
+        .expect("baseline: untampered external vector must decrypt");
+    assert_eq!(baseline, EXTERNAL_V2_NONFRAMED_PT, "baseline plaintext mismatch");
+
+    // Tamper: rewrite the 8-byte content length field at body_start + IV_LEN to
+    // exceed the bound by 1, so the decrypt parser rejects it before any AES-GCM
+    // operation. (Perturbing at the integer level ensures the parser is the layer
+    // that fails.)
+    let length_offset = body.body_start + IV_LEN;
+    let original_len = u64::from_be_bytes(
+        EXTERNAL_V2_NONFRAMED_CT[length_offset..length_offset + 8]
+            .try_into()
+            .unwrap(),
+    );
+    assert_eq!(
+        original_len, body.encrypted_content_length,
+        "raw-byte read of length field must match parsed value"
+    );
+    let tampered_len = max_allowed + 1;
+    assert_ne!(
+        tampered_len, original_len,
+        "tamper-effectiveness: tampered length must differ from original"
+    );
+
+    let mut tampered = EXTERNAL_V2_NONFRAMED_CT.to_vec();
+    tampered[length_offset..length_offset + 8].copy_from_slice(&tampered_len.to_be_bytes());
+
+    let err = try_decrypt_external_nonframed(Version::V2, &tampered)
+        .await
+        .expect_err("decrypt must reject content length > 2^36 - 32");
+    assert_eq!(
+        err.kind,
+        ErrorKind::SerializationError,
+        "expected SerializationError for over-bound content length, got: {} ({:?})",
+        err.message,
+        err.kind
     );
 }
 
