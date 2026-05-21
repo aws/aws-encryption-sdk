@@ -194,6 +194,8 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             //# The authentication tag MUST be interpreted as bytes.
             read_bytes(ciphertext, &mut auth_tag, sig_digest)?;
 
+            // AAD
+
             //= spec/client-apis/decrypt.md#decrypt-the-message-body
             //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
             //# constructed according to the [Message Body AAD](../data-format/message-body-aad.md) specification, as follows:
@@ -302,6 +304,8 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             //# The final frame MUST be the last frame.
             return Ok(result);
         }
+
+        // Validate sequence; release previous frame
 
         //= spec/client-apis/decrypt.md#decrypt-the-message-body
         //# Regular frame deserialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
