@@ -1,4 +1,5 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
+// Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //! Tests for spec/data-format/message-body.md
@@ -200,9 +201,9 @@ async fn test_nonframed_auth_tag_length() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_framed_data_max_frame_count() {
     // With frame_length=4 and 20 bytes, we get 4 regular + 1 final = 5 frames.
-    // The implementation checks sequence_number == ENDFRAME_SEQUENCE_NUMBER to enforce the limit.
     //= spec/data-format/message-body.md#framed-data
     //= type=test
+    //= reason=The 2^32-1 boundary is unreachable in a unit test (would require ~4B frames). The implementation enforces it at body_encrypt.rs by checking sequence_number == ENDFRAME_SEQUENCE_NUMBER (0xFFFFFFFF) before writing each regular frame and returning ValidationError("Too many frames"). This test exercises a small frame count to confirm the multi-frame path works; the upper bound itself is enforced by source-side citation.
     //# - The number of frames in a single message MUST be less than or equal to `2^32 - 1`.
     let pt = vec![0xBBu8; 20];
     let frames = parse_frames(&encrypt_with_frame_length(&pt, 4).await, 4);

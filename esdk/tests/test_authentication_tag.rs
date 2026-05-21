@@ -3,6 +3,7 @@
 
 //! Tests for encrypt.md#authentication-tag
 
+mod fixtures;
 mod test_helpers;
 
 use aws_esdk::*;
