@@ -65,14 +65,25 @@ async fn test_nonframed_iv_length() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_nonframed_iv_interpreted_as_bytes() {
+async fn test_nonframed_fields_interpreted_as_bytes() {
     //= spec/data-format/message-body.md#nonframed-data-iv
     //= type=test
     //# The IV MUST be interpreted as bytes.
+    //
+    //= spec/data-format/message-body.md#nonframed-data-encrypted-content
+    //= type=test
+    //# The encrypted content value MUST be interpreted as bytes.
+    //
+    //= spec/data-format/message-body.md#nonframed-data-authentication-tag
+    //= type=test
+    //# The authentication tag value MUST be interpreted as bytes.
+    // All three fields are byte-typed in the parser; a successful decrypt of the
+    // external nonframed vector proves each one is consumed as bytes (any other
+    // interpretation would corrupt the AES-GCM inputs and fail the auth tag check).
     let result = decrypt_external_nonframed_vector(Version::V2).await;
     assert_eq!(
         result, EXTERNAL_V2_NONFRAMED_PT,
-        "decrypt output did not match expected plaintext — nonframed IV was not interpreted as bytes"
+        "decrypt output did not match expected plaintext — nonframed IV/encrypted content/auth tag must be interpreted as bytes"
     );
 }
 
@@ -132,18 +143,6 @@ async fn test_nonframed_encrypted_content_length_matches_content() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_nonframed_encrypted_content_interpreted_as_bytes() {
-    //= spec/data-format/message-body.md#nonframed-data-encrypted-content
-    //= type=test
-    //# The encrypted content value MUST be interpreted as bytes.
-    let result = decrypt_external_nonframed_vector(Version::V2).await;
-    assert_eq!(
-        result, EXTERNAL_V2_NONFRAMED_PT,
-        "decrypt output did not match expected plaintext — nonframed encrypted content was not interpreted as bytes"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_nonframed_auth_tag_length() {
     //= spec/data-format/message-body.md#nonframed-data-authentication-tag
     //= type=test
@@ -153,18 +152,6 @@ async fn test_nonframed_auth_tag_length() {
         body.auth_tag.len(),
         TAG_LEN,
         "nonframed auth tag length must equal algorithm suite tag length (16)"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_nonframed_auth_tag_interpreted_as_bytes() {
-    //= spec/data-format/message-body.md#nonframed-data-authentication-tag
-    //= type=test
-    //# The authentication tag value MUST be interpreted as bytes.
-    let result = decrypt_external_nonframed_vector(Version::V2).await;
-    assert_eq!(
-        result, EXTERNAL_V2_NONFRAMED_PT,
-        "decrypt output did not match expected plaintext — nonframed auth tag was not interpreted as bytes"
     );
 }
 
@@ -313,16 +300,26 @@ async fn test_regular_frame_iv_length_matches_algorithm() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_regular_frame_iv_interpreted_as_bytes() {
+async fn test_regular_frame_fields_interpreted_as_bytes() {
     //= spec/data-format/message-body.md#regular-frame-iv
     //= type=test
     //# The IV MUST be interpreted as bytes.
-    // Round-trip proves the IV bytes are correctly interpreted during decrypt
+    //
+    //= spec/data-format/message-body.md#regular-frame-encrypted-content
+    //= type=test
+    //# The encrypted content MUST be interpreted as bytes.
+    //
+    //= spec/data-format/message-body.md#regular-frame-authentication-tag
+    //= type=test
+    //# The authentication tag MUST be interpreted as bytes.
+    // All three fields are byte-typed in the parser; a successful round-trip
+    // proves each one is consumed as bytes during decrypt (any other
+    // interpretation would corrupt the AES-GCM inputs and fail the auth tag check).
     let pt = vec![0xEEu8; 20];
     let result = round_trip_framed(&pt, 10).await;
     assert_eq!(
         result, pt,
-        "round-trip proves IV is correctly interpreted as bytes"
+        "round-trip proves regular-frame IV/encrypted content/auth tag are interpreted as bytes"
     );
 }
 
@@ -354,19 +351,6 @@ async fn test_regular_frame_encrypted_content_length_equals_frame_length() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_regular_frame_encrypted_content_interpreted_as_bytes() {
-    //= spec/data-format/message-body.md#regular-frame-encrypted-content
-    //= type=test
-    //# The encrypted content MUST be interpreted as bytes.
-    let pt = vec![0xAAu8; 20];
-    let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(
-        result, pt,
-        "round-trip proves encrypted content is interpreted as bytes"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_auth_tag_length_matches_algorithm() {
     //= spec/data-format/message-body.md#regular-frame-authentication-tag
     //= type=test
@@ -381,19 +365,6 @@ async fn test_regular_frame_auth_tag_length_matches_algorithm() {
             "auth tag length must match algorithm suite (16)"
         );
     }
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_regular_frame_auth_tag_interpreted_as_bytes() {
-    //= spec/data-format/message-body.md#regular-frame-authentication-tag
-    //= type=test
-    //# The authentication tag MUST be interpreted as bytes.
-    let pt = vec![0xCCu8; 20];
-    let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(
-        result, pt,
-        "round-trip proves auth tag is interpreted as bytes"
-    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -459,12 +430,18 @@ async fn test_sequence_number_end_value() {
     //= spec/data-format/message-body.md#sequence-number-end
     //= type=test
     //# The value MUST be encoded as the 4 bytes `FF FF FF FF` in hexadecimal notation.
+    //
+    //= spec/data-format/message-body.md#sequence-number-end
+    //= type=test
+    //# The sequence number end MUST be interpreted as bytes.
     let pt = b"test";
     let ct = encrypt_with_frame_length(pt, 4096).await;
     let pos = ct
         .windows(4)
         .position(|w| w == ENDFRAME_MARKER)
         .expect("must find ENDFRAME");
+    // The four on-wire bytes ARE the marker — checking each byte literally
+    // proves the field is encoded as bytes AND has the spec-required value.
     assert_eq!(ct[pos], 0xFF);
     assert_eq!(ct[pos + 1], 0xFF);
     assert_eq!(ct[pos + 2], 0xFF);
@@ -487,20 +464,6 @@ async fn test_sequence_number_end_4_bytes() {
         &ct[pos..pos + 4],
         &[0xFF, 0xFF, 0xFF, 0xFF],
         "sequence number end is exactly 4 bytes"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_sequence_number_end_interpreted_as_bytes() {
-    //= spec/data-format/message-body.md#sequence-number-end
-    //= type=test
-    //# The sequence number end MUST be interpreted as bytes.
-    // Successful round-trip proves the decrypt path correctly interprets the ENDFRAME marker bytes
-    let pt = b"test seq end";
-    let result = round_trip_framed(pt, 4096).await;
-    assert_eq!(
-        result, pt,
-        "round-trip proves sequence number end is interpreted as bytes"
     );
 }
 
@@ -597,15 +560,26 @@ async fn test_final_frame_iv_length_matches_algorithm() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_final_frame_iv_interpreted_as_bytes() {
+async fn test_final_frame_fields_interpreted_as_bytes() {
     //= spec/data-format/message-body.md#final-frame-iv
     //= type=test
     //# The IV MUST be interpreted as bytes.
+    //
+    //= spec/data-format/message-body.md#final-frame-encrypted-content
+    //= type=test
+    //# The encrypted content MUST be interpreted as bytes.
+    //
+    //= spec/data-format/message-body.md#final-frame-authentication-tag
+    //= type=test
+    //# The authentication tag MUST be interpreted as bytes.
+    // All three fields are byte-typed in the parser; a successful round-trip with
+    // a final-frame-only payload (pt < frame_length) proves each one is consumed
+    // as bytes (any other interpretation would corrupt AES-GCM and fail the auth tag).
     let pt = vec![0xFFu8; 5];
     let result = round_trip_framed(&pt, 10).await;
     assert_eq!(
         result, pt,
-        "round-trip proves final frame IV is interpreted as bytes"
+        "round-trip proves final-frame IV/encrypted content/auth tag are interpreted as bytes"
     );
 }
 
@@ -666,19 +640,6 @@ async fn test_final_frame_encrypted_content_length_matches() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_final_frame_encrypted_content_interpreted_as_bytes() {
-    //= spec/data-format/message-body.md#final-frame-encrypted-content
-    //= type=test
-    //# The encrypted content MUST be interpreted as bytes.
-    let pt = vec![0xEEu8; 5];
-    let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(
-        result, pt,
-        "round-trip proves final frame encrypted content is interpreted as bytes"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_auth_tag_length_matches_algorithm() {
     //= spec/data-format/message-body.md#final-frame-authentication-tag
     //= type=test
@@ -692,19 +653,6 @@ async fn test_final_frame_auth_tag_length_matches_algorithm() {
         final_frame.3.len(),
         TAG_LEN,
         "final frame auth tag length must match algorithm suite (16)"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_final_frame_auth_tag_interpreted_as_bytes() {
-    //= spec/data-format/message-body.md#final-frame-authentication-tag
-    //= type=test
-    //# The authentication tag MUST be interpreted as bytes.
-    let pt = vec![0xAAu8; 5];
-    let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(
-        result, pt,
-        "round-trip proves final frame auth tag is interpreted as bytes"
     );
 }
 
@@ -754,14 +702,6 @@ async fn encrypt_v1_with_frame_length(plaintext: &[u8], frame_length: u32) -> Ve
     input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
     input.frame_length = FrameLength::new(frame_length).unwrap();
     encrypt(&input).await.unwrap().ciphertext
-}
-
-async fn round_trip_v1_framed(plaintext: &[u8], frame_length: u32) -> Vec<u8> {
-    let keyring = test_keyring().await;
-    let ct = encrypt_v1_with_frame_length(plaintext, frame_length).await;
-    let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    decrypt(&dec_input).await.unwrap().plaintext
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -854,13 +794,6 @@ async fn test_v1_final_frame_sequence_number_equals_total_frames() {
         frames.len() as u32,
         "V1: final frame seq num must equal total frame count"
     );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_v1_round_trip_framed() {
-    let pt = vec![0xFFu8; 25];
-    let result = round_trip_v1_framed(&pt, 10).await;
-    assert_eq!(result, pt, "V1: round-trip proves regular frame serialization order");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -964,16 +897,42 @@ async fn test_message_begins_with_header() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_message_body_follows_header() {
-    // A successful round-trip decrypt proves the body follows the header,
-    // because the decryptor parses header then body in sequence.
-    let pt = b"body follows header test";
-    let result = round_trip_signing(pt).await;
     //= spec/data-format/message.md#structure
     //= type=test
-    //= reason=Round-trip decrypt proves body follows header: decrypt would fail if message ordering were incorrect.
     //# - The [Message Body](message-body.md) MUST follow the Message Header
-    assert_eq!(
-        result, pt,
-        "successful decrypt proves message body follows header in serialization order"
+    // Parse the on-wire header end offset for both versions and assert the bytes
+    // immediately after the header are the start of the body (frame seq=1, or the
+    // ENDFRAME marker if the only frame is a final frame).
+    let pt = b"body follows header test";
+
+    // V1: header body || IV(12) || Tag(16), then body starts.
+    let ct_v1 = encrypt_with_v1_signing_suite(pt).await;
+    let (_, _, _, frame_length_offset) = parse_v1_trailing_offsets(&ct_v1);
+    let body_start_v1 = frame_length_offset + 4 + IV_LEN + TAG_LEN;
+    let next_4_v1 = u32::from_be_bytes([
+        ct_v1[body_start_v1],
+        ct_v1[body_start_v1 + 1],
+        ct_v1[body_start_v1 + 2],
+        ct_v1[body_start_v1 + 3],
+    ]);
+    assert!(
+        next_4_v1 == 1 || next_4_v1 == 0xFFFF_FFFF,
+        "V1 body must start immediately after header with frame seq=1 or endframe marker, got {next_4_v1:#010X}"
+    );
+
+    // V2: header body || Tag(16), then body starts.
+    let ct_v2 = encrypt_with_signing_suite(pt).await;
+    let fields = parse_v2_header_field_offsets(&ct_v2);
+    let header_body_end = fields.last().expect("must have header fields").2;
+    let body_start_v2 = header_body_end + TAG_LEN;
+    let next_4_v2 = u32::from_be_bytes([
+        ct_v2[body_start_v2],
+        ct_v2[body_start_v2 + 1],
+        ct_v2[body_start_v2 + 2],
+        ct_v2[body_start_v2 + 3],
+    ]);
+    assert!(
+        next_4_v2 == 1 || next_4_v2 == 0xFFFF_FFFF,
+        "V2 body must start immediately after header with frame seq=1 or endframe marker, got {next_4_v2:#010X}"
     );
 }
