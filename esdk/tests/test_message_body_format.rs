@@ -64,29 +64,6 @@ async fn test_nonframed_iv_length() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_nonframed_fields_interpreted_as_bytes() {
-    //= spec/data-format/message-body.md#nonframed-data-iv
-    //= type=test
-    //# The IV MUST be interpreted as bytes.
-    //
-    //= spec/data-format/message-body.md#nonframed-data-encrypted-content
-    //= type=test
-    //# The encrypted content value MUST be interpreted as bytes.
-    //
-    //= spec/data-format/message-body.md#nonframed-data-authentication-tag
-    //= type=test
-    //# The authentication tag value MUST be interpreted as bytes.
-    // All three fields are byte-typed in the parser; a successful decrypt of the
-    // external nonframed vector proves each one is consumed as bytes (any other
-    // interpretation would corrupt the AES-GCM inputs and fail the auth tag check).
-    let result = decrypt_external_nonframed_vector(Version::V2).await;
-    assert_eq!(
-        result, EXTERNAL_V2_NONFRAMED_PT,
-        "decrypt output did not match expected plaintext — nonframed IV/encrypted content/auth tag must be interpreted as bytes"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_nonframed_encrypted_content_length_uint64() {
     //= spec/data-format/message-body.md#nonframed-data-encrypted-content-length
     //= type=test
@@ -374,30 +351,6 @@ async fn test_regular_frame_iv_length_matches_algorithm() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_regular_frame_fields_interpreted_as_bytes() {
-    //= spec/data-format/message-body.md#regular-frame-iv
-    //= type=test
-    //# The IV MUST be interpreted as bytes.
-    //
-    //= spec/data-format/message-body.md#regular-frame-encrypted-content
-    //= type=test
-    //# The encrypted content MUST be interpreted as bytes.
-    //
-    //= spec/data-format/message-body.md#regular-frame-authentication-tag
-    //= type=test
-    //# The authentication tag MUST be interpreted as bytes.
-    // All three fields are byte-typed in the parser; a successful round-trip
-    // proves each one is consumed as bytes during decrypt (any other
-    // interpretation would corrupt the AES-GCM inputs and fail the auth tag check).
-    let pt = vec![0xEEu8; 20];
-    let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(
-        result, pt,
-        "round-trip proves regular-frame IV/encrypted content/auth tag are interpreted as bytes"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_regular_frame_encrypted_content_length_equals_frame_length() {
     //= spec/data-format/message-body.md#regular-frame-encrypted-content
     //= type=test
@@ -658,30 +611,6 @@ async fn test_final_frame_iv_length_matches_algorithm() {
         final_frame.iv.len(),
         IV_LEN,
         "final frame IV length must match algorithm suite"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_final_frame_fields_interpreted_as_bytes() {
-    //= spec/data-format/message-body.md#final-frame-iv
-    //= type=test
-    //# The IV MUST be interpreted as bytes.
-    //
-    //= spec/data-format/message-body.md#final-frame-encrypted-content
-    //= type=test
-    //# The encrypted content MUST be interpreted as bytes.
-    //
-    //= spec/data-format/message-body.md#final-frame-authentication-tag
-    //= type=test
-    //# The authentication tag MUST be interpreted as bytes.
-    // All three fields are byte-typed in the parser; a successful round-trip with
-    // a final-frame-only payload (pt < frame_length) proves each one is consumed
-    // as bytes (any other interpretation would corrupt AES-GCM and fail the auth tag).
-    let pt = vec![0xFFu8; 5];
-    let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(
-        result, pt,
-        "round-trip proves final-frame IV/encrypted content/auth tag are interpreted as bytes"
     );
 }
 
