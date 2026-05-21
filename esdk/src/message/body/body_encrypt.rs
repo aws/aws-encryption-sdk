@@ -67,7 +67,15 @@ pub(crate) fn construct_frame(
         //= reason=plaintext.len() is the length of the plaintext being encrypted in this frame
         //# - For [framed data](message-body.md#framed-data), this value MUST equal the length, in bytes,
         //# of the plaintext being encrypted in this frame.
-        input.plaintext.len() as u64,
+        {
+            let Ok(plaintext_len_u64) = u64::try_from(input.plaintext.len()) else {
+                return ser_err(&format!(
+                    "Plaintext length {} exceeds u64::MAX",
+                    input.plaintext.len()
+                ));
+            };
+            plaintext_len_u64
+        },
         aad,
     );
 
@@ -255,9 +263,14 @@ pub(crate) fn encrypt_and_serialize_body(
     max_plaintext_length: Option<usize>,
 ) -> Result<(), Error> {
     let mut total_data_size: usize = 0;
-    let frame_length = header.body.frame_length() as usize;
-    let iv_len = get_iv_length(&header.suite) as usize;
-    let auth_len = get_tag_length(&header.suite) as usize;
+    let Ok(frame_length) = usize::try_from(header.body.frame_length()) else {
+        return ser_err(&format!(
+            "Frame length {} exceeds usize::MAX",
+            header.body.frame_length()
+        ));
+    };
+    let iv_len = usize::from(get_iv_length(&header.suite));
+    let auth_len = usize::from(get_tag_length(&header.suite));
     let frame_len = frame_length + iv_len + auth_len + 4;
     let mut frame_buf = Vec::with_capacity(frame_len);
 

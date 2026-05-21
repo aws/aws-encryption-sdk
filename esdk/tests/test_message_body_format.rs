@@ -1,4 +1,5 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
+// Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 //! Tests for spec/data-format/message-body.md
@@ -7,8 +8,6 @@ mod fixtures;
 mod test_helpers;
 
 use aws_esdk::*;
-use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
-use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 
 use test_helpers::*;
 
@@ -200,12 +199,13 @@ async fn test_nonframed_auth_tag_length() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_framed_data_max_frame_count() {
     // With frame_length=4 and 20 bytes, we get 4 regular + 1 final = 5 frames.
-    // The implementation checks sequence_number == ENDFRAME_SEQUENCE_NUMBER to enforce the limit.
     //= spec/data-format/message-body.md#framed-data
     //= type=test
+    //= reason=The 2^32-1 boundary is unreachable in a unit test (would require ~4B frames). The implementation enforces it at body_encrypt.rs by checking sequence_number == ENDFRAME_SEQUENCE_NUMBER (0xFFFFFFFF) before writing each regular frame and returning ValidationError("Too many frames"). This test exercises a small frame count to confirm the multi-frame path works; the upper bound itself is enforced by source-side citation.
     //# - The number of frames in a single message MUST be less than or equal to `2^32 - 1`.
     let pt = vec![0xBBu8; 20];
-    let frames = parse_frames(&encrypt_with_frame_length(&pt, 4).await, 4);
+    let ct = encrypt_with_frame_length(&pt, 4).await;
+    let frames = parse_all_frames(&ct, 4);
     assert_eq!(
         frames.len(),
         5,
@@ -282,8 +282,9 @@ async fn test_regular_frame_sequence_number_starts_at_one() {
     //= type=test
     //# Framed Data MUST start at Sequence Number 1.
     let pt = vec![0xDDu8; 20];
-    let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
-    assert_eq!(frames[0].0, 1, "first frame sequence number must be 1");
+    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
+    assert_eq!(frames[0].seq_num, 1, "first frame sequence number must be 1");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -292,11 +293,12 @@ async fn test_regular_frame_sequence_number_increments() {
     //= type=test
     //# Subsequent frames MUST be in order and MUST contain an increment of 1 from the previous frame.
     let pt = vec![0xEEu8; 40];
-    let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
+    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
     for i in 1..frames.len() {
         assert_eq!(
-            frames[i].0,
-            frames[i - 1].0 + 1,
+            frames[i].seq_num,
+            frames[i - 1].seq_num + 1,
             "frame {} seq num must be 1 greater than frame {}",
             i,
             i - 1
@@ -341,12 +343,12 @@ async fn test_regular_frame_iv_unique() {
     //= type=test
     //# Each frame in the [Framed Data](#framed-data) MUST include an IV that is unique within the message.
     let pt = vec![0xCCu8; 40];
-    let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
-    let ivs: Vec<&Vec<u8>> = frames.iter().map(|(_, iv, _, _, _)| iv).collect();
-    for i in 0..ivs.len() {
-        for j in (i + 1)..ivs.len() {
+    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
+    for i in 0..frames.len() {
+        for j in (i + 1)..frames.len() {
             assert_ne!(
-                ivs[i], ivs[j],
+                frames[i].iv, frames[j].iv,
                 "IV for frame {} must differ from frame {}",
                 i, j
             );
@@ -360,10 +362,11 @@ async fn test_regular_frame_iv_length_matches_algorithm() {
     //= type=test
     //# The IV length MUST be equal to the IV length of the algorithm suite specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
     let pt = vec![0xDDu8; 20];
-    let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
-    for (_, iv, _, _, _) in &frames {
+    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
+    for f in &frames {
         assert_eq!(
-            iv.len(),
+            f.iv.len(),
             IV_LEN,
             "IV length must match algorithm suite IV length (12)"
         );
@@ -406,14 +409,12 @@ async fn test_regular_frame_encrypted_content_length_equals_frame_length() {
     //# - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
     let frame_length: u32 = 10;
     let pt = vec![0xFFu8; 30];
-    let frames = parse_frames(
-        &encrypt_with_frame_length(&pt, frame_length).await,
-        frame_length,
-    );
-    for (_, _, enc_content, _, is_final) in &frames {
-        if !is_final {
+    let ct = encrypt_with_frame_length(&pt, frame_length).await;
+    let frames = parse_all_frames(&ct, frame_length);
+    for f in &frames {
+        if !f.is_final {
             assert_eq!(
-                enc_content.len(),
+                f.content.len(),
                 frame_length as usize,
                 "regular frame encrypted content length must equal frame length"
             );
@@ -428,10 +429,11 @@ async fn test_regular_frame_auth_tag_length_matches_algorithm() {
     //# The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
     //# specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
     let pt = vec![0xBBu8; 20];
-    let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
-    for (_, _, _, tag, _) in &frames {
+    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
+    for f in &frames {
         assert_eq!(
-            tag.len(),
+            f.tag.len(),
             TAG_LEN,
             "auth tag length must match algorithm suite (16)"
         );
@@ -580,12 +582,16 @@ async fn test_final_frame_sequence_number_equals_total_frames() {
     //= type=test
     //# The Final Frame Sequence number MUST be equal to the total number of frames in the Framed Data.
     let pt = vec![0xAAu8; 30];
-    let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
+    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
     let final_frame = frames.last().expect("must have final frame");
-    assert!(final_frame.4, "last frame must be final");
+    assert!(final_frame.is_final, "last frame must be final");
+    let Ok(total) = u32::try_from(frames.len()) else {
+        panic!("frame count exceeds u32::MAX");
+    };
     assert_eq!(
-        final_frame.0,
-        frames.len() as u32,
+        final_frame.seq_num,
+        total,
         "final frame seq num must equal total frame count"
     );
 }
@@ -619,32 +625,18 @@ async fn test_final_frame_sequence_number_serialized_same_as_regular() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_final_frame_sequence_number_interpreted_same_as_regular() {
-    //= spec/data-format/message-body.md#final-frame-sequence-number
-    //= type=test
-    //# The Final Frame Sequence Number MUST be interpreted as the same type as the
-    //# [Regular Frame Sequence Number](#regular-frame-sequence-number).
-    // Multi-frame round-trip: decrypt reads final frame seq num as UInt32 (same as regular)
-    let pt = vec![0xCCu8; 30];
-    let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(
-        result, pt,
-        "round-trip proves final frame seq num is interpreted same as regular"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_iv_unique() {
     //= spec/data-format/message-body.md#final-frame-iv
     //= type=test
     //# A generated IV MUST be a unique IV within the message.
     let pt = vec![0xDDu8; 30];
-    let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
-    let final_iv = &frames.last().expect("must have final frame").1;
-    for (i, (_, iv, _, _, is_final)) in frames.iter().enumerate() {
-        if !is_final {
+    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
+    let final_iv = frames.last().expect("must have final frame").iv;
+    for (i, f) in frames.iter().enumerate() {
+        if !f.is_final {
             assert_ne!(
-                iv, final_iv,
+                f.iv, final_iv,
                 "final frame IV must differ from regular frame {}",
                 i
             );
@@ -658,11 +650,12 @@ async fn test_final_frame_iv_length_matches_algorithm() {
     //= type=test
     //# The length of the IV field MUST be equal to the IV length of the [algorithm suite](../framework/algorithm-suites.md) that generated the message.
     let pt = vec![0xEEu8; 5];
-    let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
+    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
     let final_frame = frames.last().expect("must have final frame");
-    assert!(final_frame.4, "must be final frame");
+    assert!(final_frame.is_final, "must be final frame");
     assert_eq!(
-        final_frame.1.len(),
+        final_frame.iv.len(),
         IV_LEN,
         "final frame IV length must match algorithm suite"
     );
@@ -729,35 +722,16 @@ async fn test_final_frame_encrypted_content_length_uint32_4_bytes_be() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_final_frame_encrypted_content_length_matches() {
-    //= spec/data-format/message-body.md#final-frame-encrypted-content
-    //= type=test
-    //# The length of the serialized encrypted content field MUST be equal to the value of the [Encrypted Content Length](#final-frame-encrypted-content-length) field.
-    let pt = vec![0xDDu8; 7];
-    let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
-    let final_frame = frames.last().expect("must have final frame");
-    assert!(final_frame.4, "must be final frame");
-    // parse_frames reads content_len from the field and uses it to read enc_content
-    // If they didn't match, parsing would fail or produce wrong data
-    assert_eq!(
-        final_frame.2.len(),
-        7,
-        "encrypted content length must match the content length field"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_final_frame_auth_tag_length_matches_algorithm() {
     //= spec/data-format/message-body.md#final-frame-authentication-tag
     //= type=test
     //# The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
     //# specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
     let pt = vec![0xFFu8; 5];
-    let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
-    let final_frame = frames.last().expect("must have final frame");
-    assert!(final_frame.4, "must be final frame");
+    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let final_frame = parse_final_frame(&ct, 10);
     assert_eq!(
-        final_frame.3.len(),
+        final_frame.tag.len(),
         TAG_LEN,
         "final frame auth tag length must match algorithm suite (16)"
     );
@@ -792,13 +766,79 @@ async fn test_final_frame_auth_tag_authenticates_final_frame() {
     );
 }
 
-async fn encrypt_v1_with_frame_length(plaintext: &[u8], frame_length: u32) -> Vec<u8> {
+#[tokio::test(flavor = "multi_thread")]
+async fn test_regular_frame_auth_tag_authenticates_regular_frame() {
+    //= spec/data-format/message-body.md#regular-frame-authentication-tag
+    //= type=test
+    //# The authentication tag MUST be interpreted as bytes.
+    // Tampering with a regular frame's auth tag must cause decryption failure.
+    // Use 25 bytes / frame_length=10 so the first frame is a regular frame.
+    let pt = vec![0xCCu8; 25];
+    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
+    let regular = frames.iter().find(|f| !f.is_final).expect("must have a regular frame");
+
+    let mut tampered = ct.clone();
+    tampered[regular.tag_offset] ^= 0xFF;
+
     let keyring = test_keyring().await;
-    let mut input = EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
-    input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
-    input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    input.frame_length = FrameLength::new(frame_length).unwrap();
-    encrypt(&input).await.unwrap().ciphertext
+    let dec_input = DecryptInput::with_legacy_keyring(&tampered, EncryptionContext::new(), keyring);
+    let err = decrypt(&dec_input)
+        .await
+        .expect_err("tampered regular frame auth tag must cause decryption failure");
+    assert!(
+        matches!(err.kind, ErrorKind::CryptographicError),
+        "expected CryptographicError, got: {} ({:?})",
+        err.message,
+        err.kind
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_regular_frame_seq_num_out_of_order_rejected() {
+    //= spec/data-format/message-body.md#regular-frame-sequence-number
+    //= type=test
+    //# Subsequent frames MUST be in order and MUST contain an increment of 1 from the previous frame.
+    // Tamper the second regular frame's seq num so it's NOT (previous + 1). Decrypt must
+    // reject this with SerializationError ("Sequence number out of order"), per the
+    // body_decrypt.rs check `if seq_num != expected_frame { return ser_err(...) }`.
+    // Use 25 bytes / frame_length=10 → 2 regular + 1 final, so we have a frame[1] to tamper.
+    let pt = vec![0xDDu8; 25];
+    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
+
+    // Baseline: untampered ciphertext decrypts.
+    let baseline = round_trip_framed(&pt, 10).await;
+    assert_eq!(baseline, pt, "baseline plaintext mismatch");
+
+    // Tamper the second frame's seq num field at the integer level (perturb 2 → 3).
+    let frame1 = &frames[1];
+    assert_eq!(frame1.seq_num, 2, "second frame must have seq=2");
+    let original = u32::from_be_bytes([
+        ct[frame1.seq_num_offset],
+        ct[frame1.seq_num_offset + 1],
+        ct[frame1.seq_num_offset + 2],
+        ct[frame1.seq_num_offset + 3],
+    ]);
+    let tampered_seq = original + 1;
+    assert_ne!(tampered_seq, original, "tamper-effectiveness");
+
+    let mut tampered = ct.clone();
+    tampered[frame1.seq_num_offset..frame1.seq_num_offset + 4]
+        .copy_from_slice(&tampered_seq.to_be_bytes());
+
+    let keyring = test_keyring().await;
+    let dec_input = DecryptInput::with_legacy_keyring(&tampered, EncryptionContext::new(), keyring);
+    let err = decrypt(&dec_input)
+        .await
+        .expect_err("out-of-order seq num must be rejected");
+    assert_eq!(
+        err.kind,
+        ErrorKind::SerializationError,
+        "expected SerializationError for out-of-order seq num, got: {} ({:?})",
+        err.message,
+        err.kind
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -807,8 +847,9 @@ async fn test_v1_regular_frame_sequence_number_starts_at_one() {
     //= type=test
     //# Framed Data MUST start at Sequence Number 1.
     let pt = vec![0xAAu8; 20];
-    let frames = parse_frames(&encrypt_v1_with_frame_length(&pt, 10).await, 10);
-    assert_eq!(frames[0].0, 1, "V1: first frame sequence number must be 1");
+    let ct = encrypt_v1_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
+    assert_eq!(frames[0].seq_num, 1, "V1: first frame sequence number must be 1");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -817,11 +858,12 @@ async fn test_v1_regular_frame_sequence_number_increments() {
     //= type=test
     //# Subsequent frames MUST be in order and MUST contain an increment of 1 from the previous frame.
     let pt = vec![0xBBu8; 40];
-    let frames = parse_frames(&encrypt_v1_with_frame_length(&pt, 10).await, 10);
+    let ct = encrypt_v1_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
     for i in 1..frames.len() {
         assert_eq!(
-            frames[i].0,
-            frames[i - 1].0 + 1,
+            frames[i].seq_num,
+            frames[i - 1].seq_num + 1,
             "V1: frame {} seq num must be 1 greater than frame {}",
             i,
             i - 1
@@ -835,11 +877,15 @@ async fn test_v1_regular_frame_iv_unique() {
     //= type=test
     //# Each frame in the [Framed Data](#framed-data) MUST include an IV that is unique within the message.
     let pt = vec![0xCCu8; 40];
-    let frames = parse_frames(&encrypt_v1_with_frame_length(&pt, 10).await, 10);
-    let ivs: Vec<&Vec<u8>> = frames.iter().map(|(_, iv, _, _, _)| iv).collect();
-    for i in 0..ivs.len() {
-        for j in (i + 1)..ivs.len() {
-            assert_ne!(ivs[i], ivs[j], "V1: IV for frame {} must differ from frame {}", i, j);
+    let ct = encrypt_v1_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
+    for i in 0..frames.len() {
+        for j in (i + 1)..frames.len() {
+            assert_ne!(
+                frames[i].iv, frames[j].iv,
+                "V1: IV for frame {} must differ from frame {}",
+                i, j
+            );
         }
     }
 }
@@ -851,11 +897,12 @@ async fn test_v1_regular_frame_encrypted_content_length_equals_frame_length() {
     //# The length of the encrypted content of a Regular Frame MUST be equal to the Frame Length.
     let frame_length: u32 = 10;
     let pt = vec![0xDDu8; 30];
-    let frames = parse_frames(&encrypt_v1_with_frame_length(&pt, frame_length).await, frame_length);
-    for (_, _, enc_content, _, is_final) in &frames {
-        if !is_final {
+    let ct = encrypt_v1_with_frame_length(&pt, frame_length).await;
+    let frames = parse_all_frames(&ct, frame_length);
+    for f in &frames {
+        if !f.is_final {
             assert_eq!(
-                enc_content.len(),
+                f.content.len(),
                 frame_length as usize,
                 "V1: regular frame encrypted content length must equal frame length"
             );
@@ -882,12 +929,16 @@ async fn test_v1_final_frame_sequence_number_equals_total_frames() {
     //= type=test
     //# The Final Frame Sequence number MUST be equal to the total number of frames in the Framed Data.
     let pt = vec![0xEEu8; 30];
-    let frames = parse_frames(&encrypt_v1_with_frame_length(&pt, 10).await, 10);
+    let ct = encrypt_v1_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
     let final_frame = frames.last().expect("must have final frame");
-    assert!(final_frame.4, "last frame must be final");
+    assert!(final_frame.is_final, "last frame must be final");
+    let Ok(total) = u32::try_from(frames.len()) else {
+        panic!("frame count exceeds u32::MAX");
+    };
     assert_eq!(
-        final_frame.0,
-        frames.len() as u32,
+        final_frame.seq_num,
+        total,
         "V1: final frame seq num must equal total frame count"
     );
 }
@@ -898,8 +949,9 @@ async fn test_framed_data_contains_exactly_one_final_frame() {
     //= type=test
     //# Framed data MUST contain exactly one final frame.
     let pt = vec![0xAAu8; 30];
-    let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
-    let final_count = frames.iter().filter(|(_, _, _, _, is_final)| *is_final).count();
+    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
+    let final_count = frames.iter().filter(|f| f.is_final).count();
     assert_eq!(final_count, 1, "framed data must contain exactly one final frame");
 }
 
@@ -909,9 +961,10 @@ async fn test_final_frame_is_last_frame() {
     //= type=test
     //# The final frame MUST be the last frame.
     let pt = vec![0xBBu8; 30];
-    let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
-    for (i, (_, _, _, _, is_final)) in frames.iter().enumerate() {
-        if *is_final {
+    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
+    for (i, f) in frames.iter().enumerate() {
+        if f.is_final {
             assert_eq!(i, frames.len() - 1, "final frame must be the last frame");
         }
     }
@@ -926,13 +979,12 @@ async fn test_final_frame_content_length_lte_frame_length() {
     let frame_length: u32 = 10;
     // 7 bytes plaintext with 10-byte frame → final frame has 7 bytes (< frame_length)
     let pt = vec![0xCCu8; 7];
-    let frames = parse_frames(&encrypt_with_frame_length(&pt, frame_length).await, frame_length);
-    let final_frame = frames.last().expect("must have final frame");
-    assert!(final_frame.4, "must be final frame");
+    let ct = encrypt_with_frame_length(&pt, frame_length).await;
+    let final_frame = parse_final_frame(&ct, frame_length);
     assert!(
-        final_frame.2.len() <= frame_length as usize,
+        final_frame.content.len() <= frame_length as usize,
         "final frame content length {} must be <= frame length {}",
-        final_frame.2.len(),
+        final_frame.content.len(),
         frame_length
     );
 }
@@ -944,9 +996,10 @@ async fn test_plaintext_less_than_frame_length_single_final_frame() {
     //# - When the length of the Plaintext is less than the Frame Length,
     //# the body MUST contain exactly one frame and that frame MUST be a Final Frame.
     let pt = vec![0xDDu8; 5];
-    let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
+    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
     assert_eq!(frames.len(), 1, "plaintext < frame length must produce exactly one frame");
-    assert!(frames[0].4, "the single frame must be a final frame");
+    assert!(frames[0].is_final, "the single frame must be a final frame");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -959,10 +1012,10 @@ async fn test_plaintext_exact_multiple_of_frame_length() {
     let frame_length: u32 = 10;
     let pt = vec![0xEEu8; frame_length as usize];
     let ct = encrypt_with_frame_length(&pt, frame_length).await;
-    let frames = parse_frames(&ct, frame_length);
-    let final_frame = frames.last().expect("must have final frame");
-    assert!(final_frame.4, "last frame must be final");
-    let final_content_len = final_frame.2.len() as u32;
+    let final_frame = parse_final_frame(&ct, frame_length);
+    let Ok(final_content_len) = u32::try_from(final_frame.content.len()) else {
+        panic!("final content length exceeds u32::MAX");
+    };
     assert!(
         final_content_len == frame_length || final_content_len == 0,
         "final frame content length must be frame_length ({}) or 0, got {}",

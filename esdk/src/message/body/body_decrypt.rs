@@ -27,15 +27,20 @@ pub(crate) fn read_and_decrypt_framed_message_body(
 
     //= spec/data-format/message-body.md#regular-frame-iv
     //# The IV length MUST be equal to the IV length of the algorithm suite specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
-    let mut iv = vec![0u8; get_iv_length(&header.suite) as usize];
+    let mut iv = vec![0u8; usize::from(get_iv_length(&header.suite))];
 
     //= spec/data-format/message-body.md#regular-frame-authentication-tag
     //# The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
     //# specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
-    let mut auth_tag = vec![0u8; get_tag_length(&header.suite) as usize];
+    let mut auth_tag = vec![0u8; usize::from(get_tag_length(&header.suite))];
     let alg = get_encrypt(&header.suite)?;
     let frame_length_u64 = u64::from(header.body.frame_length());
-    let frame_length_usize = header.body.frame_length() as usize;
+    let Ok(frame_length_usize) = usize::try_from(header.body.frame_length()) else {
+        return ser_err(&format!(
+            "Frame length {} exceeds usize::MAX",
+            header.body.frame_length()
+        ));
+    };
     let mut enc_content = vec![0u8; frame_length_usize];
     let mut result = vec![0; frame_length_usize];
     let mut aad = Vec::new();
@@ -211,7 +216,13 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 //# field in the message header.
                 {
                     debug_assert!(enc_content.len() <= frame_length_usize);
-                    enc_content.len() as u64
+                    let Ok(enc_len_u64) = u64::try_from(enc_content.len()) else {
+                        return ser_err(&format!(
+                            "Final-frame encrypted content length {} exceeds u64::MAX",
+                            enc_content.len()
+                        ));
+                    };
+                    enc_len_u64
                 },
                 &mut aad,
             );
@@ -472,10 +483,10 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     //# The IV MUST be interpreted as bytes.
     let iv = serialize_functions::read_vec(
         ciphertext,
-        get_iv_length(&header.suite) as usize,
+        usize::from(get_iv_length(&header.suite)),
         sig_digest,
     )?;
-    debug_assert_eq!(iv.len(), get_iv_length(&header.suite) as usize);
+    debug_assert_eq!(iv.len(), usize::from(get_iv_length(&header.suite)));
 
     //= spec/data-format/message-body.md#nonframed-data-encrypted-content-length
     //# The encrypted content length MUST be interpreted as a UInt64.
@@ -505,7 +516,11 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     )?;
     // read_seq_u64_bounded reads the u64 length then reads exactly that many bytes,
     // so enc_content.len() is guaranteed to equal the deserialized content length field.
-    debug_assert!(enc_content.len() as u64 <= header::SAFE_MAX_ENCRYPT);
+    debug_assert!(
+        u64::try_from(enc_content.len())
+            .map(|n| n <= header::SAFE_MAX_ENCRYPT)
+            .unwrap_or(false)
+    );
 
     // Authentication Tag
     //= spec/data-format/message-body.md#nonframed-data-authentication-tag
@@ -523,10 +538,10 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     //# The authentication tag value MUST be interpreted as bytes.
     let auth_tag = serialize_functions::read_vec(
         ciphertext,
-        get_tag_length(&header.suite) as usize,
+        usize::from(get_tag_length(&header.suite)),
         sig_digest,
     )?;
-    debug_assert_eq!(auth_tag.len(), get_tag_length(&header.suite) as usize);
+    debug_assert_eq!(auth_tag.len(), usize::from(get_tag_length(&header.suite)));
     let mut aad = Vec::new();
 
     //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
@@ -568,7 +583,12 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
             //= reason=enc_content.len() equals the length of the encrypted content
             //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
             //# equal to the length of the plaintext that was encrypted.
-            let content_len = enc_content.len() as u64;
+            let Ok(content_len) = u64::try_from(enc_content.len()) else {
+                return ser_err(&format!(
+                    "Nonframed encrypted content length {} exceeds u64::MAX",
+                    enc_content.len()
+                ));
+            };
             //= spec/client-apis/decrypt.md#decrypt-the-message-body
             //= reason=enc_content.len() is the nonframed data encrypted content length deserialized from the body
             //# If this is nonframed data, this MUST be determined by using the [nonframed data encrypted content length](../data-format/message-body.md#nonframed-data-encrypted-content-length).
