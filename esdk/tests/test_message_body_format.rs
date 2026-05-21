@@ -25,7 +25,8 @@ async fn test_nonframed_data_serialization_order() {
     //# Encrypted Content Length,
     //# Encrypted Content,
     //# and Authentication Tag.
-    // This test verifies the fields are consumed in order via successful decrypt.
+    // This test verifies the fields are consumed in order via successful decrypt,
+    // then verifies each field's parsed length is consistent with the spec.
     let msg = EXTERNAL_V2_NONFRAMED_CT;
     let body = parse_nonframed_body(msg);
     let result = decrypt_external_nonframed_vector(Version::V2).await;
@@ -33,13 +34,20 @@ async fn test_nonframed_data_serialization_order() {
         result, EXTERNAL_V2_NONFRAMED_PT,
         "decrypt output did not match expected plaintext — nonframed body fields are not being consumed in the spec-required order"
     );
-    // Also verify the parsed field sizes are consistent
+
+    // Field 1 of 4: IV — fixed-width, must equal IV Length (12 bytes).
     assert_eq!(body.iv.len(), IV_LEN);
+
+    // Field 2 of 4: Encrypted Content Length — fixed-width UInt64 (8 bytes).
     assert_eq!(body.encrypted_content_length_bytes.len(), 8);
+
+    // Field 3 of 4: Encrypted Content — variable-width, length given by Field 2.
     assert_eq!(
         body.encrypted_content.len(),
         body.encrypted_content_length as usize
     );
+
+    // Field 4 of 4: Authentication Tag — fixed-width, must equal algorithm suite tag length (16 bytes).
     assert_eq!(body.auth_tag.len(), TAG_LEN);
 }
 
