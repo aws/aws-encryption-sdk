@@ -230,7 +230,7 @@ pub(crate) fn read_edk(
     //= spec/data-format/message-header.md#encrypted-data-key
     //= type=implication
     //# The encrypted data key MUST be interpreted as bytes.
-    let ciphertext = read_seq_u16(r, raw)?;
+    let edk = read_seq_u16(r, raw)?;
 
-    Ok(EncryptedDataKey::new(provider_id, provider_info, ciphertext))
+    Ok(EncryptedDataKey::new(provider_id, provider_info, edk))
 }
