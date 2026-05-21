@@ -125,6 +125,12 @@ async fn test_empty_plaintext_constructs_empty_final_frame() {
     assert_eq!(regular, 0);
     assert_eq!(final_count, 1);
     assert_eq!(final_frame_content_length(&ct).unwrap(), 0);
+
+    // Round-trip cross-check: empty plaintext must decrypt back to empty.
+    // Regression: the decrypt path's preallocated `result` buffer would otherwise
+    // be returned unchanged, leaking frame_length zero bytes.
+    let result = round_trip_framed(b"", 4096).await;
+    assert_eq!(result, b"", "empty plaintext must round-trip to empty");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -167,20 +173,6 @@ async fn test_construct_body_plaintext_length_bound_runtime_enforcement() {
     //# this operation MUST immediately fail.
     let err = result.expect_err("must fail mid-stream");
     assert!(matches!(err.kind, ErrorKind::ValidationError), "got {:?}", err.kind);
-}
-
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_empty_plaintext_round_trip_returns_empty() {
-    //= spec/client-apis/encrypt.md#construct-the-body
-    //= type=test
-    //= reason=encrypt of empty plaintext produces a single empty final frame; decrypt of that ciphertext must round-trip to an empty plaintext (regression test for the case where the decrypt path's preallocated `result` buffer would otherwise be returned unchanged, leaking frame_length zero bytes)
-    //# If an end to the input has been indicated, there are no more consumable plaintext bytes to process,
-    //# and a final frame has not yet been constructed,
-    //# this operation MUST [construct an empty final frame](#construct-a-frame).
-    let pt: &[u8] = b"";
-    let result = round_trip_framed(pt, 4096).await;
-    assert_eq!(result, pt, "empty plaintext must round-trip to empty");
 }
 
 #[tokio::test(flavor = "multi_thread")]

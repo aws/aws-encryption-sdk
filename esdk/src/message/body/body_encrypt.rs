@@ -35,9 +35,26 @@ pub(crate) fn construct_frame(
 ) -> Result<(), Error> {
     frame_buf.clear();
 
+    // AAD
+
     //= spec/client-apis/encrypt.md#construct-a-frame
     //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
     //# constructed according to the [Message Body AAD](../data-format/message-body-aad.md) specification, as follows:
+    //
+    //= spec/client-apis/encrypt.md#construct-a-frame
+    //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
+    //# equal to the length of the plaintext being encrypted.
+    //
+    //= spec/data-format/message-body-aad.md#content-length
+    //= reason=plaintext.len() is the length of the plaintext being encrypted in this frame
+    //# - For [framed data](message-body.md#framed-data), this value MUST equal the length, in bytes,
+    //# of the plaintext being encrypted in this frame.
+    let Ok(plaintext_len_u64) = u64::try_from(input.plaintext.len()) else {
+        return ser_err(&format!(
+            "Plaintext length {} exceeds u64::MAX",
+            input.plaintext.len()
+        ));
+    };
     body_aad(
         //= spec/client-apis/encrypt.md#construct-a-frame
         //# - The [message ID](../data-format/message-body-aad.md#message-id) MUST be the same as the
@@ -59,25 +76,11 @@ pub(crate) fn construct_frame(
         //= reason=The sequence_number parameter is the frame sequence number passed from encrypt_and_serialize_body
         //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
         input.sequence_number,
-        //= spec/client-apis/encrypt.md#construct-a-frame
-        //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
-        //# equal to the length of the plaintext being encrypted.
-        //
-        //= spec/data-format/message-body-aad.md#content-length
-        //= reason=plaintext.len() is the length of the plaintext being encrypted in this frame
-        //# - For [framed data](message-body.md#framed-data), this value MUST equal the length, in bytes,
-        //# of the plaintext being encrypted in this frame.
-        {
-            let Ok(plaintext_len_u64) = u64::try_from(input.plaintext.len()) else {
-                return ser_err(&format!(
-                    "Plaintext length {} exceeds u64::MAX",
-                    input.plaintext.len()
-                ));
-            };
-            plaintext_len_u64
-        },
+        plaintext_len_u64,
         aad,
     );
+
+    // IV (computed; serialized below)
 
     //= spec/client-apis/encrypt.md#construct-a-frame
     //# - The IV MUST be the [sequence number](../data-format/message-body-aad.md#sequence-number)
@@ -100,6 +103,8 @@ pub(crate) fn construct_frame(
     //# Sequence Number End
     //# and Encrypted Content Length.
     if input.is_final {
+        // Sequence Number End
+
         //= spec/client-apis/encrypt.md#construct-a-frame
         //= reason=The following lines serialize SeqNumEnd, SeqNum, IV, EncContentLen, EncContent, and AuthTag in order per the Final Frame spec
         //# For a final frame, each field MUST be serialized according to its specification:
@@ -120,6 +125,8 @@ pub(crate) fn construct_frame(
         //# The value MUST be encoded as the 4 bytes `FF FF FF FF` in hexadecimal notation.
         write_u32(frame_buf, ENDFRAME_SEQUENCE_NUMBER)?;
     }
+
+    // Sequence Number
 
     //= spec/client-apis/encrypt.md#construct-a-frame
     //= reason=The following lines serialize SeqNum, IV, EncContent, and AuthTag in order per the Regular Frame spec
@@ -150,6 +157,8 @@ pub(crate) fn construct_frame(
     //# The value MUST be the sequence number of this frame.
     write_u32(frame_buf, input.sequence_number)?;
 
+    // IV
+
     //= spec/client-apis/encrypt.md#construct-a-frame
     //# - MUST serialize the [IV](../data-format/message-body.md#regular-frame-iv).
     //
@@ -166,6 +175,8 @@ pub(crate) fn construct_frame(
     write_bytes(frame_buf, iv)?;
 
     if input.is_final {
+        // Encrypted Content Length
+
         //= spec/client-apis/encrypt.md#construct-a-frame
         //# - MUST serialize the [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length).
         //
@@ -184,27 +195,15 @@ pub(crate) fn construct_frame(
         write_u32(frame_buf, enc_content_len)?;
     }
 
+    // Encrypted Content + Authentication Tag
+
     //= spec/client-apis/encrypt.md#construct-a-frame
     //# To construct a regular or final frame that represents the next frame in the encrypted message's body,
     //# the Encrypt operation MUST calculate the encrypted content and an authentication tag using the
     //# [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# specified by the [algorithm suite](../framework/algorithm-suites.md),
     //# with the following inputs:
-    aes_encrypt(
-        input.alg,
-        iv,
-        //= spec/client-apis/encrypt.md#construct-a-frame
-        //= reason=input.key is set from the derived data key in encrypt_and_serialize_body
-        //# - The cipherkey MUST be the derived data key
-        input.key,
-        //= spec/client-apis/encrypt.md#construct-a-frame
-        //# - The plaintext MUST be the next subsequence of consumable plaintext bytes that have not yet been encrypted.
-        input.plaintext,
-        aad,
-        frame_buf,
-    )?;
-
-    // aes_encrypt writes encrypted content followed by authentication tag to frame_buf
+    //
     //= spec/client-apis/encrypt.md#construct-a-frame
     //# - MUST serialize the [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content).
     //
@@ -232,6 +231,21 @@ pub(crate) fn construct_frame(
     //
     //= spec/client-apis/encrypt.md#construct-a-frame
     //# The value MUST be the authentication tag output when calculating the encrypted content for this frame.
+    aes_encrypt(
+        input.alg,
+        iv,
+        //= spec/client-apis/encrypt.md#construct-a-frame
+        //= reason=input.key is set from the derived data key in encrypt_and_serialize_body
+        //# - The cipherkey MUST be the derived data key
+        input.key,
+        //= spec/client-apis/encrypt.md#construct-a-frame
+        //# - The plaintext MUST be the next subsequence of consumable plaintext bytes that have not yet been encrypted.
+        input.plaintext,
+        aad,
+        frame_buf,
+    )?;
+
+    // Frame release
 
     //= spec/client-apis/encrypt.md#construct-a-frame
     //= reason=Frame is fully serialized into frame_buf before being written to ciphertext; frame_buf.clear() at function start and write_bytes(ciphertext, frame_buf) here ensure atomic release

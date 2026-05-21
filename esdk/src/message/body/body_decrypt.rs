@@ -197,6 +197,21 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             //= spec/client-apis/decrypt.md#decrypt-the-message-body
             //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
             //# constructed according to the [Message Body AAD](../data-format/message-body-aad.md) specification, as follows:
+            //
+            //= spec/client-apis/decrypt.md#decrypt-the-message-body
+            //# If this is a final frame, this MUST be determined by using the [final frame encrypted content length](../data-format/message-body.md#final-frame-encrypted-content-length).
+            //
+            //= spec/data-format/message-body-aad.md#content-length
+            //# - For the [final frame](message-body.md#final-frame), this value MUST be greater than or equal to
+            //# 0 and less than or equal to the value of the [frame length](message-header.md#frame-length)
+            //# field in the message header.
+            debug_assert!(enc_content.len() <= frame_length_usize);
+            let Ok(final_content_len_u64) = u64::try_from(enc_content.len()) else {
+                return ser_err(&format!(
+                    "Final-frame encrypted content length {} exceeds u64::MAX",
+                    enc_content.len()
+                ));
+            };
             body_aad(
                 //= spec/client-apis/decrypt.md#decrypt-the-message-body
                 //= reason=header.body.message_id() is the message ID deserialized from the header
@@ -218,25 +233,11 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be the sequence
                 //# number deserialized from the frame being decrypted.
                 seq_num,
-                //= spec/client-apis/decrypt.md#decrypt-the-message-body
-                //# If this is a final frame, this MUST be determined by using the [final frame encrypted content length](../data-format/message-body.md#final-frame-encrypted-content-length).
-                //
-                //= spec/data-format/message-body-aad.md#content-length
-                //# - For the [final frame](message-body.md#final-frame), this value MUST be greater than or equal to
-                //# 0 and less than or equal to the value of the [frame length](message-header.md#frame-length)
-                //# field in the message header.
-                {
-                    debug_assert!(enc_content.len() <= frame_length_usize);
-                    let Ok(enc_len_u64) = u64::try_from(enc_content.len()) else {
-                        return ser_err(&format!(
-                            "Final-frame encrypted content length {} exceeds u64::MAX",
-                            enc_content.len()
-                        ));
-                    };
-                    enc_len_u64
-                },
+                final_content_len_u64,
                 &mut aad,
             );
+
+            // Decrypt + authenticate
 
             //= spec/client-apis/decrypt.md#decrypt-the-message-body
             //# Once at least a single frame is deserialized (or the entire body in the nonframed case),
@@ -339,6 +340,8 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //# of the previous frame.
         expected_frame += 1;
 
+        // IV
+
         //= spec/client-apis/decrypt.md#decrypt-the-message-body
         //= reason=read_bytes reads IV bytes from the regular frame
         //# - MUST deserialize the [IV](../data-format/message-body.md#regular-frame-iv).
@@ -353,6 +356,8 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //# the [signature verification](#verify-the-signature).
         read_bytes(ciphertext, &mut iv, sig_digest)?;
 
+        // Encrypted Content
+
         //= spec/client-apis/decrypt.md#decrypt-the-message-body
         //= reason=read_bytes reads the encrypted content bytes from the regular frame
         //# - MUST deserialize the [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content).
@@ -365,6 +370,8 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //# The encrypted content MUST be interpreted as bytes.
         read_bytes(ciphertext, &mut enc_content, sig_digest)?;
 
+        // Authentication Tag
+
         //= spec/client-apis/decrypt.md#decrypt-the-message-body
         //= reason=read_bytes reads the authentication tag bytes from the regular frame
         //# - MUST deserialize the [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag).
@@ -373,9 +380,25 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //# The authentication tag MUST be interpreted as bytes.
         read_bytes(ciphertext, &mut auth_tag, sig_digest)?;
 
+        // AAD
+
         //= spec/client-apis/decrypt.md#decrypt-the-message-body
         //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
         //# constructed according to the [Message Body AAD](../data-format/message-body-aad.md) specification, as follows:
+        //
+        //= spec/client-apis/decrypt.md#decrypt-the-message-body
+        //# If this is a regular frame, this MUST be determined by using the [frame length](../data-format/message-header.md#frame-length)
+        //# deserialized from the message header.
+        //
+        //= spec/data-format/message-body-aad.md#content-length
+        //# - For [regular frames](message-body.md#regular-frame), this value MUST equal the value of
+        //# the [frame length](message-header.md#frame-length) field in the message header.
+        //
+        //= spec/client-apis/decrypt.md#decrypt-the-message-body
+        //= reason=frame_length_u64 equals the frame length from the header, which equals the plaintext length for regular frames
+        //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
+        //# equal to the length of the plaintext that was encrypted.
+        debug_assert_eq!(enc_content.len(), frame_length_usize);
         body_aad(
             //= spec/client-apis/decrypt.md#decrypt-the-message-body
             //= reason=header.body.message_id() is the message ID deserialized from the header
@@ -401,24 +424,11 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             //= reason=seq_num is the frame sequence number read from the regular frame
             //# For [framed data](message-body.md#framed-data), the value of this field MUST be the [frame sequence number](message-body.md#regular-frame-sequence-number).
             seq_num,
-            //= spec/client-apis/decrypt.md#decrypt-the-message-body
-            //# If this is a regular frame, this MUST be determined by using the [frame length](../data-format/message-header.md#frame-length)
-            //# deserialized from the message header.
-            //
-            //= spec/data-format/message-body-aad.md#content-length
-            //# - For [regular frames](message-body.md#regular-frame), this value MUST equal the value of
-            //# the [frame length](message-header.md#frame-length) field in the message header.
-            //
-            //= spec/client-apis/decrypt.md#decrypt-the-message-body
-            //= reason=frame_length_u64 equals the frame length from the header, which equals the plaintext length for regular frames
-            //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
-            //# equal to the length of the plaintext that was encrypted.
-            {
-                debug_assert_eq!(enc_content.len(), frame_length_usize);
-                frame_length_u64
-            },
+            frame_length_u64,
             &mut aad,
         );
+
+        // Decrypt + authenticate
 
         //= spec/client-apis/decrypt.md#decrypt-the-message-body
         //= reason=aes_decrypt is called before write_bytes; the ? operator prevents any plaintext release on decryption failure
@@ -534,11 +544,10 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     )?;
     // read_seq_u64_bounded reads the u64 length then reads exactly that many bytes,
     // so enc_content.len() is guaranteed to equal the deserialized content length field.
-    debug_assert!(
-        u64::try_from(enc_content.len())
-            .map(|n| n <= header::SAFE_MAX_ENCRYPT)
-            .unwrap_or(false)
-    );
+    debug_assert!(matches!(
+        u64::try_from(enc_content.len()),
+        Ok(n) if n <= header::SAFE_MAX_ENCRYPT
+    ));
 
     // Authentication Tag
     //= spec/data-format/message-body.md#nonframed-data-authentication-tag
@@ -565,6 +574,27 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
     //# constructed with:
+    //= spec/data-format/message-body-aad.md#content-length
+    //# - For [non-framed data](message-body.md#nonframed-data), this value MUST equal the length, in bytes,
+    //# of the plaintext data provided to the algorithm for encryption.
+    //
+    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
+    //# - The [content length](../data-format/message-body-aad.md#content-length) MUST equal the length of the plaintext.
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= reason=enc_content.len() equals the length of the encrypted content
+    //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
+    //# equal to the length of the plaintext that was encrypted.
+    let Ok(nonframed_content_len_u64) = u64::try_from(enc_content.len()) else {
+        return ser_err(&format!(
+            "Nonframed encrypted content length {} exceeds u64::MAX",
+            enc_content.len()
+        ));
+    };
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= reason=enc_content.len() is the nonframed data encrypted content length deserialized from the body
+    //# If this is nonframed data, this MUST be determined by using the [nonframed data encrypted content length](../data-format/message-body.md#nonframed-data-encrypted-content-length).
+    debug_assert!(nonframed_content_len_u64 <= header::SAFE_MAX_ENCRYPT);
     body_aad(
         header.body.message_id(),
         //= spec/data-format/message-body-aad.md#body-aad-content
@@ -577,42 +607,18 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
         BodyAADContent::SingleBlock,
         //= spec/data-format/message-body-aad.md#sequence-number
         //# For [non-framed data](message-body.md#nonframed-data), the value of this field MUST be `1`.
+        //
+        //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
+        //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be `1`.
+        //
+        //= spec/client-apis/decrypt.md#decrypt-the-message-body
+        //= reason=NONFRAMED_SEQUENCE_NUMBER is defined as 1
+        //# If this is nonframed data, this value MUST be 1.
         {
-            //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
-            //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be `1`.
-            //
-            //= spec/client-apis/decrypt.md#decrypt-the-message-body
-            //= reason=NONFRAMED_SEQUENCE_NUMBER is defined as 1
-            //# If this is nonframed data, this value MUST be 1.
             debug_assert_eq!(header::NONFRAMED_SEQUENCE_NUMBER, 1);
-            //= spec/client-apis/decrypt.md#decrypt-the-message-body
-            //= reason=NONFRAMED_SEQUENCE_NUMBER is the constant 1
-            //# If this is nonframed data, this value MUST be 1.
             header::NONFRAMED_SEQUENCE_NUMBER
         },
-        //= spec/data-format/message-body-aad.md#content-length
-        //# - For [non-framed data](message-body.md#nonframed-data), this value MUST equal the length, in bytes,
-        //# of the plaintext data provided to the algorithm for encryption.
-        {
-            //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
-            //# - The [content length](../data-format/message-body-aad.md#content-length) MUST equal the length of the plaintext.
-            //
-            //= spec/client-apis/decrypt.md#decrypt-the-message-body
-            //= reason=enc_content.len() equals the length of the encrypted content
-            //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
-            //# equal to the length of the plaintext that was encrypted.
-            let Ok(content_len) = u64::try_from(enc_content.len()) else {
-                return ser_err(&format!(
-                    "Nonframed encrypted content length {} exceeds u64::MAX",
-                    enc_content.len()
-                ));
-            };
-            //= spec/client-apis/decrypt.md#decrypt-the-message-body
-            //= reason=enc_content.len() is the nonframed data encrypted content length deserialized from the body
-            //# If this is nonframed data, this MUST be determined by using the [nonframed data encrypted content length](../data-format/message-body.md#nonframed-data-encrypted-content-length).
-            debug_assert!(content_len <= header::SAFE_MAX_ENCRYPT);
-            content_len
-        },
+        nonframed_content_len_u64,
         &mut aad,
     );
 
