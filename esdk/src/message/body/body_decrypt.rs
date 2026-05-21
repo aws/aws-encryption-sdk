@@ -111,6 +111,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             // Sequence Number End — already read above (the 4 bytes that matched ENDFRAME_SEQUENCE_NUMBER).
 
             // Sequence Number
+
             //= spec/client-apis/decrypt.md#decrypt-the-message-body
             //= reason=read_u32 reads the final frame sequence number after the ENDFRAME marker
             //# - MUST deserialize the [Sequence Number](../data-format/message-body.md#final-frame-sequence-number).
@@ -130,6 +131,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             }
 
             // IV
+
             //= spec/client-apis/decrypt.md#decrypt-the-message-body
             //= reason=read_bytes reads IV bytes from the final frame
             //# - MUST deserialize the [IV](../data-format/message-body.md#final-frame-iv).
@@ -142,6 +144,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             read_bytes(ciphertext, &mut iv, sig_digest)?;
 
             // Encrypted Content Length + Encrypted Content
+
             //= spec/client-apis/decrypt.md#decrypt-the-message-body
             //= reason=read_seq_u32_bounded reads the encrypted content length field from the final frame
             //# - MUST deserialize the [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length).
@@ -178,6 +181,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             )?;
 
             // Authentication Tag
+
             //= spec/client-apis/decrypt.md#decrypt-the-message-body
             //= reason=read_bytes reads the authentication tag bytes from the final frame
             //# - MUST deserialize the [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag).
