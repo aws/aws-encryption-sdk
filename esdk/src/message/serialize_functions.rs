@@ -88,7 +88,7 @@ pub(crate) fn write_bytes(w: &mut dyn SafeWrite, data: &[u8]) -> Result<(), Erro
 
 // Big-endian fixed-width writers.
 pub(crate) fn write_u8(w: &mut dyn SafeWrite, data: u8) -> Result<(), Error> {
-    write_bytes(w, &[data])
+    write_bytes(w, &data.to_be_bytes())
 }
 pub(crate) fn write_u16(w: &mut dyn SafeWrite, data: u16) -> Result<(), Error> {
     write_bytes(w, &data.to_be_bytes())
