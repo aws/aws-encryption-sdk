@@ -80,7 +80,7 @@ pub(crate) fn construct_frame(
         aad,
     );
 
-    // IV (computed; serialized below)
+    // IV computation
 
     //= spec/client-apis/encrypt.md#construct-a-frame
     //# - The IV MUST be the [sequence number](../data-format/message-body-aad.md#sequence-number)
