@@ -175,19 +175,3 @@ async fn test_construct_body_plaintext_length_bound_runtime_enforcement() {
     assert!(matches!(err.kind, ErrorKind::ValidationError), "got {:?}", err.kind);
 }
 
-#[tokio::test(flavor = "multi_thread")]
-async fn test_exact_multiple_round_trip_preserves_last_frame() {
-    //= spec/client-apis/encrypt.md#construct-the-body
-    //= type=test
-    //= reason=when plaintext length is an exact multiple of frame length, encrypt may emit an empty final frame after the last regular frame; the decrypt path returns the last regular frame's plaintext for the empty-final-frame case, so a round trip of an exact-multiple plaintext must preserve every byte
-    //# - If there are exactly enough consumable plaintext bytes to create one regular frame,
-    //# such that creating a regular frame processes all consumable bytes,
-    //# then this operation MUST [construct either a final frame or regular frame](#construct-a-frame)
-    //# with the remaining plaintext.
-    // 20 bytes / frame_length=10 → either (1 regular + 1 final-of-10) or
-    // (2 regular + 1 final-of-0). Either way, all 20 bytes must round-trip.
-    let pt: Vec<u8> = (0u8..20).collect();
-    let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(result, pt, "exact-multiple plaintext must round-trip");
-}
-

@@ -11,8 +11,11 @@ use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_construct_frame_aead_inputs_authenticate_via_round_trip() {
-    // Cipherkey, message ID in AAD, and body-AAD-content tag are not on the wire;
-    // round-trip across multiple frames is the cross-module check.
+    // Cipherkey, message ID, body-AAD-content tag, sequence number, and content
+    // length are all AAD inputs to AES-GCM (not on the wire); round-trip across
+    // multiple frames is the cross-module check that encrypt and decrypt agree.
+    // Use a multi-frame plaintext so both regular and final body-AAD content
+    // tags are exercised, and so seq num + content length vary across frames.
     let pt: Vec<u8> = (0u8..=200).collect();
     let result = round_trip_framed(&pt, 50).await;
 
@@ -32,6 +35,18 @@ async fn test_construct_frame_aead_inputs_authenticate_via_round_trip() {
     //= reason=multi-frame ciphertext exercises both regular and final body-AAD content tags
     //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be the structure defined in
     //# [Message Body AAD](../data-format/message-body-aad.md).
+    //
+    //= spec/client-apis/encrypt.md#construct-a-frame
+    //= type=test
+    //= reason=decrypt rebuilds AAD from the wire seq num; round-trip pins encrypt to use that same seq num for the AAD
+    //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be the sequence
+    //# number of the frame being encrypted.
+    //
+    //= spec/client-apis/encrypt.md#construct-a-frame
+    //= type=test
+    //= reason=decrypt rebuilds AAD from the wire content length; round-trip pins encrypt to use that same length for the AAD
+    //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
+    //# equal to the length of the plaintext being encrypted.
     assert_eq!(result, pt);
 }
 
@@ -76,20 +91,6 @@ async fn test_construct_frame_sequence_number_starts_at_one_and_increments() {
     for i in 1..frames.len() {
         assert_eq!(frames[i].seq_num, frames[i - 1].seq_num + 1, "frame {i}");
     }
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_construct_frame_sequence_number_in_aad_matches_wire() {
-    // AAD seq is not on the wire; multi-frame round-trip is the cross-module check.
-    let pt = vec![0xABu8; 100];
-    let result = round_trip_framed(&pt, 10).await;
-
-    //= spec/client-apis/encrypt.md#construct-a-frame
-    //= type=test
-    //= reason=decrypt rebuilds AAD from the wire seq num; round-trip pins encrypt to it
-    //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be the sequence
-    //# number of the frame being encrypted.
-    assert_eq!(result, pt);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -141,20 +142,6 @@ async fn test_construct_frame_final_frame_plaintext_at_most_frame_length() {
         assert_eq!(final_len, expected_final_len, "{label}");
         assert!(final_len <= frame_length, "{label}");
     }
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_construct_frame_content_length_in_aad_matches_plaintext() {
-    // 50 bytes / frame_length=20 mixes regular and final frames.
-    let pt = vec![0xCDu8; 50];
-    let result = round_trip_framed(&pt, 20).await;
-
-    //= spec/client-apis/encrypt.md#construct-a-frame
-    //= type=test
-    //= reason=decrypt rebuilds AAD from the wire content length; round-trip pins encrypt to it
-    //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
-    //# equal to the length of the plaintext being encrypted.
-    assert_eq!(result, pt);
 }
 
 #[tokio::test(flavor = "multi_thread")]
