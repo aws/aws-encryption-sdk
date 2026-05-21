@@ -69,11 +69,22 @@ async fn test_nonframed_encrypted_content_length_uint64() {
     //= type=test
     //# The encrypted content length MUST be interpreted as a UInt64.
     let body = parse_nonframed_body(EXTERNAL_V2_NONFRAMED_CT);
+    let pt_len_u64 =
+        u64::try_from(EXTERNAL_V2_NONFRAMED_PT.len()).expect("plaintext length fits in u64");
     assert_eq!(
-        body.encrypted_content_length,
-        EXTERNAL_V2_NONFRAMED_PT.len() as u64,
-        "encrypted content length interpreted as UInt64 must equal plaintext length"
+        body.encrypted_content_length, pt_len_u64,
+        "decoded UInt64 BE content length must equal plaintext length"
     );
+
+    // Per-byte BE check on the on-wire 8-byte field. For pt_len = 10240 = 0x2800:
+    //   big-endian:    [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x28, 0x00]
+    //   little-endian: [0x00, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+    // The decoded value alone could match either if pt_len fits in one byte;
+    // the byte pattern distinguishes the two.
+    let expected = pt_len_u64.to_be_bytes();
+    let cl_bytes: &[u8] = &body.encrypted_content_length_bytes;
+    assert_eq!(cl_bytes, &expected,
+        "on-wire content length bytes must match the BE encoding of the plaintext length");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -140,10 +151,19 @@ async fn test_nonframed_encrypted_content_length_field_8_bytes() {
     //= type=test
     //# The length of the Encrypted Content Length field MUST be 8 bytes.
     let body = parse_nonframed_body(EXTERNAL_V2_NONFRAMED_CT);
+    // Read the field directly from the external vector at the offset where the
+    // parser places it (body_start + IV_LEN). The parser then reads the next
+    // `encrypted_content_length` bytes for the content. So the boundary between
+    // the length field and the content is at body_start + IV_LEN + 8 — proving
+    // the field spans exactly 8 bytes on the wire.
+    let length_field_offset = body.body_start + IV_LEN;
+    let pt_len_u64 =
+        u64::try_from(EXTERNAL_V2_NONFRAMED_PT.len()).expect("plaintext length fits in u64");
+    let on_wire_bytes = &EXTERNAL_V2_NONFRAMED_CT[length_field_offset..length_field_offset + 8];
     assert_eq!(
-        body.encrypted_content_length_bytes.len(),
-        8,
-        "encrypted content length field must be exactly 8 bytes"
+        on_wire_bytes,
+        &pt_len_u64.to_be_bytes(),
+        "on-wire content length field at offset {length_field_offset} must be the 8-byte BE encoding of {pt_len_u64}"
     );
 }
 
@@ -152,11 +172,29 @@ async fn test_nonframed_encrypted_content_length_matches_content() {
     //= spec/data-format/message-body.md#nonframed-data-encrypted-content
     //= type=test
     //# The length of the serialized encrypted content field MUST be equal to the value of the [Encrypted Content Length](#nonframed-data-encrypted-content-length) field.
+    // Read the on-wire content-length field bytes directly from the external vector
+    // (independent of the parser's slicing), decode as BE UInt64, then compute the
+    // span of the on-wire content slice from offsets and assert they match.
     let body = parse_nonframed_body(EXTERNAL_V2_NONFRAMED_CT);
+    let length_field_offset = body.body_start + IV_LEN;
+    let on_wire_length_bytes: [u8; 8] = EXTERNAL_V2_NONFRAMED_CT
+        [length_field_offset..length_field_offset + 8]
+        .try_into()
+        .expect("8 bytes");
+    let on_wire_length = u64::from_be_bytes(on_wire_length_bytes);
+
+    // Content slice starts immediately after the 8-byte length field and ends
+    // immediately before the auth tag. Compute its span from offsets:
+    //   content_start = body_start + IV_LEN + 8
+    //   content_end   = total_len - TAG_LEN
+    let content_start = length_field_offset + 8;
+    let content_end = EXTERNAL_V2_NONFRAMED_CT.len() - TAG_LEN;
+    let on_wire_content_len = u64::try_from(content_end - content_start)
+        .expect("content length fits in u64");
+
     assert_eq!(
-        body.encrypted_content.len(),
-        body.encrypted_content_length as usize,
-        "encrypted content byte count must equal the content length field value"
+        on_wire_content_len, on_wire_length,
+        "on-wire content slice length must equal the value of the on-wire content-length field"
     );
 }
 
