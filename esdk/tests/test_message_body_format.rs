@@ -228,86 +228,51 @@ async fn test_regular_frame_serialization_order() {
     // (10 bytes each) followed by 1 final frame (5 bytes). The first regular
     // frame's tag MUST be immediately followed by the next regular frame's seq=2,
     // proving Field 4's end offset is exactly 4 + IV_LEN + FRAME_LEN + TAG_LEN.
-    const FRAME_LEN: usize = 10;
+    const FRAME_LEN: u32 = 10;
     let pt = vec![0xCCu8; 25];
-    let ct = encrypt_with_frame_length(&pt, FRAME_LEN as u32).await;
-    let body_start = find_body_start(&ct, FRAME_LEN as u32).expect("must find body");
+    let ct = encrypt_with_frame_length(&pt, FRAME_LEN).await;
+    let frames = parse_all_frames(&ct, FRAME_LEN);
+    assert_eq!(frames.len(), 3, "expected 2 regular + 1 final frame");
+    let f = &frames[0];
+    assert!(!f.is_final, "first frame must be regular");
 
     // Field 1 of 4: Sequence Number — first 4 bytes, UInt32 BE = 1.
-    let seq_off = body_start;
-    let seq = u32::from_be_bytes([
-        ct[seq_off],
-        ct[seq_off + 1],
-        ct[seq_off + 2],
-        ct[seq_off + 3],
-    ]);
-    assert_eq!(seq, 1, "Field 1: sequence number must be 1 for first regular frame");
+    assert_eq!(f.seq_num, 1, "Field 1: sequence number must be 1 for first regular frame");
+    assert_eq!(f.seq_num_bytes, &[0x00, 0x00, 0x00, 0x01], "Field 1: BE encoding of seq=1");
 
     // Field 2 of 4: IV — exactly IV_LEN (12) bytes immediately after seq num.
-    let iv_off = seq_off + 4;
-    let iv = &ct[iv_off..iv_off + IV_LEN];
-    assert_eq!(iv.len(), IV_LEN, "Field 2: IV must be exactly IV_LEN bytes");
-    // Sanity: a real AES-GCM IV is not all zeros.
-    assert!(
-        iv.iter().any(|&b| b != 0),
-        "Field 2: IV must not be all zeros (real AES-GCM IV)"
-    );
+    assert_eq!(f.iv.len(), IV_LEN, "Field 2: IV must be exactly IV_LEN bytes");
+    assert_eq!(f.iv_offset, f.seq_num_offset + 4, "Field 2 must immediately follow Field 1");
+    assert!(f.iv.iter().any(|&b| b != 0),
+        "Field 2: IV must not be all zeros (real AES-GCM IV)");
 
-    // Field 3 of 4: Encrypted Content — exactly FRAME_LEN bytes immediately after IV
-    // (regular frame: encrypted content length equals frame length).
-    let content_off = iv_off + IV_LEN;
-    let content = &ct[content_off..content_off + FRAME_LEN];
-    assert_eq!(
-        content.len(),
-        FRAME_LEN,
-        "Field 3: regular frame encrypted content length must equal frame length"
-    );
-    // Sanity: encrypted content must NOT equal the plaintext input (proves encryption happened).
-    assert_ne!(
-        content,
-        &pt[..FRAME_LEN],
-        "Field 3: encrypted content must differ from plaintext"
-    );
+    // Field 3 of 4: Encrypted Content — exactly FRAME_LEN bytes immediately after IV.
+    assert_eq!(f.content.len(), FRAME_LEN as usize,
+        "Field 3: regular frame encrypted content length must equal frame length");
+    assert_eq!(f.content_offset, f.iv_offset + IV_LEN, "Field 3 must immediately follow Field 2");
+    assert_ne!(f.content, &pt[..FRAME_LEN as usize],
+        "Field 3: encrypted content must differ from plaintext");
 
-    // Field 4 of 4: Authentication Tag — exactly TAG_LEN (16) bytes immediately after content.
-    let tag_off = content_off + FRAME_LEN;
-    let tag = &ct[tag_off..tag_off + TAG_LEN];
-    assert_eq!(tag.len(), TAG_LEN, "Field 4: auth tag must be exactly TAG_LEN bytes");
-    // Sanity: a real AES-GCM tag is not all zeros.
-    assert!(
-        tag.iter().any(|&b| b != 0),
-        "Field 4: auth tag must not be all zeros (real AES-GCM output)"
-    );
+    // Field 4 of 4: Authentication Tag — exactly TAG_LEN bytes immediately after content.
+    assert_eq!(f.tag.len(), TAG_LEN, "Field 4: auth tag must be exactly TAG_LEN bytes");
+    assert_eq!(f.tag_offset, f.content_offset + FRAME_LEN as usize,
+        "Field 4 must immediately follow Field 3");
+    assert!(f.tag.iter().any(|&b| b != 0),
+        "Field 4: auth tag must not be all zeros (real AES-GCM output)");
 
-    // Boundary check: the byte immediately after the tag must be the next frame's
-    // seq num (= 2). This proves Field 4 ends at the spec-required offset and the
-    // four fields together occupy exactly 4 + IV_LEN + FRAME_LEN + TAG_LEN bytes.
-    let next_frame_off = tag_off + TAG_LEN;
-    let next_seq = u32::from_be_bytes([
-        ct[next_frame_off],
-        ct[next_frame_off + 1],
-        ct[next_frame_off + 2],
-        ct[next_frame_off + 3],
-    ]);
-    assert_eq!(
-        next_seq, 2,
-        "boundary: byte immediately after the regular frame must be the next frame's seq=2"
-    );
+    // Boundary: end_offset must equal frame_offset + 4 + IV_LEN + FRAME_LEN + TAG_LEN.
+    let expected_total = 4 + IV_LEN + FRAME_LEN as usize + TAG_LEN;
+    assert_eq!(f.end_offset, f.frame_offset + expected_total,
+        "regular frame must occupy exactly {} bytes", expected_total);
 
-    // Cross-check the manual walk against the independent parser.
-    let frames = parse_frames(&ct, FRAME_LEN as u32);
-    assert_eq!(frames.len(), 3, "expected 2 regular + 1 final frame for pt=25, frame_length=10");
-    assert_eq!(frames[0].0, 1, "parser-reported seq num matches manual walk");
-    assert_eq!(frames[0].1.as_slice(), iv, "parser-reported IV matches manual walk");
-    assert_eq!(
-        frames[0].2.as_slice(),
-        content,
-        "parser-reported encrypted content matches manual walk"
-    );
-    assert_eq!(frames[0].3.as_slice(), tag, "parser-reported tag matches manual walk");
+    // Boundary: the next frame must begin at frame[0].end_offset with seq=2.
+    assert_eq!(frames[1].frame_offset, f.end_offset,
+        "next frame must begin immediately after the previous frame's tag");
+    assert_eq!(frames[1].seq_num, 2,
+        "next regular frame's seq must be 2 (proves Field 4 ends at the spec-required offset)");
 
-    // Round-trip cross-check: independent decrypt validates the whole frame.
-    let result = round_trip_framed(&pt, FRAME_LEN as u32).await;
+    // Round-trip cross-check.
+    let result = round_trip_framed(&pt, FRAME_LEN).await;
     assert_eq!(result, pt, "round-trip corroborates regular frame serialization order");
 }
 
@@ -350,30 +315,24 @@ async fn test_regular_frame_sequence_number_uint32_4_bytes_be() {
     //# The sequence number MUST be interpreted as a UInt32.
     let pt = vec![0xFFu8; 20];
     let ct = encrypt_with_frame_length(&pt, 10).await;
-    let body_start = find_body_start(&ct, 10).expect("must find body");
+    let f = &parse_all_frames(&ct, 10)[0];
+    assert!(!f.is_final, "first frame must be regular");
 
     // Per rust-conventions: prove byte-order by asserting individual bytes,
     // not just the decoded value. For seq=1 on the wire:
     //   big-endian:    [0x00, 0x00, 0x00, 0x01]  → decodes to 1
     //   little-endian: [0x01, 0x00, 0x00, 0x00]  → also decodes to 1 via from_le_bytes
     // The decoded value alone can't distinguish the two; the byte pattern can.
-    assert_eq!(ct[body_start], 0x00, "seq num byte 0 must be 0x00 for big-endian UInt32 = 1");
-    assert_eq!(ct[body_start + 1], 0x00, "seq num byte 1 must be 0x00 for big-endian UInt32 = 1");
-    assert_eq!(ct[body_start + 2], 0x00, "seq num byte 2 must be 0x00 for big-endian UInt32 = 1");
-    assert_eq!(ct[body_start + 3], 0x01, "seq num byte 3 must be 0x01 for big-endian UInt32 = 1");
+    assert_eq!(f.seq_num_bytes[0], 0x00, "seq num byte 0 must be 0x00 for big-endian UInt32 = 1");
+    assert_eq!(f.seq_num_bytes[1], 0x00, "seq num byte 1 must be 0x00 for big-endian UInt32 = 1");
+    assert_eq!(f.seq_num_bytes[2], 0x00, "seq num byte 2 must be 0x00 for big-endian UInt32 = 1");
+    assert_eq!(f.seq_num_bytes[3], 0x01, "seq num byte 3 must be 0x01 for big-endian UInt32 = 1");
+    assert_eq!(f.seq_num, 1, "decoded UInt32 BE seq num must equal 1");
 
-    // Decode as big-endian UInt32 to corroborate (decoded value alone isn't proof
-    // of byte order; the per-byte assertions above are).
-    let seq = u32::from_be_bytes([
-        ct[body_start],
-        ct[body_start + 1],
-        ct[body_start + 2],
-        ct[body_start + 3],
-    ]);
-    assert_eq!(seq, 1, "decoded UInt32 BE seq num must equal 1");
-
-    // The 4-byte field width is corroborated by test_regular_frame_serialization_order,
-    // which proves the IV begins at body_start + 4 (the field ends where the next begins).
+    // 4-byte field width: the parser computes iv_offset = seq_num_offset + 4, so the
+    // boundary between Field 1 (seq num) and Field 2 (IV) is at seq_num_offset + 4.
+    assert_eq!(f.iv_offset - f.seq_num_offset, 4,
+        "seq num field must span exactly 4 bytes (Field 1 ends where Field 2 begins)");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -490,21 +449,57 @@ async fn test_final_frame_serialization_order() {
     //# Encrypted Content Length,
     //# Encrypted Content,
     //# and Authentication Tag.
-    let pt = vec![0xAAu8; 7];
-    let ct = encrypt_with_frame_length(&pt, 10).await;
-    // Find ENDFRAME marker — that's the start of the final frame
-    let pos = ct
-        .windows(4)
-        .position(|w| w == ENDFRAME_MARKER)
-        .expect("must find ENDFRAME");
-    // Verify field order: ENDFRAME(4) + SeqNum(4) + IV(12) + ContentLen(4) + Content(7) + Tag(16)
-    let expected_total = 4 + 4 + IV_LEN + 4 + 7 + TAG_LEN;
-    assert!(
-        pos + expected_total <= ct.len(),
-        "final frame must have all fields in order"
+    const FRAME_LEN: u32 = 10;
+    const PT_LEN: usize = 7;
+    let pt = vec![0xAAu8; PT_LEN];
+    let ct = encrypt_with_frame_length(&pt, FRAME_LEN).await;
+    let f = parse_final_frame(&ct, FRAME_LEN);
+
+    // Field 1 of 6: Sequence Number End — 4 bytes equal to 0xFF FF FF FF.
+    assert_eq!(
+        f.endframe_marker_bytes.expect("final frame has marker"),
+        &[0xFF, 0xFF, 0xFF, 0xFF],
+        "Field 1: sequence number end must be 0xFFFFFFFF"
     );
-    // Verify round-trip to confirm correct serialization
-    let result = round_trip_framed(&pt, 10).await;
+
+    // Field 2 of 6: Sequence Number — UInt32 BE; with PT_LEN < FRAME_LEN there is exactly
+    // one frame, so seq_num = total frame count = 1.
+    assert_eq!(f.seq_num_bytes, &[0x00, 0x00, 0x00, 0x01], "Field 2: seq num bytes BE");
+    assert_eq!(f.seq_num, 1, "Field 2: decoded seq num");
+    assert_eq!(f.seq_num_offset, f.endframe_marker_offset.unwrap() + 4,
+        "Field 2 must immediately follow Field 1");
+
+    // Field 3 of 6: IV — exactly IV_LEN bytes immediately after seq num.
+    assert_eq!(f.iv.len(), IV_LEN, "Field 3: IV length");
+    assert_eq!(f.iv_offset, f.seq_num_offset + 4, "Field 3 must immediately follow Field 2");
+    assert!(f.iv.iter().any(|&b| b != 0), "Field 3: IV must not be all zeros (real AES-GCM IV)");
+
+    // Field 4 of 6: Encrypted Content Length — UInt32 BE = PT_LEN.
+    let cl_bytes = f.content_length_bytes.expect("final frame has content length");
+    assert_eq!(cl_bytes, &[0x00, 0x00, 0x00, PT_LEN as u8],
+        "Field 4: content length bytes BE for PT_LEN={}", PT_LEN);
+    assert_eq!(f.content_length, PT_LEN as u32, "Field 4: decoded content length");
+    assert_eq!(f.content_length_offset.unwrap(), f.iv_offset + IV_LEN,
+        "Field 4 must immediately follow Field 3");
+
+    // Field 5 of 6: Encrypted Content — exactly content_length bytes; must NOT equal plaintext.
+    assert_eq!(f.content.len(), PT_LEN, "Field 5: content length matches Field 4 value");
+    assert_eq!(f.content_offset, f.content_length_offset.unwrap() + 4,
+        "Field 5 must immediately follow Field 4");
+    assert_ne!(f.content, &pt[..], "Field 5: encrypted content must differ from plaintext");
+
+    // Field 6 of 6: Authentication Tag — exactly TAG_LEN bytes; must not be all zeros.
+    assert_eq!(f.tag.len(), TAG_LEN, "Field 6: tag length");
+    assert_eq!(f.tag_offset, f.content_offset + PT_LEN, "Field 6 must immediately follow Field 5");
+    assert!(f.tag.iter().any(|&b| b != 0), "Field 6: tag must not be all zeros (real AES-GCM tag)");
+
+    // Boundary: end_offset must equal frame_offset + ENDFRAME(4) + SeqNum(4) + IV + ContentLen(4) + Content + Tag.
+    let expected_total = 4 + 4 + IV_LEN + 4 + PT_LEN + TAG_LEN;
+    assert_eq!(f.end_offset, f.frame_offset + expected_total,
+        "final frame must occupy exactly {} bytes", expected_total);
+
+    // Round-trip cross-check.
+    let result = round_trip_framed(&pt, FRAME_LEN).await;
     assert_eq!(result, pt);
 }
 
@@ -515,25 +510,25 @@ async fn test_final_frame_is_regular_frame_plus_additions() {
     //# A final frame MUST only differ from a regular frame by the addition of the
     //# Sequence Number End
     //# and Encrypted Content Length.
+    const FRAME_LEN: u32 = 10;
     let pt = vec![0xBBu8; 5];
-    let ct = encrypt_with_frame_length(&pt, 10).await;
-    let pos = ct
-        .windows(4)
-        .position(|w| w == ENDFRAME_MARKER)
-        .expect("must find ENDFRAME");
-    // Final frame has Sequence Number End (extra vs regular) at pos
+    let ct = encrypt_with_frame_length(&pt, FRAME_LEN).await;
+    let f = parse_final_frame(&ct, FRAME_LEN);
+
+    // The two ADDITIONS over a regular frame:
+    //   1. Sequence Number End at the very start of the final frame.
     assert_eq!(
-        &ct[pos..pos + 4],
+        f.endframe_marker_bytes.expect("final frame has marker"),
         &ENDFRAME_MARKER,
         "final frame starts with Sequence Number End"
     );
-    // Then SeqNum(4) + IV(12) + ContentLen(4, extra vs regular) + Content + Tag
-    let content_len = u32::from_be_bytes([ct[pos + 20], ct[pos + 21], ct[pos + 22], ct[pos + 23]]);
-    assert!(
-        content_len <= 10,
-        "final frame has Encrypted Content Length field"
-    );
-    let result = round_trip_framed(&pt, 10).await;
+    //   2. Encrypted Content Length between the IV and the encrypted content.
+    let cl = f.content_length;
+    assert!(cl <= FRAME_LEN, "final frame Encrypted Content Length must be <= frame length");
+    assert!(f.content_length_offset.is_some(),
+        "final frame must have an Encrypted Content Length offset");
+
+    let result = round_trip_framed(&pt, FRAME_LEN).await;
     assert_eq!(result, pt);
 }
 
@@ -546,18 +541,15 @@ async fn test_sequence_number_end_value() {
     //= spec/data-format/message-body.md#sequence-number-end
     //= type=test
     //# The sequence number end MUST be interpreted as bytes.
-    let pt = b"test";
-    let ct = encrypt_with_frame_length(pt, 4096).await;
-    let pos = ct
-        .windows(4)
-        .position(|w| w == ENDFRAME_MARKER)
-        .expect("must find ENDFRAME");
-    // The four on-wire bytes ARE the marker — checking each byte literally
-    // proves the field is encoded as bytes AND has the spec-required value.
-    assert_eq!(ct[pos], 0xFF);
-    assert_eq!(ct[pos + 1], 0xFF);
-    assert_eq!(ct[pos + 2], 0xFF);
-    assert_eq!(ct[pos + 3], 0xFF);
+    let ct = encrypt_with_frame_length(b"test", 4096).await;
+    let f = parse_final_frame(&ct, 4096);
+    let bytes = f.endframe_marker_bytes.expect("final frame has marker");
+    // Per-byte assertion: the four on-wire bytes ARE the marker — checking each
+    // byte literally proves the field is encoded as bytes AND has the spec-required value.
+    assert_eq!(bytes[0], 0xFF);
+    assert_eq!(bytes[1], 0xFF);
+    assert_eq!(bytes[2], 0xFF);
+    assert_eq!(bytes[3], 0xFF);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -565,17 +557,19 @@ async fn test_sequence_number_end_4_bytes() {
     //= spec/data-format/message-body.md#sequence-number-end
     //= type=test
     //# The length of the sequence number end field MUST be 4 bytes.
-    let pt = b"test";
-    let ct = encrypt_with_frame_length(pt, 4096).await;
-    // The ENDFRAME marker is exactly 4 bytes: FF FF FF FF
-    let pos = ct
-        .windows(4)
-        .position(|w| w == ENDFRAME_MARKER)
-        .expect("must find ENDFRAME");
+    let ct = encrypt_with_frame_length(b"test", 4096).await;
+    let f = parse_final_frame(&ct, 4096);
+    // The marker spans exactly [endframe_marker_offset .. seq_num_offset], which the
+    // parser computes as 4 bytes — corroborated here by the on-wire boundary.
     assert_eq!(
-        &ct[pos..pos + 4],
+        f.seq_num_offset - f.endframe_marker_offset.unwrap(),
+        4,
+        "sequence number end must be exactly 4 bytes (Field 1 ends where Field 2 begins)"
+    );
+    assert_eq!(
+        f.endframe_marker_bytes.expect("final frame has marker"),
         &[0xFF, 0xFF, 0xFF, 0xFF],
-        "sequence number end is exactly 4 bytes"
+        "sequence number end bytes"
     );
 }
 
@@ -602,19 +596,22 @@ async fn test_final_frame_sequence_number_serialized_same_as_regular() {
     //= type=test
     //# The length of the Final Frame Sequence number field MUST be the same as the
     //# [Regular Frame Sequence Number](#regular-frame-sequence-number).
+    const FRAME_LEN: u32 = 10;
     let pt = vec![0xBBu8; 20];
-    let ct = encrypt_with_frame_length(&pt, 10).await;
-    let pos = ct
-        .windows(4)
-        .position(|w| w == ENDFRAME_MARKER)
-        .expect("must find ENDFRAME");
-    // Final frame seq num is at pos+4, serialized as 4-byte big-endian UInt32 (same as regular)
-    let final_seq = u32::from_be_bytes([ct[pos + 4], ct[pos + 5], ct[pos + 6], ct[pos + 7]]);
-    assert!(
-        final_seq > 0,
-        "final frame sequence number is a valid UInt32"
+    let ct = encrypt_with_frame_length(&pt, FRAME_LEN).await;
+    let frames = parse_all_frames(&ct, FRAME_LEN);
+
+    // Find a regular frame and the final frame; their seq num field widths must match.
+    let regular = frames.iter().find(|f| !f.is_final).expect("must have a regular frame");
+    let final_f = frames.iter().find(|f| f.is_final).expect("must have a final frame");
+    assert_eq!(
+        regular.seq_num_bytes.len(),
+        final_f.seq_num_bytes.len(),
+        "final frame seq num field width must equal regular frame seq num field width"
     );
-    let result = round_trip_framed(&pt, 10).await;
+    assert_eq!(regular.seq_num_bytes.len(), 4, "seq num field width must be 4 bytes");
+
+    let result = round_trip_framed(&pt, FRAME_LEN).await;
     assert_eq!(
         result, pt,
         "round-trip proves final frame seq num serialized same as regular"
@@ -696,41 +693,39 @@ async fn test_final_frame_fields_interpreted_as_bytes() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_final_frame_encrypted_content_length_4_bytes() {
+async fn test_final_frame_encrypted_content_length_uint32_4_bytes_be() {
     //= spec/data-format/message-body.md#final-frame-encrypted-content-length
     //= type=test
     //# The length of the serialized encrypted content length field MUST be 4 bytes.
-    let pt = vec![0xAAu8; 7];
-    let ct = encrypt_with_frame_length(&pt, 10).await;
-    let pos = ct
-        .windows(4)
-        .position(|w| w == ENDFRAME_MARKER)
-        .expect("must find ENDFRAME");
-    // Content length field is at pos+20 (ENDFRAME(4)+SeqNum(4)+IV(12)), exactly 4 bytes
-    let content_len_bytes = &ct[pos + 20..pos + 24];
-    assert_eq!(
-        content_len_bytes.len(),
-        4,
-        "encrypted content length field must be exactly 4 bytes"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_final_frame_encrypted_content_length_uint32() {
+    //
     //= spec/data-format/message-body.md#final-frame-encrypted-content-length
     //= type=test
     //# The encrypted content length MUST be a UInt32.
-    let pt = vec![0xBBu8; 7];
-    let ct = encrypt_with_frame_length(&pt, 10).await;
-    let pos = ct
-        .windows(4)
-        .position(|w| w == ENDFRAME_MARKER)
-        .expect("must find ENDFRAME");
-    let content_len = u32::from_be_bytes([ct[pos + 20], ct[pos + 21], ct[pos + 22], ct[pos + 23]]);
+    const FRAME_LEN: u32 = 10;
+    const PT_LEN: u8 = 7;
+    let pt = vec![0xAAu8; PT_LEN as usize];
+    let ct = encrypt_with_frame_length(&pt, FRAME_LEN).await;
+    let f = parse_final_frame(&ct, FRAME_LEN);
+
+    let cl_bytes = f.content_length_bytes.expect("final frame has content length");
+
+    // Per rust-conventions: prove byte-order via individual bytes, not via decoded
+    // value alone (PT_LEN=7 could decode to 7 from LE [0x07, 0x00, 0x00, 0x00] too).
+    assert_eq!(cl_bytes[0], 0x00, "content length byte 0 must be 0x00 for BE UInt32 = 7");
+    assert_eq!(cl_bytes[1], 0x00, "content length byte 1 must be 0x00 for BE UInt32 = 7");
+    assert_eq!(cl_bytes[2], 0x00, "content length byte 2 must be 0x00 for BE UInt32 = 7");
+    assert_eq!(cl_bytes[3], PT_LEN, "content length byte 3 must be PT_LEN for BE UInt32 = 7");
+
+    // 4-byte width: the field spans [content_length_offset .. content_offset], which
+    // the parser computes as exactly 4 bytes — corroborated by the on-wire boundary.
     assert_eq!(
-        content_len, 7,
-        "encrypted content length serialized as UInt32 must equal 7"
+        f.content_offset - f.content_length_offset.unwrap(),
+        4,
+        "content length field must span exactly 4 bytes (Field 4 ends where Field 5 begins)"
     );
+
+    // Decoded value corroboration.
+    assert_eq!(f.content_length, PT_LEN as u32, "decoded BE UInt32 content length");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -779,20 +774,10 @@ async fn test_final_frame_auth_tag_authenticates_final_frame() {
 
     // Tampering with the final frame's auth tag must cause decryption failure.
     let ct = encrypt_with_frame_length(&pt, 10).await;
-    let frames = parse_frames(&ct, 10);
-    let final_frame = frames.last().unwrap();
-    assert!(final_frame.4, "must be final frame");
+    let final_frame = parse_final_frame(&ct, 10);
 
-    let body_start = find_body_start(&ct, 10).unwrap();
-    // Walk to the final frame's auth tag position
-    let mut pos = body_start;
-    for f in &frames[..frames.len() - 1] {
-        pos += 4 + IV_LEN + f.2.len() + TAG_LEN; // regular frame
-    }
-    // Final frame: ENDFRAME(4) + SeqNum(4) + IV(12) + ContentLen(4) + Content(N) + Tag(16)
-    let tag_offset = pos + 4 + 4 + IV_LEN + 4 + final_frame.2.len();
     let mut tampered = ct.clone();
-    tampered[tag_offset] ^= 0xFF;
+    tampered[final_frame.tag_offset] ^= 0xFF;
 
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&tampered, EncryptionContext::new(), keyring);
@@ -883,13 +868,12 @@ async fn test_v1_sequence_number_end_value() {
     //= spec/data-format/message-body.md#sequence-number-end
     //= type=test
     //# The value MUST be encoded as the 4 bytes `FF FF FF FF` in hexadecimal notation.
-    let pt = b"v1 test";
-    let ct = encrypt_v1_with_frame_length(pt, 4096).await;
-    let pos = ct
-        .windows(4)
-        .position(|w| w == ENDFRAME_MARKER)
-        .expect("V1: must find ENDFRAME");
-    assert_eq!(&ct[pos..pos + 4], &[0xFF, 0xFF, 0xFF, 0xFF]);
+    let ct = encrypt_v1_with_frame_length(b"v1 test", 4096).await;
+    let f = parse_final_frame(&ct, 4096);
+    assert_eq!(
+        f.endframe_marker_bytes.expect("V1: final frame has marker"),
+        &[0xFF, 0xFF, 0xFF, 0xFF]
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]

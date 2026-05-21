@@ -412,6 +412,182 @@ pub fn parse_frames(ct: &[u8], frame_length: u32) -> Vec<ParsedFrame> {
     frames
 }
 
+/// A single parsed message-body frame with on-wire offsets and raw byte slices
+/// for every field. Designed for byte-level wire-format tests so each test can
+/// assert on individual bytes, decoded values, and field offsets without
+/// reinventing the walk.
+///
+/// Field layouts per spec/data-format/message-body.md:
+/// - Regular frame: `SeqNum(4) || IV(IV_LEN) || EncryptedContent(frame_length) || AuthTag(TAG_LEN)`
+/// - Final frame:   `SeqNumEnd(4) || SeqNum(4) || IV(IV_LEN) || EncContentLen(4) || EncryptedContent(N) || AuthTag(TAG_LEN)`
+#[derive(Debug)]
+pub struct ParsedFrameFields<'a> {
+    /// Offset where this frame begins in the ciphertext.
+    pub frame_offset: usize,
+    /// Offset immediately after this frame ends.
+    pub end_offset: usize,
+    /// True if this is a final frame.
+    pub is_final: bool,
+
+    /// For final frames: offset of the 4-byte 0xFFFFFFFF sequence-number-end marker.
+    pub endframe_marker_offset: Option<usize>,
+    /// For final frames: on-wire bytes of the sequence-number-end marker (always 0xFF FF FF FF).
+    pub endframe_marker_bytes: Option<&'a [u8]>,
+
+    /// Offset of the 4-byte sequence number field.
+    pub seq_num_offset: usize,
+    /// On-wire bytes of the sequence number (4 bytes, big-endian UInt32).
+    pub seq_num_bytes: &'a [u8],
+    /// Decoded sequence number value.
+    pub seq_num: u32,
+
+    /// Offset of the IV field.
+    pub iv_offset: usize,
+    /// On-wire IV bytes (IV_LEN bytes).
+    pub iv: &'a [u8],
+
+    /// For final frames: offset of the 4-byte encrypted-content-length field.
+    pub content_length_offset: Option<usize>,
+    /// For final frames: on-wire bytes of the encrypted-content-length field (4 bytes, big-endian UInt32).
+    pub content_length_bytes: Option<&'a [u8]>,
+    /// Decoded encrypted-content length (= frame_length for regular frames).
+    pub content_length: u32,
+
+    /// Offset of the encrypted content.
+    pub content_offset: usize,
+    /// On-wire encrypted-content bytes (content_length bytes).
+    pub content: &'a [u8],
+
+    /// Offset of the auth tag.
+    pub tag_offset: usize,
+    /// On-wire auth-tag bytes (TAG_LEN bytes).
+    pub tag: &'a [u8],
+}
+
+/// Parse one frame starting at `offset` in `ct`. The frame's type (regular vs
+/// final) is determined by whether the first 4 bytes match the ENDFRAME marker.
+/// Panics if the ciphertext is malformed at `offset`.
+pub fn parse_frame_at(ct: &[u8], offset: usize, frame_length: u32) -> ParsedFrameFields<'_> {
+    assert!(
+        offset + 4 <= ct.len(),
+        "parse_frame_at: not enough bytes at offset {} for frame header",
+        offset
+    );
+    let first4 = u32::from_be_bytes([ct[offset], ct[offset + 1], ct[offset + 2], ct[offset + 3]]);
+    if first4 == 0xFFFF_FFFF {
+        // Final frame: SeqNumEnd(4) + SeqNum(4) + IV(IV_LEN) + ContentLen(4) + Content(N) + Tag(TAG_LEN)
+        let endframe_off = offset;
+        let seq_num_off = endframe_off + 4;
+        let iv_off = seq_num_off + 4;
+        let content_len_off = iv_off + IV_LEN;
+        let content_off = content_len_off + 4;
+        let seq_num_bytes = &ct[seq_num_off..seq_num_off + 4];
+        let seq_num = u32::from_be_bytes([
+            seq_num_bytes[0],
+            seq_num_bytes[1],
+            seq_num_bytes[2],
+            seq_num_bytes[3],
+        ]);
+        let content_length_bytes = &ct[content_len_off..content_len_off + 4];
+        let content_length = u32::from_be_bytes([
+            content_length_bytes[0],
+            content_length_bytes[1],
+            content_length_bytes[2],
+            content_length_bytes[3],
+        ]);
+        let tag_off = content_off + content_length as usize;
+        let end = tag_off + TAG_LEN;
+        assert!(
+            end <= ct.len(),
+            "parse_frame_at: final-frame end ({}) exceeds ciphertext length ({})",
+            end,
+            ct.len()
+        );
+        ParsedFrameFields {
+            frame_offset: offset,
+            end_offset: end,
+            is_final: true,
+            endframe_marker_offset: Some(endframe_off),
+            endframe_marker_bytes: Some(&ct[endframe_off..endframe_off + 4]),
+            seq_num_offset: seq_num_off,
+            seq_num_bytes,
+            seq_num,
+            iv_offset: iv_off,
+            iv: &ct[iv_off..iv_off + IV_LEN],
+            content_length_offset: Some(content_len_off),
+            content_length_bytes: Some(content_length_bytes),
+            content_length,
+            content_offset: content_off,
+            content: &ct[content_off..content_off + content_length as usize],
+            tag_offset: tag_off,
+            tag: &ct[tag_off..tag_off + TAG_LEN],
+        }
+    } else {
+        // Regular frame: SeqNum(4) + IV(IV_LEN) + Content(frame_length) + Tag(TAG_LEN)
+        let seq_num_off = offset;
+        let iv_off = seq_num_off + 4;
+        let content_off = iv_off + IV_LEN;
+        let tag_off = content_off + frame_length as usize;
+        let end = tag_off + TAG_LEN;
+        assert!(
+            end <= ct.len(),
+            "parse_frame_at: regular-frame end ({}) exceeds ciphertext length ({})",
+            end,
+            ct.len()
+        );
+        let seq_num_bytes = &ct[seq_num_off..seq_num_off + 4];
+        let seq_num = u32::from_be_bytes([
+            seq_num_bytes[0],
+            seq_num_bytes[1],
+            seq_num_bytes[2],
+            seq_num_bytes[3],
+        ]);
+        ParsedFrameFields {
+            frame_offset: offset,
+            end_offset: end,
+            is_final: false,
+            endframe_marker_offset: None,
+            endframe_marker_bytes: None,
+            seq_num_offset: seq_num_off,
+            seq_num_bytes,
+            seq_num,
+            iv_offset: iv_off,
+            iv: &ct[iv_off..iv_off + IV_LEN],
+            content_length_offset: None,
+            content_length_bytes: None,
+            content_length: frame_length,
+            content_offset: content_off,
+            content: &ct[content_off..content_off + frame_length as usize],
+            tag_offset: tag_off,
+            tag: &ct[tag_off..tag_off + TAG_LEN],
+        }
+    }
+}
+
+/// Parse all frames in the message body starting from `find_body_start`.
+/// Returns one `ParsedFrameFields` per frame, in order, ending at the final frame.
+pub fn parse_all_frames(ct: &[u8], frame_length: u32) -> Vec<ParsedFrameFields<'_>> {
+    let mut pos = find_body_start(ct, frame_length).expect("could not find body start");
+    let mut frames = Vec::new();
+    loop {
+        let f = parse_frame_at(ct, pos, frame_length);
+        let is_final = f.is_final;
+        pos = f.end_offset;
+        frames.push(f);
+        if is_final {
+            break;
+        }
+    }
+    frames
+}
+
+/// Locate the final frame in `ct` and return its parsed field record.
+pub fn parse_final_frame(ct: &[u8], frame_length: u32) -> ParsedFrameFields<'_> {
+    parse_all_frames(ct, frame_length)
+        .pop()
+        .expect("ciphertext must contain at least a final frame")
+}
+
 /// Parse V1 header trailing field offsets from ciphertext.
 /// Returns (content_type_offset, reserved_offset, iv_length_offset, frame_length_offset).
 pub fn parse_v1_trailing_offsets(ct: &[u8]) -> (usize, usize, usize, usize) {
