@@ -51,6 +51,7 @@ fn get_length(data: &ESDKCanonicalEncryptionContext) -> usize {
     let mut length = 0;
     for pair in data {
         // key_len(2) + key bytes + val_len(2) + val bytes.
+        // `.len()` on a String returns the number of UTF-8 bytes, which is what we serialize.
         length += 2 + pair.0.len() + 2 + pair.1.len();
     }
     length
@@ -85,7 +86,7 @@ pub(crate) fn write_aad_section(
     //= spec/data-format/message-header.md#key-value-pairs-length
     //# The key value pairs length MUST be interpreted as a UInt16.
     let Ok(bytes_u16) = u16::try_from(bytes) else {
-        return ser_err("value too large for u16");
+        return ser_err("Encryption context key value pair length value is too large for u16");
     };
     write_u16(w, bytes_u16)?;
 
@@ -101,7 +102,7 @@ pub(crate) fn write_aad(
 ) -> Result<(), Error> {
     // Count.
     let Ok(data_len) = u16::try_from(data.len()) else {
-        return ser_err("value too large for u16");
+        return ser_err("Encryption context key value pair count is too large for u16");
     };
     write_u16(w, data_len)?;
 
@@ -111,14 +112,14 @@ pub(crate) fn write_aad(
 
         // Key: length + UTF-8 bytes.
         let Ok(key_len) = u16::try_from(pair.0.len()) else {
-            return ser_err("value too large for u16");
+            return ser_err("Encryption context key length is too large for u16");
         };
         write_u16(w, key_len)?;
         write_bytes(w, pair.0.as_bytes())?;
 
         // Value: length + UTF-8 bytes.
         let Ok(val_len) = u16::try_from(pair.1.len()) else {
-            return ser_err("value too large for u16");
+            return ser_err("Encryption context value length is too large for u16");
         };
         write_u16(w, val_len)?;
         write_bytes(w, pair.1.as_bytes())?;
