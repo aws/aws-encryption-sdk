@@ -224,24 +224,91 @@ async fn test_regular_frame_serialization_order() {
     //# IV,
     //# Encrypted Content,
     //# and Authentication Tag.
-    let pt = vec![0xCCu8; 20];
-    let ct = encrypt_with_frame_length(&pt, 10).await;
-    let body_start = find_body_start(&ct, 10).expect("must find body");
-    // First regular frame at body_start: SeqNum(4) + IV(12) + Content(10) + Tag(16)
+    // Use frame_length=10 with 25 bytes of plaintext: produces 2 regular frames
+    // (10 bytes each) followed by 1 final frame (5 bytes). The first regular
+    // frame's tag MUST be immediately followed by the next regular frame's seq=2,
+    // proving Field 4's end offset is exactly 4 + IV_LEN + FRAME_LEN + TAG_LEN.
+    const FRAME_LEN: usize = 10;
+    let pt = vec![0xCCu8; 25];
+    let ct = encrypt_with_frame_length(&pt, FRAME_LEN as u32).await;
+    let body_start = find_body_start(&ct, FRAME_LEN as u32).expect("must find body");
+
+    // Field 1 of 4: Sequence Number — first 4 bytes, UInt32 BE = 1.
+    let seq_off = body_start;
     let seq = u32::from_be_bytes([
-        ct[body_start],
-        ct[body_start + 1],
-        ct[body_start + 2],
-        ct[body_start + 3],
+        ct[seq_off],
+        ct[seq_off + 1],
+        ct[seq_off + 2],
+        ct[seq_off + 3],
     ]);
-    assert_eq!(seq, 1, "first field is sequence number");
-    // IV follows at body_start+4, content at body_start+16, tag at body_start+26
-    // Verify by successful round-trip (wrong order would fail decryption)
-    let result = round_trip_framed(&pt, 10).await;
-    assert_eq!(
-        result, pt,
-        "round-trip proves regular frame serialization order is correct"
+    assert_eq!(seq, 1, "Field 1: sequence number must be 1 for first regular frame");
+
+    // Field 2 of 4: IV — exactly IV_LEN (12) bytes immediately after seq num.
+    let iv_off = seq_off + 4;
+    let iv = &ct[iv_off..iv_off + IV_LEN];
+    assert_eq!(iv.len(), IV_LEN, "Field 2: IV must be exactly IV_LEN bytes");
+    // Sanity: a real AES-GCM IV is not all zeros.
+    assert!(
+        iv.iter().any(|&b| b != 0),
+        "Field 2: IV must not be all zeros (real AES-GCM IV)"
     );
+
+    // Field 3 of 4: Encrypted Content — exactly FRAME_LEN bytes immediately after IV
+    // (regular frame: encrypted content length equals frame length).
+    let content_off = iv_off + IV_LEN;
+    let content = &ct[content_off..content_off + FRAME_LEN];
+    assert_eq!(
+        content.len(),
+        FRAME_LEN,
+        "Field 3: regular frame encrypted content length must equal frame length"
+    );
+    // Sanity: encrypted content must NOT equal the plaintext input (proves encryption happened).
+    assert_ne!(
+        content,
+        &pt[..FRAME_LEN],
+        "Field 3: encrypted content must differ from plaintext"
+    );
+
+    // Field 4 of 4: Authentication Tag — exactly TAG_LEN (16) bytes immediately after content.
+    let tag_off = content_off + FRAME_LEN;
+    let tag = &ct[tag_off..tag_off + TAG_LEN];
+    assert_eq!(tag.len(), TAG_LEN, "Field 4: auth tag must be exactly TAG_LEN bytes");
+    // Sanity: a real AES-GCM tag is not all zeros.
+    assert!(
+        tag.iter().any(|&b| b != 0),
+        "Field 4: auth tag must not be all zeros (real AES-GCM output)"
+    );
+
+    // Boundary check: the byte immediately after the tag must be the next frame's
+    // seq num (= 2). This proves Field 4 ends at the spec-required offset and the
+    // four fields together occupy exactly 4 + IV_LEN + FRAME_LEN + TAG_LEN bytes.
+    let next_frame_off = tag_off + TAG_LEN;
+    let next_seq = u32::from_be_bytes([
+        ct[next_frame_off],
+        ct[next_frame_off + 1],
+        ct[next_frame_off + 2],
+        ct[next_frame_off + 3],
+    ]);
+    assert_eq!(
+        next_seq, 2,
+        "boundary: byte immediately after the regular frame must be the next frame's seq=2"
+    );
+
+    // Cross-check the manual walk against the independent parser.
+    let frames = parse_frames(&ct, FRAME_LEN as u32);
+    assert_eq!(frames.len(), 3, "expected 2 regular + 1 final frame for pt=25, frame_length=10");
+    assert_eq!(frames[0].0, 1, "parser-reported seq num matches manual walk");
+    assert_eq!(frames[0].1.as_slice(), iv, "parser-reported IV matches manual walk");
+    assert_eq!(
+        frames[0].2.as_slice(),
+        content,
+        "parser-reported encrypted content matches manual walk"
+    );
+    assert_eq!(frames[0].3.as_slice(), tag, "parser-reported tag matches manual walk");
+
+    // Round-trip cross-check: independent decrypt validates the whole frame.
+    let result = round_trip_framed(&pt, FRAME_LEN as u32).await;
+    assert_eq!(result, pt, "round-trip corroborates regular frame serialization order");
 }
 
 #[tokio::test(flavor = "multi_thread")]
