@@ -102,6 +102,17 @@ pub async fn encrypt_with_frame_length(plaintext: &[u8], frame_length: u32) -> V
     encrypt(&input).await.unwrap().ciphertext
 }
 
+/// Encrypt plaintext with a given frame length under a V1 (non-committing) algorithm
+/// suite, return ciphertext bytes.
+pub async fn encrypt_v1_with_frame_length(plaintext: &[u8], frame_length: u32) -> Vec<u8> {
+    let keyring = test_keyring().await;
+    let mut input = EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
+    input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
+    input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    input.frame_length = FrameLength::new(frame_length).unwrap();
+    encrypt(&input).await.unwrap().ciphertext
+}
+
 /// Encrypt with a signing algorithm suite, return ciphertext bytes.
 pub async fn encrypt_with_signing_suite(plaintext: &[u8]) -> Vec<u8> {
     let keyring = test_keyring().await;
