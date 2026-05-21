@@ -1,5 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
+
 //! Frame decryption and body deserialization.
 
 use super::{BodyAADContent, body_aad, get_encrypt};
@@ -250,6 +251,13 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                     &aad,
                     &mut empty_result[..],
                 )?;
+                // If this empty final frame is also the FIRST frame (i.e. the entire
+                // plaintext is empty), there is no "last full frame" to return. The
+                // preallocated `result` (vec![0; frame_length_usize]) would otherwise
+                // leak frame_length zero bytes to the caller. Truncate to empty.
+                if expected_frame == START_SEQUENCE_NUMBER {
+                    result.clear();
+                }
             } else {
                 // write previous frame's data, now that we know we have another frame.
                 if expected_frame != START_SEQUENCE_NUMBER {
