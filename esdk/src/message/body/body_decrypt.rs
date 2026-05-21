@@ -140,6 +140,8 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             //# The length of the IV field MUST be equal to the IV length of the [algorithm suite](../framework/algorithm-suites.md) that generated the message.
             //
             //= spec/data-format/message-body.md#final-frame-iv
+            //= type=implication
+            //= reason=read_bytes fills a &mut [u8] buffer; the bytes are not reinterpreted as any other type
             //# The IV MUST be interpreted as bytes.
             read_bytes(ciphertext, &mut iv, sig_digest)?;
 
@@ -167,6 +169,8 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             //# - MUST deserialize the [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content).
             //
             //= spec/data-format/message-body.md#final-frame-encrypted-content
+            //= type=implication
+            //= reason=read_seq_u32_bounded fills a &mut [u8] buffer; the bytes are not reinterpreted as any other type
             //# The encrypted content MUST be interpreted as bytes.
             read_seq_u32_bounded(
                 ciphertext,
@@ -191,6 +195,8 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             //# specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
             //
             //= spec/data-format/message-body.md#final-frame-authentication-tag
+            //= type=implication
+            //= reason=read_bytes fills a &mut [u8] buffer; the bytes are not reinterpreted as any other type
             //# The authentication tag MUST be interpreted as bytes.
             read_bytes(ciphertext, &mut auth_tag, sig_digest)?;
 
@@ -351,6 +357,8 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //# - MUST deserialize the [IV](../data-format/message-body.md#regular-frame-iv).
         //
         //= spec/data-format/message-body.md#regular-frame-iv
+        //= type=implication
+        //= reason=read_bytes fills a &mut [u8] buffer; the bytes are not reinterpreted as any other type
         //# The IV MUST be interpreted as bytes.
         //
         //= spec/client-apis/decrypt.md#decrypt-the-message-body
@@ -371,6 +379,8 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //# The length of the encrypted content of a Regular Frame MUST be equal to the Frame Length.
         //
         //= spec/data-format/message-body.md#regular-frame-encrypted-content
+        //= type=implication
+        //= reason=read_bytes fills a &mut [u8] buffer; the bytes are not reinterpreted as any other type
         //# The encrypted content MUST be interpreted as bytes.
         read_bytes(ciphertext, &mut enc_content, sig_digest)?;
 
@@ -381,6 +391,8 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //# - MUST deserialize the [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag).
         //
         //= spec/data-format/message-body.md#regular-frame-authentication-tag
+        //= type=implication
+        //= reason=read_bytes fills a &mut [u8] buffer; the bytes are not reinterpreted as any other type
         //# The authentication tag MUST be interpreted as bytes.
         read_bytes(ciphertext, &mut auth_tag, sig_digest)?;
 
@@ -511,6 +523,7 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     //# padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
     //
     //= spec/data-format/message-body.md#nonframed-data-iv
+    //= type=implication
     //= reason=read_vec returns Vec<u8>
     //# The IV MUST be interpreted as bytes.
     let iv = serialize_functions::read_vec(
@@ -538,6 +551,7 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     //# - The ciphertext MUST be the [Encrypted Content](../data-format/message-body.md#nonframed-data-encrypted-content) deserialized from the message body.
     //
     //= spec/data-format/message-body.md#nonframed-data-encrypted-content
+    //= type=implication
     //= reason=read_seq_u64_bounded returns Vec<u8>
     //# The encrypted content value MUST be interpreted as bytes.
     let enc_content = serialize_functions::read_seq_u64_bounded(
@@ -565,6 +579,7 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     //# - The tag MUST be the authentication tag deserialized from the frame or body.
     //
     //= spec/data-format/message-body.md#nonframed-data-authentication-tag
+    //= type=implication
     //= reason=read_vec returns Vec<u8>
     //# The authentication tag value MUST be interpreted as bytes.
     let auth_tag = serialize_functions::read_vec(
