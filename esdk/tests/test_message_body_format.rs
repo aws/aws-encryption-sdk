@@ -340,37 +340,40 @@ async fn test_regular_frame_sequence_number_increments() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_regular_frame_sequence_number_4_bytes() {
+async fn test_regular_frame_sequence_number_uint32_4_bytes_be() {
     //= spec/data-format/message-body.md#regular-frame-sequence-number
     //= type=test
     //# The length of the serialized sequence number field MUST be 4 bytes.
-    let pt = vec![0xFFu8; 20];
-    let ct = encrypt_with_frame_length(&pt, 10).await;
-    let body_start = find_body_start(&ct, 10).expect("must find body");
-    // Sequence number occupies exactly bytes [body_start..body_start+4]
-    let seq_bytes = &ct[body_start..body_start + 4];
-    assert_eq!(
-        seq_bytes.len(),
-        4,
-        "sequence number must be exactly 4 bytes"
-    );
-    assert_eq!(
-        u32::from_be_bytes([seq_bytes[0], seq_bytes[1], seq_bytes[2], seq_bytes[3]]),
-        1
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_regular_frame_sequence_number_uint32() {
+    //
     //= spec/data-format/message-body.md#regular-frame-sequence-number
     //= type=test
     //# The sequence number MUST be interpreted as a UInt32.
-    let pt = vec![0xAAu8; 30];
-    let frames = parse_frames(&encrypt_with_frame_length(&pt, 10).await, 10);
-    // All sequence numbers are valid u32 values parsed from big-endian bytes
-    for (seq, _, _, _, _) in &frames {
-        assert!(*seq > 0, "sequence number must be a valid non-zero UInt32");
-    }
+    let pt = vec![0xFFu8; 20];
+    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let body_start = find_body_start(&ct, 10).expect("must find body");
+
+    // Per rust-conventions: prove byte-order by asserting individual bytes,
+    // not just the decoded value. For seq=1 on the wire:
+    //   big-endian:    [0x00, 0x00, 0x00, 0x01]  → decodes to 1
+    //   little-endian: [0x01, 0x00, 0x00, 0x00]  → also decodes to 1 via from_le_bytes
+    // The decoded value alone can't distinguish the two; the byte pattern can.
+    assert_eq!(ct[body_start], 0x00, "seq num byte 0 must be 0x00 for big-endian UInt32 = 1");
+    assert_eq!(ct[body_start + 1], 0x00, "seq num byte 1 must be 0x00 for big-endian UInt32 = 1");
+    assert_eq!(ct[body_start + 2], 0x00, "seq num byte 2 must be 0x00 for big-endian UInt32 = 1");
+    assert_eq!(ct[body_start + 3], 0x01, "seq num byte 3 must be 0x01 for big-endian UInt32 = 1");
+
+    // Decode as big-endian UInt32 to corroborate (decoded value alone isn't proof
+    // of byte order; the per-byte assertions above are).
+    let seq = u32::from_be_bytes([
+        ct[body_start],
+        ct[body_start + 1],
+        ct[body_start + 2],
+        ct[body_start + 3],
+    ]);
+    assert_eq!(seq, 1, "decoded UInt32 BE seq num must equal 1");
+
+    // The 4-byte field width is corroborated by test_regular_frame_serialization_order,
+    // which proves the IV begins at body_start + 4 (the field ends where the next begins).
 }
 
 #[tokio::test(flavor = "multi_thread")]
