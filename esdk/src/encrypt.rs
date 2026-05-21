@@ -378,6 +378,7 @@ fn step_construct_header(
     sig_digest: &mut DigestWriter,
 ) -> Result<header::HeaderInfo, Error> {
     //= spec/client-apis/encrypt.md#authentication-tag
+    //= type=implication
     //= reason=build_header_for_encrypt builds the complete header (body + auth tag) before returning
     //# The serialized bytes MUST NOT be released until the entire message header has been serialized.
     let header = build_header_for_encrypt(

@@ -197,35 +197,3 @@ async fn test_auth_tag_tampered_header_fails_decrypt_v2() {
         err.kind
     );
 }
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_auth_tag_serialized_bytes_not_released_until_complete_v1() {
-    //= spec/client-apis/encrypt.md#authentication-tag
-    //= type=test
-    //# The serialized bytes MUST NOT be released until the entire message header has been serialized.
-    // Encrypt returns the full ciphertext only after the header (body + IV + auth tag) is complete.
-    // Verify the auth tag is present at the expected position, proving the header was fully serialized.
-    let ct = encrypt_v1(b"v1 serialization release test").await;
-    let (_, _, tag_offset) = v1_header_auth_offsets(&ct);
-    let tag_bytes = &ct[tag_offset..tag_offset + TAG_LEN];
-    assert!(
-        tag_bytes.iter().any(|&b| b != 0),
-        "V1 header auth tag must be present (not all zeros) — proves full header was serialized before release"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_auth_tag_serialized_bytes_not_released_until_complete_v2() {
-    //= spec/client-apis/encrypt.md#authentication-tag
-    //= type=test
-    //# The serialized bytes MUST NOT be released until the entire message header has been serialized.
-    // Encrypt returns the full ciphertext only after the header (body + auth tag) is complete.
-    // Verify the auth tag is present at the expected position, proving the header was fully serialized.
-    let ct = encrypt_v2(b"v2 serialization release test").await;
-    let (_, tag_offset) = v2_header_auth_offsets(&ct);
-    let tag_bytes = &ct[tag_offset..tag_offset + TAG_LEN];
-    assert!(
-        tag_bytes.iter().any(|&b| b != 0),
-        "V2 header auth tag must be present (not all zeros) — proves full header was serialized before release"
-    );
-}
