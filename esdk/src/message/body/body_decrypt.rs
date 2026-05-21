@@ -223,6 +223,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
             //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
             if enc_content.is_empty() {
                 //= spec/client-apis/decrypt.md#decrypt-the-message-body
+                //= reason=`?` propagates aes_decrypt errors, halting decryption immediately
                 //# If this decryption fails, this operation MUST immediately halt and fail.
                 // final frame is empty, so return last full frame
                 let mut empty_result = Vec::new();
@@ -249,6 +250,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                     write_bytes(w, &result)?;
                 }
                 //= spec/client-apis/decrypt.md#decrypt-the-message-body
+                //= reason=`?` propagates aes_decrypt errors, halting decryption immediately
                 //# If this decryption fails, this operation MUST immediately halt and fail.
                 aes_decrypt(
                     alg,
@@ -400,6 +402,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
         //
         //= spec/client-apis/decrypt.md#decrypt-the-message-body
+        //= reason=`?` propagates aes_decrypt errors, halting decryption immediately
         //# If this decryption fails, this operation MUST immediately halt and fail.
         aes_decrypt(
             alg,
@@ -578,6 +581,7 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     let mut result: Vec<u8> = enc_content.clone();
 
     //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
+    //= reason=`?` propagates aes_decrypt errors, halting decryption immediately
     //# If this decryption fails, this operation MUST immediately halt and fail.
     aes_decrypt(
         get_encrypt(&header.suite)?,
