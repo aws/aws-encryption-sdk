@@ -10,9 +10,9 @@ use test_helpers::kms_keyring;
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt() {
     let kms_keyring = kms_keyring().await;
-    let asdf = "asdf";
+    let plaintext = b"hello esdk";
     let ec = EncryptionContext::new();
-    let encrypt_input = EncryptInput::with_legacy_keyring(asdf.as_bytes(), ec, kms_keyring);
+    let encrypt_input = EncryptInput::with_legacy_keyring(plaintext, ec, kms_keyring);
 
     //= spec/client-apis/client.md#encrypt
     //= type=test
@@ -29,7 +29,7 @@ async fn test_encrypt_decrypt() {
     //# that adheres to [decrypt](./decrypt.md).
     let decrypt_output = decrypt(&decrypt_input).await.unwrap();
 
-    assert_eq!(decrypt_output.plaintext, asdf.as_bytes());
+    assert_eq!(decrypt_output.plaintext, plaintext);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -37,7 +37,7 @@ async fn test_bad_decrypt_input() {
     let kms_keyring = kms_keyring().await;
     let ec = EncryptionContext::new();
     let encrypt_input =
-        EncryptInput::with_legacy_keyring(b"asdf", ec.clone(), kms_keyring.clone());
+        EncryptInput::with_legacy_keyring(b"hello esdk", ec.clone(), kms_keyring.clone());
     let esdk_ciphertext = encrypt(&encrypt_input).await.unwrap().ciphertext;
     let mut decrypt_input =
         DecryptInput::with_legacy_keyring(&esdk_ciphertext, ec, kms_keyring);
@@ -63,9 +63,9 @@ async fn test_bad_decrypt_input() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt_short() {
     let kms_keyring = kms_keyring().await;
-    let asdf = "asdf";
+    let plaintext = b"hello esdk";
     let ec = EncryptionContext::new();
-    let encrypt_input = EncryptInput::with_legacy_keyring(asdf.as_bytes(), ec, kms_keyring);
+    let encrypt_input = EncryptInput::with_legacy_keyring(plaintext, ec, kms_keyring);
     let encrypt_output = encrypt(&encrypt_input).await.unwrap();
     let esdk_ciphertext = encrypt_output.ciphertext;
     let cipher_len: usize = esdk_ciphertext.len();
@@ -93,18 +93,18 @@ async fn test_encrypt_decrypt_short() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt_ec() {
     let kms_keyring = kms_keyring().await;
-    let asdf = "asdf".as_bytes();
+    let plaintext = b"hello esdk";
     let encryption_context =
         std::collections::HashMap::from([("stuff".to_string(), "junk".to_string())]);
     let encrypt_input =
-        EncryptInput::with_legacy_keyring(asdf, encryption_context, kms_keyring.clone());
+        EncryptInput::with_legacy_keyring(plaintext, encryption_context, kms_keyring.clone());
     let encrypt_output = encrypt(&encrypt_input).await.unwrap();
     let esdk_ciphertext = encrypt_output.ciphertext;
     let ec = EncryptionContext::new();
     let decrypt_input = DecryptInput::with_legacy_keyring(&esdk_ciphertext, ec, kms_keyring);
     let decrypt_output = decrypt(&decrypt_input).await.unwrap();
 
-    assert_eq!(decrypt_output.plaintext, asdf);
+    assert_eq!(decrypt_output.plaintext, plaintext);
     assert_eq!(
         decrypt_output.encryption_context.get("stuff").map(String::as_str),
         Some("junk"),
@@ -116,10 +116,10 @@ async fn test_encrypt_decrypt_ec() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt_bad_ec() {
     let kms_keyring = kms_keyring().await;
-    let asdf = "asdf".as_bytes();
+    let plaintext = b"hello esdk";
     let encryption_context =
         std::collections::HashMap::from([("aws-crypto-stuff".to_string(), "junk".to_string())]);
-    let encrypt_input = EncryptInput::with_legacy_keyring(asdf, encryption_context, kms_keyring);
+    let encrypt_input = EncryptInput::with_legacy_keyring(plaintext, encryption_context, kms_keyring);
     let encrypt_output = encrypt(&encrypt_input).await;
 
     //= spec/client-apis/encrypt.md#encryption-context
@@ -137,9 +137,9 @@ async fn test_encrypt_decrypt_bad_ec() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_bad_encrypt_input() {
     let kms_keyring = kms_keyring().await;
-    let asdf = "asdf".as_bytes();
+    let plaintext = b"hello esdk";
     let ec = EncryptionContext::new();
-    let mut encrypt_input = EncryptInput::with_legacy_keyring(asdf, ec, kms_keyring);
+    let mut encrypt_input = EncryptInput::with_legacy_keyring(plaintext, ec, kms_keyring);
     encrypt_input.source = None;
     let encrypt_output = encrypt(&encrypt_input).await;
 
