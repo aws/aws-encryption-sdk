@@ -97,7 +97,10 @@ pub fn mpl() -> aws_mpl_legacy::dafny::client::Client {
     .unwrap()
 }
 
-/// Output Stream
+/// Output bytes sink for streaming encrypt/decrypt operations.
+///
+/// Auto-implemented for any type that is `Write + Send + Sync + Debug`
+/// (e.g. `Vec<u8>`, `std::fs::File`).
 //= spec/client-apis/streaming.md#outputs
 //# In order to support streaming, the operation MUST produce some output within a streaming framework.
 //
@@ -110,7 +113,10 @@ pub trait SafeWrite: std::io::Write + Send + Sync + std::fmt::Debug {}
 //# - There MUST be a mechanism to indicate that the entire output has been released.
 impl<T: std::io::Write + Send + Sync + std::fmt::Debug> SafeWrite for T {}
 
-/// Input Stream
+/// Input bytes source for streaming encrypt/decrypt operations.
+///
+/// Auto-implemented for any type that is `Read + Send + Sync + Debug`
+/// (e.g. `std::io::Cursor`, `std::fs::File`).
 //= spec/client-apis/streaming.md#inputs
 //# In order to support streaming, the operation MUST accept some input within a streaming framework.
 //
@@ -151,7 +157,7 @@ pub use aws_mpl_legacy::EncryptionContext;
 pub struct EncryptOutput {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
     pub algorithm_suite_id: EsdkAlgorithmSuiteId,
-    /// data to be decrypted
+    /// Encrypted message bytes (the serialized AWS Encryption SDK message).
     pub ciphertext: Vec<u8>,
     /// Key-Value pairs to associate with the encrypted data
     pub encryption_context: EncryptionContext,
@@ -378,16 +384,19 @@ pub struct EncryptStreamInput {
     pub frame_length: FrameLength,
     /// The source of cryptographic materials
     pub source: Option<MaterialSource>,
-    /// The expected size of the input data stream.
-    /// This is only important if you cmm or keyring care about such things, which most don't.
+    /// Optional expected size of the input plaintext stream.
+    ///
+    /// Most CMMs and keyrings ignore this; provide it only when the configured
+    /// CMM or keyring requires the plaintext length up front (e.g. for a
+    /// signing scheme that pre-computes a digest size).
     //= spec/client-apis/encrypt.md#input
     //= reason=EncryptStreamInput accepts unknown-length plaintext via a stream; data_size serves as the optional Plaintext Length Bound
     //# If the [plaintext](#plaintext) is of unknown length, the caller MAY also input a
     //# [Plaintext Length Bound](#plaintext-length-bound).
     pub data_size: Option<usize>,
-    /// default is no limit
+    /// Default is no limit
     pub max_encrypted_data_keys: Option<NonZeroUsize>,
-    /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
+    /// Default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 
@@ -469,11 +478,11 @@ pub struct DecryptInput<'a> {
     //= spec/client-apis/decrypt.md#input
     //# - Decrypt operation input MUST accept an optional [Keyring](../framework/keyring-interface.md) argument.
     pub source: Option<MaterialSource>,
-    /// default is `NetV400RetryPolicy::AllowRetry`
+    /// Default is `NetV400RetryPolicy::AllowRetry`
     pub net_v4_retry_policy: NetV400RetryPolicy,
-    /// default is no limit
+    /// Default is no limit
     pub max_encrypted_data_keys: Option<NonZeroUsize>,
-    /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
+    /// Default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 
@@ -492,11 +501,11 @@ pub struct DecryptStreamInput {
     /// If verification fails, at least one byte will not have been written to the output stream.
     /// If the ciphertext involves only one frame, then no danger exists, and this flag is not needed.
     pub i_accept_the_danger: bool,
-    /// default is `NetV400RetryPolicy::AllowRetry`
+    /// Default is `NetV400RetryPolicy::AllowRetry`
     pub net_v4_retry_policy: NetV400RetryPolicy,
-    /// default is no limit
+    /// Default is no limit
     pub max_encrypted_data_keys: Option<NonZeroUsize>,
-    /// default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
+    /// Default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 
