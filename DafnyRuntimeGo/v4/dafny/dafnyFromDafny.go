@@ -3,6 +3,8 @@
 
 package dafny
 
+import "sync/atomic"
+
 type Dummy__ struct{}
 
 // Definition of class Default__
@@ -882,14 +884,13 @@ func (CompanionStruct_AtomicBox_) CastTo_(x interface{}) AtomicBox {
 
 // Definition of class ArraySequence
 type ArraySequence struct {
-	_isString bool
+	_isString atomic.Bool
 	_values   ImmutableArray
 }
 
 func New_ArraySequence_() *ArraySequence {
 	_this := ArraySequence{}
 
-	_this._isString = false
 	_this._values = (ImmutableArray)(nil)
 	return &_this
 }
@@ -931,10 +932,10 @@ func (_this *ArraySequence) Elements() Sequence {
 	return Companion_Sequence_.Elements(_this)
 }
 func (_this *ArraySequence) IsString() bool {
-	return _this._isString
+	return _this._isString.Load()
 }
 func (_this *ArraySequence) IsString_set_(value bool) {
-	_this._isString = value
+	_this._isString.Store(value)
 }
 func (_this *ArraySequence) Select(index uint32) interface{} {
 	var _out1 interface{}
@@ -972,7 +973,7 @@ func (_this *ArraySequence) PrototypeArray() ImmutableArray {
 func (_this *ArraySequence) Ctor__(value ImmutableArray, isString bool) {
 	{
 		(_this)._values = value
-		(_this)._isString = isString
+		(_this)._isString.Store(isString)
 	}
 }
 func (_this *ArraySequence) Cardinality() uint32 {
@@ -999,7 +1000,7 @@ func (_this *ArraySequence) Values() ImmutableArray {
 
 // Definition of class ConcatSequence
 type ConcatSequence struct {
-	_isString bool
+	_isString atomic.Bool
 	_left     Sequence
 	_right    Sequence
 	_length   uint32
@@ -1008,7 +1009,6 @@ type ConcatSequence struct {
 func New_ConcatSequence_() *ConcatSequence {
 	_this := ConcatSequence{}
 
-	_this._isString = false
 	_this._left = (Sequence)(nil)
 	_this._right = (Sequence)(nil)
 	_this._length = Companion_Size__t_.Witness()
@@ -1052,10 +1052,10 @@ func (_this *ConcatSequence) Elements() Sequence {
 	return Companion_Sequence_.Elements(_this)
 }
 func (_this *ConcatSequence) IsString() bool {
-	return _this._isString
+	return _this._isString.Load()
 }
 func (_this *ConcatSequence) IsString_set_(value bool) {
-	_this._isString = value
+	_this._isString.Store(value)
 }
 func (_this *ConcatSequence) Select(index uint32) interface{} {
 	var _out2 interface{}
@@ -1097,7 +1097,7 @@ func (_this *ConcatSequence) Ctor__(left Sequence, right Sequence) {
 		(_this)._left = left
 		(_this)._right = right
 		(_this)._length = ((left).Cardinality()) + ((right).Cardinality())
-		(_this)._isString = (left.IsString()) || (right.IsString())
+		(_this)._isString.Store((left.IsString()) || (right.IsString()))
 	}
 }
 func (_this *ConcatSequence) Cardinality() uint32 {
@@ -1155,7 +1155,7 @@ func (_this *ConcatSequence) Length() uint32 {
 
 // Definition of class LazySequence
 type LazySequence struct {
-	_isString bool
+	_isString atomic.Bool
 	_length   uint32
 	_box      AtomicBox
 }
@@ -1163,7 +1163,6 @@ type LazySequence struct {
 func New_LazySequence_() *LazySequence {
 	_this := LazySequence{}
 
-	_this._isString = false
 	_this._length = Companion_Size__t_.Witness()
 	_this._box = (AtomicBox)(nil)
 	return &_this
@@ -1206,10 +1205,10 @@ func (_this *LazySequence) Elements() Sequence {
 	return Companion_Sequence_.Elements(_this)
 }
 func (_this *LazySequence) IsString() bool {
-	return _this._isString
+	return _this._isString.Load()
 }
 func (_this *LazySequence) IsString_set_(value bool) {
-	_this._isString = value
+	_this._isString.Store(value)
 }
 func (_this *LazySequence) Select(index uint32) interface{} {
 	var _out3 interface{}
@@ -1262,7 +1261,7 @@ func (_this *LazySequence) Ctor__(wrapped Sequence) {
 		_0_box = Companion_AtomicBox_.CastTo_(_out0)
 		(_this)._box = _0_box
 		(_this)._length = (wrapped).Cardinality()
-		(_this)._isString = wrapped.IsString()
+		(_this)._isString.Store(wrapped.IsString())
 	}
 }
 func (_this *LazySequence) Cardinality() uint32 {
