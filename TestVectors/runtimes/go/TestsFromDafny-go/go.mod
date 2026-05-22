@@ -12,6 +12,7 @@ replace (
 	github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk => ../../../../AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/
 	github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk/test => ../../../../AwsEncryptionSDK/runtimes/go/TestsFromDafny-go/
 	github.com/aws/aws-encryption-sdk/testvectors => ../ImplementationFromDafny-go/
+	github.com/dafny-lang/DafnyRuntimeGo/v4 => ../../../../DafnyRuntimeGo/v4/
 )
 
 require (
