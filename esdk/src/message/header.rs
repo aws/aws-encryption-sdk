@@ -22,9 +22,13 @@ pub(crate) const START_SEQUENCE_NUMBER: u32 = 1;
 //# The value MUST be encoded as the 4 bytes `FF FF FF FF` in hexadecimal notation.
 pub(crate) const ENDFRAME_SEQUENCE_NUMBER: u32 = 0xFFFF_FFFF;
 pub(crate) const NONFRAMED_SEQUENCE_NUMBER: u32 = 1;
+
+//= spec/data-format/message-body.md#nonframed-data-encrypted-content-length
+//# The value of this field MUST NOT be greater than `2^36 - 32`, or 64 gibibytes (64 GiB),
+//# due to restrictions imposed by the [implemented algorithms](../framework/algorithm-suites.md).
 pub(crate) const SAFE_MAX_ENCRYPT: u64 = 0x000F_FFFF_FFE0;
 
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) struct HeaderInfo {
     pub(crate) body: HeaderBody,
     pub(crate) raw_header: Vec<u8>,
@@ -33,9 +37,19 @@ pub(crate) struct HeaderInfo {
     pub(crate) header_auth: HeaderAuth,
 }
 
-//= spec/data-format/message-header.md#structure
-//# The message header is a sequence of bytes that MUST be in big-endian format.
 pub(crate) fn write_header_body(w: &mut dyn SafeWrite, body: &HeaderBody) -> Result<(), Error> {
+    // The body variant must agree with its embedded suite's message format version.
+    // Construction sites in encrypt.rs pick V1Body/V2Body based on the suite, so this
+    // is a dev-time guard against future drift; the invariant is enforced at the call site.
+    debug_assert!(
+        match body {
+            HeaderBody::V1Body(b) => b.algorithm_suite.message_version == 1,
+            HeaderBody::V2Body(b) => b.algorithm_suite.message_version == 2,
+        },
+        "header body variant does not match its embedded algorithm suite's message_version",
+    );
+    //= spec/data-format/message-header.md#structure
+    //# The message header is a sequence of bytes that MUST be in big-endian format.
     match body {
         //= spec/client-apis/encrypt.md#v1-header
         //# If the message format version associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites) is 1.0,
@@ -147,10 +161,18 @@ pub(crate) fn validate_max_encrypted_data_keys(
 }
 
 pub(crate) fn generate_message_id(suite: &AlgorithmSuite) -> Result<MessageId, Error> {
-    let length = if suite.message_version == 1 {
-        MESSAGE_ID_LEN_V1
-    } else {
-        MESSAGE_ID_LEN_V2
+    // Defense-in-depth: in practice every supported suite has message_version 1 or 2
+    // (suites are sourced from the static algorithm-suites table), but match explicitly
+    // so a hypothetical future or malformed value fails loudly instead of silently
+    // falling through to the V2 length.
+    let length = match suite.message_version {
+        1 => MESSAGE_ID_LEN_V1,
+        2 => MESSAGE_ID_LEN_V2,
+        v => {
+            return ser_err(&format!(
+                "Cannot generate message ID for unsupported message format version: {v}"
+            ));
+        }
     };
     let mut rand_bytes: Vec<u8> = vec![0; length];
 

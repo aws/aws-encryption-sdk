@@ -123,7 +123,7 @@ pub(crate) fn read_content_type(
     }
 }
 
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) struct V1HeaderBody {
     pub(crate) message_type: MessageType,
     pub(crate) algorithm_suite: AlgorithmSuite,
@@ -135,7 +135,7 @@ pub(crate) struct V1HeaderBody {
     pub(crate) frame_length: u32,
 }
 
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) struct V2HeaderBody {
     pub(crate) algorithm_suite: AlgorithmSuite,
     pub(crate) message_id: MessageId,
@@ -150,11 +150,6 @@ pub(crate) struct V2HeaderBody {
 pub(crate) enum HeaderBody {
     V1Body(V1HeaderBody),
     V2Body(V2HeaderBody),
-}
-impl Default for HeaderBody {
-    fn default() -> Self {
-        Self::V2Body(V2HeaderBody::default())
-    }
 }
 
 impl HeaderBody {
@@ -210,15 +205,6 @@ pub(crate) enum HeaderAuth {
     },
 }
 
-impl Default for HeaderAuth {
-    fn default() -> Self {
-        // This is a dummy value. It should never be used.
-        Self::AESMac {
-            header_iv: vec![0u8; 12],
-            header_auth_tag: vec![0u8; 16],
-        }
-    }
-}
 impl HeaderAuth {
     pub(crate) fn header_iv(&self) -> &[u8] {
         match self {
