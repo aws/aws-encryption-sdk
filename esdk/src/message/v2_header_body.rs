@@ -66,7 +66,7 @@ pub(crate) fn write_v2_header_body(
     //# - MUST serialize the [AAD](../data-format/message-header.md#aad).
     //
     //= spec/client-apis/encrypt.md#v2-header
-    //= reason=required EC keys are filtered out in shared code before the v1 header-specific code
+    //= reason=required EC keys are filtered out in shared code before the v2 header-specific code
     //# The value MUST be the serialization of the [encryption context](../framework/structures.md#encryption-context)
     //# in the [encryption materials](../framework/structures.md#encryption-materials),
     //# and this serialization MUST NOT contain any key value pairs listed in
