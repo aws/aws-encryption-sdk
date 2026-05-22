@@ -1,7 +1,13 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-use aws_esdk::*;
+use aws_esdk::{
+    decrypt, mpl, DecryptInput, EncryptInput, EncryptionContext, ErrorKind, FrameLength,
+    NetV400RetryPolicy,
+};
+
+mod fixtures;
+mod test_helpers;
 
 // THIS IS AN INCORRECTLY SERIALIZED CIPHERTEXT PRODUCED BY
 // THE ESDK .NET V4.0.0
@@ -60,8 +66,12 @@ async fn test_net_retry_flag() {
     let mut input = DecryptInput::with_legacy_keyring(ESDK_NET_V400_MESSAGE, ec, raw_aes_keyring);
     input.net_v4_retry_policy = NetV400RetryPolicy::ForbidRetry;
 
-    let expect_failure = decrypt(&input).await;
-    assert!(expect_failure.is_err(), "Expected decryption to fail without retry flag");
+    let err = decrypt(&input).await.expect_err("Expected decryption to fail without retry flag");
+    assert!(
+        matches!(err.kind, ErrorKind::CryptographicError),
+        "expected CryptographicError, got {:?}",
+        err.kind
+    );
 
     // Decrypt v4.0.0 message with the default configuration which is to retry
     // and expect decryption to pass
@@ -115,9 +125,6 @@ fn test_encrypt_input_default_commitment_policy() {
 
 #[test]
 fn test_decrypt_input_default_commitment_policy() {
-    //= spec/client-apis/client.md#initialization
-    //= type=test
-    //# If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
     let input = DecryptInput::default();
     assert_eq!(
         input.commitment_policy,
@@ -137,10 +144,6 @@ fn test_encrypt_input_default_max_edks_is_none() {
 
 #[test]
 fn test_decrypt_input_default_max_edks_is_none() {
-    //= spec/client-apis/client.md#initialization
-    //= type=test
-    //# If no [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys) is provided
-    //# the default MUST result in no limit on the number of encrypted data keys (aside from the limit imposed by the [message format](../format/message-header.md)).
     let input = DecryptInput::default();
     assert!(input.max_encrypted_data_keys.is_none());
 }
@@ -176,6 +179,7 @@ fn test_encrypt_input_accepts_plaintext() {
     //= spec/client-apis/encrypt.md#input
     //= type=test
     //# - Encrypt operation input MUST accept a required [plaintext](#plaintext) argument.
+    //
     //= spec/client-apis/encrypt.md#plaintext
     //= type=test
     //# This MUST be a sequence of bytes.
@@ -238,6 +242,7 @@ fn test_decrypt_input_accepts_encrypted_message() {
     //= spec/client-apis/decrypt.md#input
     //= type=test
     //# - Decrypt operation input MUST accept a required [Encrypted Message](#encrypted-message) argument.
+    //
     //= spec/client-apis/decrypt.md#encrypted-message
     //= type=test
     //# The input encrypted message MUST be a sequence of bytes in the
@@ -281,14 +286,16 @@ fn test_frame_length_rejects_zero() {
     //= spec/client-apis/encrypt.md#frame-length
     //= type=test
     //# This value MUST be greater than 0 and MUST NOT exceed the value 2^32 - 1.
-    assert!(FrameLength::new(0).is_err());
+    let err = FrameLength::new(0).expect_err("FrameLength::new(0) must fail");
+    assert!(
+        matches!(err.kind, ErrorKind::ValidationError),
+        "expected ValidationError, got {:?}",
+        err.kind
+    );
 }
 
 #[test]
 fn test_frame_length_accepts_max_u32() {
-    //= spec/client-apis/encrypt.md#frame-length
-    //= type=test
-    //# This value MUST be greater than 0 and MUST NOT exceed the value 2^32 - 1.
     let fl = FrameLength::new(u32::MAX).unwrap();
     assert_eq!(fl.0.get(), u32::MAX);
 }
