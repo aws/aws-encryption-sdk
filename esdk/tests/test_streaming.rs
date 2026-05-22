@@ -3,8 +3,10 @@
 
 mod test_helpers;
 
-use aws_esdk::*;
-use test_helpers::*;
+use aws_esdk::{
+    decrypt_stream, encrypt_stream, DecryptStreamInput, EncryptStreamInput, EncryptionContext,
+};
+use test_helpers::test_keyring;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_encrypt_decrypt_round_trip() {
@@ -23,6 +25,11 @@ async fn test_streaming_encrypt_decrypt_round_trip() {
     //= type=test
     //= reason=encrypt_stream writes the encrypted message to a SafeWrite (Vec<u8>) frame-by-frame, proving the encrypted message MAY be streamed
     //# This operation MAY [stream](streaming.md) the encrypted message.
+    //
+    //= spec/client-apis/streaming.md#outputs
+    //= type=test
+    //= reason=decrypt_stream returns Ok only after all plaintext bytes have been written to the SafeWrite output; the round-trip assertion below proves the operation did not signal completion before the output was complete
+    //# Operations MUST NOT indicate completion or success until an end to the output has been indicated.
     let keyring = test_keyring().await;
     let plaintext = b"hello streaming world";
 
@@ -70,6 +77,10 @@ async fn test_streaming_encrypt_decrypt_round_trip() {
         .await
         .unwrap();
 
+    //= spec/client-apis/streaming.md#outputs
+    //= type=test
+    //= reason=after decrypt_stream returns Ok, all plaintext bytes are present in the output Vec<u8>; this proves the end-of-output signaling matches actual completion
+    //# - There MUST be a mechanism to indicate that the entire output has been released.
     assert_eq!(decrypted, plaintext, "round-trip plaintext must match");
 }
 
@@ -117,39 +128,5 @@ async fn test_streaming_finite_working_memory() {
     assert_eq!(
         decrypted, plaintext,
         "multi-frame streaming round-trip must match"
-    );
-}
-
-//= spec/client-apis/streaming.md#outputs
-//= type=test
-//= reason=decrypt_stream returns Ok only after all plaintext bytes have been written to the SafeWrite output; the assertion that decrypted == plaintext proves output was complete before success was indicated
-//# Operations MUST NOT indicate completion or success until an end to the output has been indicated.
-#[tokio::test(flavor = "multi_thread")]
-async fn test_streaming_completion_only_after_output_end() {
-    let keyring = test_keyring().await;
-    let plaintext = b"completion test payload";
-
-    let ec = EncryptionContext::new();
-    let enc_input = EncryptStreamInput::with_legacy_keyring(ec.clone(), keyring.clone());
-    let mut pt_cursor = std::io::Cursor::new(&plaintext[..]);
-    let mut ciphertext: Vec<u8> = Vec::new();
-    encrypt_stream(&mut pt_cursor, &mut ciphertext, &enc_input)
-        .await
-        .unwrap();
-
-    let dec_input = DecryptStreamInput::with_legacy_keyring(ec, keyring);
-    let mut ct_cursor = std::io::Cursor::new(&ciphertext[..]);
-    let mut decrypted: Vec<u8> = Vec::new();
-    let result = decrypt_stream(&mut ct_cursor, &mut decrypted, &dec_input).await;
-    assert!(result.is_ok(), "decrypt_stream must succeed");
-
-    //= spec/client-apis/streaming.md#outputs
-    //= type=test
-    //= reason=after decrypt_stream returns Ok, all output is present in the Vec<u8>, proving the end-of-output mechanism works
-    //# - There MUST be a mechanism to indicate that the entire output has been released.
-    assert_eq!(
-        decrypted,
-        plaintext.as_slice(),
-        "all output must be present when success is indicated"
     );
 }

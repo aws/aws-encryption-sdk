@@ -33,6 +33,11 @@ pub enum MaterialSource {
 
 impl PartialEq for MaterialSource {
     fn eq(&self, other: &Self) -> bool {
+        // The non-legacy variants wrap `Arc<dyn _>`-backed handles whose
+        // contained types are not themselves `PartialEq`; we compare them by
+        // Arc identity (pointer equality of the underlying allocation). The
+        // legacy variants wrap types that already implement `PartialEq`, so
+        // we delegate to those.
         match (self, other) {
             (Self::Cmm(x), Self::Cmm(y)) => {
                 std::ptr::addr_eq(std::sync::Arc::as_ptr(x), std::sync::Arc::as_ptr(y))
@@ -204,7 +209,7 @@ impl EncryptStreamOutput {
 pub struct DecryptOutput {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
     pub algorithm_suite_id: EsdkAlgorithmSuiteId,
-    /// Key-Value pairs to associate with the encrypted data
+    /// Encryption context recovered from the encrypted message.
     pub encryption_context: EncryptionContext,
     /// Decrypted plaintext data
     //= spec/client-apis/decrypt.md#plaintext
@@ -238,8 +243,8 @@ pub enum NetV400RetryPolicy {
     AllowRetry,
 }
 
-impl ::std::fmt::Display for NetV400RetryPolicy {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+impl std::fmt::Display for NetV400RetryPolicy {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::ForbidRetry => write!(f, "FORBID_RETRY"),
             Self::AllowRetry => write!(f, "ALLOW_RETRY"),
@@ -319,10 +324,6 @@ pub struct EncryptInput<'a> {
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 
-#[allow(
-    single_use_lifetimes,
-    reason = "Remove when we add with_cmm and with_keyring"
-)]
 impl<'a> EncryptInput<'a> {
     /// Create default `EncryptInput`
     #[must_use]
@@ -470,10 +471,6 @@ impl EncryptStreamInput {
 
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
 #[non_exhaustive]
-#[allow(
-    single_use_lifetimes,
-    reason = "Remove when we add with_cmm and with_keyring"
-)]
 /// Input for [`decrypt`](crate::decrypt).
 pub struct DecryptInput<'a> {
     /// Encrypted message bytes (the serialized AWS Encryption SDK message) to decrypt.
