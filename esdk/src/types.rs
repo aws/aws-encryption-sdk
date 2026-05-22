@@ -216,6 +216,13 @@ pub struct DecryptOutput {
     //# This MUST be a sequence of bytes.
     pub plaintext: Vec<u8>,
 }
+impl DecryptOutput {
+    /// Create default `DecryptOutput`
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
 
 #[derive(Debug, PartialEq, Eq, Clone, Default)]
 #[non_exhaustive]
@@ -225,6 +232,13 @@ pub struct DecryptStreamOutput {
     pub algorithm_suite_id: EsdkAlgorithmSuiteId,
     /// Encryption context recovered from the encrypted message.
     pub encryption_context: EncryptionContext,
+}
+impl DecryptStreamOutput {
+    /// Create default `DecryptStreamOutput`
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Default, Hash)]
