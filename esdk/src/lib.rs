@@ -106,7 +106,7 @@ mod decrypt;
 pub use decrypt::*;
 #[cfg(feature = "test_vectors")]
 #[cfg_attr(docsrs, doc(cfg(feature = "test_vectors")))]
-/// test vectors
+/// Cross-implementation test-vector tooling. Gated behind the `test_vectors` feature.
 pub mod test_vectors;
 mod types;
 pub use types::*;

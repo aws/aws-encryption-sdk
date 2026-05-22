@@ -84,6 +84,12 @@ async fn test_streaming_encrypt_decrypt_round_trip() {
 //= reason=the streaming APIs accept SafeRead/SafeWrite (incremental I/O), proving the implementation does not require holding the entire input in memory
 //# If an implementation requires holding the entire input in memory in order to perform the operation,
 //# that implementation SHOULD NOT provide an API that allows the caller to stream the operation.
+//
+//= spec/client-apis/encrypt.md#plaintext
+//= type=test
+//= reason=encrypt_stream processes a multi-frame payload via SafeRead/SafeWrite without holding the entire plaintext in memory; providing a streaming encrypt API is therefore correct under the contrapositive of this requirement.
+//# If an implementation requires holding the input entire plaintext in memory in order to perform this operation,
+//# that implementation SHOULD NOT provide an API that allows this input to be streamed.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_finite_working_memory() {
     let keyring = test_keyring().await;
@@ -146,26 +152,4 @@ async fn test_streaming_completion_only_after_output_end() {
         plaintext.as_slice(),
         "all output must be present when success is indicated"
     );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_streaming_encrypt_does_not_require_full_plaintext_in_memory() {
-    //= spec/client-apis/encrypt.md#plaintext
-    //= type=test
-    //= reason=encrypt_stream processes frames incrementally via SafeRead/SafeWrite without holding the entire plaintext in memory, so providing a streaming API is correct
-    //# If an implementation requires holding the input entire plaintext in memory in order to perform this operation,
-    //# that implementation SHOULD NOT provide an API that allows this input to be streamed.
-    let keyring = test_keyring().await;
-    // Use a payload larger than one frame to prove streaming works incrementally
-    let plaintext = vec![0xCDu8; 10_000];
-
-    let ec = EncryptionContext::new();
-    let enc_input = EncryptStreamInput::with_legacy_keyring(ec.clone(), keyring.clone());
-    let mut pt_cursor = std::io::Cursor::new(&plaintext[..]);
-    let mut ciphertext: Vec<u8> = Vec::new();
-    encrypt_stream(&mut pt_cursor, &mut ciphertext, &enc_input)
-        .await
-        .unwrap();
-
-    assert!(!ciphertext.is_empty(), "streaming encrypt must produce ciphertext");
 }
