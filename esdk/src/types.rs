@@ -12,7 +12,12 @@ use aws_mpl_legacy::dafny::types::keyring::KeyringRef as LegacyKeyring;
 use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use std::num::NonZeroUsize;
 
-/// Source for Cryptographic Materials
+/// Source of cryptographic materials for an encrypt or decrypt call.
+///
+/// Pick the variant matching what the caller already has constructed:
+/// the legacy variants accept the Dafny-generated MPL refs, while
+/// `Cmm` / `Keyring` accept the higher-level wrappers in the
+/// `aws_mpl_legacy` crate.
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub enum MaterialSource {
@@ -61,7 +66,7 @@ impl Default for FrameLength {
 }
 
 impl FrameLength {
-    /// return new `FrameLength`.
+    /// Returns a new `FrameLength`, validated to be non-zero.
     ///
     /// # Errors
     /// Returns an error if `val` is zero.
@@ -73,7 +78,10 @@ impl FrameLength {
                 .ok_or_else(|| val_err("Frame length must be non-zero"))?,
         ))
     }
-    /// return new `FrameLength`. Panic if val is zero.
+    /// Returns a new `FrameLength`, panicking if `val` is zero.
+    ///
+    /// Prefer [`FrameLength::new`] in non-`const` contexts; use this only
+    /// when the caller can statically prove `val != 0` (e.g. a literal).
     ///
     /// # Panics
     /// Panics if `val` is zero.
@@ -83,7 +91,10 @@ impl FrameLength {
     }
 }
 
-/// Convenience function to return a `MaterialProviders` Client.
+/// Convenience constructor for a `MaterialProviders` library client.
+///
+/// Most call sites that need an MPL client (e.g. building a keyring) can
+/// use this rather than re-deriving the `MaterialProvidersConfig` builder.
 ///
 /// # Panics
 /// Panics if the `MaterialProviders` client cannot be constructed.
@@ -212,12 +223,17 @@ pub struct DecryptStreamOutput {
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Default, Hash)]
-/// During Decryption, Allow or Forbid ESDK-NET v4.0.0 Behavior if the ESDK Message Header fails the Header Authentication check.
+/// Whether to allow the ESDK-NET v4.0.0 retry behavior on header authentication failure.
+///
+/// ESDK-NET v4.0.0 incorrectly serialized message headers in a way that
+/// older readers and other-language readers cannot parse. The retry
+/// behavior, when allowed, lets this implementation recover and decrypt
+/// such messages. Set to [`Self::ForbidRetry`] to opt out.
 #[non_exhaustive]
 pub enum NetV400RetryPolicy {
-    /// Do not retry on failure
+    /// Do not retry on header authentication failure.
     ForbidRetry,
-    /// Retry on failure
+    /// Retry on header authentication failure (default).
     #[default]
     AllowRetry,
 }
@@ -235,12 +251,14 @@ impl ::std::fmt::Display for NetV400RetryPolicy {
 #[non_exhaustive]
 /// Input for [`encrypt`](crate::encrypt).
 //= spec/client-apis/encrypt.md#input
-//= reason=EncryptInput has plaintext: &[u8] (always known length) and no plaintext_length_bound field, so a caller cannot specify both
+//= type=exception
+//= reason=EncryptInput does not expose a plaintext_length_bound field; plaintext is always &[u8] with known length, so this implementation does not implement the optional Plaintext Length Bound feature.
 //# Implementations SHOULD ensure that a caller is not able to specify both a [plaintext](#plaintext)
 //# with known length and a [Plaintext Length Bound](#plaintext-length-bound) by construction.
 //
 //= spec/client-apis/encrypt.md#input
-//= reason=EncryptInput has plaintext: &[u8] (always known length) and no plaintext_length_bound field, making it impossible to specify both
+//= type=exception
+//= reason=EncryptInput does not expose a plaintext_length_bound field; the optional Plaintext Length Bound feature is not implemented on the non-streaming input, so this conditional MUST does not apply.
 //# If a caller is able to specify both an input [plaintext](#plaintext) with known length and
 //# a [Plaintext Length Bound](#plaintext-length-bound),
 //# the [Plaintext Length Bound](#plaintext-length-bound) MUST NOT be used during the Encrypt operation
@@ -335,8 +353,8 @@ impl<'a> EncryptInput<'a> {
             ..Default::default()
         }
     }
-    #[must_use]
     /// Construct an `EncryptInput` with a `CryptographicMaterialsManagerRef`
+    #[must_use]
     pub fn with_cmm(
         plaintext: &'a [u8],
         ec: EncryptionContext,
@@ -348,8 +366,7 @@ impl<'a> EncryptInput<'a> {
             source: Some(MaterialSource::Cmm(cmm)),
             ..Default::default()
         }
-    }
-    /// Construct an `EncryptInput` with a `KeyringRef`
+    }    /// Construct an `EncryptInput` with a `KeyringRef`
     #[must_use]
     pub fn with_keyring(plaintext: &'a [u8], ec: EncryptionContext, keyring: KeyringRef) -> Self {
         Self {
@@ -459,7 +476,7 @@ impl EncryptStreamInput {
 )]
 /// Input for [`decrypt`](crate::decrypt).
 pub struct DecryptInput<'a> {
-    /// data to be decrypted
+    /// Encrypted message bytes (the serialized AWS Encryption SDK message) to decrypt.
     //= spec/client-apis/decrypt.md#input
     //# - Decrypt operation input MUST accept a required [Encrypted Message](#encrypted-message) argument.
     //
@@ -605,7 +622,7 @@ impl DecryptStreamInput {
             ..Default::default()
         }
     }
-    /// Construct a `DecryptStreamInput` with a `KeyringRef`
+    /// Construct a `DecryptStreamInput` with a legacy `KeyringRef`
     #[must_use]
     pub fn with_legacy_keyring(ec: EncryptionContext, keyring: LegacyKeyring) -> Self {
         Self {
@@ -633,7 +650,7 @@ impl DecryptStreamInput {
         }
     }
 
-    /// Construct a `DecryptStreamInput` from an `EncryptStreamInput`
+    /// Construct a `DecryptStreamInput` from an `EncryptInput`
     #[must_use]
     pub fn from_encrypt(e: &EncryptInput<'_>) -> Self {
         Self {
