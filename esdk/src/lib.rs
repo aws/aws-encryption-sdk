@@ -24,6 +24,7 @@
     deprecated_in_future,
     keyword_idents,
     keyword_idents_2024,
+    rust_2018_idioms,           // sub-lints like elided_lifetimes_in_paths still fire on edition 2024
 
     // --- Public API hygiene ---
     missing_debug_implementations,
@@ -39,6 +40,8 @@
     unit_bindings,              // `let x = ();` is almost always a bug
 
     // --- Cleanup / explicitness ---
+    absolute_paths_not_starting_with_crate,
+    explicit_outlives_requirements,
     impl_trait_redundant_captures,
     macro_use_extern_crate,
     non_ascii_idents,
@@ -49,29 +52,44 @@
     unused_lifetimes,
     unused_qualifications,
 
+    // --- Safety review ---
+    unsafe_op_in_unsafe_fn,     // edition 2024 makes this warn-by-default; listed for explicit project policy
+
     // --- Clippy lint groups ---
     clippy::style,
     clippy::pedantic,
+    clippy::nursery,            // unstable; review surprise warnings on toolchain bumps
+    clippy::cargo,
 
     // --- Selected clippy::restriction lints. We do NOT enable
     // clippy::restriction wholesale; most of its lints are situational. ---
+    clippy::create_dir,                       // require create_dir_all
     clippy::exhaustive_enums,                 // public enums must be #[non_exhaustive]
     clippy::exhaustive_structs,               // public structs must be #[non_exhaustive]
     clippy::little_endian_bytes,              // big-endian preferred (matches spec wire format)
+    clippy::missing_asserts_for_indexing,     // catch panic-prone indexing
     clippy::mixed_read_write_in_expression,   // avoid order-of-eval surprises
+    clippy::partial_pub_fields,               // all-or-nothing field visibility
+    clippy::redundant_type_annotations,
     clippy::renamed_function_params,          // trait impls keep parameter names
+    clippy::rest_pat_in_fully_bound_structs,  // explicit `..` only when needed
     clippy::same_name_method,                 // avoid inherent vs trait shadowing
+    clippy::string_add,                       // prefer push_str over `s + s`
+    clippy::string_lit_chars_any,             // prefer matches! over .chars().any()
+    clippy::tests_outside_test_module,
+    clippy::unneeded_field_pattern,
 
     // Intentionally not enabled (with rationale):
     //   clippy::panic                  — MPL enums are #[non_exhaustive], forcing panic!()
     //   clippy::indexing_slicing       — too noisy in serialization code
     //   clippy::wildcard_enum_match_arm — see allow(...) below
-    //   clippy::nursery                — unstable; behavior changes between Rust versions
-    //   clippy::cargo                  — only multiple_crate_versions ever fires (allowed below)
     //   clippy::restriction            — opt in to selected lints individually
     //   non_exhaustive_omitted_patterns — unstable
-    //   rust_2018_idioms / rust_2021_* — already enforced by edition 2024
-    //   unsafe_op_in_unsafe_fn         — crate has no `unsafe` code
+    //   rust_2021_incompatible_closure_captures
+    //   rust_2021_incompatible_or_patterns
+    //   rust_2021_prefixes_incompatible_syntax
+    //   rust_2021_prelude_collisions  — all four are silent on edition 2024 (the things
+    //                                   they warn about are compile errors here, not lintable)
 )]
 // Project disagreements with the warn set above:
 #![allow(clippy::wildcard_enum_match_arm)] // too noisy against #[non_exhaustive] MPL enums
