@@ -159,13 +159,15 @@ async fn test_bad_encrypt_input() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_encrypt_decrypt_single_full_frame() {
+async fn test_encrypt_decrypt_varied_frame_lengths() {
     let kms_keyring = kms_keyring().await;
     let plaintext = "0123456789abcdef".as_bytes();
 
     let ec = EncryptionContext::new();
     let mut encrypt_input =
         EncryptInput::with_legacy_keyring(plaintext, ec.clone(), kms_keyring.clone());
+    // Sweep frame_length from 4 (multi-frame) up to plaintext.len() (single full frame),
+    // round-tripping at each length to confirm encrypt+decrypt agree across both regimes.
     for i in 4..=plaintext.len() {
         encrypt_input.frame_length.0 =
             std::num::NonZeroU32::new(u32::try_from(i).expect("frame length fits u32"))
