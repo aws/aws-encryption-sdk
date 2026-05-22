@@ -15,71 +15,88 @@
 //! as well as **V1** and **V2** message format versions (V2 adds key commitment).
 //!
 #![cfg_attr(docsrs, feature(doc_cfg))]
+// Project lint policy. We opt in to several rustc/clippy lint groups plus
+// individually-selected clippy::restriction lints. Lint definitions live at
+// https://doc.rust-lang.org/rustc/lints/listing/index.html and
+// https://rust-lang.github.io/rust-clippy/master/index.html.
 #![warn(
-    absolute_paths_not_starting_with_crate,
+    // --- Forward-compatibility (catch idioms that future editions will break) ---
     deprecated_in_future,
-    explicit_outlives_requirements,
     keyword_idents,
-    impl_trait_redundant_captures,
     keyword_idents_2024,
-    let_underscore_drop,
-    macro_use_extern_crate,
-    missing_debug_implementations,
-    missing_copy_implementations,
-    missing_docs,
-    non_ascii_idents,
-    // non_exhaustive_omitted_patterns, unstable
-    noop_method_call,
-    redundant_imports,
-    redundant_lifetimes,
+    rust_2018_idioms,
     rust_2021_incompatible_closure_captures,
     rust_2021_incompatible_or_patterns,
     rust_2021_prefixes_incompatible_syntax,
     rust_2021_prelude_collisions,
-    rust_2018_idioms,
-    single_use_lifetimes,
-    trivial_numeric_casts,
-    trivial_casts,
-    unit_bindings,
+
+    // --- Public API hygiene ---
+    missing_debug_implementations,
+    missing_copy_implementations,
+    missing_docs,
     unreachable_pub,
-    unsafe_op_in_unsafe_fn,
+
+    // --- Bug prevention (constructs that are usually mistakes) ---
+    let_underscore_drop,        // `let _ = guard;` drops the guard immediately
+    noop_method_call,           // .clone()/.borrow() that does nothing
+    trivial_casts,              // `x as T` where T is x's type
+    trivial_numeric_casts,      // numeric `as` cast that is a no-op
+    unit_bindings,              // `let x = ();` is almost always a bug
+
+    // --- Cleanup / explicitness ---
+    absolute_paths_not_starting_with_crate,
+    explicit_outlives_requirements,
+    impl_trait_redundant_captures,
+    macro_use_extern_crate,
+    non_ascii_idents,
+    redundant_imports,
+    redundant_lifetimes,
+    single_use_lifetimes,
     unused_extern_crates,
     unused_lifetimes,
     unused_qualifications,
 
+    // --- Safety review ---
+    unsafe_op_in_unsafe_fn,
+
+    // --- Clippy lint groups ---
     clippy::style,
     clippy::pedantic,
     clippy::nursery,
     clippy::cargo,
 
-    // clippy::restriction,
-    clippy::create_dir,
-    clippy::exhaustive_enums,
-    clippy::exhaustive_structs,
-    clippy::little_endian_bytes,
-    clippy::missing_asserts_for_indexing,
-    clippy::mixed_read_write_in_expression,
-    // clippy::panic, disabled due to non-exhaustive MPL enum patterns
-    clippy::partial_pub_fields,
+    // --- Selected clippy::restriction lints. We do NOT enable
+    // clippy::restriction wholesale; most of its lints are situational. ---
+    clippy::create_dir,                       // require create_dir_all
+    clippy::exhaustive_enums,                 // public enums must be #[non_exhaustive]
+    clippy::exhaustive_structs,               // public structs must be #[non_exhaustive]
+    clippy::little_endian_bytes,              // big-endian preferred (matches spec wire format)
+    clippy::missing_asserts_for_indexing,     // catch panic-prone indexing
+    clippy::mixed_read_write_in_expression,   // avoid order-of-eval surprises
+    clippy::partial_pub_fields,               // all-or-nothing field visibility
     clippy::redundant_type_annotations,
-    clippy::renamed_function_params,
-    clippy::rest_pat_in_fully_bound_structs,
-    clippy::same_name_method,
-    clippy::string_add,
-    clippy::string_lit_chars_any,
+    clippy::renamed_function_params,          // trait impls keep parameter names
+    clippy::rest_pat_in_fully_bound_structs,  // explicit `..` only when needed
+    clippy::same_name_method,                 // avoid inherent vs trait shadowing
+    clippy::string_add,                       // prefer push_str over `s + s`
+    clippy::string_lit_chars_any,             // prefer matches! over .chars().any()
     clippy::tests_outside_test_module,
-
-    // clippy::indexing_slicing,
-    // clippy::wildcard_enum_match_arm,
     clippy::unneeded_field_pattern,
 
+    // Intentionally not enabled (with rationale):
+    //   clippy::panic                  — MPL enums are #[non_exhaustive], forcing panic!()
+    //   clippy::indexing_slicing       — too noisy in serialization code
+    //   clippy::wildcard_enum_match_arm — see allow(...) below
+    //   clippy::restriction            — opt in to selected lints individually
+    //   non_exhaustive_omitted_patterns — unstable
 )]
-#![allow(clippy::wildcard_enum_match_arm)]
-#![allow(clippy::multiple_crate_versions)] // nothing to be done
-#![allow(clippy::option_if_let_else)] // disagree
-#![allow(clippy::redundant_pub_crate)] // broken, conflicts with unreachable_pub
-#![allow(clippy::too_many_lines)] // disagree
-#![allow(unused_crate_dependencies)] // broken
+// Project disagreements with the warn set above:
+#![allow(clippy::wildcard_enum_match_arm)] // too noisy against #[non_exhaustive] MPL enums
+#![allow(clippy::multiple_crate_versions)] // transitively unavoidable
+#![allow(clippy::option_if_let_else)]      // disagree: `if let` is often clearer
+#![allow(clippy::redundant_pub_crate)]     // false positive: conflicts with unreachable_pub
+#![allow(clippy::too_many_lines)]          // disagree: arbitrary line-count threshold
+#![allow(unused_crate_dependencies)]       // false positives across workspace dev-deps
 
 mod error;
 pub use error::*;

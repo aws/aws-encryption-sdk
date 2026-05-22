@@ -2,27 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod fixtures;
-use aws_esdk::{decrypt, encrypt, mpl, DecryptInput, EncryptInput, EncryptionContext, ErrorKind};
-use fixtures::*;
+mod test_helpers;
+
+use aws_esdk::{decrypt, encrypt, DecryptInput, EncryptInput, EncryptionContext, ErrorKind};
+use test_helpers::kms_keyring;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt() {
-    let mpl = mpl();
-
-    let client_supplier = mpl.create_default_client_supplier().send().await.unwrap();
-    let kms_client = client_supplier
-        .get_client()
-        .region("us-west-2")
-        .send()
-        .await
-        .unwrap();
-    let kms_keyring = mpl
-        .create_aws_kms_keyring()
-        .kms_key_id(KEY_ARN)
-        .kms_client(kms_client)
-        .send()
-        .await
-        .unwrap();
+    let kms_keyring = kms_keyring().await;
     let asdf = "asdf";
     let ec = EncryptionContext::new();
     let encrypt_input = EncryptInput::with_legacy_keyring(asdf.as_bytes(), ec, kms_keyring);
@@ -47,32 +34,13 @@ async fn test_encrypt_decrypt() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_bad_decrypt_input() {
-    let mpl = mpl();
-
-    let client_supplier = mpl.create_default_client_supplier().send().await.unwrap();
-    let kms_client = client_supplier
-        .get_client()
-        .region("us-west-2")
-        .send()
-        .await
-        .unwrap();
-    let kms_keyring = mpl
-        .create_aws_kms_keyring()
-        .kms_key_id(KEY_ARN)
-        .kms_client(kms_client)
-        .send()
-        .await
-        .unwrap();
-    let asdf = "asdf";
+    let kms_keyring = kms_keyring().await;
     let ec = EncryptionContext::new();
     let encrypt_input =
-        EncryptInput::with_legacy_keyring(asdf.as_bytes(), ec.clone(), kms_keyring.clone());
-    let encrypt_output = encrypt(&encrypt_input).await.unwrap();
-    let esdk_ciphertext = encrypt_output.ciphertext;
+        EncryptInput::with_legacy_keyring(b"asdf", ec.clone(), kms_keyring.clone());
+    let esdk_ciphertext = encrypt(&encrypt_input).await.unwrap().ciphertext;
     let mut decrypt_input =
-        DecryptInput::with_legacy_keyring(&esdk_ciphertext, ec, kms_keyring.clone());
-    let decrypt_output = decrypt(&decrypt_input).await.unwrap();
-    assert_eq!(decrypt_output.plaintext, asdf.as_bytes());
+        DecryptInput::with_legacy_keyring(&esdk_ciphertext, ec, kms_keyring);
 
     decrypt_input.source = None;
     let bad_decrypt_output = decrypt(&decrypt_input).await;
@@ -94,22 +62,7 @@ async fn test_bad_decrypt_input() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt_short() {
-    let mpl = mpl();
-
-    let client_supplier = mpl.create_default_client_supplier().send().await.unwrap();
-    let kms_client = client_supplier
-        .get_client()
-        .region("us-west-2")
-        .send()
-        .await
-        .unwrap();
-    let kms_keyring = mpl
-        .create_aws_kms_keyring()
-        .kms_key_id(KEY_ARN)
-        .kms_client(kms_client)
-        .send()
-        .await
-        .unwrap();
+    let kms_keyring = kms_keyring().await;
     let asdf = "asdf";
     let ec = EncryptionContext::new();
     let encrypt_input = EncryptInput::with_legacy_keyring(asdf.as_bytes(), ec, kms_keyring);
@@ -139,22 +92,7 @@ async fn test_encrypt_decrypt_short() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt_ec() {
-    let mpl = mpl();
-
-    let client_supplier = mpl.create_default_client_supplier().send().await.unwrap();
-    let kms_client = client_supplier
-        .get_client()
-        .region("us-west-2")
-        .send()
-        .await
-        .unwrap();
-    let kms_keyring = mpl
-        .create_aws_kms_keyring()
-        .kms_key_id(KEY_ARN)
-        .kms_client(kms_client)
-        .send()
-        .await
-        .unwrap();
+    let kms_keyring = kms_keyring().await;
     let asdf = "asdf".as_bytes();
     let encryption_context =
         std::collections::HashMap::from([("stuff".to_string(), "junk".to_string())]);
@@ -177,22 +115,7 @@ async fn test_encrypt_decrypt_ec() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt_bad_ec() {
-    let mpl = mpl();
-
-    let client_supplier = mpl.create_default_client_supplier().send().await.unwrap();
-    let kms_client = client_supplier
-        .get_client()
-        .region("us-west-2")
-        .send()
-        .await
-        .unwrap();
-    let kms_keyring = mpl
-        .create_aws_kms_keyring()
-        .kms_key_id(KEY_ARN)
-        .kms_client(kms_client)
-        .send()
-        .await
-        .unwrap();
+    let kms_keyring = kms_keyring().await;
     let asdf = "asdf".as_bytes();
     let encryption_context =
         std::collections::HashMap::from([("aws-crypto-stuff".to_string(), "junk".to_string())]);
@@ -213,25 +136,10 @@ async fn test_encrypt_decrypt_bad_ec() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_bad_encrypt_input() {
-    let mpl = mpl();
-
-    let client_supplier = mpl.create_default_client_supplier().send().await.unwrap();
-    let kms_client = client_supplier
-        .get_client()
-        .region("us-west-2")
-        .send()
-        .await
-        .unwrap();
-    let kms_keyring = mpl
-        .create_aws_kms_keyring()
-        .kms_key_id(KEY_ARN)
-        .kms_client(kms_client)
-        .send()
-        .await
-        .unwrap();
+    let kms_keyring = kms_keyring().await;
     let asdf = "asdf".as_bytes();
     let ec = EncryptionContext::new();
-    let mut encrypt_input = EncryptInput::with_legacy_keyring(asdf, ec, kms_keyring.clone());
+    let mut encrypt_input = EncryptInput::with_legacy_keyring(asdf, ec, kms_keyring);
     encrypt_input.source = None;
     let encrypt_output = encrypt(&encrypt_input).await;
 
@@ -252,22 +160,7 @@ async fn test_bad_encrypt_input() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt_single_full_frame() {
-    let mpl = mpl();
-
-    let client_supplier = mpl.create_default_client_supplier().send().await.unwrap();
-    let kms_client = client_supplier
-        .get_client()
-        .region("us-west-2")
-        .send()
-        .await
-        .unwrap();
-    let kms_keyring = mpl
-        .create_aws_kms_keyring()
-        .kms_key_id(KEY_ARN)
-        .kms_client(kms_client)
-        .send()
-        .await
-        .unwrap();
+    let kms_keyring = kms_keyring().await;
     let plaintext = "0123456789abcdef".as_bytes();
 
     let ec = EncryptionContext::new();

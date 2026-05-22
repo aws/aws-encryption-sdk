@@ -51,6 +51,29 @@ pub async fn aes_keyring(n: u8) -> KeyringRef {
         .unwrap()
 }
 
+/// Create a KMS keyring backed by the shared `KEY_ARN` test key in us-west-2.
+///
+/// Requires AWS credentials with permission to call `kms:GenerateDataKey` and
+/// `kms:Decrypt` against the test key. Tests that only need a round-trip
+/// keyring without specifically exercising KMS should prefer `test_keyring()`
+/// (raw AES) instead.
+pub async fn kms_keyring() -> KeyringRef {
+    let mpl = mpl();
+    let client_supplier = mpl.create_default_client_supplier().send().await.unwrap();
+    let kms_client = client_supplier
+        .get_client()
+        .region("us-west-2")
+        .send()
+        .await
+        .unwrap();
+    mpl.create_aws_kms_keyring()
+        .kms_key_id(KEY_ARN)
+        .kms_client(kms_client)
+        .send()
+        .await
+        .unwrap()
+}
+
 /// Create a multi-keyring from a generator and child keyrings.
 pub async fn multi_keyring(generator_kr: KeyringRef, children: Vec<KeyringRef>) -> KeyringRef {
     mpl()

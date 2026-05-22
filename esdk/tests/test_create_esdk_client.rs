@@ -99,53 +99,68 @@ fn test_commitment_policy_uses_mpl_type() {
 fn test_commitment_policy_is_immutable() {
     //= spec/client-apis/client.md#initialization
     //= type=test
+    //= reason=encrypt() and decrypt() take &EncryptInput / &DecryptInput, so neither can mutate the policy field through a shared reference. We additionally confirm the value survives Clone and propagates unchanged through DecryptInput::from_encrypt — the only construction path that copies the policy from one input to another.
     //# Once a [commitment policy](#commitment-policy) has been set it SHOULD be immutable.
-    let input = EncryptInput::default();
-    let policy = input.commitment_policy;
+    let mut input = EncryptInput::default();
+    input.commitment_policy =
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    let original = input.commitment_policy;
+
+    // Clone preserves the policy bit-for-bit.
     assert_eq!(
-        policy,
-        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt
+        input.clone().commitment_policy,
+        original,
+        "policy must survive Clone unchanged"
     );
-    // The commitment_policy field is a plain value on the struct.
-    // Once the struct is consumed by encrypt(), the caller cannot mutate it.
-    // This verifies the value is preserved as set.
+
+    // A shared reference (the form encrypt()/decrypt() receive) cannot mutate it.
+    let shared: &EncryptInput<'_> = &input;
+    assert_eq!(
+        shared.commitment_policy, original,
+        "policy must be visible unchanged through a shared reference"
+    );
+
+    // The encrypt → decrypt input bridge propagates the same policy.
+    let decrypt_input = DecryptInput::from_encrypt(b"", &input);
+    assert_eq!(
+        decrypt_input.commitment_policy, original,
+        "policy must propagate unchanged into a DecryptInput built from this EncryptInput"
+    );
 }
 
 #[test]
-fn test_encrypt_input_default_commitment_policy() {
+fn test_default_commitment_policy() {
     //= spec/client-apis/client.md#initialization
     //= type=test
     //# If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
-    let input = EncryptInput::default();
+    let expected =
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
     assert_eq!(
-        input.commitment_policy,
-        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt
+        EncryptInput::default().commitment_policy,
+        expected,
+        "EncryptInput default commitment policy"
+    );
+    assert_eq!(
+        DecryptInput::default().commitment_policy,
+        expected,
+        "DecryptInput default commitment policy"
     );
 }
 
 #[test]
-fn test_decrypt_input_default_commitment_policy() {
-    let input = DecryptInput::default();
-    assert_eq!(
-        input.commitment_policy,
-        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt
-    );
-}
-
-#[test]
-fn test_encrypt_input_default_max_edks_is_none() {
+fn test_default_max_encrypted_data_keys_is_none() {
     //= spec/client-apis/client.md#initialization
     //= type=test
     //# If no [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys) is provided
     //# the default MUST result in no limit on the number of encrypted data keys (aside from the limit imposed by the [message format](../format/message-header.md)).
-    let input = EncryptInput::default();
-    assert!(input.max_encrypted_data_keys.is_none());
-}
-
-#[test]
-fn test_decrypt_input_default_max_edks_is_none() {
-    let input = DecryptInput::default();
-    assert!(input.max_encrypted_data_keys.is_none());
+    assert!(
+        EncryptInput::default().max_encrypted_data_keys.is_none(),
+        "EncryptInput default max_encrypted_data_keys must be None (no limit)"
+    );
+    assert!(
+        DecryptInput::default().max_encrypted_data_keys.is_none(),
+        "DecryptInput default max_encrypted_data_keys must be None (no limit)"
+    );
 }
 
 #[test]
