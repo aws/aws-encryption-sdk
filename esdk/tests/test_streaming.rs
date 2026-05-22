@@ -87,47 +87,104 @@ async fn test_streaming_encrypt_decrypt_round_trip() {
 
 //= spec/client-apis/streaming.md#overview
 //= type=test
-//= reason=encrypts and decrypts a multi-frame payload via streaming APIs, demonstrating that arbitrarily large inputs can be processed frame-by-frame with finite memory
+//= reason=A 10_000-byte plaintext is streamed through encrypt_stream via a Read source that generates bytes on demand (PatternReader; never materializes the full payload) and decrypt_stream's plaintext output is consumed by a Write sink that counts and verifies bytes without buffering them (VerifyingWriter). Both plaintext directions are processed without holding the full payload in memory, demonstrating bounded working memory across the streaming round-trip.
 //# APIs that support streaming of the encrypt or decrypt operation SHOULD allow customers
 //# to be able to process arbitrarily large inputs with a finite amount of working memory.
 //
 //= spec/client-apis/streaming.md#overview
 //= type=test
-//= reason=the streaming APIs accept SafeRead/SafeWrite (incremental I/O), proving the implementation does not require holding the entire input in memory
+//= reason=PatternReader holds two usize-sized fields regardless of total byte count; VerifyingWriter holds three. Neither side ever buffers the full plaintext, so providing a streaming API is correct under this requirement.
 //# If an implementation requires holding the entire input in memory in order to perform the operation,
 //# that implementation SHOULD NOT provide an API that allows the caller to stream the operation.
 //
 //= spec/client-apis/encrypt.md#plaintext
 //= type=test
-//= reason=encrypt_stream processes a multi-frame payload via SafeRead/SafeWrite without holding the entire plaintext in memory; providing a streaming encrypt API is therefore correct under the contrapositive of this requirement.
+//= reason=PatternReader generates plaintext bytes on demand; encrypt_stream succeeds without ever requiring the full plaintext to be materialized in memory.
 //# If an implementation requires holding the input entire plaintext in memory in order to perform this operation,
 //# that implementation SHOULD NOT provide an API that allows this input to be streamed.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_finite_working_memory() {
-    let keyring = test_keyring().await;
-    // Use a payload larger than one frame (default frame = 4096 bytes)
-    let plaintext = vec![0xABu8; 10_000];
+    /// `Read` source that yields `remaining` bytes equal to `byte` on demand.
+    /// Holds two `usize`-sized fields regardless of total byte count, so the
+    /// plaintext is never materialized as a buffer.
+    #[derive(Debug)]
+    struct PatternReader {
+        remaining: usize,
+        byte: u8,
+    }
+    impl std::io::Read for PatternReader {
+        fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+            let n = std::cmp::min(buf.len(), self.remaining);
+            buf[..n].fill(self.byte);
+            self.remaining -= n;
+            Ok(n)
+        }
+    }
 
+    /// `Write` sink that counts bytes written and verifies every byte equals
+    /// `expected`. Holds three small fields regardless of total byte count, so
+    /// the decrypted plaintext is never buffered.
+    #[derive(Debug)]
+    struct VerifyingWriter {
+        count: usize,
+        expected: u8,
+        all_match: bool,
+    }
+    impl std::io::Write for VerifyingWriter {
+        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+            if !buf.iter().all(|&b| b == self.expected) {
+                self.all_match = false;
+            }
+            self.count += buf.len();
+            Ok(buf.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+
+    let keyring = test_keyring().await;
+    // 10_000 bytes is larger than the default 4096-byte frame, so this
+    // exercises multi-frame handling on top of the streaming I/O.
+    let total_bytes: usize = 10_000;
+    let pattern = 0xABu8;
+
+    // Encrypt: plaintext source streams bytes on demand. The full plaintext
+    // is never materialized as a `Vec`. The ciphertext must be buffered so we
+    // can re-feed it to `decrypt_stream` below; this is unavoidable in a
+    // single-threaded round-trip but the buffer holds ciphertext, not plaintext.
+    let mut pt_reader = PatternReader {
+        remaining: total_bytes,
+        byte: pattern,
+    };
     let ec = EncryptionContext::new();
     let enc_input = EncryptStreamInput::with_legacy_keyring(ec.clone(), keyring.clone());
-    let mut pt_cursor = std::io::Cursor::new(&plaintext[..]);
     let mut ciphertext: Vec<u8> = Vec::new();
-    encrypt_stream(&mut pt_cursor, &mut ciphertext, &enc_input)
+    encrypt_stream(&mut pt_reader, &mut ciphertext, &enc_input)
         .await
         .unwrap();
 
-    let mut dec_input = DecryptStreamInput::with_legacy_keyring(ec, keyring);
+    // Decrypt: plaintext sink counts and verifies bytes without buffering.
     // Multi-frame payloads with signed algorithm suites stream data before
     // signature verification completes; acknowledge this risk for the test.
+    let mut dec_input = DecryptStreamInput::with_legacy_keyring(ec, keyring);
     dec_input.i_accept_the_danger = true;
     let mut ct_cursor = std::io::Cursor::new(&ciphertext[..]);
-    let mut decrypted: Vec<u8> = Vec::new();
-    decrypt_stream(&mut ct_cursor, &mut decrypted, &dec_input)
+    let mut sink = VerifyingWriter {
+        count: 0,
+        expected: pattern,
+        all_match: true,
+    };
+    decrypt_stream(&mut ct_cursor, &mut sink, &dec_input)
         .await
         .unwrap();
 
     assert_eq!(
-        decrypted, plaintext,
-        "multi-frame streaming round-trip must match"
+        sink.count, total_bytes,
+        "decrypt_stream output byte count must equal the streamed plaintext length"
+    );
+    assert!(
+        sink.all_match,
+        "every decrypted plaintext byte must equal the streamed pattern"
     );
 }

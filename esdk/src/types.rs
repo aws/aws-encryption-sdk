@@ -21,9 +21,9 @@ use std::num::NonZeroUsize;
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub enum MaterialSource {
-    /// Legacy CMM, i.e. `aws_mpl_legacy::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef`
+    /// Legacy CMM, i.e. `aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef`
     LegacyCmm(LegacyCMM),
-    /// Legacy Keyring, i.e. `aws_mpl_legacy::types::keyring::KeyringRef`
+    /// Legacy Keyring, i.e. `aws_mpl_legacy::dafny::types::keyring::KeyringRef`
     LegacyKeyring(LegacyKeyring),
     /// CMM
     Cmm(CryptographicMaterialsManagerRef),
@@ -599,7 +599,7 @@ impl<'a> DecryptInput<'a> {
 
     /// Construct a `DecryptInput` from an `EncryptInput`
     #[must_use]
-    pub fn from_encrypt(ciphertext: &'a [u8], e: &'a EncryptInput<'_>) -> Self {
+    pub fn from_encrypt(ciphertext: &'a [u8], e: &EncryptInput<'_>) -> Self {
         Self {
             ciphertext,
             encryption_context: e.encryption_context.clone(),
