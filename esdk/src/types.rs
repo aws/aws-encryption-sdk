@@ -175,7 +175,7 @@ pub struct EncryptOutput {
     pub algorithm_suite_id: EsdkAlgorithmSuiteId,
     /// Encrypted message bytes (the serialized AWS Encryption SDK message).
     pub ciphertext: Vec<u8>,
-    /// Key-Value pairs to associate with the encrypted data
+    /// Encryption context associated with the encrypted message.
     pub encryption_context: EncryptionContext,
 }
 impl EncryptOutput {
@@ -192,7 +192,7 @@ impl EncryptOutput {
 pub struct EncryptStreamOutput {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
     pub algorithm_suite_id: EsdkAlgorithmSuiteId,
-    /// Key-Value pairs to associate with the encrypted data
+    /// Encryption context associated with the encrypted message.
     pub encryption_context: EncryptionContext,
 }
 impl EncryptStreamOutput {
@@ -223,7 +223,7 @@ pub struct DecryptOutput {
 pub struct DecryptStreamOutput {
     /// Algorithm Suite. See <https://docs.aws.amazon.com/encryption-sdk/latest/developer-guide/supported-algorithms.html>
     pub algorithm_suite_id: EsdkAlgorithmSuiteId,
-    /// Key-Value pairs to associate with the encrypted data
+    /// Encryption context recovered from the encrypted message.
     pub encryption_context: EncryptionContext,
 }
 
@@ -367,7 +367,8 @@ impl<'a> EncryptInput<'a> {
             source: Some(MaterialSource::Cmm(cmm)),
             ..Default::default()
         }
-    }    /// Construct an `EncryptInput` with a `KeyringRef`
+    }
+    /// Construct an `EncryptInput` with a `KeyringRef`
     #[must_use]
     pub fn with_keyring(plaintext: &'a [u8], ec: EncryptionContext, keyring: KeyringRef) -> Self {
         Self {
@@ -481,7 +482,9 @@ pub struct DecryptInput<'a> {
     //# The input encrypted message MUST be a sequence of bytes in the
     //# [message format](../data-format/message.md) specified by the AWS Encryption SDK.
     pub ciphertext: &'a [u8],
-    /// Key-Value pairs to associate with the encrypted data
+    /// Optional encryption context to verify against the encrypted message.
+    /// If non-empty, decrypt requires every entry to be present in the message's
+    /// encryption context (subset check).
     //= spec/client-apis/decrypt.md#input
     //# - Decrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
     pub encryption_context: EncryptionContext,
@@ -504,7 +507,9 @@ pub struct DecryptInput<'a> {
 #[non_exhaustive]
 /// Input for [`decrypt_stream`](crate::decrypt_stream).
 pub struct DecryptStreamInput {
-    /// Key-Value pairs to associate with the encrypted data
+    /// Optional encryption context to verify against the encrypted message.
+    /// If non-empty, `decrypt_stream` requires every entry to be present in the
+    /// message's encryption context (subset check).
     pub encryption_context: EncryptionContext,
     /// The source of cryptographic materials
     pub source: Option<MaterialSource>,
