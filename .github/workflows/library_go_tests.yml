@@ -94,6 +94,12 @@ jobs:
         run: |
           make purge_polymorph_code
 
+      - name: Go Vet (copylocks, atomic, etc.)
+        working-directory: ${{ matrix.library }}/runtimes/go
+        shell: bash
+        run: |
+          go vet ./...
+
       - name: Test Go
         working-directory: ${{ matrix.library }}
         shell: bash
