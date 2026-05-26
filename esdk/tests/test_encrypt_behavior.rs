@@ -26,13 +26,16 @@ async fn test_step_1_get_encryption_materials() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_step_2_construct_header() {
-    // A successful encrypt produces output starting with a valid header.
+    // A successful encrypt produces output starting with a valid header version byte
+    // for both V1 and V2 message formats.
     //= spec/client-apis/encrypt.md#behavior
     //= type=test
     //# - Encrypt operation step 2 MUST be [Construct the header](#construct-the-header)
-    let output = encrypt_default(b"test step 2").await;
-    // The default suite is V2 (committing), so the first byte must be 0x02.
-    assert_eq!(output.ciphertext[0], 0x02, "output must start with a valid V2 header version byte");
+    let v2 = encrypt_v2(b"test step 2 v2").await;
+    assert_eq!(v2[0], 0x02, "V2 output must start with header version byte 0x02");
+
+    let v1 = encrypt_v1(b"test step 2 v1").await;
+    assert_eq!(v1[0], 0x01, "V1 output must start with header version byte 0x01");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -73,13 +76,43 @@ async fn test_step_4_construct_signature() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_no_extra_data_in_output_message() {
-    // A successful decrypt proves the output message contains only valid message format data.
-    // If extra data were appended, the parser would fail or leave trailing bytes.
     //= spec/client-apis/encrypt.md#behavior
     //= type=test
     //# Any data that is not specified within the [message format](../data-format/message.md)
     //# MUST NOT be added to the output message.
+    //
+    // Compute the end-of-message offset by walking the frames (and the footer if a
+    // signing suite is in use) and assert it equals the ciphertext length. Trailing
+    // bytes after the last frame / footer would be "extra data."
     let pt = b"no extra data test";
+
+    // Case 1: V2 non-signing — body ends at the final frame.
+    let ct = encrypt_without_signing_suite(pt).await;
+    let frames = parse_all_frames(&ct, 4096);
+    let body_end = frames.last().expect("at least one frame").end_offset;
+    assert_eq!(
+        body_end, ct.len(),
+        "V2 non-signing: ciphertext must end exactly at the final frame; trailing bytes = {}",
+        ct.len() - body_end
+    );
+
+    // Case 2: V2 signing — body ends, then footer (sig_len + signature) ends at ct.len().
+    let ct = encrypt_with_signing_suite(pt).await;
+    let frames = parse_all_frames(&ct, 4096);
+    let body_end = frames.last().expect("at least one frame").end_offset;
+    let (footer_offset, sig_len) = find_footer_offset(&ct);
+    assert_eq!(
+        footer_offset, body_end,
+        "V2 signing: footer must begin immediately after the final frame"
+    );
+    assert_eq!(
+        footer_offset + 2 + sig_len as usize,
+        ct.len(),
+        "V2 signing: ciphertext must end exactly at the footer; trailing bytes = {}",
+        ct.len() - (footer_offset + 2 + sig_len as usize)
+    );
+
+    // Round-trip corroboration.
     let result = round_trip(pt).await;
     assert_eq!(result, pt);
 }
@@ -346,8 +379,8 @@ async fn test_encrypt_data_key_derived_from_plaintext_data_key() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_frame_length_input_used() {
-    // Encrypt with a custom frame length and verify round-trip succeeds.
-    // The frame length affects body structure; wrong frame length would cause decrypt failure.
+    // Encrypt with a custom frame length and verify the header records that exact value
+    // in the 4-byte big-endian frame_length field. Round-trip is corroboration.
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //# The frame length used in the procedures described below MUST be the input [frame length](#frame-length),
@@ -357,6 +390,15 @@ async fn test_frame_length_input_used() {
         EncryptInput::with_legacy_keyring(b"custom frame length", EncryptionContext::new(), keyring.clone());
     enc_input.frame_length = FrameLength::new(512).unwrap();
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    // Default suite is V2. parse_v2_header_field_offsets returns the frame_length field span.
+    let fields = parse_v2_header_field_offsets(&ct);
+    let (_, fl_start, fl_end) = fields.iter().find(|(n, _, _)| *n == "Frame Length")
+        .expect("V2 header must have a Frame Length field");
+    assert_eq!(fl_end - fl_start, 4, "frame_length field must be 4 bytes");
+    let on_wire = u32::from_be_bytes([ct[*fl_start], ct[fl_start + 1], ct[fl_start + 2], ct[fl_start + 3]]);
+    assert_eq!(on_wire, 512, "header frame_length must equal the input frame length");
+
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await.unwrap();
     assert_eq!(result.plaintext, b"custom frame length");
@@ -364,13 +406,22 @@ async fn test_frame_length_input_used() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_default_frame_length_used() {
-    // Encrypt without specifying frame length (uses default 4096).
-    // A successful round-trip proves the default frame length was used.
+    // Encrypt without specifying a frame length and verify the header records the
+    // default value (4096) in the 4-byte big-endian frame_length field.
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
-    //= reason=Round-trip success without specifying frame length proves the default (4096) was used: the header records the frame length, and decrypt uses it to parse the body.
     //# If no input frame length is supplied, the default frame length MUST be used.
     let pt = b"default frame length test";
+    let ct = encrypt_default(pt).await.ciphertext;
+
+    let fields = parse_v2_header_field_offsets(&ct);
+    let (_, fl_start, fl_end) = fields.iter().find(|(n, _, _)| *n == "Frame Length")
+        .expect("V2 header must have a Frame Length field");
+    assert_eq!(fl_end - fl_start, 4, "frame_length field must be 4 bytes");
+    let on_wire = u32::from_be_bytes([ct[*fl_start], ct[fl_start + 1], ct[fl_start + 2], ct[fl_start + 3]]);
+    assert_eq!(on_wire, 4096, "default frame_length on the wire must be 4096");
+
+    // Round-trip corroboration.
     let result = round_trip(pt).await;
     assert_eq!(result, pt);
 }

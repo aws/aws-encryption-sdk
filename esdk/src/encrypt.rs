@@ -26,6 +26,11 @@ use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
 use aws_mpl_legacy::primitives::{aes_encrypt, ecdsa_sign_digest};
 use aws_mpl_legacy::suites::AlgorithmSuite;
 
+/// AES-GCM IV length in bytes (used for body frames; header IV length varies by suite).
+const IV_LEN: usize = 12;
+/// AES-GCM authentication tag length in bytes.
+const AUTH_TAG_LEN: usize = 16;
+
 /// Intermediate state produced by [`step_get_encryption_materials`] and consumed by subsequent steps.
 struct EncryptionMaterialsResult {
     materials: aws_mpl_legacy::EncryptionMaterials,
@@ -50,16 +55,21 @@ struct EncryptionMaterialsResult {
 pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
     input.validate()?;
 
-    let mut cursor: std::io::Cursor<&[u8]> = std::io::Cursor::new(input.plaintext);
+    let mut cursor = std::io::Cursor::new(input.plaintext);
 
-    // calculate reasonable upper bound for ciphertext size, to minimize allocations.
-    let frame_length_usize = input.frame_length.0.get() as usize;
-    let frames = input.plaintext.len().div_ceil(frame_length_usize);
-    let iv_len = 12_usize;
-    let auth_len = 16_usize;
-    let frame_len = frame_length_usize + iv_len + auth_len + 4;
+    // Reasonable upper bound for ciphertext size, to minimize allocations.
+    // Per-frame overhead is SeqNum(4) + IV(12) + AuthTag(16) = 32 bytes; the 1024-byte
+    // header overhead absorbs a typical V2 header (version + suite-id + 32-byte message id +
+    // EDKs + AAD + content type + frame length + suite data + auth tag). Saturating
+    // arithmetic keeps this a best-effort capacity hint even for pathological inputs.
+    let frame_length_usize = usize::try_from(input.frame_length.0.get()).unwrap_or(usize::MAX);
+    let frames = input.plaintext.len().div_ceil(frame_length_usize.max(1));
+    let per_frame_overhead = 4 + IV_LEN + AUTH_TAG_LEN;
+    let frame_len = frame_length_usize.saturating_add(per_frame_overhead);
     let header_overhead = 1024_usize;
-    let total_size = frames * frame_len + header_overhead;
+    let total_size = frames
+        .saturating_mul(frame_len)
+        .saturating_add(header_overhead);
 
     let mut ciphertext: Vec<u8> = Vec::with_capacity(total_size);
     let out = internal_encrypt(
@@ -634,7 +644,9 @@ fn build_header_body(
             let Some(sd) = suite_data else {
                 return ser_err("Suite data must be present for HKDF commitment");
             };
-            if sd.len() != h.output_key_length as usize {
+            let expected_len = usize::try_from(h.output_key_length)
+                .expect("HKDF output_key_length fits in usize on supported targets");
+            if sd.len() != expected_len {
                 return ser_err(
                     "Suite data length must match the commitment key output length for HKDF commitment",
                 );
@@ -676,7 +688,7 @@ fn build_header_auth_tag(
     serialized_req_encryption_context: &[u8],
 ) -> Result<HeaderAuth, Error> {
     let key_length = get_encrypt_key_length(suite);
-    if data_key.len() != key_length as usize {
+    if data_key.len() != usize::from(key_length) {
         return ser_err(&format!(
             "Incorrect data key length: got {}, expected {}",
             data_key.len(),
@@ -686,7 +698,7 @@ fn build_header_auth_tag(
 
     //= spec/client-apis/encrypt.md#authentication-tag
     //# - The IV MUST have a value of 0.
-    let iv = vec![0; get_iv_length(suite) as usize];
+    let iv = vec![0; usize::from(get_iv_length(suite))];
     let mut auth_tag = Vec::new();
 
     //= spec/client-apis/encrypt.md#authentication-tag
