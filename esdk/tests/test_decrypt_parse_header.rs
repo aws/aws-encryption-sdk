@@ -464,3 +464,72 @@ async fn test_no_header_info_released_before_verification() {
     assert_eq!(err.kind, ErrorKind::ValidationError, "got: {err:?}");
 }
 
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v1_header_auth_tag_deserialized_and_verified() {
+    // Tamper the V1 header auth tag to prove it was deserialized and used for verification.
+    let keyring = test_keyring().await;
+    let plaintext = b"v1 header auth tag tamper test";
+
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
+    enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
+    enc_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    // Baseline: untampered V1 message decrypts.
+    let mut baseline_input = DecryptInput::from_encrypt(&ct, &enc_input);
+    baseline_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    assert!(decrypt(&baseline_input).await.is_ok(), "baseline must pass");
+
+    // V1 header auth: IV(12) + Tag(16) at the end of the header, before the body.
+    // Tamper the last byte of the header (part of the auth tag).
+    // V1 header ends at: fixed(20) + AAD(variable) + EDKs(variable) + content_type(1)
+    //   + reserved(4) + iv_length(1) + frame_length(4) + header_auth_iv(12) + header_auth_tag(16)
+    // The auth tag's last byte is just before the body starts.
+    let body_start = find_body_start(&ct, 4096).expect("body start");
+    let auth_tag_last_byte = body_start - 1;
+    ct[auth_tag_last_byte] ^= 0xFF;
+
+    let mut dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
+    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //= reason=Tampered V1 auth tag causes failure, proving it was deserialized and verified
+    //# - MUST deserialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
+    let err = decrypt(&dec_input).await.expect_err("tampered V1 auth tag must fail");
+    assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v1_header_auth_iv_deserialized_and_used() {
+    // Tamper the V1 header auth IV to prove it was deserialized and used for verification.
+    let keyring = test_keyring().await;
+    let plaintext = b"v1 header auth iv tamper test";
+
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
+    enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
+    enc_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    // Baseline
+    let mut baseline_input = DecryptInput::from_encrypt(&ct, &enc_input);
+    baseline_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    assert!(decrypt(&baseline_input).await.is_ok(), "baseline must pass");
+
+    // V1 header auth IV is 12 bytes immediately before the 16-byte auth tag, which
+    // is immediately before the body. Tamper its first byte.
+    let body_start = find_body_start(&ct, 4096).expect("body start");
+    let iv_start = body_start - 16 - 12; // 16 bytes tag + 12 bytes IV before body
+    ct[iv_start] ^= 0xFF;
+
+    let mut dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
+    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //= reason=Tampered V1 header auth IV causes failure, proving IV was deserialized and used
+    //# - MUST deserialize the [IV](../data-format/message-header.md#iv).
+    let err = decrypt(&dec_input).await.expect_err("tampered V1 header auth IV must fail");
+    assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
+}
