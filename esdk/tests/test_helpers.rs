@@ -224,6 +224,15 @@ pub async fn decrypt_ciphertext(ciphertext: &[u8]) -> DecryptOutput {
     decrypt(&dec_input).await.unwrap()
 }
 
+/// Decrypt ciphertext with the default test keyring, returning the Result
+/// (for negative/tamper tests that expect failure).
+pub async fn decrypt_ciphertext_result(ciphertext: &[u8]) -> Result<DecryptOutput, Error> {
+    let keyring = test_keyring().await;
+    let dec_input =
+        DecryptInput::with_legacy_keyring(ciphertext, EncryptionContext::new(), keyring);
+    decrypt(&dec_input).await
+}
+
 /// Decrypt with a specific policy and keyring, return full DecryptOutput.
 pub async fn decrypt_with(
     ciphertext: &[u8],
