@@ -131,7 +131,7 @@ pub(crate) struct V1HeaderBody {
     pub(crate) encryption_context: ESDKCanonicalEncryptionContext,
     pub(crate) encrypted_data_keys: Vec<EncryptedDataKey>,
     pub(crate) content_type: ContentType,
-    pub(crate) header_iv_length: u64,
+    pub(crate) header_iv_length: u8,
     pub(crate) frame_length: u32,
 }
 

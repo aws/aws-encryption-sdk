@@ -675,7 +675,7 @@ fn build_header_body(
             encryption_context: encryption_context.clone(),
             encrypted_data_keys: encrypted_data_keys.into(),
             content_type: ContentType::Framed,
-            header_iv_length: u64::from(get_iv_length(suite)),
+            header_iv_length: get_iv_length(suite),
             frame_length,
         })),
     }
