@@ -35,13 +35,53 @@ async fn test_signature_uses_signing_algorithm() {
     //# To calculate a signature, this operation MUST use the [signature algorithm](../framework/algorithm-suites.md#signature-algorithm)
     //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following input:
 
-    // A successful round-trip proves the correct algorithm was used,
-    // because decrypt verifies the signature using the same algorithm suite.
-    let pt = b"signature algorithm test";
-    let result = round_trip_signing(pt).await;
-    assert_eq!(
-        result, pt,
-        "round-trip proves correct signature algorithm was used"
+    // Strategy: encrypt with a P-384 signing suite, extract the footer signature,
+    // and verify it succeeds with EcdsaP384 but fails with EcdsaP256. This proves
+    // the specific algorithm from the suite was used.
+    use aws_mpl_legacy::primitives::{DigestContext, EcdsaSignatureAlgorithm, ecdsa_verify_context};
+
+    let keyring = test_keyring().await;
+    let mut enc_input = aws_esdk::EncryptInput::with_legacy_keyring(
+        b"algorithm choice test",
+        aws_esdk::EncryptionContext::new(),
+        keyring,
+    );
+    enc_input.algorithm_suite_id = Some(
+        aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384,
+    );
+    let output = aws_esdk::encrypt(&enc_input).await.unwrap();
+    let ct = &output.ciphertext;
+
+    let pub_key_b64 = output.encryption_context.get("aws-crypto-public-key").unwrap();
+    let verification_key = aws_smithy_types::base64::decode(pub_key_b64).unwrap();
+    let (footer_offset, sig_len) = find_footer_offset(ct);
+    let signature = &ct[footer_offset + 2..footer_offset + 2 + sig_len as usize];
+    let signed_content = &ct[..footer_offset];
+
+    // Verify with P-384 (the correct algorithm) → must succeed.
+    let mut digest = DigestContext::new_from_ecdsa(EcdsaSignatureAlgorithm::EcdsaP384).unwrap();
+    digest.update(signed_content);
+    let valid = ecdsa_verify_context(
+        EcdsaSignatureAlgorithm::EcdsaP384,
+        &verification_key,
+        digest,
+        signature,
+    )
+    .expect("verify must not error");
+    assert!(valid, "signature must verify with the correct algorithm (P-384)");
+
+    // Verify with P-256 (wrong algorithm) → must NOT succeed.
+    let mut digest_wrong = DigestContext::new_from_ecdsa(EcdsaSignatureAlgorithm::EcdsaP256).unwrap();
+    digest_wrong.update(signed_content);
+    let valid_wrong = ecdsa_verify_context(
+        EcdsaSignatureAlgorithm::EcdsaP256,
+        &verification_key,
+        digest_wrong,
+        signature,
+    );
+    assert!(
+        !matches!(valid_wrong, Ok(true)),
+        "signature must NOT verify with the wrong algorithm (P-256)"
     );
 }
 
@@ -240,14 +280,50 @@ async fn test_footer_equals_calculated() {
     //# The encrypted message output by this operation MUST have a message footer equal
     //# to the message footer calculated in this step.
 
-    // A successful round-trip proves the output footer equals the calculated footer,
-    // because decrypt verifies the signature from the footer.
-    let pt = b"footer equals calculated test";
-    let result = round_trip_signing(pt).await;
-    assert_eq!(
-        result, pt,
-        "round-trip proves output footer equals calculated footer"
+    // Prove the footer in the output is a valid signature over header+body by
+    // independently verifying it. If the output footer differed from the calculated
+    // footer, verification would fail.
+    use aws_mpl_legacy::primitives::{DigestContext, EcdsaSignatureAlgorithm, ecdsa_verify_context};
+
+    let keyring = test_keyring().await;
+    let mut enc_input = aws_esdk::EncryptInput::with_legacy_keyring(
+        b"footer equals calculated test",
+        aws_esdk::EncryptionContext::new(),
+        keyring.clone(),
     );
+    enc_input.algorithm_suite_id =
+        Some(aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
+    let output = aws_esdk::encrypt(&enc_input).await.unwrap();
+    let ct = &output.ciphertext;
+
+    let pub_key_b64 = output.encryption_context.get("aws-crypto-public-key").unwrap();
+    let verification_key = aws_smithy_types::base64::decode(pub_key_b64).unwrap();
+    let (footer_offset, sig_len) = find_footer_offset(ct);
+    let signature = &ct[footer_offset + 2..footer_offset + 2 + sig_len as usize];
+    let signed_content = &ct[..footer_offset];
+
+    let mut digest = DigestContext::new_from_ecdsa(EcdsaSignatureAlgorithm::EcdsaP384).unwrap();
+    digest.update(signed_content);
+    let valid = ecdsa_verify_context(
+        EcdsaSignatureAlgorithm::EcdsaP384,
+        &verification_key,
+        digest,
+        signature,
+    )
+    .expect("verify must not error");
+    assert!(
+        valid,
+        "output footer must verify correctly, proving it equals the calculated signature"
+    );
+
+    // Round-trip corroboration.
+    let dec_input = aws_esdk::DecryptInput::with_legacy_keyring(
+        ct,
+        aws_esdk::EncryptionContext::new(),
+        keyring,
+    );
+    let pt = aws_esdk::decrypt(&dec_input).await.unwrap().plaintext;
+    assert_eq!(pt, b"footer equals calculated test");
 }
 
 #[tokio::test(flavor = "multi_thread")]
