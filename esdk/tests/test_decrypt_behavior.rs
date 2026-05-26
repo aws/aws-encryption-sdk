@@ -185,6 +185,10 @@ async fn test_signing_suite_must_perform_signature_step() {
     // Tamper with the footer (signature area) to prove the signature step runs.
     // If the step were skipped, tampering the footer would not cause failure.
     let len = ct.len();
+    // Baseline: untampered ciphertext must decrypt successfully.
+    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
+    assert!(baseline.is_ok(), "baseline decrypt must succeed before tamper");
+
     ct[len - 3] ^= 0xFF;
 
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);

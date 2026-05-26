@@ -232,6 +232,8 @@ async fn test_decrypt_fails_on_tampered_auth_tag() {
     let pt = vec![0xABu8; 20];
     let mut ct = encrypt_with_frame_length(&pt, 10).await;
     let body_start = find_body_start(&ct, 10).expect("must find body");
+    // Baseline: untampered ciphertext decrypts successfully.
+    assert_eq!(decrypt_ciphertext(&ct).await.plaintext, pt, "baseline must pass");
     // First regular frame: SeqNum(4) + IV(12) + EncContent(10) + AuthTag(16)
     // Tamper with the last byte of the auth tag
     let tag_end = body_start + 4 + IV_LEN + 10 + TAG_LEN - 1;
@@ -253,6 +255,8 @@ async fn test_decrypt_no_unauthenticated_plaintext_released() {
     let pt = vec![0xABu8; 20];
     let mut ct = encrypt_with_frame_length(&pt, 10).await;
     let body_start = find_body_start(&ct, 10).expect("must find body");
+    // Baseline: untampered ciphertext decrypts successfully.
+    assert_eq!(decrypt_ciphertext(&ct).await.plaintext, pt, "baseline must pass");
     // Tamper with a byte in the encrypted content of the first regular frame
     let tamper_offset = body_start + 4 + IV_LEN + 1;
     ct[tamper_offset] ^= 0xFF;
@@ -556,6 +560,9 @@ async fn test_decrypt_final_frame_held_until_signature_verification() {
     enc_input.algorithm_suite_id =
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
     let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    // Baseline: untampered ciphertext decrypts successfully.
+    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
+    assert!(baseline.is_ok(), "baseline must pass before tamper");
     // Tamper with the last byte of the signature to cause verification failure
     let last = ct.len() - 1;
     ct[last] ^= 0xFF;
@@ -673,6 +680,9 @@ async fn test_unframed_decrypt_fails_on_tampered_auth_tag() {
     //# If this decryption fails, this operation MUST immediately halt and fail.
     // Tamper with the authentication tag in the external V2 nonframed vector. Decrypt must fail.
     let mut ct = EXTERNAL_V2_NONFRAMED_CT.to_vec();
+    // Baseline: untampered vector decrypts successfully.
+    let baseline = try_decrypt_external_nonframed(Version::V2, &ct).await;
+    assert!(baseline.is_ok(), "baseline external vector must decrypt");
     // The auth tag is the last 16 bytes of the message
     let last = ct.len() - 1;
     ct[last] ^= 0xFF;

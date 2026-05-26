@@ -82,6 +82,10 @@ async fn test_verify_signature_fails_on_tampered_footer() {
 
     // Tamper with a signature byte in the footer (last byte of ciphertext is part of the signature)
     let footer_offset = find_footer_offset_only(&ct);
+    // Baseline: untampered ciphertext must decrypt successfully.
+    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
+    assert!(baseline.is_ok(), "baseline decrypt must succeed before tamper");
+
     ct[footer_offset + 3] ^= 0xFF;
 
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);

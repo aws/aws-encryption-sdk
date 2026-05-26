@@ -95,6 +95,10 @@ async fn test_verify_header_fails_on_tampered_header() {
     let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
     // Tamper with a byte in the header body (byte 10 is safely within the header body)
+    // Baseline: untampered ciphertext must decrypt successfully.
+    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
+    assert!(baseline.is_ok(), "baseline decrypt must succeed before tamper");
+
     ct[10] ^= 0xFF;
 
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
@@ -167,6 +171,10 @@ async fn test_streamed_signed_output_not_signed_until_complete() {
 
     // Tamper with the footer (signature) to cause verification failure
     let len = ct.len();
+    // Baseline: untampered ciphertext must decrypt successfully.
+    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
+    assert!(baseline.is_ok(), "baseline decrypt must succeed before tamper");
+
     ct[len - 4] ^= 0xFF;
 
     let mut cursor = std::io::Cursor::new(ct.as_slice());
