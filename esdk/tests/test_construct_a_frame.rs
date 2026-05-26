@@ -268,7 +268,7 @@ async fn test_construct_frame_final_frame_field_serialization() {
 async fn test_construct_frame_streaming_frame_released() {
     let keyring = test_keyring().await;
     let mut stream_input =
-        EncryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
+        EncryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring.clone());
     stream_input.frame_length = FrameLength::new(10).unwrap();
     let plaintext = vec![0xAAu8; 50];
     let mut reader = std::io::Cursor::new(&plaintext);
@@ -289,9 +289,8 @@ async fn test_construct_frame_streaming_frame_released() {
     //# the serialized frame MUST be released.
     assert!(!output.is_empty());
 
-    let dec_keyring = test_keyring().await;
     let dec_input =
-        DecryptInput::with_legacy_keyring(&output, EncryptionContext::new(), dec_keyring);
+        DecryptInput::with_legacy_keyring(&output, EncryptionContext::new(), keyring);
     let decrypted = decrypt(&dec_input).await.unwrap();
     assert_eq!(decrypted.plaintext, plaintext);
 }
