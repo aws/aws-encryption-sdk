@@ -84,6 +84,10 @@ async fn test_net_retry_flag() {
 
 #[test]
 fn test_commitment_policy_is_immutable() {
+    //= spec/client-apis/client.md#initialization
+    //= type=test
+    //= reason=Clone, shared-ref read, and DecryptInput::from_encrypt all return the policy unchanged
+    //# Once a [commitment policy](#commitment-policy) has been set it SHOULD be immutable.
     let mut input = EncryptInput::default();
     input.commitment_policy =
         aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
@@ -113,6 +117,10 @@ fn test_commitment_policy_is_immutable() {
 
 #[test]
 fn test_default_commitment_policy() {
+    //= spec/client-apis/client.md#initialization
+    //= type=test
+    //= reason=EncryptInput::default() and DecryptInput::default() both return RequireEncryptRequireDecrypt
+    //# If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
     let expected =
         aws_mpl_legacy::commitment::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
     assert_eq!(
@@ -158,6 +166,10 @@ fn test_frame_length_rejects_zero() {
 
 #[test]
 fn test_frame_length_accepts_max_u32() {
+    //= spec/data-format/message-body.md#framed-data
+    //= type=test
+    //= reason=FrameLength::new(u32::MAX) succeeds, proving the implementation accepts the maximum allowed value
+    //# - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
     let fl = FrameLength::new(u32::MAX).unwrap();
     assert_eq!(fl.0.get(), u32::MAX);
 }
@@ -215,6 +227,27 @@ async fn test_encrypt_decrypt_accepts_all_optional_inputs() {
     //= reason=encrypt_input.frame_length is set to a non-default 1024; encrypt() succeeds, proving the optional Frame Length argument is accepted.
     //# - Encrypt operation input MUST accept an optional [Frame Length](#frame-length) argument.
     //
+    //= spec/client-apis/encrypt.md#input
+    //= type=test
+    //= reason=encrypt_input.source is Some(MaterialSource::LegacyKeyring(...)); encrypt() succeeds, proving the optional CMM/keyring argument is accepted via the keyring variant
+    //# - Encrypt operation input MUST accept an optional [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
+    //
+    //= spec/client-apis/encrypt.md#input
+    //= type=test
+    //= reason=encrypt_input.source is Some(MaterialSource::LegacyKeyring(...)); encrypt() succeeds, proving the optional keyring argument is accepted
+    //# - Encrypt operation input MUST accept an optional [keyring](../framework/keyring-interface.md) argument.
+    //
+    //= spec/client-apis/client.md#initialization
+    //= type=test
+    //= reason=encrypt_input.commitment_policy is set non-default; encrypt() honors it, proving the optional commitment-policy argument
+    //# - On client initialization,
+    //# the caller MUST have the option to provide a [commitment policy](#commitment-policy).
+    //
+    //= spec/client-apis/client.md#commitment-policy
+    //= type=test
+    //= reason=commitment_policy is an EsdkCommitmentPolicy from aws_mpl_legacy; encrypt() honors it, proving the SDK uses the MPL type
+    //# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
+    //
     //= spec/client-apis/client.md#initialization
     //= type=test
     //= reason=encrypt_input.max_encrypted_data_keys is set to Some(5); encrypt() succeeds, proving the optional max-EDKs argument
@@ -245,6 +278,16 @@ async fn test_encrypt_decrypt_accepts_all_optional_inputs() {
     //= type=test
     //= reason=decrypt_input.encryption_context is populated; decrypt() succeeds, proving the optional Encryption Context argument is accepted.
     //# - Decrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
+    //
+    //= spec/client-apis/decrypt.md#input
+    //= type=test
+    //= reason=decrypt_input.source is Some(MaterialSource::LegacyKeyring(...)); decrypt() succeeds, proving the optional CMM argument is accepted via the keyring variant
+    //# - Decrypt operation input MUST accept an optional [Cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
+    //
+    //= spec/client-apis/decrypt.md#input
+    //= type=test
+    //= reason=decrypt_input.source is Some(MaterialSource::LegacyKeyring(...)); decrypt() succeeds, proving the optional Keyring argument is accepted
+    //# - Decrypt operation input MUST accept an optional [Keyring](../framework/keyring-interface.md) argument.
     let decrypt_output = decrypt(&decrypt_input)
         .await
         .expect("decrypt must accept a fully-populated DecryptInput");

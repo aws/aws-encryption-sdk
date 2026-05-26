@@ -43,6 +43,20 @@ async fn test_streaming_encrypt_decrypt_round_trip() {
     let mut pt_cursor = std::io::Cursor::new(&plaintext[..]);
     let mut ciphertext: Vec<u8> = Vec::new();
 
+    //= spec/client-apis/streaming.md#inputs
+    //= type=test
+    //= reason=encrypt_stream reads from the Cursor incrementally, making bytes consumable; the round-trip succeeds
+    //# - There MUST be a mechanism for input bytes to become consumable.
+    //
+    //= spec/client-apis/streaming.md#inputs
+    //= type=test
+    //= reason=the Cursor returns Ok(0) at EOF; encrypt_stream completes successfully, proving the EOF mechanism works
+    //# - There MUST be a mechanism to indicate that there are no more input bytes.
+    //
+    //= spec/client-apis/streaming.md#inputs
+    //= type=test
+    //= reason=encrypt_stream accepts a SafeRead (Cursor) as input; the round-trip succeeds, proving the streaming-input mechanism works
+    //# In order to support streaming, the operation MUST accept some input within a streaming framework.
     encrypt_stream(&mut pt_cursor, &mut ciphertext, &enc_input)
         .await
         .unwrap();
@@ -54,10 +68,23 @@ async fn test_streaming_encrypt_decrypt_round_trip() {
     let mut ct_cursor = std::io::Cursor::new(&ciphertext[..]);
     let mut decrypted: Vec<u8> = Vec::new();
 
+    //= spec/client-apis/streaming.md#outputs
+    //= type=test
+    //= reason=the Vec<u8> receives bytes via SafeWrite::write(), which is the mechanism for releasing output bytes
+    //# - There MUST be a mechanism for output bytes to be released.
+    //
+    //= spec/client-apis/streaming.md#outputs
+    //= type=test
+    //= reason=decrypt_stream writes output to a Vec<u8> via SafeWrite; the non-empty result proves streaming output
+    //# In order to support streaming, the operation MUST produce some output within a streaming framework.
     decrypt_stream(&mut ct_cursor, &mut decrypted, &dec_input)
         .await
         .unwrap();
 
+    //= spec/client-apis/streaming.md#outputs
+    //= type=test
+    //= reason=decrypt_stream's Ok return means all plaintext is in the output, proving end-of-output signaling
+    //# - There MUST be a mechanism to indicate that the entire output has been released.
     assert_eq!(decrypted, plaintext, "round-trip plaintext must match");
 }
 
