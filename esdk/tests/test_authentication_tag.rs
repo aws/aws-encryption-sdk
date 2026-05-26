@@ -7,8 +7,6 @@ mod fixtures;
 mod test_helpers;
 
 use aws_esdk::*;
-use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
-use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use test_helpers::*;
 
 /// V1 header auth layout: IV(12) || Tag(16) immediately after the header body.
@@ -36,13 +34,7 @@ async fn test_v1_header_auth_has_iv_then_tag() {
     //# to the message header calculated in this step.
     let keyring = test_keyring().await;
     let pt = b"raw byte v1 auth tag";
-    let ct = encrypt_with_suite(
-        pt,
-        EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256,
-        EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
-        &keyring,
-    )
-    .await;
+    let ct = encrypt_with_version(pt, Version::V1, keyring.clone()).await;
     let (_, iv_offset, tag_offset) = v1_header_auth_offsets(&ct);
 
     //= spec/client-apis/encrypt.md#authentication-tag
@@ -68,9 +60,7 @@ async fn test_v1_header_auth_has_iv_then_tag() {
     );
 
     // Round-trip cross-check: decrypt the same ct whose bytes we inspected above.
-    let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    let result = decrypt(&dec_input).await.unwrap().plaintext;
+    let result = decrypt_v1_with_keyring(&ct, &keyring).await;
     assert_eq!(result, pt, "V1 round-trip with auth tag verification");
 }
 
@@ -83,13 +73,7 @@ async fn test_v2_header_auth_has_tag_only() {
     //# over the message header body.
     let keyring = test_keyring().await;
     let pt = b"raw byte v2 auth tag";
-    let ct = encrypt_with_suite(
-        pt,
-        EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey,
-        EsdkCommitmentPolicy::RequireEncryptRequireDecrypt,
-        &keyring,
-    )
-    .await;
+    let ct = encrypt_with_version(pt, Version::V2, keyring.clone()).await;
     let (header_body_end, tag_offset) = v2_header_auth_offsets(&ct);
 
     let tag_bytes = &ct[tag_offset..tag_offset + TAG_LEN];
@@ -113,8 +97,7 @@ async fn test_v2_header_auth_has_tag_only() {
     );
 
     // Round-trip cross-check: decrypt the same ct whose bytes we inspected above.
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap().plaintext;
+    let result = decrypt_with_keyring(&ct, &keyring).await;
     assert_eq!(result, pt, "V2 round-trip with auth tag verification");
 }
 
@@ -131,11 +114,7 @@ async fn test_auth_tag_present_with_required_ec_v1() {
     ]);
     let keyring = test_keyring().await;
     let pt = b"v1 required ec with auth tag";
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(pt.as_slice(), ec.clone(), keyring.clone());
-    enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
-    enc_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let ct = encrypt_no_sign_ec_keyring(pt, ec.clone(), Version::V1, &keyring).await;
 
     // Raw-byte: auth tag is present at the expected offset with the expected length.
     let (_, _, tag_offset) = v1_header_auth_offsets(&ct);
@@ -147,9 +126,7 @@ async fn test_auth_tag_present_with_required_ec_v1() {
     );
 
     // Round-trip cross-check: decrypt the same ct with the same EC validates the AAD construction.
-    let mut dec_input = DecryptInput::with_legacy_keyring(&ct, ec, keyring);
-    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    let result = decrypt(&dec_input).await.unwrap().plaintext;
+    let result = decrypt_v1_with_keyring_ec(&ct, ec, &keyring).await;
     assert_eq!(result, pt, "V1 round-trip with non-empty EC");
 }
 
@@ -166,10 +143,7 @@ async fn test_auth_tag_present_with_required_ec_v2() {
     ]);
     let keyring = test_keyring().await;
     let pt = b"v2 required ec with auth tag";
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(pt.as_slice(), ec.clone(), keyring.clone());
-    enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let ct = encrypt_no_sign_ec_keyring(pt, ec.clone(), Version::V2, &keyring).await;
 
     // Raw-byte: auth tag is present at the expected offset with the expected length.
     let (_, tag_offset) = v2_header_auth_offsets(&ct);
@@ -181,8 +155,7 @@ async fn test_auth_tag_present_with_required_ec_v2() {
     );
 
     // Round-trip cross-check: decrypt the same ct with the same EC validates the AAD construction.
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, ec, keyring);
-    let result = decrypt(&dec_input).await.unwrap().plaintext;
+    let result = decrypt_with_keyring_ec(&ct, ec, &keyring).await;
     assert_eq!(result, pt, "V2 round-trip with non-empty EC");
 }
 
@@ -192,19 +165,11 @@ async fn test_auth_tag_tampered_header_fails_decrypt_v1() {
     //= type=test
     //# If this tag verification fails, this operation MUST immediately halt and fail.
     let keyring = test_keyring().await;
-    let mut ct = encrypt_with_suite(
-        b"v1 tamper test",
-        EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256,
-        EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
-        &keyring,
-    )
-    .await;
+    let mut ct = encrypt_with_version(b"v1 tamper test", Version::V1, keyring.clone()).await;
     // Tamper with a byte in the header body area (after version byte).
     assert!(ct.len() > 10, "ciphertext must be long enough to tamper");
     ct[5] ^= 0xFF;
-    let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    let err = decrypt(&dec_input)
+    let err = try_decrypt_v1_with_keyring(&ct, &keyring)
         .await
         .expect_err("V1 tampered header must fail decryption");
     assert!(
@@ -220,18 +185,11 @@ async fn test_auth_tag_tampered_header_fails_decrypt_v2() {
     //= type=test
     //# If this tag verification fails, this operation MUST immediately halt and fail.
     let keyring = test_keyring().await;
-    let mut ct = encrypt_with_suite(
-        b"v2 tamper test",
-        EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey,
-        EsdkCommitmentPolicy::RequireEncryptRequireDecrypt,
-        &keyring,
-    )
-    .await;
+    let mut ct = encrypt_with_version(b"v2 tamper test", Version::V2, keyring.clone()).await;
     // Tamper with a byte in the header body area (after version byte).
     assert!(ct.len() > 10, "ciphertext must be long enough to tamper");
     ct[5] ^= 0xFF;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let err = decrypt(&dec_input)
+    let err = try_decrypt_with_keyring(&ct, &keyring)
         .await
         .expect_err("V2 tampered header must fail decryption");
     assert!(

@@ -11,6 +11,7 @@ use crate::message::{DigestWriter, Error, ser_err};
 use crate::types::{SafeRead, SafeWrite};
 use aws_mpl_legacy::primitives::{AesGcm, aes_encrypt};
 
+/// Maximum plaintext bytes per message: 2^36 - 32 (AES-GCM safety bound).
 const MAX_DATA: usize = (1usize << 36) - 32;
 
 /// Input for constructing a single frame (regular or final).

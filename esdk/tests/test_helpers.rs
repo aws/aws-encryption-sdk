@@ -125,6 +125,18 @@ pub async fn encrypt_with_frame_length(plaintext: &[u8], frame_length: u32) -> V
     encrypt(&input).await.unwrap().ciphertext
 }
 
+/// Encrypt plaintext with a given frame length and caller-supplied keyring, return ciphertext bytes.
+pub async fn encrypt_framed_with_keyring(
+    plaintext: &[u8],
+    frame_length: u32,
+    keyring: &KeyringRef,
+) -> Vec<u8> {
+    let mut input =
+        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
+    input.frame_length = FrameLength::new(frame_length).unwrap();
+    encrypt(&input).await.unwrap().ciphertext
+}
+
 /// Encrypt plaintext with a given frame length under a V1 (non-committing) algorithm
 /// suite, return ciphertext bytes.
 pub async fn encrypt_v1_with_frame_length(plaintext: &[u8], frame_length: u32) -> Vec<u8> {
@@ -214,6 +226,84 @@ pub async fn encrypt_no_sign_with_ec(
         }
     }
     encrypt(&input).await.unwrap().ciphertext
+}
+
+/// Encrypt with a non-signing algorithm suite, caller-supplied EC, version, and keyring.
+pub async fn encrypt_no_sign_ec_keyring(
+    plaintext: &[u8],
+    ec: EncryptionContext,
+    version: Version,
+    keyring: &KeyringRef,
+) -> Vec<u8> {
+    let mut input = EncryptInput::with_legacy_keyring(plaintext, ec, keyring.clone());
+    match version {
+        Version::V1 => {
+            input.algorithm_suite_id =
+                Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
+            input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+        }
+        Version::V2 => {
+            input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
+        }
+    }
+    encrypt(&input).await.unwrap().ciphertext
+}
+
+/// Decrypt ciphertext with a caller-supplied keyring, return plaintext bytes.
+pub async fn decrypt_with_keyring(ciphertext: &[u8], keyring: &KeyringRef) -> Vec<u8> {
+    let dec_input =
+        DecryptInput::with_legacy_keyring(ciphertext, EncryptionContext::new(), keyring.clone());
+    decrypt(&dec_input).await.unwrap().plaintext
+}
+
+/// Decrypt V1 ciphertext with a caller-supplied keyring, return plaintext bytes.
+pub async fn decrypt_v1_with_keyring(ciphertext: &[u8], keyring: &KeyringRef) -> Vec<u8> {
+    let mut dec_input =
+        DecryptInput::with_legacy_keyring(ciphertext, EncryptionContext::new(), keyring.clone());
+    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    decrypt(&dec_input).await.unwrap().plaintext
+}
+
+/// Decrypt ciphertext with a caller-supplied keyring and EC, return plaintext bytes.
+pub async fn decrypt_with_keyring_ec(
+    ciphertext: &[u8],
+    ec: EncryptionContext,
+    keyring: &KeyringRef,
+) -> Vec<u8> {
+    let dec_input = DecryptInput::with_legacy_keyring(ciphertext, ec, keyring.clone());
+    decrypt(&dec_input).await.unwrap().plaintext
+}
+
+/// Decrypt V1 ciphertext with a caller-supplied keyring and EC, return plaintext bytes.
+pub async fn decrypt_v1_with_keyring_ec(
+    ciphertext: &[u8],
+    ec: EncryptionContext,
+    keyring: &KeyringRef,
+) -> Vec<u8> {
+    let mut dec_input = DecryptInput::with_legacy_keyring(ciphertext, ec, keyring.clone());
+    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    decrypt(&dec_input).await.unwrap().plaintext
+}
+
+/// Try to decrypt ciphertext with a caller-supplied keyring, return Result.
+pub async fn try_decrypt_with_keyring(
+    ciphertext: &[u8],
+    keyring: &KeyringRef,
+) -> Result<DecryptOutput, Error> {
+    let dec_input =
+        DecryptInput::with_legacy_keyring(ciphertext, EncryptionContext::new(), keyring.clone());
+    decrypt(&dec_input).await
+}
+
+/// Try to decrypt V1 ciphertext with a caller-supplied keyring, return Result.
+pub async fn try_decrypt_v1_with_keyring(
+    ciphertext: &[u8],
+    keyring: &KeyringRef,
+) -> Result<DecryptOutput, Error> {
+    let mut dec_input =
+        DecryptInput::with_legacy_keyring(ciphertext, EncryptionContext::new(), keyring.clone());
+    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    decrypt(&dec_input).await
 }
 
 /// Decrypt ciphertext with the default test keyring, return full DecryptOutput.
