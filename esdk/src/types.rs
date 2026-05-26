@@ -141,9 +141,22 @@ impl<T: std::io::Write + Send + Sync + std::fmt::Debug> SafeWrite for T {}
 //# - There MUST be a mechanism for input bytes to become consumable.
 pub trait SafeRead: std::io::Read + Send + Sync + std::fmt::Debug {}
 //= spec/client-apis/streaming.md#overview
-//= reason=SafeRead wraps std::io::Read; reads bytes incrementally without buffering the full input
+//= type=implication
+//= reason=SafeRead wraps std::io::Read; the trait exposes only incremental reads, so callers never need to hold the full input in memory
 //# If an implementation requires holding the entire input in memory in order to perform the operation,
 //# that implementation SHOULD NOT provide an API that allows the caller to stream the operation.
+//
+//= spec/client-apis/streaming.md#overview
+//= type=implication
+//= reason=SafeRead wraps std::io::Read; processing happens incrementally regardless of input size
+//# APIs that support streaming of the encrypt or decrypt operation SHOULD allow customers
+//# to be able to process arbitrarily large inputs with a finite amount of working memory.
+//
+//= spec/client-apis/encrypt.md#plaintext
+//= type=implication
+//= reason=SafeRead wraps std::io::Read; the plaintext flows in incrementally and is never held whole
+//# If an implementation requires holding the input entire plaintext in memory in order to perform this operation,
+//# that implementation SHOULD NOT provide an API that allows this input to be streamed.
 //
 //= spec/client-apis/streaming.md#inputs
 //= reason=SafeRead wraps std::io::Read; read() returning Ok(0) signals EOF
@@ -527,13 +540,42 @@ pub struct DecryptStreamInput {
     pub encryption_context: EncryptionContext,
     /// The source of cryptographic materials
     pub source: Option<MaterialSource>,
-    /// If you decrypt a signed payload, most of the data will be written
-    /// to the output stream before the signature is verified.
-    /// Thus, if verification fails, you are responsible for discarding any data
-    /// already received. If you are willing to accept this, set `i_accept_the_danger` to true.
-    /// If verification fails, at least one byte will not have been written to the output stream.
-    /// If the ciphertext involves only one frame, then no danger exists, and this flag is not needed.
-    pub i_accept_the_danger: bool,
+    /// Allow streaming decryption of multi-frame signed messages, at the cost of
+    /// potentially releasing unverified plaintext.
+    ///
+    /// # Background
+    ///
+    /// When decrypting a signed message in streaming mode, plaintext frames are
+    /// written to the output before the trailing ECDSA signature can be verified
+    /// (the signature covers the entire message and can only be checked after all
+    /// frames are consumed). If signature verification ultimately fails, the caller
+    /// will have already received plaintext that may be inauthentic.
+    ///
+    /// # Default behavior (`false`)
+    ///
+    /// With this set to `false` (the default), `decrypt_stream` will refuse to
+    /// process multi-frame signed messages and return an error immediately after
+    /// parsing the header. Single-frame signed messages are still allowed because
+    /// the final frame is buffered until after signature verification.
+    ///
+    /// # Opting in (`true`)
+    ///
+    /// Setting this to `true` permits streaming multi-frame signed messages.
+    /// **If you enable this, you MUST treat all output as untrusted until
+    /// `decrypt_stream` returns `Ok`.** If it returns an error, you MUST discard
+    /// any plaintext already written to the output stream — it may have been
+    /// tampered with.
+    ///
+    /// # When this flag is irrelevant
+    ///
+    /// - Non-streaming `decrypt()` — the entire plaintext is buffered internally
+    ///   and only returned after full verification. This flag is not consulted.
+    /// - Non-signed algorithm suites — no trailing signature exists, so all frames
+    ///   are authenticated individually via AES-GCM. No danger of releasing
+    ///   unverified data.
+    /// - Single-frame signed messages — the SDK buffers the single frame until
+    ///   after signature verification, so no partial release occurs.
+    pub unsafe_release_plaintext_before_verify: bool,
     /// Default is `NetV400RetryPolicy::AllowRetry`
     pub net_v4_retry_policy: NetV400RetryPolicy,
     /// Default is no limit
