@@ -3,6 +3,7 @@
 
 //! Tests for encrypt.md#construct-the-signature requirements
 
+mod fixtures;
 mod test_helpers;
 
 use test_helpers::*;
