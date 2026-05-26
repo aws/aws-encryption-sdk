@@ -78,7 +78,7 @@ async fn test_encrypt_decrypt_short() {
     decrypt_input.ciphertext = &esdk_ciphertext[..cipher_len - 1];
     //= spec/client-apis/decrypt.md#behavior
     //= type=test
-    //= reason=All ciphertext bytes are provided via the slice, but truncating the last byte makes footer/body deserialization unable to complete; decrypt MUST halt and surface a failure.
+    //= reason=Truncating the ciphertext's last byte makes footer deserialization fail; decrypt MUST halt with an error
     //# - If all bytes have been provided and this operation
     //# is unable to complete the above steps with the consumable encrypted message bytes,
     //# this operation MUST halt and indicate a failure to the caller.

@@ -141,7 +141,7 @@ impl<T: std::io::Write + Send + Sync + std::fmt::Debug> SafeWrite for T {}
 //# - There MUST be a mechanism for input bytes to become consumable.
 pub trait SafeRead: std::io::Read + Send + Sync + std::fmt::Debug {}
 //= spec/client-apis/streaming.md#overview
-//= reason=SafeRead wraps std::io::Read, enabling incremental consumption; the implementation does not require holding the entire input in memory
+//= reason=SafeRead wraps std::io::Read; reads bytes incrementally without buffering the full input
 //# If an implementation requires holding the entire input in memory in order to perform the operation,
 //# that implementation SHOULD NOT provide an API that allows the caller to stream the operation.
 //
@@ -271,13 +271,13 @@ impl std::fmt::Display for NetV400RetryPolicy {
 /// Input for [`encrypt`](crate::encrypt).
 //= spec/client-apis/encrypt.md#input
 //= type=exception
-//= reason=EncryptInput does not expose a plaintext_length_bound field; plaintext is always &[u8] with known length, so this implementation does not implement the optional Plaintext Length Bound feature.
+//= reason=EncryptInput plaintext is &[u8] with known length; Plaintext Length Bound is not implemented here
 //# Implementations SHOULD ensure that a caller is not able to specify both a [plaintext](#plaintext)
 //# with known length and a [Plaintext Length Bound](#plaintext-length-bound) by construction.
 //
 //= spec/client-apis/encrypt.md#input
 //= type=exception
-//= reason=EncryptInput does not expose a plaintext_length_bound field; the optional Plaintext Length Bound feature is not implemented on the non-streaming input, so this conditional MUST does not apply.
+//= reason=Plaintext Length Bound is not implemented on EncryptInput, so this conditional MUST does not apply
 //# If a caller is able to specify both an input [plaintext](#plaintext) with known length and
 //# a [Plaintext Length Bound](#plaintext-length-bound),
 //# the [Plaintext Length Bound](#plaintext-length-bound) MUST NOT be used during the Encrypt operation
