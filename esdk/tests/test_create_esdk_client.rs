@@ -86,7 +86,7 @@ async fn test_net_retry_flag() {
 fn test_commitment_policy_is_immutable() {
     //= spec/client-apis/client.md#initialization
     //= type=test
-    //= reason=encrypt() and decrypt() take &EncryptInput / &DecryptInput, so neither can mutate the policy field through a shared reference. We additionally confirm the value survives Clone and propagates unchanged through DecryptInput::from_encrypt — the only construction path that copies the policy from one input to another.
+    //= reason=encrypt/decrypt take shared references; Clone and DecryptInput::from_encrypt preserve commitment_policy, the only copy path
     //# Once a [commitment policy](#commitment-policy) has been set it SHOULD be immutable.
     let mut input = EncryptInput::default();
     input.commitment_policy =
@@ -234,18 +234,18 @@ async fn test_encrypt_decrypt_accepts_all_optional_inputs() {
     //
     //= spec/client-apis/client.md#initialization
     //= type=test
-    //= reason=encrypt_input.commitment_policy is set to a non-default value; encrypt() honoring it (paired with the matching V1 suite) proves the option to provide a commitment policy.
+    //= reason=encrypt_input.commitment_policy is set non-default; encrypt() honors it, proving the optional commitment-policy argument
     //# - On client initialization,
     //# the caller MUST have the option to provide a [commitment policy](#commitment-policy).
     //
     //= spec/client-apis/client.md#commitment-policy
     //= type=test
-    //= reason=encrypt_input.commitment_policy is an EsdkCommitmentPolicy value from aws_mpl_legacy::commitment; encrypt() honoring this MPL-typed value proves the SDK uses the ESDK commitment policies defined in the Material Providers Library.
+    //= reason=commitment_policy is an EsdkCommitmentPolicy from aws_mpl_legacy; encrypt() honors it, proving SDK uses the MPL type
     //# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
     //
     //= spec/client-apis/client.md#initialization
     //= type=test
-    //= reason=encrypt_input.max_encrypted_data_keys is set to Some(NonZeroUsize::new(5)); encrypt() succeeds, proving the option to provide a maximum number of encrypted data keys.
+    //= reason=encrypt_input.max_encrypted_data_keys is set to Some(5); encrypt() succeeds, proving the optional max-EDKs argument
     //# - On client initialization,
     //# the caller MUST have the option to provide a [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys).
     let encrypt_output = encrypt(&encrypt_input)
@@ -265,7 +265,7 @@ async fn test_encrypt_decrypt_accepts_all_optional_inputs() {
     //
     //= spec/client-apis/decrypt.md#encrypted-message
     //= type=test
-    //= reason=The ciphertext is a sequence of bytes in the AWS Encryption SDK message format produced by encrypt(); decrypt() accepts and round-trips it to the original plaintext.
+    //= reason=ciphertext is the byte-sequence ESDK message produced by encrypt(); decrypt() accepts and round-trips it
     //# The input encrypted message MUST be a sequence of bytes in the
     //# [message format](../data-format/message.md) specified by the AWS Encryption SDK.
     //
