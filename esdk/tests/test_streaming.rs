@@ -5,11 +5,10 @@ mod fixtures;
 mod test_helpers;
 
 use aws_esdk::{
-    decrypt_stream, encrypt, encrypt_stream, DecryptStreamInput, EncryptInput, EncryptStreamInput,
-    EncryptionContext, ErrorKind, FrameLength,
+    decrypt_stream, encrypt_stream, DecryptStreamInput, EncryptStreamInput, EncryptionContext,
+    ErrorKind,
 };
-use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
-use test_helpers::test_keyring;
+use test_helpers::{multi_frame_signed_for_stream, test_keyring};
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_encrypt_decrypt_round_trip() {
@@ -90,17 +89,11 @@ async fn test_streaming_encrypt_decrypt_round_trip() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_stream_multi_frame_signed_rejected_by_default() {
-    // Multi-frame signed payload: 30 bytes / frame_length=10 → 3 frames (2 regular + final).
-    // With unsafe_release_plaintext_before_verify=false (default), decrypt_stream must
-    // reject this up front rather than release plaintext before signature verification.
-    let keyring = test_keyring().await;
-    let plaintext = vec![0xAAu8; 30];
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(&plaintext, EncryptionContext::new(), keyring.clone());
-    enc_input.frame_length = FrameLength::new(10).unwrap();
-    enc_input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    // multi_frame_signed_for_stream produces a 30-byte / frame_length=10 ECDSA-P384
+    // payload (3 frames: 2 regular + final). With unsafe_release_plaintext_before_verify
+    // = false (default), decrypt_stream must reject this up front rather than release
+    // plaintext before signature verification.
+    let (_plaintext, keyring, ct) = multi_frame_signed_for_stream().await;
 
     let dec_input =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
@@ -136,14 +129,7 @@ async fn test_decrypt_stream_multi_frame_signed_unsafe_flag_round_trip() {
     // unsafe_release_plaintext_before_verify=true opts in to early release;
     // decrypt_stream now succeeds and the plaintext round-trips. Doubles as
     // multi-frame streaming round-trip coverage for this PR.
-    let keyring = test_keyring().await;
-    let plaintext = vec![0xAAu8; 30];
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(&plaintext, EncryptionContext::new(), keyring.clone());
-    enc_input.frame_length = FrameLength::new(10).unwrap();
-    enc_input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let (plaintext, keyring, ct) = multi_frame_signed_for_stream().await;
 
     let mut dec_input =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
