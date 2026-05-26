@@ -17,9 +17,11 @@ async fn test_signing_suite_produces_footer() {
 
     let ct = encrypt_with_signing_suite(b"signature presence test").await;
     let (_, sig_len) = find_footer_offset(&ct);
+    // The default signing suite is ECDSA P-384; DER-encoded signatures are 64..=104 bytes.
+    // A wider-than-zero check would let any 1-byte "signature" pass.
     assert!(
-        sig_len > 0,
-        "signing suite must produce a footer with non-zero signature"
+        (64..=104).contains(&(sig_len as usize)),
+        "signing suite must produce a footer with a P-384 DER signature (64..=104 bytes), got: {sig_len}"
     );
 }
 
@@ -154,14 +156,18 @@ async fn test_no_signature_without_signing_suite() {
     //# - If the materials do not have an algorithm suite including a signature algorithm,
     //# the Encrypt operation MUST NOT construct a signature.
 
-    // Encrypt with non-signing suite and verify successful round-trip.
-    // If a signature were constructed, the message would contain a footer
-    // that the decryptor (knowing the suite has no signature) would not expect,
-    // causing failure or trailing bytes.
+    // Encrypt with a non-signing suite, then verify on the wire that no footer is
+    // present and that the plaintext round-trips. `has_footer` looks for a 2-byte
+    // length prefix at the tail whose value falls in the ECDSA P-384 DER signature
+    // range and equals the remaining byte count.
     let ct = encrypt_without_signing_suite(b"no signature test").await;
+    assert!(
+        !has_footer(&ct),
+        "non-signing suite must NOT produce a trailing footer"
+    );
     let pt = decrypt_ciphertext(&ct).await.plaintext;
     assert_eq!(
         pt, b"no signature test",
-        "successful round-trip with non-signing suite proves no signature was constructed"
+        "round-trip with non-signing suite must succeed"
     );
 }
