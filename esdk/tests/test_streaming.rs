@@ -13,26 +13,6 @@ use test_helpers::test_keyring;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_encrypt_decrypt_round_trip() {
-    //= spec/client-apis/streaming.md#overview
-    //= type=test
-    //= reason=encrypt_stream and decrypt_stream are the streaming APIs; the round-trip proves both work
-    //# The AWS Encryption SDK MAY provide APIs that enable streamed [encryption](encrypt.md)
-    //# and [decryption](decrypt.md).
-    //
-    //= spec/client-apis/encrypt.md#plaintext
-    //= type=test
-    //= reason=the round-trip with a Cursor input source succeeds, proving plaintext can be streamed to encrypt
-    //# This input MAY be [streamed](streaming.md) to this operation.
-    //
-    //= spec/client-apis/encrypt.md#encrypted-message
-    //= type=test
-    //= reason=the round-trip with a Vec<u8> ciphertext sink succeeds, proving the encrypted message can be streamed
-    //# This operation MAY [stream](streaming.md) the encrypted message.
-    //
-    //= spec/client-apis/streaming.md#outputs
-    //= type=test
-    //= reason=decrypt_stream returns Ok only after all plaintext is written; the round-trip assertion confirms this
-    //# Operations MUST NOT indicate completion or success until an end to the output has been indicated.
     let keyring = test_keyring().await;
     let plaintext = b"hello streaming world";
 
@@ -57,10 +37,19 @@ async fn test_streaming_encrypt_decrypt_round_trip() {
     //= type=test
     //= reason=encrypt_stream accepts a SafeRead (Cursor) as input; the round-trip succeeds, proving the streaming-input mechanism works
     //# In order to support streaming, the operation MUST accept some input within a streaming framework.
+    //
+    //= spec/client-apis/encrypt.md#plaintext
+    //= type=test
+    //= reason=the round-trip with a Cursor input source succeeds, proving plaintext can be streamed to encrypt
+    //# This input MAY be [streamed](streaming.md) to this operation.
     encrypt_stream(&mut pt_cursor, &mut ciphertext, &enc_input)
         .await
         .unwrap();
 
+    //= spec/client-apis/encrypt.md#encrypted-message
+    //= type=test
+    //= reason=the round-trip with a Vec<u8> ciphertext sink succeeds, proving the encrypted message can be streamed
+    //# This operation MAY [stream](streaming.md) the encrypted message.
     assert!(!ciphertext.is_empty(), "ciphertext must not be empty");
 
     // Decrypt via streaming API
@@ -81,6 +70,17 @@ async fn test_streaming_encrypt_decrypt_round_trip() {
         .await
         .unwrap();
 
+    //= spec/client-apis/streaming.md#overview
+    //= type=test
+    //= reason=encrypt_stream and decrypt_stream are the streaming APIs; the round-trip proves both work
+    //# The AWS Encryption SDK MAY provide APIs that enable streamed [encryption](encrypt.md)
+    //# and [decryption](decrypt.md).
+    //
+    //= spec/client-apis/streaming.md#outputs
+    //= type=test
+    //= reason=decrypt_stream returns Ok only after all plaintext is written; the round-trip assertion confirms this
+    //# Operations MUST NOT indicate completion or success until an end to the output has been indicated.
+    //
     //= spec/client-apis/streaming.md#outputs
     //= type=test
     //= reason=decrypt_stream's Ok return means all plaintext is in the output, proving end-of-output signaling
