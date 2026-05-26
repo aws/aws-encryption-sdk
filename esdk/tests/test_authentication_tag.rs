@@ -58,8 +58,12 @@ async fn test_v1_header_auth_has_iv_then_tag() {
         "V1 header auth tag must not be all zeros"
     );
 
-    // Round-trip cross-check: independent decrypt validates the same tag.
-    let result = round_trip_v1(pt, EncryptionContext::new()).await;
+    // Round-trip cross-check: decrypt the same ct whose bytes we inspected above.
+    let keyring = test_keyring().await;
+    let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    dec_input.commitment_policy =
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    let result = decrypt(&dec_input).await.unwrap().plaintext;
     assert_eq!(result, pt, "V1 round-trip with auth tag verification");
 }
 
@@ -94,8 +98,10 @@ async fn test_v2_header_auth_has_tag_only() {
         "V2: bytes after auth tag must be body start (seq=1 or endframe), got {next_4:#010X}"
     );
 
-    // Round-trip cross-check: independent decrypt validates the same tag.
-    let result = round_trip_v2(pt, EncryptionContext::new()).await;
+    // Round-trip cross-check: decrypt the same ct whose bytes we inspected above.
+    let keyring = test_keyring().await;
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let result = decrypt(&dec_input).await.unwrap().plaintext;
     assert_eq!(result, pt, "V2 round-trip with auth tag verification");
 }
 
@@ -122,8 +128,12 @@ async fn test_auth_tag_present_with_required_ec_v1() {
         "V1 auth tag must be a real AEAD output (not all zeros)"
     );
 
-    // Round-trip cross-check: decrypt with the same EC validates the AAD construction.
-    let result = round_trip_v1(pt, ec).await;
+    // Round-trip cross-check: decrypt the same ct with the same EC validates the AAD construction.
+    let keyring = test_keyring().await;
+    let mut dec_input = DecryptInput::with_legacy_keyring(&ct, ec, keyring);
+    dec_input.commitment_policy =
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    let result = decrypt(&dec_input).await.unwrap().plaintext;
     assert_eq!(result, pt, "V1 round-trip with non-empty EC");
 }
 
@@ -150,8 +160,10 @@ async fn test_auth_tag_present_with_required_ec_v2() {
         "V2 auth tag must be a real AEAD output (not all zeros)"
     );
 
-    // Round-trip cross-check: decrypt with the same EC validates the AAD construction.
-    let result = round_trip_v2(pt, ec).await;
+    // Round-trip cross-check: decrypt the same ct with the same EC validates the AAD construction.
+    let keyring = test_keyring().await;
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, ec, keyring);
+    let result = decrypt(&dec_input).await.unwrap().plaintext;
     assert_eq!(result, pt, "V2 round-trip with non-empty EC");
 }
 
