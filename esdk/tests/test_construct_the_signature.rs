@@ -75,10 +75,6 @@ async fn test_footer_serialization() {
     //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //# The order for message footer serialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
-    //
-    //= specification/client-apis/encrypt.md#construct-the-signature
-    //= type=test
-    //# The order for message footer serialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
 
     let ct = encrypt_with_signing_suite(b"footer serialization test").await;
     let (offset, sig_len) = find_footer_offset(&ct);
@@ -87,10 +83,6 @@ async fn test_footer_serialization() {
     // Verify the two-byte length field at `offset` correctly describes the remaining bytes.
 
     //= spec/client-apis/encrypt.md#construct-the-signature
-    //= type=test
-    //# - MUST serialize the [Signature Length](../data-format/message-footer.md#signature-length).
-    //
-    //= specification/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //# - MUST serialize the [Signature Length](../data-format/message-footer.md#signature-length).
     let declared_len = u16::from_be_bytes([ct[offset], ct[offset + 1]]);
@@ -102,10 +94,6 @@ async fn test_footer_serialization() {
     //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //# The value MUST be the length of the output of the signature calculation above.
-    //
-    //= specification/client-apis/encrypt.md#construct-the-signature
-    //= type=test
-    //# The value MUST be the length of the output of the signature calculation above.
     assert_eq!(
         declared_len as usize,
         ct.len() - offset - 2,
@@ -113,10 +101,6 @@ async fn test_footer_serialization() {
     );
 
     //= spec/client-apis/encrypt.md#construct-the-signature
-    //= type=test
-    //# - MUST serialize the [Signature](../data-format/message-footer.md#signature).
-    //
-    //= specification/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //# - MUST serialize the [Signature](../data-format/message-footer.md#signature).
     let signature_bytes = &ct[offset + 2..];
@@ -129,10 +113,6 @@ async fn test_footer_serialization() {
     //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //# The value MUST be the output of the signature calculation above.
-    //
-    //= specification/client-apis/encrypt.md#construct-the-signature
-    //= type=test
-    //# The value MUST be the output of the signature calculation above.
     // Non-zero signature bytes prove actual signature content (not padding)
     assert!(
         signature_bytes.iter().any(|&b| b != 0),
@@ -140,11 +120,6 @@ async fn test_footer_serialization() {
     );
 
     //= spec/client-apis/encrypt.md#construct-the-signature
-    //= type=test
-    //= reason=The footer is present in the output as a complete unit (length + signature); partial release would produce a truncated or absent footer
-    //# The above serialized bytes MUST NOT be released until the entire message footer has been serialized.
-    //
-    //= specification/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //= reason=The footer is present in the output as a complete unit (length + signature); partial release would produce a truncated or absent footer
     //# The above serialized bytes MUST NOT be released until the entire message footer has been serialized.

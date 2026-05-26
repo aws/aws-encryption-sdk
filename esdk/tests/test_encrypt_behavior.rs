@@ -48,10 +48,18 @@ async fn test_step_3_construct_body() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_step_4_construct_signature() {
-    // Encrypt with a signing suite; decrypt verifies the signature, proving step 4 executed.
+    // Encrypt with a signing suite; decrypt verifies the signature, proving step 4 executed
+    // for the suite-has-signature branch.
     //= spec/client-apis/encrypt.md#behavior
     //= type=test
     //# - Encrypt operation step 4 MUST be [Construct the signature](#construct-the-signature)
+    //
+    //= spec/client-apis/encrypt.md#behavior
+    //= type=test
+    //= reason=Decrypt verifies the footer signature; round-trip success on a signing suite is only possible if encrypt performed the signature step.
+    //# - If the [encryption materials gathered](#get-the-encryption-materials) has a algorithm suite
+    //# including a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
+    //# the Encrypt operation MUST perform this step.
     let keyring = test_keyring().await;
     let mut enc_input =
         EncryptInput::with_legacy_keyring(b"test step 4", EncryptionContext::new(), keyring.clone());
@@ -61,26 +69,6 @@ async fn test_step_4_construct_signature() {
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let pt = decrypt(&dec_input).await.unwrap().plaintext;
     assert_eq!(pt, b"test step 4");
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_encrypt_signing_suite_must_perform_signature_step() {
-    // Encrypt with a signing suite and verify round-trip succeeds.
-    // Decrypt verifies the signature, so success proves the signature step was performed.
-    //= spec/client-apis/encrypt.md#behavior
-    //= type=test
-    //# - If the [encryption materials gathered](#get-the-encryption-materials) has a algorithm suite
-    //# including a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
-    //# the Encrypt operation MUST perform this step.
-    let keyring = test_keyring().await;
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(b"signing step test", EncryptionContext::new(), keyring.clone());
-    enc_input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let pt = decrypt(&dec_input).await.unwrap().plaintext;
-    assert_eq!(pt, b"signing step test");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -112,11 +100,13 @@ async fn test_input_suite_vs_commitment_policy_error() {
     enc_input.commitment_policy = EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
     let result = encrypt(&enc_input).await;
     let err = result.expect_err("encrypt must fail when input suite violates commitment policy");
-    let dbg = format!("{err:?}");
+    let ErrorKind::LegacyError(legacy) = &err.kind else {
+        panic!("expected LegacyError, got: {:?}", err.kind);
+    };
+    let inner = format!("{legacy:?}");
     assert!(
-        dbg.to_lowercase().contains("commitment") || dbg.to_lowercase().contains("committing")
-            || dbg.to_lowercase().contains("policy"),
-        "error must indicate commitment-policy failure, got: {dbg}"
+        inner.contains("InvalidAlgorithmSuiteInfoOnEncrypt"),
+        "expected InvalidAlgorithmSuiteInfoOnEncrypt, got: {inner}"
     );
 }
 
@@ -298,33 +288,6 @@ async fn test_suite_from_materials_used() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_post_cmm_commitment_policy_error() {
-    // This tests the post-CMM commitment policy check. In practice, the pre-CMM and
-    // post-CMM checks exercise the same validation because the default CMM returns the
-    // requested suite unchanged. The post-CMM check exists to catch cases where a custom
-    // CMM returns a different (non-committing) suite than what was requested.
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# If this [algorithm suite](../framework/algorithm-suites.md) is not supported by the [commitment policy](client.md#commitment-policy)
-    //# configured in the [client](client.md) encrypt MUST yield an error.
-    let keyring = test_keyring().await;
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(b"post-cmm commitment", EncryptionContext::new(), keyring);
-    // Non-committing suite with RequireEncryptRequireDecrypt: commitment policy check should fail
-    enc_input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
-    enc_input.commitment_policy = EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
-    let result = encrypt(&enc_input).await;
-    let err = result.expect_err("encrypt must fail when post-CMM suite violates commitment policy");
-    let dbg = format!("{err:?}");
-    assert!(
-        dbg.to_lowercase().contains("commitment") || dbg.to_lowercase().contains("committing")
-            || dbg.to_lowercase().contains("policy"),
-        "error must indicate commitment-policy failure, got: {dbg}"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_max_edk_exceeded_error() {
     // Set max_encrypted_data_keys to 0 (impossible to satisfy) — should fail.
     // NonZeroUsize minimum is 1, but even 1 EDK from a single keyring should be exactly 1.
@@ -356,10 +319,14 @@ async fn test_max_edk_exceeded_error() {
     enc_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(1).unwrap());
     let result = encrypt(&enc_input).await;
     let err = result.expect_err("encrypt must fail when EDK count exceeds max");
+    assert_eq!(
+        err.kind, ErrorKind::ValidationError,
+        "expected ValidationError, got: {err:?}"
+    );
     assert!(
         err.message.contains("exceed") && err.message.contains("maximum"),
-        "error must indicate EDK count exceeds maximum, got: {} ({:?})",
-        err.message, err.kind
+        "error must indicate EDK count exceeds maximum, got: {}",
+        err.message
     );
 }
 
@@ -513,10 +480,14 @@ async fn test_reserved_encryption_context_prefix_must_fail() {
     let enc_input = EncryptInput::with_legacy_keyring(b"should fail", ec, keyring);
     let result = encrypt(&enc_input).await;
     let err = result.expect_err("encrypt must fail when encryption context has aws-crypto- prefix key");
+    assert_eq!(
+        err.kind, ErrorKind::ValidationError,
+        "expected ValidationError, got: {err:?}"
+    );
     assert!(
-        err.message.contains("aws-crypto-") || err.message.to_lowercase().contains("reserved"),
-        "error must indicate the reserved-prefix failure, got: {} ({:?})",
-        err.message, err.kind
+        err.message.contains("aws-crypto-"),
+        "error must identify the reserved prefix, got: {}",
+        err.message
     );
 }
 

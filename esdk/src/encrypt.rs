@@ -122,6 +122,8 @@ pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
 //# This operation MAY [stream](streaming.md) the encrypted message.
 //
 //= spec/client-apis/encrypt.md#plaintext
+//= type=exception
+//= reason=Does not require holding input plaintext in memory
 //# If an implementation requires holding the input entire plaintext in memory in order to perform this operation,
 //# that implementation SHOULD NOT provide an API that allows this input to be streamed.
 pub async fn encrypt_stream(
@@ -472,10 +474,6 @@ fn step_construct_signature(
             //# The order for message footer serialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
             //
             //= spec/data-format/message-footer.md#overview
-            //# When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
-            //# the [message](message.md) MUST contain a footer.
-            //
-            //= specification/data-format/message-footer.md#overview
             //# When an [algorithm suite](../framework/algorithm-suites.md) includes a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
             //# the [message](message.md) MUST contain a footer.
             //
