@@ -132,7 +132,8 @@ pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
     let mut cursor = std::io::Cursor::new(input.ciphertext);
 
     //= spec/client-apis/decrypt.md#behavior
-    //= reason=Plaintext is buffered locally; returned only on Ok
+    //= type=implication
+    //= reason=decrypt() returns Result; caller cannot access output until Ok
     //# If the input encrypted message is not being [streamed](streaming.md) to this operation,
     //# all output MUST NOT be released until after these steps complete successfully.
     let mut plaintext: Vec<u8> = Vec::with_capacity(input.ciphertext.len());

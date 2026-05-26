@@ -39,24 +39,6 @@ async fn test_decrypt_skips_signature_step_for_non_signing_algorithm() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_non_streaming_decrypt_holds_output_until_completion() {
-    let keyring = test_keyring().await;
-    let plaintext = b"non-streaming output held until completion";
-    let enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap();
-    //= spec/client-apis/decrypt.md#behavior
-    //= type=test
-    //= reason=decrypt() returns Result; output only available on Ok, proving all-or-nothing release
-    //# If the input encrypted message is not being [streamed](streaming.md) to this operation,
-    //# all output MUST NOT be released until after these steps complete successfully.
-    assert_eq!(result.plaintext, plaintext);
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_output_not_released_until_indicated() {
     let keyring = test_keyring().await;
     let plaintext = b"streaming output held";
