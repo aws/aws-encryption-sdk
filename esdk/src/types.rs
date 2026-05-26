@@ -323,6 +323,8 @@ pub struct EncryptInput<'a> {
     //# - Encrypt operation input MUST accept a required [plaintext](#plaintext) argument.
     //
     //= spec/client-apis/encrypt.md#plaintext
+    //= type=implication
+    //= reason=&[u8] is a sequence of bytes by definition
     //# This MUST be a sequence of bytes.
     pub plaintext: &'a [u8],
     /// Default is no limit

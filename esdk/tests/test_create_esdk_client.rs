@@ -207,11 +207,6 @@ async fn test_encrypt_decrypt_accepts_all_optional_inputs() {
     //= reason=encrypt() returns Ok with `plaintext: &[u8]` populated, proving the required plaintext argument is accepted.
     //# - Encrypt operation input MUST accept a required [plaintext](#plaintext) argument.
     //
-    //= spec/client-apis/encrypt.md#plaintext
-    //= type=test
-    //= reason=plaintext is `&[u8]` (a sequence of bytes); encrypt() accepts and round-trips it.
-    //# This MUST be a sequence of bytes.
-    //
     //= spec/client-apis/encrypt.md#input
     //= type=test
     //= reason=encrypt_input.algorithm_suite_id is set to Some(non-default V1 suite); encrypt() succeeds, proving the optional Algorithm Suite argument is accepted.
