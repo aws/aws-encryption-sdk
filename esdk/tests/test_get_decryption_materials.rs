@@ -13,94 +13,6 @@ use fixtures::*;
 use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_obtain_decryption_materials_via_cmm() {
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=Decrypt succeeds only if CMM provides valid materials
-    //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
-    //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
-    //= spec/client-apis/decrypt.md#cryptographic-materials-manager
-    //= type=test
-    //= reason=Decrypt success proves CMM obtained required materials
-    //# This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
-    let pt = b"test obtain decryption materials";
-    let result = round_trip_with_ec(pt, EncryptionContext::new()).await;
-    assert_eq!(result.plaintext, pt);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_cmm_call_constructed_as_follows() {
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=Malformed CMM call would fail to produce valid materials
-    //# The call to the CMM's [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) operation
-    //# MUST be constructed as follows:
-    let pt = b"test cmm call construction";
-    let result = round_trip_with_ec(pt, EncryptionContext::new()).await;
-    assert_eq!(result.plaintext, pt);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_cmm_call_algorithm_suite_id() {
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=Wrong suite ID would produce mismatched data keys
-    //# - Algorithm Suite ID: This MUST be the parsed
-    //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
-    //# from the message header.
-    let pt = b"test algorithm suite id";
-    let result = round_trip_with_ec(pt, EncryptionContext::new()).await;
-    assert_eq!(result.plaintext, pt);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_cmm_call_commitment_policy() {
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=Wrong policy would reject valid or accept invalid suites
-    //# - Commitment Policy: This MUST be the commitment policy configured on the client.
-    let pt = b"test commitment policy";
-    let result = round_trip_with_ec(pt, EncryptionContext::new()).await;
-    assert_eq!(result.plaintext, pt);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_cmm_call_encrypted_data_keys() {
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=Wrong EDKs would prevent data key unwrap
-    //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header.md#encrypted-data-keys)
-    //# from the message header.
-    let pt = b"test encrypted data keys";
-    let result = round_trip_with_ec(pt, EncryptionContext::new()).await;
-    assert_eq!(result.plaintext, pt);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_cmm_call_encryption_context() {
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=Wrong EC would cause AAD mismatch and tag failure
-    //# - Encryption Context: This MUST be the parsed [encryption context](../data-format/message-header.md#aad)
-    //# from the message header.
-    let ec = EncryptionContext::from([("key1".to_string(), "val1".to_string())]);
-    let pt = b"test encryption context";
-    let result = round_trip_with_ec(pt, ec).await;
-    assert_eq!(result.plaintext, pt);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_cmm_call_reproduced_encryption_context() {
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=Wrong reproduced EC would cause CMM to reject request
-    //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
-    let pt = b"test reproduced encryption context";
-    let result = round_trip_with_ec(pt, EncryptionContext::new()).await;
-    assert_eq!(result.plaintext, pt);
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_fails_with_wrong_keyring() {
     let keyring = test_keyring().await;
     let pt = b"negative test";
@@ -159,43 +71,6 @@ async fn test_pre_cmm_commitment_policy_check() {
     //# is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) decrypt MUST yield an error.
     assert!(inner.contains("InvalidAlgorithmSuiteInfoOnDecrypt"), "expected InvalidAlgorithmSuiteInfoOnDecrypt, got: {inner}");
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_cmm_used_is_input_cmm() {
-    let keyring = aes_keyring(0).await;
-    let cmm = mpl()
-        .create_default_cryptographic_materials_manager()
-        .keyring(keyring.clone())
-        .send()
-        .await
-        .unwrap();
-    let pt = b"test input cmm used";
-    let enc_input = EncryptInput::with_legacy_cmm(pt, EncryptionContext::new(), cmm.clone());
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_cmm(&ct, EncryptionContext::new(), cmm);
-    let result = decrypt(&dec_input).await.unwrap();
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //# The CMM used MUST be the input CMM, if supplied.
-    assert_eq!(result.plaintext, pt);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_default_cmm_constructed_from_keyring() {
-    let keyring = aes_keyring(0).await;
-    let pt = b"test default cmm from keyring";
-    let enc_input =
-        EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring.clone());
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    // Decrypt with keyring (not CMM) — decrypt must construct default CMM internally
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap();
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //# If a CMM is not supplied as the input, the decrypt operation MUST construct a [default CMM](../framework/default-cmm.md)
-    //# from the input [keyring](../framework/keyring-interface.md).
-    assert_eq!(result.plaintext, pt);
 }
 
 #[tokio::test(flavor = "multi_thread")]

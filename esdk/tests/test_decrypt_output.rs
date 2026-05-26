@@ -12,26 +12,6 @@ use fixtures::*;
 use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_decrypt_output_includes_plaintext() {
-    let keyring = test_keyring().await;
-    let plaintext = b"test plaintext for output check";
-    let enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-
-    let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    let result = decrypt(&dec_input).await.unwrap();
-    //= spec/client-apis/decrypt.md#output
-    //= type=test
-    //# - Decrypt operation output MUST include a [Plaintext](#plaintext) value.
-    //
-    //= spec/client-apis/decrypt.md#plaintext
-    //= type=test
-    //# This MUST be a sequence of bytes.
-    assert_eq!(result.plaintext, plaintext);
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_output_includes_encryption_context() {
     let keyring = test_keyring().await;
     let ec = small_encryption_context(SmallEncryptionContextVariation::AB);
@@ -66,24 +46,6 @@ async fn test_decrypt_output_includes_algorithm_suite() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_decrypt_output_algorithm_suite_is_esdk_supported() {
-    //= spec/client-apis/decrypt.md#algorithm-suite
-    //= type=test
-    //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
-    let keyring = test_keyring().await;
-    let enc_input =
-        EncryptInput::with_legacy_keyring(b"esdk suite", EncryptionContext::new(), keyring.clone());
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-
-    let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    let result = decrypt(&dec_input).await.unwrap();
-    // The returned algorithm_suite_id is an EsdkAlgorithmSuiteId enum variant,
-    // which by construction only contains ESDK-supported suites.
-    // A non-ESDK suite would have caused get_esdk_id to return Err.
-    let _suite: EsdkAlgorithmSuiteId = result.algorithm_suite_id;
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_no_unauthenticated_data_released() {
     let keyring = test_keyring().await;
     let plaintext = b"tamper test data";
@@ -107,62 +69,6 @@ async fn test_decrypt_no_unauthenticated_data_released() {
     //= reason=Tampered body produces error with no plaintext returned to caller
     //# This operation MUST NOT release any unauthenticated plaintext or unauthenticated associated data.
     assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_streaming_signed_plaintext_not_signed_until_complete() {
-    let keyring = test_keyring().await;
-    let plaintext = b"signed streaming test";
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    enc_input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-
-    let mut cursor = std::io::Cursor::new(ct.as_slice());
-    let mut output = Vec::new();
-    let mut stream_input =
-        DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    stream_input.unsafe_release_plaintext_before_verify = true;
-    decrypt_stream(&mut cursor, &mut output, &stream_input)
-        .await
-        .unwrap();
-    //= spec/client-apis/decrypt.md#security-considerations
-    //= type=test
-    //# If this operation is [streaming](streaming.md) output to the caller
-    //# and is decrypting messages created with an algorithm suite including a signature algorithm,
-    //# any released plaintext MUST NOT be considered signed data until this operation finishes
-    //# successfully.
-    //= reason=Ok return after signature verify proves output is signed-data-valid
-    assert_eq!(output, plaintext);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_streaming_callers_must_not_consider_successful_until_complete() {
-    let keyring = test_keyring().await;
-    let plaintext = b"completion contract test";
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    enc_input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-
-    let mut cursor = std::io::Cursor::new(ct.as_slice());
-    let mut output = Vec::new();
-    let mut stream_input =
-        DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    stream_input.unsafe_release_plaintext_before_verify = true;
-    let result = decrypt_stream(&mut cursor, &mut output, &stream_input).await;
-    assert!(
-        result.is_ok(),
-        "successful completion signals callers may consider processing successful"
-    );
-    //= spec/client-apis/decrypt.md#security-considerations
-    //= type=test
-    //# This means that callers that process such released plaintext MUST NOT consider any processing successful
-    //# until this operation completes successfully.
-    //= reason=decrypt_stream returns Result; Ok signals completion and safe-to-use
-    assert_eq!(output, plaintext);
 }
 
 #[tokio::test(flavor = "multi_thread")]

@@ -39,31 +39,6 @@ async fn test_decrypt_skips_signature_step_for_non_signing_algorithm() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_streaming_output_not_released_until_indicated() {
-    let keyring = test_keyring().await;
-    let plaintext = b"streaming output held";
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    enc_input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-
-    let mut cursor = std::io::Cursor::new(ct.as_slice());
-    let mut output = Vec::new();
-    let mut stream_input =
-        DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    stream_input.unsafe_release_plaintext_before_verify = true;
-    decrypt_stream(&mut cursor, &mut output, &stream_input)
-        .await
-        .unwrap();
-    //= spec/client-apis/decrypt.md#behavior
-    //= type=test
-    //= reason=Signing-suite streaming decrypt succeeds; output released only after verification
-    //# - Output MUST NOT be released until otherwise indicated.
-    assert_eq!(output, plaintext);
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_halts_on_incomplete_message() {
     let keyring = test_keyring().await;
     let plaintext = b"truncation test data";

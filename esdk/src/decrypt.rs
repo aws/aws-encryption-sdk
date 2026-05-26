@@ -163,6 +163,8 @@ pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
 
     Ok(DecryptOutput {
         //= spec/client-apis/decrypt.md#output
+        //= type=implication
+        //= reason=DecryptOutput struct always contains plaintext field
         //# - Decrypt operation output MUST include a [Plaintext](#plaintext) value.
         plaintext,
         //= spec/client-apis/decrypt.md#output

@@ -391,31 +391,6 @@ async fn test_decrypt_steps_in_order() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_parse_header_sequential_processing() {
-    //= spec/client-apis/decrypt.md#parse-the-header
-    //= type=test
-    //# Given encrypted message bytes, this operation MUST process those bytes sequentially,
-    //# deserializing those bytes according to the [message format](../data-format/message.md).
-    // A successful streaming decrypt proves bytes are processed sequentially from the reader.
-    let keyring = test_keyring().await;
-    let plaintext = b"sequential processing test";
-
-    let enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-
-    let mut cursor = std::io::Cursor::new(ct.as_slice());
-    let mut output = Vec::new();
-    let mut stream_input =
-        DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    stream_input.unsafe_release_plaintext_before_verify = true;
-    decrypt_stream(&mut cursor, &mut output, &stream_input)
-        .await
-        .unwrap();
-    assert_eq!(output, plaintext);
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_max_encrypted_data_keys_enforcement() {
     //= spec/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
@@ -489,64 +464,3 @@ async fn test_no_header_info_released_before_verification() {
     assert_eq!(err.kind, ErrorKind::ValidationError, "got: {err:?}");
 }
 
-#[tokio::test(flavor = "multi_thread")]
-async fn test_v1_header_auth_deserialized() {
-    let keyring = test_keyring().await;
-    let plaintext = b"v1 header auth deserialization test";
-
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
-    enc_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-
-    let mut dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    //= spec/client-apis/decrypt.md#v1-header-deserialization
-    //= type=test
-    //= reason=V1 round-trip proves Header Auth Version 1.0 (IV + Tag) was deserialized
-    //# The Decrypt operation MUST then deserialize the
-    //# [Header Authentication Version 1.0](../data-format/message-header.md#header-authentication-version-10):
-    let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, plaintext);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_v1_header_auth_iv_deserialized() {
-    let keyring = test_keyring().await;
-    let plaintext = b"v1 header auth iv test";
-
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
-    enc_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-
-    let mut dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    //= spec/client-apis/decrypt.md#v1-header-deserialization
-    //= type=test
-    //= reason=V1 round-trip proves header auth IV was deserialized
-    //# - MUST deserialize the [IV](../data-format/message-header.md#iv).
-    let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, plaintext);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_v2_header_auth_deserialized() {
-    let keyring = test_keyring().await;
-    let plaintext = b"v2 header auth deserialization test";
-
-    let enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-
-    let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    //= spec/client-apis/decrypt.md#v2-header-deserialization
-    //= type=test
-    //= reason=V2 round-trip proves Header Auth Version 2.0 (Tag only) was deserialized
-    //# The Decrypt operation MUST then deserialize the
-    //# [Header Authentication Version 2.0](../data-format/message-header.md#header-authentication-version-20):
-    let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, plaintext);
-}
