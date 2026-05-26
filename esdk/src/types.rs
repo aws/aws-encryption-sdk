@@ -575,6 +575,17 @@ pub struct DecryptStreamInput {
     ///   unverified data.
     /// - Single-frame signed messages — the SDK buffers the single frame until
     ///   after signature verification, so no partial release occurs.
+    ///
+    /// # Preferred alternative
+    ///
+    /// If your threat model trusts encryptors as much as decryptors (i.e., you do
+    /// not need to guard against a malicious encryptor forging messages), consider
+    /// using a non-signing algorithm suite instead. Non-signing suites authenticate
+    /// each frame individually via AES-GCM, so streaming is always safe without
+    /// this flag — every frame is fully verified before its plaintext is released.
+    /// The ECDSA signature only adds value when you need to prove that the message
+    /// was produced by a holder of a specific private key, which is not required in
+    /// most symmetric-trust architectures.
     pub unsafe_release_plaintext_before_verify: bool,
     /// Default is `NetV400RetryPolicy::AllowRetry`
     pub net_v4_retry_policy: NetV400RetryPolicy,
