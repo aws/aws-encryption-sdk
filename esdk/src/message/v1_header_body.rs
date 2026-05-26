@@ -262,7 +262,7 @@ pub(crate) fn read_v1_header_body(
         encryption_context,
         encrypted_data_keys,
         content_type,
-        header_iv_length: u64::from(header_iv_length),
+        header_iv_length,
         frame_length,
     })
 }
