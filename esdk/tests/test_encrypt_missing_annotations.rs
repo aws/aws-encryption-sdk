@@ -26,11 +26,15 @@ async fn test_step_failure_must_halt_and_indicate_failure() {
     enc_input.commitment_policy = EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
     let result = encrypt(&enc_input).await;
     let err = result.expect_err("encrypt must halt and indicate failure when a step fails");
-    // Step 1 fails because of the commitment-policy check on a non-committing suite
-    let dbg = format!("{err:?}");
+    // Step 1 fails because of the commitment-policy check on a non-committing suite,
+    // which surfaces as a LegacyError wrapping the Dafny InvalidAlgorithmSuiteInfoOnEncrypt variant.
+    let ErrorKind::LegacyError(legacy) = &err.kind else {
+        panic!("expected LegacyError, got: {:?}", err.kind);
+    };
+    let inner = format!("{legacy:?}");
     assert!(
-        dbg.to_lowercase().contains("commitment") || dbg.to_lowercase().contains("committing"),
-        "error must indicate the commitment-policy failure, got: {dbg}"
+        inner.contains("InvalidAlgorithmSuiteInfoOnEncrypt"),
+        "expected InvalidAlgorithmSuiteInfoOnEncrypt, got: {inner}"
     );
 }
 
@@ -194,24 +198,27 @@ async fn test_message_bodies_not_equal_must_fail() {
         "successful round-trip proves output body equals calculated body"
     );
 
-    // Tamper with the body to verify decrypt fails (proving the integrity check works)
-    let ct = encrypt_default(pt).await.ciphertext;
+    // Tamper a byte inside the encrypted body (NOT the footer) and verify decrypt fails
+    // with an authentication error. Use a non-signing committing suite so the only
+    // integrity check is the per-frame AEAD tag — a signing suite would also fail at
+    // signature verify, masking which layer caught the tamper.
+    let ct = encrypt_without_signing_suite(pt).await;
+    let body_start = find_body_start(&ct, 4096).expect("body start");
+    // 18-byte plaintext at frame_length=4096 produces a single final frame:
+    //   ENDFRAME(4) + SeqNum(4) + IV(12) + ContentLen(4) + EncContent(18) + Tag(16)
+    // Tamper the first byte of EncContent.
+    let content_off = body_start + 4 + 4 + IV_LEN + 4;
     let mut tampered = ct.clone();
-    // Tamper with a byte in the body area (well past the header)
-    let tamper_offset = tampered.len() - 20;
-    tampered[tamper_offset] ^= 0xFF;
+    let original = tampered[content_off];
+    tampered[content_off] ^= 0xFF;
+    assert_ne!(tampered[content_off], original, "tamper must change the byte");
+
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&tampered, EncryptionContext::new(), keyring);
     let err = decrypt(&dec_input).await.expect_err("tampered body must cause decrypt to fail");
-    // Body tamper must fail an integrity check — either the per-frame AEAD tag or the message-level signature over header+body
-    let dbg = format!("{err:?}");
-    assert!(
-        matches!(err.kind, aws_esdk::ErrorKind::CryptographicError)
-            || dbg.to_lowercase().contains("authentic")
-            || dbg.to_lowercase().contains("tag")
-            || dbg.to_lowercase().contains("integrity")
-            || dbg.to_lowercase().contains("signature verification"),
-        "tampered body must produce an authentication/integrity error, got: {dbg}"
+    assert_eq!(
+        err.kind, ErrorKind::CryptographicError,
+        "tampered body must surface as a CryptographicError (AES-GCM authentication failure), got: {err:?}"
     );
 }
 

@@ -71,8 +71,15 @@ async fn test_decrypt_fails_with_wrong_keyring() {
     //= type=test
     //# If the Keyring is provided as the input, the client MUST construct a [default CMM](../framework/default-cmm.md) that uses this keyring,
     //# to obtain the [decryption materials](../framework/structures.md#decryption-materials) that is required for decryption.
+    let err = result.expect_err(
+        "decrypt must fail when default CMM cannot obtain decryption materials with wrong keyring",
+    );
+    let ErrorKind::LegacyError(legacy) = &err.kind else {
+        panic!("expected LegacyError, got: {:?}", err.kind);
+    };
+    let inner = format!("{legacy:?}");
     assert!(
-        result.is_err(),
-        "decrypt must fail when default CMM cannot obtain decryption materials with wrong keyring"
+        inner.contains("Raw AES Keyring was unable to decrypt"),
+        "expected raw-AES decrypt failure, got: {inner}"
     );
 }
