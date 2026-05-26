@@ -6,7 +6,7 @@ mod test_helpers;
 
 use aws_esdk::{
     decrypt_stream, encrypt, encrypt_stream, DecryptStreamInput, EncryptInput, EncryptStreamInput,
-    EncryptionContext, FrameLength,
+    EncryptionContext, ErrorKind, FrameLength,
 };
 use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use test_helpers::test_keyring;
@@ -111,10 +111,13 @@ async fn test_decrypt_stream_multi_frame_signed_rejected_by_default() {
 
     let mut ct_cursor = std::io::Cursor::new(&ct[..]);
     let mut output: Vec<u8> = Vec::new();
-    let result = decrypt_stream(&mut ct_cursor, &mut output, &dec_input).await;
+    let err = decrypt_stream(&mut ct_cursor, &mut output, &dec_input)
+        .await
+        .expect_err("multi-frame signed message must fail with default unsafe_release_plaintext_before_verify=false");
     assert!(
-        result.is_err(),
-        "multi-frame signed message must fail with default unsafe_release_plaintext_before_verify=false"
+        matches!(err.kind, ErrorKind::Esdk),
+        "expected ErrorKind::Esdk, got {:?}",
+        err.kind
     );
 
     //= spec/client-apis/streaming.md#release
