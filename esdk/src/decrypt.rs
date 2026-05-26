@@ -47,49 +47,49 @@ impl ProtectionNeeded {
 
 //= spec/client-apis/decrypt.md#encrypted-message
 //= type=implication
-//= reason=SafeRead accepts incremental reads, so callers can stream the encrypted message without buffering it entirely in memory
+//= reason=SafeRead processes bytes incrementally without buffering the full message
 //# This input MAY be [streamed](streaming.md) to this operation.
 //
 //= spec/client-apis/decrypt.md#encrypted-message
 //= type=implication
-//= reason=The implementation does not require holding the entire encrypted message in memory; it processes bytes incrementally via SafeRead
+//= reason=SafeRead processes incrementally; full message never held in memory
 //# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
 //# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
 //
 //= spec/client-apis/decrypt.md#plaintext
 //= type=implication
-//= reason=SafeWrite accepts incremental writes, so each decrypted frame is flushed to the output as it's produced without buffering the full plaintext
+//= reason=SafeWrite flushes each decrypted frame without buffering the full plaintext
 //# This operation MAY [stream](streaming.md) the plaintext as output.
 //
 //= spec/client-apis/decrypt.md#plaintext
-//= type=implication
-//= reason=The implementation streams plaintext output incrementally via SafeWrite, so it does not require buffering the full plaintext in memory
+//= type=exception
+//= reason=Does not require holding input plaintext in memory
 //# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
 //# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
 //
 //= spec/client-apis/decrypt.md#security-considerations
-//= reason=decrypt_stream returns DecryptStreamOutput only on Ok; any error aborts and the caller is responsible for not trusting plaintext released via SafeWrite. Signature verification (step 5) runs before Ok is returned, so successful completion implies the plaintext is signed-data-valid.
+//= reason=Ok is only returned after signature verification; streamed bytes are unverified until then
 //# If this operation is [streaming](streaming.md) output to the caller
 //# and is decrypting messages created with an algorithm suite including a signature algorithm,
 //# any released plaintext MUST NOT be considered signed data until this operation finishes
 //# successfully.
 //
 //= spec/client-apis/decrypt.md#verify-the-header
-//= reason=decrypt_stream only returns Ok after step_verify_signature succeeds; before that, any plaintext released to SafeWrite is unverified-signed-data by contract.
+//= reason=Ok is returned only after step_verify_signature succeeds
 //# However, if the streamed Decrypt operation is using an algorithm suite with a signature algorithm
 //# all released output MUST NOT be considered signed data until
 //# this operation successfully completes.
 //
 //= spec/client-apis/decrypt.md#security-considerations
-//= reason=This is a caller obligation documented in the operation's contract; the API returns Ok only when processing is complete and callers MUST NOT treat streamed bytes as final until then.
+//= reason=Caller obligation; Ok signals completion
 //# This means that callers that process such released plaintext MUST NOT consider any processing successful
 //# until this operation completes successfully.
 //
 //= spec/client-apis/decrypt.md#security-considerations
-//= reason=Caller obligation on failure; decrypt_stream returns Err on any failure and does not finalize the plaintext, so callers are contractually bound to discard released bytes.
+//= reason=Caller obligation; Err signals discard
 //# Additionally, if this operation fails, callers MUST discard the released plaintext and encryption context
 //# and MUST rollback any processing done due to the released plaintext or encryption context.
-/// Decrypt dyn Read into dyn Write
+/// Decrypt an encrypted message stream, writing plaintext to the output.
 ///
 /// # Errors
 /// Returns an error if input validation, header parsing, decryption, or signature verification fails.
@@ -102,10 +102,10 @@ pub async fn decrypt_stream(
 
     //= spec/client-apis/decrypt.md#behavior
     //= type=exception
-    //= reason=The configuration option i_accept_the_danger is provided. The ESDK interprets "fail immediately after parsing the header if a signed algorithm suite is used" as "fail when partial plaintext release would be unsafe": for single-frame signed messages the final frame is buffered until after signature verification, so no unsafe release occurs; for multi-frame signed messages, step_decrypt_body fails up front when i_accept_the_danger is false.
+    //= reason=unsafe_release_plaintext_before_verify gates multi-frame signed messages; single-frame is buffered until after verify
     //# - The ESDK MUST provide a configuration option that causes the decryption operation
     //# to fail immediately after parsing the header if a signed algorithm suite is used.
-    let safety = ProtectionNeeded::needs_protection(input.i_accept_the_danger);
+    let safety = ProtectionNeeded::needs_protection(input.unsafe_release_plaintext_before_verify);
 
     internal_decrypt(
         ciphertext,
@@ -123,16 +123,16 @@ pub async fn decrypt_stream(
 //= spec/client-apis/client.md#decrypt
 //# The AWS Encryption SDK Client MUST provide an [decrypt](./decrypt.md#input) function
 //# that adheres to [decrypt](./decrypt.md).
-/// Decrypt slice into Vec
+/// Decrypt an encrypted message, returning the plaintext and metadata.
 ///
 /// # Errors
 /// Returns an error if input validation, header parsing, decryption, or signature verification fails.
 pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
     input.validate()?;
-    let mut cursor: std::io::Cursor<&[u8]> = std::io::Cursor::new(input.ciphertext);
+    let mut cursor = std::io::Cursor::new(input.ciphertext);
 
     //= spec/client-apis/decrypt.md#behavior
-    //= reason=Plaintext is buffered into this local Vec; no bytes are released to the caller until the function returns Ok with the populated Vec.
+    //= reason=Plaintext is buffered locally; returned only on Ok
     //# If the input encrypted message is not being [streamed](streaming.md) to this operation,
     //# all output MUST NOT be released until after these steps complete successfully.
     let mut plaintext: Vec<u8> = Vec::with_capacity(input.ciphertext.len());
@@ -198,11 +198,11 @@ struct DecryptState {
 
 #[expect(clippy::too_many_arguments)]
 //= spec/client-apis/decrypt.md#behavior
-//= reason=Output is written to the `plaintext` SafeWrite only: (a) inside step_decrypt_body for intermediate frames (gated by ProtectionNeeded for signed multi-frame), and (b) for the last frame via serialize_functions::write_bytes after step_verify_signature succeeds. The returned DecryptStreamOutput is only produced on the Ok path at the end of the function.
+//= reason=Plaintext written to SafeWrite only after per-frame AEAD; last frame held until after signature verify
 //# - Output MUST NOT be released until otherwise indicated.
 //
 //= spec/client-apis/decrypt.md#behavior
-//= reason=Every step call propagates errors via `?`; any failure to parse, verify, or decrypt causes internal_decrypt to return Err, halting the operation and indicating failure to the caller.
+//= reason=Every step uses ?; any failure returns Err to the caller
 //# - If all bytes have been provided and this operation
 //# is unable to complete the above steps with the consumable encrypted message bytes,
 //# this operation MUST halt and indicate a failure to the caller.
@@ -240,7 +240,7 @@ async fn internal_decrypt(
     let _esdk_id = get_esdk_id(state.header.suite.id)?;
 
     //= spec/client-apis/decrypt.md#behavior
-    //= reason=Defense-in-depth: the spec gates signature verification on the algorithm suite's signature algorithm, so verification_key from the CMM must be present iff the suite has one. An invariant mismatch indicates a misbehaving CMM; fail closed rather than silently skip verification.
+    //= reason=verification_key presence must match suite's signature algorithm; mismatch means misbehaving CMM
     //# - If the message header contains an algorithm suite including a
     //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
     //# the Decrypt operation MUST perform this step.
@@ -255,7 +255,7 @@ async fn internal_decrypt(
     }
 
     //= spec/client-apis/decrypt.md#v2-header-deserialization
-    //= reason=The header's parsed info is kept in the DecryptState local (not released) until step_verify_header returns Ok below; only after that can the caller observe parsed values via the returned DecryptStreamOutput.
+    //= reason=Parsed header kept in local state until step_verify_header succeeds
     //# Until the [header is verified](#verify-the-header), this operation MUST NOT
     //# release any parsed information from the header.
 
@@ -282,7 +282,7 @@ async fn internal_decrypt(
 
     //= spec/client-apis/decrypt.md#behavior
     //= type=exception
-    //= reason=SafeRead is std::io::Read and does not expose an "all bytes provided" signal for unbounded streams. For bounded ciphertext, the non-streaming decrypt() wrapper enforces this by comparing cursor position to input length; for truly streamed inputs, the caller is responsible for not supplying extra bytes. Detecting trailing bytes here would require an extra read that blocks on unbounded streams.
+    //= reason=SafeRead has no "end of stream" signal; non-streaming wrapper checks cursor position instead
     //# - If this operation successfully completes the above steps
     //# but there are consumable bytes which are intended to be decrypted,
     //# this operation MUST fail.
@@ -297,11 +297,11 @@ async fn internal_decrypt(
     }
 
     //= spec/client-apis/streaming.md#outputs
-    //= reason=All bytes have been written to the SafeWrite before Ok is returned; success is only indicated after output is complete
+    //= reason=All bytes written to SafeWrite before Ok is returned
     //# Operations MUST NOT indicate completion or success until an end to the output has been indicated.
     //
     //= spec/client-apis/decrypt.md#verify-the-header
-    //= reason=The parsed encryption context and algorithm suite ID are released here via the returned DecryptStreamOutput, which happens only after step_verify_header succeeded earlier in this function.
+    //= reason=Encryption context and suite released only after step_verify_header succeeded
     //# - A streamed Decrypt operation SHOULD release the parsed [encryption context](#encryption-context),
     //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id),
     //# and [other header information](#parsed-header)
@@ -324,7 +324,7 @@ fn step_parse_header(
         header::read_header_body(ciphertext, max_encrypted_data_keys, &mut raw_header)?;
 
     //= spec/client-apis/decrypt.md#verify-the-header
-    //= reason=sig_digest is fed the serialized header bytes immediately after deserialization, so the raw header does not need to remain in memory for signature verification
+    //= reason=sig_digest is fed header bytes immediately; raw header not retained for later
     //# - The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
     //# such that the serialized header isn't required to remain in memory to [verify the signature](#verify-the-signature).
     let mut sig_digest = DigestWriter::from_old_ecdsa(header_body.algorithm_suite().signature)?;
@@ -516,7 +516,6 @@ fn step_verify_header(
         &mut [],
     );
 
-    // TODO Post-#619: Add to the ESDK Specification the following:
     // ESDK-NET v4.0.0 Header Auth Catch
     if maybe_header_auth.is_err() && net_v4_retry_policy == NetV400RetryPolicy::AllowRetry {
         let derived_data_keys = key_derivation::derive_keys(
@@ -655,7 +654,6 @@ fn step_verify_signature(ciphertext: &mut dyn SafeRead, state: &DecryptState) ->
 // the encryption context in the decryption materials filtered
 // to only contain key value pairs listed
 // in the decryption material's required encryption context keys.
-// TODO Post-#619: Duvet this section
 fn build_encryption_context_to_only_authenticate(
     dec_mat: &aws_mpl_legacy::DecryptionMaterials,
 ) -> EncryptionContext {
