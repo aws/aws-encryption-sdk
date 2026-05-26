@@ -150,6 +150,7 @@ async fn test_obtain_materials_from_cmm() {
     //= type=test
     //# This operation MUST obtain this set of [encryption materials](../framework/structures.md#encryption-materials)
     //# by calling [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) on a [CMM](../framework/cmm-interface.md).
+    //
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //# To construct the [encrypted message](#encrypted-message),
@@ -468,6 +469,7 @@ async fn test_output_includes_encrypted_message() {
     //= spec/client-apis/encrypt.md#output
     //= type=test
     //# - Encrypt operation output MUST include an [encrypted message](#encrypted-message) value.
+    //
     //= spec/client-apis/encrypt.md#encrypted-message
     //= type=test
     //# This MUST be a sequence of bytes
@@ -502,6 +504,7 @@ async fn test_output_includes_algorithm_suite() {
     //= spec/client-apis/encrypt.md#output
     //= type=test
     //# - Encrypt operation output MUST include an [algorithm suite](#algorithm-suite) value.
+    //
     //= spec/client-apis/encrypt.md#algorithm-suite-1
     //= type=test
     //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
