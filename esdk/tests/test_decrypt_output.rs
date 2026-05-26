@@ -100,10 +100,8 @@ async fn test_decrypt_no_unauthenticated_data_released() {
 
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "decrypt must fail when ciphertext is tampered — no unauthenticated data released"
-    );
+    let err = result.expect_err("decrypt must fail when ciphertext is tampered — no unauthenticated data released");
+    assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -128,7 +126,7 @@ async fn test_streaming_signed_plaintext_not_signed_until_complete() {
     let mut output = Vec::new();
     let mut stream_input =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    stream_input.i_accept_the_danger = true;
+    stream_input.unsafe_release_plaintext_before_verify = true;
     decrypt_stream(&mut cursor, &mut output, &stream_input)
         .await
         .unwrap();
@@ -155,7 +153,7 @@ async fn test_streaming_callers_must_not_consider_successful_until_complete() {
     let mut output = Vec::new();
     let mut stream_input =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    stream_input.i_accept_the_danger = true;
+    stream_input.unsafe_release_plaintext_before_verify = true;
     let result = decrypt_stream(&mut cursor, &mut output, &stream_input).await;
     assert!(
         result.is_ok(),
@@ -189,10 +187,8 @@ async fn test_streaming_callers_must_discard_on_failure() {
     let mut output = Vec::new();
     let mut stream_input =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    stream_input.i_accept_the_danger = true;
+    stream_input.unsafe_release_plaintext_before_verify = true;
     let result = decrypt_stream(&mut cursor, &mut output, &stream_input).await;
-    assert!(
-        result.is_err(),
-        "decrypt_stream must return Err on tampered signature — callers must discard output"
-    );
+    let err = result.expect_err("decrypt_stream must return Err on tampered signature — callers must discard output");
+    assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
 }

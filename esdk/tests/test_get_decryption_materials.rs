@@ -124,10 +124,12 @@ async fn test_decrypt_fails_with_wrong_keyring() {
         .unwrap();
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), wrong_keyring);
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "decrypt must fail when CMM cannot obtain decryption materials"
-    );
+    let err = result.expect_err("decrypt must fail when CMM cannot obtain decryption materials");
+    let ErrorKind::LegacyError(legacy) = &err.kind else {
+        panic!("expected LegacyError, got: {:?}", err.kind);
+    };
+    let inner = format!("{legacy:?}");
+    assert!(inner.contains("CollectionOfErrors"), "expected CollectionOfErrors, got: {inner}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -151,10 +153,12 @@ async fn test_pre_cmm_commitment_policy_check() {
     let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     dec_input.commitment_policy = EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "decrypt must fail when parsed algorithm suite is not supported by commitment policy"
-    );
+    let err = result.expect_err("decrypt must fail when parsed algorithm suite is not supported by commitment policy");
+    let ErrorKind::LegacyError(legacy) = &err.kind else {
+        panic!("expected LegacyError, got: {:?}", err.kind);
+    };
+    let inner = format!("{legacy:?}");
+    assert!(inner.contains("InvalidAlgorithmSuiteInfoOnDecrypt"), "expected InvalidAlgorithmSuiteInfoOnDecrypt, got: {inner}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -321,8 +325,6 @@ async fn test_unsupported_esdk_algorithm_suite_yields_error() {
 
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "decrypt must fail when algorithm suite ID is not a supported ESDK suite"
-    );
+    let err = result.expect_err("decrypt must fail when algorithm suite ID is not a supported ESDK suite");
+    assert_eq!(err.kind, ErrorKind::ValidationError, "got: {err:?}");
 }

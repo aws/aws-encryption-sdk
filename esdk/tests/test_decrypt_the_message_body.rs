@@ -151,10 +151,8 @@ async fn test_decrypt_final_frame_content_length_validation() {
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "decrypt must fail when final frame content length exceeds frame length"
-    );
+    let err = result.expect_err("decrypt must fail when final frame content length exceeds frame length");
+    assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -241,10 +239,8 @@ async fn test_decrypt_fails_on_tampered_auth_tag() {
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "tampered auth tag must cause immediate decryption failure"
-    );
+    let err = result.expect_err("tampered auth tag must cause immediate decryption failure");
+    assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -263,10 +259,8 @@ async fn test_decrypt_no_unauthenticated_plaintext_released() {
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "tampered ciphertext must produce error, not partial plaintext"
-    );
+    let err = result.expect_err("tampered ciphertext must produce error, not partial plaintext");
+    assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -567,10 +561,8 @@ async fn test_decrypt_final_frame_held_until_signature_verification() {
     ct[last] ^= 0xFF;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "tampered signature must cause decrypt failure, proving final frame was held back"
-    );
+    let err = result.expect_err("tampered signature must cause decrypt failure, proving final frame was held back");
+    assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -685,10 +677,8 @@ async fn test_unframed_decrypt_fails_on_tampered_auth_tag() {
     let last = ct.len() - 1;
     ct[last] ^= 0xFF;
     let result = try_decrypt_external_nonframed(Version::V2, &ct).await;
-    assert!(
-        result.is_err(),
-        "tampered nonframed auth tag must cause immediate decryption failure"
-    );
+    let err = result.expect_err("tampered nonframed auth tag must cause immediate decryption failure");
+    assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]

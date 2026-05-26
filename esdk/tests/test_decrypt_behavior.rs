@@ -71,7 +71,7 @@ async fn test_streaming_output_not_released_until_indicated() {
     let mut output = Vec::new();
     let mut stream_input =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    stream_input.i_accept_the_danger = true;
+    stream_input.unsafe_release_plaintext_before_verify = true;
     decrypt_stream(&mut cursor, &mut output, &stream_input)
         .await
         .unwrap();
@@ -96,10 +96,8 @@ async fn test_decrypt_halts_on_incomplete_message() {
     let truncated = &ct[..ct.len() * 3 / 5];
     let dec_input = DecryptInput::with_legacy_keyring(truncated, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "decrypt must fail when ciphertext is truncated"
-    );
+    let err = result.expect_err("decrypt must fail when ciphertext is truncated");
+    assert_eq!(err.kind, ErrorKind::SerializationError, "truncated message must be SerializationError, got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -120,10 +118,8 @@ async fn test_decrypt_fails_with_trailing_bytes_after_message() {
 
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "decrypt must fail when there are trailing bytes after the message"
-    );
+    let err = result.expect_err("decrypt must fail when there are trailing bytes after the message");
+    assert_eq!(err.kind, ErrorKind::Esdk, "trailing bytes must produce Esdk error, got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -143,30 +139,28 @@ async fn test_streaming_fails_for_multi_frame_signed_without_override() {
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // decrypt_stream with i_accept_the_danger=false (default) must fail
+    // decrypt_stream with unsafe_release_plaintext_before_verify=false (default) must fail
     // for multi-frame signed messages
     let mut cursor = std::io::Cursor::new(ct.as_slice());
     let mut output = Vec::new();
     let stream_input =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring.clone());
-    // i_accept_the_danger defaults to false
-    assert!(!stream_input.i_accept_the_danger);
+    // unsafe_release_plaintext_before_verify defaults to false
+    assert!(!stream_input.unsafe_release_plaintext_before_verify);
     let result = decrypt_stream(&mut cursor, &mut output, &stream_input).await;
-    assert!(
-        result.is_err(),
-        "multi-frame signed message must fail with default i_accept_the_danger=false"
-    );
+    let err = result.expect_err("multi-frame signed message must fail with default unsafe_release_plaintext_before_verify=false");
+    assert_eq!(err.kind, ErrorKind::Esdk, "multi-frame signed without override must produce Esdk error, got: {err:?}");
 
-    // Same message succeeds when i_accept_the_danger=true
+    // Same message succeeds when unsafe_release_plaintext_before_verify=true
     let mut cursor2 = std::io::Cursor::new(ct.as_slice());
     let mut output2 = Vec::new();
     let mut stream_input2 =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    stream_input2.i_accept_the_danger = true;
+    stream_input2.unsafe_release_plaintext_before_verify = true;
     let result2 = decrypt_stream(&mut cursor2, &mut output2, &stream_input2).await;
     assert!(
         result2.is_ok(),
-        "multi-frame signed message must succeed with i_accept_the_danger=true"
+        "multi-frame signed message must succeed with unsafe_release_plaintext_before_verify=true"
     );
     assert_eq!(output2, plaintext);
 }
@@ -195,8 +189,6 @@ async fn test_signing_suite_must_perform_signature_step() {
 
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "decrypt must fail when signature is tampered — proves signature step was performed"
-    );
+    let err = result.expect_err("decrypt must fail when signature is tampered — proves signature step was performed");
+    assert_eq!(err.kind, ErrorKind::Esdk, "tampered signature must produce Esdk error, got: {err:?}");
 }

@@ -106,7 +106,7 @@ async fn test_streamed_release_parsed_header_after_verification() {
     let mut output = Vec::new();
     let mut stream_input =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    stream_input.i_accept_the_danger = true;
+    stream_input.unsafe_release_plaintext_before_verify = true;
     let result = decrypt_stream(&mut cursor, &mut output, &stream_input)
         .await
         .unwrap();
@@ -200,7 +200,7 @@ async fn test_streamed_header_fed_to_signature_algorithm() {
     let mut output = Vec::new();
     let mut stream_input =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    stream_input.i_accept_the_danger = true;
+    stream_input.unsafe_release_plaintext_before_verify = true;
     decrypt_stream(&mut cursor, &mut output, &stream_input)
         .await
         .unwrap();
@@ -233,7 +233,7 @@ async fn test_footer_wait_for_bytes() {
     let mut output = Vec::new();
     let mut stream_input =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    stream_input.i_accept_the_danger = true;
+    stream_input.unsafe_release_plaintext_before_verify = true;
     decrypt_stream(&mut cursor, &mut output, &stream_input)
         .await
         .unwrap();
@@ -267,8 +267,6 @@ async fn test_footer_wait_truncated_message_fails() {
 
     let dec_input = DecryptInput::with_legacy_keyring(truncated, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "decrypt must fail when footer is truncated — proves operation waited for bytes that never came"
-    );
+    let err = result.expect_err("decrypt must fail when footer is truncated — proves operation waited for bytes that never came");
+    assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }

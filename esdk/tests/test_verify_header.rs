@@ -102,10 +102,8 @@ async fn test_verify_header_fails_on_tampered_header() {
     //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# If this tag verification fails, this operation MUST immediately halt and fail.
-    assert!(
-        result.is_err(),
-        "decrypt must fail when header bytes are tampered (tag verification failure)"
-    );
+    let err = result.expect_err("decrypt must fail when header bytes are tampered (tag verification failure)");
+    assert_eq!(err.kind, ErrorKind::ValidationError, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -175,15 +173,13 @@ async fn test_streamed_signed_output_not_signed_until_complete() {
     let mut output = Vec::new();
     let mut stream_input =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    stream_input.i_accept_the_danger = true;
+    stream_input.unsafe_release_plaintext_before_verify = true;
     //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# However, if the streamed Decrypt operation is using an algorithm suite with a signature algorithm
     //# all released output MUST NOT be considered signed data until
     //# this operation successfully completes.
     let result = decrypt_stream(&mut cursor, &mut output, &stream_input).await;
-    assert!(
-        result.is_err(),
-        "streaming decrypt must fail on tampered signature — output was not signed data"
-    );
+    let err = result.expect_err("streaming decrypt must fail on tampered signature — output was not signed data");
+    assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
 }

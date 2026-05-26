@@ -3,6 +3,7 @@
 
 //! Tests for spec/client-apis/decrypt.md#verify-the-signature
 
+mod fixtures;
 mod test_helpers;
 
 use aws_esdk::*;

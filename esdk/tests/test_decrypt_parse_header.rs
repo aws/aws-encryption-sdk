@@ -169,10 +169,8 @@ async fn test_unsupported_version_rejected() {
 
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "decrypt must fail when version byte is unsupported"
-    );
+    let err = result.expect_err("decrypt must fail when version byte is unsupported");
+    assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -223,10 +221,8 @@ async fn test_unsupported_content_type_v1_rejected() {
     let mut dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "decrypt must fail when content type byte is unsupported"
-    );
+    let err = result.expect_err("decrypt must fail when content type byte is unsupported");
+    assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -274,10 +270,8 @@ async fn test_unsupported_content_type_v2_rejected() {
 
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "decrypt must fail when V2 content type byte is unsupported"
-    );
+    let err = result.expect_err("decrypt must fail when V2 content type byte is unsupported");
+    assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -301,10 +295,8 @@ async fn test_unsupported_type_rejected() {
     let mut dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "decrypt must fail when message type byte is unsupported"
-    );
+    let err = result.expect_err("decrypt must fail when message type byte is unsupported");
+    assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -326,10 +318,8 @@ async fn test_trailing_bytes_after_message_rejected() {
 
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "decrypt must fail when there are trailing bytes after the message"
-    );
+    let err = result.expect_err("decrypt must fail when there are trailing bytes after the message");
+    assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -386,7 +376,7 @@ async fn test_parse_header_sequential_processing() {
     let mut output = Vec::new();
     let mut stream_input =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    stream_input.i_accept_the_danger = true;
+    stream_input.unsafe_release_plaintext_before_verify = true;
     decrypt_stream(&mut cursor, &mut output, &stream_input)
         .await
         .unwrap();
@@ -435,10 +425,8 @@ async fn test_max_encrypted_data_keys_enforcement() {
         DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), multi_keyring);
     dec_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(1).unwrap());
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "decrypt must fail when EDK count exceeds max_encrypted_data_keys"
-    );
+    let err = result.expect_err("decrypt must fail when EDK count exceeds max_encrypted_data_keys");
+    assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -461,8 +449,6 @@ async fn test_no_header_info_released_before_verification() {
 
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     let result = decrypt(&dec_input).await;
-    assert!(
-        result.is_err(),
-        "decrypt must fail entirely when header verification fails — no partial header info released"
-    );
+    let err = result.expect_err("decrypt must fail entirely when header verification fails — no partial header info released");
+    assert_eq!(err.kind, ErrorKind::ValidationError, "got: {err:?}");
 }
