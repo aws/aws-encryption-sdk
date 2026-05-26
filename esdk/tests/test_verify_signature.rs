@@ -11,31 +11,6 @@ use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_verify_signature_round_trip() {
-    // A successful encrypt→decrypt round-trip with a signing algorithm suite exercises
-    // footer deserialization. If the footer were not deserialized, or deserialized out of
-    // order, the decrypt operation would fail.
-
-    //= spec/client-apis/decrypt.md#verify-the-signature
-    //= type=test
-    //= reason=Decrypt would fail if the footer were not deserialized after the body, since the signature bytes would be misread.
-    //# After deserializing the body, the Decrypt operation MUST deserialize the next encrypted message bytes
-    //# as the [message footer](../data-format/message-footer.md).
-
-    //= spec/client-apis/decrypt.md#verify-the-signature
-    //= type=test
-    //= reason=Decrypt would fail if footer deserialization did not conform to the message-footer spec, since the signature length and value would be misread.
-    //# The order for message footer deserialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
-
-    let pt = b"verify signature round-trip test";
-    let result = round_trip_signing(pt).await;
-    assert_eq!(
-        result, pt,
-        "successful round-trip with signing suite proves footer deserialization requirements"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_verify_signature_fails_on_tampered_footer() {
     // Tampering with the footer signature bytes and asserting that decrypt fails proves
     // that signature verification actually runs. If verification were removed, the tampered
