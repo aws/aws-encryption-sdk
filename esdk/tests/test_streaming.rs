@@ -21,12 +21,12 @@ async fn test_streaming_encrypt_decrypt_round_trip() {
     //
     //= spec/client-apis/encrypt.md#plaintext
     //= type=test
-    //= reason=encrypt_stream reads plaintext from a SafeRead, proving plaintext MAY be streamed to encrypt
+    //= reason=the round-trip with a Cursor input source succeeds, proving plaintext can be streamed to encrypt
     //# This input MAY be [streamed](streaming.md) to this operation.
     //
     //= spec/client-apis/encrypt.md#encrypted-message
     //= type=test
-    //= reason=encrypt_stream writes the encrypted message to a SafeWrite, proving the message MAY be streamed
+    //= reason=the round-trip with a Vec<u8> ciphertext sink succeeds, proving the encrypted message can be streamed
     //# This operation MAY [stream](streaming.md) the encrypted message.
     //
     //= spec/client-apis/streaming.md#outputs
@@ -40,22 +40,9 @@ async fn test_streaming_encrypt_decrypt_round_trip() {
     let ec = EncryptionContext::new();
     let enc_input = EncryptStreamInput::with_legacy_keyring(ec.clone(), keyring.clone());
 
-    //= spec/client-apis/streaming.md#inputs
-    //= type=test
-    //= reason=the Cursor implements Read; encrypt_stream reads bytes from it incrementally, making them consumable
-    //# - There MUST be a mechanism for input bytes to become consumable.
-    //
-    //= spec/client-apis/streaming.md#inputs
-    //= type=test
-    //= reason=the Cursor returns Ok(0) at EOF; encrypt_stream completes successfully, proving the EOF mechanism works
-    //# - There MUST be a mechanism to indicate that there are no more input bytes.
     let mut pt_cursor = std::io::Cursor::new(&plaintext[..]);
     let mut ciphertext: Vec<u8> = Vec::new();
 
-    //= spec/client-apis/streaming.md#inputs
-    //= type=test
-    //= reason=encrypt_stream accepts a SafeRead (Cursor) as input, proving the operation accepts input within a streaming framework
-    //# In order to support streaming, the operation MUST accept some input within a streaming framework.
     encrypt_stream(&mut pt_cursor, &mut ciphertext, &enc_input)
         .await
         .unwrap();
@@ -67,30 +54,13 @@ async fn test_streaming_encrypt_decrypt_round_trip() {
     let mut ct_cursor = std::io::Cursor::new(&ciphertext[..]);
     let mut decrypted: Vec<u8> = Vec::new();
 
-    //= spec/client-apis/streaming.md#outputs
-    //= type=test
-    //= reason=the Vec<u8> receives bytes via SafeWrite::write(), which is the mechanism for releasing output bytes
-    //# - There MUST be a mechanism for output bytes to be released.
-    //
-    //= spec/client-apis/streaming.md#outputs
-    //= type=test
-    //= reason=decrypt_stream writes output to a Vec<u8> via SafeWrite; the non-empty result proves streaming output
-    //# In order to support streaming, the operation MUST produce some output within a streaming framework.
     decrypt_stream(&mut ct_cursor, &mut decrypted, &dec_input)
         .await
         .unwrap();
 
-    //= spec/client-apis/streaming.md#outputs
-    //= type=test
-    //= reason=decrypt_stream's Ok return means all plaintext is in the output, proving end-of-output signaling
-    //# - There MUST be a mechanism to indicate that the entire output has been released.
     assert_eq!(decrypted, plaintext, "round-trip plaintext must match");
 }
 
-//= spec/client-apis/streaming.md#release
-//= type=test
-//= reason=decrypt_stream rejects the multi-frame signed payload before any plaintext is written, honoring "the decrypt operation specifies when not to release output bytes"
-//# The decrypt and encrypt operations specify when to release output bytes and when not to release output bytes.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_stream_multi_frame_signed_rejected_by_default() {
     // Multi-frame signed payload: 30 bytes / frame_length=10 → 3 frames (2 regular + final).
@@ -119,6 +89,11 @@ async fn test_decrypt_stream_multi_frame_signed_rejected_by_default() {
         result.is_err(),
         "multi-frame signed message must fail with default unsafe_release_plaintext_before_verify=false"
     );
+
+    //= spec/client-apis/streaming.md#release
+    //= type=test
+    //= reason=decrypt_stream rejects the multi-frame signed payload before any plaintext is written, honoring "specify when not to release"
+    //# The decrypt and encrypt operations specify when to release output bytes and when not to release output bytes.
     assert!(
         output.is_empty(),
         "no plaintext must be released before signature verification"

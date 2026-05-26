@@ -56,7 +56,8 @@ impl Eq for MaterialSource {}
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// The length of one frame, must be non-zero, defaults to 4096.
 //= spec/data-format/message-body.md#framed-data
-//= reason=Max value of a U32 is 2^32 - 1; enforced by construction
+//= type=implication
+//= reason=NonZeroU32 max value is u32::MAX = 2^32 - 1; enforced by the type system
 //# - The total bytes allowed in a single frame MUST be less than or equal to `2^32 - 1`.
 #[expect(clippy::exhaustive_structs)]
 pub struct FrameLength(pub std::num::NonZeroU32);
@@ -118,14 +119,18 @@ pub fn mpl() -> aws_mpl_legacy::dafny::client::Client {
 /// Auto-implemented for any type that is `Write + Send + Sync + Debug`
 /// (e.g. `Vec<u8>`, `std::fs::File`).
 //= spec/client-apis/streaming.md#outputs
+//= type=implication
+//= reason=encrypt_stream/decrypt_stream take a SafeWrite sink, so output is produced through the streaming trait
 //# In order to support streaming, the operation MUST produce some output within a streaming framework.
 //
 //= spec/client-apis/streaming.md#outputs
-//= reason=SafeWrite wraps std::io::Write; write() pushes bytes to the consumer immediately
+//= type=implication
+//= reason=SafeWrite wraps std::io::Write; write() is the output release mechanism
 //# - There MUST be a mechanism for output bytes to be released.
 pub trait SafeWrite: std::io::Write + Send + Sync + std::fmt::Debug {}
 //= spec/client-apis/streaming.md#outputs
-//= reason=SafeWrite wraps std::io::Write; the operation returning Ok(()) signals that all output has been written
+//= type=implication
+//= reason=encrypt_stream/decrypt_stream return Result; Ok(()) is the end-of-output indicator
 //# - There MUST be a mechanism to indicate that the entire output has been released.
 impl<T: std::io::Write + Send + Sync + std::fmt::Debug> SafeWrite for T {}
 
@@ -134,10 +139,13 @@ impl<T: std::io::Write + Send + Sync + std::fmt::Debug> SafeWrite for T {}
 /// Auto-implemented for any type that is `Read + Send + Sync + Debug`
 /// (e.g. `std::io::Cursor`, `std::fs::File`).
 //= spec/client-apis/streaming.md#inputs
+//= type=implication
+//= reason=encrypt_stream/decrypt_stream take a SafeRead source, so input is accepted through the streaming trait
 //# In order to support streaming, the operation MUST accept some input within a streaming framework.
 //
 //= spec/client-apis/streaming.md#inputs
-//= reason=SafeRead wraps std::io::Read; read() returns bytes as they become available
+//= type=implication
+//= reason=SafeRead wraps std::io::Read; read() is the input consumption mechanism
 //# - There MUST be a mechanism for input bytes to become consumable.
 pub trait SafeRead: std::io::Read + Send + Sync + std::fmt::Debug {}
 //= spec/client-apis/streaming.md#overview
@@ -159,7 +167,8 @@ pub trait SafeRead: std::io::Read + Send + Sync + std::fmt::Debug {}
 //# that implementation SHOULD NOT provide an API that allows this input to be streamed.
 //
 //= spec/client-apis/streaming.md#inputs
-//= reason=SafeRead wraps std::io::Read; read() returning Ok(0) signals EOF
+//= type=implication
+//= reason=SafeRead wraps std::io::Read; read() returning Ok(0) is the EOF indicator
 //# - There MUST be a mechanism to indicate that there are no more input bytes.
 impl<T: std::io::Read + Send + Sync + std::fmt::Debug> SafeRead for T {}
 
@@ -226,6 +235,8 @@ pub struct DecryptOutput {
     pub encryption_context: EncryptionContext,
     /// Decrypted plaintext data
     //= spec/client-apis/decrypt.md#plaintext
+    //= type=implication
+    //= reason=Vec<u8> is a sequence of bytes by definition
     //# This MUST be a sequence of bytes.
     pub plaintext: Vec<u8>,
 }
@@ -310,10 +321,13 @@ pub struct EncryptInput<'a> {
     pub frame_length: FrameLength,
     /// The source of cryptographic materials
     //= spec/client-apis/encrypt.md#input
+    //= type=implication
+    //= reason=source is Option<MaterialSource>, making the CMM optional by construction
     //# - Encrypt operation input MUST accept an optional [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
     //
     //= spec/client-apis/encrypt.md#input
-    //= reason=source is Option<MaterialSource>, making CMM/keyring optional by construction
+    //= type=implication
+    //= reason=source is Option<MaterialSource>, making the keyring optional by construction
     //# - Encrypt operation input MUST accept an optional [keyring](../framework/keyring-interface.md) argument.
     pub source: Option<MaterialSource>,
     /// data to be encrypted
@@ -334,18 +348,23 @@ pub struct EncryptInput<'a> {
     pub max_encrypted_data_keys: Option<NonZeroUsize>,
     /// Default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
     //= spec/client-apis/client.md#commitment-policy
-    //= reason=commitment_policy field type is EsdkCommitmentPolicy from the Material Providers Library
+    //= type=implication
+    //= reason=commitment_policy field type is EsdkCommitmentPolicy from aws_mpl_legacy
     //# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
     //
     //= spec/client-apis/client.md#initialization
-    //= reason=EsdkCommitmentPolicy's Default impl returns RequireEncryptRequireDecrypt; EncryptInput uses #[derive(Default)]
+    //= type=implication
+    //= reason=EsdkCommitmentPolicy::default() returns RequireEncryptRequireDecrypt; EncryptInput uses #[derive(Default)]
     //# If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
     //
     //= spec/client-apis/client.md#initialization
-    //= reason=once the struct is consumed by encrypt()/decrypt(), the caller cannot mutate the policy
+    //= type=implication
+    //= reason=encrypt()/decrypt() take &EncryptInput/&DecryptInput; the policy cannot be mutated through a shared reference
     //# Once a [commitment policy](#commitment-policy) has been set it SHOULD be immutable.
     //
     //= spec/client-apis/client.md#initialization
+    //= type=implication
+    //= reason=commitment_policy is a public field on EncryptInput and DecryptInput, so callers can set it
     //# - On client initialization,
     //# the caller MUST have the option to provide a [commitment policy](#commitment-policy).
     pub commitment_policy: EsdkCommitmentPolicy,
