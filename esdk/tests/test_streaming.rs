@@ -5,8 +5,10 @@ mod fixtures;
 mod test_helpers;
 
 use aws_esdk::{
-    decrypt_stream, encrypt_stream, DecryptStreamInput, EncryptStreamInput, EncryptionContext,
+    decrypt_stream, encrypt, encrypt_stream, DecryptStreamInput, EncryptInput, EncryptStreamInput,
+    EncryptionContext, FrameLength,
 };
+use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use test_helpers::test_keyring;
 
 #[tokio::test(flavor = "multi_thread")]
@@ -85,106 +87,67 @@ async fn test_streaming_encrypt_decrypt_round_trip() {
     assert_eq!(decrypted, plaintext, "round-trip plaintext must match");
 }
 
-//= spec/client-apis/streaming.md#overview
+//= spec/client-apis/streaming.md#release
 //= type=test
-//= reason=PatternReader streams plaintext on demand; VerifyingWriter discards after checking; full payload never in memory
-//# APIs that support streaming of the encrypt or decrypt operation SHOULD allow customers
-//# to be able to process arbitrarily large inputs with a finite amount of working memory.
-//
-//= spec/client-apis/streaming.md#overview
-//= type=test
-//= reason=Neither PatternReader nor VerifyingWriter buffers the full plaintext, so a streaming API is appropriate
-//# If an implementation requires holding the entire input in memory in order to perform the operation,
-//# that implementation SHOULD NOT provide an API that allows the caller to stream the operation.
-//
-//= spec/client-apis/encrypt.md#plaintext
-//= type=test
-//= reason=PatternReader generates plaintext on demand; encrypt_stream succeeds without materializing the full plaintext
-//# If an implementation requires holding the input entire plaintext in memory in order to perform this operation,
-//# that implementation SHOULD NOT provide an API that allows this input to be streamed.
+//= reason=decrypt_stream rejects the multi-frame signed payload before any plaintext is written, honoring "the decrypt operation specifies when not to release output bytes"
+//# The decrypt and encrypt operations specify when to release output bytes and when not to release output bytes.
 #[tokio::test(flavor = "multi_thread")]
-async fn test_streaming_finite_working_memory() {
-    /// `Read` source that yields `remaining` bytes equal to `byte` on demand.
-    /// Holds two `usize`-sized fields regardless of total byte count, so the
-    /// plaintext is never materialized as a buffer.
-    #[derive(Debug)]
-    struct PatternReader {
-        remaining: usize,
-        byte: u8,
-    }
-    impl std::io::Read for PatternReader {
-        fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-            let n = std::cmp::min(buf.len(), self.remaining);
-            buf[..n].fill(self.byte);
-            self.remaining -= n;
-            Ok(n)
-        }
-    }
-
-    /// `Write` sink that counts bytes written and verifies every byte equals
-    /// `expected`. Holds three small fields regardless of total byte count, so
-    /// the decrypted plaintext is never buffered.
-    #[derive(Debug)]
-    struct VerifyingWriter {
-        count: usize,
-        expected: u8,
-        all_match: bool,
-    }
-    impl std::io::Write for VerifyingWriter {
-        fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-            if !buf.iter().all(|&b| b == self.expected) {
-                self.all_match = false;
-            }
-            self.count += buf.len();
-            Ok(buf.len())
-        }
-        fn flush(&mut self) -> std::io::Result<()> {
-            Ok(())
-        }
-    }
-
+async fn test_decrypt_stream_multi_frame_signed_rejected_by_default() {
+    // Multi-frame signed payload: 30 bytes / frame_length=10 → 3 frames (2 regular + final).
+    // With unsafe_release_plaintext_before_verify=false (default), decrypt_stream must
+    // reject this up front rather than release plaintext before signature verification.
     let keyring = test_keyring().await;
-    // 10_000 bytes is larger than the default 4096-byte frame, so this
-    // exercises multi-frame handling on top of the streaming I/O.
-    let total_bytes: usize = 10_000;
-    let pattern = 0xABu8;
+    let plaintext = vec![0xAAu8; 30];
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(&plaintext, EncryptionContext::new(), keyring.clone());
+    enc_input.frame_length = FrameLength::new(10).unwrap();
+    enc_input.algorithm_suite_id =
+        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
+    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // Encrypt: plaintext source streams bytes on demand. The full plaintext
-    // is never materialized as a `Vec`. The ciphertext must be buffered so we
-    // can re-feed it to `decrypt_stream` below; this is unavoidable in a
-    // single-threaded round-trip but the buffer holds ciphertext, not plaintext.
-    let mut pt_reader = PatternReader {
-        remaining: total_bytes,
-        byte: pattern,
-    };
-    let ec = EncryptionContext::new();
-    let enc_input = EncryptStreamInput::with_legacy_keyring(ec.clone(), keyring.clone());
-    let mut ciphertext: Vec<u8> = Vec::new();
-    encrypt_stream(&mut pt_reader, &mut ciphertext, &enc_input)
-        .await
-        .unwrap();
+    let dec_input =
+        DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
+    assert!(
+        !dec_input.unsafe_release_plaintext_before_verify,
+        "unsafe_release_plaintext_before_verify must default to false"
+    );
 
-    // Decrypt: plaintext sink counts and verifies bytes without buffering.
-    // Multi-frame payloads with signed algorithm suites stream data before
-    // signature verification completes; acknowledge this risk for the test.
-    let mut dec_input = DecryptStreamInput::with_legacy_keyring(ec, keyring);
-    dec_input.i_accept_the_danger = true;
-    let mut ct_cursor = std::io::Cursor::new(&ciphertext[..]);
-    let mut sink = VerifyingWriter {
-        count: 0,
-        expected: pattern,
-        all_match: true,
-    };
-    decrypt_stream(&mut ct_cursor, &mut sink, &dec_input)
-        .await
-        .unwrap();
-
-    assert_eq!(
-        sink.count, total_bytes,
-        "decrypt_stream output byte count must equal the streamed plaintext length"
+    let mut ct_cursor = std::io::Cursor::new(&ct[..]);
+    let mut output: Vec<u8> = Vec::new();
+    let result = decrypt_stream(&mut ct_cursor, &mut output, &dec_input).await;
+    assert!(
+        result.is_err(),
+        "multi-frame signed message must fail with default unsafe_release_plaintext_before_verify=false"
     );
     assert!(
-        sink.all_match,
-        "every decrypted plaintext byte must equal the streamed pattern"
+        output.is_empty(),
+        "no plaintext must be released before signature verification"
     );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_decrypt_stream_multi_frame_signed_unsafe_flag_round_trip() {
+    // Same multi-frame signed payload as the default-rejection test. Setting
+    // unsafe_release_plaintext_before_verify=true opts in to early release;
+    // decrypt_stream now succeeds and the plaintext round-trips. Doubles as
+    // multi-frame streaming round-trip coverage for this PR.
+    let keyring = test_keyring().await;
+    let plaintext = vec![0xAAu8; 30];
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(&plaintext, EncryptionContext::new(), keyring.clone());
+    enc_input.frame_length = FrameLength::new(10).unwrap();
+    enc_input.algorithm_suite_id =
+        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
+    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    let mut dec_input =
+        DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
+    dec_input.unsafe_release_plaintext_before_verify = true;
+
+    let mut ct_cursor = std::io::Cursor::new(&ct[..]);
+    let mut output: Vec<u8> = Vec::new();
+    decrypt_stream(&mut ct_cursor, &mut output, &dec_input)
+        .await
+        .unwrap();
+    assert_eq!(output, plaintext);
 }
