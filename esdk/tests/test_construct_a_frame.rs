@@ -16,8 +16,12 @@ async fn test_construct_frame_aead_inputs_authenticate_via_round_trip() {
     // multiple frames is the cross-module check that encrypt and decrypt agree.
     // Use a multi-frame plaintext so both regular and final body-AAD content
     // tags are exercised, and so seq num + content length vary across frames.
+    let keyring = test_keyring().await;
     let pt: Vec<u8> = (0u8..=200).collect();
-    let result = round_trip_framed(&pt, 50).await;
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(&pt, EncryptionContext::new(), keyring.clone());
+    enc_input.frame_length = FrameLength::new(50).unwrap();
+    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
     //= spec/client-apis/encrypt.md#construct-a-frame
     //= type=test
@@ -47,6 +51,8 @@ async fn test_construct_frame_aead_inputs_authenticate_via_round_trip() {
     //= reason=decrypt rebuilds AAD from the wire content length; round-trip pins encrypt to use that same length for the AAD
     //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
     //# equal to the length of the plaintext being encrypted.
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let result = decrypt(&dec_input).await.unwrap().plaintext;
     assert_eq!(result, pt);
 }
 
@@ -147,12 +153,18 @@ async fn test_construct_frame_final_frame_plaintext_at_most_frame_length() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_construct_frame_plaintext_subsequence_consumed_in_order() {
     // All-distinct bytes: any reorder, skip, or duplication breaks equality.
+    let keyring = test_keyring().await;
     let pt: Vec<u8> = (0..=255).collect();
-    let result = round_trip_framed(&pt, 50).await;
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(&pt, EncryptionContext::new(), keyring.clone());
+    enc_input.frame_length = FrameLength::new(50).unwrap();
+    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
     //= spec/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //# - The plaintext MUST be the next subsequence of consumable plaintext bytes that have not yet been encrypted.
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let result = decrypt(&dec_input).await.unwrap().plaintext;
     assert_eq!(result, pt);
 }
 

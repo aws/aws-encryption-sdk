@@ -7,13 +7,30 @@ mod fixtures;
 mod test_helpers;
 
 use aws_esdk::*;
+use aws_mpl_legacy::dafny::types::keyring::KeyringRef;
 use test_helpers::*;
+
+/// Encrypt with a shared keyring and frame length, returning (ct, keyring) for reuse in decrypt.
+async fn encrypt_framed(pt: &[u8], frame_length: u32) -> (Vec<u8>, KeyringRef) {
+    let keyring = test_keyring().await;
+    let mut input =
+        EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring.clone());
+    input.frame_length = FrameLength::new(frame_length).unwrap();
+    let ct = encrypt(&input).await.unwrap().ciphertext;
+    (ct, keyring)
+}
+
+/// Decrypt ct with a given keyring, returning plaintext.
+async fn decrypt_ct(ct: &[u8], keyring: KeyringRef) -> Vec<u8> {
+    let dec_input = DecryptInput::with_legacy_keyring(ct, EncryptionContext::new(), keyring);
+    decrypt(&dec_input).await.unwrap().plaintext
+}
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_process_consumable_bytes_as_regular_frames() {
     // 50 bytes / frame_length=10 → 4 regular + 1 final (10).
     let pt = vec![0xBBu8; 50];
-    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let (ct, keyring) = encrypt_framed(&pt, 10).await;
     let (regular, final_count) = count_frames(&ct, 10);
 
     //= spec/client-apis/encrypt.md#construct-the-body
@@ -29,7 +46,7 @@ async fn test_process_consumable_bytes_as_regular_frames() {
     //= reason=round-trip proves encrypt and decrypt agree on the body bytes
     //# The encrypted message output by the Encrypt operation MUST have a message body equal
     //# to the message body calculated in this step.
-    let result = round_trip_framed(&pt, 10).await;
+    let result = decrypt_ct(&ct, keyring).await;
     assert_eq!(result, pt);
 }
 
@@ -37,7 +54,7 @@ async fn test_process_consumable_bytes_as_regular_frames() {
 async fn test_end_of_input_processing() {
     // 15 bytes / frame_length=10 → 1 regular (10) + 1 final (5).
     let pt = vec![0xCCu8; 15];
-    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let (ct, keyring) = encrypt_framed(&pt, 10).await;
     let (regular, final_count) = count_frames(&ct, 10);
 
     //= spec/client-apis/encrypt.md#construct-the-body
@@ -48,7 +65,7 @@ async fn test_end_of_input_processing() {
     assert_eq!(final_count, 1);
     assert_eq!(final_frame_content_length(&ct).unwrap(), 5);
 
-    let result = round_trip_framed(&pt, 10).await;
+    let result = decrypt_ct(&ct, keyring).await;
     assert_eq!(result, pt);
 }
 
@@ -56,7 +73,7 @@ async fn test_end_of_input_processing() {
 async fn test_exact_frame_length_constructs_final_or_regular() {
     // 10 bytes / frame_length=10 → exactly one frame (final, in this impl).
     let pt = vec![0xDDu8; 10];
-    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let (ct, keyring) = encrypt_framed(&pt, 10).await;
     let (regular, final_count) = count_frames(&ct, 10);
 
     //= spec/client-apis/encrypt.md#construct-the-body
@@ -68,7 +85,7 @@ async fn test_exact_frame_length_constructs_final_or_regular() {
     assert_eq!(regular + final_count, 1);
     assert_eq!(final_frame_content_length(&ct).unwrap(), 10);
 
-    let result = round_trip_framed(&pt, 10).await;
+    let result = decrypt_ct(&ct, keyring).await;
     assert_eq!(result, pt);
 }
 
@@ -76,7 +93,7 @@ async fn test_exact_frame_length_constructs_final_or_regular() {
 async fn test_enough_bytes_constructs_regular_frame() {
     // 25 bytes / frame_length=10 → 2 regular + 1 final (5).
     let pt = vec![0xEEu8; 25];
-    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let (ct, keyring) = encrypt_framed(&pt, 10).await;
     let (regular, final_count) = count_frames(&ct, 10);
 
     //= spec/client-apis/encrypt.md#construct-the-body
@@ -89,7 +106,7 @@ async fn test_enough_bytes_constructs_regular_frame() {
     assert_eq!(final_count, 1);
     assert_eq!(final_frame_content_length(&ct).unwrap(), 5);
 
-    let result = round_trip_framed(&pt, 10).await;
+    let result = decrypt_ct(&ct, keyring).await;
     assert_eq!(result, pt);
 }
 
@@ -97,7 +114,7 @@ async fn test_enough_bytes_constructs_regular_frame() {
 async fn test_not_enough_bytes_constructs_final_frame() {
     // 7 bytes / frame_length=10 → single final frame.
     let pt = vec![0xFFu8; 7];
-    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let (ct, keyring) = encrypt_framed(&pt, 10).await;
     let (regular, final_count) = count_frames(&ct, 10);
 
     //= spec/client-apis/encrypt.md#construct-the-body
@@ -108,13 +125,13 @@ async fn test_not_enough_bytes_constructs_final_frame() {
     assert_eq!(final_count, 1);
     assert_eq!(final_frame_content_length(&ct).unwrap(), 7);
 
-    let result = round_trip_framed(&pt, 10).await;
+    let result = decrypt_ct(&ct, keyring).await;
     assert_eq!(result, pt);
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_empty_plaintext_constructs_empty_final_frame() {
-    let ct = encrypt_with_frame_length(b"", 4096).await;
+    let (ct, keyring) = encrypt_framed(b"", 4096).await;
     let (regular, final_count) = count_frames(&ct, 4096);
 
     //= spec/client-apis/encrypt.md#construct-the-body
@@ -129,7 +146,7 @@ async fn test_empty_plaintext_constructs_empty_final_frame() {
     // Round-trip cross-check: empty plaintext must decrypt back to empty.
     // Regression: the decrypt path's preallocated `result` buffer would otherwise
     // be returned unchanged, leaking frame_length zero bytes.
-    let result = round_trip_framed(b"", 4096).await;
+    let result = decrypt_ct(&ct, keyring).await;
     assert_eq!(result, b"", "empty plaintext must round-trip to empty");
 }
 
@@ -174,4 +191,3 @@ async fn test_construct_body_plaintext_length_bound_runtime_enforcement() {
     let err = result.expect_err("must fail mid-stream");
     assert!(matches!(err.kind, ErrorKind::ValidationError), "got {:?}", err.kind);
 }
-
