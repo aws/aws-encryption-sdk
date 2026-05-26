@@ -27,6 +27,7 @@ async fn test_decrypt_skips_signature_step_for_non_signing_algorithm() {
 
     //= spec/client-apis/decrypt.md#behavior
     //= type=test
+    //= reason=Non-signing suite has no footer; decrypt succeeds without signature step
     //# - If the message header does not contain an algorithm suite including a signature algorithm,
     //# the Decrypt operation MUST NOT perform this step.
     assert_eq!(decrypt_output.plaintext, plaintext);
@@ -44,10 +45,9 @@ async fn test_non_streaming_decrypt_holds_output_until_completion() {
     let result = decrypt(&dec_input).await.unwrap();
     //= spec/client-apis/decrypt.md#behavior
     //= type=test
+    //= reason=decrypt() returns Result; output only available on Ok, proving all-or-nothing release
     //# If the input encrypted message is not being [streamed](streaming.md) to this operation,
     //# all output MUST NOT be released until after these steps complete successfully.
-    // A successful round-trip through the non-streaming decrypt() proves that
-    // all output is returned only after all 5 steps complete.
     assert_eq!(result.plaintext, plaintext);
 }
 
@@ -71,10 +71,8 @@ async fn test_streaming_output_not_released_until_indicated() {
         .unwrap();
     //= spec/client-apis/decrypt.md#behavior
     //= type=test
+    //= reason=Signing-suite streaming decrypt succeeds; output released only after verification
     //# - Output MUST NOT be released until otherwise indicated.
-    // Streaming decrypt with a signing suite: output is held back until
-    // per-frame tag verification and final signature verification succeed.
-    // A successful round-trip proves output was only released after verification.
     assert_eq!(output, plaintext);
 }
 
@@ -93,10 +91,10 @@ async fn test_decrypt_halts_on_incomplete_message() {
     let err = result.expect_err("decrypt must fail when ciphertext is truncated");
     //= spec/client-apis/decrypt.md#behavior
     //= type=test
+    //= reason=Truncated ciphertext triggers SerializationError, proving incomplete input halts
     //# - If all bytes have been provided and this operation
     //# is unable to complete the above steps with the consumable encrypted message bytes,
     //# this operation MUST halt and indicate a failure to the caller.
-    // Encrypt a valid message, then truncate it so the body is incomplete.
     assert_eq!(err.kind, ErrorKind::SerializationError, "truncated message must be SerializationError, got: {err:?}");
 }
 
@@ -116,6 +114,7 @@ async fn test_decrypt_fails_with_trailing_bytes_after_message() {
     let err = result.expect_err("decrypt must fail when there are trailing bytes after the message");
     //= spec/client-apis/decrypt.md#behavior
     //= type=test
+    //= reason=Appended 4 extra bytes after valid message; decrypt rejects them
     //# - If this operation successfully completes the above steps
     //# but there are consumable bytes which are intended to be decrypted,
     //# this operation MUST fail.
@@ -159,9 +158,9 @@ async fn test_streaming_fails_for_multi_frame_signed_without_override() {
     );
     //= spec/client-apis/decrypt.md#behavior
     //= type=test
+    //= reason=Multi-frame signed fails with override=false, succeeds with override=true
     //# - The ESDK MUST provide a configuration option that causes the decryption operation
     //# to fail immediately after parsing the header if a signed algorithm suite is used.
-    // Encrypt a multi-frame message with a signing algorithm suite.
     assert_eq!(output2, plaintext);
 }
 
@@ -191,6 +190,7 @@ async fn test_signing_suite_must_perform_signature_step() {
     let err = result.expect_err("decrypt must fail when signature is tampered — proves signature step was performed");
     //= spec/client-apis/decrypt.md#behavior
     //= type=test
+    //= reason=Tampered footer causes failure, proving signature step runs for signing suites
     //# - If the message header contains an algorithm suite including a
     //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
     //# the Decrypt operation MUST perform this step.

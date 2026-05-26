@@ -104,6 +104,7 @@ async fn test_decrypt_no_unauthenticated_data_released() {
     let err = result.expect_err("decrypt must fail when ciphertext is tampered — no unauthenticated data released");
     //= spec/client-apis/decrypt.md#authenticated-data
     //= type=test
+    //= reason=Tampered body produces error with no plaintext returned to caller
     //# This operation MUST NOT release any unauthenticated plaintext or unauthenticated associated data.
     assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
 }
@@ -132,8 +133,7 @@ async fn test_streaming_signed_plaintext_not_signed_until_complete() {
     //# and is decrypting messages created with an algorithm suite including a signature algorithm,
     //# any released plaintext MUST NOT be considered signed data until this operation finishes
     //# successfully.
-    // A successful streaming decrypt with a signing suite proves the contract:
-    // output is only fully released after signature verification completes.
+    //= reason=Ok return after signature verify proves output is signed-data-valid
     assert_eq!(output, plaintext);
 }
 
@@ -161,8 +161,7 @@ async fn test_streaming_callers_must_not_consider_successful_until_complete() {
     //= type=test
     //# This means that callers that process such released plaintext MUST NOT consider any processing successful
     //# until this operation completes successfully.
-    // decrypt_stream returns Result — callers can only consider processing successful
-    // when Ok is returned. A successful round-trip proves the contract.
+    //= reason=decrypt_stream returns Result; Ok signals completion and safe-to-use
     assert_eq!(output, plaintext);
 }
 
@@ -195,8 +194,6 @@ async fn test_streaming_callers_must_discard_on_failure() {
     //= type=test
     //# Additionally, if this operation fails, callers MUST discard the released plaintext and encryption context
     //# and MUST rollback any processing done due to the released plaintext or encryption context.
-    // Encrypt with a signing suite, then tamper with the footer area to cause
-    // signature verification failure. decrypt_stream must return Err,
-    // signaling callers to discard any released output.
+    //= reason=Tampered signature → Err signals callers to discard released output
     assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
 }

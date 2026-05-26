@@ -16,12 +16,12 @@ use test_helpers::*;
 async fn test_obtain_decryption_materials_via_cmm() {
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
-    //= reason=successful round-trip decrypt proves the CMM was called to obtain decryption materials; without a valid CMM call the data key would not be available and decryption would fail
+    //= reason=Decrypt succeeds only if CMM provides valid materials
     //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
     //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
     //= spec/client-apis/decrypt.md#cryptographic-materials-manager
     //= type=test
-    //= reason=successful decrypt proves the CMM obtained the required decryption materials; if the CMM failed to obtain them the decrypt would fail
+    //= reason=Decrypt success proves CMM obtained required materials
     //# This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
     let pt = b"test obtain decryption materials";
     let result = round_trip_with_ec(pt, EncryptionContext::new()).await;
@@ -32,7 +32,7 @@ async fn test_obtain_decryption_materials_via_cmm() {
 async fn test_cmm_call_constructed_as_follows() {
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
-    //= reason=successful round-trip decrypt proves the CMM Decrypt Materials call was constructed correctly; any malformed call would fail to produce valid decryption materials
+    //= reason=Malformed CMM call would fail to produce valid materials
     //# The call to the CMM's [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) operation
     //# MUST be constructed as follows:
     let pt = b"test cmm call construction";
@@ -44,7 +44,7 @@ async fn test_cmm_call_constructed_as_follows() {
 async fn test_cmm_call_algorithm_suite_id() {
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
-    //= reason=successful decrypt implies the CMM was invoked with the algorithm suite ID from the parsed header; if a different suite ID were passed the decrypt materials would not match the data keys in the ciphertext and the decrypt would fail
+    //= reason=Wrong suite ID would produce mismatched data keys
     //# - Algorithm Suite ID: This MUST be the parsed
     //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
     //# from the message header.
@@ -57,7 +57,7 @@ async fn test_cmm_call_algorithm_suite_id() {
 async fn test_cmm_call_commitment_policy() {
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
-    //= reason=successful decrypt implies the commitment policy from the client was passed to the CMM; if a wrong policy were passed the CMM would either reject or accept suites incorrectly
+    //= reason=Wrong policy would reject valid or accept invalid suites
     //# - Commitment Policy: This MUST be the commitment policy configured on the client.
     let pt = b"test commitment policy";
     let result = round_trip_with_ec(pt, EncryptionContext::new()).await;
@@ -68,7 +68,7 @@ async fn test_cmm_call_commitment_policy() {
 async fn test_cmm_call_encrypted_data_keys() {
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
-    //= reason=successful decrypt implies the encrypted data keys from the header were passed to the CMM; if different EDKs were passed the CMM could not unwrap the correct data key
+    //= reason=Wrong EDKs would prevent data key unwrap
     //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header.md#encrypted-data-keys)
     //# from the message header.
     let pt = b"test encrypted data keys";
@@ -80,7 +80,7 @@ async fn test_cmm_call_encrypted_data_keys() {
 async fn test_cmm_call_encryption_context() {
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
-    //= reason=successful decrypt implies the encryption context parsed from the header was passed to the CMM; if a different EC were passed the resulting AAD would not match the ciphertext's AAD and AES-GCM tag verification would fail
+    //= reason=Wrong EC would cause AAD mismatch and tag failure
     //# - Encryption Context: This MUST be the parsed [encryption context](../data-format/message-header.md#aad)
     //# from the message header.
     let ec = EncryptionContext::from([("key1".to_string(), "val1".to_string())]);
@@ -93,7 +93,7 @@ async fn test_cmm_call_encryption_context() {
 async fn test_cmm_call_reproduced_encryption_context() {
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
-    //= reason=successful decrypt implies the input encryption context was passed as the reproduced EC to the CMM; if a different value were passed the CMM would reject the materials request
+    //= reason=Wrong reproduced EC would cause CMM to reject request
     //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
     let pt = b"test reproduced encryption context";
     let result = round_trip_with_ec(pt, EncryptionContext::new()).await;
