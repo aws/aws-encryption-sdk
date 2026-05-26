@@ -51,12 +51,71 @@ async fn test_signature_key_is_signing_key() {
     //= type=test
     //# - the signature key MUST be the [signing key](../framework/structures.md#signing-key) in the [encryption materials](../framework/structures.md#encryption-materials)
 
-    // A successful round-trip proves the correct signing key was used,
-    // because decrypt verifies the signature against the verification key
-    // derived from the signing key in the encryption materials.
-    let pt = b"signing key test";
-    let result = round_trip_signing(pt).await;
-    assert_eq!(result, pt, "round-trip proves correct signing key was used");
+    // Strategy: encrypt with a signing suite, extract the verification key from the
+    // output encryption context (aws-crypto-public-key), parse the footer signature
+    // from the ciphertext, rebuild a digest over header+body, and verify the signature
+    // with that key. Success proves the signing key that produced the footer corresponds
+    // to the verification key in the encryption materials.
+    use aws_mpl_legacy::primitives::{DigestContext, EcdsaSignatureAlgorithm, ecdsa_verify_context};
+
+    let keyring = test_keyring().await;
+    let mut enc_input = aws_esdk::EncryptInput::with_legacy_keyring(
+        b"signing key direct test",
+        aws_esdk::EncryptionContext::new(),
+        keyring,
+    );
+    enc_input.algorithm_suite_id =
+        Some(aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
+    let output = aws_esdk::encrypt(&enc_input).await.unwrap();
+    let ct = &output.ciphertext;
+
+    // Extract verification key from output encryption context.
+    let pub_key_b64 = output.encryption_context.get("aws-crypto-public-key")
+        .expect("signing suite must produce aws-crypto-public-key in EC");
+    let verification_key = aws_smithy_types::base64::decode(pub_key_b64)
+        .expect("public key must be valid base64");
+
+    // Parse the footer: last 2+sig_len bytes of ciphertext.
+    let (footer_offset, sig_len) = find_footer_offset(ct);
+    let signature = &ct[footer_offset + 2..footer_offset + 2 + sig_len as usize];
+
+    // The signed content is everything before the footer (header + body).
+    let signed_content = &ct[..footer_offset];
+
+    // Rebuild digest and verify.
+    let mut digest = DigestContext::new_from_ecdsa(EcdsaSignatureAlgorithm::EcdsaP384).unwrap();
+    digest.update(signed_content);
+    let valid = ecdsa_verify_context(
+        EcdsaSignatureAlgorithm::EcdsaP384,
+        &verification_key,
+        digest,
+        signature,
+    )
+    .expect("ecdsa_verify_context must not error");
+    assert!(
+        valid,
+        "signature must verify against the encryption materials' verification key, \
+         proving the signing key from encryption materials was used"
+    );
+
+    // Negative check: verify with a wrong key fails.
+    let mut wrong_key = verification_key.clone();
+    // Flip a byte in the key to make it invalid.
+    let last = wrong_key.len() - 1;
+    wrong_key[last] ^= 0xFF;
+    let mut digest2 = DigestContext::new_from_ecdsa(EcdsaSignatureAlgorithm::EcdsaP384).unwrap();
+    digest2.update(signed_content);
+    let valid_wrong = ecdsa_verify_context(
+        EcdsaSignatureAlgorithm::EcdsaP384,
+        &wrong_key,
+        digest2,
+        signature,
+    );
+    // Wrong key should either return Ok(false) or error — never Ok(true).
+    assert!(
+        !matches!(valid_wrong, Ok(true)),
+        "signature must NOT verify with a wrong key"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
