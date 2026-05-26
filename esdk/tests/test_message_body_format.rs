@@ -7,29 +7,11 @@ mod fixtures;
 mod test_helpers;
 
 use aws_esdk::*;
-use aws_mpl_legacy::dafny::types::keyring::KeyringRef;
-
 use test_helpers::*;
 
 // The ESDK always uses framed encryption, so nonframed deserialization
 // is exercised by parsing/decrypting the external V2 nonframed vector from
 // aws-encryption-sdk-test-vectors.
-
-/// Encrypt with a shared keyring and frame length, returning (ct, keyring) for reuse in decrypt.
-async fn encrypt_framed_shared(pt: &[u8], frame_length: u32) -> (Vec<u8>, KeyringRef) {
-    let keyring = test_keyring().await;
-    let mut input =
-        EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring.clone());
-    input.frame_length = FrameLength::new(frame_length).unwrap();
-    let ct = encrypt(&input).await.unwrap().ciphertext;
-    (ct, keyring)
-}
-
-/// Decrypt ct with a given keyring, returning plaintext.
-async fn decrypt_with_keyring(ct: &[u8], keyring: KeyringRef) -> Vec<u8> {
-    let dec_input = DecryptInput::with_legacy_keyring(ct, EncryptionContext::new(), keyring);
-    decrypt(&dec_input).await.unwrap().plaintext
-}
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_nonframed_data_serialization_order() {
@@ -235,14 +217,15 @@ async fn test_framed_data_max_frame_count() {
     //= reason=The 2^32-1 boundary is unreachable in a unit test (would require ~4B frames). The implementation enforces it at body_encrypt.rs by checking sequence_number == ENDFRAME_SEQUENCE_NUMBER (0xFFFFFFFF) before writing each regular frame and returning ValidationError("Too many frames"). This test exercises a small frame count to confirm the multi-frame path works; the upper bound itself is enforced by source-side citation.
     //# - The number of frames in a single message MUST be less than or equal to `2^32 - 1`.
     let pt = vec![0xBBu8; 20];
-    let (ct, keyring) = encrypt_framed_shared(&pt, 4).await;
+    let keyring = test_keyring().await;
+    let ct = encrypt_framed_with_keyring(&pt, 4, &keyring).await;
     let frames = parse_all_frames(&ct, 4);
     assert_eq!(
         frames.len(),
         5,
         "20 bytes / 4-byte frames = 4 regular + 1 final = 5 frames"
     );
-    let result = decrypt_with_keyring(&ct, keyring).await;
+    let result = decrypt_with_keyring(&ct, &keyring).await;
     assert_eq!(result, pt);
 }
 
@@ -261,7 +244,8 @@ async fn test_regular_frame_serialization_order() {
     // proving Field 4's end offset is exactly 4 + IV_LEN + FRAME_LEN + TAG_LEN.
     const FRAME_LEN: u32 = 10;
     let pt = vec![0xCCu8; 25];
-    let (ct, keyring) = encrypt_framed_shared(&pt, FRAME_LEN).await;
+    let keyring = test_keyring().await;
+    let ct = encrypt_framed_with_keyring(&pt, FRAME_LEN, &keyring).await;
     let frames = parse_all_frames(&ct, FRAME_LEN);
     assert_eq!(frames.len(), 3, "expected 2 regular + 1 final frame");
     let f = &frames[0];
@@ -303,7 +287,7 @@ async fn test_regular_frame_serialization_order() {
         "next regular frame's seq must be 2 (proves Field 4 ends at the spec-required offset)");
 
     // Round-trip cross-check.
-    let result = decrypt_with_keyring(&ct, keyring).await;
+    let result = decrypt_with_keyring(&ct, &keyring).await;
     assert_eq!(result, pt, "round-trip corroborates regular frame serialization order");
 }
 
@@ -461,7 +445,8 @@ async fn test_final_frame_serialization_order() {
     const FRAME_LEN: u32 = 10;
     const PT_LEN: usize = 7;
     let pt = vec![0xAAu8; PT_LEN];
-    let (ct, keyring) = encrypt_framed_shared(&pt, FRAME_LEN).await;
+    let keyring = test_keyring().await;
+    let ct = encrypt_framed_with_keyring(&pt, FRAME_LEN, &keyring).await;
     let f = parse_final_frame(&ct, FRAME_LEN);
 
     // Field 1 of 6: Sequence Number End — 4 bytes equal to 0xFF FF FF FF.
@@ -508,7 +493,7 @@ async fn test_final_frame_serialization_order() {
         "final frame must occupy exactly {} bytes", expected_total);
 
     // Round-trip cross-check.
-    let result = decrypt_with_keyring(&ct, keyring).await;
+    let result = decrypt_with_keyring(&ct, &keyring).await;
     assert_eq!(result, pt);
 }
 
@@ -521,7 +506,8 @@ async fn test_final_frame_is_regular_frame_plus_additions() {
     //# and Encrypted Content Length.
     const FRAME_LEN: u32 = 10;
     let pt = vec![0xBBu8; 5];
-    let (ct, keyring) = encrypt_framed_shared(&pt, FRAME_LEN).await;
+    let keyring = test_keyring().await;
+    let ct = encrypt_framed_with_keyring(&pt, FRAME_LEN, &keyring).await;
     let f = parse_final_frame(&ct, FRAME_LEN);
 
     // The two ADDITIONS over a regular frame:
@@ -537,7 +523,7 @@ async fn test_final_frame_is_regular_frame_plus_additions() {
     assert!(f.content_length_offset.is_some(),
         "final frame must have an Encrypted Content Length offset");
 
-    let result = decrypt_with_keyring(&ct, keyring).await;
+    let result = decrypt_with_keyring(&ct, &keyring).await;
     assert_eq!(result, pt);
 }
 
@@ -611,7 +597,8 @@ async fn test_final_frame_sequence_number_serialized_same_as_regular() {
     //# [Regular Frame Sequence Number](#regular-frame-sequence-number).
     const FRAME_LEN: u32 = 10;
     let pt = vec![0xBBu8; 20];
-    let (ct, keyring) = encrypt_framed_shared(&pt, FRAME_LEN).await;
+    let keyring = test_keyring().await;
+    let ct = encrypt_framed_with_keyring(&pt, FRAME_LEN, &keyring).await;
     let frames = parse_all_frames(&ct, FRAME_LEN);
 
     // Find a regular frame and the final frame; their seq num field widths must match.
@@ -624,7 +611,7 @@ async fn test_final_frame_sequence_number_serialized_same_as_regular() {
     );
     assert_eq!(regular.seq_num_bytes.len(), 4, "seq num field width must be 4 bytes");
 
-    let result = decrypt_with_keyring(&ct, keyring).await;
+    let result = decrypt_with_keyring(&ct, &keyring).await;
     assert_eq!(
         result, pt,
         "round-trip proves final frame seq num serialized same as regular"
@@ -727,8 +714,9 @@ async fn test_final_frame_auth_tag_authenticates_final_frame() {
     //# It MUST be used to authenticate the final frame.
     // Successful decrypt proves the auth tag authenticated the final frame.
     let pt = vec![0xBBu8; 5];
-    let (ct, keyring) = encrypt_framed_shared(&pt, 10).await;
-    assert_eq!(decrypt_with_keyring(&ct, keyring.clone()).await, pt);
+    let keyring = test_keyring().await;
+    let ct = encrypt_framed_with_keyring(&pt, 10, &keyring).await;
+    assert_eq!(decrypt_with_keyring(&ct, &keyring).await, pt);
 
     // Tampering with the final frame's auth tag must cause decryption failure.
     let final_frame = parse_final_frame(&ct, 10);
@@ -757,7 +745,8 @@ async fn test_regular_frame_auth_tag_authenticates_regular_frame() {
     // Tampering with a regular frame's auth tag must cause decryption failure.
     // Use 25 bytes / frame_length=10 so the first frame is a regular frame.
     let pt = vec![0xCCu8; 25];
-    let (ct, keyring) = encrypt_framed_shared(&pt, 10).await;
+    let keyring = test_keyring().await;
+    let ct = encrypt_framed_with_keyring(&pt, 10, &keyring).await;
     let frames = parse_all_frames(&ct, 10);
     let regular = frames.iter().find(|f| !f.is_final).expect("must have a regular frame");
 
@@ -787,11 +776,12 @@ async fn test_regular_frame_seq_num_out_of_order_rejected() {
     // body_decrypt.rs check `if seq_num != expected_frame { return ser_err(...) }`.
     // Use 25 bytes / frame_length=10 → 2 regular + 1 final, so we have a frame[1] to tamper.
     let pt = vec![0xDDu8; 25];
-    let (ct, keyring) = encrypt_framed_shared(&pt, 10).await;
+    let keyring = test_keyring().await;
+    let ct = encrypt_framed_with_keyring(&pt, 10, &keyring).await;
     let frames = parse_all_frames(&ct, 10);
 
     // Baseline: untampered ciphertext decrypts.
-    let baseline = decrypt_with_keyring(&ct, keyring.clone()).await;
+    let baseline = decrypt_with_keyring(&ct, &keyring).await;
     assert_eq!(baseline, pt, "baseline plaintext mismatch");
 
     // Tamper the second frame's seq num field at the integer level (perturb 2 → 3).
@@ -994,7 +984,8 @@ async fn test_plaintext_exact_multiple_of_frame_length() {
     //# the Final Frame encrypted content length SHOULD be equal to the frame length but MAY be 0.
     let frame_length: u32 = 10;
     let pt = vec![0xEEu8; frame_length as usize];
-    let (ct, keyring) = encrypt_framed_shared(&pt, frame_length).await;
+    let keyring = test_keyring().await;
+    let ct = encrypt_framed_with_keyring(&pt, frame_length, &keyring).await;
     let final_frame = parse_final_frame(&ct, frame_length);
     let Ok(final_content_len) = u32::try_from(final_frame.content.len()) else {
         panic!("final content length exceeds u32::MAX");
@@ -1005,7 +996,7 @@ async fn test_plaintext_exact_multiple_of_frame_length() {
         frame_length,
         final_content_len
     );
-    let result = decrypt_with_keyring(&ct, keyring).await;
+    let result = decrypt_with_keyring(&ct, &keyring).await;
     assert_eq!(result, pt, "round-trip must succeed for exact multiple of frame length");
 }
 
