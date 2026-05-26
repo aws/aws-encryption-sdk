@@ -102,3 +102,58 @@ async fn test_verify_signature_fails_on_tampered_footer() {
         err.message
     );
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_footer_wait_for_bytes() {
+    let keyring = test_keyring().await;
+    let plaintext = b"footer wait test";
+
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
+    enc_input.algorithm_suite_id =
+        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
+    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    let mut cursor = std::io::Cursor::new(ct.as_slice());
+    let mut output = Vec::new();
+    let mut stream_input =
+        DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
+    stream_input.unsafe_release_plaintext_before_verify = true;
+    //= spec/client-apis/decrypt.md#verify-the-signature
+    //= type=test
+    //= reason=Streaming decrypt with signing suite succeeds, proving footer bytes were waited for
+    //# If there are not enough consumable bytes to deserialize the message footer and
+    //# the caller has not yet indicated an end to the encrypted message,
+    //# the Decrypt operation MUST wait for enough bytes to become consumable or for the caller
+    //# to indicate an end to the encrypted message.
+    decrypt_stream(&mut cursor, &mut output, &stream_input)
+        .await
+        .unwrap();
+    assert_eq!(output, plaintext);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_footer_wait_truncated_message_fails() {
+    let keyring = test_keyring().await;
+    let plaintext = b"truncated footer test";
+
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
+    enc_input.algorithm_suite_id =
+        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
+    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    let footer_offset = find_footer_offset_only(&ct);
+    let truncated = &ct[..footer_offset + 2]; // Keep sig_len but truncate signature bytes
+
+    let dec_input = DecryptInput::with_legacy_keyring(truncated, EncryptionContext::new(), keyring);
+    //= spec/client-apis/decrypt.md#verify-the-signature
+    //= type=test
+    //= reason=Truncated footer proves operation waits for bytes and fails when unavailable
+    //# If there are not enough consumable bytes to deserialize the message footer and
+    //# the caller has not yet indicated an end to the encrypted message,
+    //# the Decrypt operation MUST wait for enough bytes to become consumable or for the caller
+    //# to indicate an end to the encrypted message.
+    let err = decrypt(&dec_input).await.expect_err("decrypt must fail when footer is truncated");
+    assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
+}

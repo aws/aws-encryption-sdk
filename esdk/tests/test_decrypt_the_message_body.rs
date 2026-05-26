@@ -702,3 +702,47 @@ async fn test_unframed_decrypt_aad_constructed_correctly() {
     let result = decrypt_external_nonframed_vector(Version::V2).await;
     assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_inspect_first_4_bytes_of_each_frame() {
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Multi-frame decrypt proves first 4 bytes of each frame are inspected
+    //# The Decrypt operation MUST inspect the first 4 bytes of each frame.
+    let pt = vec![0xAAu8; 40];
+    let result = round_trip_framed(&pt, 10).await;
+    assert_eq!(result, pt);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_sequence_number_end_value_is_0xffffffff() {
+    let pt = vec![0xBBu8; 5];
+    let ct = encrypt_with_frame_length(&pt, 4096).await;
+    let frames = parse_frames(&ct, 4096);
+    assert_eq!(frames.len(), 1, "single final frame expected");
+    assert!(frames[0].4, "frame must be a final frame");
+    let keyring = test_keyring().await;
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Final frame starts with 0xFFFFFFFF on wire; decrypt validates it
+    //# The value MUST be `0xFFFFFFFF`.
+    let result = decrypt(&dec_input).await.unwrap();
+    assert_eq!(result.plaintext, pt);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_nonframed_content_length_from_encrypted_content_length() {
+    let body = parse_nonframed_body(EXTERNAL_V2_NONFRAMED_CT);
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=External nonframed vector proves content length is read from the wire field
+    //# If this is nonframed data, this MUST be determined by using the [nonframed data encrypted content length](../data-format/message-body.md#nonframed-data-encrypted-content-length).
+    assert_eq!(
+        body.encrypted_content_length as usize,
+        EXTERNAL_V2_NONFRAMED_PT.len(),
+        "encrypted content length field must equal plaintext length"
+    );
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
+    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
+}

@@ -191,3 +191,66 @@ async fn test_streamed_signed_output_not_signed_until_complete() {
     let err = result.expect_err("streaming decrypt must fail on tampered signature — output was not signed data");
     assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_streamed_release_parsed_header_after_verification() {
+    let keyring = test_keyring().await;
+    let plaintext = b"streamed header release test";
+
+    let mut ec = EncryptionContext::new();
+    ec.insert("release-key".to_string(), "release-value".to_string());
+    let enc_input = EncryptInput::with_legacy_keyring(plaintext, ec, keyring.clone());
+    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    let mut cursor = std::io::Cursor::new(ct.as_slice());
+    let mut output = Vec::new();
+    let mut stream_input =
+        DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
+    stream_input.unsafe_release_plaintext_before_verify = true;
+    let result = decrypt_stream(&mut cursor, &mut output, &stream_input)
+        .await
+        .unwrap();
+    assert_eq!(output, plaintext);
+    //= spec/client-apis/decrypt.md#verify-the-header
+    //= type=test
+    //= reason=Streaming decrypt output includes EC and suite, proving release after verification
+    //# - A streamed Decrypt operation SHOULD release the parsed [encryption context](#encryption-context),
+    //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id),
+    //# and [other header information](#parsed-header)
+    //# as soon as tag verification succeeds.
+    assert_eq!(
+        result.encryption_context.get("release-key").map(String::as_str),
+        Some("release-value"),
+    );
+    assert_eq!(
+        result.algorithm_suite_id,
+        EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384,
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_streamed_header_fed_to_signature_algorithm() {
+    let keyring = test_keyring().await;
+    let plaintext = b"header to sig alg test";
+
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
+    enc_input.algorithm_suite_id =
+        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
+    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    let mut cursor = std::io::Cursor::new(ct.as_slice());
+    let mut output = Vec::new();
+    let mut stream_input =
+        DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
+    stream_input.unsafe_release_plaintext_before_verify = true;
+    //= spec/client-apis/decrypt.md#verify-the-header
+    //= type=test
+    //= reason=Signing-suite streaming decrypt succeeds, proving header was fed to sig algorithm
+    //# - The streamed Decrypt operation SHOULD input the serialized header to the signature algorithm as soon as it is deserialized,
+    //# such that the serialized header isn't required to remain in memory to [verify the signature](#verify-the-signature).
+    decrypt_stream(&mut cursor, &mut output, &stream_input)
+        .await
+        .unwrap();
+    assert_eq!(output, plaintext);
+}

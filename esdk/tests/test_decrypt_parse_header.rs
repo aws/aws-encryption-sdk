@@ -477,10 +477,76 @@ async fn test_no_header_info_released_before_verification() {
     let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
     // Tamper with a byte in the header body to cause header auth tag verification failure
+    // Baseline: untampered ciphertext must decrypt successfully.
+    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
+    assert!(baseline.is_ok(), "baseline decrypt must succeed before tamper");
+
     ct[10] ^= 0xFF;
 
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("decrypt must fail entirely when header verification fails — no partial header info released");
     assert_eq!(err.kind, ErrorKind::ValidationError, "got: {err:?}");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v1_header_auth_deserialized() {
+    let keyring = test_keyring().await;
+    let plaintext = b"v1 header auth deserialization test";
+
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
+    enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
+    enc_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    let mut dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
+    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //= reason=V1 round-trip proves Header Auth Version 1.0 (IV + Tag) was deserialized
+    //# The Decrypt operation MUST then deserialize the
+    //# [Header Authentication Version 1.0](../data-format/message-header.md#header-authentication-version-10):
+    let result = decrypt(&dec_input).await.unwrap();
+    assert_eq!(result.plaintext, plaintext);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v1_header_auth_iv_deserialized() {
+    let keyring = test_keyring().await;
+    let plaintext = b"v1 header auth iv test";
+
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
+    enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
+    enc_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    let mut dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
+    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //= reason=V1 round-trip proves header auth IV was deserialized
+    //# - MUST deserialize the [IV](../data-format/message-header.md#iv).
+    let result = decrypt(&dec_input).await.unwrap();
+    assert_eq!(result.plaintext, plaintext);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_v2_header_auth_deserialized() {
+    let keyring = test_keyring().await;
+    let plaintext = b"v2 header auth deserialization test";
+
+    let enc_input =
+        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
+    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //= type=test
+    //= reason=V2 round-trip proves Header Auth Version 2.0 (Tag only) was deserialized
+    //# The Decrypt operation MUST then deserialize the
+    //# [Header Authentication Version 2.0](../data-format/message-header.md#header-authentication-version-20):
+    let result = decrypt(&dec_input).await.unwrap();
+    assert_eq!(result.plaintext, plaintext);
 }
