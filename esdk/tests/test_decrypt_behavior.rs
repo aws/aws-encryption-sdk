@@ -19,15 +19,20 @@ async fn test_decrypt_skips_signature_step_for_non_signing_algorithm() {
     // Encrypt with a non-signing algorithm suite
     let mut encrypt_input = EncryptInput::with_legacy_keyring(plaintext, ec, keyring.clone());
     encrypt_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
-    let encrypt_output = encrypt(&encrypt_input).await.unwrap();
+    let ct = encrypt(&encrypt_input).await.unwrap().ciphertext;
 
-    // Decrypt succeeds — the signature verification step is skipped
-    let decrypt_input = DecryptInput::from_encrypt(&encrypt_output.ciphertext, &encrypt_input);
+    // Prove the ciphertext has no footer — so if decrypt tried to run the
+    // signature step, it would attempt to read footer bytes from the body
+    // region and fail with a parse error.
+    assert!(!has_footer(&ct), "non-signing suite must not produce a footer");
+
+    // Decrypt succeeds despite no footer → signature step was skipped.
+    let decrypt_input = DecryptInput::from_encrypt(&ct, &encrypt_input);
     let decrypt_output = decrypt(&decrypt_input).await.unwrap();
 
     //= spec/client-apis/decrypt.md#behavior
     //= type=test
-    //= reason=Non-signing suite has no footer; decrypt succeeds without signature step
+    //= reason=No footer on wire + decrypt succeeds → signature step was not attempted
     //# - If the message header does not contain an algorithm suite including a signature algorithm,
     //# the Decrypt operation MUST NOT perform this step.
     assert_eq!(decrypt_output.plaintext, plaintext);
