@@ -102,10 +102,6 @@ async fn test_cmm_call_reproduced_encryption_context() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_fails_with_wrong_keyring() {
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
-    //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
     let keyring = test_keyring().await;
     let pt = b"negative test";
     let enc_input = EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring);
@@ -129,16 +125,15 @@ async fn test_decrypt_fails_with_wrong_keyring() {
         panic!("expected LegacyError, got: {:?}", err.kind);
     };
     let inner = format!("{legacy:?}");
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
+    //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
     assert!(inner.contains("CollectionOfErrors"), "expected CollectionOfErrors, got: {inner}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_pre_cmm_commitment_policy_check() {
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //# If the parsed [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
-    //# is not supported by the [commitment policy](client.md#commitment-policy)
-    //# configured in the [client](client.md) decrypt MUST yield an error.
     let keyring = aes_keyring(0).await;
     let pt = b"test pre-cmm commitment policy";
     // Encrypt with non-committing suite using ForbidEncryptAllowDecrypt
@@ -158,14 +153,16 @@ async fn test_pre_cmm_commitment_policy_check() {
         panic!("expected LegacyError, got: {:?}", err.kind);
     };
     let inner = format!("{legacy:?}");
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //# If the parsed [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
+    //# is not supported by the [commitment policy](client.md#commitment-policy)
+    //# configured in the [client](client.md) decrypt MUST yield an error.
     assert!(inner.contains("InvalidAlgorithmSuiteInfoOnDecrypt"), "expected InvalidAlgorithmSuiteInfoOnDecrypt, got: {inner}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_used_is_input_cmm() {
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //# The CMM used MUST be the input CMM, if supplied.
     let keyring = aes_keyring(0).await;
     let cmm = mpl()
         .create_default_cryptographic_materials_manager()
@@ -178,15 +175,14 @@ async fn test_cmm_used_is_input_cmm() {
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
     let dec_input = DecryptInput::with_legacy_cmm(&ct, EncryptionContext::new(), cmm);
     let result = decrypt(&dec_input).await.unwrap();
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //# The CMM used MUST be the input CMM, if supplied.
     assert_eq!(result.plaintext, pt);
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_default_cmm_constructed_from_keyring() {
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //# If a CMM is not supplied as the input, the decrypt operation MUST construct a [default CMM](../framework/default-cmm.md)
-    //# from the input [keyring](../framework/keyring-interface.md).
     let keyring = aes_keyring(0).await;
     let pt = b"test default cmm from keyring";
     let enc_input =
@@ -195,15 +191,15 @@ async fn test_default_cmm_constructed_from_keyring() {
     // Decrypt with keyring (not CMM) — decrypt must construct default CMM internally
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await.unwrap();
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //# If a CMM is not supplied as the input, the decrypt operation MUST construct a [default CMM](../framework/default-cmm.md)
+    //# from the input [keyring](../framework/keyring-interface.md).
     assert_eq!(result.plaintext, pt);
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_data_key_derived_from_plaintext_data_key() {
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //# The data key used as input for all decryption described below MUST be a data key derived from the plaintext data key
-    //# included in the [decryption materials](../framework/structures.md#decryption-materials).
     let keyring = aes_keyring(0).await;
     let pt = b"test data key derivation";
     // Use HKDF suite to exercise key derivation
@@ -217,6 +213,10 @@ async fn test_data_key_derived_from_plaintext_data_key() {
     let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
     let result = decrypt(&dec_input).await.unwrap();
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //# The data key used as input for all decryption described below MUST be a data key derived from the plaintext data key
+    //# included in the [decryption materials](../framework/structures.md#decryption-materials).
     assert_eq!(
         result.plaintext, pt,
         "successful round-trip proves data key was correctly derived from plaintext data key"
@@ -225,10 +225,6 @@ async fn test_data_key_derived_from_plaintext_data_key() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_algorithm_suite_from_decryption_materials() {
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //# The algorithm suite used as input for all decryption described below MUST be the algorithm suite
-    //# included in the [decryption materials](../framework/structures.md#decryption-materials).
     let keyring = aes_keyring(0).await;
     let pt = b"test algorithm suite from materials";
     let ct = encrypt_with_suite(
@@ -241,6 +237,10 @@ async fn test_algorithm_suite_from_decryption_materials() {
     let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
     let result = decrypt(&dec_input).await.unwrap();
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //# The algorithm suite used as input for all decryption described below MUST be the algorithm suite
+    //# included in the [decryption materials](../framework/structures.md#decryption-materials).
     assert_eq!(
         result.plaintext, pt,
         "successful round-trip proves algorithm suite from materials was used for decryption"
@@ -249,14 +249,6 @@ async fn test_algorithm_suite_from_decryption_materials() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_commit_key_derived_and_validated() {
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //# If the [algorithm suite](../framework/algorithm-suites.md#algorithm-suites-encryption-key-derivation-settings) supports [key commitment](../framework/algorithm-suites.md#key-commitment)
-    //# then the [commit key](../framework/algorithm-suites.md#commit-key) MUST be derived from the plaintext data key
-    //# using the [commit key derivation](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //# The derived commit key MUST equal the commit key stored in the message header.
     let keyring = aes_keyring(0).await;
     let pt = b"test commit key derivation and equality";
     // Use committing suite
@@ -269,6 +261,14 @@ async fn test_commit_key_derived_and_validated() {
     .await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await.unwrap();
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //# If the [algorithm suite](../framework/algorithm-suites.md#algorithm-suites-encryption-key-derivation-settings) supports [key commitment](../framework/algorithm-suites.md#key-commitment)
+    //# then the [commit key](../framework/algorithm-suites.md#commit-key) MUST be derived from the plaintext data key
+    //# using the [commit key derivation](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //# The derived commit key MUST equal the commit key stored in the message header.
     assert_eq!(
         result.plaintext, pt,
         "successful round-trip with committing suite proves commit key was derived and matched header"
@@ -277,12 +277,6 @@ async fn test_commit_key_derived_and_validated() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_kdf_algorithm_from_materials_suite() {
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //# The algorithm suite used to derive a data key from the plaintext data key MUST be
-    //# the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
-    //# [algorithm suite](../framework/algorithm-suites.md) associated with
-    //# the returned decryption materials.
     let keyring = aes_keyring(0).await;
     let pt = b"test kdf algorithm from materials";
     // Use HKDF suite to exercise KDF algorithm selection
@@ -296,6 +290,12 @@ async fn test_kdf_algorithm_from_materials_suite() {
     let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
     let result = decrypt(&dec_input).await.unwrap();
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //# The algorithm suite used to derive a data key from the plaintext data key MUST be
+    //# the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
+    //# [algorithm suite](../framework/algorithm-suites.md) associated with
+    //# the returned decryption materials.
     assert_eq!(
         result.plaintext, pt,
         "successful round-trip proves KDF algorithm from materials suite was used"
@@ -304,11 +304,6 @@ async fn test_kdf_algorithm_from_materials_suite() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unsupported_esdk_algorithm_suite_yields_error() {
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=get_esdk_id rejects non-ESDK suite IDs; a valid round-trip proves ESDK suites pass, and tampering the suite ID to a non-ESDK value triggers the error path
-    //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
-    //# decrypt MUST yield an error.
     let keyring = aes_keyring(0).await;
     let pt = b"unsupported esdk suite test";
 
@@ -326,5 +321,10 @@ async fn test_unsupported_esdk_algorithm_suite_yields_error() {
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("decrypt must fail when algorithm suite ID is not a supported ESDK suite");
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=get_esdk_id rejects non-ESDK suite IDs; a valid round-trip proves ESDK suites pass, and tampering the suite ID to a non-ESDK value triggers the error path
+    //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
+    //# decrypt MUST yield an error.
     assert_eq!(err.kind, ErrorKind::ValidationError, "got: {err:?}");
 }

@@ -12,10 +12,6 @@ use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_skips_signature_step_for_non_signing_algorithm() {
-    //= spec/client-apis/decrypt.md#behavior
-    //= type=test
-    //# - If the message header does not contain an algorithm suite including a signature algorithm,
-    //# the Decrypt operation MUST NOT perform this step.
     let keyring = test_keyring().await;
     let plaintext = b"test non-signing decrypt";
     let ec = EncryptionContext::new();
@@ -29,17 +25,15 @@ async fn test_decrypt_skips_signature_step_for_non_signing_algorithm() {
     let decrypt_input = DecryptInput::from_encrypt(&encrypt_output.ciphertext, &encrypt_input);
     let decrypt_output = decrypt(&decrypt_input).await.unwrap();
 
+    //= spec/client-apis/decrypt.md#behavior
+    //= type=test
+    //# - If the message header does not contain an algorithm suite including a signature algorithm,
+    //# the Decrypt operation MUST NOT perform this step.
     assert_eq!(decrypt_output.plaintext, plaintext);
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_non_streaming_decrypt_holds_output_until_completion() {
-    //= spec/client-apis/decrypt.md#behavior
-    //= type=test
-    //# If the input encrypted message is not being [streamed](streaming.md) to this operation,
-    //# all output MUST NOT be released until after these steps complete successfully.
-    // A successful round-trip through the non-streaming decrypt() proves that
-    // all output is returned only after all 5 steps complete.
     let keyring = test_keyring().await;
     let plaintext = b"non-streaming output held until completion";
     let enc_input =
@@ -48,17 +42,17 @@ async fn test_non_streaming_decrypt_holds_output_until_completion() {
 
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await.unwrap();
+    //= spec/client-apis/decrypt.md#behavior
+    //= type=test
+    //# If the input encrypted message is not being [streamed](streaming.md) to this operation,
+    //# all output MUST NOT be released until after these steps complete successfully.
+    // A successful round-trip through the non-streaming decrypt() proves that
+    // all output is returned only after all 5 steps complete.
     assert_eq!(result.plaintext, plaintext);
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_output_not_released_until_indicated() {
-    //= spec/client-apis/decrypt.md#behavior
-    //= type=test
-    //# - Output MUST NOT be released until otherwise indicated.
-    // Streaming decrypt with a signing suite: output is held back until
-    // per-frame tag verification and final signature verification succeed.
-    // A successful round-trip proves output was only released after verification.
     let keyring = test_keyring().await;
     let plaintext = b"streaming output held";
     let mut enc_input =
@@ -75,17 +69,17 @@ async fn test_streaming_output_not_released_until_indicated() {
     decrypt_stream(&mut cursor, &mut output, &stream_input)
         .await
         .unwrap();
+    //= spec/client-apis/decrypt.md#behavior
+    //= type=test
+    //# - Output MUST NOT be released until otherwise indicated.
+    // Streaming decrypt with a signing suite: output is held back until
+    // per-frame tag verification and final signature verification succeed.
+    // A successful round-trip proves output was only released after verification.
     assert_eq!(output, plaintext);
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_halts_on_incomplete_message() {
-    //= spec/client-apis/decrypt.md#behavior
-    //= type=test
-    //# - If all bytes have been provided and this operation
-    //# is unable to complete the above steps with the consumable encrypted message bytes,
-    //# this operation MUST halt and indicate a failure to the caller.
-    // Encrypt a valid message, then truncate it so the body is incomplete.
     let keyring = test_keyring().await;
     let plaintext = b"truncation test data";
     let enc_input =
@@ -97,16 +91,17 @@ async fn test_decrypt_halts_on_incomplete_message() {
     let dec_input = DecryptInput::with_legacy_keyring(truncated, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("decrypt must fail when ciphertext is truncated");
+    //= spec/client-apis/decrypt.md#behavior
+    //= type=test
+    //# - If all bytes have been provided and this operation
+    //# is unable to complete the above steps with the consumable encrypted message bytes,
+    //# this operation MUST halt and indicate a failure to the caller.
+    // Encrypt a valid message, then truncate it so the body is incomplete.
     assert_eq!(err.kind, ErrorKind::SerializationError, "truncated message must be SerializationError, got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_fails_with_trailing_bytes_after_message() {
-    //= spec/client-apis/decrypt.md#behavior
-    //= type=test
-    //# - If this operation successfully completes the above steps
-    //# but there are consumable bytes which are intended to be decrypted,
-    //# this operation MUST fail.
     let keyring = test_keyring().await;
     let plaintext = b"trailing bytes test";
     let enc_input =
@@ -119,16 +114,16 @@ async fn test_decrypt_fails_with_trailing_bytes_after_message() {
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("decrypt must fail when there are trailing bytes after the message");
+    //= spec/client-apis/decrypt.md#behavior
+    //= type=test
+    //# - If this operation successfully completes the above steps
+    //# but there are consumable bytes which are intended to be decrypted,
+    //# this operation MUST fail.
     assert_eq!(err.kind, ErrorKind::Esdk, "trailing bytes must produce Esdk error, got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_fails_for_multi_frame_signed_without_override() {
-    //= spec/client-apis/decrypt.md#behavior
-    //= type=test
-    //# - The ESDK MUST provide a configuration option that causes the decryption operation
-    //# to fail immediately after parsing the header if a signed algorithm suite is used.
-    // Encrypt a multi-frame message with a signing algorithm suite.
     let keyring = test_keyring().await;
     // 30 bytes with frame_length=10 → 3 frames (2 regular + 1 final)
     let plaintext = vec![0xAAu8; 30];
@@ -162,16 +157,16 @@ async fn test_streaming_fails_for_multi_frame_signed_without_override() {
         result2.is_ok(),
         "multi-frame signed message must succeed with unsafe_release_plaintext_before_verify=true"
     );
+    //= spec/client-apis/decrypt.md#behavior
+    //= type=test
+    //# - The ESDK MUST provide a configuration option that causes the decryption operation
+    //# to fail immediately after parsing the header if a signed algorithm suite is used.
+    // Encrypt a multi-frame message with a signing algorithm suite.
     assert_eq!(output2, plaintext);
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_signing_suite_must_perform_signature_step() {
-    //= spec/client-apis/decrypt.md#behavior
-    //= type=test
-    //# - If the message header contains an algorithm suite including a
-    //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
-    //# the Decrypt operation MUST perform this step.
     let keyring = test_keyring().await;
     let plaintext = b"signing suite signature step test";
 
@@ -194,5 +189,10 @@ async fn test_signing_suite_must_perform_signature_step() {
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("decrypt must fail when signature is tampered — proves signature step was performed");
+    //= spec/client-apis/decrypt.md#behavior
+    //= type=test
+    //# - If the message header contains an algorithm suite including a
+    //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
+    //# the Decrypt operation MUST perform this step.
     assert_eq!(err.kind, ErrorKind::Esdk, "tampered signature must produce Esdk error, got: {err:?}");
 }
