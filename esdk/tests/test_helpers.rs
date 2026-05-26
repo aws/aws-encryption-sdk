@@ -156,6 +156,25 @@ pub async fn encrypt_with_signing_suite(plaintext: &[u8]) -> Vec<u8> {
     encrypt(&input).await.unwrap().ciphertext
 }
 
+/// Encrypt a 30-byte 0xAA plaintext with frame_length=10 under the ECDSA-P384
+/// signing suite, returning `(plaintext, keyring, ciphertext)` for streaming
+/// decrypt tests that need a multi-frame signed payload and the matching
+/// keyring to re-feed into `decrypt_stream`.
+pub async fn multi_frame_signed_for_stream() -> (Vec<u8>, KeyringRef, Vec<u8>) {
+    let keyring = test_keyring().await;
+    let plaintext = vec![0xAAu8; 30];
+    let mut input = EncryptInput::with_legacy_keyring(
+        &plaintext,
+        EncryptionContext::new(),
+        keyring.clone(),
+    );
+    input.frame_length = FrameLength::new(10).unwrap();
+    input.algorithm_suite_id =
+        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
+    let ct = encrypt(&input).await.unwrap().ciphertext;
+    (plaintext, keyring, ct)
+}
+
 /// Encrypt with a V1 signing algorithm suite, return ciphertext bytes.
 pub async fn encrypt_with_v1_signing_suite(plaintext: &[u8]) -> Vec<u8> {
     let keyring = test_keyring().await;
