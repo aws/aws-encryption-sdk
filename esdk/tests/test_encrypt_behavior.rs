@@ -165,6 +165,12 @@ async fn test_obtain_materials_from_cmm() {
     let pt = b"obtain materials test";
     let output = encrypt_default(pt).await;
     assert!(!output.ciphertext.is_empty(), "encrypt must produce ciphertext from CMM-provided materials");
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //= reason=encrypt_default passes a keyring; success proves default CMM was constructed
+    //# If instead the caller supplied a [keyring](../framework/keyring-interface.md),
+    //# this behavior MUST use a [default CMM](../framework/default-cmm.md)
+    //# constructed using the caller-supplied keyring as input.
     // The output algorithm suite comes from encryption materials; verify it is a valid ESDK suite.
     // The default CMM selects AlgAes256GcmHkdfSha512CommitKeyEcdsaP384 when no suite is specified.
     assert_eq!(
@@ -592,6 +598,11 @@ async fn test_cmm_request_no_algorithm_suite_field() {
 
     // Verify spy observed None for algorithm_suite_id
     let observed = observed_suite.lock().unwrap().clone();
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //= reason=Spy CMM directly observes the call was constructed with expected fields
+    //# The call to [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials)
+    //# on that CMM MUST be constructed as follows:
     assert_eq!(observed, Some(None), "CMM must receive algorithm_suite_id=None when caller omits it");
 
     // Round-trip corroboration
