@@ -177,7 +177,7 @@ async fn test_obtain_materials_from_cmm() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_used_must_be_input_cmm() {
     // Create a CMM from a keyring, then pass it as the CMM input.
-    // A successful round-trip proves the input CMM was used.
+    // Decrypt with the same CMM succeeds, proving encrypt used the input CMM.
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //# The CMM used MUST be the input CMM, if supplied.
@@ -311,8 +311,8 @@ async fn test_max_edk_exceeded_error() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_data_key_derived_from_plaintext_data_key() {
-    // A successful round-trip proves the derived data key was used for encryption,
-    // because decrypt derives the same key from the same plaintext data key.
+    // Decrypt re-derives the same key from the plaintext data key; success proves
+    // encrypt used the correctly derived data key.
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //= reason=Decrypt re-derives the same key; mismatch would cause decryption failure
@@ -477,9 +477,10 @@ async fn test_reserved_encryption_context_prefix_must_fail() {
     );
 }
 
-// Boundary: `aws-crypto` without the trailing dash MUST be accepted, proving the check requires the trailing dash.
+// Boundary: `aws-crypto` without the trailing dash MUST be accepted.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_reserved_encryption_context_prefix_boundary_no_dash() {
+    // Proves only 'aws-crypto-' (with dash) is reserved; 'aws-crypto' alone is valid.
     let keyring = test_keyring().await;
     let ec = std::collections::HashMap::from([
         ("aws-crypto".to_string(), "bar".to_string()),
@@ -515,7 +516,7 @@ async fn test_algorithm_suite_used_for_encryption() {
     assert_eq!(pt, b"suite used test");
 }
 
-/// Spy CMM that records what inputs it received, then delegates to a real CMM.
+// Spy CMM that records what inputs it received, then delegates to a real CMM.
 struct SpyCmm {
     inner: aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef,
     observed_algorithm_suite_id: std::sync::Arc<std::sync::Mutex<Option<Option<aws_mpl_legacy::dafny::types::AlgorithmSuiteId>>>>,
