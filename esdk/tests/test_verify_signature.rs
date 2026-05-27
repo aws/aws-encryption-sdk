@@ -18,13 +18,13 @@ async fn test_verify_signature_fails_on_tampered_footer() {
 
     //= spec/client-apis/decrypt.md#verify-the-signature
     //= type=test
-    //= reason=Tampering the footer causes decrypt to fail, proving the footer is verified. If verification were removed, this test would pass — so failure proves verification runs.
+    //= reason=Tampered footer causes failure, proving the footer is verified
     //# If the algorithm suite has a signature algorithm,
     //# the Decrypt operation MUST verify the message footer using the specified signature algorithm.
 
     //= spec/client-apis/decrypt.md#verify-the-signature
     //= type=test
-    //= reason=Tampering the footer breaks ECDSA verification, proving the correct signature algorithm from the algorithm suite is used. A wrong algorithm would already fail on untampered data.
+    //= reason=Tampered footer breaks ECDSA; proves correct signature algorithm is used
     //# Once the message footer is deserialized, the Decrypt operation MUST use the
     //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm)
     //# from the [algorithm suite](../framework/algorithm-suites.md) in the decryption materials to
@@ -32,13 +32,13 @@ async fn test_verify_signature_fails_on_tampered_footer() {
 
     //= spec/client-apis/decrypt.md#verify-the-signature
     //= type=test
-    //= reason=Tampering the footer breaks ECDSA verification, proving the correct verification key from decryption materials is used. A wrong key would already fail on untampered data.
+    //= reason=Tampered footer breaks ECDSA; proves correct verification key is used
     //# - The verification key MUST be the [verification key](../framework/structures.md#verification-key)
     //# in the decryption materials.
 
     //= spec/client-apis/decrypt.md#verify-the-signature
     //= type=test
-    //= reason=Tampering the footer breaks ECDSA verification, proving the signed input is the correct concatenation of header and body. Wrong input would already fail on untampered data.
+    //= reason=Tampered footer breaks ECDSA; proves signed input is header+body concatenation
     //# - The input to verify MUST be the concatenation of the serialization of the
     //# [message header](../data-format/message-header.md) and [message body](../data-format/message-body.md).
 

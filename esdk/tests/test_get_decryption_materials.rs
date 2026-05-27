@@ -233,7 +233,7 @@ async fn test_unsupported_esdk_algorithm_suite_yields_error() {
     let err = result.expect_err("decrypt must fail when algorithm suite ID is not a supported ESDK suite");
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
-    //= reason=get_esdk_id rejects non-ESDK suite IDs; a valid round-trip proves ESDK suites pass, and tampering the suite ID to a non-ESDK value triggers the error path
+    //= reason=Tampered suite ID to non-ESDK value triggers the error path
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
     //# decrypt MUST yield an error.
     assert_eq!(err.kind, ErrorKind::ValidationError, "got: {err:?}");

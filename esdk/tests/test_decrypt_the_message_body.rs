@@ -137,7 +137,7 @@ async fn test_decrypt_no_unauthenticated_plaintext_released() {
 async fn test_decrypt_unframed_sequence_number_is_one() {
     //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //= reason=Decrypt output of the external V2 nonframed vector matches the expected plaintext, which can only happen if the decryptor used sequence number 1 in its AAD reconstruction.
+    //= reason=External V2 nonframed vector succeeds only if AAD sequence number is 1
     //# If this is nonframed data, this value MUST be 1.
     let result = decrypt_external_nonframed_vector(Version::V2).await;
     assert_eq!(
