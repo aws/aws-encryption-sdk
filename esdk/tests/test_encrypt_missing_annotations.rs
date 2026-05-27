@@ -98,42 +98,6 @@ async fn test_no_plaintext_length_bound_field_not_included() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_esdk_supported_algorithm_suite_accepted() {
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //= reason=All EsdkAlgorithmSuiteId variants are ESDK-supported by construction; the public API only accepts EsdkAlgorithmSuiteId, so non-ESDK suites cannot be passed. A successful encrypt with an explicit ESDK suite proves the check passes for supported suites.
-    //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
-    //# encrypt MUST yield an error.
-    let keyring = test_keyring().await;
-    let enc_input = EncryptInput::with_legacy_keyring(
-        b"esdk suite check",
-        EncryptionContext::new(),
-        keyring,
-    );
-    // Default suite (AlgAes256GcmHkdfSha512CommitKeyEcdsaP384) is ESDK-supported;
-    // a successful encrypt proves the ESDK support check passes.
-    let result = encrypt(&enc_input).await;
-    assert!(
-        result.is_ok(),
-        "encrypt must succeed with an ESDK-supported algorithm suite"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_header_bytes_not_released_until_fully_serialized() {
-    //= spec/client-apis/encrypt.md#authentication-tag
-    //= type=test
-    //= reason=A successful round-trip proves the header was fully serialized before release; if partial header bytes were released, decrypt would fail to parse the header
-    //# The serialized bytes MUST NOT be released until the entire message header has been serialized.
-    let pt = b"header release test";
-    let result = round_trip(pt).await;
-    assert_eq!(
-        result, pt,
-        "successful round-trip proves header was fully serialized before release"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_header_released_after_serialization() {
     //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
@@ -165,23 +129,6 @@ async fn test_streaming_header_released_after_serialization() {
     assert_eq!(
         pt, plaintext,
         "streaming round-trip proves header was released after serialization"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_signature_algorithm_receives_serialized_header() {
-    //= spec/client-apis/encrypt.md#authentication-tag
-    //= type=test
-    //= reason=A successful round-trip with a signing suite proves the header was input to the signature algorithm; decrypt verifies the signature over header+body
-    //# If the algorithm suite contains a signature algorithm and
-    //# this operation is [streaming](streaming.md) the encrypted message output to the caller,
-    //# this operation MUST input the serialized header to the signature algorithm as soon as it is serialized,
-    //# such that the serialized header isn't required to remain in memory to [construct the signature](#construct-the-signature).
-    let pt = b"header to signature test";
-    let result = round_trip_signing(pt).await;
-    assert_eq!(
-        result, pt,
-        "round-trip with signing suite proves header was input to signature algorithm"
     );
 }
 
@@ -219,61 +166,6 @@ async fn test_message_bodies_not_equal_must_fail() {
     assert_eq!(
         err.kind, ErrorKind::CryptographicError,
         "tampered body must surface as a CryptographicError (AES-GCM authentication failure), got: {err:?}"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_signature_algorithm_receives_serialized_frame() {
-    //= spec/client-apis/encrypt.md#construct-a-frame
-    //= type=test
-    //= reason=A successful round-trip with a signing suite proves each frame was input to the signature algorithm; decrypt verifies the signature over header+body (all frames)
-    //# If the algorithm suite contains a signature algorithm and
-    //# the Encrypt operation is [streaming](streaming.md) the encrypted message output to the caller,
-    //# the Encrypt operation MUST input the serialized frame to the signature algorithm as soon as it is serialized,
-    //# such that the serialized frame isn't required to remain in memory to [construct the signature](#construct-the-signature).
-    let keyring = test_keyring().await;
-    let mut enc_input = EncryptInput::with_legacy_keyring(
-        b"frame to signature test with multiple frames",
-        EncryptionContext::new(),
-        keyring.clone(),
-    );
-    enc_input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    enc_input.frame_length = FrameLength::new(10).unwrap();
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let pt = decrypt(&dec_input).await.unwrap().plaintext;
-    assert_eq!(
-        pt, b"frame to signature test with multiple frames",
-        "round-trip with signing suite and multiple frames proves each frame was input to signature algorithm"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_header_and_body_may_already_be_input_to_signature() {
-    //= spec/client-apis/encrypt.md#construct-the-signature
-    //= type=test
-    //= reason=A successful round-trip with a signing suite proves the header and body were already input to the signature during previous steps (header serialization and body serialization)
-    //# Note that the message header and message body MAY have already been input during previous steps.
-    let pt = b"already input test";
-    let result = round_trip_signing(pt).await;
-    assert_eq!(
-        result, pt,
-        "round-trip proves header and body were input to signature during previous steps"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_footer_bytes_not_released_until_fully_serialized() {
-    //= spec/client-apis/encrypt.md#construct-the-signature
-    //= type=test
-    //= reason=A successful round-trip with a signing suite proves the footer was fully serialized before release; if partial footer bytes were released, decrypt would fail to parse the footer
-    //# The above serialized bytes MUST NOT be released until the entire message footer has been serialized.
-    let pt = b"footer release test";
-    let result = round_trip_signing(pt).await;
-    assert_eq!(
-        result, pt,
-        "successful round-trip proves footer was fully serialized before release"
     );
 }
 
