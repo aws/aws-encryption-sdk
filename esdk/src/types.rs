@@ -360,8 +360,13 @@ pub struct EncryptInput<'a> {
     //= spec/client-apis/client.md#initialization
     //# If no [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys) is provided
     //# the default MUST result in no limit on the number of encrypted data keys (aside from the limit imposed by the [message format](../format/message-header.md)).
+    /// Default is no limit on the number of encrypted data keys.
+    ///
+    /// Leave as `None` when calling [`Esdk::encrypt`](crate::Esdk::encrypt) — the client provides this.
     pub max_encrypted_data_keys: Option<NonZeroUsize>,
-    /// Default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
+    /// Default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`.
+    ///
+    /// Leave at the default when calling [`Esdk::encrypt`](crate::Esdk::encrypt) — the client provides this.
     //= spec/client-apis/client.md#commitment-policy
     //= reason=commitment_policy field type is EsdkCommitmentPolicy from aws_mpl_legacy
     //# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
@@ -470,9 +475,13 @@ pub struct EncryptStreamInput {
     //# If the [plaintext](#plaintext) is of unknown length, the caller MAY also input a
     //# [Plaintext Length Bound](#plaintext-length-bound).
     pub data_size: Option<usize>,
-    /// Default is no limit
+    /// Default is no limit on the number of encrypted data keys.
+    ///
+    /// Leave as `None` when calling [`Esdk::encrypt`](crate::Esdk::encrypt) — the client provides this.
     pub max_encrypted_data_keys: Option<NonZeroUsize>,
-    /// Default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
+    /// Default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`.
+    ///
+    /// Leave at the default when calling [`Esdk::encrypt`](crate::Esdk::encrypt) — the client provides this.
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 
@@ -554,9 +563,13 @@ pub struct DecryptInput<'a> {
     pub source: Option<MaterialSource>,
     /// Default is `NetV400RetryPolicy::AllowRetry`
     pub net_v4_retry_policy: NetV400RetryPolicy,
-    /// Default is no limit
+    /// Default is no limit on the number of encrypted data keys.
+    ///
+    /// Leave as `None` when calling [`Esdk::encrypt`](crate::Esdk::encrypt) — the client provides this.
     pub max_encrypted_data_keys: Option<NonZeroUsize>,
-    /// Default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
+    /// Default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`.
+    ///
+    /// Leave at the default when calling [`Esdk::encrypt`](crate::Esdk::encrypt) — the client provides this.
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 
@@ -619,9 +632,13 @@ pub struct DecryptStreamInput {
     pub unsafe_release_plaintext_before_verify: bool,
     /// Default is `NetV400RetryPolicy::AllowRetry`
     pub net_v4_retry_policy: NetV400RetryPolicy,
-    /// Default is no limit
+    /// Default is no limit on the number of encrypted data keys.
+    ///
+    /// Leave as `None` when calling [`Esdk::encrypt`](crate::Esdk::encrypt) — the client provides this.
     pub max_encrypted_data_keys: Option<NonZeroUsize>,
-    /// Default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`
+    /// Default is `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`.
+    ///
+    /// Leave at the default when calling [`Esdk::encrypt`](crate::Esdk::encrypt) — the client provides this.
     pub commitment_policy: EsdkCommitmentPolicy,
 }
 

@@ -96,11 +96,7 @@ impl Esdk {
     /// in two places). Otherwise, returns whatever
     /// [`encrypt`](crate::encrypt) returns.
     pub async fn encrypt(&self, input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
-        reject_input_client_config(input.commitment_policy, input.max_encrypted_data_keys)?;
-        let mut filled = input.clone();
-        filled.commitment_policy = self.config.commitment_policy;
-        filled.max_encrypted_data_keys = self.config.max_encrypted_data_keys;
-        crate::encrypt::encrypt(&filled).await
+        crate::encrypt::encrypt(&fill_or_reject(input, &self.config)?).await
     }
 
     /// Decrypt with the client's configured commitment policy and EDK cap.
@@ -111,11 +107,7 @@ impl Esdk {
     /// default or `input.max_encrypted_data_keys` is `Some`. Otherwise,
     /// returns whatever [`decrypt`](crate::decrypt) returns.
     pub async fn decrypt(&self, input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
-        reject_input_client_config(input.commitment_policy, input.max_encrypted_data_keys)?;
-        let mut filled = input.clone();
-        filled.commitment_policy = self.config.commitment_policy;
-        filled.max_encrypted_data_keys = self.config.max_encrypted_data_keys;
-        crate::decrypt::decrypt(&filled).await
+        crate::decrypt::decrypt(&fill_or_reject(input, &self.config)?).await
     }
 
     /// Stream-encrypt with the client's configured commitment policy and EDK cap.
@@ -131,11 +123,7 @@ impl Esdk {
         ciphertext: &mut dyn SafeWrite,
         input: &EncryptStreamInput,
     ) -> Result<EncryptStreamOutput, Error> {
-        reject_input_client_config(input.commitment_policy, input.max_encrypted_data_keys)?;
-        let mut filled = input.clone();
-        filled.commitment_policy = self.config.commitment_policy;
-        filled.max_encrypted_data_keys = self.config.max_encrypted_data_keys;
-        crate::encrypt::encrypt_stream(plaintext, ciphertext, &filled).await
+        crate::encrypt::encrypt_stream(plaintext, ciphertext, &fill_or_reject(input, &self.config)?).await
     }
 
     /// Stream-decrypt with the client's configured commitment policy and EDK cap.
@@ -151,26 +139,56 @@ impl Esdk {
         plaintext: &mut dyn SafeWrite,
         input: &DecryptStreamInput,
     ) -> Result<DecryptStreamOutput, Error> {
-        reject_input_client_config(input.commitment_policy, input.max_encrypted_data_keys)?;
-        let mut filled = input.clone();
-        filled.commitment_policy = self.config.commitment_policy;
-        filled.max_encrypted_data_keys = self.config.max_encrypted_data_keys;
-        crate::decrypt::decrypt_stream(ciphertext, plaintext, &filled).await
+        crate::decrypt::decrypt_stream(ciphertext, plaintext, &fill_or_reject(input, &self.config)?).await
     }
 }
 
-/// Reject the call if the input also carries client-level config.
+/// Internal abstraction over the four input structs that carry the two
+/// "client-config" fields. Used by [`fill_or_reject`] so the four `Esdk`
+/// methods don't repeat the rejection-and-fill logic.
+trait HasClientConfigFields {
+    fn client_commitment_policy(&self) -> EsdkCommitmentPolicy;
+    fn client_max_encrypted_data_keys(&self) -> Option<NonZeroUsize>;
+    fn set_client_commitment_policy(&mut self, p: EsdkCommitmentPolicy);
+    fn set_client_max_encrypted_data_keys(&mut self, n: Option<NonZeroUsize>);
+}
+
+macro_rules! impl_has_client_config_fields {
+    ($t:ty) => {
+        impl HasClientConfigFields for $t {
+            fn client_commitment_policy(&self) -> EsdkCommitmentPolicy {
+                self.commitment_policy
+            }
+            fn client_max_encrypted_data_keys(&self) -> Option<NonZeroUsize> {
+                self.max_encrypted_data_keys
+            }
+            fn set_client_commitment_policy(&mut self, p: EsdkCommitmentPolicy) {
+                self.commitment_policy = p;
+            }
+            fn set_client_max_encrypted_data_keys(&mut self, n: Option<NonZeroUsize>) {
+                self.max_encrypted_data_keys = n;
+            }
+        }
+    };
+}
+
+impl_has_client_config_fields!(EncryptInput<'_>);
+impl_has_client_config_fields!(DecryptInput<'_>);
+impl_has_client_config_fields!(EncryptStreamInput);
+impl_has_client_config_fields!(DecryptStreamInput);
+
+/// Reject the call if the input also carries client-level config; otherwise
+/// return a clone of the input with the client config's fields filled in.
 ///
-/// We intentionally do not define override semantics today: returning an error
-/// is forward-compatible (a future release may accept the call with explicit
-/// precedence rules), while shipping any specific precedence today would lock
-/// it in.
-fn reject_input_client_config(
-    commitment_policy: EsdkCommitmentPolicy,
-    max_encrypted_data_keys: Option<NonZeroUsize>,
-) -> Result<(), Error> {
-    if commitment_policy != EsdkCommitmentPolicy::default()
-        || max_encrypted_data_keys.is_some()
+/// Returning an error today (rather than picking a precedence rule) is
+/// forward-compatible: a future release may define override semantics
+/// without breaking callers.
+fn fill_or_reject<I>(input: &I, config: &EsdkConfig) -> Result<I, Error>
+where
+    I: HasClientConfigFields + Clone,
+{
+    if input.client_commitment_policy() != EsdkCommitmentPolicy::default()
+        || input.client_max_encrypted_data_keys().is_some()
     {
         return Err(val_err(
             "EsdkConfig is provided by both the Esdk client and the input struct. \
@@ -180,7 +198,10 @@ fn reject_input_client_config(
              a future release.",
         ));
     }
-    Ok(())
+    let mut filled = input.clone();
+    filled.set_client_commitment_policy(config.commitment_policy);
+    filled.set_client_max_encrypted_data_keys(config.max_encrypted_data_keys);
+    Ok(filled)
 }
 
 /// Fluent builder for [`Esdk`].
