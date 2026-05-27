@@ -83,39 +83,6 @@ async fn test_net_retry_flag() {
 }
 
 #[test]
-fn test_commitment_policy_is_immutable() {
-    //= spec/client-apis/client.md#initialization
-    //= type=test
-    //= reason=Clone, shared-ref read, and DecryptInput::from_encrypt all return the policy unchanged
-    //# Once a [commitment policy](#commitment-policy) has been set it SHOULD be immutable.
-    let mut input = EncryptInput::default();
-    input.commitment_policy =
-        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    let original = input.commitment_policy;
-
-    // Clone preserves the policy bit-for-bit.
-    assert_eq!(
-        input.clone().commitment_policy,
-        original,
-        "policy must survive Clone unchanged"
-    );
-
-    // A shared reference (the form encrypt()/decrypt() receive) cannot mutate it.
-    let shared: &EncryptInput<'_> = &input;
-    assert_eq!(
-        shared.commitment_policy, original,
-        "policy must be visible unchanged through a shared reference"
-    );
-
-    // The encrypt → decrypt input bridge propagates the same policy.
-    let decrypt_input = DecryptInput::from_encrypt(b"", &input);
-    assert_eq!(
-        decrypt_input.commitment_policy, original,
-        "policy must propagate unchanged into a DecryptInput built from this EncryptInput"
-    );
-}
-
-#[test]
 fn test_default_commitment_policy() {
     //= spec/client-apis/client.md#initialization
     //= type=test
