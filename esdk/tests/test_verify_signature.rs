@@ -66,6 +66,16 @@ async fn test_verify_signature_fails_on_tampered_footer() {
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("decrypt must fail when footer signature bytes are tampered");
+    //= spec/client-apis/decrypt.md#verify-the-signature
+    //= type=test
+    //= reason=Tampered footer causes signature error, proving footer was deserialized after body
+    //# After deserializing the body, the Decrypt operation MUST deserialize the next encrypted message bytes
+    //# as the [message footer](../data-format/message-footer.md).
+    //
+    //= spec/client-apis/decrypt.md#verify-the-signature
+    //= type=test
+    //= reason=Successful untampered baseline proves footer deserialization conforms to spec
+    //# The order for message footer deserialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
     assert_eq!(
         err.kind,
         ErrorKind::Esdk,

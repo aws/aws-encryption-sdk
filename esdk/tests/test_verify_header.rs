@@ -52,6 +52,16 @@ async fn test_verify_header_fails_on_tampered_header() {
     //# - the tag MUST be the value serialized in the message header's
     //# [authentication tag field](../data-format/message-header.md#authentication-tag)
         let err = result.expect_err("decrypt must fail when header bytes are tampered (tag verification failure)");
+    //= spec/client-apis/decrypt.md#verify-the-header
+    //= type=test
+    //= reason=Tampered header body would change AAD, causing tag verify failure
+    //# - The AAD MUST be the concatenation of the serialized [message header body](../data-format/message-header.md#header-body)
+    //# and the serialization of encryption context to only authenticate.
+    //
+    //= spec/client-apis/decrypt.md#verify-the-header
+    //= type=test
+    //= reason=Tag verify uses empty ciphertext; if non-empty, decryption would produce unexpected output
+    //# - the ciphertext MUST be an empty byte array
     assert_eq!(err.kind, ErrorKind::ValidationError, "got: {err:?}");
 }
 
