@@ -181,7 +181,7 @@ async fn internal_encrypt(
 
     //= spec/client-apis/encrypt.md#behavior
     //= type=implication
-    //= reason=get_encryption_materials is called first in the function body
+    //= reason=step 2 consumes mat_result from step 1; reordering won't compile
     //# - Encrypt operation Step 1 MUST be [Get the encryption materials](#get-the-encryption-materials)
     //
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
