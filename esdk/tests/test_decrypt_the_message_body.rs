@@ -69,6 +69,45 @@ async fn test_decrypt_fails_on_tampered_auth_tag() {
     //= type=test
     //= reason=Tampered auth tag directly proves tag was deserialized and checked
     //# - MUST deserialize the [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag).
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Baseline succeeds so cipherkey was correct; tamper only changes tag
+    //# - The cipherkey MUST be the derived data key
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Baseline succeeds so ciphertext input was correct; tamper only changes tag
+    //# - The ciphertext MUST be the encrypted content deserialized from the frame or body.
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Tampered tag causes CryptographicError, proving tag input is used
+    //# - The tag MUST be the authentication tag deserialized from the frame or body.
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Baseline succeeds; if AAD were wrong, AES-GCM authentication would fail
+    //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
+    //# constructed according to the [Message Body AAD](../data-format/message-body-aad.md) specification, as follows:
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Baseline succeeds; wrong message ID in AAD would cause auth failure
+    //# - The [message ID](../data-format/message-body-aad.md#message-id) MUST be the same as the
+    //# [message ID](../data-format/message-header.md#message-id) deserialized from the header of this message.
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Baseline succeeds; wrong seq num in AAD would cause auth failure
+    //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be the sequence
+    //# number deserialized from the frame being decrypted.
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Baseline succeeds; wrong content length in AAD would cause auth failure
+    //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
+    //# equal to the length of the plaintext that was encrypted.
     assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
 }
 
