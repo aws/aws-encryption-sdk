@@ -139,6 +139,10 @@ async fn test_input_suite_vs_commitment_policy_error() {
         panic!("expected LegacyError, got: {:?}", err.kind);
     };
     let inner = format!("{legacy:?}");
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //= reason=Test sets commitment_policy on input; policy-violation error proves it was passed
+    //# - Commitment Policy: This MUST be the [commitment policy](client.md#commitment-policy) configured in the [client](client.md) exposing this encrypt function.
     assert!(
         inner.contains("InvalidAlgorithmSuiteInfoOnEncrypt"),
         "expected InvalidAlgorithmSuiteInfoOnEncrypt, got: {inner}"
