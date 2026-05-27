@@ -125,6 +125,7 @@ async fn test_data_key_derived_from_plaintext_data_key() {
     let result = decrypt(&dec_input).await.unwrap();
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
+    //= reason=Decrypt re-derives from same plaintext data key; success proves it matched
     //# The data key used as input for all decryption described below MUST be a data key derived from the plaintext data key
     //# included in the [decryption materials](../framework/structures.md#decryption-materials).
     assert_eq!(
@@ -149,6 +150,7 @@ async fn test_algorithm_suite_from_decryption_materials() {
     let result = decrypt(&dec_input).await.unwrap();
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
+    //= reason=Decrypt succeeds with HKDF suite; proves materials' suite was used
     //# The algorithm suite used as input for all decryption described below MUST be the algorithm suite
     //# included in the [decryption materials](../framework/structures.md#decryption-materials).
     assert_eq!(
@@ -173,11 +175,13 @@ async fn test_commit_key_derived_and_validated() {
     let result = decrypt(&dec_input).await.unwrap();
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
+    //= reason=Committing suite round-trip succeeds; proves commit key derived and matched
     //# If the [algorithm suite](../framework/algorithm-suites.md#algorithm-suites-encryption-key-derivation-settings) supports [key commitment](../framework/algorithm-suites.md#key-commitment)
     //# then the [commit key](../framework/algorithm-suites.md#commit-key) MUST be derived from the plaintext data key
     //# using the [commit key derivation](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
+    //= reason=Committing suite round-trip succeeds; proves derived commit key matched header
     //# The derived commit key MUST equal the commit key stored in the message header.
     assert_eq!(
         result.plaintext, pt,
@@ -202,6 +206,7 @@ async fn test_kdf_algorithm_from_materials_suite() {
     let result = decrypt(&dec_input).await.unwrap();
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
+    //= reason=HKDF suite round-trip succeeds; proves KDF from materials was used
     //# The algorithm suite used to derive a data key from the plaintext data key MUST be
     //# the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
     //# [algorithm suite](../framework/algorithm-suites.md) associated with

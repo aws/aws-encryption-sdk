@@ -163,6 +163,7 @@ async fn test_decrypt_no_unauthenticated_plaintext_released() {
     let err = result.expect_err("tampered ciphertext must produce error, not partial plaintext");
     //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
+    //= reason=Tampered body returns Err; no DecryptOutput means no plaintext released
     //# This operation MUST NOT release any unauthenticated plaintext.
     assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
 }
@@ -197,6 +198,7 @@ async fn test_decrypt_nonframed_content_length_determines_aad() {
 async fn test_decrypt_final_frame_held_until_signature_verification() {
     //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
+    //= reason=Tampered signature → Err; proves final frame plaintext was held back
     //# Any plaintext decrypted from [nonframed data](../data-format/message-body.md#nonframed-data) or
     //# a final frame in a streamed Decrypt operation MUST NOT be released until [signature verification](#verify-the-signature)
     //# successfully completes.
@@ -227,6 +229,7 @@ async fn test_decrypt_final_frame_held_until_signature_verification() {
 async fn test_decrypt_nonframed_deserialization_conforms_to_spec() {
     //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
+    //= reason=External vector from aws-encryption-sdk-python decrypts; proves format conformance
     //# Nonframed data deserialization MUST conform to the [Nonframed Data](../data-format/message-body.md#nonframed-data) specification.
     // Successful decryption of the external V2 nonframed vector (produced by
     // aws-encryption-sdk-python 2.0.0) proves our nonframed deserialization
