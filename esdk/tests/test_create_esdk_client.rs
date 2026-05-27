@@ -276,3 +276,173 @@ async fn test_encrypt_decrypt_accepts_all_optional_inputs() {
         "encrypt/decrypt must honor the encryption context input"
     );
 }
+
+
+// === Esdk client (optional convenience layer) =====================================
+
+use aws_esdk::{Esdk, EsdkConfig};
+
+#[test]
+fn test_esdk_default_uses_default_config() {
+    // Default Esdk has the spec-default commitment policy and no EDK cap.
+    let esdk = Esdk::default();
+    assert_eq!(
+        esdk.config.commitment_policy,
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt,
+        "Esdk::default() must use the default commitment policy"
+    );
+    assert!(
+        esdk.config.max_encrypted_data_keys.is_none(),
+        "Esdk::default() must have no EDK cap"
+    );
+}
+
+#[test]
+fn test_esdk_builder_sets_commitment_policy() {
+    let esdk = Esdk::builder()
+        .commitment_policy(
+            aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
+        )
+        .build();
+    assert_eq!(
+        esdk.config.commitment_policy,
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
+        "builder().commitment_policy(...) must set it on the resulting Esdk's config"
+    );
+}
+
+#[test]
+fn test_esdk_builder_sets_max_encrypted_data_keys() {
+    let cap = std::num::NonZeroUsize::new(3).unwrap();
+    let esdk = Esdk::builder().max_encrypted_data_keys(cap).build();
+    assert_eq!(
+        esdk.config.max_encrypted_data_keys,
+        Some(cap),
+        "builder().max_encrypted_data_keys(...) must set it on the resulting Esdk's config"
+    );
+}
+
+#[test]
+fn test_esdk_new_takes_explicit_config() {
+    // Direct construction from a built EsdkConfig is also supported.
+    let mut config = EsdkConfig::default();
+    config.commitment_policy =
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    config.max_encrypted_data_keys = std::num::NonZeroUsize::new(7);
+    let esdk = Esdk::new(config);
+    assert_eq!(
+        esdk.config.commitment_policy,
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt
+    );
+    assert_eq!(
+        esdk.config.max_encrypted_data_keys,
+        std::num::NonZeroUsize::new(7)
+    );
+}
+
+// Esdk methods reject calls whose input *also* sets commitment_policy or
+// max_encrypted_data_keys: providing config in two places at once is reserved.
+// The rejection check fires before any input validation, so we don't need a
+// real keyring for these tests.
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_esdk_encrypt_rejects_input_with_non_default_commitment_policy() {
+    let esdk = Esdk::default();
+    let mut input = EncryptInput::new();
+    input.commitment_policy =
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+
+    let err = esdk
+        .encrypt(&input)
+        .await
+        .expect_err("Esdk::encrypt must reject input with non-default commitment_policy");
+    assert!(
+        matches!(err.kind, ErrorKind::ValidationError),
+        "expected ValidationError, got {:?}",
+        err.kind
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_esdk_encrypt_rejects_input_with_max_encrypted_data_keys() {
+    let esdk = Esdk::default();
+    let mut input = EncryptInput::new();
+    input.max_encrypted_data_keys = std::num::NonZeroUsize::new(2);
+
+    let err = esdk
+        .encrypt(&input)
+        .await
+        .expect_err("Esdk::encrypt must reject input with max_encrypted_data_keys set");
+    assert!(
+        matches!(err.kind, ErrorKind::ValidationError),
+        "expected ValidationError, got {:?}",
+        err.kind
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_esdk_decrypt_rejects_input_with_non_default_commitment_policy() {
+    let esdk = Esdk::default();
+    let mut input = DecryptInput::new();
+    input.commitment_policy =
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+
+    let err = esdk
+        .decrypt(&input)
+        .await
+        .expect_err("Esdk::decrypt must reject input with non-default commitment_policy");
+    assert!(
+        matches!(err.kind, ErrorKind::ValidationError),
+        "expected ValidationError, got {:?}",
+        err.kind
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_esdk_decrypt_rejects_input_with_max_encrypted_data_keys() {
+    let esdk = Esdk::default();
+    let mut input = DecryptInput::new();
+    input.max_encrypted_data_keys = std::num::NonZeroUsize::new(2);
+
+    let err = esdk
+        .decrypt(&input)
+        .await
+        .expect_err("Esdk::decrypt must reject input with max_encrypted_data_keys set");
+    assert!(
+        matches!(err.kind, ErrorKind::ValidationError),
+        "expected ValidationError, got {:?}",
+        err.kind
+    );
+}
+
+// Round-trip: configure the Esdk client, hand it inputs that DO NOT set client
+// config, and verify the encrypt/decrypt pair succeeds and produces the
+// original plaintext.
+#[tokio::test(flavor = "multi_thread")]
+async fn test_esdk_encrypt_decrypt_round_trip() {
+    let plaintext: &[u8] = b"hello via Esdk client";
+    let keyring = test_keyring().await;
+
+    let esdk = Esdk::builder()
+        .commitment_policy(
+            aws_mpl_legacy::commitment::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt,
+        )
+        .build();
+
+    let ec = EncryptionContext::new();
+    let enc_input = EncryptInput::with_legacy_keyring(plaintext, ec.clone(), keyring.clone());
+    let ct = esdk
+        .encrypt(&enc_input)
+        .await
+        .expect("Esdk::encrypt must succeed for a default input + configured client");
+
+    let dec_input = DecryptInput::with_legacy_keyring(&ct.ciphertext, ec, keyring);
+    let pt = esdk
+        .decrypt(&dec_input)
+        .await
+        .expect("Esdk::decrypt must succeed on the matching ciphertext");
+    assert_eq!(
+        pt.plaintext, plaintext,
+        "Esdk round-trip must produce the original plaintext"
+    );
+}
