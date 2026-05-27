@@ -151,6 +151,8 @@ async fn test_input_suite_vs_commitment_policy_error() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_obtain_materials_from_cmm() {
     // A successful encrypt proves materials were obtained from the CMM.
+    let pt = b"obtain materials test";
+    let output = encrypt_default(pt).await;
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //# This operation MUST obtain this set of [encryption materials](../framework/structures.md#encryption-materials)
@@ -161,8 +163,6 @@ async fn test_obtain_materials_from_cmm() {
     //# To construct the [encrypted message](#encrypted-message),
     //# some fields MUST be constructed using information obtained
     //# from a set of valid [encryption materials](../framework/structures.md#encryption-materials).
-    let pt = b"obtain materials test";
-    let output = encrypt_default(pt).await;
     assert!(!output.ciphertext.is_empty(), "encrypt must produce ciphertext from CMM-provided materials");
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
@@ -183,9 +183,6 @@ async fn test_obtain_materials_from_cmm() {
 async fn test_cmm_used_must_be_input_cmm() {
     // Create a CMM from a keyring, then pass it as the CMM input.
     // Decrypt with the same CMM succeeds, proving encrypt used the input CMM.
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# The CMM used MUST be the input CMM, if supplied.
     let keyring = test_keyring().await;
     let cmm = mpl()
         .create_default_cryptographic_materials_manager()
@@ -198,19 +195,22 @@ async fn test_cmm_used_must_be_input_cmm() {
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
     let dec_input = DecryptInput::with_legacy_cmm(&ct, EncryptionContext::new(), cmm);
     let result = decrypt(&dec_input).await.unwrap();
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //# The CMM used MUST be the input CMM, if supplied.
     assert_eq!(result.plaintext, pt);
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_request_encryption_context() {
     // Encrypt with a non-empty encryption context and verify it appears in the output.
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# - Encryption Context: If provided, this MUST be the [input encryption context](#encryption-context).
     let keyring = test_keyring().await;
     let ec = std::collections::HashMap::from([("mykey".to_string(), "myval".to_string())]);
     let enc_input = EncryptInput::with_legacy_keyring(b"ec test", ec.clone(), keyring.clone());
     let output = encrypt(&enc_input).await.unwrap();
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //# - Encryption Context: If provided, this MUST be the [input encryption context](#encryption-context).
     assert!(
         output.encryption_context.contains_key("mykey"),
         "output encryption context must contain the input key"
@@ -219,16 +219,14 @@ async fn test_cmm_request_encryption_context() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_request_empty_encryption_context() {
-    // Encrypt with no encryption context; the CMM receives an empty EC.
-    // The output EC should contain no user-provided keys (only CMM-added keys, if any).
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# Otherwise, this MUST be an empty encryption context.
+    // Encrypt with no encryption context; verify no user-provided keys in output.
     let pt = b"empty ec test";
     let output = encrypt_default(pt).await;
     let decrypted = decrypt_ciphertext(&output.ciphertext).await;
     assert_eq!(decrypted.plaintext, pt, "round-trip must recover original plaintext");
-    // No user-provided keys should appear in the output encryption context.
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //# Otherwise, this MUST be an empty encryption context.
     assert!(
         !output.encryption_context.keys().any(|k| !k.starts_with("aws-crypto-")),
         "output encryption context must not contain user-provided keys when input EC is empty"
@@ -238,15 +236,15 @@ async fn test_cmm_request_empty_encryption_context() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_request_algorithm_suite_provided() {
     // Encrypt with a specific algorithm suite and verify the output uses it.
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# - Algorithm Suite: If provided, this MUST be the [input algorithm suite](#algorithm-suite).
     let keyring = test_keyring().await;
     let mut enc_input =
         EncryptInput::with_legacy_keyring(b"suite test", EncryptionContext::new(), keyring);
     enc_input.algorithm_suite_id =
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
     let output = encrypt(&enc_input).await.unwrap();
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //# - Algorithm Suite: If provided, this MUST be the [input algorithm suite](#algorithm-suite).
     assert_eq!(
         output.algorithm_suite_id,
         EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey,
@@ -257,17 +255,17 @@ async fn test_cmm_request_algorithm_suite_provided() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_suite_from_materials_used() {
     // Encrypt with a specific suite and verify the output reports the same suite.
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# The [algorithm suite](../framework/algorithm-suites.md) used in all aspects of this operation
-    //# MUST be the algorithm suite in the [encryption materials](../framework/structures.md#encryption-materials)
-    //# returned from the [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) call.
     let keyring = test_keyring().await;
     let mut enc_input =
         EncryptInput::with_legacy_keyring(b"suite from materials", EncryptionContext::new(), keyring);
     enc_input.algorithm_suite_id =
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
     let output = encrypt(&enc_input).await.unwrap();
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //# The [algorithm suite](../framework/algorithm-suites.md) used in all aspects of this operation
+    //# MUST be the algorithm suite in the [encryption materials](../framework/structures.md#encryption-materials)
+    //# returned from the [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) call.
     assert_eq!(output.algorithm_suite_id, EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
 }
 
