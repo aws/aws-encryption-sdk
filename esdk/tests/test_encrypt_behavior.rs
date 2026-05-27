@@ -680,11 +680,6 @@ async fn test_plaintext_length_bound_used_for_unknown_length() {
 
     let dec_input = DecryptInput::with_legacy_keyring(&output, EncryptionContext::new(), keyring);
     let pt = decrypt(&dec_input).await.unwrap().plaintext;
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //= reason=encrypt_stream with data_size=Some(100) passes the bound; success proves it was used
-    //# If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
-    //# was provided, this MUST be the [Plaintext Length Bound](#plaintext-length-bound).
     assert_eq!(pt, plaintext);
 }
 
@@ -702,10 +697,6 @@ async fn test_no_plaintext_length_bound_field_not_included() {
 
     let dec_input = DecryptInput::with_legacy_keyring(&output, EncryptionContext::new(), keyring);
     let pt = decrypt(&dec_input).await.unwrap().plaintext;
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //= reason=encrypt_stream with data_size=None succeeds; proves field was not included
-    //# If no Plaintext Length Bound is provided, this field MUST NOT be included.
     assert_eq!(pt, plaintext);
 }
 
