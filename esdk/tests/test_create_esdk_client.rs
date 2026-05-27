@@ -288,11 +288,18 @@ use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 fn test_esdk_default_uses_default_config() {
     // Default Esdk has the spec-default commitment policy and no EDK cap.
     let esdk = Esdk::default();
+    //= spec/client-apis/client.md#initialization
+    //= type=test
+    //# If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
     assert_eq!(
         esdk.config().commitment_policy,
         aws_mpl_legacy::commitment::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt,
         "Esdk::default() must use the default commitment policy"
     );
+    //= spec/client-apis/client.md#initialization
+    //= type=test
+    //# If no [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys) is provided
+    //# the default MUST result in no limit on the number of encrypted data keys (aside from the limit imposed by the [message format](../format/message-header.md)).
     assert!(
         esdk.config().max_encrypted_data_keys.is_none(),
         "Esdk::default() must have no EDK cap"
@@ -301,6 +308,10 @@ fn test_esdk_default_uses_default_config() {
 
 #[test]
 fn test_esdk_builder_sets_commitment_policy() {
+    //= spec/client-apis/client.md#initialization
+    //= type=test
+    //# - On client initialization,
+    //# the caller MUST have the option to provide a [commitment policy](#commitment-policy).
     let esdk = Esdk::builder()
         .commitment_policy(
             aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
@@ -316,6 +327,10 @@ fn test_esdk_builder_sets_commitment_policy() {
 #[test]
 fn test_esdk_builder_sets_max_encrypted_data_keys() {
     let cap = std::num::NonZeroUsize::new(3).unwrap();
+    //= spec/client-apis/client.md#initialization
+    //= type=test
+    //# - On client initialization,
+    //# the caller MUST have the option to provide a [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys).
     let esdk = Esdk::builder().max_encrypted_data_keys(cap).build();
     assert_eq!(
         esdk.config().max_encrypted_data_keys,
@@ -433,12 +448,20 @@ async fn test_esdk_encrypt_decrypt_round_trip() {
 
     let ec = EncryptionContext::new();
     let enc_input = EncryptInput::with_legacy_keyring(plaintext, ec.clone(), keyring.clone());
+    //= spec/client-apis/client.md#encrypt
+    //= type=test
+    //# The AWS Encryption SDK Client MUST provide an [encrypt](./encrypt.md#input) function
+    //# that adheres to [encrypt](./encrypt.md).
     let ct = esdk
         .encrypt(&enc_input)
         .await
         .expect("Esdk::encrypt must succeed for a default input + configured client");
 
     let dec_input = DecryptInput::with_legacy_keyring(&ct.ciphertext, ec, keyring);
+    //= spec/client-apis/client.md#decrypt
+    //= type=test
+    //# The AWS Encryption SDK Client MUST provide an [decrypt](./decrypt.md#input) function
+    //# that adheres to [decrypt](./decrypt.md).
     let pt = esdk
         .decrypt(&dec_input)
         .await
