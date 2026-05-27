@@ -193,6 +193,23 @@ pub async fn encrypt_without_signing_suite(plaintext: &[u8]) -> Vec<u8> {
     encrypt(&input).await.unwrap().ciphertext
 }
 
+/// Encrypt a 30-byte 0xBB plaintext with frame_length=10 under a non-signing
+/// suite, returning `(plaintext, keyring, ciphertext)` for streaming decrypt
+/// tests that need a multi-frame unsigned payload.
+pub async fn multi_frame_unsigned_for_stream() -> (Vec<u8>, KeyringRef, Vec<u8>) {
+    let keyring = test_keyring().await;
+    let plaintext = vec![0xBBu8; 30];
+    let mut input = EncryptInput::with_legacy_keyring(
+        &plaintext,
+        EncryptionContext::new(),
+        keyring.clone(),
+    );
+    input.frame_length = FrameLength::new(10).unwrap();
+    input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
+    let ct = encrypt(&input).await.unwrap().ciphertext;
+    (plaintext, keyring, ct)
+}
+
 /// Encrypt with a specific suite, policy, and keyring, return ciphertext bytes.
 pub async fn encrypt_with_suite(
     plaintext: &[u8],

@@ -8,7 +8,7 @@ use aws_esdk::{
     decrypt_stream, encrypt_stream, DecryptStreamInput, EncryptStreamInput, EncryptionContext,
     ErrorKind,
 };
-use test_helpers::{multi_frame_signed_for_stream, test_keyring};
+use test_helpers::{multi_frame_signed_for_stream, multi_frame_unsigned_for_stream, test_keyring};
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_encrypt_decrypt_round_trip() {
@@ -137,6 +137,24 @@ async fn test_decrypt_stream_multi_frame_signed_unsafe_flag_round_trip() {
     let mut dec_input =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
     dec_input.unsafe_release_plaintext_before_verify = true;
+
+    let mut ct_cursor = std::io::Cursor::new(&ct[..]);
+    let mut output: Vec<u8> = Vec::new();
+    decrypt_stream(&mut ct_cursor, &mut output, &dec_input)
+        .await
+        .unwrap();
+    assert_eq!(output, plaintext);
+}
+
+// Multi-frame unsigned payloads don't require unsafe_release_plaintext_before_verify
+// because each frame is individually authenticated via AES-GCM (no trailing signature).
+#[tokio::test(flavor = "multi_thread")]
+async fn test_decrypt_stream_multi_frame_unsigned_accepted_by_default() {
+    let (plaintext, keyring, ct) = multi_frame_unsigned_for_stream().await;
+
+    let dec_input =
+        DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
+    assert!(!dec_input.unsafe_release_plaintext_before_verify);
 
     let mut ct_cursor = std::io::Cursor::new(&ct[..]);
     let mut output: Vec<u8> = Vec::new();
