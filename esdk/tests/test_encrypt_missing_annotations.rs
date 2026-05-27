@@ -212,7 +212,7 @@ async fn test_footer_serialized_releases_all_bytes() {
 async fn test_must_not_encrypt_using_nonframed_content_type() {
     //= spec/client-apis/encrypt.md#nonframed-message-body-encryption
     //= type=test
-    //= reason=All encryptions produce framed content (content type 0x02); verifying the content type byte in the header proves nonframed is never used
+    //= reason=Content type byte in header is 0x02 (Framed), proving nonframed is never used
     //# Implementations of the AWS Encryption SDK MUST NOT encrypt using the nonframed content type.
     for version in VERSIONS {
         let keyring = test_keyring().await;
