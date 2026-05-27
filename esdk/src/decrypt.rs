@@ -323,6 +323,44 @@ fn step_parse_header(
     max_encrypted_data_keys: Option<std::num::NonZeroUsize>,
 ) -> Result<(header_types::HeaderBody, Vec<u8>, DigestWriter), Error> {
     let mut raw_header = Vec::new();
+
+    //= spec/client-apis/decrypt.md#parse-the-header
+    //= type=implication
+    //= reason=SafeRead provides sequential byte access only; no seek or random access
+    //# Given encrypted message bytes, this operation MUST process those bytes sequentially,
+    //# deserializing those bytes according to the [message format](../data-format/message.md).
+    //
+    //= spec/client-apis/decrypt.md#parse-the-header
+    //= type=implication
+    //= reason=read_header_body returns Err on incomplete data or reads until header is complete
+    //# This operation MUST attempt to deserialize all consumable encrypted message bytes until it has
+    //# successfully deserialized a valid [message header](../data-format/message-header.md).
+    //
+    //= spec/client-apis/decrypt.md#parse-the-header
+    //= type=implication
+    //= reason=read_header_body reads version first then dispatches V1/V2 parser
+    //# The header deserialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10)
+    //# or [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification,
+    //# depending on the [Version](../data-format/message-header.md#version) field in the message header.
+    //
+    //= spec/client-apis/decrypt.md#parse-the-header
+    //= type=implication
+    //= reason=read_header_body reads the version byte before dispatching to V1/V2
+    //# The [Version](../data-format/message-header.md#version) field MUST be deserialized first.
+    //
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
+    //= type=implication
+    //= reason=read_header_body dispatches to V1 parser when version byte is 0x01
+    //# If the value of the deserialized version field is [1.0](../data-format/message-header.md#supported-versions),
+    //# the remaining header fields MUST be deserialized according to the
+    //# [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
+    //
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //= type=implication
+    //= reason=read_header_body dispatches to V2 parser when version byte is 0x02
+    //# If the value of the deserialized version field is [2.0](../data-format/message-header.md#supported-versions),
+    //# the remaining header fields MUST be deserialized according to the
+    //# [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
     let header_body =
         header::read_header_body(ciphertext, max_encrypted_data_keys, &mut raw_header)?;
 
