@@ -180,6 +180,8 @@ async fn internal_encrypt(
     validate_encryption_context(encryption_context)?;
 
     //= spec/client-apis/encrypt.md#behavior
+    //= type=implication
+    //= reason=get_encryption_materials is called first in the function body
     //# - Encrypt operation Step 1 MUST be [Get the encryption materials](#get-the-encryption-materials)
     //
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
@@ -203,6 +205,8 @@ async fn internal_encrypt(
     //# - Encrypt operation step 2 MUST be [Construct the header](#construct-the-header)
     //
     //= spec/client-apis/encrypt.md#construct-the-header
+    //= type=implication
+    //= reason=Header serialization precedes body encryption in the function body
     //# Before encrypting input plaintext,
     //# this operation MUST serialize the [message header body](../data-format/message-header.md).
     //
@@ -225,6 +229,8 @@ async fn internal_encrypt(
     )?;
 
     //= spec/client-apis/encrypt.md#behavior
+    //= type=implication
+    //= reason=encrypt_and_serialize_body is called third in the function body
     //# - Encrypt operation step 3 MUST be [Construct the body](#construct-the-body)
     //
     //= spec/data-format/message.md#structure
