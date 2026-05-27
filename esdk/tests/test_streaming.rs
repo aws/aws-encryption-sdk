@@ -123,6 +123,9 @@ async fn test_decrypt_stream_multi_frame_signed_rejected_by_default() {
     );
 }
 
+/// Proves that unsafe_release_plaintext_before_verify=true allows a
+/// multi-frame signed payload to round-trip via decrypt_stream. Doubles
+/// as multi-frame streaming coverage for this PR.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_stream_multi_frame_signed_unsafe_flag_round_trip() {
     // Same multi-frame signed payload as the default-rejection test. Setting

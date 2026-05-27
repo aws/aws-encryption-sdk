@@ -90,6 +90,8 @@ async fn test_encrypt_decrypt_short() {
     );
 }
 
+/// Proves that an encryption context provided at encrypt time round-trips:
+/// the (key, value) pair appears in DecryptOutput.encryption_context.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt_ec() {
     let kms_keyring = kms_keyring().await;
@@ -158,6 +160,9 @@ async fn test_bad_encrypt_input() {
     );
 }
 
+/// Sweeps frame_length from 4 (multi-frame) up to plaintext.len() (single
+/// full frame), round-tripping at each length to confirm encrypt+decrypt
+/// agree across both frame-count regimes.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt_varied_frame_lengths() {
     let kms_keyring = kms_keyring().await;

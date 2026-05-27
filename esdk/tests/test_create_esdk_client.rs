@@ -44,6 +44,9 @@ const ESDK_NET_V400_MESSAGE: &[u8] = &[
     145, 95, 80, 61, 85, 143, 32, 0, 98, 20, 88, 251, 204, 5,
 ];
 
+/// ESDK .NET v4.0.0 incorrectly serialized headers. This test proves our
+/// retry logic: decrypting the v4.0.0 message fails without the retry flag
+/// (CryptographicError from header auth mismatch) and succeeds with it.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_net_retry_flag() {
     let key_namespace = "Some managed raw keys";
