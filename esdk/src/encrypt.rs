@@ -128,7 +128,7 @@ pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
 //# This input MAY be [streamed](streaming.md) to this operation.
 //
 //= spec/client-apis/encrypt.md#encrypted-message
-//= reason=SafeWrite accepts incremental writes, so each encrypted frame is flushed to the output as it's produced without buffering the full ciphertext
+//= reason=SafeWrite flushes each frame without buffering full ciphertext
 //# This operation MAY [stream](streaming.md) the encrypted message.
 //
 //= spec/client-apis/encrypt.md#plaintext
@@ -171,7 +171,7 @@ async fn internal_encrypt(
     commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<EncryptStreamOutput, Error> {
     //= spec/client-apis/encrypt.md#behavior
-    //= reason=every step below uses the ? operator, which halts and returns the error to the caller
+    //= reason=Every step uses ?; any failure returns Err to the caller
     //# If any of these steps fails, this operation MUST halt and indicate a failure to the caller.
     //
     //= spec/client-apis/encrypt.md#encryption-context
@@ -252,7 +252,7 @@ async fn internal_encrypt(
             &header,
             &mat_result.materials,
             //= spec/client-apis/encrypt.md#construct-the-signature
-            //= reason=sig_digest (DigestWriter) was fed the header bytes in step 2 (write_header) and the body bytes in step 3 (encrypt_and_serialize_body)
+            //= reason=sig_digest was fed header in step 2 and body in step 3
             //# Note that the message header and message body MAY have already been input during previous steps.
             sig_digest,
             ciphertext,
@@ -266,12 +266,12 @@ async fn internal_encrypt(
     let suite_id = get_esdk_id(header.suite.id)?;
 
     //= spec/client-apis/encrypt.md#behavior
-    //= reason=The Ok return follows step_construct_signature; no post-write code appends bytes after the footer. The returned struct carries metadata only (encryption_context, algorithm_suite_id), not ciphertext bytes.
+    //= reason=Ok follows the last write; no bytes appended after footer
     //# Any data that is not specified within the [message format](../data-format/message.md)
     //# MUST NOT be added to the output message.
     //
     //= spec/client-apis/streaming.md#outputs
-    //= reason=All bytes have been written to the SafeWrite before Ok is returned; success is only indicated after output is complete
+    //= reason=All bytes written to SafeWrite before Ok is returned
     //# Operations MUST NOT indicate completion or success until an end to the output has been indicated.
     Ok(EncryptStreamOutput {
         encryption_context: header.encryption_context,
@@ -345,13 +345,13 @@ async fn step_get_encryption_materials(
     //# returned from the [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) call.
     //
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= reason=The code uses materials.algorithm_suite regardless of what was requested; the CMM may return a different suite
+    //= reason=Code uses materials.algorithm_suite regardless of input
     //# Note that the algorithm suite in the retrieved encryption materials MAY be different
     //# from the [input algorithm suite](#algorithm-suite).
     let algorithm_suite = &materials.algorithm_suite;
 
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= reason=All EsdkAlgorithmSuiteId variants are ESDK-supported; the check guards against non-ESDK AlgorithmSuiteId variants returned by the CMM
+    //= reason=Guards against non-ESDK AlgorithmSuiteId from CMM
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
     //# encrypt MUST yield an error.
     let message_id = header::generate_message_id(&materials.algorithm_suite)?;
@@ -404,7 +404,7 @@ fn step_construct_header(
     )?;
 
     //= spec/client-apis/encrypt.md#authentication-tag
-    //= reason=write_header writes the complete header (body + auth tag) to ciphertext via SafeWrite, which flushes immediately before body serialization begins
+    //= reason=write_header flushes complete header before body begins
     //# If this operation is streaming the encrypted message and
     //# the entire message header has been serialized,
     //# the serialized message header MUST be released.
@@ -415,7 +415,7 @@ fn step_construct_header(
     //# to the message header calculated in this step.
     //
     //= spec/client-apis/encrypt.md#authentication-tag
-    //= reason=write_header above serializes this exact header directly to ciphertext; the output header is the header calculated here by construction, so inequality is structurally impossible
+    //= reason=Header written directly to output; inequality structurally impossible
     //# If the message headers are not equal, the Encrypt operation MUST fail.
     Ok(header)
 }
