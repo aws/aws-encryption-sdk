@@ -162,8 +162,7 @@ async fn test_encrypt_decrypt_accepts_all_optional_inputs() {
     ec.insert("greet".to_string(), "hello".to_string());
     let plaintext = b"round-trip plaintext";
 
-    let mut encrypt_input =
-        EncryptInput::with_legacy_keyring(plaintext, ec.clone(), keyring.clone());
+    let mut encrypt_input = EncryptInput::new();
 
     //= spec/client-apis/encrypt.md#input
     //= type=test
@@ -202,12 +201,14 @@ async fn test_encrypt_decrypt_accepts_all_optional_inputs() {
     //= type=test
     //= reason=encrypt() returns Ok with plaintext populated, proving the required plaintext argument is accepted
     //# - Encrypt operation input MUST accept a required [plaintext](#plaintext) argument.
-    //
+    encrypt_input.plaintext = plaintext;
+
     //= spec/client-apis/encrypt.md#input
     //= type=test
     //= reason=encrypt_input.encryption_context is populated; encrypt() succeeds
     //# - Encrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
-    //
+    encrypt_input.encryption_context = ec.clone();
+
     //= spec/client-apis/encrypt.md#input
     //= type=test
     //= reason=encrypt_input.source is Some(MaterialSource::LegacyKeyring(...)); encrypt() succeeds
@@ -217,9 +218,13 @@ async fn test_encrypt_decrypt_accepts_all_optional_inputs() {
     //= type=test
     //= reason=encrypt_input.source is Some(MaterialSource::LegacyKeyring(...)); encrypt() succeeds
     //# - Encrypt operation input MUST accept an optional [keyring](../framework/keyring-interface.md) argument.
+    encrypt_input.source = Some(aws_esdk::MaterialSource::LegacyKeyring(keyring.clone()));
+
     let encrypt_output = encrypt(&encrypt_input)
         .await
         .expect("encrypt must accept a fully-populated EncryptInput");
+
+    let mut decrypt_input = DecryptInput::new();
 
     //= spec/client-apis/decrypt.md#input
     //= type=test
@@ -231,12 +236,14 @@ async fn test_encrypt_decrypt_accepts_all_optional_inputs() {
     //= reason=ciphertext is the byte-sequence ESDK message; decrypt() accepts and round-trips it
     //# The input encrypted message MUST be a sequence of bytes in the
     //# [message format](../data-format/message.md) specified by the AWS Encryption SDK.
-    //
+    decrypt_input.ciphertext = &encrypt_output.ciphertext;
+
     //= spec/client-apis/decrypt.md#input
     //= type=test
     //= reason=decrypt_input.encryption_context is populated; decrypt() succeeds
     //# - Decrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
-    //
+    decrypt_input.encryption_context = ec.clone();
+
     //= spec/client-apis/decrypt.md#input
     //= type=test
     //= reason=decrypt_input.source is Some(MaterialSource::LegacyKeyring(...)); decrypt() succeeds
@@ -246,8 +253,8 @@ async fn test_encrypt_decrypt_accepts_all_optional_inputs() {
     //= type=test
     //= reason=decrypt_input.source is Some(MaterialSource::LegacyKeyring(...)); decrypt() succeeds
     //# - Decrypt operation input MUST accept an optional [Keyring](../framework/keyring-interface.md) argument.
-    let mut decrypt_input =
-        DecryptInput::with_legacy_keyring(&encrypt_output.ciphertext, ec.clone(), keyring);
+    decrypt_input.source = Some(aws_esdk::MaterialSource::LegacyKeyring(keyring));
+
     decrypt_input.commitment_policy =
         aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
     decrypt_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(5).unwrap());
