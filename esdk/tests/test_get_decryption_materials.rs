@@ -45,6 +45,11 @@ async fn test_decrypt_fails_with_wrong_keyring() {
     //
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
+    //= reason=Wrong keyring proves the input source determines which CMM is used
+    //# The CMM used MUST be the input CMM, if supplied.
+    //
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
     //= reason=Wrong keyring used → wrong CMM → fails; proves input keyring is used
     //# If a CMM is not supplied as the input, the decrypt operation MUST construct a [default CMM](../framework/default-cmm.md)
     //# from the input [keyring](../framework/keyring-interface.md).
@@ -83,6 +88,11 @@ async fn test_pre_cmm_commitment_policy_check() {
     //# If the parsed [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
     //# is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) decrypt MUST yield an error.
+    //
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=Test explicitly sets commitment_policy on input; failure proves it was passed to CMM
+    //# - Commitment Policy: This MUST be the commitment policy configured on the client.
     assert!(inner.contains("InvalidAlgorithmSuiteInfoOnDecrypt"), "expected InvalidAlgorithmSuiteInfoOnDecrypt, got: {inner}");
 }
 
