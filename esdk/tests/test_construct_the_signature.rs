@@ -33,6 +33,7 @@ async fn test_signing_suite_produces_footer() {
 async fn test_signature_uses_signing_algorithm() {
     //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
+    //= reason=Verify succeeds with P-384, fails with P-256; proves correct algorithm was used
     //# To calculate a signature, this operation MUST use the [signature algorithm](../framework/algorithm-suites.md#signature-algorithm)
     //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following input:
 
@@ -90,6 +91,7 @@ async fn test_signature_uses_signing_algorithm() {
 async fn test_signature_key_is_signing_key() {
     //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
+    //= reason=Verify with materials' pub key succeeds; wrong key fails
     //# - the signature key MUST be the [signing key](../framework/structures.md#signing-key) in the [encryption materials](../framework/structures.md#encryption-materials)
 
     // Strategy: encrypt with a signing suite, extract the verification key from the
@@ -275,6 +277,7 @@ async fn test_footer_serialization() {
 async fn test_footer_equals_calculated() {
     //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
+    //= reason=Independent ECDSA verify of footer signature succeeds against header+body
     //# The encrypted message output by this operation MUST have a message footer equal
     //# to the message footer calculated in this step.
 
