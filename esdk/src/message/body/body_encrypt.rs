@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //! Frame encryption and body serialization.
 
-use super::{BodyAADContent, body_aad, get_encrypt, iv_seq};
+use super::{BodyAADContent, body_aad, get_aes_gcm, iv_seq};
 use crate::error::val_err;
 use crate::message::header::{ENDFRAME_SEQUENCE_NUMBER, HeaderInfo, START_SEQUENCE_NUMBER};
 use crate::message::serializable_types::{get_iv_length, get_tag_length};
@@ -16,7 +16,7 @@ const MAX_DATA: usize = (1usize << 36) - 32;
 
 /// Input for constructing a single frame (regular or final).
 pub(crate) struct ConstructFrameInput<'a> {
-    pub(crate) alg: AesGcm,
+    pub(crate) aes_gcm: AesGcm,
     pub(crate) key: &'a [u8],
     pub(crate) plaintext: &'a [u8],
     pub(crate) message_id: &'a [u8],
@@ -183,6 +183,11 @@ pub(crate) fn construct_frame(
         //
         //= spec/data-format/message-body.md#final-frame-encrypted-content-length
         //# The encrypted content length MUST be a UInt32.
+        // AES-GCM produces ciphertext of the same length as plaintext (the auth
+        // tag is a separate 16-byte field), so plaintext.len() is the value of
+        // the encrypted content length. The length must be written before the
+        // encrypted content on the wire, so we cannot measure the ciphertext
+        // post-encryption — we use this structural equivalence instead.
         let Ok(enc_content_len) = u32::try_from(input.plaintext.len()) else {
             return ser_err("Plaintext length exceeds u32");
         };
@@ -233,7 +238,7 @@ pub(crate) fn construct_frame(
     //= spec/client-apis/encrypt.md#construct-a-frame
     //# The value MUST be the authentication tag output when calculating the encrypted content for this frame.
     aes_encrypt(
-        input.alg,
+        input.aes_gcm,
         iv,
         //= spec/client-apis/encrypt.md#construct-a-frame
         //= reason=input.key is set from the derived data key in encrypt_and_serialize_body
@@ -297,7 +302,7 @@ pub(crate) fn encrypt_and_serialize_body(
     //= reason=START_SEQUENCE_NUMBER is defined as 1
     //# If this is the first frame sequentially, the sequence number value MUST be 1.
     let mut sequence_number = START_SEQUENCE_NUMBER;
-    let alg = get_encrypt(&header.suite)?;
+    let aes_gcm = get_aes_gcm(&header.suite)?;
 
     let mut iv = vec![0; iv_len];
     let mut plaintext_frame = vec![0; frame_length];
@@ -366,7 +371,7 @@ pub(crate) fn encrypt_and_serialize_body(
                 //# has a length greater than this value,
                 //# this operation MUST immediately fail.
                 return Err(val_err(
-                    "Plaintext length exceeds specified Plaintext Length Bound",
+                    "Plaintext length exceeds configured Plaintext Length Bound",
                 ));
             }
         }
@@ -382,7 +387,7 @@ pub(crate) fn encrypt_and_serialize_body(
         //# and Authentication Tag.
         construct_frame(
             &ConstructFrameInput {
-                alg,
+                aes_gcm,
                 key,
                 //= spec/client-apis/encrypt.md#construct-a-frame
                 //= reason=plaintext_frame is exactly frame_length bytes (the full buffer read from input)
@@ -451,7 +456,7 @@ pub(crate) fn encrypt_and_serialize_body(
     //# Final frame serialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
     construct_frame(
         &ConstructFrameInput {
-            alg,
+            aes_gcm,
             key,
             //= spec/client-apis/encrypt.md#construct-a-frame
             //= reason=plaintext_frame[0..in_size] is the remaining unencrypted bytes, where in_size <= frame_length

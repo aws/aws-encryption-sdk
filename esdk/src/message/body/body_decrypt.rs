@@ -3,7 +3,7 @@
 
 //! Frame decryption and body deserialization.
 
-use super::{BodyAADContent, body_aad, get_encrypt};
+use super::{BodyAADContent, body_aad, get_aes_gcm};
 use crate::error::esdk_err;
 use crate::message::header::{ENDFRAME_SEQUENCE_NUMBER, HeaderInfo, START_SEQUENCE_NUMBER};
 use crate::message::serializable_types::{get_iv_length, get_tag_length};
@@ -34,7 +34,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
     //# The authentication tag length MUST be equal to the authentication tag length of the algorithm suite
     //# specified by the [Algorithm Suite ID](message-header.md#algorithm-suite-id) field.
     let mut auth_tag = vec![0u8; usize::from(get_tag_length(&header.suite))];
-    let alg = get_encrypt(&header.suite)?;
+    let aes_gcm = get_aes_gcm(&header.suite)?;
     let frame_length_u64 = u64::from(header.body.frame_length());
     let Ok(frame_length_usize) = usize::try_from(header.body.frame_length()) else {
         return ser_err(&format!(
@@ -259,7 +259,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 // final frame is empty, so return last full frame
                 let mut empty_result = Vec::new();
                 aes_decrypt(
-                    alg,
+                    aes_gcm,
                     key,
                     &enc_content,
                     //= spec/data-format/message-body.md#final-frame-authentication-tag
@@ -282,7 +282,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 if expected_frame != START_SEQUENCE_NUMBER {
                     if fail_if_multi_frame {
                         return Err(esdk_err(
-                            "Streaming interface can return data before signature has been validated. Set `allow_unsafe_unverified_signature` in the DecryptStreamInput struct if this is ok",
+                            "Streaming a multi-frame signed message would release plaintext before signature verification. Set `unsafe_release_plaintext_before_verify = true` in DecryptStreamInput to allow this.",
                         ));
                     }
                     write_bytes(w, &result)?;
@@ -291,7 +291,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
                 //= reason=`?` propagates aes_decrypt errors, halting decryption immediately
                 //# If this decryption fails, this operation MUST immediately halt and fail.
                 aes_decrypt(
-                    alg,
+                    aes_gcm,
                     key,
                     &enc_content,
                     &auth_tag,
@@ -339,7 +339,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         if expected_frame != START_SEQUENCE_NUMBER {
             if fail_if_multi_frame {
                 return Err(esdk_err(
-                    "Streaming interface can return data before signature has been validated. Set `allow_unsafe_unverified_signature` in the DecryptStreamInput struct if this is ok",
+                    "Streaming a multi-frame signed message would release plaintext before signature verification. Set `unsafe_release_plaintext_before_verify = true` in DecryptStreamInput to allow this.",
                 ));
             }
             write_bytes(w, &result)?;
@@ -460,7 +460,7 @@ pub(crate) fn read_and_decrypt_framed_message_body(
         //= reason=`?` propagates aes_decrypt errors, halting decryption immediately
         //# If this decryption fails, this operation MUST immediately halt and fail.
         aes_decrypt(
-            alg,
+            aes_gcm,
             //= spec/client-apis/decrypt.md#decrypt-the-message-body
             //= reason=key is the derived data key passed from step_decrypt_body
             //# - The cipherkey MUST be the derived data key
@@ -647,7 +647,7 @@ pub(crate) fn read_and_decrypt_non_framed_message_body(
     //= reason=`?` propagates aes_decrypt errors, halting decryption immediately
     //# If this decryption fails, this operation MUST immediately halt and fail.
     aes_decrypt(
-        get_encrypt(&header.suite)?,
+        get_aes_gcm(&header.suite)?,
         //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
         //# - The cipherkey MUST be the derived data key.
         //
