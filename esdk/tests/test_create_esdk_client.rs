@@ -44,9 +44,9 @@ const ESDK_NET_V400_MESSAGE: &[u8] = &[
     145, 95, 80, 61, 85, 143, 32, 0, 98, 20, 88, 251, 204, 5,
 ];
 
-/// ESDK .NET v4.0.0 incorrectly serialized headers. This test proves our
-/// retry logic: decrypting the v4.0.0 message fails without the retry flag
-/// (CryptographicError from header auth mismatch) and succeeds with it.
+// ESDK .NET v4.0.0 incorrectly serialized headers. This test proves our
+// retry logic: decrypting the v4.0.0 message fails without the retry flag
+// (CryptographicError from header auth mismatch) and succeeds with it.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_net_retry_flag() {
     let key_namespace = "Some managed raw keys";
@@ -152,10 +152,9 @@ fn test_frame_length_default_is_4096() {
     assert_eq!(FrameLength::default().0.get(), 4096);
 }
 
-/// Round-trip a fully-populated `EncryptInput` and `DecryptInput` through
-/// `encrypt()` and `decrypt()`. Each populated optional field is proven
-/// "accepted" by the operation returning `Ok(_)` — not by reading the
-/// field back out of the struct (which would be a memcpy tautology).
+// Round-trip a fully-populated EncryptInput and DecryptInput through
+// encrypt() and decrypt(). Each populated optional field is proven
+// "accepted" by the operation returning Ok(_).
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt_accepts_all_optional_inputs() {
     let keyring = test_keyring().await;
@@ -165,94 +164,94 @@ async fn test_encrypt_decrypt_accepts_all_optional_inputs() {
 
     let mut encrypt_input =
         EncryptInput::with_legacy_keyring(plaintext, ec.clone(), keyring.clone());
-    encrypt_input.algorithm_suite_id =
-        Some(aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
-    encrypt_input.commitment_policy =
-        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    encrypt_input.frame_length = FrameLength::new(1024).unwrap();
-    encrypt_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(5).unwrap());
 
     //= spec/client-apis/encrypt.md#input
     //= type=test
-    //= reason=encrypt() returns Ok with `plaintext: &[u8]` populated, proving the required plaintext argument is accepted.
-    //# - Encrypt operation input MUST accept a required [plaintext](#plaintext) argument.
-    //
-    //= spec/client-apis/encrypt.md#input
-    //= type=test
-    //= reason=encrypt_input.algorithm_suite_id is set to Some(non-default V1 suite); encrypt() succeeds, proving the optional Algorithm Suite argument is accepted.
+    //= reason=encrypt_input.algorithm_suite_id is set to Some(non-default V1 suite); encrypt() succeeds
     //# - Encrypt operation input MUST accept an optional [Algorithm Suite](#algorithm-suite) argument.
-    //
-    //= spec/client-apis/encrypt.md#input
-    //= type=test
-    //= reason=encrypt_input.encryption_context is populated with {"greet": "hello"}; encrypt() succeeds, proving the optional Encryption Context argument is accepted.
-    //# - Encrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
-    //
-    //= spec/client-apis/encrypt.md#input
-    //= type=test
-    //= reason=encrypt_input.frame_length is set to a non-default 1024; encrypt() succeeds, proving the optional Frame Length argument is accepted.
-    //# - Encrypt operation input MUST accept an optional [Frame Length](#frame-length) argument.
-    //
-    //= spec/client-apis/encrypt.md#input
-    //= type=test
-    //= reason=encrypt_input.source is Some(MaterialSource::LegacyKeyring(...)); encrypt() succeeds, proving the optional CMM/keyring argument is accepted via the keyring variant
-    //# - Encrypt operation input MUST accept an optional [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
-    //
-    //= spec/client-apis/encrypt.md#input
-    //= type=test
-    //= reason=encrypt_input.source is Some(MaterialSource::LegacyKeyring(...)); encrypt() succeeds, proving the optional keyring argument is accepted
-    //# - Encrypt operation input MUST accept an optional [keyring](../framework/keyring-interface.md) argument.
-    //
+    encrypt_input.algorithm_suite_id =
+        Some(aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
+
     //= spec/client-apis/client.md#initialization
     //= type=test
-    //= reason=encrypt_input.commitment_policy is set non-default; encrypt() honors it, proving the optional commitment-policy argument
+    //= reason=encrypt_input.commitment_policy is set non-default; encrypt() honors it
     //# - On client initialization,
     //# the caller MUST have the option to provide a [commitment policy](#commitment-policy).
     //
     //= spec/client-apis/client.md#commitment-policy
     //= type=test
-    //= reason=commitment_policy is an EsdkCommitmentPolicy from aws_mpl_legacy; encrypt() honors it, proving the SDK uses the MPL type
+    //= reason=commitment_policy is an EsdkCommitmentPolicy from aws_mpl_legacy; encrypt() honors it
     //# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
-    //
+    encrypt_input.commitment_policy =
+        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+
+    //= spec/client-apis/encrypt.md#input
+    //= type=test
+    //= reason=encrypt_input.frame_length is set to a non-default 1024; encrypt() succeeds
+    //# - Encrypt operation input MUST accept an optional [Frame Length](#frame-length) argument.
+    encrypt_input.frame_length = FrameLength::new(1024).unwrap();
+
     //= spec/client-apis/client.md#initialization
     //= type=test
-    //= reason=encrypt_input.max_encrypted_data_keys is set to Some(5); encrypt() succeeds, proving the optional max-EDKs argument
+    //= reason=encrypt_input.max_encrypted_data_keys is set to Some(5); encrypt() succeeds
     //# - On client initialization,
     //# the caller MUST have the option to provide a [maximum number of encrypted data keys](#maximum-number-of-encrypted-data-keys).
+    encrypt_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(5).unwrap());
+
+    //= spec/client-apis/encrypt.md#input
+    //= type=test
+    //= reason=encrypt() returns Ok with plaintext populated, proving the required plaintext argument is accepted
+    //# - Encrypt operation input MUST accept a required [plaintext](#plaintext) argument.
+    //
+    //= spec/client-apis/encrypt.md#input
+    //= type=test
+    //= reason=encrypt_input.encryption_context is populated; encrypt() succeeds
+    //# - Encrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
+    //
+    //= spec/client-apis/encrypt.md#input
+    //= type=test
+    //= reason=encrypt_input.source is Some(MaterialSource::LegacyKeyring(...)); encrypt() succeeds
+    //# - Encrypt operation input MUST accept an optional [cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
+    //
+    //= spec/client-apis/encrypt.md#input
+    //= type=test
+    //= reason=encrypt_input.source is Some(MaterialSource::LegacyKeyring(...)); encrypt() succeeds
+    //# - Encrypt operation input MUST accept an optional [keyring](../framework/keyring-interface.md) argument.
     let encrypt_output = encrypt(&encrypt_input)
         .await
         .expect("encrypt must accept a fully-populated EncryptInput");
 
+    //= spec/client-apis/decrypt.md#input
+    //= type=test
+    //= reason=decrypt_input.ciphertext is the &[u8] produced by encrypt(); decrypt() succeeds
+    //# - Decrypt operation input MUST accept a required [Encrypted Message](#encrypted-message) argument.
+    //
+    //= spec/client-apis/decrypt.md#encrypted-message
+    //= type=test
+    //= reason=ciphertext is the byte-sequence ESDK message; decrypt() accepts and round-trips it
+    //# The input encrypted message MUST be a sequence of bytes in the
+    //# [message format](../data-format/message.md) specified by the AWS Encryption SDK.
+    //
+    //= spec/client-apis/decrypt.md#input
+    //= type=test
+    //= reason=decrypt_input.encryption_context is populated; decrypt() succeeds
+    //# - Decrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
+    //
+    //= spec/client-apis/decrypt.md#input
+    //= type=test
+    //= reason=decrypt_input.source is Some(MaterialSource::LegacyKeyring(...)); decrypt() succeeds
+    //# - Decrypt operation input MUST accept an optional [Cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
+    //
+    //= spec/client-apis/decrypt.md#input
+    //= type=test
+    //= reason=decrypt_input.source is Some(MaterialSource::LegacyKeyring(...)); decrypt() succeeds
+    //# - Decrypt operation input MUST accept an optional [Keyring](../framework/keyring-interface.md) argument.
     let mut decrypt_input =
         DecryptInput::with_legacy_keyring(&encrypt_output.ciphertext, ec.clone(), keyring);
     decrypt_input.commitment_policy =
         aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
     decrypt_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(5).unwrap());
 
-    //= spec/client-apis/decrypt.md#input
-    //= type=test
-    //= reason=decrypt_input.ciphertext is the &[u8] produced by encrypt(); decrypt() succeeds, proving the required Encrypted Message argument is accepted.
-    //# - Decrypt operation input MUST accept a required [Encrypted Message](#encrypted-message) argument.
-    //
-    //= spec/client-apis/decrypt.md#encrypted-message
-    //= type=test
-    //= reason=ciphertext is the byte-sequence ESDK message produced by encrypt(); decrypt() accepts and round-trips it
-    //# The input encrypted message MUST be a sequence of bytes in the
-    //# [message format](../data-format/message.md) specified by the AWS Encryption SDK.
-    //
-    //= spec/client-apis/decrypt.md#input
-    //= type=test
-    //= reason=decrypt_input.encryption_context is populated; decrypt() succeeds, proving the optional Encryption Context argument is accepted.
-    //# - Decrypt operation input MUST accept an optional [Encryption Context](#encryption-context) argument.
-    //
-    //= spec/client-apis/decrypt.md#input
-    //= type=test
-    //= reason=decrypt_input.source is Some(MaterialSource::LegacyKeyring(...)); decrypt() succeeds, proving the optional CMM argument is accepted via the keyring variant
-    //# - Decrypt operation input MUST accept an optional [Cryptographic Materials Manager (CMM)](../framework/cmm-interface.md) argument.
-    //
-    //= spec/client-apis/decrypt.md#input
-    //= type=test
-    //= reason=decrypt_input.source is Some(MaterialSource::LegacyKeyring(...)); decrypt() succeeds, proving the optional Keyring argument is accepted
-    //# - Decrypt operation input MUST accept an optional [Keyring](../framework/keyring-interface.md) argument.
     let decrypt_output = decrypt(&decrypt_input)
         .await
         .expect("decrypt must accept a fully-populated DecryptInput");
