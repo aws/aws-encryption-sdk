@@ -20,6 +20,7 @@ async fn test_step_2_construct_header() {
     let v2 = encrypt_v2(b"test step 2 v2").await;
     //= spec/client-apis/encrypt.md#behavior
     //= type=test
+    //= reason=Output starts with version byte 0x02, proving header was constructed
     //# - Encrypt operation step 2 MUST be [Construct the header](#construct-the-header)
     assert_eq!(v2[0], 0x02, "V2 output must start with header version byte 0x02");
 
@@ -155,11 +156,13 @@ async fn test_obtain_materials_from_cmm() {
     let output = encrypt_default(pt).await;
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
+    //= reason=Encrypt succeeds and produces ciphertext; impossible without materials
     //# This operation MUST obtain this set of [encryption materials](../framework/structures.md#encryption-materials)
     //# by calling [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) on a [CMM](../framework/cmm-interface.md).
     //
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
+    //= reason=Encrypt succeeds; materials were used to construct the message
     //# To construct the [encrypted message](#encrypted-message),
     //# some fields MUST be constructed using information obtained
     //# from a set of valid [encryption materials](../framework/structures.md#encryption-materials).
@@ -197,6 +200,7 @@ async fn test_cmm_used_must_be_input_cmm() {
     let result = decrypt(&dec_input).await.unwrap();
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
+    //= reason=Decrypt with the same CMM succeeds; proves encrypt used it
     //# The CMM used MUST be the input CMM, if supplied.
     assert_eq!(result.plaintext, pt);
 }
