@@ -50,6 +50,18 @@ async fn test_decrypt_fails_with_wrong_keyring() {
     //
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
+    //= reason=Wrong keyring's CMM call fails; proves the call was constructed with header data
+    //# The call to the CMM's [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) operation
+    //# MUST be constructed as follows:
+    //
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=CMM call includes header EC; wrong keyring still receives correct EC from header
+    //# - Encryption Context: This MUST be the parsed [encryption context](../data-format/message-header.md#aad)
+    //# from the message header.
+    //
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
     //= reason=Wrong keyring used → wrong CMM → fails; proves input keyring is used
     //# If a CMM is not supplied as the input, the decrypt operation MUST construct a [default CMM](../framework/default-cmm.md)
     //# from the input [keyring](../framework/keyring-interface.md).
