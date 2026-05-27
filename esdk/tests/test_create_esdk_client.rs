@@ -446,3 +446,50 @@ async fn test_esdk_encrypt_decrypt_round_trip() {
         "Esdk round-trip must produce the original plaintext"
     );
 }
+
+// Proves the Esdk's configured commitment policy actually reaches the
+// encryption logic: with `ForbidEncryptAllowDecrypt` configured on the client
+// and a known committing (V2) suite explicitly selected on the input,
+// encrypt must reject. If the client's policy were not being applied to the
+// underlying call, the input would carry `RequireEncryptRequireDecrypt` (the
+// EncryptInput default) and the call with a committing suite would succeed —
+// so the failure here is what falsifies "the Esdk's commitment_policy is
+// applied."
+#[tokio::test(flavor = "multi_thread")]
+async fn test_esdk_commitment_policy_actually_gates_encrypt() {
+    let keyring = test_keyring().await;
+    let esdk = Esdk::builder()
+        .commitment_policy(
+            aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
+        )
+        .build();
+
+    let mut enc_input = EncryptInput::with_legacy_keyring(
+        b"x",
+        EncryptionContext::new(),
+        keyring,
+    );
+    // Explicitly request a V2 committing suite. ForbidEncryptAllowDecrypt
+    // forbids committing on encrypt → must fail.
+    enc_input.algorithm_suite_id = Some(
+        aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey,
+    );
+    let err = esdk
+        .encrypt(&enc_input)
+        .await
+        .expect_err("ForbidEncryptAllowDecrypt + committing V2 suite must fail encrypt");
+    // Expect a LegacyError (the MPL surfaces the policy conflict). The
+    // important point: the call failed because the Esdk's policy was applied.
+    // Also verify the message names a "commitment policy" conflict so we
+    // can't accidentally pass on some unrelated MPL error.
+    assert!(
+        matches!(err.kind, ErrorKind::LegacyError(_)),
+        "expected LegacyError when Esdk commitment policy forbids committing; got {:?}: {}",
+        err.kind, err.message
+    );
+    let err_text = format!("{:?}", err.kind);
+    assert!(
+        err_text.contains("ommitment policy") || err_text.contains("ommitment"),
+        "error must reference commitment policy, got: {err_text}"
+    );
+}

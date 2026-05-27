@@ -1392,3 +1392,85 @@ pub fn parse_external_nonframed_body(msg: &[u8], version: Version) -> ExternalNo
         encrypted_content_length,
     }
 }
+
+
+// === CallStyle parametrization for testing free-function and Esdk-client paths ===
+//
+// Each `#[derive(Clone, Copy)]` variant of [`CallStyle`] selects a way to call
+// encrypt/decrypt under test:
+//   - `Free`   → call the free function directly (e.g. `aws_esdk::encrypt`).
+//   - `Client` → call through `Esdk::default()` (or a custom `Esdk` if needed).
+//
+// Tests that want both-path coverage iterate `CallStyle::ALL` and pass the
+// variant into [`run_encrypt`] / [`run_decrypt`] / [`run_encrypt_stream`] /
+// [`run_decrypt_stream`]. Each helper asserts the same shape of result so the
+// test body is identical across styles.
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CallStyle {
+    /// Free function (`aws_esdk::encrypt` / `decrypt` / `encrypt_stream` / `decrypt_stream`).
+    Free,
+    /// `Esdk::default()` client method.
+    Client,
+}
+
+impl CallStyle {
+    /// All call styles to iterate over for both-path test coverage.
+    pub const ALL: [Self; 2] = [Self::Free, Self::Client];
+}
+
+/// Run encrypt under the chosen [`CallStyle`].
+pub async fn run_encrypt(
+    style: CallStyle,
+    input: &EncryptInput<'_>,
+) -> Result<EncryptOutput, Error> {
+    match style {
+        CallStyle::Free => encrypt(input).await,
+        CallStyle::Client => Esdk::default().encrypt(input).await,
+    }
+}
+
+/// Run decrypt under the chosen [`CallStyle`].
+pub async fn run_decrypt(
+    style: CallStyle,
+    input: &DecryptInput<'_>,
+) -> Result<DecryptOutput, Error> {
+    match style {
+        CallStyle::Free => decrypt(input).await,
+        CallStyle::Client => Esdk::default().decrypt(input).await,
+    }
+}
+
+/// Run encrypt_stream under the chosen [`CallStyle`].
+pub async fn run_encrypt_stream(
+    style: CallStyle,
+    plaintext: &mut dyn SafeRead,
+    ciphertext: &mut dyn SafeWrite,
+    input: &EncryptStreamInput,
+) -> Result<EncryptStreamOutput, Error> {
+    match style {
+        CallStyle::Free => encrypt_stream(plaintext, ciphertext, input).await,
+        CallStyle::Client => {
+            Esdk::default()
+                .encrypt_stream(plaintext, ciphertext, input)
+                .await
+        }
+    }
+}
+
+/// Run decrypt_stream under the chosen [`CallStyle`].
+pub async fn run_decrypt_stream(
+    style: CallStyle,
+    ciphertext: &mut dyn SafeRead,
+    plaintext: &mut dyn SafeWrite,
+    input: &DecryptStreamInput,
+) -> Result<DecryptStreamOutput, Error> {
+    match style {
+        CallStyle::Free => decrypt_stream(ciphertext, plaintext, input).await,
+        CallStyle::Client => {
+            Esdk::default()
+                .decrypt_stream(ciphertext, plaintext, input)
+                .await
+        }
+    }
+}

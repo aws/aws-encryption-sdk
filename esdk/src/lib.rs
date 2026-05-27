@@ -11,6 +11,16 @@
 //! - [`encrypt()`](fn@crate::encrypt) — encrypts plaintext and serializes an encrypted message
 //! - [`decrypt()`](fn@crate::decrypt) — deserializes an encrypted message and decrypts the plaintext
 //!
+//! Per-call configuration (commitment policy, max encrypted data keys, etc.)
+//! lives on the [`EncryptInput`](crate::EncryptInput) /
+//! [`DecryptInput`](crate::DecryptInput) structs.
+//!
+//! For callers who want to set the cross-call configuration once and reuse it,
+//! the [`Esdk`](crate::Esdk) client is an optional convenience layer:
+//! configure it via [`Esdk::builder`](crate::Esdk::builder) and call
+//! [`Esdk::encrypt`](crate::Esdk::encrypt) / [`Esdk::decrypt`](crate::Esdk::decrypt)
+//! (and the streaming variants) instead.
+//!
 //! The SDK supports both **framed** and **nonframed** message body formats,
 //! as well as **V1** and **V2** message format versions (V2 adds key commitment).
 //!

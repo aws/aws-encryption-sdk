@@ -5,31 +5,44 @@ mod fixtures;
 mod test_helpers;
 
 use aws_esdk::{decrypt, encrypt, DecryptInput, EncryptInput, EncryptionContext, ErrorKind};
-use test_helpers::kms_keyring;
+use test_helpers::{kms_keyring, run_decrypt, run_encrypt, CallStyle};
 
+// Round-trips plaintext via encrypt/decrypt. Iterates over CallStyle so both
+// the free `encrypt`/`decrypt` functions AND `Esdk::default().encrypt`/`decrypt`
+// are exercised by this one test. A failure under either path will name the
+// offending CallStyle.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_decrypt() {
-    let kms_keyring = kms_keyring().await;
-    let plaintext = b"hello esdk";
-    let ec = EncryptionContext::new();
-    let encrypt_input = EncryptInput::with_legacy_keyring(plaintext, ec, kms_keyring);
+    for style in CallStyle::ALL {
+        let kms_keyring = kms_keyring().await;
+        let plaintext = b"hello esdk";
+        let ec = EncryptionContext::new();
+        let encrypt_input = EncryptInput::with_legacy_keyring(plaintext, ec, kms_keyring);
 
-    //= spec/client-apis/client.md#encrypt
-    //= type=test
-    //# The AWS Encryption SDK Client MUST provide an [encrypt](./encrypt.md#input) function
-    //# that adheres to [encrypt](./encrypt.md).
-    let encrypt_output = encrypt(&encrypt_input).await.unwrap();
-    let esdk_ciphertext = encrypt_output.ciphertext;
+        //= spec/client-apis/client.md#encrypt
+        //= type=test
+        //# The AWS Encryption SDK Client MUST provide an [encrypt](./encrypt.md#input) function
+        //# that adheres to [encrypt](./encrypt.md).
+        let encrypt_output = run_encrypt(style, &encrypt_input)
+            .await
+            .unwrap_or_else(|e| panic!("encrypt failed under {style:?}: {e:?}"));
+        let esdk_ciphertext = encrypt_output.ciphertext;
 
-    let decrypt_input = DecryptInput::from_encrypt(&esdk_ciphertext, &encrypt_input);
+        let decrypt_input = DecryptInput::from_encrypt(&esdk_ciphertext, &encrypt_input);
 
-    //= spec/client-apis/client.md#decrypt
-    //= type=test
-    //# The AWS Encryption SDK Client MUST provide an [decrypt](./decrypt.md#input) function
-    //# that adheres to [decrypt](./decrypt.md).
-    let decrypt_output = decrypt(&decrypt_input).await.unwrap();
+        //= spec/client-apis/client.md#decrypt
+        //= type=test
+        //# The AWS Encryption SDK Client MUST provide an [decrypt](./decrypt.md#input) function
+        //# that adheres to [decrypt](./decrypt.md).
+        let decrypt_output = run_decrypt(style, &decrypt_input)
+            .await
+            .unwrap_or_else(|e| panic!("decrypt failed under {style:?}: {e:?}"));
 
-    assert_eq!(decrypt_output.plaintext, plaintext);
+        assert_eq!(
+            decrypt_output.plaintext, plaintext,
+            "round-trip plaintext must match (style: {style:?})"
+        );
+    }
 }
 
 #[tokio::test(flavor = "multi_thread")]
