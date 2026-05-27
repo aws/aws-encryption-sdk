@@ -53,20 +53,19 @@ async fn test_step_4_construct_signature() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_no_extra_data_in_output_message() {
-    //= spec/client-apis/encrypt.md#behavior
-    //= type=test
-    //# Any data that is not specified within the [message format](../data-format/message.md)
-    //# MUST NOT be added to the output message.
-    //
     // Compute the end-of-message offset by walking the frames (and the footer if a
-    // signing suite is in use) and assert it equals the ciphertext length. Trailing
-    // bytes after the last frame / footer would be "extra data."
+    // signing suite is in use) and assert it equals the ciphertext length.
     let pt = b"no extra data test";
 
     // Case 1: V2 non-signing — body ends at the final frame.
     let ct = encrypt_without_signing_suite(pt).await;
     let frames = parse_all_frames(&ct, 4096);
     let body_end = frames.last().expect("at least one frame").end_offset;
+    //= spec/client-apis/encrypt.md#behavior
+    //= type=test
+    //# Any data that is not specified within the [message format](../data-format/message.md)
+    //# MUST NOT be added to the output message.
+    //
     //= spec/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //= reason=parse_all_frames independently walks wire bytes verifying frame structure
@@ -152,6 +151,8 @@ async fn test_input_suite_vs_commitment_policy_error() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_obtain_materials_from_cmm() {
     // A successful encrypt proves materials were obtained from the CMM.
+    let pt = b"obtain materials test";
+    let output = encrypt_default(pt).await;
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //# This operation MUST obtain this set of [encryption materials](../framework/structures.md#encryption-materials)
@@ -162,8 +163,6 @@ async fn test_obtain_materials_from_cmm() {
     //# To construct the [encrypted message](#encrypted-message),
     //# some fields MUST be constructed using information obtained
     //# from a set of valid [encryption materials](../framework/structures.md#encryption-materials).
-    let pt = b"obtain materials test";
-    let output = encrypt_default(pt).await;
     assert!(!output.ciphertext.is_empty(), "encrypt must produce ciphertext from CMM-provided materials");
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
@@ -184,9 +183,6 @@ async fn test_obtain_materials_from_cmm() {
 async fn test_cmm_used_must_be_input_cmm() {
     // Create a CMM from a keyring, then pass it as the CMM input.
     // Decrypt with the same CMM succeeds, proving encrypt used the input CMM.
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# The CMM used MUST be the input CMM, if supplied.
     let keyring = test_keyring().await;
     let cmm = mpl()
         .create_default_cryptographic_materials_manager()
@@ -199,19 +195,22 @@ async fn test_cmm_used_must_be_input_cmm() {
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
     let dec_input = DecryptInput::with_legacy_cmm(&ct, EncryptionContext::new(), cmm);
     let result = decrypt(&dec_input).await.unwrap();
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //# The CMM used MUST be the input CMM, if supplied.
     assert_eq!(result.plaintext, pt);
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_request_encryption_context() {
     // Encrypt with a non-empty encryption context and verify it appears in the output.
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# - Encryption Context: If provided, this MUST be the [input encryption context](#encryption-context).
     let keyring = test_keyring().await;
     let ec = std::collections::HashMap::from([("mykey".to_string(), "myval".to_string())]);
     let enc_input = EncryptInput::with_legacy_keyring(b"ec test", ec.clone(), keyring.clone());
     let output = encrypt(&enc_input).await.unwrap();
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //# - Encryption Context: If provided, this MUST be the [input encryption context](#encryption-context).
     assert!(
         output.encryption_context.contains_key("mykey"),
         "output encryption context must contain the input key"
@@ -220,16 +219,14 @@ async fn test_cmm_request_encryption_context() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_request_empty_encryption_context() {
-    // Encrypt with no encryption context; the CMM receives an empty EC.
-    // The output EC should contain no user-provided keys (only CMM-added keys, if any).
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# Otherwise, this MUST be an empty encryption context.
+    // Encrypt with no encryption context; verify no user-provided keys in output.
     let pt = b"empty ec test";
     let output = encrypt_default(pt).await;
     let decrypted = decrypt_ciphertext(&output.ciphertext).await;
     assert_eq!(decrypted.plaintext, pt, "round-trip must recover original plaintext");
-    // No user-provided keys should appear in the output encryption context.
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //# Otherwise, this MUST be an empty encryption context.
     assert!(
         !output.encryption_context.keys().any(|k| !k.starts_with("aws-crypto-")),
         "output encryption context must not contain user-provided keys when input EC is empty"
@@ -239,15 +236,15 @@ async fn test_cmm_request_empty_encryption_context() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_request_algorithm_suite_provided() {
     // Encrypt with a specific algorithm suite and verify the output uses it.
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# - Algorithm Suite: If provided, this MUST be the [input algorithm suite](#algorithm-suite).
     let keyring = test_keyring().await;
     let mut enc_input =
         EncryptInput::with_legacy_keyring(b"suite test", EncryptionContext::new(), keyring);
     enc_input.algorithm_suite_id =
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
     let output = encrypt(&enc_input).await.unwrap();
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //# - Algorithm Suite: If provided, this MUST be the [input algorithm suite](#algorithm-suite).
     assert_eq!(
         output.algorithm_suite_id,
         EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey,
@@ -258,17 +255,17 @@ async fn test_cmm_request_algorithm_suite_provided() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_suite_from_materials_used() {
     // Encrypt with a specific suite and verify the output reports the same suite.
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# The [algorithm suite](../framework/algorithm-suites.md) used in all aspects of this operation
-    //# MUST be the algorithm suite in the [encryption materials](../framework/structures.md#encryption-materials)
-    //# returned from the [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) call.
     let keyring = test_keyring().await;
     let mut enc_input =
         EncryptInput::with_legacy_keyring(b"suite from materials", EncryptionContext::new(), keyring);
     enc_input.algorithm_suite_id =
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
     let output = encrypt(&enc_input).await.unwrap();
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //# The [algorithm suite](../framework/algorithm-suites.md) used in all aspects of this operation
+    //# MUST be the algorithm suite in the [encryption materials](../framework/structures.md#encryption-materials)
+    //# returned from the [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) call.
     assert_eq!(output.algorithm_suite_id, EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
 }
 
@@ -319,36 +316,34 @@ async fn test_max_edk_exceeded_error() {
 async fn test_encrypt_data_key_derived_from_plaintext_data_key() {
     // Decrypt re-derives the same key from the plaintext data key; success proves
     // encrypt used the correctly derived data key.
+    let pt = b"derived data key test";
+    let result = round_trip(pt).await;
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //= reason=Decrypt re-derives the same key; mismatch would cause decryption failure
     //# The data key used as input for all encryption described below MUST be a data key derived from the plaintext data key
     //# included in the [encryption materials](../framework/structures.md#encryption-materials).
-    let pt = b"derived data key test";
-    let result = round_trip(pt).await;
     assert_eq!(result, pt);
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_frame_length_input_used() {
-    // Encrypt with a custom frame length and verify the header records that exact value
-    // in the 4-byte big-endian frame_length field. Round-trip is corroboration.
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# The frame length used in the procedures described below MUST be the input [frame length](#frame-length),
-    //# if supplied.
+    // Encrypt with a custom frame length and verify the header records that exact value.
     let keyring = test_keyring().await;
     let mut enc_input =
         EncryptInput::with_legacy_keyring(b"custom frame length", EncryptionContext::new(), keyring.clone());
     enc_input.frame_length = FrameLength::new(512).unwrap();
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // Default suite is V2. parse_v2_header_field_offsets returns the frame_length field span.
     let fields = parse_v2_header_field_offsets(&ct);
     let (_, fl_start, fl_end) = fields.iter().find(|(n, _, _)| *n == "Frame Length")
         .expect("V2 header must have a Frame Length field");
     assert_eq!(fl_end - fl_start, 4, "frame_length field must be 4 bytes");
     let on_wire = u32::from_be_bytes([ct[*fl_start], ct[fl_start + 1], ct[fl_start + 2], ct[fl_start + 3]]);
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //# The frame length used in the procedures described below MUST be the input [frame length](#frame-length),
+    //# if supplied.
     assert_eq!(on_wire, 512, "header frame_length must equal the input frame length");
 
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
@@ -358,11 +353,7 @@ async fn test_frame_length_input_used() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_default_frame_length_used() {
-    // Encrypt without specifying a frame length and verify the header records the
-    // default value (4096) in the 4-byte big-endian frame_length field.
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# If no input frame length is supplied, the default frame length MUST be used.
+    // Encrypt without specifying a frame length and verify the header records the default (4096).
     let pt = b"default frame length test";
     let ct = encrypt_default(pt).await.ciphertext;
 
@@ -371,6 +362,9 @@ async fn test_default_frame_length_used() {
         .expect("V2 header must have a Frame Length field");
     assert_eq!(fl_end - fl_start, 4, "frame_length field must be 4 bytes");
     let on_wire = u32::from_be_bytes([ct[*fl_start], ct[fl_start + 1], ct[fl_start + 2], ct[fl_start + 3]]);
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //# If no input frame length is supplied, the default frame length MUST be used.
     assert_eq!(on_wire, 4096, "default frame_length on the wire must be 4096");
 
     // Round-trip corroboration.
@@ -381,15 +375,15 @@ async fn test_default_frame_length_used() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_message_format_version_matches_suite() {
     // Encrypt with a V2 (committing) suite and verify the first byte is 0x02 (version 2).
-    //= spec/client-apis/encrypt.md#construct-the-header
-    //= type=test
-    //# The [message format version](../data-format/message-header.md#supported-versions) MUST be the value associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites).
     let keyring = test_keyring().await;
     let mut enc_input =
         EncryptInput::with_legacy_keyring(b"version test", EncryptionContext::new(), keyring.clone());
     enc_input.algorithm_suite_id =
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    //= spec/client-apis/encrypt.md#construct-the-header
+    //= type=test
+    //# The [message format version](../data-format/message-header.md#supported-versions) MUST be the value associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites).
     assert_eq!(ct[0], 0x02, "V2 committing suite must produce message version 2");
 
     // Encrypt with a V1 (non-committing) suite and verify the first byte is 0x01 (version 1).
@@ -404,17 +398,15 @@ async fn test_message_format_version_matches_suite() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_output_includes_encrypted_message() {
+    let output = encrypt_default(b"output encrypted message test").await;
     //= spec/client-apis/encrypt.md#output
     //= type=test
     //# - Encrypt operation output MUST include an [encrypted message](#encrypted-message) value.
-    //
+    assert!(!output.ciphertext.is_empty(), "output must include non-empty encrypted message");
     //= spec/client-apis/encrypt.md#encrypted-message
     //= type=test
     //# This MUST be a sequence of bytes
     //# and conform to the [message format specification](../data-format/message.md).
-    let output = encrypt_default(b"output encrypted message test").await;
-    assert!(!output.ciphertext.is_empty(), "output must include non-empty encrypted message");
-    // First byte must be a valid ESDK message format version (0x01 or 0x02)
     assert!(
         output.ciphertext[0] == 0x01 || output.ciphertext[0] == 0x02,
         "first byte must be a valid ESDK version (0x01 or 0x02), got {:#04x}",
@@ -424,13 +416,13 @@ async fn test_output_includes_encrypted_message() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_output_includes_encryption_context() {
-    //= spec/client-apis/encrypt.md#output
-    //= type=test
-    //# - Encrypt operation output MUST include an [encryption context](#encryption-context) value.
     let keyring = test_keyring().await;
     let ec = std::collections::HashMap::from([("testkey".to_string(), "testval".to_string())]);
     let enc_input = EncryptInput::with_legacy_keyring(b"output ec test", ec, keyring);
     let output = encrypt(&enc_input).await.unwrap();
+    //= spec/client-apis/encrypt.md#output
+    //= type=test
+    //# - Encrypt operation output MUST include an [encryption context](#encryption-context) value.
     assert!(
         output.encryption_context.contains_key("testkey"),
         "output must include the encryption context"
@@ -439,6 +431,12 @@ async fn test_output_includes_encryption_context() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_output_includes_algorithm_suite() {
+    let keyring = test_keyring().await;
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(b"output suite test", EncryptionContext::new(), keyring);
+    enc_input.algorithm_suite_id =
+        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
+    let output = encrypt(&enc_input).await.unwrap();
     //= spec/client-apis/encrypt.md#output
     //= type=test
     //# - Encrypt operation output MUST include an [algorithm suite](#algorithm-suite) value.
@@ -446,12 +444,6 @@ async fn test_output_includes_algorithm_suite() {
     //= spec/client-apis/encrypt.md#algorithm-suite-1
     //= type=test
     //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
-    let keyring = test_keyring().await;
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(b"output suite test", EncryptionContext::new(), keyring);
-    enc_input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
-    let output = encrypt(&enc_input).await.unwrap();
     assert_eq!(
         output.algorithm_suite_id,
         EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey,
@@ -461,10 +453,6 @@ async fn test_output_includes_algorithm_suite() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_reserved_encryption_context_prefix_must_fail() {
-    //= spec/client-apis/encrypt.md#encryption-context
-    //= type=test
-    //# If the input encryption context contains any entries with a key beginning with `aws-crypto-`,
-    //# the encryption operation MUST fail.
     let keyring = test_keyring().await;
     let ec = std::collections::HashMap::from([
         ("aws-crypto-foo".to_string(), "bar".to_string()),
@@ -472,6 +460,10 @@ async fn test_reserved_encryption_context_prefix_must_fail() {
     let enc_input = EncryptInput::with_legacy_keyring(b"should fail", ec, keyring);
     let result = encrypt(&enc_input).await;
     let err = result.expect_err("encrypt must fail when encryption context has aws-crypto- prefix key");
+    //= spec/client-apis/encrypt.md#encryption-context
+    //= type=test
+    //# If the input encryption context contains any entries with a key beginning with `aws-crypto-`,
+    //# the encryption operation MUST fail.
     assert_eq!(
         err.kind, ErrorKind::ValidationError,
         "expected ValidationError, got: {err:?}"
@@ -502,15 +494,15 @@ async fn test_reserved_encryption_context_prefix_boundary_no_dash() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_algorithm_suite_used_for_encryption() {
-    //= spec/client-apis/encrypt.md#algorithm-suite
-    //= type=test
-    //# The [algorithm suite](../framework/algorithm-suites.md) that MUST be used for encryption.
     let keyring = test_keyring().await;
     let mut enc_input =
         EncryptInput::with_legacy_keyring(b"suite used test", EncryptionContext::new(), keyring.clone());
     enc_input.algorithm_suite_id =
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
     let output = encrypt(&enc_input).await.unwrap();
+    //= spec/client-apis/encrypt.md#algorithm-suite
+    //= type=test
+    //# The [algorithm suite](../framework/algorithm-suites.md) that MUST be used for encryption.
     assert_eq!(
         output.algorithm_suite_id,
         EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey,
@@ -573,10 +565,7 @@ impl aws_mpl_legacy::dafny::types::cryptographic_materials_manager::Cryptographi
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_request_no_algorithm_suite_field() {
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //= reason=Spy CMM observes algorithm_suite_id is None when caller omits it
-    //# If no Algorithm Suite is provided, this field MUST NOT be included.
+    // Spy CMM observes algorithm_suite_id is None when caller omits it.
     let keyring = test_keyring().await;
     let inner_cmm = mpl()
         .create_default_cryptographic_materials_manager()
@@ -603,6 +592,10 @@ async fn test_cmm_request_no_algorithm_suite_field() {
     //= reason=Spy CMM directly observes the call was constructed with expected fields
     //# The call to [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials)
     //# on that CMM MUST be constructed as follows:
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //= reason=Spy CMM observes algorithm_suite_id is None when caller omits it
+    //# If no Algorithm Suite is provided, this field MUST NOT be included.
     assert_eq!(observed, Some(None), "CMM must receive algorithm_suite_id=None when caller omits it");
 
     // Round-trip corroboration
@@ -612,11 +605,7 @@ async fn test_cmm_request_no_algorithm_suite_field() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_request_max_plaintext_length_equals_input() {
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //= reason=Spy CMM observes max_plaintext_length equals input plaintext length
-    //# - Max Plaintext Length: If the [input plaintext](#plaintext) has known length,
-    //# this length MUST be used.
+    // Spy CMM observes max_plaintext_length equals input plaintext length.
     let keyring = test_keyring().await;
     let inner_cmm = mpl()
         .create_default_cryptographic_materials_manager()
@@ -638,6 +627,11 @@ async fn test_cmm_request_max_plaintext_length_equals_input() {
 
     // Verify spy observed max_plaintext_length == plaintext.len()
     let observed = observed_len.lock().unwrap().clone();
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //= reason=Spy CMM observes max_plaintext_length equals input plaintext length
+    //# - Max Plaintext Length: If the [input plaintext](#plaintext) has known length,
+    //# this length MUST be used.
     assert_eq!(
         observed,
         Some(Some(pt.len() as i64)),
