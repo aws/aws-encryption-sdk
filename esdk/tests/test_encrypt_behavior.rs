@@ -29,8 +29,15 @@ async fn test_step_2_construct_header() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_step_4_construct_signature() {
-    // Encrypt with a signing suite; decrypt verifies the signature, proving step 4 executed
-    // for the suite-has-signature branch.
+    // Encrypt with a signing suite; decrypt verifies the signature, proving step 4 executed.
+    let keyring = test_keyring().await;
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(b"test step 4", EncryptionContext::new(), keyring.clone());
+    enc_input.algorithm_suite_id =
+        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
+    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let pt = decrypt(&dec_input).await.unwrap().plaintext;
     //= spec/client-apis/encrypt.md#behavior
     //= type=test
     //# - Encrypt operation step 4 MUST be [Construct the signature](#construct-the-signature)
@@ -41,14 +48,6 @@ async fn test_step_4_construct_signature() {
     //# - If the [encryption materials gathered](#get-the-encryption-materials) has a algorithm suite
     //# including a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
     //# the Encrypt operation MUST perform this step.
-    let keyring = test_keyring().await;
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(b"test step 4", EncryptionContext::new(), keyring.clone());
-    enc_input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let pt = decrypt(&dec_input).await.unwrap().plaintext;
     assert_eq!(pt, b"test step 4");
 }
 
@@ -121,15 +120,10 @@ async fn test_no_extra_data_in_output_message() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_input_suite_vs_commitment_policy_error() {
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# If an [input algorithm suite](#algorithm-suite) is provided
-    //# that is not supported by the [commitment policy](client.md#commitment-policy)
-    //# configured in the [client](client.md) encrypt MUST yield an error.
+    // Non-committing suite + RequireEncryptRequireDecrypt → must fail.
     let keyring = test_keyring().await;
     let mut enc_input =
         EncryptInput::with_legacy_keyring(b"commitment check", EncryptionContext::new(), keyring);
-    // Non-committing suite with RequireEncryptRequireDecrypt policy
     enc_input.algorithm_suite_id =
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
     enc_input.commitment_policy = EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
@@ -139,6 +133,12 @@ async fn test_input_suite_vs_commitment_policy_error() {
         panic!("expected LegacyError, got: {:?}", err.kind);
     };
     let inner = format!("{legacy:?}");
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //# If an [input algorithm suite](#algorithm-suite) is provided
+    //# that is not supported by the [commitment policy](client.md#commitment-policy)
+    //# configured in the [client](client.md) encrypt MUST yield an error.
+    //
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //= reason=Test sets commitment_policy on input; policy-violation error proves it was passed
@@ -277,10 +277,6 @@ async fn test_max_edk_exceeded_error() {
     // Set max_encrypted_data_keys to 0 (impossible to satisfy) — should fail.
     // NonZeroUsize minimum is 1, but even 1 EDK from a single keyring should be exactly 1.
     // We use two keyrings to produce 2 EDKs, then set max to 1.
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys) on the [encryption materials](../framework/structures.md#encryption-materials)
-    //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md) encrypt MUST yield an error.
     let keyring1 = test_keyring().await;
     let (ns2, name2) = namespace_and_name(1);
     let keyring2 = mpl()
@@ -304,6 +300,10 @@ async fn test_max_edk_exceeded_error() {
     enc_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(1).unwrap());
     let result = encrypt(&enc_input).await;
     let err = result.expect_err("encrypt must fail when EDK count exceeds max");
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys) on the [encryption materials](../framework/structures.md#encryption-materials)
+    //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md) encrypt MUST yield an error.
     assert_eq!(
         err.kind, ErrorKind::ValidationError,
         "expected ValidationError, got: {err:?}"
