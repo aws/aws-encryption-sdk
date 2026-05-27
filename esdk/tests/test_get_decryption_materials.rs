@@ -125,7 +125,7 @@ async fn test_data_key_derived_from_plaintext_data_key() {
     let result = decrypt(&dec_input).await.unwrap();
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
-    //= reason=Decrypt re-derives from same plaintext data key; success proves it matched
+    //= reason=HKDF suite decrypt succeeds; wrong keyring test proves wrong PDK → failure
     //# The data key used as input for all decryption described below MUST be a data key derived from the plaintext data key
     //# included in the [decryption materials](../framework/structures.md#decryption-materials).
     assert_eq!(
@@ -171,22 +171,35 @@ async fn test_commit_key_derived_and_validated() {
         &keyring,
     )
     .await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap();
+
+    // Baseline: untampered ciphertext decrypts.
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone());
+    assert!(decrypt(&dec_input).await.is_ok(), "baseline must pass");
+
+    // Tamper the Algorithm Suite Data (commit key) in the header.
+    // parse_v2_header_field_offsets gives us the exact byte range.
+    let mut tampered = ct.clone();
+    let fields = parse_v2_header_field_offsets(&tampered);
+    let (_, sd_start, _sd_end) = fields.iter().find(|(n, _, _)| *n == "Algorithm Suite Data")
+        .expect("V2 header must have Algorithm Suite Data field");
+    let original = tampered[*sd_start];
+    tampered[*sd_start] ^= 0xFF;
+    assert_ne!(tampered[*sd_start], original, "tamper must change the byte");
+
+    let dec_input = DecryptInput::with_legacy_keyring(&tampered, EncryptionContext::new(), keyring);
+    let err = decrypt(&dec_input).await.expect_err("tampered commit key must cause decrypt to fail");
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
-    //= reason=Committing suite round-trip succeeds; proves commit key derived and matched
+    //= reason=Tampered commit key in header causes failure; proves equality check runs
     //# If the [algorithm suite](../framework/algorithm-suites.md#algorithm-suites-encryption-key-derivation-settings) supports [key commitment](../framework/algorithm-suites.md#key-commitment)
     //# then the [commit key](../framework/algorithm-suites.md#commit-key) MUST be derived from the plaintext data key
     //# using the [commit key derivation](../framework/algorithm-suites.md#algorithm-suites-commit-key-derivation-settings).
+    //
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
-    //= reason=Committing suite round-trip succeeds; proves derived commit key matched header
+    //= reason=Tampered header commit key != derived commit key → ValidationError
     //# The derived commit key MUST equal the commit key stored in the message header.
-    assert_eq!(
-        result.plaintext, pt,
-        "successful round-trip with committing suite proves commit key was derived and matched header"
-    );
+    assert_eq!(err.kind, ErrorKind::ValidationError, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
