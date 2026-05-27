@@ -37,7 +37,7 @@ async fn test_step_4_construct_signature() {
     //
     //= spec/client-apis/encrypt.md#behavior
     //= type=test
-    //= reason=Decrypt verifies the footer signature; round-trip success on a signing suite is only possible if encrypt performed the signature step.
+    //= reason=Decrypt verifies footer signature; success proves encrypt performed the step
     //# - If the [encryption materials gathered](#get-the-encryption-materials) has a algorithm suite
     //# including a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
     //# the Encrypt operation MUST perform this step.
@@ -315,7 +315,7 @@ async fn test_encrypt_data_key_derived_from_plaintext_data_key() {
     // because decrypt derives the same key from the same plaintext data key.
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
-    //= reason=Round-trip success proves the derived data key was used: decrypt re-derives the same key from the plaintext data key in the header, so a mismatch would cause decryption failure.
+    //= reason=Decrypt re-derives the same key; mismatch would cause decryption failure
     //# The data key used as input for all encryption described below MUST be a data key derived from the plaintext data key
     //# included in the [encryption materials](../framework/structures.md#encryption-materials).
     let pt = b"derived data key test";
@@ -620,7 +620,7 @@ async fn test_cmm_request_max_plaintext_length_equals_input() {
         observed_max_plaintext_length: observed_len.clone(),
     });
 
-    let pt = b"24 bytes of plaintext!!";  // 23 bytes
+    let pt = b"spy plaintext 23 bytes!";  // 23 bytes
     let enc_input = EncryptInput::with_legacy_cmm(pt, EncryptionContext::new(), cmm_ref);
     encrypt(&enc_input).await.unwrap();
 

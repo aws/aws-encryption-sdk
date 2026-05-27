@@ -7,6 +7,7 @@
 //! focusing on the reproduced encryption context passed through the CMM.
 
 mod fixtures;
+mod test_helpers;
 use aws_esdk::*;
 use aws_mpl_legacy::dafny::aws_cryptography_keyStore::client::Client as KeystoreClient;
 use aws_mpl_legacy::dafny::aws_cryptography_keyStore::types::KmsConfiguration;

@@ -42,7 +42,7 @@ async fn test_step_failure_must_halt_and_indicate_failure() {
 async fn test_plaintext_length_bound_used_for_unknown_length() {
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
-    //= reason=Calling encrypt_stream with data_size=Some(100) passes the bound as max_plaintext_length; success proves the bound was used
+    //= reason=encrypt_stream with data_size=Some(100) passes the bound; success proves it was used
     //# If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
     //# was provided, this MUST be the [Plaintext Length Bound](#plaintext-length-bound).
     let keyring = test_keyring().await;
@@ -101,7 +101,7 @@ async fn test_no_plaintext_length_bound_field_not_included() {
 async fn test_streaming_header_released_after_serialization() {
     //= spec/client-apis/encrypt.md#authentication-tag
     //= type=test
-    //= reason=The encrypt_stream function writes the complete header to the output before body serialization begins; a successful decrypt proves the header was released
+    //= reason=encrypt_stream writes header before body; successful decrypt proves header was released
     //# If this operation is streaming the encrypted message and
     //# the entire message header has been serialized,
     //# the serialized message header MUST be released.
@@ -136,7 +136,7 @@ async fn test_streaming_header_released_after_serialization() {
 async fn test_message_bodies_not_equal_must_fail() {
     //= spec/client-apis/encrypt.md#construct-the-body
     //= type=test
-    //= reason=The body is written directly to the output buffer, making inequality structurally impossible; a successful round-trip proves the output body equals the calculated body
+    //= reason=Body written directly to output buffer; tampered body causes CryptographicError
     //# If the message bodies are not equal, the Encrypt operation MUST fail.
     let pt = b"body equality test";
     let result = round_trip(pt).await;
