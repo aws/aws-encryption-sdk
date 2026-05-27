@@ -310,7 +310,12 @@ async fn test_decrypt_first_frame_sequence_number_is_one() {
     //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=On-wire first frame seq_num == 1 proves requirement
-    //# The first frame's sequence number MUST be 1.
+    //# If this is framed data and the first frame sequentially, this value MUST be 1.
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Wire parse extracts seq_num from first 4 bytes, proving deserialization
+    //# - MUST deserialize the [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number).
     assert_eq!(frames[0].seq_num, 1, "first frame sequence number must be 1 on the wire");
     // Round-trip corroboration
     let result = decrypt_ciphertext(&ct).await.plaintext;
@@ -327,7 +332,8 @@ async fn test_decrypt_sequence_numbers_increment() {
     //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=On-wire seq_nums 1..5 prove monotonic increment across frames
-    //# Sequence numbers MUST be in order and MUST start at 1.
+    //# Otherwise, this value MUST be 1 greater than the value of the sequence number
+    //# of the previous frame.
     assert_eq!(frames.len(), 5, "50 bytes / 10-byte frames = 4 regular + 1 final");
     for (i, frame) in frames.iter().enumerate() {
         assert_eq!(
