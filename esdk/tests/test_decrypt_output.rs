@@ -42,6 +42,11 @@ async fn test_decrypt_output_includes_algorithm_suite() {
     //= spec/client-apis/decrypt.md#output
     //= type=test
     //# - Decrypt operation output MUST include an [algorithm suite](#algorithm-suite) value.
+    //
+    //= spec/client-apis/decrypt.md#algorithm-suite
+    //= type=test
+    //= reason=Output suite matches a supported ESDK suite (AlgAes256GcmHkdfSha512CommitKey)
+    //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
     assert_eq!(result.algorithm_suite_id, suite);
 }
 
@@ -98,8 +103,8 @@ async fn test_streaming_callers_must_discard_on_failure() {
     let err = result.expect_err("decrypt_stream must return Err on tampered signature — callers must discard output");
     //= spec/client-apis/decrypt.md#security-considerations
     //= type=test
+    //= reason=Tampered signature to Err signals callers to discard released output
     //# Additionally, if this operation fails, callers MUST discard the released plaintext and encryption context
     //# and MUST rollback any processing done due to the released plaintext or encryption context.
-    //= reason=Tampered signature → Err signals callers to discard released output
     assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
 }

@@ -33,6 +33,10 @@ async fn test_decrypt_final_frame_content_length_validation() {
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("decrypt must fail when final frame content length exceeds frame length");
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Tampered content length > frame_length causes error, proving it's checked
+    //# If this is a final frame, this MUST be determined by using the [final frame encrypted content length](../data-format/message-body.md#final-frame-encrypted-content-length).
     assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }
 
@@ -108,6 +112,34 @@ async fn test_decrypt_fails_on_tampered_auth_tag() {
     //= reason=Baseline succeeds; wrong content length in AAD would cause auth failure
     //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
     //# equal to the length of the plaintext that was encrypted.
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Tampered auth tag causes AES-GCM failure, proving authenticated decryption runs
+    //# Once at least a single frame is deserialized (or the entire body in the nonframed case),
+    //# the Decrypt operation MUST decrypt and authenticate the frame (or body) using the
+    //# [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
+    //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Baseline succeeds; wrong Body AAD Content would cause auth failure
+    //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be constructed
+    //# according to [Message Body AAD](../data-format/message-body-aad.md) depending on
+    //# whether the bytes being decrypted are a regular frame, final frame, or nonframed data.
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Baseline uses frame_length=10; correct content_length in AAD is required
+    //# If this is a regular frame, this MUST be determined by using the [frame length](../data-format/message-header.md#frame-length)
+    //# deserialized from the message header.
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Baseline succeeds; wrong IV in AAD would cause AES-GCM auth failure
+    //# - The IV MUST be the [sequence number](../data-format/message-body-aad.md#sequence-number)
+    //# used in the message body AAD above,
+    //# padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
     assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
 }
 
@@ -399,6 +431,20 @@ async fn test_decrypt_first_frame_sequence_number_is_one() {
     //= type=test
     //= reason=Wire parse extracts seq_num from first 4 bytes, proving deserialization
     //# - MUST deserialize the [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number).
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Successful multi-frame decrypt proves body bytes follow header
+    //# Once the message header is successfully parsed, the next sequential bytes
+    //# MUST be deserialized according to the [message body spec](../data-format/message-body.md).
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Successful decrypt of all frames proves bytes were consumed as available
+    //# If there could still be message body left to deserialize and decrypt,
+    //# this operation MUST either wait for more of the encrypted message bytes to become consumable,
+    //# wait for the end to the encrypted message to be indicated,
+    //# or deserialize and/or decrypt the consumable bytes.
     assert_eq!(frames[0].seq_num, 1, "first frame sequence number must be 1 on the wire");
     // Round-trip corroboration
     let result = decrypt_ciphertext(&ct).await.plaintext;
@@ -427,6 +473,59 @@ async fn test_decrypt_sequence_numbers_increment() {
         );
     }
     // Round-trip corroboration
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Successful 5-frame decrypt proves content type dispatches to framed data
+    //# The Decrypt operation MUST use the [content type](../data-format/message-header.md#content-type) field parsed from the
+    //# message header to determine whether the operation will deserialize the message bytes as
+    //# [framed data](../data-format/message-body.md#framed-data) or
+    //# [nonframed data](../data-format/message-body.md#nonframed-data).
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Successful 5-frame decrypt proves first 4 bytes determine frame type
+    //# If deserializing [framed data](../data-format/message-body.md#framed-data),
+    //# the Decrypt operation MUST use the first 4 bytes of a frame to determine
+    //# whether the operation will deserialize the frame as a [final frame](../data-format/message-body.md#final-frame)
+    //# or [regular frame](../data-format/message-body.md#regular-frame).
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=5-frame decrypt proves first 4 bytes of each frame are inspected
+    //# The Decrypt operation MUST inspect the first 4 bytes of each frame.
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Final frame detected and deserialized per final frame spec
+    //# If the first 4 bytes have a value of 0xFFFFFFFF,
+    //# the Decrypt operation MUST treat them as the [Sequence Number End](../data-format/message-body.md#sequence-number-end)
+    //# and deserialize the following bytes according to the [final frame spec](../data-format/message-body.md#final-frame).
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Regular frames detected and deserialized per regular frame spec
+    //# Otherwise, the Decrypt operation MUST treat them as the [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number)
+    //# and deserialize the following bytes according to the [regular frame spec](../data-format/message-body.md#regular-frame).
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=4 regular frames successfully decrypted
+    //# Regular frame deserialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=4 regular frames deserialized per field spec
+    //# For a regular frame, each field MUST be deserialized according to its specification:
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Final frame successfully decrypted
+    //# Final frame deserialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Final frame deserialized per field spec
+    //# For a final frame, each field MUST be deserialized according to its specification:
     let result = decrypt_ciphertext(&ct).await.plaintext;
     assert_eq!(result, pt);
 }

@@ -236,5 +236,12 @@ async fn test_unsupported_esdk_algorithm_suite_yields_error() {
     //= reason=Tampered suite ID to non-ESDK value triggers the error path
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
     //# decrypt MUST yield an error.
+    //
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=Tampered header suite ID causes failure, proving parsed suite is used
+    //# - Algorithm Suite ID: This MUST be the parsed
+    //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
+    //# from the message header.
     assert_eq!(err.kind, ErrorKind::ValidationError, "got: {err:?}");
 }

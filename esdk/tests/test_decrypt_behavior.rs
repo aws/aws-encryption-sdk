@@ -35,6 +35,11 @@ async fn test_decrypt_skips_signature_step_for_non_signing_algorithm() {
     //= reason=No footer on wire + decrypt succeeds → signature step was not attempted
     //# - If the message header does not contain an algorithm suite including a signature algorithm,
     //# the Decrypt operation MUST NOT perform this step.
+    //
+    //= spec/client-apis/decrypt.md#cryptographic-materials-manager
+    //= type=test
+    //= reason=Successful decrypt proves CMM obtained decryption materials
+    //# This CMM MUST obtain the [decryption materials](../framework/structures.md#decryption-materials) required for decryption.
     assert_eq!(decrypt_output.plaintext, plaintext);
 }
 
