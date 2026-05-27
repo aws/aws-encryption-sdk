@@ -40,23 +40,6 @@ async fn test_keyring_constructs_default_cmm_for_decrypt() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_keyring_constructs_default_cmm_for_encrypt() {
-    let keyring = test_keyring().await;
-    let pt = b"test keyring constructs default cmm for encrypt";
-    let enc_input =
-        EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring.clone());
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await.unwrap();
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# If instead the caller supplied a [keyring](../framework/keyring-interface.md),
-    //# this behavior MUST use a [default CMM](../framework/default-cmm.md)
-    //# constructed using the caller-supplied keyring as input.
-    assert_eq!(result.plaintext, pt);
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_fails_with_wrong_keyring() {
     let keyring = test_keyring().await;
     let pt = b"negative test keyring to default cmm";

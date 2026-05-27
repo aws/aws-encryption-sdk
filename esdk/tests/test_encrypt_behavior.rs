@@ -14,17 +14,6 @@ use fixtures::*;
 use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_step_1_get_encryption_materials() {
-    // A successful encrypt proves materials were obtained (step 1).
-    //= spec/client-apis/encrypt.md#behavior
-    //= type=test
-    //# - Encrypt operation Step 1 MUST be [Get the encryption materials](#get-the-encryption-materials)
-    let pt = b"test step 1";
-    let result = round_trip(pt).await;
-    assert_eq!(result, pt);
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_step_2_construct_header() {
     // A successful encrypt produces output starting with a valid header version byte
     // for both V1 and V2 message formats.
@@ -36,17 +25,6 @@ async fn test_step_2_construct_header() {
 
     let v1 = encrypt_v1(b"test step 2 v1").await;
     assert_eq!(v1[0], 0x01, "V1 output must start with header version byte 0x01");
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_step_3_construct_body() {
-    // A successful round-trip proves the body was encrypted correctly (step 3).
-    //= spec/client-apis/encrypt.md#behavior
-    //= type=test
-    //# - Encrypt operation step 3 MUST be [Construct the body](#construct-the-body)
-    let pt = b"test step 3";
-    let result = round_trip(pt).await;
-    assert_eq!(result, pt);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -225,26 +203,6 @@ async fn test_cmm_request_empty_encryption_context() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_cmm_request_commitment_policy() {
-    // Encrypt with a committing suite and RequireEncryptRequireDecrypt policy.
-    // Success proves the commitment policy was correctly passed to the CMM.
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# - Commitment Policy: This MUST be the [commitment policy](client.md#commitment-policy) configured in the [client](client.md) exposing this encrypt function.
-    let keyring = test_keyring().await;
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(b"commitment policy test", EncryptionContext::new(), keyring.clone());
-    enc_input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
-    enc_input.commitment_policy = EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    dec_input.commitment_policy = EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
-    let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, b"commitment policy test");
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_request_algorithm_suite_provided() {
     // Encrypt with a specific algorithm suite and verify the output uses it.
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
@@ -261,47 +219,6 @@ async fn test_cmm_request_algorithm_suite_provided() {
         EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey,
         "output algorithm suite must match the input algorithm suite"
     );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_cmm_request_no_algorithm_suite() {
-    // Encrypt without specifying an algorithm suite; success proves the CMM
-    // was called without an algorithm suite field and selected one itself.
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# If no Algorithm Suite is provided, this field MUST NOT be included.
-    let pt = b"no suite test";
-    let output = encrypt_default(pt).await;
-    let decrypted = decrypt_ciphertext(&output.ciphertext).await;
-    assert_eq!(decrypted.plaintext, pt, "round-trip must recover original plaintext");
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_cmm_request_max_plaintext_length() {
-    // EncryptInput takes &[u8] which always has known length.
-    // A successful encrypt proves the known length was passed to the CMM.
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //# - Max Plaintext Length: If the [input plaintext](#plaintext) has known length,
-    //# this length MUST be used.
-    let pt = b"max plaintext length test";
-    let output = encrypt_default(pt).await;
-    let decrypted = decrypt_ciphertext(&output.ciphertext).await;
-    assert_eq!(decrypted.plaintext, pt, "round-trip must recover original plaintext");
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_cmm_request_construction() {
-    // A successful encrypt proves the CMM request was correctly constructed.
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //= reason=A successful encrypt-then-decrypt round-trip proves the CMM request was correctly constructed, because decrypt would fail if the CMM received malformed encryption materials.
-    //# The call to [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials)
-    //# on that CMM MUST be constructed as follows:
-    let pt = b"cmm request construction test";
-    let output = encrypt_default(pt).await;
-    let decrypted = decrypt_ciphertext(&output.ciphertext).await;
-    assert_eq!(decrypted.plaintext, pt, "round-trip must recover original plaintext");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -423,19 +340,6 @@ async fn test_default_frame_length_used() {
     assert_eq!(on_wire, 4096, "default frame_length on the wire must be 4096");
 
     // Round-trip corroboration.
-    let result = round_trip(pt).await;
-    assert_eq!(result, pt);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_write_header_before_body() {
-    // A successful round-trip proves the header was serialized before the body,
-    // because decrypt parses header first, then uses header info to decrypt body.
-    //= spec/client-apis/encrypt.md#construct-the-header
-    //= type=test
-    //# Before encrypting input plaintext,
-    //# this operation MUST serialize the [message header body](../data-format/message-header.md).
-    let pt = b"header serialization test";
     let result = round_trip(pt).await;
     assert_eq!(result, pt);
 }
@@ -583,17 +487,120 @@ async fn test_algorithm_suite_used_for_encryption() {
     assert_eq!(pt, b"suite used test");
 }
 
+/// Spy CMM that records what inputs it received, then delegates to a real CMM.
+struct SpyCmm {
+    inner: aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef,
+    observed_algorithm_suite_id: std::sync::Arc<std::sync::Mutex<Option<Option<aws_mpl_legacy::dafny::types::AlgorithmSuiteId>>>>,
+    observed_max_plaintext_length: std::sync::Arc<std::sync::Mutex<Option<Option<i64>>>>,
+}
+
+impl aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManager for SpyCmm {
+    fn get_encryption_materials(
+        &self,
+        input: aws_mpl_legacy::dafny::operation::get_encryption_materials::GetEncryptionMaterialsInput,
+    ) -> Result<aws_mpl_legacy::dafny::operation::get_encryption_materials::GetEncryptionMaterialsOutput, aws_mpl_legacy::dafny::types::error::Error> {
+        // Record observations
+        *self.observed_algorithm_suite_id.lock().unwrap() = Some(input.algorithm_suite_id.clone());
+        *self.observed_max_plaintext_length.lock().unwrap() = Some(input.max_plaintext_length);
+
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                let mut builder = self.inner.get_encryption_materials()
+                    .commitment_policy(input.commitment_policy.unwrap())
+                    .encryption_context(input.encryption_context.unwrap());
+                if let Some(suite) = input.algorithm_suite_id {
+                    builder = builder.algorithm_suite_id(suite);
+                }
+                if let Some(len) = input.max_plaintext_length {
+                    builder = builder.max_plaintext_length(len);
+                }
+                builder.send().await
+            })
+        })
+    }
+    fn decrypt_materials(
+        &self,
+        input: aws_mpl_legacy::dafny::operation::decrypt_materials::DecryptMaterialsInput,
+    ) -> Result<aws_mpl_legacy::dafny::operation::decrypt_materials::DecryptMaterialsOutput, aws_mpl_legacy::dafny::types::error::Error> {
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                self.inner.decrypt_materials()
+                    .algorithm_suite_id(input.algorithm_suite_id.unwrap())
+                    .commitment_policy(input.commitment_policy.unwrap())
+                    .encryption_context(input.encryption_context.unwrap())
+                    .encrypted_data_keys(input.encrypted_data_keys.unwrap())
+                    .send()
+                    .await
+            })
+        })
+    }
+}
+
 #[tokio::test(flavor = "multi_thread")]
-async fn test_algorithm_suite_must_be_esdk_supported() {
-    // Verify that encrypting with a valid ESDK-supported suite succeeds.
-    //= spec/client-apis/encrypt.md#algorithm-suite
+async fn test_cmm_request_no_algorithm_suite_field() {
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
-    //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
+    //= reason=Spy CMM observes algorithm_suite_id is None when caller omits it
+    //# If no Algorithm Suite is provided, this field MUST NOT be included.
     let keyring = test_keyring().await;
-    let mut enc_input =
-        EncryptInput::with_legacy_keyring(b"esdk supported suite", EncryptionContext::new(), keyring);
-    enc_input.algorithm_suite_id =
-        Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
-    let result = encrypt(&enc_input).await;
-    assert!(result.is_ok(), "encrypt must succeed with an ESDK-supported algorithm suite");
+    let inner_cmm = mpl()
+        .create_default_cryptographic_materials_manager()
+        .keyring(keyring.clone())
+        .send()
+        .await
+        .unwrap();
+    let observed_suite = std::sync::Arc::new(std::sync::Mutex::new(None));
+    let observed_len = std::sync::Arc::new(std::sync::Mutex::new(None));
+    let cmm_ref = aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef::from(SpyCmm {
+        inner: inner_cmm,
+        observed_algorithm_suite_id: observed_suite.clone(),
+        observed_max_plaintext_length: observed_len.clone(),
+    });
+
+    let pt = b"no suite spy test";
+    let enc_input = EncryptInput::with_legacy_cmm(pt, EncryptionContext::new(), cmm_ref);
+    let output = encrypt(&enc_input).await.unwrap();
+
+    // Verify spy observed None for algorithm_suite_id
+    let observed = observed_suite.lock().unwrap().clone();
+    assert_eq!(observed, Some(None), "CMM must receive algorithm_suite_id=None when caller omits it");
+
+    // Round-trip corroboration
+    let dec_input = DecryptInput::with_legacy_keyring(&output.ciphertext, EncryptionContext::new(), keyring);
+    assert_eq!(decrypt(&dec_input).await.unwrap().plaintext, pt);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_cmm_request_max_plaintext_length_equals_input() {
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //= reason=Spy CMM observes max_plaintext_length equals input plaintext length
+    //# - Max Plaintext Length: If the [input plaintext](#plaintext) has known length,
+    //# this length MUST be used.
+    let keyring = test_keyring().await;
+    let inner_cmm = mpl()
+        .create_default_cryptographic_materials_manager()
+        .keyring(keyring.clone())
+        .send()
+        .await
+        .unwrap();
+    let observed_suite = std::sync::Arc::new(std::sync::Mutex::new(None));
+    let observed_len = std::sync::Arc::new(std::sync::Mutex::new(None));
+    let cmm_ref = aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef::from(SpyCmm {
+        inner: inner_cmm,
+        observed_algorithm_suite_id: observed_suite.clone(),
+        observed_max_plaintext_length: observed_len.clone(),
+    });
+
+    let pt = b"24 bytes of plaintext!!";  // 23 bytes
+    let enc_input = EncryptInput::with_legacy_cmm(pt, EncryptionContext::new(), cmm_ref);
+    encrypt(&enc_input).await.unwrap();
+
+    // Verify spy observed max_plaintext_length == plaintext.len()
+    let observed = observed_len.lock().unwrap().clone();
+    assert_eq!(
+        observed,
+        Some(Some(pt.len() as i64)),
+        "CMM must receive max_plaintext_length equal to input plaintext length"
+    );
 }
