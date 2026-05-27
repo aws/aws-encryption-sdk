@@ -147,9 +147,6 @@ async fn test_decrypt_fails_on_tampered_auth_tag() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_no_unauthenticated_plaintext_released() {
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //# This operation MUST NOT release any unauthenticated plaintext.
     // Tamper with encrypted content in the first frame. Decrypt must fail
     // and return no plaintext at all.
     let pt = vec![0xABu8; 20];
@@ -164,6 +161,9 @@ async fn test_decrypt_no_unauthenticated_plaintext_released() {
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("tampered ciphertext must produce error, not partial plaintext");
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //# This operation MUST NOT release any unauthenticated plaintext.
     assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
 }
 
