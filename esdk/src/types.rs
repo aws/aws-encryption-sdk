@@ -346,6 +346,7 @@ pub struct EncryptInput<'a> {
     //# If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
     //
     //= spec/client-apis/client.md#initialization
+    //= type=implication
     //= reason=encrypt()/decrypt() take &EncryptInput/&DecryptInput; the policy cannot be mutated through a shared reference
     //# Once a [commitment policy](#commitment-policy) has been set it SHOULD be immutable.
     //
