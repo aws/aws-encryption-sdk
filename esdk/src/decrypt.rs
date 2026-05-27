@@ -68,6 +68,7 @@ impl ProtectionNeeded {
 //# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
 //
 //= spec/client-apis/decrypt.md#security-considerations
+//= type=implication
 //= reason=Ok is only returned after signature verification; streamed bytes are unverified until then
 //# If this operation is [streaming](streaming.md) output to the caller
 //# and is decrypting messages created with an algorithm suite including a signature algorithm,
@@ -81,6 +82,7 @@ impl ProtectionNeeded {
 //# this operation successfully completes.
 //
 //= spec/client-apis/decrypt.md#security-considerations
+//= type=implication
 //= reason=Caller obligation; Ok signals completion
 //# This means that callers that process such released plaintext MUST NOT consider any processing successful
 //# until this operation completes successfully.
@@ -201,7 +203,8 @@ struct DecryptState {
 
 #[expect(clippy::too_many_arguments)]
 //= spec/client-apis/decrypt.md#behavior
-//= reason=Plaintext written to SafeWrite only after per-frame AEAD; last frame held until after signature verify
+//= type=implication
+//= reason=SafeWrite receives output only after per-frame AEAD; last frame held until after signature verify
 //# - Output MUST NOT be released until otherwise indicated.
 //
 //= spec/client-apis/decrypt.md#behavior
