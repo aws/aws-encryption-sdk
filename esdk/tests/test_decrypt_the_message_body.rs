@@ -12,10 +12,6 @@ use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_final_frame_content_length_validation() {
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //# MUST ensure that the length of the encrypted content field is
-    //# less than or equal to the frame length deserialized in the message header.
     // Encrypt a message, then tamper with the final frame's content length field
     // to exceed the frame length. Decrypt must fail.
     let pt = vec![0xEEu8; 5];
@@ -35,6 +31,11 @@ async fn test_decrypt_final_frame_content_length_validation() {
     let err = result.expect_err("decrypt must fail when final frame content length exceeds frame length");
     //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
+    //# MUST ensure that the length of the encrypted content field is
+    //# less than or equal to the frame length deserialized in the message header.
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
     //= reason=Tampered content length > frame_length causes error, proving it's checked
     //# If this is a final frame, this MUST be determined by using the [final frame encrypted content length](../data-format/message-body.md#final-frame-encrypted-content-length).
     assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
@@ -42,9 +43,6 @@ async fn test_decrypt_final_frame_content_length_validation() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_fails_on_tampered_auth_tag() {
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //# If this decryption fails, this operation MUST immediately halt and fail.
     // Tamper with the authentication tag of the first frame. Decrypt must fail.
     let pt = vec![0xABu8; 20];
     let mut ct = encrypt_with_frame_length(&pt, 10).await;
@@ -59,6 +57,10 @@ async fn test_decrypt_fails_on_tampered_auth_tag() {
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("tampered auth tag must cause immediate decryption failure");
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //# If this decryption fails, this operation MUST immediately halt and fail.
+    //
     //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=Tampered auth tag causes CryptographicError; impossible unless IV was deserialized
