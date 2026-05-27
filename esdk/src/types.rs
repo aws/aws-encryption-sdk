@@ -6,10 +6,8 @@ use crate::Error;
 use crate::val_err;
 use aws_mpl_legacy::CryptographicMaterialsManagerRef;
 use aws_mpl_legacy::KeyringRef;
-use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
 use aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef as LegacyCMM;
 use aws_mpl_legacy::dafny::types::keyring::KeyringRef as LegacyKeyring;
-use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use std::num::NonZeroUsize;
 
 /// Source of cryptographic materials for an encrypt or decrypt call.
@@ -52,6 +50,27 @@ impl PartialEq for MaterialSource {
     }
 }
 impl Eq for MaterialSource {}
+
+impl From<LegacyCMM> for MaterialSource {
+    fn from(cmm: LegacyCMM) -> Self {
+        Self::LegacyCmm(cmm)
+    }
+}
+impl From<LegacyKeyring> for MaterialSource {
+    fn from(keyring: LegacyKeyring) -> Self {
+        Self::LegacyKeyring(keyring)
+    }
+}
+impl From<CryptographicMaterialsManagerRef> for MaterialSource {
+    fn from(cmm: CryptographicMaterialsManagerRef) -> Self {
+        Self::Cmm(cmm)
+    }
+}
+impl From<KeyringRef> for MaterialSource {
+    fn from(keyring: KeyringRef) -> Self {
+        Self::Keyring(keyring)
+    }
+}
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// The length of one frame, must be non-zero, defaults to 4096.
@@ -162,6 +181,12 @@ pub trait SafeRead: std::io::Read + Send + Sync + std::fmt::Debug {}
 //= reason=SafeRead wraps std::io::Read; read() returning Ok(0) is the EOF indicator
 //# - There MUST be a mechanism to indicate that there are no more input bytes.
 impl<T: std::io::Read + Send + Sync + std::fmt::Debug> SafeRead for T {}
+
+/// Algorithm suite identifiers for the ESDK.
+pub use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
+
+/// Commitment policies governing key commitment behavior.
+pub use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
 
 /// Key-Value pairs to associate with the encrypted data
 pub use aws_mpl_legacy::EncryptionContext;
