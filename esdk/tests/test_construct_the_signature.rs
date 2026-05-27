@@ -185,11 +185,11 @@ async fn test_signature_input_is_header_plus_body() {
     let err = decrypt_ciphertext_result(&tampered_header)
         .await
         .expect_err("tampered header must fail signature verification");
-    // Flipping the version byte (0x02 → 0x01 or vice versa) causes either a parse
-    // failure or a signature mismatch. Either proves the header is in the signed input.
-    assert!(
-        matches!(err.kind, ErrorKind::SerializationError | ErrorKind::Esdk | ErrorKind::ValidationError),
-        "tampered header must produce a parse or verification error, got: {err:?}"
+    // Flipping the version byte (0x02 → 0x01 or vice versa) causes a parse
+    // failure because the header structure doesn't match the version.
+    assert_eq!(
+        err.kind, ErrorKind::SerializationError,
+        "tampered header version must produce a parse error, got: {err:?}"
     );
 
     // Tamper body (first byte of the first frame's encrypted content).
@@ -203,12 +203,11 @@ async fn test_signature_input_is_header_plus_body() {
     let err = decrypt_ciphertext_result(&tampered_body)
         .await
         .expect_err("tampered body must fail when signature covers body");
-    // Body tamper with a signing suite fails at AEAD (per-frame tag) OR at signature
-    // verification. Either proves the body is authenticated — and the signature covers
-    // the serialized body bytes that include the AEAD tag.
-    assert!(
-        matches!(err.kind, ErrorKind::CryptographicError | ErrorKind::Esdk),
-        "tampered body must produce an auth or verification error, got: {err:?}"
+    // Body tamper with a signing suite fails at AEAD (per-frame tag) because
+    // the encrypted content no longer matches its authentication tag.
+    assert_eq!(
+        err.kind, ErrorKind::CryptographicError,
+        "tampered body must produce an AES-GCM auth error, got: {err:?}"
     );
 }
 
