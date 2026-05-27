@@ -421,6 +421,7 @@ fn step_construct_header(
     //# to the message header calculated in this step.
     //
     //= spec/client-apis/encrypt.md#authentication-tag
+    //= type=implication
     //= reason=Header written directly to output; inequality structurally impossible
     //# If the message headers are not equal, the Encrypt operation MUST fail.
     Ok(header)
@@ -717,6 +718,8 @@ fn build_header_auth_tag(
         //# - The cipherkey MUST be the derived data key
         data_key,
         //= spec/client-apis/encrypt.md#authentication-tag
+        //= type=implication
+        //= reason=Rust literal &[] is statically empty
         //# - The plaintext MUST be an empty byte array
         &[],
         //= spec/client-apis/encrypt.md#authentication-tag
