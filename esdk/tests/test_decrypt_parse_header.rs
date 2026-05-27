@@ -15,9 +15,6 @@ use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unsupported_version_rejected() {
-    //= spec/client-apis/decrypt.md#parse-the-header
-    //= type=test
-    //# The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
     let keyring = test_keyring().await;
     let plaintext = b"unsupported version test";
 
@@ -31,6 +28,9 @@ async fn test_unsupported_version_rejected() {
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("decrypt must fail when version byte is unsupported");
+    //= spec/client-apis/decrypt.md#parse-the-header
+    //= type=test
+    //# The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
     assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }
 
@@ -231,6 +231,24 @@ async fn test_max_encrypted_data_keys_enforcement() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_no_header_info_released_before_verification() {
+    // Tamper with the header auth tag so header verification fails.
+    // The non-streaming decrypt must return an error with no partial output.
+    let keyring = test_keyring().await;
+    let plaintext = b"no header info before verification";
+
+    let enc_input =
+        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
+    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    // Baseline: untampered ciphertext must decrypt successfully.
+    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
+    assert!(baseline.is_ok(), "baseline decrypt must succeed before tamper");
+
+    ct[10] ^= 0xFF;
+
+    let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
+    let result = decrypt(&dec_input).await;
+    let err = result.expect_err("decrypt must fail entirely when header verification fails — no partial header info released");
     //= spec/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
     //= reason=Tampered header byte causes tag verify failure, proving all fields were parsed
@@ -275,25 +293,6 @@ async fn test_no_header_info_released_before_verification() {
     //= type=test
     //# Until the [header is verified](#verify-the-header), this operation MUST NOT
     //# release any parsed information from the header.
-    // Tamper with the header auth tag so header verification fails.
-    // The non-streaming decrypt must return an error with no partial output.
-    let keyring = test_keyring().await;
-    let plaintext = b"no header info before verification";
-
-    let enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
-
-    // Tamper with a byte in the header body to cause header auth tag verification failure
-    // Baseline: untampered ciphertext must decrypt successfully.
-    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
-    assert!(baseline.is_ok(), "baseline decrypt must succeed before tamper");
-
-    ct[10] ^= 0xFF;
-
-    let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("decrypt must fail entirely when header verification fails — no partial header info released");
     assert_eq!(err.kind, ErrorKind::ValidationError, "got: {err:?}");
 }
 
