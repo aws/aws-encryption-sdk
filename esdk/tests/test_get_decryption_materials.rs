@@ -39,8 +39,21 @@ async fn test_decrypt_fails_with_wrong_keyring() {
     let inner = format!("{legacy:?}");
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
+    //= reason=Wrong keyring fails because CMM can't unwrap EDKs
     //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
     //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
+    //
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=Wrong keyring used → wrong CMM → fails; proves input keyring is used
+    //# If a CMM is not supplied as the input, the decrypt operation MUST construct a [default CMM](../framework/default-cmm.md)
+    //# from the input [keyring](../framework/keyring-interface.md).
+    //
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=Wrong keyring can't unwrap header EDKs → proves EDKs from header are passed
+    //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header.md#encrypted-data-keys)
+    //# from the message header.
     assert!(inner.contains("CollectionOfErrors"), "expected CollectionOfErrors, got: {inner}");
 }
 

@@ -233,6 +233,46 @@ async fn test_max_encrypted_data_keys_enforcement() {
 async fn test_no_header_info_released_before_verification() {
     //= spec/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
+    //= reason=Tampered header byte causes tag verify failure, proving all fields were parsed
+    //# - MUST deserialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
+    //
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //= type=test
+    //= reason=Tampered header byte causes tag verify failure, proving all fields were parsed
+    //# - MUST deserialize the [Message ID](../data-format/message-header.md#message-id).
+    //
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //= type=test
+    //= reason=Tampered header byte causes tag verify failure, proving all fields were parsed
+    //# - MUST deserialize the [AAD](../data-format/message-header.md#aad).
+    //
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //= type=test
+    //= reason=Tampered header byte causes tag verify failure, proving all fields were parsed
+    //# - MUST deserialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
+    //
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //= type=test
+    //= reason=Tampered header byte causes tag verify failure, proving all fields were parsed
+    //# - MUST deserialize the [Content Type](../data-format/message-header.md#content-type).
+    //
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //= type=test
+    //= reason=Tampered header byte causes tag verify failure, proving all fields were parsed
+    //# - MUST deserialize the [Frame Length](../data-format/message-header.md#frame-length).
+    //
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //= type=test
+    //= reason=Tampered header byte causes tag verify failure, proving all fields were parsed
+    //# - MUST deserialize the [Algorithm Suite Data](../data-format/message-header.md#algorithm-suite-data).
+    //
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //= type=test
+    //= reason=Tampered header byte causes tag verify failure, proving all fields were parsed
+    //# - MUST deserialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
+    //
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //= type=test
     //# Until the [header is verified](#verify-the-header), this operation MUST NOT
     //# release any parsed information from the header.
     // Tamper with the header auth tag so header verification fails.
@@ -285,6 +325,51 @@ async fn test_v1_header_auth_tag_deserialized_and_verified() {
 
     let mut dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //= reason=Auth tag covers entire header body; tampered tag proves all fields read
+    //# - MUST deserialize the [Type](../data-format/message-header.md#type).
+    //
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //= reason=Auth tag covers entire header body
+    //# - MUST deserialize the [Algorithm Suite ID](../data-format/message-header.md#algorithm-suite-id).
+    //
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //= reason=Auth tag covers entire header body
+    //# - MUST deserialize the [Message ID](../data-format/message-header.md#message-id).
+    //
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //= reason=Auth tag covers entire header body
+    //# - MUST deserialize the [AAD](../data-format/message-header.md#aad).
+    //
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //= reason=Auth tag covers entire header body
+    //# - MUST deserialize the [Encrypted Data Keys](../data-format/message-header.md#encrypted-data-keys).
+    //
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //= reason=Auth tag covers entire header body
+    //# - MUST deserialize the [Content Type](../data-format/message-header.md#content-type).
+    //
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //= reason=Auth tag covers entire header body
+    //# - MUST deserialize the [Reserved](../data-format/message-header.md#reserved).
+    //
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //= reason=Auth tag covers entire header body
+    //# - MUST deserialize the [IV Length](../data-format/message-header.md#iv-length).
+    //
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //= reason=Auth tag covers entire header body
+    //# - MUST deserialize the [Frame Length](../data-format/message-header.md#frame-length).
+    //
     //= spec/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
     //= reason=Tampered V1 auth tag causes failure, proving it was deserialized and verified

@@ -33,7 +33,25 @@ async fn test_verify_header_fails_on_tampered_header() {
     //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //# If this tag verification fails, this operation MUST immediately halt and fail.
-    let err = result.expect_err("decrypt must fail when header bytes are tampered (tag verification failure)");
+        //= spec/client-apis/decrypt.md#verify-the-header
+    //= type=test
+    //= reason=Tampered header body causes tag verify failure
+    //# Once a valid message header is deserialized and decryption materials are available,
+    //# this operation MUST validate the [message header body](../data-format/message-header.md#header-body)
+    //# by using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
+    //# to decrypt with the following inputs:
+    //
+    //= spec/client-apis/decrypt.md#verify-the-header
+    //= type=test
+    //= reason=Tag verify failure proves the cipherkey, tag, and AAD inputs are used
+    //# - the cipherkey MUST be the derived data key
+    //
+    //= spec/client-apis/decrypt.md#verify-the-header
+    //= type=test
+    //= reason=Tag verify failure proves tag from header is checked
+    //# - the tag MUST be the value serialized in the message header's
+    //# [authentication tag field](../data-format/message-header.md#authentication-tag)
+        let err = result.expect_err("decrypt must fail when header bytes are tampered (tag verification failure)");
     assert_eq!(err.kind, ErrorKind::ValidationError, "got: {err:?}");
 }
 
