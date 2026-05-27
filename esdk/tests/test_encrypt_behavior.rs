@@ -53,20 +53,19 @@ async fn test_step_4_construct_signature() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_no_extra_data_in_output_message() {
-    //= spec/client-apis/encrypt.md#behavior
-    //= type=test
-    //# Any data that is not specified within the [message format](../data-format/message.md)
-    //# MUST NOT be added to the output message.
-    //
     // Compute the end-of-message offset by walking the frames (and the footer if a
-    // signing suite is in use) and assert it equals the ciphertext length. Trailing
-    // bytes after the last frame / footer would be "extra data."
+    // signing suite is in use) and assert it equals the ciphertext length.
     let pt = b"no extra data test";
 
     // Case 1: V2 non-signing — body ends at the final frame.
     let ct = encrypt_without_signing_suite(pt).await;
     let frames = parse_all_frames(&ct, 4096);
     let body_end = frames.last().expect("at least one frame").end_offset;
+    //= spec/client-apis/encrypt.md#behavior
+    //= type=test
+    //# Any data that is not specified within the [message format](../data-format/message.md)
+    //# MUST NOT be added to the output message.
+    //
     //= spec/client-apis/encrypt.md#construct-a-frame
     //= type=test
     //= reason=parse_all_frames independently walks wire bytes verifying frame structure
