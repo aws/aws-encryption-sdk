@@ -55,6 +55,20 @@ async fn test_decrypt_fails_on_tampered_auth_tag() {
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("tampered auth tag must cause immediate decryption failure");
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Tampered auth tag causes CryptographicError; impossible unless IV was deserialized
+    //# - MUST deserialize the [IV](../data-format/message-body.md#regular-frame-iv).
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Tampered auth tag causes failure; impossible unless content was deserialized
+    //# - MUST deserialize the [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content).
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Tampered auth tag directly proves tag was deserialized and checked
+    //# - MUST deserialize the [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag).
     assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
 }
 
@@ -280,6 +294,36 @@ async fn test_sequence_number_end_value_is_0xffffffff() {
     //= type=test
     //= reason=Final frame starts with 0xFFFFFFFF on wire; decrypt validates it
     //# The value MUST be `0xFFFFFFFF`.
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Successful final frame decrypt proves ENDFRAME marker was deserialized
+    //# - MUST deserialize the [Sequence Number End](../data-format/message-body.md#sequence-number-end).
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Successful final frame decrypt proves seq num was deserialized
+    //# - MUST deserialize the [Sequence Number](../data-format/message-body.md#final-frame-sequence-number).
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Successful final frame decrypt proves IV was deserialized
+    //# - MUST deserialize the [IV](../data-format/message-body.md#final-frame-iv).
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Successful final frame decrypt proves content length was deserialized
+    //# - MUST deserialize the [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length).
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Successful final frame decrypt proves encrypted content was deserialized
+    //# - MUST deserialize the [Encrypted Content](../data-format/message-body.md#final-frame-encrypted-content).
+    //
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Successful final frame decrypt proves auth tag was deserialized and checked
+    //# - MUST deserialize the [Authentication Tag](../data-format/message-body.md#final-frame-authentication-tag).
     let result = decrypt(&dec_input).await.unwrap();
     assert_eq!(result.plaintext, pt);
 }
