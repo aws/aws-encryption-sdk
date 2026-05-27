@@ -11,14 +11,14 @@ use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_signing_suite_produces_footer() {
+    let ct = encrypt_with_signing_suite(b"signature presence test").await;
+    let (_, sig_len) = find_footer_offset(&ct);
     //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
+    //= reason=Footer exists with P-384 signature length, proving signature was calculated
     //# If the [algorithm suite](../framework/algorithm-suites.md) contains a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
     //# this operation MUST calculate a signature over the message,
     //# and the output [encrypted message](#encrypted-message) MUST contain a [message footer](../data-format/message-footer.md).
-
-    let ct = encrypt_with_signing_suite(b"signature presence test").await;
-    let (_, sig_len) = find_footer_offset(&ct);
     // The default signing suite is ECDSA P-384; DER-encoded signatures are 64..=104 bytes.
     assert!(
         (64..=104).contains(&(sig_len as usize)),
@@ -215,16 +215,16 @@ async fn test_signature_input_is_header_plus_body() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_footer_serialization() {
-    //= spec/client-apis/encrypt.md#construct-the-signature
-    //= type=test
-    //# The order for message footer serialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
-
     let ct = encrypt_with_signing_suite(b"footer serialization test").await;
     let (offset, sig_len) = find_footer_offset(&ct);
 
     // Footer format: [sig_len: 2 bytes big-endian] [signature: sig_len bytes]
     // Verify the two-byte length field at `offset` correctly describes the remaining bytes.
 
+    //= spec/client-apis/encrypt.md#construct-the-signature
+    //= type=test
+    //# The order for message footer serialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
+    //
     //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
     //# - MUST serialize the [Signature Length](../data-format/message-footer.md#signature-length).
