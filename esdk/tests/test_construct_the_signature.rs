@@ -346,3 +346,31 @@ async fn test_no_signature_without_signing_suite() {
         "round-trip with non-signing suite must succeed"
     );
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_footer_serialized_releases_all_bytes() {
+    // Signing suite output ends exactly at the footer; proves all bytes released atomically.
+    let keyring = test_keyring().await;
+    let mut enc_input = aws_esdk::EncryptInput::with_legacy_keyring(
+        b"release all bytes test",
+        aws_esdk::EncryptionContext::new(),
+        keyring.clone(),
+    );
+    enc_input.algorithm_suite_id =
+        Some(aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
+    let ct = aws_esdk::encrypt(&enc_input).await.unwrap().ciphertext;
+
+    let (footer_offset, sig_len) = find_footer_offset(&ct);
+    assert!(sig_len > 0, "footer must contain a signature");
+    //= spec/client-apis/encrypt.md#construct-the-signature
+    //= type=test
+    //= reason=Footer is at the end; all bytes released
+    //# Once the entire message footer has been serialized,
+    //# this operation MUST release any previously unreleased serialized bytes from previous steps
+    //# and MUST release the message footer.
+    assert_eq!(
+        footer_offset + 2 + sig_len as usize,
+        ct.len(),
+        "all bytes must be released: footer ends exactly at the end of the ciphertext"
+    );
+}

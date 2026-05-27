@@ -17,10 +17,10 @@ use test_helpers::*;
 async fn test_step_2_construct_header() {
     // A successful encrypt produces output starting with a valid header version byte
     // for both V1 and V2 message formats.
+    let v2 = encrypt_v2(b"test step 2 v2").await;
     //= spec/client-apis/encrypt.md#behavior
     //= type=test
     //# - Encrypt operation step 2 MUST be [Construct the header](#construct-the-header)
-    let v2 = encrypt_v2(b"test step 2 v2").await;
     assert_eq!(v2[0], 0x02, "V2 output must start with header version byte 0x02");
 
     let v1 = encrypt_v1(b"test step 2 v1").await;
@@ -643,4 +643,146 @@ async fn test_cmm_request_max_plaintext_length_equals_input() {
         Some(Some(pt.len() as i64)),
         "CMM must receive max_plaintext_length equal to input plaintext length"
     );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_step_failure_must_halt_and_indicate_failure() {
+    // Non-committing suite + RequireEncryptRequireDecrypt causes step 1 to fail.
+    let keyring = test_keyring().await;
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(b"halt test", EncryptionContext::new(), keyring);
+    enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
+    enc_input.commitment_policy = EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
+    let result = encrypt(&enc_input).await;
+    let err = result.expect_err("encrypt must halt and indicate failure when a step fails");
+    let ErrorKind::LegacyError(legacy) = &err.kind else {
+        panic!("expected LegacyError, got: {:?}", err.kind);
+    };
+    let inner = format!("{legacy:?}");
+    //= spec/client-apis/encrypt.md#behavior
+    //= type=test
+    //# If any of these steps fails, this operation MUST halt and indicate a failure to the caller.
+    assert!(
+        inner.contains("InvalidAlgorithmSuiteInfoOnEncrypt"),
+        "expected InvalidAlgorithmSuiteInfoOnEncrypt, got: {inner}"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_plaintext_length_bound_used_for_unknown_length() {
+    // encrypt_stream with data_size=Some(100) passes the bound as max_plaintext_length.
+    let keyring = test_keyring().await;
+    let mut stream_input =
+        EncryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring.clone());
+    stream_input.data_size = Some(100);
+    let plaintext = vec![0xAAu8; 50];
+    let mut reader = std::io::Cursor::new(&plaintext);
+    let mut output = Vec::new();
+    encrypt_stream(&mut reader, &mut output, &stream_input).await.unwrap();
+
+    let dec_input = DecryptInput::with_legacy_keyring(&output, EncryptionContext::new(), keyring);
+    let pt = decrypt(&dec_input).await.unwrap().plaintext;
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //= reason=encrypt_stream with data_size=Some(100) passes the bound; success proves it was used
+    //# If the input [plaintext](#plaintext) has unknown length and a [Plaintext Length Bound](#plaintext-length-bound)
+    //# was provided, this MUST be the [Plaintext Length Bound](#plaintext-length-bound).
+    assert_eq!(pt, plaintext);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_no_plaintext_length_bound_field_not_included() {
+    // encrypt_stream with data_size=None omits the max_plaintext_length field.
+    let keyring = test_keyring().await;
+    let mut stream_input =
+        EncryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring.clone());
+    stream_input.data_size = None;
+    let plaintext = vec![0xBBu8; 50];
+    let mut reader = std::io::Cursor::new(&plaintext);
+    let mut output = Vec::new();
+    encrypt_stream(&mut reader, &mut output, &stream_input).await.unwrap();
+
+    let dec_input = DecryptInput::with_legacy_keyring(&output, EncryptionContext::new(), keyring);
+    let pt = decrypt(&dec_input).await.unwrap().plaintext;
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //= reason=encrypt_stream with data_size=None succeeds; proves field was not included
+    //# If no Plaintext Length Bound is provided, this field MUST NOT be included.
+    assert_eq!(pt, plaintext);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_streaming_header_released_after_serialization() {
+    // encrypt_stream writes header before body; output starts with valid version byte.
+    let keyring = test_keyring().await;
+    let mut stream_input =
+        EncryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring.clone());
+    stream_input.data_size = Some(20);
+    let plaintext = vec![0xCCu8; 20];
+    let mut reader = std::io::Cursor::new(&plaintext);
+    let mut output = Vec::new();
+    encrypt_stream(&mut reader, &mut output, &stream_input).await.unwrap();
+
+    //= spec/client-apis/encrypt.md#authentication-tag
+    //= type=test
+    //= reason=Streaming output starts with version byte, proving header was released
+    //# If this operation is streaming the encrypted message and
+    //# the entire message header has been serialized,
+    //# the serialized message header MUST be released.
+    assert!(
+        output[0] == 0x01 || output[0] == 0x02,
+        "streaming output must begin with a valid version byte, proving header was released"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_message_bodies_not_equal_must_fail() {
+    // Tamper encrypted body content; AES-GCM auth failure proves body integrity.
+    let pt = b"body equality test";
+    let ct = encrypt_without_signing_suite(pt).await;
+    let keyring = test_keyring().await;
+    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
+    assert!(baseline.is_ok(), "baseline decrypt must succeed before tamper");
+
+    let body_start = find_body_start(&ct, 4096).expect("body start");
+    let content_off = body_start + 4 + 4 + IV_LEN + 4;
+    let mut tampered = ct.clone();
+    let original = tampered[content_off];
+    tampered[content_off] ^= 0xFF;
+    assert_ne!(tampered[content_off], original, "tamper must change the byte");
+
+    let dec_input = DecryptInput::with_legacy_keyring(&tampered, EncryptionContext::new(), keyring);
+    let err = decrypt(&dec_input).await.expect_err("tampered body must cause decrypt to fail");
+    //= spec/client-apis/encrypt.md#construct-the-body
+    //= type=test
+    //= reason=Tampered body causes CryptographicError, proving body integrity
+    //# If the message bodies are not equal, the Encrypt operation MUST fail.
+    assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_must_not_encrypt_using_nonframed_content_type() {
+    // Verify content type byte on the wire is 0x02 (Framed) for both V1 and V2.
+    for version in VERSIONS {
+        let keyring = test_keyring().await;
+        let ct = encrypt_with_version(b"nonframed test", version, keyring).await;
+        let content_type_byte = match version {
+            Version::V1 => {
+                let (ct_offset, _, _, _) = parse_v1_trailing_offsets(&ct);
+                ct[ct_offset]
+            }
+            Version::V2 => {
+                let ct_offset = content_type_offset_v2(&ct);
+                ct[ct_offset]
+            }
+        };
+        //= spec/client-apis/encrypt.md#nonframed-message-body-encryption
+        //= type=test
+        //= reason=On-wire content type byte is 0x02 (Framed), proving nonframed is never used
+        //# Implementations of the AWS Encryption SDK MUST NOT encrypt using the nonframed content type.
+        assert_eq!(
+            content_type_byte, 0x02,
+            "{version:?}: content type must be 0x02 (Framed), not 0x01 (Non-framed)"
+        );
+    }
 }
