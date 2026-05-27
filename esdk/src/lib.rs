@@ -111,6 +111,8 @@ pub use decrypt::*;
 pub mod test_vectors;
 mod types;
 pub use types::*;
+mod client;
+pub use client::*;
 
 pub(crate) mod key_derivation;
 pub(crate) mod legacy_compat;
