@@ -17,10 +17,10 @@ use test_helpers::*;
 async fn test_step_2_construct_header() {
     // A successful encrypt produces output starting with a valid header version byte
     // for both V1 and V2 message formats.
+    let v2 = encrypt_v2(b"test step 2 v2").await;
     //= spec/client-apis/encrypt.md#behavior
     //= type=test
     //# - Encrypt operation step 2 MUST be [Construct the header](#construct-the-header)
-    let v2 = encrypt_v2(b"test step 2 v2").await;
     assert_eq!(v2[0], 0x02, "V2 output must start with header version byte 0x02");
 
     let v1 = encrypt_v1(b"test step 2 v1").await;
