@@ -427,11 +427,13 @@ async fn step_get_decryption_materials(
     }
 
     //= spec/client-apis/decrypt.md#v1-header-deserialization
+    //= type=implication
     //= reason=read_header_auth_tag dispatches to V1 or V2 based on suite.message_version
     //# The Decrypt operation MUST then deserialize the
     //# [Header Authentication Version 1.0](../data-format/message-header.md#header-authentication-version-10):
     //
     //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //= type=implication
     //= reason=read_header_auth_tag dispatches to V1 or V2 based on suite.message_version
     //# The Decrypt operation MUST then deserialize the
     //# [Header Authentication Version 2.0](../data-format/message-header.md#header-authentication-version-20):
