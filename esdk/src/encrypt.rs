@@ -705,7 +705,7 @@ fn build_header_auth_tag(
     //# The value of this MUST be the output of the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
     aes_encrypt(
-        body::get_aes_gcm(suite)?,
+        body::get_alg_suite(suite)?,
         &iv,
         //= spec/client-apis/encrypt.md#authentication-tag
         //# - The cipherkey MUST be the derived data key

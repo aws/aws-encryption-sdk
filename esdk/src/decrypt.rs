@@ -532,7 +532,7 @@ fn step_verify_header(
     //# by using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# to decrypt with the following inputs:
     let mut maybe_header_auth = aes_decrypt(
-        body::get_aes_gcm(&state.header.suite)?,
+        body::get_alg_suite(&state.header.suite)?,
         //= spec/client-apis/decrypt.md#verify-the-header
         //# - the cipherkey MUST be the derived data key
         &state.derived_data_keys.data_key,
@@ -582,7 +582,7 @@ fn step_verify_header(
             &canonical_req_encryption_context,
         )?;
         maybe_header_auth = aes_decrypt(
-            body::get_aes_gcm(&state.header.suite)?,
+            body::get_alg_suite(&state.header.suite)?,
             &state.derived_data_keys.data_key,
             &[],
             state.header.header_auth.header_auth_tag(),
