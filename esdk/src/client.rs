@@ -71,7 +71,10 @@ pub struct EsdkConfig {
 #[non_exhaustive]
 pub struct Esdk {
     /// Client configuration applied to every call.
-    pub config: EsdkConfig,
+    ///
+    /// Private to enforce construction via [`Esdk::new`] / [`Esdk::builder`];
+    /// read via [`Esdk::config`].
+    pub(crate) config: EsdkConfig,
 }
 
 impl Esdk {
@@ -85,6 +88,12 @@ impl Esdk {
     #[must_use]
     pub fn builder() -> EsdkBuilder {
         EsdkBuilder::default()
+    }
+
+    /// Borrow this client's configuration.
+    #[must_use]
+    pub const fn config(&self) -> &EsdkConfig {
+        &self.config
     }
 
     /// Encrypt with the client's configured commitment policy and EDK cap.

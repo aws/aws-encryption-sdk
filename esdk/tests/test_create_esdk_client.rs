@@ -9,7 +9,7 @@ use aws_esdk::{
 mod fixtures;
 mod test_helpers;
 
-use test_helpers::test_keyring;
+use test_helpers::{encrypt_with_suite, test_keyring};
 
 // THIS IS AN INCORRECTLY SERIALIZED CIPHERTEXT PRODUCED BY
 // THE ESDK .NET V4.0.0
@@ -281,18 +281,20 @@ async fn test_encrypt_decrypt_accepts_all_optional_inputs() {
 // === Esdk client (optional convenience layer) =====================================
 
 use aws_esdk::{Esdk, EsdkConfig};
+use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
+use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 
 #[test]
 fn test_esdk_default_uses_default_config() {
     // Default Esdk has the spec-default commitment policy and no EDK cap.
     let esdk = Esdk::default();
     assert_eq!(
-        esdk.config.commitment_policy,
+        esdk.config().commitment_policy,
         aws_mpl_legacy::commitment::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt,
         "Esdk::default() must use the default commitment policy"
     );
     assert!(
-        esdk.config.max_encrypted_data_keys.is_none(),
+        esdk.config().max_encrypted_data_keys.is_none(),
         "Esdk::default() must have no EDK cap"
     );
 }
@@ -305,7 +307,7 @@ fn test_esdk_builder_sets_commitment_policy() {
         )
         .build();
     assert_eq!(
-        esdk.config.commitment_policy,
+        esdk.config().commitment_policy,
         aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
         "builder().commitment_policy(...) must set it on the resulting Esdk's config"
     );
@@ -316,7 +318,7 @@ fn test_esdk_builder_sets_max_encrypted_data_keys() {
     let cap = std::num::NonZeroUsize::new(3).unwrap();
     let esdk = Esdk::builder().max_encrypted_data_keys(cap).build();
     assert_eq!(
-        esdk.config.max_encrypted_data_keys,
+        esdk.config().max_encrypted_data_keys,
         Some(cap),
         "builder().max_encrypted_data_keys(...) must set it on the resulting Esdk's config"
     );
@@ -331,11 +333,11 @@ fn test_esdk_new_takes_explicit_config() {
     config.max_encrypted_data_keys = std::num::NonZeroUsize::new(7);
     let esdk = Esdk::new(config);
     assert_eq!(
-        esdk.config.commitment_policy,
+        esdk.config().commitment_policy,
         aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt
     );
     assert_eq!(
-        esdk.config.max_encrypted_data_keys,
+        esdk.config().max_encrypted_data_keys,
         std::num::NonZeroUsize::new(7)
     );
 }
@@ -478,18 +480,77 @@ async fn test_esdk_commitment_policy_actually_gates_encrypt() {
         .encrypt(&enc_input)
         .await
         .expect_err("ForbidEncryptAllowDecrypt + committing V2 suite must fail encrypt");
-    // Expect a LegacyError (the MPL surfaces the policy conflict). The
-    // important point: the call failed because the Esdk's policy was applied.
-    // Also verify the message names a "commitment policy" conflict so we
-    // can't accidentally pass on some unrelated MPL error.
+    // The MPL surfaces the policy conflict as InvalidAlgorithmSuiteInfoOnEncrypt.
+    // Match on the variant name (a stable type identity) rather than message text
+    // so the test doesn't break on MPL message rewording.
+    let ErrorKind::LegacyError(legacy) = &err.kind else {
+        panic!("expected LegacyError, got {:?}: {}", err.kind, err.message);
+    };
+    let inner = format!("{legacy:?}");
     assert!(
-        matches!(err.kind, ErrorKind::LegacyError(_)),
-        "expected LegacyError when Esdk commitment policy forbids committing; got {:?}: {}",
-        err.kind, err.message
+        inner.contains("InvalidAlgorithmSuiteInfoOnEncrypt"),
+        "expected InvalidAlgorithmSuiteInfoOnEncrypt MPL error, got: {inner}"
     );
-    let err_text = format!("{:?}", err.kind);
+}
+
+
+// Symmetric to `test_esdk_commitment_policy_actually_gates_encrypt`: proves
+// the Esdk's configured commitment policy actually reaches the decrypt path.
+//
+// Setup: produce a non-committing (V1) ciphertext via the free `encrypt` with
+// `ForbidEncryptAllowDecrypt` set on the input. Then configure the client with
+// `ForbidEncryptAllowDecrypt` and verify `Esdk::decrypt` succeeds. If the
+// client's policy were not being applied, the input would carry the default
+// `RequireEncryptRequireDecrypt`, which would reject the V1 ciphertext —
+// so the success here falsifies "the Esdk's commitment_policy is applied on
+// decrypt."
+#[tokio::test(flavor = "multi_thread")]
+async fn test_esdk_commitment_policy_actually_gates_decrypt() {
+    let keyring = test_keyring().await;
+    let plaintext = b"decrypt gating proof";
+
+    // Build a non-committing V1 ciphertext using the free encrypt path with the
+    // matching ForbidEncryptAllowDecrypt policy on the input. (Esdk::encrypt
+    // can't produce this ciphertext under the default RequireEncryptRequireDecrypt,
+    // which is why we use the free function here for setup.)
+    let ct = encrypt_with_suite(
+        plaintext,
+        EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256,
+        EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
+        &keyring,
+    )
+    .await;
+
+    // Configure the Esdk with ForbidEncryptAllowDecrypt and try to decrypt.
+    let esdk = Esdk::builder()
+        .commitment_policy(EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt)
+        .build();
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+
+    let out = esdk
+        .decrypt(&dec_input)
+        .await
+        .expect("Esdk(ForbidEncryptAllowDecrypt) must accept a V1 non-committing ciphertext");
+    assert_eq!(
+        out.plaintext, plaintext,
+        "decrypt under Esdk client must round-trip the V1 plaintext"
+    );
+
+    // Sanity: the *default* Esdk (RequireEncryptRequireDecrypt) must reject
+    // the same V1 ciphertext, confirming the previous success was due to the
+    // ForbidEncryptAllowDecrypt config flowing through (not just "any V1
+    // ciphertext decrypts via Esdk::decrypt").
+    let default_esdk = Esdk::default();
+    let err = default_esdk
+        .decrypt(&dec_input)
+        .await
+        .expect_err("default Esdk (RequireEncryptRequireDecrypt) must reject V1 non-committing ciphertext");
+    let ErrorKind::LegacyError(legacy) = &err.kind else {
+        panic!("expected LegacyError, got {:?}: {}", err.kind, err.message);
+    };
+    let inner = format!("{legacy:?}");
     assert!(
-        err_text.contains("ommitment policy") || err_text.contains("ommitment"),
-        "error must reference commitment policy, got: {err_text}"
+        inner.contains("InvalidAlgorithmSuiteInfoOnDecrypt"),
+        "expected InvalidAlgorithmSuiteInfoOnDecrypt MPL error, got: {inner}"
     );
 }

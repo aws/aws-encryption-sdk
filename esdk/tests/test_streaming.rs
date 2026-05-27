@@ -4,10 +4,7 @@
 mod fixtures;
 mod test_helpers;
 
-use aws_esdk::{
-    decrypt_stream, encrypt_stream, DecryptStreamInput, EncryptStreamInput, EncryptionContext,
-    ErrorKind,
-};
+use aws_esdk::{DecryptStreamInput, EncryptStreamInput, EncryptionContext, ErrorKind};
 use test_helpers::{
     multi_frame_signed_for_stream, multi_frame_unsigned_for_stream, run_decrypt_stream,
     run_encrypt_stream, test_keyring, CallStyle,
@@ -108,34 +105,36 @@ async fn test_decrypt_stream_multi_frame_signed_rejected_by_default() {
     // payload (3 frames: 2 regular + final). With unsafe_release_plaintext_before_verify
     // = false (default), decrypt_stream must reject this up front rather than release
     // plaintext before signature verification.
-    let (_plaintext, keyring, ct) = multi_frame_signed_for_stream().await;
+    for style in CallStyle::ALL {
+        let (_plaintext, keyring, ct) = multi_frame_signed_for_stream().await;
 
-    let dec_input =
-        DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    assert!(
-        !dec_input.unsafe_release_plaintext_before_verify,
-        "unsafe_release_plaintext_before_verify must default to false"
-    );
+        let dec_input =
+            DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
+        assert!(
+            !dec_input.unsafe_release_plaintext_before_verify,
+            "unsafe_release_plaintext_before_verify must default to false"
+        );
 
-    let mut ct_cursor = std::io::Cursor::new(&ct[..]);
-    let mut output: Vec<u8> = Vec::new();
-    let err = decrypt_stream(&mut ct_cursor, &mut output, &dec_input)
-        .await
-        .expect_err("multi-frame signed message must fail with default unsafe_release_plaintext_before_verify=false");
-    assert!(
-        matches!(err.kind, ErrorKind::Esdk),
-        "expected ErrorKind::Esdk, got {:?}",
-        err.kind
-    );
+        let mut ct_cursor = std::io::Cursor::new(&ct[..]);
+        let mut output: Vec<u8> = Vec::new();
+        let err = run_decrypt_stream(style, &mut ct_cursor, &mut output, &dec_input)
+            .await
+            .expect_err("multi-frame signed message must fail with default unsafe_release_plaintext_before_verify=false");
+        assert!(
+            matches!(err.kind, ErrorKind::Esdk),
+            "expected ErrorKind::Esdk under {style:?}, got {:?}",
+            err.kind
+        );
 
-    //= spec/client-apis/streaming.md#release
-    //= type=test
-    //= reason=decrypt_stream rejects the multi-frame signed payload before any plaintext is written, honoring "specify when not to release"
-    //# The decrypt and encrypt operations specify when to release output bytes and when not to release output bytes.
-    assert!(
-        output.is_empty(),
-        "no plaintext must be released before signature verification"
-    );
+        //= spec/client-apis/streaming.md#release
+        //= type=test
+        //= reason=decrypt_stream rejects the multi-frame signed payload before any plaintext is written, honoring "specify when not to release"
+        //# The decrypt and encrypt operations specify when to release output bytes and when not to release output bytes.
+        assert!(
+            output.is_empty(),
+            "no plaintext must be released before signature verification (style: {style:?})"
+        );
+    }
 }
 
 // Proves that unsafe_release_plaintext_before_verify=true allows a
@@ -147,34 +146,44 @@ async fn test_decrypt_stream_multi_frame_signed_unsafe_flag_round_trip() {
     // unsafe_release_plaintext_before_verify=true opts in to early release;
     // decrypt_stream now succeeds and the plaintext round-trips. Doubles as
     // multi-frame streaming round-trip coverage for this PR.
-    let (plaintext, keyring, ct) = multi_frame_signed_for_stream().await;
+    for style in CallStyle::ALL {
+        let (plaintext, keyring, ct) = multi_frame_signed_for_stream().await;
 
-    let mut dec_input =
-        DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    dec_input.unsafe_release_plaintext_before_verify = true;
+        let mut dec_input =
+            DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
+        dec_input.unsafe_release_plaintext_before_verify = true;
 
-    let mut ct_cursor = std::io::Cursor::new(&ct[..]);
-    let mut output: Vec<u8> = Vec::new();
-    decrypt_stream(&mut ct_cursor, &mut output, &dec_input)
-        .await
-        .unwrap();
-    assert_eq!(output, plaintext);
+        let mut ct_cursor = std::io::Cursor::new(&ct[..]);
+        let mut output: Vec<u8> = Vec::new();
+        run_decrypt_stream(style, &mut ct_cursor, &mut output, &dec_input)
+            .await
+            .unwrap_or_else(|e| panic!("decrypt_stream failed under {style:?}: {e:?}"));
+        assert_eq!(
+            output, plaintext,
+            "multi-frame signed round-trip mismatch under {style:?}"
+        );
+    }
 }
 
 // Multi-frame unsigned payloads don't require unsafe_release_plaintext_before_verify
 // because each frame is individually authenticated via AES-GCM (no trailing signature).
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_stream_multi_frame_unsigned_accepted_by_default() {
-    let (plaintext, keyring, ct) = multi_frame_unsigned_for_stream().await;
+    for style in CallStyle::ALL {
+        let (plaintext, keyring, ct) = multi_frame_unsigned_for_stream().await;
 
-    let dec_input =
-        DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    assert!(!dec_input.unsafe_release_plaintext_before_verify);
+        let dec_input =
+            DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
+        assert!(!dec_input.unsafe_release_plaintext_before_verify);
 
-    let mut ct_cursor = std::io::Cursor::new(&ct[..]);
-    let mut output: Vec<u8> = Vec::new();
-    decrypt_stream(&mut ct_cursor, &mut output, &dec_input)
-        .await
-        .unwrap();
-    assert_eq!(output, plaintext);
+        let mut ct_cursor = std::io::Cursor::new(&ct[..]);
+        let mut output: Vec<u8> = Vec::new();
+        run_decrypt_stream(style, &mut ct_cursor, &mut output, &dec_input)
+            .await
+            .unwrap_or_else(|e| panic!("decrypt_stream failed under {style:?}: {e:?}"));
+        assert_eq!(
+            output, plaintext,
+            "multi-frame unsigned round-trip mismatch under {style:?}"
+        );
+    }
 }
