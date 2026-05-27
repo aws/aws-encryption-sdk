@@ -180,6 +180,8 @@ async fn internal_encrypt(
     validate_encryption_context(encryption_context)?;
 
     //= spec/client-apis/encrypt.md#behavior
+    //= type=implication
+    //= reason=get_encryption_materials is called first in the function body
     //# - Encrypt operation Step 1 MUST be [Get the encryption materials](#get-the-encryption-materials)
     //
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
@@ -203,6 +205,8 @@ async fn internal_encrypt(
     //# - Encrypt operation step 2 MUST be [Construct the header](#construct-the-header)
     //
     //= spec/client-apis/encrypt.md#construct-the-header
+    //= type=implication
+    //= reason=Header serialization precedes body encryption in the function body
     //# Before encrypting input plaintext,
     //# this operation MUST serialize the [message header body](../data-format/message-header.md).
     //
@@ -225,6 +229,8 @@ async fn internal_encrypt(
     )?;
 
     //= spec/client-apis/encrypt.md#behavior
+    //= type=implication
+    //= reason=encrypt_and_serialize_body is called third in the function body
     //# - Encrypt operation step 3 MUST be [Construct the body](#construct-the-body)
     //
     //= spec/data-format/message.md#structure
@@ -415,6 +421,7 @@ fn step_construct_header(
     //# to the message header calculated in this step.
     //
     //= spec/client-apis/encrypt.md#authentication-tag
+    //= type=implication
     //= reason=Header written directly to output; inequality structurally impossible
     //# If the message headers are not equal, the Encrypt operation MUST fail.
     Ok(header)
@@ -705,12 +712,14 @@ fn build_header_auth_tag(
     //# The value of this MUST be the output of the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
     //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
     aes_encrypt(
-        body::get_encrypt(suite)?,
+        body::get_alg_suite(suite)?,
         &iv,
         //= spec/client-apis/encrypt.md#authentication-tag
         //# - The cipherkey MUST be the derived data key
         data_key,
         //= spec/client-apis/encrypt.md#authentication-tag
+        //= type=implication
+        //= reason=Rust literal &[] is statically empty
         //# - The plaintext MUST be an empty byte array
         &[],
         //= spec/client-apis/encrypt.md#authentication-tag

@@ -68,6 +68,30 @@ async fn test_no_extra_data_in_output_message() {
     let ct = encrypt_without_signing_suite(pt).await;
     let frames = parse_all_frames(&ct, 4096);
     let body_end = frames.last().expect("at least one frame").end_offset;
+    //= spec/client-apis/encrypt.md#construct-a-frame
+    //= type=test
+    //= reason=parse_all_frames independently walks wire bytes verifying frame structure
+    //# The Encrypt operation MUST serialize a regular frame or final frame with the following specifics:
+    //
+    //= spec/client-apis/encrypt.md#construct-a-frame
+    //= type=test
+    //= reason=parse_all_frames validates seq_num/IV/content/tag layout matches regular frame spec
+    //# Regular frame serialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
+    //
+    //= spec/client-apis/encrypt.md#construct-a-frame
+    //= type=test
+    //= reason=parse_all_frames extracts each field from wire bytes at spec-defined offsets
+    //# For a regular frame, each field MUST be serialized according to its specification:
+    //
+    //= spec/client-apis/encrypt.md#construct-a-frame
+    //= type=test
+    //= reason=parse_all_frames detects ENDFRAME marker and validates final frame layout
+    //# Final frame serialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
+    //
+    //= spec/client-apis/encrypt.md#construct-a-frame
+    //= type=test
+    //= reason=parse_all_frames extracts each final frame field at spec-defined offsets
+    //# For a final frame, each field MUST be serialized according to its specification:
     assert_eq!(
         body_end, ct.len(),
         "V2 non-signing: ciphertext must end exactly at the final frame; trailing bytes = {}",
@@ -115,6 +139,10 @@ async fn test_input_suite_vs_commitment_policy_error() {
         panic!("expected LegacyError, got: {:?}", err.kind);
     };
     let inner = format!("{legacy:?}");
+    //= spec/client-apis/encrypt.md#get-the-encryption-materials
+    //= type=test
+    //= reason=Test sets commitment_policy on input; policy-violation error proves it was passed
+    //# - Commitment Policy: This MUST be the [commitment policy](client.md#commitment-policy) configured in the [client](client.md) exposing this encrypt function.
     assert!(
         inner.contains("InvalidAlgorithmSuiteInfoOnEncrypt"),
         "expected InvalidAlgorithmSuiteInfoOnEncrypt, got: {inner}"

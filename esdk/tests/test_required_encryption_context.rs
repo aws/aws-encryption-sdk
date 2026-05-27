@@ -207,6 +207,15 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
         rsa_keyring.clone(),
     );
     let decrypt_output = decrypt(&decrypt_input).await.unwrap();
+    //= spec/client-apis/encrypt.md#authentication-tag
+    //= type=test
+    //= reason=Decrypt with reproduced EC succeeds; proves encrypt AAD included filtered EC
+    //# The encryption context to only authenticate MUST be the [encryption context](../framework/structures.md#encryption-context)
+    //# in the [encryption materials](../framework/structures.md#encryption-materials)
+    //# filtered to only contain key value pairs listed in
+    //# the [encryption material's](../framework/structures.md#encryption-materials)
+    //# [required encryption context keys](../framework/structures.md#required-encryption-context-keys)
+    //# serialized according to the [encryption context serialization specification](../framework/structures.md#serialization).
     assert_eq!(decrypt_output.plaintext, asdf);
 
     // Test KMS
