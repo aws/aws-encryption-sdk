@@ -21,7 +21,7 @@ use aws_mpl_legacy::dafny::types::{AlgorithmSuiteId, EsdkAlgorithmSuiteId};
 use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId as SuiteId;
 use fixtures::*;
 
-/// Wraps a real CMM but forces a different algorithm suite on encrypt.
+// Wraps a real CMM but forces a different algorithm suite on encrypt.
 struct SuiteOverrideCmm {
     inner: CryptographicMaterialsManagerRef,
     suite: EsdkAlgorithmSuiteId,
@@ -66,6 +66,7 @@ impl CryptographicMaterialsManager for SuiteOverrideCmm {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_uses_cmm_suite_not_input_suite() {
+    // CMM overrides caller's suite; output reflects CMM's choice, not caller's.
     let (ns, name) = namespace_and_name(0);
     let keyring = mpl()
         .create_raw_aes_keyring()

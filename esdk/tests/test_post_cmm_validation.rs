@@ -32,12 +32,13 @@ async fn test_post_cmm_commitment_policy_round_trip() {
     .await;
     assert_eq!(
         result.plaintext, pt,
-        "round-trip proves post-CMM commitment policy validation passed"
+        "committing suite with matching policy must decrypt successfully"
     );
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encrypt_non_committing_with_require_policy_fails() {
+    // Non-committing suite + RequireEncryptRequireDecrypt must fail post-CMM.
     let keyring = test_keyring().await;
     let pt = b"test encrypt non-committing fails";
     // Non-committing suite with RequireEncryptRequireDecrypt: should fail
@@ -64,6 +65,7 @@ async fn test_encrypt_non_committing_with_require_policy_fails() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_non_committing_with_require_policy_fails() {
+    // Non-committing suite + RequireEncryptRequireDecrypt must fail on decrypt.
     let keyring = test_keyring().await;
     let pt = b"test decrypt non-committing fails";
     // Encrypt with non-committing suite using ForbidEncryptAllowDecrypt

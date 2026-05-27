@@ -19,6 +19,7 @@ use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_keyring_constructs_default_cmm_for_decrypt() {
+    // Passing a keyring to decrypt constructs a default CMM that obtains materials.
     let keyring = test_keyring().await;
     let pt = b"test keyring constructs default cmm for decrypt";
     let mut ec = EncryptionContext::new();
@@ -41,6 +42,7 @@ async fn test_keyring_constructs_default_cmm_for_decrypt() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_fails_with_wrong_keyring() {
+    // Wrong keyring → default CMM cannot unwrap EDKs → decrypt fails.
     let keyring = test_keyring().await;
     let pt = b"negative test keyring to default cmm";
     let enc_input = EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring);

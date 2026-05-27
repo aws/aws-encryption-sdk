@@ -64,7 +64,7 @@ async fn test_plaintext_length_bound_used_for_unknown_length() {
     let pt = decrypt(&dec_input).await.unwrap().plaintext;
     assert_eq!(
         pt, plaintext,
-        "round-trip proves plaintext length bound was correctly passed"
+        "decrypted plaintext must match original"
     );
 }
 
@@ -93,7 +93,7 @@ async fn test_no_plaintext_length_bound_field_not_included() {
     let pt = decrypt(&dec_input).await.unwrap().plaintext;
     assert_eq!(
         pt, plaintext,
-        "round-trip proves no bound field was included"
+        "decrypted plaintext must match original"
     );
 }
 
@@ -128,7 +128,7 @@ async fn test_streaming_header_released_after_serialization() {
     let pt = decrypt(&dec_input).await.unwrap().plaintext;
     assert_eq!(
         pt, plaintext,
-        "streaming round-trip proves header was released after serialization"
+        "streaming encrypt output must decrypt successfully"
     );
 }
 
@@ -142,7 +142,7 @@ async fn test_message_bodies_not_equal_must_fail() {
     let result = round_trip(pt).await;
     assert_eq!(
         result, pt,
-        "successful round-trip proves output body equals calculated body"
+        "untampered ciphertext must decrypt successfully"
     );
 
     // Tamper a byte inside the encrypted body (NOT the footer) and verify decrypt fails
@@ -150,6 +150,10 @@ async fn test_message_bodies_not_equal_must_fail() {
     // integrity check is the per-frame AEAD tag — a signing suite would also fail at
     // signature verify, masking which layer caught the tamper.
     let ct = encrypt_without_signing_suite(pt).await;
+    // Baseline: untampered ciphertext must decrypt successfully.
+    let keyring = test_keyring().await;
+    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
+    assert!(baseline.is_ok(), "baseline decrypt must succeed before tamper");
     let body_start = find_body_start(&ct, 4096).expect("body start");
     // 18-byte plaintext at frame_length=4096 produces a single final frame:
     //   ENDFRAME(4) + SeqNum(4) + IV(12) + ContentLen(4) + EncContent(18) + Tag(16)
@@ -160,7 +164,6 @@ async fn test_message_bodies_not_equal_must_fail() {
     tampered[content_off] ^= 0xFF;
     assert_ne!(tampered[content_off], original, "tamper must change the byte");
 
-    let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&tampered, EncryptionContext::new(), keyring);
     let err = decrypt(&dec_input).await.expect_err("tampered body must cause decrypt to fail");
     assert_eq!(
@@ -201,7 +204,7 @@ async fn test_footer_serialized_releases_all_bytes() {
     let pt = decrypt(&dec_input).await.unwrap().plaintext;
     assert_eq!(
         pt, b"release all bytes test",
-        "round-trip proves all bytes were released"
+        "signing suite output must decrypt successfully"
     );
 }
 
