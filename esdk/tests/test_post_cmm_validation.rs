@@ -13,6 +13,7 @@ use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_post_cmm_commitment_policy_round_trip() {
+    // Committing suite with matching policy succeeds; proves post-CMM validation passes.
     let keyring = test_keyring().await;
     let pt = b"test post-cmm commitment policy round trip";
     // Committing suite with RequireEncryptRequireDecrypt: post-CMM validation passes
@@ -96,6 +97,7 @@ async fn test_decrypt_non_committing_with_require_policy_fails() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_identity_kdf_decrypt() {
+    // Round-trip with identity KDF suite proves the decrypt path handles non-HKDF derivation.
     let keyring = test_keyring().await;
     let pt = b"test identity kdf on decrypt path";
     // AlgAes256GcmIv12Tag16NoKdf uses identity KDF

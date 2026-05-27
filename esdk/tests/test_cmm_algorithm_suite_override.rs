@@ -5,6 +5,7 @@
 //! different from the input algorithm suite (encrypt.md#get-the-encryption-materials).
 
 mod fixtures;
+mod test_helpers;
 use aws_esdk::*;
 use aws_mpl_legacy::dafny::operation::decrypt_materials::{
     DecryptMaterialsInput, DecryptMaterialsOutput,

@@ -6,6 +6,7 @@
 mod fixtures;
 mod test_helpers;
 
+use aws_esdk::ErrorKind;
 use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
@@ -186,10 +187,9 @@ async fn test_signature_input_is_header_plus_body() {
         .expect_err("tampered header must fail signature verification");
     // Flipping the version byte (0x02 → 0x01 or vice versa) causes either a parse
     // failure or a signature mismatch. Either proves the header is in the signed input.
-    let dbg = format!("{err:?}");
     assert!(
-        !dbg.is_empty(),
-        "tampered header must produce an error, got: {dbg}"
+        matches!(err.kind, ErrorKind::SerializationError | ErrorKind::Esdk | ErrorKind::ValidationError),
+        "tampered header must produce a parse or verification error, got: {err:?}"
     );
 
     // Tamper body (first byte of the first frame's encrypted content).
@@ -206,10 +206,9 @@ async fn test_signature_input_is_header_plus_body() {
     // Body tamper with a signing suite fails at AEAD (per-frame tag) OR at signature
     // verification. Either proves the body is authenticated — and the signature covers
     // the serialized body bytes that include the AEAD tag.
-    let dbg = format!("{err:?}");
     assert!(
-        !dbg.is_empty(),
-        "tampered body must produce an error, got: {dbg}"
+        matches!(err.kind, ErrorKind::CryptographicError | ErrorKind::Esdk),
+        "tampered body must produce an auth or verification error, got: {err:?}"
     );
 }
 
