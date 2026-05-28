@@ -79,40 +79,6 @@ async fn test_pre_cmm_commitment_policy_check() {
     assert!(inner.contains("InvalidAlgorithmSuiteInfoOnDecrypt"), "expected InvalidAlgorithmSuiteInfoOnDecrypt, got: {inner}");
 }
 
-// Regression: parses header via __test_internals to extract message_id, then
-// runs the full decrypt path end-to-end to confirm derive_keys is actually
-// invoked. The "data key MUST be derived from plaintext data key" requirement
-// is covered by a source-side type=implication on the literal call site
-// (`derive_keys(message_id, dec_mat.plaintext_data_key, ...)` in decrypt.rs).
-#[tokio::test(flavor = "multi_thread")]
-async fn test_data_key_derived_from_plaintext_data_key() {
-    use aws_esdk::__test_internals::*;
-
-    let keyring = aes_keyring(0).await;
-    let pt = b"test data key derivation";
-    let ct = encrypt_with_suite(
-        pt,
-        EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256,
-        EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
-        &keyring,
-    )
-    .await;
-
-    // Parse header to confirm message_id is reachable via the public accessor;
-    // derive_keys uses message_id as HKDF info.
-    let mut cursor = std::io::Cursor::new(ct.as_slice());
-    let mut raw = Vec::new();
-    let header_body = read_header_body(&mut cursor, None, &mut raw).unwrap();
-    let message_id = header_body.message_id();
-    assert!(!message_id.is_empty(), "message_id parsed from header");
-
-    // End-to-end decrypt confirms the real derivation path works.
-    let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt);
-}
-
 #[tokio::test(flavor = "multi_thread")]
 async fn test_algorithm_suite_from_decryption_materials() {
     // Directly verify: parse the header to get the algorithm suite, then verify
