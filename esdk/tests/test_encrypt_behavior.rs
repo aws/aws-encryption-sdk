@@ -18,10 +18,10 @@ async fn test_step_2_construct_header() {
     // A successful encrypt produces output starting with a valid header version byte
     // for both V1 and V2 message formats.
     let v2 = encrypt_v2(b"test step 2 v2").await;
-    //= spec/client-apis/encrypt.md#behavior
+    //= spec/client-apis/encrypt.md#construct-the-header
     //= type=test
-    //= reason=Output starts with version byte 0x02, proving header was constructed
-    //# - Encrypt operation step 2 MUST be [Construct the header](#construct-the-header)
+    //= reason=Version byte on wire matches suite's message format version
+    //# The [message format version](../data-format/message-header.md#supported-versions) MUST be the value associated with the [algorithm suite](../framework/algorithm-suites.md#supported-algorithm-suites).
     assert_eq!(v2[0], 0x02, "V2 output must start with header version byte 0x02");
 
     let v1 = encrypt_v1(b"test step 2 v1").await;
@@ -39,11 +39,6 @@ async fn test_step_4_construct_signature() {
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let pt = decrypt(&dec_input).await.unwrap().plaintext;
-    //= spec/client-apis/encrypt.md#behavior
-    //= type=test
-    //= reason=Decrypt verifies footer; success proves step 4 ran
-    //# - Encrypt operation step 4 MUST be [Construct the signature](#construct-the-signature)
-    //
     //= spec/client-apis/encrypt.md#behavior
     //= type=test
     //= reason=Decrypt verifies footer signature; success proves encrypt performed the step

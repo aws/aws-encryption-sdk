@@ -181,6 +181,7 @@ async fn internal_encrypt(
 
     //= spec/client-apis/encrypt.md#behavior
     //= type=implication
+    //= type=implication
     //= reason=step 2 consumes mat_result from step 1; reordering won't compile
     //# - Encrypt operation Step 1 MUST be [Get the encryption materials](#get-the-encryption-materials)
     //
@@ -202,6 +203,7 @@ async fn internal_encrypt(
         DigestWriter::from_old_ecdsa(mat_result.materials.algorithm_suite.signature)?;
 
     //= spec/client-apis/encrypt.md#behavior
+    //= type=implication
     //# - Encrypt operation step 2 MUST be [Construct the header](#construct-the-header)
     //
     //= spec/client-apis/encrypt.md#construct-the-header
@@ -230,6 +232,7 @@ async fn internal_encrypt(
 
     //= spec/client-apis/encrypt.md#behavior
     //= type=implication
+    //= type=implication
     //= reason=encrypt_and_serialize_body is called third in the function body
     //# - Encrypt operation step 3 MUST be [Construct the body](#construct-the-body)
     //
@@ -245,6 +248,7 @@ async fn internal_encrypt(
     )?;
 
     //= spec/client-apis/encrypt.md#behavior
+    //= type=implication
     //# - Encrypt operation step 4 MUST be [Construct the signature](#construct-the-signature)
     if matches!(
         mat_result.materials.algorithm_suite.signature,
