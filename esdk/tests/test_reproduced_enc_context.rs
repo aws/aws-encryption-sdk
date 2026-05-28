@@ -6,6 +6,7 @@
 //! focusing on the Reproduced Encryption Context requirement.
 
 mod fixtures;
+mod test_helpers;
 use aws_esdk::*;
 use fixtures::*;
 
