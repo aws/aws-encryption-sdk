@@ -4,6 +4,7 @@
 
 use crate::Error;
 use crate::val_err;
+// TODO replace these with the new crate we write
 use aws_mpl_legacy::CryptographicMaterialsManagerRef;
 use aws_mpl_legacy::KeyringRef;
 use aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef as LegacyCMM;
@@ -101,17 +102,6 @@ impl FrameLength {
             std::num::NonZeroU32::new(val)
                 .ok_or_else(|| val_err("Frame length must be non-zero"))?,
         ))
-    }
-    /// Returns a new `FrameLength`, panicking if `val` is zero.
-    ///
-    /// Prefer [`FrameLength::new`] in non-`const` contexts; use this only
-    /// when the caller can statically prove `val != 0` (e.g. a literal).
-    ///
-    /// # Panics
-    /// Panics if `val` is zero.
-    #[must_use]
-    pub const fn new_unchecked(val: u32) -> Self {
-        Self(std::num::NonZeroU32::new(val).unwrap())
     }
 }
 

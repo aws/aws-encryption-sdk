@@ -372,7 +372,7 @@ async fn test_esdk_encrypt_rejects_input_with_non_default_commitment_policy() {
     let err = esdk
         .encrypt(&input)
         .await
-        .expect_err("Esdk::encrypt must reject input with non-default commitment_policy");
+        .expect_err("Esdk::encrypt must reject input that sets commitment_policy when the client also configures it");
     assert!(
         matches!(err.kind, ErrorKind::ValidationError),
         "expected ValidationError, got {:?}",
@@ -389,7 +389,7 @@ async fn test_esdk_encrypt_rejects_input_with_max_encrypted_data_keys() {
     let err = esdk
         .encrypt(&input)
         .await
-        .expect_err("Esdk::encrypt must reject input with max_encrypted_data_keys set");
+        .expect_err("Esdk::encrypt must reject input that sets max_encrypted_data_keys when the client also configures it");
     assert!(
         matches!(err.kind, ErrorKind::ValidationError),
         "expected ValidationError, got {:?}",
@@ -407,7 +407,7 @@ async fn test_esdk_decrypt_rejects_input_with_non_default_commitment_policy() {
     let err = esdk
         .decrypt(&input)
         .await
-        .expect_err("Esdk::decrypt must reject input with non-default commitment_policy");
+        .expect_err("Esdk::decrypt must reject input that sets commitment_policy when the client also configures it");
     assert!(
         matches!(err.kind, ErrorKind::ValidationError),
         "expected ValidationError, got {:?}",
@@ -424,7 +424,7 @@ async fn test_esdk_decrypt_rejects_input_with_max_encrypted_data_keys() {
     let err = esdk
         .decrypt(&input)
         .await
-        .expect_err("Esdk::decrypt must reject input with max_encrypted_data_keys set");
+        .expect_err("Esdk::decrypt must reject input that sets max_encrypted_data_keys when the client also configures it");
     assert!(
         matches!(err.kind, ErrorKind::ValidationError),
         "expected ValidationError, got {:?}",

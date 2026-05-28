@@ -224,8 +224,7 @@ where
             "EsdkConfig is provided by both the Esdk client and the input struct. \
              Set commitment_policy and max_encrypted_data_keys in exactly one place: \
              on the Esdk client (via Esdk::builder), or on the input struct (when \
-             using the free encrypt/decrypt functions). Mixing them is reserved for \
-             a future release.",
+             using the free encrypt/decrypt functions).",
         ));
     }
     let mut filled = input.clone();
