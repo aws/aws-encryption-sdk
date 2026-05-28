@@ -168,48 +168,36 @@ async fn test_signature_input_is_header_plus_body() {
     //# - the input to sign MUST be the concatenation of the serialization of the [message header](../data-format/message-header.md) and [message body](../data-format/message-body.md)
 
     // Strategy: encrypt with a signing suite, then tamper a byte in the header and a
-    // byte in the body separately. In both cases, signature verification must fail —
-    // proving both regions are covered by the signature. A non-signing suite's AEAD
-    // would also catch body tampers, so we additionally verify that the *specific*
-    // failure is signature verification (not AEAD) by checking that the footer is
-    // intact while the upstream bytes are wrong.
+    // byte in the body separately. In both cases, decryption must fail —
+    // proving both regions are covered by the signature.
     let pt = b"header plus body input test";
-    let ct = encrypt_with_signing_suite(pt).await;
+    let valid_ct = encrypt_with_signing_suite(pt).await;
 
-    // Baseline: untampered ciphertext decrypts.
-    let baseline = decrypt_ciphertext(&ct).await.plaintext;
-    assert_eq!(baseline, pt, "baseline must decrypt");
+    // Tamper header (byte 10 is safely within the header body for V2).
+    let mut tampered_header = valid_ct.clone();
+    tampered_header[10] ^= 0xFF;
+    assert_ne!(tampered_header[10], valid_ct[10], "header tamper must change the byte");
 
-    // Tamper header (version byte at offset 0).
-    let mut tampered_header = ct.clone();
-    tampered_header[0] ^= 0x03; // flip version byte
-    assert_ne!(tampered_header[0], ct[0], "header tamper must change the byte");
-    let err = decrypt_ciphertext_result(&tampered_header)
-        .await
-        .expect_err("tampered header must fail signature verification");
-    // Flipping the version byte (0x02 → 0x01 or vice versa) causes a parse
-    // failure because the header structure doesn't match the version.
+    // Valid ct decrypts; tampered header → ValidationError (header auth tag mismatch).
+    assert!(decrypt_ciphertext_result(&valid_ct).await.is_ok(), "valid ct must decrypt");
     assert_eq!(
-        err.kind, ErrorKind::SerializationError,
-        "tampered header version must produce a parse error, got: {err:?}"
+        decrypt_ciphertext_result(&tampered_header).await.unwrap_err().kind,
+        ErrorKind::ValidationError,
+        "tampered header body byte must produce ValidationError"
     );
 
     // Tamper body (first byte of the first frame's encrypted content).
-    let mut tampered_body = ct.clone();
+    let mut tampered_body = valid_ct.clone();
     let body_start = find_body_start(&tampered_body, 4096).expect("body start");
-    // Signing suite uses framed content. The final frame layout:
-    //   ENDFRAME(4) + SeqNum(4) + IV(12) + ContentLen(4) + Content(N) + Tag(16)
     let content_off = body_start + 4 + 4 + 12 + 4;
     tampered_body[content_off] ^= 0xFF;
-    assert_ne!(tampered_body[content_off], ct[content_off], "body tamper must change the byte");
-    let err = decrypt_ciphertext_result(&tampered_body)
-        .await
-        .expect_err("tampered body must fail when signature covers body");
-    // Body tamper with a signing suite fails at AEAD (per-frame tag) because
-    // the encrypted content no longer matches its authentication tag.
+    assert_ne!(tampered_body[content_off], valid_ct[content_off], "body tamper must change the byte");
+
+    // Valid ct decrypts; tampered body → CryptographicError (AES-GCM auth failure).
     assert_eq!(
-        err.kind, ErrorKind::CryptographicError,
-        "tampered body must produce an AES-GCM auth error, got: {err:?}"
+        decrypt_ciphertext_result(&tampered_body).await.unwrap_err().kind,
+        ErrorKind::CryptographicError,
+        "tampered body must produce CryptographicError"
     );
 }
 

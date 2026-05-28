@@ -30,21 +30,22 @@ async fn test_step_2_construct_header() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_step_4_construct_signature() {
-    // Encrypt with a signing suite; decrypt verifies the signature, proving step 4 executed.
+    // Encrypt with a signing suite; verify footer exists on the wire, then decrypt as corroboration.
     let keyring = test_keyring().await;
     let mut enc_input =
         EncryptInput::with_legacy_keyring(b"test step 4", EncryptionContext::new(), keyring.clone());
     enc_input.algorithm_suite_id =
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let pt = decrypt(&dec_input).await.unwrap().plaintext;
     //= spec/client-apis/encrypt.md#behavior
     //= type=test
-    //= reason=Decrypt verifies footer signature; success proves encrypt performed the step
+    //= reason=Footer is present on wire; decrypt verifies it — proves encrypt performed signature step
     //# - If the [encryption materials gathered](#get-the-encryption-materials) has a algorithm suite
     //# including a [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
     //# the Encrypt operation MUST perform this step.
+    assert!(has_footer(&ct), "signing suite must produce a footer on the wire");
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let pt = decrypt(&dec_input).await.unwrap().plaintext;
     assert_eq!(pt, b"test step 4");
 }
 
@@ -148,20 +149,10 @@ async fn test_input_suite_vs_commitment_policy_error() {
 #[tokio::test(flavor = "multi_thread")]
 async fn test_obtain_materials_from_cmm() {
     // A successful encrypt proves materials were obtained from the CMM.
+    // (The spy-CMM tests in this file directly prove the CMM was called with
+    // expected fields; this test provides regression coverage for the basic path.)
     let pt = b"obtain materials test";
     let output = encrypt_default(pt).await;
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //= reason=Encrypt succeeds and produces ciphertext; impossible without materials
-    //# This operation MUST obtain this set of [encryption materials](../framework/structures.md#encryption-materials)
-    //# by calling [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials) on a [CMM](../framework/cmm-interface.md).
-    //
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //= reason=Encrypt succeeds; materials were used to construct the message
-    //# To construct the [encrypted message](#encrypted-message),
-    //# some fields MUST be constructed using information obtained
-    //# from a set of valid [encryption materials](../framework/structures.md#encryption-materials).
     assert!(!output.ciphertext.is_empty(), "encrypt must produce ciphertext from CMM-provided materials");
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
@@ -635,7 +626,7 @@ async fn test_cmm_request_max_plaintext_length_equals_input() {
     //# this length MUST be used.
     assert_eq!(
         observed,
-        Some(Some(pt.len() as i64)),
+        Some(Some(i64::try_from(pt.len()).expect("test plaintext fits in i64"))),
         "CMM must receive max_plaintext_length equal to input plaintext length"
     );
 }
@@ -725,25 +716,28 @@ async fn test_streaming_header_released_after_serialization() {
 async fn test_message_bodies_not_equal_must_fail() {
     // Tamper encrypted body content; AES-GCM auth failure proves body integrity.
     let pt = b"body equality test";
-    let ct = encrypt_without_signing_suite(pt).await;
+    let valid_ct = encrypt_without_signing_suite(pt).await;
     let keyring = test_keyring().await;
-    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
-    assert!(baseline.is_ok(), "baseline decrypt must succeed before tamper");
 
-    let body_start = find_body_start(&ct, 4096).expect("body start");
+    let body_start = find_body_start(&valid_ct, 4096).expect("body start");
     let content_off = body_start + 4 + 4 + IV_LEN + 4;
-    let mut tampered = ct.clone();
-    let original = tampered[content_off];
-    tampered[content_off] ^= 0xFF;
-    assert_ne!(tampered[content_off], original, "tamper must change the byte");
+    let mut tampered_ct = valid_ct.clone();
+    tampered_ct[content_off] ^= 0xFF;
+    assert_ne!(tampered_ct[content_off], valid_ct[content_off], "tamper must change the byte");
 
-    let dec_input = DecryptInput::with_legacy_keyring(&tampered, EncryptionContext::new(), keyring);
-    let err = decrypt(&dec_input).await.expect_err("tampered body must cause decrypt to fail");
+    let valid_input = DecryptInput::with_legacy_keyring(&valid_ct, EncryptionContext::new(), keyring.clone());
+    let tampered_input = DecryptInput::with_legacy_keyring(&tampered_ct, EncryptionContext::new(), keyring);
+
     //= spec/client-apis/encrypt.md#construct-the-body
     //= type=test
-    //= reason=Tampered body causes CryptographicError, proving body integrity
+    //= reason=Untampered ct decrypts; tampered body content → CryptographicError, proving body integrity
     //# If the message bodies are not equal, the Encrypt operation MUST fail.
-    assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "valid ct must decrypt");
+    assert_eq!(
+        decrypt(&tampered_input).await.unwrap_err().kind,
+        ErrorKind::CryptographicError,
+        "tampered body content must produce CryptographicError"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
