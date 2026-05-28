@@ -78,7 +78,7 @@ async fn test_net_retry_flag() {
         err.kind
     );
 
-    // Decrypt v4.0.0 message with AllowRetry explicitly opted in
+    // Decrypt v4.0.0 message with the default configuration which is to retry
     // and expect decryption to pass
     input.net_v4_retry_policy = NetV400RetryPolicy::AllowRetry;
     let expect_success = decrypt(&input).await.unwrap();
@@ -306,8 +306,8 @@ fn test_esdk_default_uses_default_config() {
     );
     assert_eq!(
         esdk.config().net_v4_retry_policy,
-        NetV400RetryPolicy::ForbidRetry,
-        "Esdk::default() must use ForbidRetry as the .NET v4.0.0 retry default"
+        NetV400RetryPolicy::AllowRetry,
+        "Esdk::default() must use AllowRetry as the .NET v4.0.0 retry default"
     );
 }
 

@@ -276,14 +276,14 @@ impl DecryptStreamOutput {
 ///
 /// ESDK-NET v4.0.0 incorrectly serialized message headers in a way that
 /// older readers and other-language readers cannot parse. The retry
-/// behavior, when opted in, lets this implementation recover and decrypt
-/// such messages. Set to [`Self::AllowRetry`] to opt in.
+/// behavior, when allowed, lets this implementation recover and decrypt
+/// such messages. Set to [`Self::ForbidRetry`] to opt out.
 #[non_exhaustive]
 pub enum NetV400RetryPolicy {
-    /// Do not retry on header authentication failure (default).
-    #[default]
+    /// Do not retry on header authentication failure.
     ForbidRetry,
-    /// Retry on header authentication failure.
+    /// Retry on header authentication failure (default).
+    #[default]
     AllowRetry,
 }
 
@@ -551,7 +551,7 @@ pub struct DecryptInput<'a> {
     //= spec/client-apis/decrypt.md#input
     //# - Decrypt operation input MUST accept an optional [Keyring](../framework/keyring-interface.md) argument.
     pub source: Option<MaterialSource>,
-    /// Default is `NetV400RetryPolicy::ForbidRetry`
+    /// Default is `NetV400RetryPolicy::AllowRetry`
     pub net_v4_retry_policy: NetV400RetryPolicy,
     /// Default is no limit on the number of encrypted data keys.
     ///
@@ -620,7 +620,7 @@ pub struct DecryptStreamInput {
     /// was produced by a holder of a specific private key, which is not required in
     /// most symmetric-trust architectures.
     pub unsafe_release_plaintext_before_verify: bool,
-    /// Default is `NetV400RetryPolicy::ForbidRetry`
+    /// Default is `NetV400RetryPolicy::AllowRetry`
     pub net_v4_retry_policy: NetV400RetryPolicy,
     /// Default is no limit on the number of encrypted data keys.
     ///

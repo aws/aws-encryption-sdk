@@ -55,7 +55,7 @@ pub struct EsdkConfig {
     pub max_encrypted_data_keys: Option<NonZeroUsize>,
     /// Whether to allow the ESDK-NET v4.0.0 retry behavior on header authentication
     /// failure (decrypt only — ignored on encrypt). Default is
-    /// `NetV400RetryPolicy::ForbidRetry`.
+    /// `NetV400RetryPolicy::AllowRetry`.
     pub net_v4_retry_policy: NetV400RetryPolicy,
 }
 
@@ -314,7 +314,7 @@ impl EsdkBuilder {
 
     /// Build the `Esdk`. Unset fields use their defaults
     /// (`RequireEncryptRequireDecrypt` commitment policy, no EDK cap,
-    /// `ForbidRetry` for the .NET v4.0.0 retry policy).
+    /// `AllowRetry` for the .NET v4.0.0 retry policy).
     #[must_use]
     pub fn build(self) -> Esdk {
         Esdk {
