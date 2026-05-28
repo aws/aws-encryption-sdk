@@ -181,8 +181,6 @@ async fn internal_encrypt(
 
     //= spec/client-apis/encrypt.md#behavior
     //= type=implication
-    //= type=implication
-    //= reason=step 2 consumes mat_result from step 1; reordering won't compile
     //# - Encrypt operation Step 1 MUST be [Get the encryption materials](#get-the-encryption-materials)
     //
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
@@ -231,7 +229,6 @@ async fn internal_encrypt(
     )?;
 
     //= spec/client-apis/encrypt.md#behavior
-    //= type=implication
     //= type=implication
     //= reason=encrypt_and_serialize_body is called third in the function body
     //# - Encrypt operation step 3 MUST be [Construct the body](#construct-the-body)

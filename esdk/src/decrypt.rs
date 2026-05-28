@@ -221,13 +221,11 @@ async fn internal_decrypt(
     commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<DecryptStreamOutput, Error> {
     //= spec/client-apis/decrypt.md#behavior
-    //= spec/client-apis/decrypt.md#behavior
     //= type=implication
     //# - Decrypt operation Step 1 MUST be [Parse the header](#parse-the-header)
     let (header_body, raw_header, sig_digest) =
         step_parse_header(ciphertext, max_encrypted_data_keys)?;
 
-    //= spec/client-apis/decrypt.md#behavior
     //= spec/client-apis/decrypt.md#behavior
     //= type=implication
     //# - Decrypt operation Step 2 MUST be [Get the decryption materials](#get-the-decryption-materials)
@@ -268,18 +266,15 @@ async fn internal_decrypt(
     //# release any parsed information from the header.
 
     //= spec/client-apis/decrypt.md#behavior
-    //= spec/client-apis/decrypt.md#behavior
     //= type=implication
     //# - Decrypt operation Step 3 MUST be [Verify the header](#verify-the-header)
     let mut state = step_verify_header(state, net_v4_retry_policy)?;
 
     //= spec/client-apis/decrypt.md#behavior
-    //= spec/client-apis/decrypt.md#behavior
     //= type=implication
     //# - Decrypt operation Step 4 MUST be [Decrypt the message body](#decrypt-the-message-body)
     let last_frame = step_decrypt_body(ciphertext, plaintext, &mut state, &safety_needed)?;
 
-    //= spec/client-apis/decrypt.md#behavior
     //= spec/client-apis/decrypt.md#behavior
     //= type=implication
     //# - Decrypt operation Step 5 MUST be [Verify the signature](#verify-the-signature)
