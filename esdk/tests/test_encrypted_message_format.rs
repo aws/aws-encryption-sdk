@@ -13,11 +13,6 @@ use test_helpers::*;
 async fn test_decrypt_rejects_base64_encoded_input() {
     // Construct input starting with 0x41 ('A') — the first byte of Base64-encoded
     // version 0x01 type 0x80 (per the spec table: "01 80" → "AY..." → "41 59...")
-    //= spec/client-apis/decrypt.md#encrypted-message-format
-    //= type=test
-    //# To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version)
-    //# and [types](../data-format/message-header.md#type)
-    //# and fail with a more specific error message.
     let fake_b64_input: Vec<u8> = {
         let mut v = vec![0x41, 0x59]; // 'A', 'Y'
         v.extend_from_slice(&[0u8; 100]); // padding
@@ -29,6 +24,11 @@ async fn test_decrypt_rejects_base64_encoded_input() {
         DecryptInput::with_legacy_keyring(&fake_b64_input, EncryptionContext::new(), keyring);
     let err = decrypt(&dec_input).await.unwrap_err();
     let msg = format!("{err}");
+    //= spec/client-apis/decrypt.md#encrypted-message-format
+    //= type=test
+    //# To make diagnosing this mistake easier, implementations SHOULD detect the first two bytes of the Base64 encoding of any supported message [versions](../data-format/message-header.md#version)
+    //# and [types](../data-format/message-header.md#type)
+    //# and fail with a more specific error message.
     assert!(
         msg.contains("Base64"),
         "Error message should mention Base64, got: {msg}"

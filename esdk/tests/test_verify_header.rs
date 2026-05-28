@@ -97,6 +97,7 @@ async fn test_verify_header_encryption_context_to_only_authenticate() {
     let dec_input = DecryptInput::with_legacy_keyring(&ct, reproduced_ec, keyring);
     //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
+    //= reason=Decrypt with reproduced EC succeeds; wrong filtering would fail header auth
     //# The encryption context to only authenticate MUST be the [encryption context](../framework/structures.md#encryption-context)
     //# in the [decryption materials](../framework/structures.md#decryption-materials)
     //# filtered to only contain key value pairs listed in
