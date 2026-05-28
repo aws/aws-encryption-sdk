@@ -204,9 +204,12 @@ async fn test_commit_key_derived_and_validated() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_kdf_algorithm_from_materials_suite() {
+    // Parse the header to verify the algorithm suite uses HKDF, then decrypt
+    // to prove that KDF algorithm was actually used for key derivation.
+    use aws_esdk::__test_internals::*;
+
     let keyring = aes_keyring(0).await;
     let pt = b"test kdf algorithm from materials";
-    // Use HKDF suite to exercise KDF algorithm selection
     let ct = encrypt_with_suite(
         pt,
         EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256,
@@ -214,20 +217,29 @@ async fn test_kdf_algorithm_from_materials_suite() {
         &keyring,
     )
     .await;
+
+    // Parse header and verify the suite's KDF is HKDF (not Identity)
+    let mut cursor = std::io::Cursor::new(ct.as_slice());
+    let mut raw = Vec::new();
+    let header_body = read_header_body(&mut cursor, None, &mut raw).unwrap();
+    let suite = header_body.algorithm_suite();
+    assert!(
+        matches!(suite.kdf, aws_mpl_legacy::suites::DerivationAlgorithm::Hkdf(_)),
+        "parsed suite must use HKDF derivation, got: {:?}", suite.kdf
+    );
+
+    // Decrypt proves the KDF from the materials' suite was actually used
     let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    let result = decrypt(&dec_input).await.unwrap();
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
-    //= reason=HKDF suite round-trip succeeds; proves KDF from materials was used
+    //= reason=Wire-parsed suite uses HKDF; successful decrypt proves that KDF was used
     //# The algorithm suite used to derive a data key from the plaintext data key MUST be
     //# the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
     //# [algorithm suite](../framework/algorithm-suites.md) associated with
     //# the returned decryption materials.
-    assert_eq!(
-        result.plaintext, pt,
-        "successful round-trip proves KDF algorithm from materials suite was used"
-    );
+    let result = decrypt(&dec_input).await.unwrap();
+    assert_eq!(result.plaintext, pt);
 }
 
 #[tokio::test(flavor = "multi_thread")]

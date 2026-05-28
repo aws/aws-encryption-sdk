@@ -149,33 +149,6 @@ async fn test_decrypt_no_unauthenticated_plaintext_released() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_decrypt_unframed_sequence_number_is_one() {
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=External V2 nonframed vector succeeds only if AAD sequence number is 1
-    //# If this is nonframed data, this value MUST be 1.
-    let result = decrypt_external_nonframed_vector(Version::V2).await;
-    assert_eq!(
-        result, EXTERNAL_V2_NONFRAMED_PT,
-        "nonframed decrypt output did not match expected plaintext — AAD sequence number is not 1"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_decrypt_nonframed_content_length_determines_aad() {
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=External vector decrypts; wrong content length would fail AES-GCM
-    //# If this is nonframed data, this MUST be determined by using the [nonframed data encrypted content length](../data-format/message-body.md#nonframed-data-encrypted-content-length).
-    // Successful decryption of the external V2 nonframed vector implies the decryptor's AAD content length matched what the external producer used — which, for that vector, is the nonframed data encrypted content length.
-    let result = decrypt_external_nonframed_vector(Version::V2).await;
-    assert_eq!(
-        result, EXTERNAL_V2_NONFRAMED_PT,
-        "nonframed decrypt output did not match expected plaintext — AAD content length did not come from the nonframed encrypted content length field"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_final_frame_held_until_signature_verification() {
     //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
@@ -207,116 +180,6 @@ async fn test_decrypt_final_frame_held_until_signature_verification() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_decrypt_nonframed_deserialization_conforms_to_spec() {
-    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
-    //= type=test
-    //= reason=External vector from aws-encryption-sdk-python decrypts; proves format conformance
-    //# Nonframed data deserialization MUST conform to the [Nonframed Data](../data-format/message-body.md#nonframed-data) specification.
-    // Successful decryption of the external V2 nonframed vector (produced by
-    // aws-encryption-sdk-python 2.0.0) proves our nonframed deserialization
-    // conforms to the spec.
-    let result = decrypt_external_nonframed_vector(Version::V2).await;
-    assert_eq!(
-        result, EXTERNAL_V2_NONFRAMED_PT,
-        "nonframed decrypt output did not match expected plaintext — nonframed deserialization does not conform to spec"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_unframed_decrypt_deserializes_and_decrypts() {
-    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
-    //= type=test
-    //= reason=External nonframed vector decrypts; proves nonframed path works
-    //# If a message has the [nonframed](../data-format/message-body.md#nonframed-data) content type,
-    //# the Decrypt operation MUST deserialize the message body according to the
-    //# [nonframed data specification](../data-format/message-body.md#nonframed-data)
-    //# and decrypt it using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
-    //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
-    let result = decrypt_external_nonframed_vector(Version::V2).await;
-    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_unframed_decrypt_iv_from_body() {
-    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
-    //= type=test
-    //= reason=External vector auth succeeds; wrong IV would fail AES-GCM
-    //# - The IV MUST be the [IV](../data-format/message-body.md#nonframed-data-iv) deserialized from the message body.
-    // Successful authenticated decryption of the external V2 nonframed vector
-    // proves the IV was correctly deserialized from the body.
-    let result = decrypt_external_nonframed_vector(Version::V2).await;
-    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_unframed_decrypt_ciphertext_from_body() {
-    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
-    //= type=test
-    //= reason=External vector auth succeeds; wrong ciphertext would fail
-    //# - The ciphertext MUST be the [Encrypted Content](../data-format/message-body.md#nonframed-data-encrypted-content) deserialized from the message body.
-    let result = decrypt_external_nonframed_vector(Version::V2).await;
-    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_unframed_decrypt_cipherkey_is_derived_data_key() {
-    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
-    //= type=test
-    //= reason=External vector decrypts; wrong key would fail AES-GCM
-    //# - The cipherkey MUST be the derived data key.
-    // Successful decryption proves the derived data key was used as the cipherkey.
-    let result = decrypt_external_nonframed_vector(Version::V2).await;
-    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_unframed_decrypt_tag_from_body() {
-    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
-    //= type=test
-    //= reason=External vector auth succeeds; wrong tag would fail AES-GCM
-    //# - The tag MUST be the [Authentication Tag](../data-format/message-body.md#nonframed-data-authentication-tag) deserialized from the message body.
-    let result = decrypt_external_nonframed_vector(Version::V2).await;
-    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_unframed_decrypt_aad_body_aad_content() {
-    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
-    //= type=test
-    //= reason=External vector auth succeeds; wrong AAD content would fail
-    //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST use the value for
-    //# [nonframed data](../data-format/message-body-aad.md#body-aad-content).
-    // External V2 nonframed vector was produced with the spec-required
-    // "AWSKMSEncryptionClient Single Block" body AAD content. If our
-    // decryptor reconstructed a different content value, AES-GCM auth
-    // would fail and decryption would not return the expected plaintext.
-    let result = decrypt_external_nonframed_vector(Version::V2).await;
-    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_unframed_decrypt_aad_sequence_number_is_one() {
-    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
-    //= type=test
-    //= reason=External vector auth succeeds; wrong seq num in AAD would fail
-    //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be `1`.
-    // External V2 nonframed vector was produced with sequence number 1 in the AAD.
-    let result = decrypt_external_nonframed_vector(Version::V2).await;
-    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_unframed_decrypt_aad_content_length_equals_encrypted_content_length() {
-    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
-    //= type=test
-    //= reason=External vector auth succeeds; wrong content length would fail
-    //# - The [content length](../data-format/message-body-aad.md#content-length) MUST equal the length of the plaintext.
-    // External V2 nonframed vector's AAD content_length equals its plaintext length.
-    let result = decrypt_external_nonframed_vector(Version::V2).await;
-    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_fails_on_tampered_auth_tag() {
     //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
@@ -332,19 +195,6 @@ async fn test_unframed_decrypt_fails_on_tampered_auth_tag() {
     let result = try_decrypt_external_nonframed(Version::V2, &ct).await;
     let err = result.expect_err("tampered nonframed auth tag must cause immediate decryption failure");
     assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_unframed_decrypt_aad_constructed_correctly() {
-    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
-    //= type=test
-    //= reason=External vector auth succeeds; wrong AAD would fail AES-GCM
-    //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
-    //# constructed with:
-    // Successful authenticated decryption of the external V2 nonframed vector
-    // proves the AAD was constructed correctly per the message-body-aad spec.
-    let result = decrypt_external_nonframed_vector(Version::V2).await;
-    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -408,22 +258,6 @@ async fn test_sequence_number_end_value_is_0xffffffff() {
     // Round-trip corroboration
     let result = decrypt_ciphertext(&ct).await.plaintext;
     assert_eq!(result, pt);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn test_nonframed_content_length_from_encrypted_content_length() {
-    let body = parse_nonframed_body(EXTERNAL_V2_NONFRAMED_CT);
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=External nonframed vector proves content length is read from the wire field
-    //# If this is nonframed data, this MUST be determined by using the [nonframed data encrypted content length](../data-format/message-body.md#nonframed-data-encrypted-content-length).
-    assert_eq!(
-        body.encrypted_content_length as usize,
-        EXTERNAL_V2_NONFRAMED_PT.len(),
-        "encrypted content length field must equal plaintext length"
-    );
-    let result = decrypt_external_nonframed_vector(Version::V2).await;
-    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -509,4 +343,45 @@ async fn test_decrypt_sequence_numbers_increment() {
     // Round-trip corroboration
     let result = decrypt_ciphertext(&ct).await.plaintext;
     assert_eq!(result, pt);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_nonframed_body_fields_deserialized_from_wire() {
+    // Parse the external V2 nonframed vector directly and verify each field.
+    let body = parse_external_nonframed_body(EXTERNAL_V2_NONFRAMED_CT, Version::V2);
+
+    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
+    //= type=test
+    //= reason=External vector's IV field is 12 bytes at expected offset
+    //# - The IV MUST be the [IV](../data-format/message-body.md#nonframed-data-iv) deserialized from the message body.
+    assert_eq!(body.iv.len(), IV_LEN, "nonframed IV must be 12 bytes");
+
+    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
+    //= type=test
+    //= reason=Encrypted content length field equals expected plaintext length (10240)
+    //# If this is nonframed data, this MUST be determined by using the [nonframed data encrypted content length](../data-format/message-body.md#nonframed-data-encrypted-content-length).
+    assert_eq!(
+        body.encrypted_content_length as usize,
+        EXTERNAL_V2_NONFRAMED_PT.len(),
+        "encrypted content length must equal plaintext length"
+    );
+
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=On-wire seq_num for nonframed is always 1 (checked via AAD construction)
+    //# If this is nonframed data, this value MUST be 1.
+    // The IV's last 4 bytes encode the sequence number for nonframed data.
+    let iv_seq = u32::from_be_bytes([body.iv[8], body.iv[9], body.iv[10], body.iv[11]]);
+    assert_eq!(iv_seq, 1, "nonframed IV sequence number must be 1");
+
+    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
+    //= type=test
+    //= reason=External vector decrypts to known plaintext; proves all AES-GCM inputs correct
+    //# If a message has the [nonframed](../data-format/message-body.md#nonframed-data) content type,
+    //# the Decrypt operation MUST deserialize the message body according to the
+    //# [nonframed data specification](../data-format/message-body.md#nonframed-data)
+    //# and decrypt it using the [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
+    //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
+    let result = decrypt_external_nonframed_vector(Version::V2).await;
+    assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
 }
