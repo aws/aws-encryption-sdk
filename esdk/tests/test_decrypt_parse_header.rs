@@ -52,35 +52,15 @@ async fn test_unsupported_content_type_v1_rejected() {
     enc_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
     let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // V1 header layout with empty encryption context:
-    // version(1) + type(1) + alg_suite(2) + message_id(16) = 20 bytes fixed
-    // AAD section with empty EC: key_value_pairs_length(2) = 0x0000 → 2 bytes total
-    // EDK section: edk_count(2) + each EDK
-    let mut pos: usize = 20; // after version + type + alg_suite + message_id
-    let aad_len = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
-    pos += 2;
-    if aad_len > 0 {
-        pos += aad_len;
-    }
-    let edk_count = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
-    pos += 2;
-    for _ in 0..edk_count {
-        let provider_id_len = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
-        pos += 2 + provider_id_len;
-        let provider_info_len = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
-        pos += 2 + provider_info_len;
-        let edk_len = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
-        pos += 2 + edk_len;
-    }
-    // pos now points to the content type byte
-    let original_content_type = valid_ct[pos];
+    let (content_type_offset, _, _, _) = parse_v1_trailing_offsets(&valid_ct);
+    let original_content_type = valid_ct[content_type_offset];
     assert!(
         original_content_type == 1 || original_content_type == 2,
         "sanity check: content type should be 1 or 2, got {original_content_type}"
     );
 
     let mut tampered_ct = valid_ct.clone();
-    tampered_ct[pos] = 0xFF; // unsupported content type
+    tampered_ct[content_type_offset] = 0xFF; // unsupported content type
 
     let mut valid_input = DecryptInput::from_encrypt(&valid_ct, &enc_input);
     valid_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
@@ -108,32 +88,19 @@ async fn test_unsupported_content_type_v2_rejected() {
         EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
     let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // V2 header layout with empty encryption context:
-    // version(1) + alg_suite(2) + message_id(32) = 35 bytes fixed
-    let mut pos: usize = 35;
-    let aad_len = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
-    pos += 2;
-    if aad_len > 0 {
-        pos += aad_len;
-    }
-    let edk_count = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
-    pos += 2;
-    for _ in 0..edk_count {
-        let provider_id_len = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
-        pos += 2 + provider_id_len;
-        let provider_info_len = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
-        pos += 2 + provider_info_len;
-        let edk_len = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
-        pos += 2 + edk_len;
-    }
-    let original_content_type = valid_ct[pos];
+    let fields = parse_v2_header_field_offsets(&valid_ct);
+    let (_, ct_start, _) = fields
+        .iter()
+        .find(|(n, _, _)| *n == "Content Type")
+        .expect("V2 header must have Content Type field");
+    let original_content_type = valid_ct[*ct_start];
     assert!(
         original_content_type == 1 || original_content_type == 2,
         "sanity check: content type should be 1 or 2, got {original_content_type}"
     );
 
     let mut tampered_ct = valid_ct.clone();
-    tampered_ct[pos] = 0xFF; // unsupported content type
+    tampered_ct[*ct_start] = 0xFF; // unsupported content type
 
     let valid_input = DecryptInput::from_encrypt(&valid_ct, &enc_input);
     let tampered_input = DecryptInput::from_encrypt(&tampered_ct, &enc_input);
@@ -343,21 +310,7 @@ async fn test_v1_header_auth_iv_deserialized_and_used() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v1_header_body_fields_parsed_from_wire() {
-    // Drive the production deserialization path (read_header_body) on a known
-    // V1 ciphertext, then use independent on-wire field offsets
-    // (parse_v1_trailing_offsets) to assert each field's bytes/length/value at
-    // the spec-defined location. Each annotation is placed immediately above
-    // the assertion that proves that specific field was deserialized:
-    //
-    //   - For fields with public accessors (`message_id`, `algorithm_suite`),
-    //     the parsed value is asserted to equal the wire bytes at the field's
-    //     offset.
-    //   - For other fields, the wire bytes at the spec-defined offset are
-    //     asserted to have the expected length/value, AND `read_header_body`
-    //     returned Ok (consuming exactly those bytes in order). If the
-    //     implementation skipped a field, downstream offsets would be
-    //     misaligned and read_header_body would fail or yield wrong values
-    //     for the public-accessor fields.
+    // Drives `read_header_body` and asserts each V1 field at its on-wire offset.
     use aws_esdk::__test_internals::*;
 
     let keyring = test_keyring().await;
@@ -485,12 +438,8 @@ async fn test_v1_header_body_fields_parsed_from_wire() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_v2_header_body_fields_parsed_from_wire() {
-    // Drive the production deserialization path (read_header_body and
-    // read_header_auth_tag) on a known V2 ciphertext, then use independent
-    // on-wire field offsets (parse_v2_header_field_offsets) to assert each
-    // field's bytes/length/value at the spec-defined location. Each
-    // annotation is placed immediately above the assertion that proves
-    // that specific field was deserialized.
+    // Drives `read_header_body` and asserts each V2 field at its on-wire offset,
+    // then tampers the V2 auth tag byte to confirm it was deserialized and used.
     use aws_esdk::__test_internals::*;
 
     let keyring = test_keyring().await;

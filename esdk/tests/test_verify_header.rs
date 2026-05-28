@@ -43,7 +43,7 @@ async fn test_verify_header_fails_on_tampered_header() {
     //
     //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
-    //= reason=Tampered header body would change AAD, causing tag verify failure
+    //= reason=Tampering header body changes the AAD's header-body part → tag verify fails; EC-to-only-authenticate part of AAD is covered by test_verify_header_encryption_context_to_only_authenticate
     //# - The AAD MUST be the concatenation of the serialized [message header body](../data-format/message-header.md#header-body)
     //# and the serialization of encryption context to only authenticate.
     //

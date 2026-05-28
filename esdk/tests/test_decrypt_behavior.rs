@@ -26,15 +26,13 @@ async fn test_decrypt_skips_signature_step_for_non_signing_algorithm() {
     // region and fail with a parse error.
     assert!(!has_footer(&ct), "non-signing suite must not produce a footer");
 
-    // Decrypt succeeds despite no footer → signature step was skipped.
     let decrypt_input = DecryptInput::from_encrypt(&ct, &encrypt_input);
-    let decrypt_output = decrypt(&decrypt_input).await.unwrap();
-
     //= spec/client-apis/decrypt.md#behavior
     //= type=test
     //= reason=No footer on wire + decrypt succeeds → signature step was not attempted
     //# - If the message header does not contain an algorithm suite including a signature algorithm,
     //# the Decrypt operation MUST NOT perform this step.
+    let decrypt_output = decrypt(&decrypt_input).await.unwrap();
     assert_eq!(decrypt_output.plaintext, plaintext);
 }
 
@@ -99,6 +97,11 @@ async fn test_decrypt_fails_with_trailing_bytes_after_message() {
     );
 }
 
+// Multi-frame signed messages: rejected by default, accepted when
+// unsafe_release_plaintext_before_verify=true. The "MUST fail immediately
+// after parsing the header" requirement is type=exception on the source
+// (decrypt.rs); we fail during body decode rather than at header parse,
+// so this test only covers the configuration-option-exists aspect.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streaming_fails_for_multi_frame_signed_without_override() {
     let keyring = test_keyring().await;
@@ -124,11 +127,6 @@ async fn test_streaming_fails_for_multi_frame_signed_without_override() {
     let mut with_cursor = std::io::Cursor::new(ct.as_slice());
     let mut with_output = Vec::new();
 
-    //= spec/client-apis/decrypt.md#behavior
-    //= type=test
-    //= reason=Multi-frame signed: without override (default) → Esdk error; with override=true → Ok and plaintext round-trips
-    //# - The ESDK MUST provide a configuration option that causes the decryption operation
-    //# to fail immediately after parsing the header if a signed algorithm suite is used.
     assert_eq!(
         decrypt_stream(&mut without_cursor, &mut without_output, &without_override).await.unwrap_err().kind,
         ErrorKind::Esdk,
