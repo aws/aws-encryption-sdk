@@ -36,9 +36,6 @@ async fn test_unsupported_version_rejected() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unsupported_content_type_v1_rejected() {
-    //= spec/client-apis/decrypt.md#v1-header-deserialization
-    //= type=test
-    //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
     let keyring = test_keyring().await;
     let plaintext = b"unsupported content type v1 test";
 
@@ -83,14 +80,14 @@ async fn test_unsupported_content_type_v1_rejected() {
     dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("decrypt must fail when content type byte is unsupported");
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
     assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unsupported_content_type_v2_rejected() {
-    //= spec/client-apis/decrypt.md#v2-header-deserialization
-    //= type=test
-    //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
     let keyring = test_keyring().await;
     let plaintext = b"unsupported content type v2 test";
 
@@ -132,14 +129,14 @@ async fn test_unsupported_content_type_v2_rejected() {
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("decrypt must fail when V2 content type byte is unsupported");
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //= type=test
+    //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
     assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unsupported_type_rejected() {
-    //= spec/client-apis/decrypt.md#v1-header-deserialization
-    //= type=test
-    //# The value MUST be a [supported type](../data-format/message-header.md#supported-types).
     let keyring = test_keyring().await;
     let plaintext = b"unsupported type test";
 
@@ -157,16 +154,14 @@ async fn test_unsupported_type_rejected() {
     dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("decrypt must fail when message type byte is unsupported");
+    //= spec/client-apis/decrypt.md#v1-header-deserialization
+    //= type=test
+    //# The value MUST be a [supported type](../data-format/message-header.md#supported-types).
     assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_trailing_bytes_after_message_rejected() {
-    //= spec/client-apis/decrypt.md#behavior
-    //= type=test
-    //# - If this operation successfully completes the above steps
-    //# but there are consumable bytes which are intended to be decrypted,
-    //# this operation MUST fail.
     let keyring = test_keyring().await;
     let plaintext = b"trailing bytes test";
 
@@ -180,18 +175,16 @@ async fn test_trailing_bytes_after_message_rejected() {
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("decrypt must fail when there are trailing bytes after the message");
+    //= spec/client-apis/decrypt.md#behavior
+    //= type=test
+    //# - If this operation successfully completes the above steps
+    //# but there are consumable bytes which are intended to be decrypted,
+    //# this operation MUST fail.
     assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_max_encrypted_data_keys_enforcement() {
-    //= spec/client-apis/decrypt.md#v2-header-deserialization
-    //= type=test
-    //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
-    //# deserialized from the [message header](../data-format/message-header.md)
-    //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
-    //# then as soon as that can be determined during deserializing
-    //# decrypt MUST process no more bytes and yield an error.
     // Create two keyrings and a multi-keyring to produce 2 EDKs
     let keyring1 = test_keyring().await;
     let (ns2, name2) = namespace_and_name(1);
@@ -226,6 +219,13 @@ async fn test_max_encrypted_data_keys_enforcement() {
     dec_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(1).unwrap());
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("decrypt must fail when EDK count exceeds max_encrypted_data_keys");
+    //= spec/client-apis/decrypt.md#v2-header-deserialization
+    //= type=test
+    //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
+    //# deserialized from the [message header](../data-format/message-header.md)
+    //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
+    //# then as soon as that can be determined during deserializing
+    //# decrypt MUST process no more bytes and yield an error.
     assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }
 
