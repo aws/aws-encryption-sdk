@@ -278,7 +278,7 @@ async fn test_encrypt_decrypt_accepts_all_optional_inputs() {
 }
 
 
-// === Esdk client (optional convenience layer) =====================================
+// Esdk client tests
 
 use aws_esdk::{Esdk, EsdkConfig};
 use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
