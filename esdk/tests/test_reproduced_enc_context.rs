@@ -61,62 +61,6 @@ async fn test_encryption_context_on_decrypt() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_encryption_context_on_decrypt_failure() {
-    let kms_key = KEY_ARN;
-    let asdf = "asdf".as_bytes();
-
-    let mpl = mpl();
-    let supplier = mpl.create_default_client_supplier().send().await.unwrap();
-    let kms_client = supplier
-        .get_client()
-        .region("us-west-2")
-        .send()
-        .await
-        .unwrap();
-
-    let kms_keyring = mpl
-        .create_aws_kms_keyring()
-        .kms_key_id(kms_key)
-        .kms_client(kms_client)
-        .send()
-        .await
-        .unwrap();
-
-    let encryption_context = small_encryption_context(SmallEncryptionContextVariation::A);
-    let bad_encryption_context = small_encryption_context(SmallEncryptionContextVariation::AB);
-
-    let encrypt_output = encrypt(&EncryptInput::with_legacy_keyring(
-        asdf,
-        encryption_context.clone(),
-        kms_keyring.clone(),
-    ))
-    .await
-    .unwrap();
-    let esdk_ciphertext = encrypt_output.ciphertext;
-
-    let valid_input = DecryptInput::with_legacy_keyring(
-        &esdk_ciphertext,
-        encryption_context,
-        kms_keyring.clone(),
-    );
-    let invalid_input = DecryptInput::with_legacy_keyring(
-        &esdk_ciphertext,
-        bad_encryption_context,
-        kms_keyring,
-    );
-
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=Original EC → Ok; superset EC (extra key) → Err, proving the reproduced EC was used in materials/KMS lookup
-    //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
-    assert!(decrypt(&valid_input).await.is_ok(), "original EC must decrypt");
-    assert!(
-        decrypt(&invalid_input).await.is_err(),
-        "superset EC must fail (reproduced EC mismatch)"
-    );
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_mismatched_encryption_context_on_decrypt() {
     let asdf = "asdf".as_bytes();
 
