@@ -41,6 +41,7 @@ async fn test_step_4_construct_signature() {
     let pt = decrypt(&dec_input).await.unwrap().plaintext;
     //= spec/client-apis/encrypt.md#behavior
     //= type=test
+    //= reason=Decrypt verifies footer; success proves step 4 ran
     //# - Encrypt operation step 4 MUST be [Construct the signature](#construct-the-signature)
     //
     //= spec/client-apis/encrypt.md#behavior
@@ -596,6 +597,7 @@ async fn test_cmm_request_no_algorithm_suite_field() {
     //= reason=Spy CMM directly observes the call was constructed with expected fields
     //# The call to [Get Encryption Materials](../framework/cmm-interface.md#get-encryption-materials)
     //# on that CMM MUST be constructed as follows:
+    //
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
     //= reason=Spy CMM observes algorithm_suite_id is None when caller omits it
