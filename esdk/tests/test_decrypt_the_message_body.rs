@@ -185,6 +185,7 @@ async fn test_decrypt_unframed_sequence_number_is_one() {
 async fn test_decrypt_nonframed_content_length_determines_aad() {
     //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
+    //= reason=External vector decrypts; wrong content length would fail AES-GCM
     //# If this is nonframed data, this MUST be determined by using the [nonframed data encrypted content length](../data-format/message-body.md#nonframed-data-encrypted-content-length).
     // Successful decryption of the external V2 nonframed vector implies the decryptor's AAD content length matched what the external producer used — which, for that vector, is the nonframed data encrypted content length.
     let result = decrypt_external_nonframed_vector(Version::V2).await;
@@ -245,6 +246,7 @@ async fn test_decrypt_nonframed_deserialization_conforms_to_spec() {
 async fn test_unframed_decrypt_deserializes_and_decrypts() {
     //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
+    //= reason=External nonframed vector decrypts; proves nonframed path works
     //# If a message has the [nonframed](../data-format/message-body.md#nonframed-data) content type,
     //# the Decrypt operation MUST deserialize the message body according to the
     //# [nonframed data specification](../data-format/message-body.md#nonframed-data)
@@ -258,6 +260,7 @@ async fn test_unframed_decrypt_deserializes_and_decrypts() {
 async fn test_unframed_decrypt_iv_from_body() {
     //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
+    //= reason=External vector auth succeeds; wrong IV would fail AES-GCM
     //# - The IV MUST be the [IV](../data-format/message-body.md#nonframed-data-iv) deserialized from the message body.
     // Successful authenticated decryption of the external V2 nonframed vector
     // proves the IV was correctly deserialized from the body.
@@ -269,6 +272,7 @@ async fn test_unframed_decrypt_iv_from_body() {
 async fn test_unframed_decrypt_ciphertext_from_body() {
     //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
+    //= reason=External vector auth succeeds; wrong ciphertext would fail
     //# - The ciphertext MUST be the [Encrypted Content](../data-format/message-body.md#nonframed-data-encrypted-content) deserialized from the message body.
     let result = decrypt_external_nonframed_vector(Version::V2).await;
     assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
@@ -278,6 +282,7 @@ async fn test_unframed_decrypt_ciphertext_from_body() {
 async fn test_unframed_decrypt_cipherkey_is_derived_data_key() {
     //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
+    //= reason=External vector decrypts; wrong key would fail AES-GCM
     //# - The cipherkey MUST be the derived data key.
     // Successful decryption proves the derived data key was used as the cipherkey.
     let result = decrypt_external_nonframed_vector(Version::V2).await;
@@ -288,6 +293,7 @@ async fn test_unframed_decrypt_cipherkey_is_derived_data_key() {
 async fn test_unframed_decrypt_tag_from_body() {
     //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
+    //= reason=External vector auth succeeds; wrong tag would fail AES-GCM
     //# - The tag MUST be the [Authentication Tag](../data-format/message-body.md#nonframed-data-authentication-tag) deserialized from the message body.
     let result = decrypt_external_nonframed_vector(Version::V2).await;
     assert_eq!(result, EXTERNAL_V2_NONFRAMED_PT);
@@ -297,6 +303,7 @@ async fn test_unframed_decrypt_tag_from_body() {
 async fn test_unframed_decrypt_aad_body_aad_content() {
     //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
+    //= reason=External vector auth succeeds; wrong AAD content would fail
     //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST use the value for
     //# [nonframed data](../data-format/message-body-aad.md#body-aad-content).
     // External V2 nonframed vector was produced with the spec-required
@@ -311,6 +318,7 @@ async fn test_unframed_decrypt_aad_body_aad_content() {
 async fn test_unframed_decrypt_aad_sequence_number_is_one() {
     //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
+    //= reason=External vector auth succeeds; wrong seq num in AAD would fail
     //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be `1`.
     // External V2 nonframed vector was produced with sequence number 1 in the AAD.
     let result = decrypt_external_nonframed_vector(Version::V2).await;
@@ -321,6 +329,7 @@ async fn test_unframed_decrypt_aad_sequence_number_is_one() {
 async fn test_unframed_decrypt_aad_content_length_equals_encrypted_content_length() {
     //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
+    //= reason=External vector auth succeeds; wrong content length would fail
     //# - The [content length](../data-format/message-body-aad.md#content-length) MUST equal the length of the plaintext.
     // External V2 nonframed vector's AAD content_length equals its plaintext length.
     let result = decrypt_external_nonframed_vector(Version::V2).await;
@@ -349,6 +358,7 @@ async fn test_unframed_decrypt_fails_on_tampered_auth_tag() {
 async fn test_unframed_decrypt_aad_constructed_correctly() {
     //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
+    //= reason=External vector auth succeeds; wrong AAD would fail AES-GCM
     //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
     //# constructed with:
     // Successful authenticated decryption of the external V2 nonframed vector
