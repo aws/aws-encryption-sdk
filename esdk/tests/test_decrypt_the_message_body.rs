@@ -43,106 +43,74 @@ async fn test_decrypt_final_frame_content_length_validation() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_fails_on_tampered_auth_tag() {
-    // Tamper with the authentication tag of the first frame. Decrypt must fail.
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Tampered auth tag → CryptographicError proves AEAD check runs
+    //# If this decryption fails, this operation MUST immediately halt and fail.
     let pt = vec![0xABu8; 20];
     let mut ct = encrypt_with_frame_length(&pt, 10).await;
     let body_start = find_body_start(&ct, 10).expect("must find body");
-    // Baseline: untampered ciphertext decrypts successfully.
     assert_eq!(decrypt_ciphertext(&ct).await.plaintext, pt, "baseline must pass");
-    // First regular frame: SeqNum(4) + IV(12) + EncContent(10) + AuthTag(16)
-    // Tamper with the last byte of the auth tag
     let tag_end = body_start + 4 + IV_LEN + 10 + TAG_LEN - 1;
     ct[tag_end] ^= 0xFF;
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("tampered auth tag must cause immediate decryption failure");
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //# If this decryption fails, this operation MUST immediately halt and fail.
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Tampered auth tag causes CryptographicError; impossible unless IV was deserialized
-    //# - MUST deserialize the [IV](../data-format/message-body.md#regular-frame-iv).
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Tampered auth tag causes failure; impossible unless content was deserialized
-    //# - MUST deserialize the [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content).
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Tampered auth tag directly proves tag was deserialized and checked
-    //# - MUST deserialize the [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag).
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Baseline succeeds so cipherkey was correct; tamper only changes tag
-    //# - The cipherkey MUST be the derived data key
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Baseline succeeds so ciphertext input was correct; tamper only changes tag
-    //# - The ciphertext MUST be the encrypted content deserialized from the frame or body.
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Tampered tag causes CryptographicError, proving tag input is used
-    //# - The tag MUST be the authentication tag deserialized from the frame or body.
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Baseline succeeds; if AAD were wrong, AES-GCM authentication would fail
-    //# - The AAD MUST be the serialized [message body AAD](../data-format/message-body-aad.md),
-    //# constructed according to the [Message Body AAD](../data-format/message-body-aad.md) specification, as follows:
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Baseline succeeds; wrong message ID in AAD would cause auth failure
-    //# - The [message ID](../data-format/message-body-aad.md#message-id) MUST be the same as the
-    //# [message ID](../data-format/message-header.md#message-id) deserialized from the header of this message.
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Baseline succeeds; wrong seq num in AAD would cause auth failure
-    //# - The [sequence number](../data-format/message-body-aad.md#sequence-number) MUST be the sequence
-    //# number deserialized from the frame being decrypted.
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Baseline succeeds; wrong content length in AAD would cause auth failure
-    //# - The [content length](../data-format/message-body-aad.md#content-length) MUST have a value
-    //# equal to the length of the plaintext that was encrypted.
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Tampered auth tag causes AES-GCM failure, proving authenticated decryption runs
-    //# Once at least a single frame is deserialized (or the entire body in the nonframed case),
-    //# the Decrypt operation MUST decrypt and authenticate the frame (or body) using the
-    //# [authenticated encryption algorithm](../framework/algorithm-suites.md#encryption-algorithm)
-    //# specified by the [algorithm suite](../framework/algorithm-suites.md), with the following inputs:
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Baseline succeeds; wrong Body AAD Content would cause auth failure
-    //# - The [Body AAD Content](../data-format/message-body-aad.md#body-aad-content) MUST be constructed
-    //# according to [Message Body AAD](../data-format/message-body-aad.md) depending on
-    //# whether the bytes being decrypted are a regular frame, final frame, or nonframed data.
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Baseline uses frame_length=10; correct content_length in AAD is required
-    //# If this is a regular frame, this MUST be determined by using the [frame length](../data-format/message-header.md#frame-length)
-    //# deserialized from the message header.
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Baseline succeeds; wrong IV in AAD would cause AES-GCM auth failure
-    //# - The IV MUST be the [sequence number](../data-format/message-body-aad.md#sequence-number)
-    //# used in the message body AAD above,
-    //# padded to the [IV length](../data-format/message-header.md#iv-length) with 0.
+    let err = decrypt(&dec_input).await.expect_err("tampered auth tag must fail");
     assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_frame_fields_deserialized_from_wire() {
+    // Directly verify each frame field is present at the correct wire offset.
+    // 30 bytes / frame_length=10 → 2 regular + 1 final = 3 frames.
+    let pt = vec![0xABu8; 30];
+    let ct = encrypt_with_frame_length(&pt, 10).await;
+    let frames = parse_all_frames(&ct, 10);
+    assert_eq!(frames.len(), 3, "expected 3 frames (2 regular + 1 final)");
+
+    // Regular frame 1: verify deserialized fields on wire
+    let f = &frames[0];
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=On-wire seq_num at expected offset proves it was deserialized
+    //# - MUST deserialize the [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number).
+    assert_eq!(f.seq_num, 1, "frame 1 seq_num must be 1");
+    assert_eq!(f.seq_num_bytes.len(), 4, "seq_num is 4 bytes on wire");
+
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=On-wire IV at expected offset proves it was deserialized
+    //# - MUST deserialize the [IV](../data-format/message-body.md#regular-frame-iv).
+    assert_eq!(f.iv.len(), IV_LEN, "IV is 12 bytes on wire");
+    assert_eq!(f.iv_offset, f.seq_num_offset + 4, "IV follows seq_num");
+
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=On-wire content at expected offset proves it was deserialized
+    //# - MUST deserialize the [Encrypted Content](../data-format/message-body.md#regular-frame-encrypted-content).
+    assert_eq!(f.content.len(), 10, "regular frame content is frame_length bytes");
+    assert_eq!(f.content_offset, f.iv_offset + IV_LEN, "content follows IV");
+
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=On-wire tag at expected offset proves it was deserialized
+    //# - MUST deserialize the [Authentication Tag](../data-format/message-body.md#regular-frame-authentication-tag).
+    assert_eq!(f.tag.len(), TAG_LEN, "auth tag is 16 bytes on wire");
+    assert_eq!(f.tag_offset, f.content_offset + 10, "tag follows content");
+
+    // Final frame: verify content_length field
+    let ff = &frames[2];
+    assert!(ff.is_final, "frame 3 must be final");
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=On-wire content_length field in final frame proves it was deserialized
+    //# - MUST deserialize the [Encrypted Content Length](../data-format/message-body.md#final-frame-encrypted-content-length).
+    assert_eq!(ff.content_length_bytes.unwrap().len(), 4, "content_length is 4 bytes");
+    assert_eq!(ff.content_length, 10, "final frame content = remaining 10 bytes");
+
+    // Round-trip corroboration: all fields consumed correctly
+    let result = decrypt_ciphertext(&ct).await.plaintext;
+    assert_eq!(result, pt);
 }
 
 #[tokio::test(flavor = "multi_thread")]
