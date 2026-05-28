@@ -186,7 +186,7 @@ async fn test_unsupported_type_rejected() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_max_encrypted_data_keys_enforcement() {
-    // Create two keyrings and a multi-keyring to produce 2 EDKs
+    // Create two keyrings and a multi-keyring to produce 2 EDKs on the wire.
     let keyring1 = test_keyring().await;
     let (ns2, name2) = namespace_and_name(1);
     let keyring2 = mpl()
@@ -214,21 +214,28 @@ async fn test_max_encrypted_data_keys_enforcement() {
     );
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // Decrypt with max_encrypted_data_keys=1, but message has 2 EDKs → must fail
-    let mut dec_input =
+    // Two decrypt inputs differing only in max_encrypted_data_keys.
+    let mut allowing_input =
+        DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), multi_keyring.clone());
+    allowing_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(2).unwrap());
+    let mut limiting_input =
         DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), multi_keyring);
-    dec_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(1).unwrap());
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("decrypt must fail when EDK count exceeds max_encrypted_data_keys");
+    limiting_input.max_encrypted_data_keys = Some(std::num::NonZeroUsize::new(1).unwrap());
+
     //= spec/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
-    //= reason=2 EDKs on wire + max=1 → SerializationError; proves the limit halts deserialization
+    //= reason=2 EDKs on wire + max=2 → Ok; same ct + max=1 → SerializationError, halting deserialization
     //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
     //# deserialized from the [message header](../data-format/message-header.md)
     //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
     //# then as soon as that can be determined during deserializing
     //# decrypt MUST process no more bytes and yield an error.
-    assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
+    assert!(decrypt(&allowing_input).await.is_ok(), "max=2 must decrypt 2-EDK ct");
+    assert_eq!(
+        decrypt(&limiting_input).await.unwrap_err().kind,
+        ErrorKind::SerializationError,
+        "max=1 with 2 EDKs on wire must produce SerializationError"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
