@@ -16,10 +16,28 @@ async fn test_decrypt_final_frame_content_length_validation() {
     // to exceed the frame length. Decrypt must fail.
     let pt = vec![0xEEu8; 5];
     let mut ct = encrypt_with_frame_length(&pt, 10).await;
-    // Find the ENDFRAME marker, then the content length is at offset +20 (ENDFRAME(4)+SeqNum(4)+IV(12))
+
+    // First, verify the untampered content_length is <= frame_length on wire
+    let frames = parse_all_frames(&ct, 10);
+    let final_frame = frames.last().unwrap();
+    assert!(final_frame.is_final);
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=On-wire content_length (5) <= frame_length (10) verified directly
+    //# MUST ensure that the length of the encrypted content field is
+    //# less than or equal to the frame length deserialized in the message header.
+    assert!(
+        final_frame.content_length <= 10,
+        "untampered: content_length {} must be <= frame_length 10",
+        final_frame.content_length
+    );
+
+    // Valid value decrypts as expected
+    assert_eq!(decrypt_ciphertext(&ct).await.plaintext, pt, "valid content_length decrypts");
+
+    // Now tamper: set content_length to 11 (exceeds frame_length=10)
     for i in 0..ct.len().saturating_sub(24) {
         if ct[i..i + 4] == ENDFRAME_MARKER {
-            // Set content length to frame_length + 1 = 11 (exceeds frame_length=10)
             let bad_len = 11u32.to_be_bytes();
             ct[i + 20..i + 24].copy_from_slice(&bad_len);
             break;
@@ -27,26 +45,16 @@ async fn test_decrypt_final_frame_content_length_validation() {
     }
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("decrypt must fail when final frame content length exceeds frame length");
     //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //# MUST ensure that the length of the encrypted content field is
-    //# less than or equal to the frame length deserialized in the message header.
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Tampered content length > frame_length causes error, proving it's checked
+    //= reason=content_length > frame_length → SerializationError; proves the check exists
     //# If this is a final frame, this MUST be determined by using the [final frame encrypted content length](../data-format/message-body.md#final-frame-encrypted-content-length).
+    let err = decrypt(&dec_input).await.expect_err("content_length > frame_length must fail");
     assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_fails_on_tampered_auth_tag() {
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Tampered auth tag → CryptographicError proves AEAD check runs
-    //# If this decryption fails, this operation MUST immediately halt and fail.
     let pt = vec![0xABu8; 20];
     let mut ct = encrypt_with_frame_length(&pt, 10).await;
     let body_start = find_body_start(&ct, 10).expect("must find body");
@@ -56,6 +64,10 @@ async fn test_decrypt_fails_on_tampered_auth_tag() {
     let keyring = test_keyring().await;
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let err = decrypt(&dec_input).await.expect_err("tampered auth tag must fail");
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Tampered auth tag → CryptographicError proves AEAD check runs
+    //# If this decryption fails, this operation MUST immediately halt and fail.
     assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
 }
 

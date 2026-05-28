@@ -234,3 +234,107 @@ async fn test_unsupported_esdk_algorithm_suite_yields_error() {
     //# from the message header.
     assert_eq!(err.kind, ErrorKind::ValidationError, "got: {err:?}");
 }
+
+/// Spy CMM for decrypt: records the inputs it received from the decrypt call.
+struct DecryptSpyCmm {
+    inner: aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef,
+    observed_edk_count: std::sync::Arc<std::sync::Mutex<Option<usize>>>,
+    observed_ec_keys: std::sync::Arc<std::sync::Mutex<Option<Vec<String>>>>,
+}
+
+impl aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManager for DecryptSpyCmm {
+    fn get_encryption_materials(
+        &self,
+        input: aws_mpl_legacy::dafny::operation::get_encryption_materials::GetEncryptionMaterialsInput,
+    ) -> Result<aws_mpl_legacy::dafny::operation::get_encryption_materials::GetEncryptionMaterialsOutput, aws_mpl_legacy::dafny::types::error::Error> {
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                self.inner.get_encryption_materials()
+                    .commitment_policy(input.commitment_policy.unwrap())
+                    .encryption_context(input.encryption_context.unwrap())
+                    .max_plaintext_length(input.max_plaintext_length.unwrap())
+                    .send().await
+            })
+        })
+    }
+    fn decrypt_materials(
+        &self,
+        input: aws_mpl_legacy::dafny::operation::decrypt_materials::DecryptMaterialsInput,
+    ) -> Result<aws_mpl_legacy::dafny::operation::decrypt_materials::DecryptMaterialsOutput, aws_mpl_legacy::dafny::types::error::Error> {
+        // Record observations
+        if let Some(ref edks) = input.encrypted_data_keys {
+            *self.observed_edk_count.lock().unwrap() = Some(edks.len());
+        }
+        if let Some(ref ec) = input.encryption_context {
+            let keys: Vec<String> = ec.keys().cloned().collect();
+            *self.observed_ec_keys.lock().unwrap() = Some(keys);
+        }
+        // Delegate
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                self.inner.decrypt_materials()
+                    .algorithm_suite_id(input.algorithm_suite_id.unwrap())
+                    .commitment_policy(input.commitment_policy.unwrap())
+                    .encryption_context(input.encryption_context.unwrap())
+                    .encrypted_data_keys(input.encrypted_data_keys.unwrap())
+                    .send().await
+            })
+        })
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_cmm_decrypt_call_receives_header_edks_and_ec() {
+    let keyring = test_keyring().await;
+    let mut ec = EncryptionContext::new();
+    ec.insert("spy-key".to_string(), "spy-val".to_string());
+    let pt = b"spy cmm decrypt test";
+    let enc_input = EncryptInput::with_legacy_keyring(pt, ec, keyring.clone());
+    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
+    let inner_cmm = mpl()
+        .create_default_cryptographic_materials_manager()
+        .keyring(keyring)
+        .send()
+        .await
+        .unwrap();
+    let observed_edk_count = std::sync::Arc::new(std::sync::Mutex::new(None));
+    let observed_ec_keys = std::sync::Arc::new(std::sync::Mutex::new(None));
+    let spy_cmm = aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef::from(DecryptSpyCmm {
+        inner: inner_cmm,
+        observed_edk_count: observed_edk_count.clone(),
+        observed_ec_keys: observed_ec_keys.clone(),
+    });
+
+    let dec_input = DecryptInput::with_legacy_cmm(&ct, EncryptionContext::new(), spy_cmm);
+    let result = decrypt(&dec_input).await.unwrap();
+    assert_eq!(result.plaintext, pt);
+
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=Spy CMM observes EDK count matches header (1 EDK from single keyring)
+    //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header.md#encrypted-data-keys)
+    //# from the message header.
+    let edk_count = observed_edk_count.lock().unwrap().unwrap();
+    assert_eq!(edk_count, 1, "CMM must receive 1 EDK from header");
+
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=Spy CMM observes EC contains the key we encrypted with
+    //# - Encryption Context: This MUST be the parsed [encryption context](../data-format/message-header.md#aad)
+    //# from the message header.
+    let ec_keys = observed_ec_keys.lock().unwrap().clone().unwrap();
+    assert!(ec_keys.contains(&"spy-key".to_string()), "CMM must receive EC from header containing 'spy-key'");
+
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=Spy CMM was called and returned materials successfully
+    //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
+    //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
+    //
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=We passed spy_cmm as input; it was used
+    //# The CMM used MUST be the input CMM, if supplied.
+    assert!(edk_count > 0, "CMM decrypt_materials was called (observed EDKs)");
+}
