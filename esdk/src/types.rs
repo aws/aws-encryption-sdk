@@ -103,17 +103,6 @@ impl FrameLength {
                 .ok_or_else(|| val_err("Frame length must be non-zero"))?,
         ))
     }
-    /// Returns a new `FrameLength`, panicking if `val` is zero.
-    ///
-    /// Prefer [`FrameLength::new`] in non-`const` contexts; use this only
-    /// when the caller can statically prove `val != 0` (e.g. a literal).
-    ///
-    /// # Panics
-    /// Panics if `val` is zero.
-    #[must_use]
-    pub const fn new_unchecked(val: u32) -> Self {
-        Self(std::num::NonZeroU32::new(val).unwrap())
-    }
 }
 
 /// Convenience constructor for a `MaterialProviders` library client.
