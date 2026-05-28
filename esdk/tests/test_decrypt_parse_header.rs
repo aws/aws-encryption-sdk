@@ -30,6 +30,7 @@ async fn test_unsupported_version_rejected() {
     let err = result.expect_err("decrypt must fail when version byte is unsupported");
     //= spec/client-apis/decrypt.md#parse-the-header
     //= type=test
+    //= reason=Unsupported value 0xFF rejected, proving only supported values accepted
     //# The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
     assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }
@@ -82,6 +83,7 @@ async fn test_unsupported_content_type_v1_rejected() {
     let err = result.expect_err("decrypt must fail when content type byte is unsupported");
     //= spec/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
+    //= reason=Unsupported value rejected; proves only valid values accepted
     //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
     assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }
@@ -131,6 +133,7 @@ async fn test_unsupported_content_type_v2_rejected() {
     let err = result.expect_err("decrypt must fail when V2 content type byte is unsupported");
     //= spec/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
+    //= reason=Unsupported value rejected; proves only valid values accepted
     //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
     assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }
@@ -156,6 +159,7 @@ async fn test_unsupported_type_rejected() {
     let err = result.expect_err("decrypt must fail when message type byte is unsupported");
     //= spec/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
+    //= reason=Unsupported value rejected; proves only valid values accepted
     //# The value MUST be a [supported type](../data-format/message-header.md#supported-types).
     assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
 }

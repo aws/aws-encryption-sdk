@@ -158,29 +158,5 @@ async fn test_signing_suite_must_perform_signature_step() {
     //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
     //# the Decrypt operation MUST perform this step.
     //
-    //= spec/client-apis/decrypt.md#behavior
-    //= type=test
-    //= reason=Steps 1-4 must complete before step 5 (verify sig) is reached
-    //# - Decrypt operation Step 1 MUST be [Parse the header](#parse-the-header)
-    //
-    //= spec/client-apis/decrypt.md#behavior
-    //= type=test
-    //= reason=Steps 1-4 must complete before step 5 (verify sig) is reached
-    //# - Decrypt operation Step 2 MUST be [Get the decryption materials](#get-the-decryption-materials)
-    //
-    //= spec/client-apis/decrypt.md#behavior
-    //= type=test
-    //= reason=Steps 1-4 must complete before step 5 (verify sig) is reached
-    //# - Decrypt operation Step 3 MUST be [Verify the header](#verify-the-header)
-    //
-    //= spec/client-apis/decrypt.md#behavior
-    //= type=test
-    //= reason=Steps 1-4 must complete before step 5 (verify sig) is reached
-    //# - Decrypt operation Step 4 MUST be [Decrypt the message body](#decrypt-the-message-body)
-    //
-    //= spec/client-apis/decrypt.md#behavior
-    //= type=test
-    //= reason=Tampered footer proves step 5 runs
-    //# - Decrypt operation Step 5 MUST be [Verify the signature](#verify-the-signature)
     assert_eq!(err.kind, ErrorKind::Esdk, "tampered signature must produce Esdk error, got: {err:?}");
 }

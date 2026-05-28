@@ -45,28 +45,6 @@ impl ProtectionNeeded {
     }
 }
 
-//= spec/client-apis/decrypt.md#encrypted-message
-//= type=implication
-//= reason=SafeRead processes bytes incrementally without buffering the full message
-//# This input MAY be [streamed](streaming.md) to this operation.
-//
-//= spec/client-apis/decrypt.md#encrypted-message
-//= type=implication
-//= reason=SafeRead processes incrementally; full message never held in memory
-//# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
-//# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
-//
-//= spec/client-apis/decrypt.md#plaintext
-//= type=implication
-//= reason=SafeWrite flushes each decrypted frame without buffering the full plaintext
-//# This operation MAY [stream](streaming.md) the plaintext as output.
-//
-//= spec/client-apis/decrypt.md#plaintext
-//= type=exception
-//= reason=Does not require holding input plaintext in memory
-//# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
-//# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
-//
 //= spec/client-apis/decrypt.md#security-considerations
 //= type=implication
 //= reason=Ok is only returned after signature verification; streamed bytes are unverified until then
@@ -96,7 +74,27 @@ impl ProtectionNeeded {
 /// # Errors
 /// Returns an error if input validation, header parsing, decryption, or signature verification fails.
 pub async fn decrypt_stream(
+    //= spec/client-apis/decrypt.md#encrypted-message
+    //= type=implication
+    //= reason=SafeRead processes bytes incrementally without buffering the full message
+    //# This input MAY be [streamed](streaming.md) to this operation.
+    //
+    //= spec/client-apis/decrypt.md#encrypted-message
+    //= type=implication
+    //= reason=SafeRead processes incrementally; full message never held in memory
+    //# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
+    //# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
     ciphertext: &mut dyn SafeRead,
+    //= spec/client-apis/decrypt.md#plaintext
+    //= type=implication
+    //= reason=SafeWrite flushes each decrypted frame without buffering the full plaintext
+    //# This operation MAY [stream](streaming.md) the plaintext as output.
+    //
+    //= spec/client-apis/decrypt.md#plaintext
+    //= type=exception
+    //= reason=Does not require holding input plaintext in memory
+    //# If an implementation requires holding the entire encrypted message in memory in order to perform this operation,
+    //# that implementation SHOULD NOT provide an API that allows the caller to stream the encrypted message.
     plaintext: &mut dyn SafeWrite,
     input: &DecryptStreamInput,
 ) -> Result<DecryptStreamOutput, Error> {
@@ -223,11 +221,15 @@ async fn internal_decrypt(
     commitment_policy: EsdkCommitmentPolicy,
 ) -> Result<DecryptStreamOutput, Error> {
     //= spec/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
+    //= type=implication
     //# - Decrypt operation Step 1 MUST be [Parse the header](#parse-the-header)
     let (header_body, raw_header, sig_digest) =
         step_parse_header(ciphertext, max_encrypted_data_keys)?;
 
     //= spec/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
+    //= type=implication
     //# - Decrypt operation Step 2 MUST be [Get the decryption materials](#get-the-decryption-materials)
     let state = step_get_decryption_materials(
         ciphertext,
@@ -266,14 +268,20 @@ async fn internal_decrypt(
     //# release any parsed information from the header.
 
     //= spec/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
+    //= type=implication
     //# - Decrypt operation Step 3 MUST be [Verify the header](#verify-the-header)
     let mut state = step_verify_header(state, net_v4_retry_policy)?;
 
     //= spec/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
+    //= type=implication
     //# - Decrypt operation Step 4 MUST be [Decrypt the message body](#decrypt-the-message-body)
     let last_frame = step_decrypt_body(ciphertext, plaintext, &mut state, &safety_needed)?;
 
     //= spec/client-apis/decrypt.md#behavior
+    //= spec/client-apis/decrypt.md#behavior
+    //= type=implication
     //# - Decrypt operation Step 5 MUST be [Verify the signature](#verify-the-signature)
     step_verify_signature(ciphertext, &state)?;
 
@@ -338,32 +346,6 @@ fn step_parse_header(
     //= reason=read_header_body returns Err on incomplete data or reads until header is complete
     //# This operation MUST attempt to deserialize all consumable encrypted message bytes until it has
     //# successfully deserialized a valid [message header](../data-format/message-header.md).
-    //
-    //= spec/client-apis/decrypt.md#parse-the-header
-    //= type=implication
-    //= reason=read_header_body reads version first then dispatches V1/V2 parser
-    //# The header deserialization order MUST follow the [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10)
-    //# or [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification,
-    //# depending on the [Version](../data-format/message-header.md#version) field in the message header.
-    //
-    //= spec/client-apis/decrypt.md#parse-the-header
-    //= type=implication
-    //= reason=read_header_body reads the version byte before dispatching to V1/V2
-    //# The [Version](../data-format/message-header.md#version) field MUST be deserialized first.
-    //
-    //= spec/client-apis/decrypt.md#v1-header-deserialization
-    //= type=implication
-    //= reason=read_header_body dispatches to V1 parser when version byte is 0x01
-    //# If the value of the deserialized version field is [1.0](../data-format/message-header.md#supported-versions),
-    //# the remaining header fields MUST be deserialized according to the
-    //# [Header Body Version 1.0](../data-format/message-header.md#header-body-version-10) specification:
-    //
-    //= spec/client-apis/decrypt.md#v2-header-deserialization
-    //= type=implication
-    //= reason=read_header_body dispatches to V2 parser when version byte is 0x02
-    //# If the value of the deserialized version field is [2.0](../data-format/message-header.md#supported-versions),
-    //# the remaining header fields MUST be deserialized according to the
-    //# [Header Body Version 2.0](../data-format/message-header.md#header-body-version-20) specification:
     let header_body =
         header::read_header_body(ciphertext, max_encrypted_data_keys, &mut raw_header)?;
 
@@ -426,17 +408,6 @@ async fn step_get_decryption_materials(
         ));
     }
 
-    //= spec/client-apis/decrypt.md#v1-header-deserialization
-    //= type=implication
-    //= reason=read_header_auth_tag dispatches to V1 or V2 based on suite.message_version
-    //# The Decrypt operation MUST then deserialize the
-    //# [Header Authentication Version 1.0](../data-format/message-header.md#header-authentication-version-10):
-    //
-    //= spec/client-apis/decrypt.md#v2-header-deserialization
-    //= type=implication
-    //= reason=read_header_auth_tag dispatches to V1 or V2 based on suite.message_version
-    //# The Decrypt operation MUST then deserialize the
-    //# [Header Authentication Version 2.0](../data-format/message-header.md#header-authentication-version-20):
     let header_auth =
         //= spec/client-apis/decrypt.md#v1-header-deserialization
         //# - MUST deserialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
