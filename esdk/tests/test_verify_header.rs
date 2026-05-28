@@ -146,11 +146,8 @@ async fn test_streamed_signed_output_not_signed_until_complete() {
     );
 }
 
-// Regression: streaming decrypt with a signing suite returns the parsed
-// encryption context and algorithm suite ID in DecryptStreamOutput. The
-// SHOULD requirement about releasing "as soon as tag verification succeeds"
-// is unobservable from the public API (DecryptStreamOutput is returned at end
-// of operation); see decrypt.rs `type=exception` annotation for the deviation.
+// Streaming decrypt output contains the parsed encryption context and
+// algorithm suite ID after the operation completes successfully.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streamed_release_parsed_header_after_verification() {
     let keyring = test_keyring().await;

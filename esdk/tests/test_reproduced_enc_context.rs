@@ -9,12 +9,8 @@ mod fixtures;
 use aws_esdk::*;
 use fixtures::*;
 
-// Regression: positive-path round-trip with KMS keyring and small EC. Behavioral
-// coverage that encrypt+decrypt with the same EC succeeds end-to-end. The
-// "Reproduced Encryption Context: This MUST be the input encryption context"
-// requirement is proven by the negative-path tests below — successful
-// round-trip alone doesn't prove reproduced-EC handling because the default
-// CMM with no required keys doesn't validate the reproduced EC.
+// Positive-path KMS round-trip with the same encryption context on encrypt
+// and decrypt.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encryption_context_on_decrypt() {
     let kms_key = KEY_ARN;
