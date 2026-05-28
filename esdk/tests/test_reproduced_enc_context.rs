@@ -87,27 +87,32 @@ async fn test_encryption_context_on_decrypt_failure() {
 
     let encrypt_output = encrypt(&EncryptInput::with_legacy_keyring(
         asdf,
-        encryption_context,
+        encryption_context.clone(),
         kms_keyring.clone(),
     ))
     .await
     .unwrap();
-
     let esdk_ciphertext = encrypt_output.ciphertext;
 
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
-    let decrypt_output = decrypt(&DecryptInput::with_legacy_keyring(
+    let valid_input = DecryptInput::with_legacy_keyring(
+        &esdk_ciphertext,
+        encryption_context,
+        kms_keyring.clone(),
+    );
+    let invalid_input = DecryptInput::with_legacy_keyring(
         &esdk_ciphertext,
         bad_encryption_context,
         kms_keyring,
-    ))
-    .await;
+    );
 
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=Original EC → Ok; superset EC (extra key) → Err, proving the reproduced EC was used in materials/KMS lookup
+    //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
+    assert!(decrypt(&valid_input).await.is_ok(), "original EC must decrypt");
     assert!(
-        decrypt_output.is_err(),
-        "decrypt must fail when reproduced encryption context is a superset of the original"
+        decrypt(&invalid_input).await.is_err(),
+        "superset EC must fail (reproduced EC mismatch)"
     );
 }
 

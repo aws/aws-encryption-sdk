@@ -44,20 +44,28 @@ async fn test_decrypt_halts_on_incomplete_message() {
     let plaintext = b"truncation test data";
     let enc_input =
         EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // Truncate to ~60% of the message — enough for the header but not the full body
-    let truncated = &ct[..ct.len() * 3 / 5];
-    let dec_input = DecryptInput::with_legacy_keyring(truncated, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("decrypt must fail when ciphertext is truncated");
+    // Truncate to ~60% of the message — enough for the header but not the full body.
+    let truncated_ct = valid_ct[..valid_ct.len() * 3 / 5].to_vec();
+
+    let valid_input =
+        DecryptInput::with_legacy_keyring(&valid_ct, EncryptionContext::new(), keyring.clone());
+    let truncated_input =
+        DecryptInput::with_legacy_keyring(&truncated_ct, EncryptionContext::new(), keyring);
+
     //= spec/client-apis/decrypt.md#behavior
     //= type=test
-    //= reason=Truncated ciphertext triggers SerializationError, proving incomplete input halts
+    //= reason=Full ct → Ok; ~60% truncated ct → SerializationError, halting on incomplete input
     //# - If all bytes have been provided and this operation
     //# is unable to complete the above steps with the consumable encrypted message bytes,
     //# this operation MUST halt and indicate a failure to the caller.
-    assert_eq!(err.kind, ErrorKind::SerializationError, "truncated message must be SerializationError, got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "full ct must decrypt");
+    assert_eq!(
+        decrypt(&truncated_input).await.unwrap_err().kind,
+        ErrorKind::SerializationError,
+        "truncated ct must produce SerializationError"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -66,21 +74,29 @@ async fn test_decrypt_fails_with_trailing_bytes_after_message() {
     let plaintext = b"trailing bytes test";
     let enc_input =
         EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // Append extra bytes after the valid message
-    ct.extend_from_slice(&[0xDE, 0xAD, 0xBE, 0xEF]);
+    // Append extra bytes after the valid message.
+    let mut trailing_ct = valid_ct.clone();
+    trailing_ct.extend_from_slice(&[0xDE, 0xAD, 0xBE, 0xEF]);
 
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("decrypt must fail when there are trailing bytes after the message");
+    let valid_input =
+        DecryptInput::with_legacy_keyring(&valid_ct, EncryptionContext::new(), keyring.clone());
+    let trailing_input =
+        DecryptInput::with_legacy_keyring(&trailing_ct, EncryptionContext::new(), keyring);
+
     //= spec/client-apis/decrypt.md#behavior
     //= type=test
-    //= reason=Appended 4 extra bytes after valid message; decrypt rejects them
+    //= reason=Clean ct → Ok; same ct + 4 trailing bytes → Esdk error, proving extra bytes are rejected
     //# - If this operation successfully completes the above steps
     //# but there are consumable bytes which are intended to be decrypted,
     //# this operation MUST fail.
-    assert_eq!(err.kind, ErrorKind::Esdk, "trailing bytes must produce Esdk error, got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "clean ct must decrypt");
+    assert_eq!(
+        decrypt(&trailing_input).await.unwrap_err().kind,
+        ErrorKind::Esdk,
+        "ct with trailing bytes must produce Esdk error"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -95,35 +111,34 @@ async fn test_streaming_fails_for_multi_frame_signed_without_override() {
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // decrypt_stream with unsafe_release_plaintext_before_verify=false (default) must fail
-    // for multi-frame signed messages
-    let mut cursor = std::io::Cursor::new(ct.as_slice());
-    let mut output = Vec::new();
-    let stream_input =
+    // Two stream inputs differing only in unsafe_release_plaintext_before_verify.
+    let without_override =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring.clone());
-    // unsafe_release_plaintext_before_verify defaults to false
-    assert!(!stream_input.unsafe_release_plaintext_before_verify);
-    let result = decrypt_stream(&mut cursor, &mut output, &stream_input).await;
-    let err = result.expect_err("multi-frame signed message must fail with default unsafe_release_plaintext_before_verify=false");
-    assert_eq!(err.kind, ErrorKind::Esdk, "multi-frame signed without override must produce Esdk error, got: {err:?}");
-
-    // Same message succeeds when unsafe_release_plaintext_before_verify=true
-    let mut cursor2 = std::io::Cursor::new(ct.as_slice());
-    let mut output2 = Vec::new();
-    let mut stream_input2 =
+    assert!(!without_override.unsafe_release_plaintext_before_verify); // default
+    let mut with_override =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
-    stream_input2.unsafe_release_plaintext_before_verify = true;
-    let result2 = decrypt_stream(&mut cursor2, &mut output2, &stream_input2).await;
-    assert!(
-        result2.is_ok(),
-        "multi-frame signed message must succeed with unsafe_release_plaintext_before_verify=true"
-    );
+    with_override.unsafe_release_plaintext_before_verify = true;
+
+    let mut without_cursor = std::io::Cursor::new(ct.as_slice());
+    let mut without_output = Vec::new();
+    let mut with_cursor = std::io::Cursor::new(ct.as_slice());
+    let mut with_output = Vec::new();
+
     //= spec/client-apis/decrypt.md#behavior
     //= type=test
-    //= reason=Multi-frame signed fails with override=false, succeeds with override=true
+    //= reason=Multi-frame signed: without override (default) → Esdk error; with override=true → Ok and plaintext round-trips
     //# - The ESDK MUST provide a configuration option that causes the decryption operation
     //# to fail immediately after parsing the header if a signed algorithm suite is used.
-    assert_eq!(output2, plaintext);
+    assert_eq!(
+        decrypt_stream(&mut without_cursor, &mut without_output, &without_override).await.unwrap_err().kind,
+        ErrorKind::Esdk,
+        "multi-frame signed without override must produce Esdk error"
+    );
+    assert!(
+        decrypt_stream(&mut with_cursor, &mut with_output, &with_override).await.is_ok(),
+        "multi-frame signed with override must succeed"
+    );
+    assert_eq!(with_output, plaintext);
 }
 
 #[tokio::test(flavor = "multi_thread")]

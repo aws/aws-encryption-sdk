@@ -196,19 +196,28 @@ async fn test_footer_wait_truncated_message_fails() {
         EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
     enc_input.algorithm_suite_id =
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    let ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    let footer_offset = find_footer_offset_only(&ct);
-    let truncated = &ct[..footer_offset + 2]; // Keep sig_len but truncate signature bytes
+    // Truncate the footer signature: keep sig_len but drop the signature bytes.
+    let footer_offset = find_footer_offset_only(&valid_ct);
+    let truncated_ct = valid_ct[..footer_offset + 2].to_vec();
 
-    let dec_input = DecryptInput::with_legacy_keyring(truncated, EncryptionContext::new(), keyring);
+    let valid_input =
+        DecryptInput::with_legacy_keyring(&valid_ct, EncryptionContext::new(), keyring.clone());
+    let truncated_input =
+        DecryptInput::with_legacy_keyring(&truncated_ct, EncryptionContext::new(), keyring);
+
     //= spec/client-apis/decrypt.md#verify-the-signature
     //= type=test
-    //= reason=Truncated footer proves operation waits for bytes and fails when unavailable
+    //= reason=Full ct → Ok; ct truncated mid-footer → SerializationError, EOF on the blocking read signals end-of-message
     //# If there are not enough consumable bytes to deserialize the message footer and
     //# the caller has not yet indicated an end to the encrypted message,
     //# the Decrypt operation MUST wait for enough bytes to become consumable or for the caller
     //# to indicate an end to the encrypted message.
-    let err = decrypt(&dec_input).await.expect_err("decrypt must fail when footer is truncated");
-    assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "full ct must decrypt");
+    assert_eq!(
+        decrypt(&truncated_input).await.unwrap_err().kind,
+        ErrorKind::SerializationError,
+        "truncated footer must produce SerializationError"
+    );
 }

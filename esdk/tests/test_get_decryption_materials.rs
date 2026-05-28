@@ -16,10 +16,12 @@ use test_helpers::*;
 async fn test_decrypt_fails_with_wrong_keyring() {
     let keyring = test_keyring().await;
     let pt = b"negative test";
-    let enc_input = EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring);
+    let enc_input =
+        EncryptInput::with_legacy_keyring(pt, EncryptionContext::new(), keyring.clone());
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // Decrypt with a different keyring (different key material) — CMM call should fail
+    // A different keyring (different namespace, different wrapping key) — its
+    // default CMM cannot unwrap the EDK encrypted by `keyring`.
     let (ns, name) = namespace_and_name(1);
     let wrong_keyring = mpl()
         .create_raw_aes_keyring()
@@ -30,26 +32,35 @@ async fn test_decrypt_fails_with_wrong_keyring() {
         .send()
         .await
         .unwrap();
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), wrong_keyring);
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("decrypt must fail when CMM cannot obtain decryption materials");
+
+    let valid_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let invalid_input =
+        DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), wrong_keyring);
+
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=Right keyring → Ok; wrong keyring → default-CMM CollectionOfErrors, proving the input keyring constructs the default CMM
+    //# If a CMM is not supplied as the input, the decrypt operation MUST construct a [default CMM](../framework/default-cmm.md)
+    //# from the input [keyring](../framework/keyring-interface.md).
+    assert!(decrypt(&valid_input).await.is_ok(), "right keyring must decrypt");
+    let err = decrypt(&invalid_input)
+        .await
+        .expect_err("wrong keyring must fail to obtain materials");
     let ErrorKind::LegacyError(legacy) = &err.kind else {
         panic!("expected LegacyError, got: {:?}", err.kind);
     };
     let inner = format!("{legacy:?}");
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=Wrong keyring → default CMM can't unwrap → proves input keyring determines CMM
-    //# If a CMM is not supplied as the input, the decrypt operation MUST construct a [default CMM](../framework/default-cmm.md)
-    //# from the input [keyring](../framework/keyring-interface.md).
-    assert!(inner.contains("CollectionOfErrors"), "expected CollectionOfErrors, got: {inner}");
+    assert!(
+        inner.contains("CollectionOfErrors"),
+        "expected default-CMM CollectionOfErrors, got: {inner}"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_pre_cmm_commitment_policy_check() {
     let keyring = aes_keyring(0).await;
     let pt = b"test pre-cmm commitment policy";
-    // Encrypt with non-committing suite using ForbidEncryptAllowDecrypt
+    // Encrypt with a non-committing suite (allowed by ForbidEncryptAllowDecrypt).
     let ct = encrypt_with_suite(
         pt,
         EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256,
@@ -57,26 +68,42 @@ async fn test_pre_cmm_commitment_policy_check() {
         &keyring,
     )
     .await;
-    // Decrypt with RequireEncryptRequireDecrypt — pre-CMM check must reject non-committing suite
-    let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    dec_input.commitment_policy = EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("decrypt must fail when parsed algorithm suite is not supported by commitment policy");
-    let ErrorKind::LegacyError(legacy) = &err.kind else {
-        panic!("expected LegacyError, got: {:?}", err.kind);
-    };
-    let inner = format!("{legacy:?}");
+
+    // Two decrypt inputs differing only in commitment_policy: the allowing
+    // policy accepts the parsed non-committing suite; the requiring policy
+    // rejects it pre-CMM.
+    let mut valid_input =
+        DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone());
+    valid_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    let mut invalid_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    invalid_input.commitment_policy = EsdkCommitmentPolicy::RequireEncryptRequireDecrypt;
+
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
+    //= reason=Policy that allows the parsed suite → Ok; policy that doesn't → InvalidAlgorithmSuiteInfoOnDecrypt
     //# If the parsed [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id)
     //# is not supported by the [commitment policy](client.md#commitment-policy)
     //# configured in the [client](client.md) decrypt MUST yield an error.
     //
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
-    //= reason=Test explicitly sets commitment_policy on input; failure proves it was passed to CMM
+    //= reason=Test sets commitment_policy on input directly; only the chosen policy reaches the pre-CMM check
     //# - Commitment Policy: This MUST be the commitment policy configured on the client.
-    assert!(inner.contains("InvalidAlgorithmSuiteInfoOnDecrypt"), "expected InvalidAlgorithmSuiteInfoOnDecrypt, got: {inner}");
+    assert!(
+        decrypt(&valid_input).await.is_ok(),
+        "policy that allows non-committing suite must decrypt"
+    );
+    let err = decrypt(&invalid_input)
+        .await
+        .expect_err("policy that requires committing must reject non-committing suite");
+    let ErrorKind::LegacyError(legacy) = &err.kind else {
+        panic!("expected LegacyError, got: {:?}", err.kind);
+    };
+    let inner = format!("{legacy:?}");
+    assert!(
+        inner.contains("InvalidAlgorithmSuiteInfoOnDecrypt"),
+        "expected InvalidAlgorithmSuiteInfoOnDecrypt, got: {inner}"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
