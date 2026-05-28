@@ -293,7 +293,7 @@ fn test_esdk_default_uses_default_config() {
     //# If no [commitment policy](#commitment-policy) is provided the default MUST be [REQUIRE_ENCRYPT_REQUIRE_DECRYPT](../framework/algorithm-suites.md#require_encrypt_require_decrypt).
     assert_eq!(
         esdk.config().commitment_policy,
-        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt,
+        EsdkCommitmentPolicy::RequireEncryptRequireDecrypt,
         "Esdk::default() must use the default commitment policy"
     );
     //= spec/client-apis/client.md#initialization
@@ -314,12 +314,12 @@ fn test_esdk_builder_sets_commitment_policy() {
     //# the caller MUST have the option to provide a [commitment policy](#commitment-policy).
     let esdk = Esdk::builder()
         .commitment_policy(
-            aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
+            EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
         )
         .build();
     assert_eq!(
         esdk.config().commitment_policy,
-        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
+        EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
         "builder().commitment_policy(...) must set it on the resulting Esdk's config"
     );
 }
@@ -344,12 +344,12 @@ fn test_esdk_new_takes_explicit_config() {
     // Direct construction from a built EsdkConfig is also supported.
     let mut config = EsdkConfig::default();
     config.commitment_policy =
-        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+        EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
     config.max_encrypted_data_keys = std::num::NonZeroUsize::new(7);
     let esdk = Esdk::new(config);
     assert_eq!(
         esdk.config().commitment_policy,
-        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt
+        EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt
     );
     assert_eq!(
         esdk.config().max_encrypted_data_keys,
@@ -367,7 +367,7 @@ async fn test_esdk_encrypt_rejects_input_with_non_default_commitment_policy() {
     let esdk = Esdk::default();
     let mut input = EncryptInput::new();
     input.commitment_policy =
-        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+        EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
 
     let err = esdk
         .encrypt(&input)
@@ -402,7 +402,7 @@ async fn test_esdk_decrypt_rejects_input_with_non_default_commitment_policy() {
     let esdk = Esdk::default();
     let mut input = DecryptInput::new();
     input.commitment_policy =
-        aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+        EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
 
     let err = esdk
         .decrypt(&input)
@@ -442,7 +442,7 @@ async fn test_esdk_encrypt_decrypt_round_trip() {
 
     let esdk = Esdk::builder()
         .commitment_policy(
-            aws_mpl_legacy::commitment::EsdkCommitmentPolicy::RequireEncryptRequireDecrypt,
+            EsdkCommitmentPolicy::RequireEncryptRequireDecrypt,
         )
         .build();
 
@@ -485,7 +485,7 @@ async fn test_esdk_commitment_policy_actually_gates_encrypt() {
     let keyring = test_keyring().await;
     let esdk = Esdk::builder()
         .commitment_policy(
-            aws_mpl_legacy::commitment::EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
+            EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt,
         )
         .build();
 
@@ -497,7 +497,7 @@ async fn test_esdk_commitment_policy_actually_gates_encrypt() {
     // Explicitly request a V2 committing suite. ForbidEncryptAllowDecrypt
     // forbids committing on encrypt → must fail.
     enc_input.algorithm_suite_id = Some(
-        aws_mpl_legacy::suites::EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey,
+        EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey,
     );
     let err = esdk
         .encrypt(&enc_input)
@@ -510,6 +510,10 @@ async fn test_esdk_commitment_policy_actually_gates_encrypt() {
         panic!("expected LegacyError, got {:?}: {}", err.kind, err.message);
     };
     let inner = format!("{legacy:?}");
+    //= spec/client-apis/client.md#commitment-policy
+    //= type=test
+    //= reason=the InvalidAlgorithmSuiteInfoOnEncrypt error comes from the MPL's commitment-policy enforcement
+    //# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
     assert!(
         inner.contains("InvalidAlgorithmSuiteInfoOnEncrypt"),
         "expected InvalidAlgorithmSuiteInfoOnEncrypt MPL error, got: {inner}"
@@ -572,6 +576,10 @@ async fn test_esdk_commitment_policy_actually_gates_decrypt() {
         panic!("expected LegacyError, got {:?}: {}", err.kind, err.message);
     };
     let inner = format!("{legacy:?}");
+    //= spec/client-apis/client.md#commitment-policy
+    //= type=test
+    //= reason=the InvalidAlgorithmSuiteInfoOnDecrypt error comes from the MPL's commitment-policy enforcement
+    //# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
     assert!(
         inner.contains("InvalidAlgorithmSuiteInfoOnDecrypt"),
         "expected InvalidAlgorithmSuiteInfoOnDecrypt MPL error, got: {inner}"
