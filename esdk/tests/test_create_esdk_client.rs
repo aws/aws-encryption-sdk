@@ -304,6 +304,11 @@ fn test_esdk_default_uses_default_config() {
         esdk.config().max_encrypted_data_keys.is_none(),
         "Esdk::default() must have no EDK cap"
     );
+    assert_eq!(
+        esdk.config().net_v4_retry_policy,
+        NetV400RetryPolicy::AllowRetry,
+        "Esdk::default() must use AllowRetry as the .NET v4.0.0 retry default"
+    );
 }
 
 #[test]
@@ -336,6 +341,18 @@ fn test_esdk_builder_sets_max_encrypted_data_keys() {
         esdk.config().max_encrypted_data_keys,
         Some(cap),
         "builder().max_encrypted_data_keys(...) must set it on the resulting Esdk's config"
+    );
+}
+
+#[test]
+fn test_esdk_builder_sets_net_v4_retry_policy() {
+    let esdk = Esdk::builder()
+        .net_v4_retry_policy(NetV400RetryPolicy::ForbidRetry)
+        .build();
+    assert_eq!(
+        esdk.config().net_v4_retry_policy,
+        NetV400RetryPolicy::ForbidRetry,
+        "builder().net_v4_retry_policy(...) must set it on the resulting Esdk's config"
     );
 }
 
@@ -425,6 +442,23 @@ async fn test_esdk_decrypt_rejects_input_with_max_encrypted_data_keys() {
         .decrypt(&input)
         .await
         .expect_err("Esdk::decrypt must reject input that sets max_encrypted_data_keys when the client also configures it");
+    assert!(
+        matches!(err.kind, ErrorKind::ValidationError),
+        "expected ValidationError, got {:?}",
+        err.kind
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_esdk_decrypt_rejects_input_with_non_default_net_v4_retry_policy() {
+    let esdk = Esdk::default();
+    let mut input = DecryptInput::new();
+    input.net_v4_retry_policy = NetV400RetryPolicy::ForbidRetry;
+
+    let err = esdk
+        .decrypt(&input)
+        .await
+        .expect_err("Esdk::decrypt must reject input that sets net_v4_retry_policy when the client also configures it");
     assert!(
         matches!(err.kind, ErrorKind::ValidationError),
         "expected ValidationError, got {:?}",

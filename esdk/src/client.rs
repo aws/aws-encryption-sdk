@@ -21,7 +21,8 @@
 
 use crate::types::{
     DecryptInput, DecryptOutput, DecryptStreamInput, DecryptStreamOutput, EncryptInput,
-    EncryptOutput, EncryptStreamInput, EncryptStreamOutput, SafeRead, SafeWrite,
+    EncryptOutput, EncryptStreamInput, EncryptStreamOutput, NetV400RetryPolicy, SafeRead,
+    SafeWrite,
 };
 use crate::{Error, val_err};
 use aws_mpl_legacy::commitment::EsdkCommitmentPolicy;
@@ -52,6 +53,10 @@ pub struct EsdkConfig {
     /// Optional cap on the number of encrypted data keys per message.
     /// Default is `None` (no cap beyond the message-format limit).
     pub max_encrypted_data_keys: Option<NonZeroUsize>,
+    /// Whether to allow the ESDK-NET v4.0.0 retry behavior on header authentication
+    /// failure (decrypt only — ignored on encrypt). Default is
+    /// `NetV400RetryPolicy::AllowRetry`.
+    pub net_v4_retry_policy: NetV400RetryPolicy,
 }
 
 /// Optional client over the free encrypt/decrypt functions.
@@ -173,17 +178,28 @@ impl Esdk {
     }
 }
 
-/// Internal abstraction over the four input structs that carry the two
+/// Internal abstraction over the four input structs that carry the
 /// "client-config" fields. Used by [`fill_or_reject`] so the four `Esdk`
 /// methods don't repeat the rejection-and-fill logic.
+///
+/// `net_v4_retry_policy` only exists on `DecryptInput` / `DecryptStreamInput`;
+/// the trait gives default impls (return-default getter, no-op setter) so the
+/// encrypt-side input types can opt out cleanly without polluting `fill_or_reject`.
 trait HasClientConfigFields {
     fn client_commitment_policy(&self) -> EsdkCommitmentPolicy;
     fn client_max_encrypted_data_keys(&self) -> Option<NonZeroUsize>;
     fn set_client_commitment_policy(&mut self, p: EsdkCommitmentPolicy);
     fn set_client_max_encrypted_data_keys(&mut self, n: Option<NonZeroUsize>);
+
+    /// Default impl returns the type's default; decrypt-side inputs override.
+    fn client_net_v4_retry_policy(&self) -> NetV400RetryPolicy {
+        NetV400RetryPolicy::default()
+    }
+    /// Default impl is a no-op; decrypt-side inputs override.
+    fn set_client_net_v4_retry_policy(&mut self, _: NetV400RetryPolicy) {}
 }
 
-macro_rules! impl_has_client_config_fields {
+macro_rules! impl_encrypt_side {
     ($t:ty) => {
         impl HasClientConfigFields for $t {
             fn client_commitment_policy(&self) -> EsdkCommitmentPolicy {
@@ -202,10 +218,35 @@ macro_rules! impl_has_client_config_fields {
     };
 }
 
-impl_has_client_config_fields!(EncryptInput<'_>);
-impl_has_client_config_fields!(DecryptInput<'_>);
-impl_has_client_config_fields!(EncryptStreamInput);
-impl_has_client_config_fields!(DecryptStreamInput);
+macro_rules! impl_decrypt_side {
+    ($t:ty) => {
+        impl HasClientConfigFields for $t {
+            fn client_commitment_policy(&self) -> EsdkCommitmentPolicy {
+                self.commitment_policy
+            }
+            fn client_max_encrypted_data_keys(&self) -> Option<NonZeroUsize> {
+                self.max_encrypted_data_keys
+            }
+            fn set_client_commitment_policy(&mut self, p: EsdkCommitmentPolicy) {
+                self.commitment_policy = p;
+            }
+            fn set_client_max_encrypted_data_keys(&mut self, n: Option<NonZeroUsize>) {
+                self.max_encrypted_data_keys = n;
+            }
+            fn client_net_v4_retry_policy(&self) -> NetV400RetryPolicy {
+                self.net_v4_retry_policy
+            }
+            fn set_client_net_v4_retry_policy(&mut self, p: NetV400RetryPolicy) {
+                self.net_v4_retry_policy = p;
+            }
+        }
+    };
+}
+
+impl_encrypt_side!(EncryptInput<'_>);
+impl_encrypt_side!(EncryptStreamInput);
+impl_decrypt_side!(DecryptInput<'_>);
+impl_decrypt_side!(DecryptStreamInput);
 
 /// Reject the call if the input also carries client-level config; otherwise
 /// return a clone of the input with the client config's fields filled in.
@@ -219,17 +260,19 @@ where
 {
     if input.client_commitment_policy() != EsdkCommitmentPolicy::default()
         || input.client_max_encrypted_data_keys().is_some()
+        || input.client_net_v4_retry_policy() != NetV400RetryPolicy::default()
     {
         return Err(val_err(
             "EsdkConfig is provided by both the Esdk client and the input struct. \
-             Set commitment_policy and max_encrypted_data_keys in exactly one place: \
-             on the Esdk client (via Esdk::builder), or on the input struct (when \
-             using the free encrypt/decrypt functions).",
+             Set commitment_policy, max_encrypted_data_keys, and net_v4_retry_policy \
+             in exactly one place: on the Esdk client (via Esdk::builder), or on the \
+             input struct (when using the free encrypt/decrypt functions).",
         ));
     }
     let mut filled = input.clone();
     filled.set_client_commitment_policy(config.commitment_policy);
     filled.set_client_max_encrypted_data_keys(config.max_encrypted_data_keys);
+    filled.set_client_net_v4_retry_policy(config.net_v4_retry_policy);
     Ok(filled)
 }
 
@@ -238,6 +281,7 @@ where
 pub struct EsdkBuilder {
     commitment_policy: Option<EsdkCommitmentPolicy>,
     max_encrypted_data_keys: Option<NonZeroUsize>,
+    net_v4_retry_policy: Option<NetV400RetryPolicy>,
 }
 
 impl EsdkBuilder {
@@ -261,14 +305,23 @@ impl EsdkBuilder {
         self
     }
 
+    /// Set the ESDK-NET v4.0.0 retry policy. Decrypt-only — ignored on encrypt.
+    #[must_use]
+    pub const fn net_v4_retry_policy(mut self, p: NetV400RetryPolicy) -> Self {
+        self.net_v4_retry_policy = Some(p);
+        self
+    }
+
     /// Build the `Esdk`. Unset fields use their defaults
-    /// (`RequireEncryptRequireDecrypt` commitment policy, no EDK cap).
+    /// (`RequireEncryptRequireDecrypt` commitment policy, no EDK cap,
+    /// `AllowRetry` for the .NET v4.0.0 retry policy).
     #[must_use]
     pub fn build(self) -> Esdk {
         Esdk {
             config: EsdkConfig {
                 commitment_policy: self.commitment_policy.unwrap_or_default(),
                 max_encrypted_data_keys: self.max_encrypted_data_keys,
+                net_v4_retry_policy: self.net_v4_retry_policy.unwrap_or_default(),
             },
         }
     }
