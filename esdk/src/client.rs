@@ -67,16 +67,8 @@ pub struct EsdkConfig {
 /// validation error. Override semantics may be defined in a future release;
 /// callers should set the fields in exactly one place.
 ///
-/// # Note on detecting input config
-///
-/// `max_encrypted_data_keys` on the input structs is `Option<_>`, so any
-/// user-set value is detected and the call is rejected. `commitment_policy`
-/// is not — its non-`Option` shape cannot distinguish "user explicitly set
-/// to the default" from "user did not touch it." If you set
-/// `input.commitment_policy` to its default value explicitly, the rejection
-/// will not fire, and the call will proceed using the client's configured
-/// policy. Configure `commitment_policy` via [`Esdk::builder`] only and
-/// leave `input.commitment_policy` at the default to avoid this ambiguity.
+/// Note: `input.commitment_policy` set to its default value is not detected as
+/// a conflict; configure it via [`Esdk::builder`] only.
 ///
 /// # Example
 ///
