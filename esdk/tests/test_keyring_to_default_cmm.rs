@@ -31,11 +31,13 @@ async fn test_keyring_constructs_default_cmm_for_decrypt() {
     let result = decrypt(&dec_input).await.unwrap();
     //= spec/client-apis/decrypt.md#keyring
     //= type=test
+    //= reason=Decrypt with keyring succeeds; wrong-keyring test below proves specificity
     //# If the Keyring is provided as the input, the client MUST construct a [default CMM](../framework/default-cmm.md) that uses this keyring,
     //# to obtain the [decryption materials](../framework/structures.md#decryption-materials) that is required for decryption.
     //
     //= spec/client-apis/decrypt.md#keyring
     //= type=test
+    //= reason=Decrypt succeeds; materials were obtained from keyring-constructed CMM
     //# This default CMM constructed from the keyring MUST obtain the decryption materials required for decryption.
     assert_eq!(result.plaintext, pt);
 }

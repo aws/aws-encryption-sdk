@@ -13,39 +13,7 @@ use test_helpers::*;
 #[tokio::test(flavor = "multi_thread")]
 async fn test_verify_signature_fails_on_tampered_footer() {
     // Tampering with the footer signature bytes and asserting that decrypt fails proves
-    // that signature verification actually runs. If verification were removed, the tampered
-    // ciphertext would decrypt successfully and this test would fail.
-
-    //= spec/client-apis/decrypt.md#verify-the-signature
-    //= type=test
-    //= reason=Tampered footer causes failure, proving the footer is verified
-    //# If the algorithm suite has a signature algorithm,
-    //# the Decrypt operation MUST verify the message footer using the specified signature algorithm.
-
-    //= spec/client-apis/decrypt.md#verify-the-signature
-    //= type=test
-    //= reason=Tampered footer breaks ECDSA; proves correct signature algorithm is used
-    //# Once the message footer is deserialized, the Decrypt operation MUST use the
-    //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm)
-    //# from the [algorithm suite](../framework/algorithm-suites.md) in the decryption materials to
-    //# verify the encrypted message, with the following inputs:
-
-    //= spec/client-apis/decrypt.md#verify-the-signature
-    //= type=test
-    //= reason=Tampered footer breaks ECDSA; proves correct verification key is used
-    //# - The verification key MUST be the [verification key](../framework/structures.md#verification-key)
-    //# in the decryption materials.
-
-    //= spec/client-apis/decrypt.md#verify-the-signature
-    //= type=test
-    //= reason=Tampered footer breaks ECDSA; proves signed input is header+body concatenation
-    //# - The input to verify MUST be the concatenation of the serialization of the
-    //# [message header](../data-format/message-header.md) and [message body](../data-format/message-body.md).
-
-    //= spec/client-apis/decrypt.md#verify-the-signature
-    //= type=test
-    //# If this verification is not successful, this operation MUST immediately halt and fail.
-
+    // that signature verification actually runs.
     let keyring = test_keyring().await;
     let plaintext = b"tamper footer test";
 
@@ -55,7 +23,6 @@ async fn test_verify_signature_fails_on_tampered_footer() {
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
     let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // Tamper with a signature byte in the footer (last byte of ciphertext is part of the signature)
     let footer_offset = find_footer_offset_only(&ct);
     // Baseline: untampered ciphertext must decrypt successfully.
     let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
@@ -66,6 +33,36 @@ async fn test_verify_signature_fails_on_tampered_footer() {
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("decrypt must fail when footer signature bytes are tampered");
+    //= spec/client-apis/decrypt.md#verify-the-signature
+    //= type=test
+    //= reason=Tampered footer causes failure, proving the footer is verified
+    //# If the algorithm suite has a signature algorithm,
+    //# the Decrypt operation MUST verify the message footer using the specified signature algorithm.
+    //
+    //= spec/client-apis/decrypt.md#verify-the-signature
+    //= type=test
+    //= reason=Tampered footer breaks ECDSA; proves correct signature algorithm is used
+    //# Once the message footer is deserialized, the Decrypt operation MUST use the
+    //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm)
+    //# from the [algorithm suite](../framework/algorithm-suites.md) in the decryption materials to
+    //# verify the encrypted message, with the following inputs:
+    //
+    //= spec/client-apis/decrypt.md#verify-the-signature
+    //= type=test
+    //= reason=Tampered footer breaks ECDSA; proves correct verification key is used
+    //# - The verification key MUST be the [verification key](../framework/structures.md#verification-key)
+    //# in the decryption materials.
+    //
+    //= spec/client-apis/decrypt.md#verify-the-signature
+    //= type=test
+    //= reason=Tampered footer breaks ECDSA; proves signed input is header+body concatenation
+    //# - The input to verify MUST be the concatenation of the serialization of the
+    //# [message header](../data-format/message-header.md) and [message body](../data-format/message-body.md).
+    //
+    //= spec/client-apis/decrypt.md#verify-the-signature
+    //= type=test
+    //# If this verification is not successful, this operation MUST immediately halt and fail.
+    //
     //= spec/client-apis/decrypt.md#verify-the-signature
     //= type=test
     //= reason=Tampered footer causes signature error, proving footer was deserialized after body
