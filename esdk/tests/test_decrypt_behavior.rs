@@ -35,7 +35,6 @@ async fn test_decrypt_skips_signature_step_for_non_signing_algorithm() {
     //= reason=No footer on wire + decrypt succeeds → signature step was not attempted
     //# - If the message header does not contain an algorithm suite including a signature algorithm,
     //# the Decrypt operation MUST NOT perform this step.
-    //
     assert_eq!(decrypt_output.plaintext, plaintext);
 }
 
@@ -137,26 +136,27 @@ async fn test_signing_suite_must_perform_signature_step() {
         EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
     enc_input.algorithm_suite_id =
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
     // Tamper with the footer (signature area) to prove the signature step runs.
     // If the step were skipped, tampering the footer would not cause failure.
-    let len = ct.len();
-    // Baseline: untampered ciphertext must decrypt successfully.
-    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
-    assert!(baseline.is_ok(), "baseline decrypt must succeed before tamper");
+    let mut tampered_ct = valid_ct.clone();
+    let len = tampered_ct.len();
+    tampered_ct[len - 3] ^= 0xFF;
 
-    ct[len - 3] ^= 0xFF;
+    let valid_input = DecryptInput::from_encrypt(&valid_ct, &enc_input);
+    let tampered_input = DecryptInput::from_encrypt(&tampered_ct, &enc_input);
 
-    let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("decrypt must fail when signature is tampered — proves signature step was performed");
     //= spec/client-apis/decrypt.md#behavior
     //= type=test
-    //= reason=Tampered footer causes failure, proving signature step runs for signing suites
+    //= reason=Untampered ct decrypts; tampered footer → Esdk error, proving signature step runs for signing suites
     //# - If the message header contains an algorithm suite including a
     //# [signature algorithm](../framework/algorithm-suites.md#signature-algorithm),
     //# the Decrypt operation MUST perform this step.
-    //
-    assert_eq!(err.kind, ErrorKind::Esdk, "tampered signature must produce Esdk error, got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "valid ct must decrypt");
+    assert_eq!(
+        decrypt(&tampered_input).await.unwrap_err().kind,
+        ErrorKind::Esdk,
+        "tampered signature must produce Esdk error"
+    );
 }

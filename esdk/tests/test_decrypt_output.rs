@@ -56,24 +56,27 @@ async fn test_decrypt_no_unauthenticated_data_released() {
     let plaintext = b"tamper test data";
     let enc_input =
         EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // Tamper with the ciphertext body (flip a byte near the end, in the encrypted content area)
-    let tamper_pos = ct.len() - 50;
-    // Baseline: untampered ciphertext must decrypt successfully.
-    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
-    assert!(baseline.is_ok(), "baseline decrypt must succeed before tamper");
+    // Tamper with the ciphertext (flip a byte near the end, in the signature
+    // area for the default signing suite).
+    let mut tampered_ct = valid_ct.clone();
+    let tamper_pos = tampered_ct.len() - 50;
+    tampered_ct[tamper_pos] ^= 0xFF;
 
-    ct[tamper_pos] ^= 0xFF;
+    let valid_input = DecryptInput::from_encrypt(&valid_ct, &enc_input);
+    let tampered_input = DecryptInput::from_encrypt(&tampered_ct, &enc_input);
 
-    let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("decrypt must fail when ciphertext is tampered — no unauthenticated data released");
     //= spec/client-apis/decrypt.md#authenticated-data
     //= type=test
-    //= reason=Tampered body produces error with no plaintext returned to caller
+    //= reason=Untampered ct decrypts (Ok with plaintext); tampered ct → Err with no DecryptOutput, no plaintext released
     //# This operation MUST NOT release any unauthenticated plaintext or unauthenticated associated data.
-    assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "valid ct must decrypt");
+    assert_eq!(
+        decrypt(&tampered_input).await.unwrap_err().kind,
+        ErrorKind::Esdk,
+        "tampered ct must produce Esdk error, no plaintext"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -84,27 +87,33 @@ async fn test_streaming_callers_must_discard_on_failure() {
         EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
     enc_input.algorithm_suite_id =
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // Tamper with the last few bytes (signature area) to cause verification failure
-    let len = ct.len();
-    // Baseline: untampered ciphertext must decrypt successfully.
-    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
-    assert!(baseline.is_ok(), "baseline decrypt must succeed before tamper");
+    // Tamper with the last few bytes (signature area) to cause verification failure.
+    let mut tampered_ct = valid_ct.clone();
+    let len = tampered_ct.len();
+    tampered_ct[len - 5] ^= 0xFF;
 
-    ct[len - 5] ^= 0xFF;
-
-    let mut cursor = std::io::Cursor::new(ct.as_slice());
-    let mut output = Vec::new();
+    let mut valid_cursor = std::io::Cursor::new(valid_ct.as_slice());
+    let mut valid_output = Vec::new();
+    let mut tampered_cursor = std::io::Cursor::new(tampered_ct.as_slice());
+    let mut tampered_output = Vec::new();
     let mut stream_input =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
     stream_input.unsafe_release_plaintext_before_verify = true;
-    let result = decrypt_stream(&mut cursor, &mut output, &stream_input).await;
-    let err = result.expect_err("decrypt_stream must return Err on tampered signature — callers must discard output");
+
     //= spec/client-apis/decrypt.md#security-considerations
     //= type=test
-    //= reason=Tampered signature to Err signals callers to discard released output
+    //= reason=Untampered ct streams to Ok; tampered signature → Err signals callers to discard any released output
     //# Additionally, if this operation fails, callers MUST discard the released plaintext and encryption context
     //# and MUST rollback any processing done due to the released plaintext or encryption context.
-    assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
+    assert!(
+        decrypt_stream(&mut valid_cursor, &mut valid_output, &stream_input).await.is_ok(),
+        "valid ct must stream to Ok"
+    );
+    assert_eq!(
+        decrypt_stream(&mut tampered_cursor, &mut tampered_output, &stream_input).await.unwrap_err().kind,
+        ErrorKind::Esdk,
+        "tampered signature must produce Esdk error"
+    );
 }

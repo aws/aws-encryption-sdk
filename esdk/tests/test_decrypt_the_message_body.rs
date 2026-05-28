@@ -15,10 +15,10 @@ async fn test_decrypt_final_frame_content_length_validation() {
     // Encrypt a message, then tamper with the final frame's content length field
     // to exceed the frame length. Decrypt must fail.
     let pt = vec![0xEEu8; 5];
-    let mut ct = encrypt_with_frame_length(&pt, 10).await;
+    let valid_ct = encrypt_with_frame_length(&pt, 10).await;
 
     // First, verify the untampered content_length is <= frame_length on wire
-    let frames = parse_all_frames(&ct, 10);
+    let frames = parse_all_frames(&valid_ct, 10);
     let final_frame = frames.last().unwrap();
     assert!(final_frame.is_final);
     //= spec/client-apis/decrypt.md#decrypt-the-message-body
@@ -32,43 +32,60 @@ async fn test_decrypt_final_frame_content_length_validation() {
         final_frame.content_length
     );
 
-    // Valid value decrypts as expected
-    assert_eq!(decrypt_ciphertext(&ct).await.plaintext, pt, "valid content_length decrypts");
-
     // Now tamper: set content_length to 11 (exceeds frame_length=10)
-    for i in 0..ct.len().saturating_sub(24) {
-        if ct[i..i + 4] == ENDFRAME_MARKER {
+    let mut tampered_ct = valid_ct.clone();
+    for i in 0..tampered_ct.len().saturating_sub(24) {
+        if tampered_ct[i..i + 4] == ENDFRAME_MARKER {
             let bad_len = 11u32.to_be_bytes();
-            ct[i + 20..i + 24].copy_from_slice(&bad_len);
+            tampered_ct[i + 20..i + 24].copy_from_slice(&bad_len);
             break;
         }
     }
+
     let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    let valid_input =
+        DecryptInput::with_legacy_keyring(&valid_ct, EncryptionContext::new(), keyring.clone());
+    let tampered_input =
+        DecryptInput::with_legacy_keyring(&tampered_ct, EncryptionContext::new(), keyring);
+
     //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //= reason=content_length > frame_length → SerializationError; proves the check exists
+    //= reason=Untampered ct decrypts; content_length tampered to 11 (> frame_length=10) → SerializationError
     //# If this is a final frame, this MUST be determined by using the [final frame encrypted content length](../data-format/message-body.md#final-frame-encrypted-content-length).
-    let err = decrypt(&dec_input).await.expect_err("content_length > frame_length must fail");
-    assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "valid ct must decrypt");
+    assert_eq!(
+        decrypt(&tampered_input).await.unwrap_err().kind,
+        ErrorKind::SerializationError,
+        "content_length > frame_length must produce SerializationError"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_fails_on_tampered_auth_tag() {
     let pt = vec![0xABu8; 20];
-    let mut ct = encrypt_with_frame_length(&pt, 10).await;
-    let body_start = find_body_start(&ct, 10).expect("must find body");
-    assert_eq!(decrypt_ciphertext(&ct).await.plaintext, pt, "baseline must pass");
+    let valid_ct = encrypt_with_frame_length(&pt, 10).await;
+    let body_start = find_body_start(&valid_ct, 10).expect("must find body");
     let tag_end = body_start + 4 + IV_LEN + 10 + TAG_LEN - 1;
-    ct[tag_end] ^= 0xFF;
+
+    let mut tampered_ct = valid_ct.clone();
+    tampered_ct[tag_end] ^= 0xFF;
+
     let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let err = decrypt(&dec_input).await.expect_err("tampered auth tag must fail");
+    let valid_input =
+        DecryptInput::with_legacy_keyring(&valid_ct, EncryptionContext::new(), keyring.clone());
+    let tampered_input =
+        DecryptInput::with_legacy_keyring(&tampered_ct, EncryptionContext::new(), keyring);
+
     //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //= reason=Tampered auth tag → CryptographicError proves AEAD check runs
+    //= reason=Untampered ct decrypts; tampered auth tag byte → CryptographicError
     //# If this decryption fails, this operation MUST immediately halt and fail.
-    assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "valid ct must decrypt");
+    assert_eq!(
+        decrypt(&tampered_input).await.unwrap_err().kind,
+        ErrorKind::CryptographicError,
+        "tampered auth tag must produce CryptographicError"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -130,22 +147,29 @@ async fn test_decrypt_no_unauthenticated_plaintext_released() {
     // Tamper with encrypted content in the first frame. Decrypt must fail
     // and return no plaintext at all.
     let pt = vec![0xABu8; 20];
-    let mut ct = encrypt_with_frame_length(&pt, 10).await;
-    let body_start = find_body_start(&ct, 10).expect("must find body");
-    // Baseline: untampered ciphertext decrypts successfully.
-    assert_eq!(decrypt_ciphertext(&ct).await.plaintext, pt, "baseline must pass");
-    // Tamper with a byte in the encrypted content of the first regular frame
+    let valid_ct = encrypt_with_frame_length(&pt, 10).await;
+    let body_start = find_body_start(&valid_ct, 10).expect("must find body");
     let tamper_offset = body_start + 4 + IV_LEN + 1;
-    ct[tamper_offset] ^= 0xFF;
+
+    let mut tampered_ct = valid_ct.clone();
+    tampered_ct[tamper_offset] ^= 0xFF;
+
     let keyring = test_keyring().await;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("tampered ciphertext must produce error, not partial plaintext");
+    let valid_input =
+        DecryptInput::with_legacy_keyring(&valid_ct, EncryptionContext::new(), keyring.clone());
+    let tampered_input =
+        DecryptInput::with_legacy_keyring(&tampered_ct, EncryptionContext::new(), keyring);
+
     //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //= reason=Tampered body returns Err; no DecryptOutput means no plaintext released
+    //= reason=Untampered body decrypts (Ok includes plaintext); tampered body returns Err with no DecryptOutput, so no plaintext released
     //# This operation MUST NOT release any unauthenticated plaintext.
-    assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "valid ct must decrypt");
+    assert_eq!(
+        decrypt(&tampered_input).await.unwrap_err().kind,
+        ErrorKind::CryptographicError,
+        "tampered body must produce CryptographicError, no plaintext"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -160,42 +184,53 @@ async fn test_decrypt_final_frame_held_until_signature_verification() {
     enc_input.frame_length = FrameLength::new(4096).unwrap();
     enc_input.algorithm_suite_id =
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    // Baseline: untampered ciphertext decrypts successfully.
-    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
-    assert!(baseline.is_ok(), "baseline must pass before tamper");
+    let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
+
     // Tamper with the last byte of the signature to cause verification failure
-    let last = ct.len() - 1;
-    ct[last] ^= 0xFF;
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("tampered signature must cause decrypt failure, proving final frame was held back");
+    let mut tampered_ct = valid_ct.clone();
+    let last = tampered_ct.len() - 1;
+    tampered_ct[last] ^= 0xFF;
+
+    let valid_input =
+        DecryptInput::with_legacy_keyring(&valid_ct, EncryptionContext::new(), keyring.clone());
+    let tampered_input =
+        DecryptInput::with_legacy_keyring(&tampered_ct, EncryptionContext::new(), keyring);
+
     //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
-    //= reason=Tampered signature → Err; final frame plaintext never reaches caller
+    //= reason=Untampered ct decrypts (Ok with plaintext); tampered signature → Err, so final frame plaintext was held back and never reaches caller
     //# Any plaintext decrypted from [nonframed data](../data-format/message-body.md#nonframed-data) or
     //# a final frame in a streamed Decrypt operation MUST NOT be released until [signature verification](#verify-the-signature)
     //# successfully completes.
-    assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "valid ct must decrypt");
+    assert_eq!(
+        decrypt(&tampered_input).await.unwrap_err().kind,
+        ErrorKind::Esdk,
+        "tampered signature must produce Esdk error, no plaintext"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_fails_on_tampered_auth_tag() {
     // Tamper with the authentication tag in the external V2 nonframed vector. Decrypt must fail.
-    let mut ct = EXTERNAL_V2_NONFRAMED_CT.to_vec();
-    // Baseline: untampered vector decrypts successfully.
-    let baseline = try_decrypt_external_nonframed(Version::V2, &ct).await;
-    assert!(baseline.is_ok(), "baseline external vector must decrypt");
-    // The auth tag is the last 16 bytes of the message
-    let last = ct.len() - 1;
-    ct[last] ^= 0xFF;
-    let result = try_decrypt_external_nonframed(Version::V2, &ct).await;
-    let err = result.expect_err("tampered nonframed auth tag must cause immediate decryption failure");
+    let valid_ct = EXTERNAL_V2_NONFRAMED_CT.to_vec();
+    let mut tampered_ct = valid_ct.clone();
+    let last = tampered_ct.len() - 1;
+    tampered_ct[last] ^= 0xFF;
+
     //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
     //= type=test
-    //= reason=Tampered nonframed auth tag → CryptographicError, proving AEAD halts on failure
+    //= reason=Untampered nonframed vector decrypts; tampered auth tag → CryptographicError, AEAD halts on failure
     //# If this decryption fails, this operation MUST immediately halt and fail.
-    assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
+    assert!(
+        try_decrypt_external_nonframed(Version::V2, &valid_ct).await.is_ok(),
+        "valid external vector must decrypt"
+    );
+    assert_eq!(
+        try_decrypt_external_nonframed(Version::V2, &tampered_ct).await.unwrap_err().kind,
+        ErrorKind::CryptographicError,
+        "tampered nonframed auth tag must produce CryptographicError"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]

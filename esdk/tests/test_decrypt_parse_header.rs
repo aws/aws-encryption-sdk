@@ -20,23 +20,25 @@ async fn test_unsupported_version_rejected() {
 
     let enc_input =
         EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
-
-    // Valid value decrypts as expected
-    let dec_valid = DecryptInput::from_encrypt(&ct, &enc_input);
-    assert!(decrypt(&dec_valid).await.is_ok(), "valid version decrypts successfully");
+    let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
     // Byte 0 is the version field — set to an unsupported value
-    ct[0] = 0xFF;
+    let mut tampered_ct = valid_ct.clone();
+    tampered_ct[0] = 0xFF;
 
-    let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("decrypt must fail when version byte is unsupported");
+    let valid_input = DecryptInput::from_encrypt(&valid_ct, &enc_input);
+    let tampered_input = DecryptInput::from_encrypt(&tampered_ct, &enc_input);
+
     //= spec/client-apis/decrypt.md#parse-the-header
     //= type=test
-    //= reason=Unsupported value 0xFF rejected, proving only supported values accepted
+    //= reason=Supported version byte → Ok; unsupported value 0xFF → SerializationError
     //# The value MUST be a [supported version](../data-format/message-header.md#supported-versions).
-    assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "supported version must decrypt");
+    assert_eq!(
+        decrypt(&tampered_input).await.unwrap_err().kind,
+        ErrorKind::SerializationError,
+        "unsupported version byte must produce SerializationError"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -48,53 +50,53 @@ async fn test_unsupported_content_type_v1_rejected() {
         EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
     enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
     enc_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
     // V1 header layout with empty encryption context:
     // version(1) + type(1) + alg_suite(2) + message_id(16) = 20 bytes fixed
     // AAD section with empty EC: key_value_pairs_length(2) = 0x0000 → 2 bytes total
     // EDK section: edk_count(2) + each EDK
     let mut pos: usize = 20; // after version + type + alg_suite + message_id
-    // Skip AAD section: read key_value_pairs_length
-    let aad_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
-    pos += 2; // past key_value_pairs_length
+    let aad_len = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
+    pos += 2;
     if aad_len > 0 {
-        // aad_len already includes the 2-byte key_value_pair_count
         pos += aad_len;
     }
-    // Skip EDK section: edk_count(2) + each EDK
-    let edk_count = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
+    let edk_count = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
     pos += 2;
     for _ in 0..edk_count {
-        let provider_id_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
+        let provider_id_len = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
         pos += 2 + provider_id_len;
-        let provider_info_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
+        let provider_info_len = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
         pos += 2 + provider_info_len;
-        let edk_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
+        let edk_len = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
         pos += 2 + edk_len;
     }
     // pos now points to the content type byte
-    let original_content_type = ct[pos];
+    let original_content_type = valid_ct[pos];
     assert!(
         original_content_type == 1 || original_content_type == 2,
         "sanity check: content type should be 1 or 2, got {original_content_type}"
     );
-    // Valid content type decrypts as expected
-    let mut dec_valid = DecryptInput::from_encrypt(&ct, &enc_input);
-    dec_valid.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    assert!(decrypt(&dec_valid).await.is_ok(), "valid content type decrypts successfully");
 
-    ct[pos] = 0xFF; // unsupported content type
+    let mut tampered_ct = valid_ct.clone();
+    tampered_ct[pos] = 0xFF; // unsupported content type
 
-    let mut dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("decrypt must fail when content type byte is unsupported");
+    let mut valid_input = DecryptInput::from_encrypt(&valid_ct, &enc_input);
+    valid_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    let mut tampered_input = DecryptInput::from_encrypt(&tampered_ct, &enc_input);
+    tampered_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+
     //= spec/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //= reason=Unsupported value rejected; proves only valid values accepted
+    //= reason=Supported content type byte → Ok; unsupported value 0xFF → SerializationError
     //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
-    assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "supported content type must decrypt");
+    assert_eq!(
+        decrypt(&tampered_input).await.unwrap_err().kind,
+        ErrorKind::SerializationError,
+        "unsupported V1 content type must produce SerializationError"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -104,51 +106,48 @@ async fn test_unsupported_content_type_v2_rejected() {
 
     let enc_input =
         EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
     // V2 header layout with empty encryption context:
     // version(1) + alg_suite(2) + message_id(32) = 35 bytes fixed
-    // AAD section with empty EC: key_value_pairs_length(2) = 0x0000 → 2 bytes total
-    // EDK section: edk_count(2) + each EDK
-    let mut pos: usize = 35; // after version + alg_suite + message_id (32 bytes for V2)
-    // Skip AAD section: read key_value_pairs_length
-    let aad_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
-    pos += 2; // past key_value_pairs_length
+    let mut pos: usize = 35;
+    let aad_len = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
+    pos += 2;
     if aad_len > 0 {
-        // aad_len already includes the 2-byte key_value_pair_count
         pos += aad_len;
     }
-    // Skip EDK section: edk_count(2) + each EDK
-    let edk_count = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
+    let edk_count = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
     pos += 2;
     for _ in 0..edk_count {
-        let provider_id_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
+        let provider_id_len = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
         pos += 2 + provider_id_len;
-        let provider_info_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
+        let provider_info_len = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
         pos += 2 + provider_info_len;
-        let edk_len = u16::from_be_bytes([ct[pos], ct[pos + 1]]) as usize;
+        let edk_len = u16::from_be_bytes([valid_ct[pos], valid_ct[pos + 1]]) as usize;
         pos += 2 + edk_len;
     }
-    // pos now points to the content type byte
-    let original_content_type = ct[pos];
+    let original_content_type = valid_ct[pos];
     assert!(
         original_content_type == 1 || original_content_type == 2,
         "sanity check: content type should be 1 or 2, got {original_content_type}"
     );
-    // Valid content type decrypts as expected
-    let dec_valid = DecryptInput::from_encrypt(&ct, &enc_input);
-    assert!(decrypt(&dec_valid).await.is_ok(), "valid content type decrypts successfully");
 
-    ct[pos] = 0xFF; // unsupported content type
+    let mut tampered_ct = valid_ct.clone();
+    tampered_ct[pos] = 0xFF; // unsupported content type
 
-    let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("decrypt must fail when V2 content type byte is unsupported");
+    let valid_input = DecryptInput::from_encrypt(&valid_ct, &enc_input);
+    let tampered_input = DecryptInput::from_encrypt(&tampered_ct, &enc_input);
+
     //= spec/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
-    //= reason=Unsupported value rejected; proves only valid values accepted
+    //= reason=Supported content type byte → Ok; unsupported value 0xFF → SerializationError
     //# The value MUST be a [supported content type](../data-format/message-header.md#supported-content-types).
-    assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "supported content type must decrypt");
+    assert_eq!(
+        decrypt(&tampered_input).await.unwrap_err().kind,
+        ErrorKind::SerializationError,
+        "unsupported V2 content type must produce SerializationError"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -160,26 +159,29 @@ async fn test_unsupported_type_rejected() {
         EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
     enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
     enc_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
     // V1 layout: byte 0 = version (0x01), byte 1 = type (0x80)
-    // Valid value decrypts as expected
-    let mut dec_valid = DecryptInput::from_encrypt(&ct, &enc_input);
-    dec_valid.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    assert!(decrypt(&dec_valid).await.is_ok(), "valid type decrypts successfully");
+    assert_eq!(valid_ct[1], 0x80, "sanity check: V1 type should be 0x80");
 
-    assert_eq!(ct[1], 0x80, "sanity check: V1 type should be 0x80");
-    ct[1] = 0xFF; // unsupported type
+    let mut tampered_ct = valid_ct.clone();
+    tampered_ct[1] = 0xFF; // unsupported type
 
-    let mut dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("decrypt must fail when message type byte is unsupported");
+    let mut valid_input = DecryptInput::from_encrypt(&valid_ct, &enc_input);
+    valid_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    let mut tampered_input = DecryptInput::from_encrypt(&tampered_ct, &enc_input);
+    tampered_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+
     //= spec/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //= reason=Unsupported value rejected; proves only valid values accepted
+    //= reason=Supported type byte (0x80) → Ok; unsupported value 0xFF → SerializationError
     //# The value MUST be a [supported type](../data-format/message-header.md#supported-types).
-    assert_eq!(err.kind, ErrorKind::SerializationError, "got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "supported type must decrypt");
+    assert_eq!(
+        decrypt(&tampered_input).await.unwrap_err().kind,
+        ErrorKind::SerializationError,
+        "unsupported V1 type byte must produce SerializationError"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -238,23 +240,25 @@ async fn test_no_header_info_released_before_verification() {
 
     let enc_input =
         EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // Baseline: untampered ciphertext must decrypt successfully.
-    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
-    assert!(baseline.is_ok(), "baseline decrypt must succeed before tamper");
+    let mut tampered_ct = valid_ct.clone();
+    tampered_ct[10] ^= 0xFF;
 
-    ct[10] ^= 0xFF;
+    let valid_input = DecryptInput::from_encrypt(&valid_ct, &enc_input);
+    let tampered_input = DecryptInput::from_encrypt(&tampered_ct, &enc_input);
 
-    let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    let result = decrypt(&dec_input).await;
     //= spec/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
-    //= reason=Tampered header → ValidationError with no DecryptOutput; nothing released to caller
+    //= reason=Untampered ct decrypts (Ok with output); tampered header byte → ValidationError with no DecryptOutput, so nothing released
     //# Until the [header is verified](#verify-the-header), this operation MUST NOT
     //# release any parsed information from the header.
-    let err = result.expect_err("decrypt must fail entirely when header verification fails — no partial header info released");
-    assert_eq!(err.kind, ErrorKind::ValidationError, "got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "valid ct must decrypt");
+    assert_eq!(
+        decrypt(&tampered_input).await.unwrap_err().kind,
+        ErrorKind::ValidationError,
+        "tampered header must produce ValidationError, no output"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -267,30 +271,30 @@ async fn test_v1_header_auth_tag_deserialized_and_verified() {
         EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
     enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
     enc_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
-
-    // Baseline: untampered V1 message decrypts.
-    let mut baseline_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    baseline_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    assert!(decrypt(&baseline_input).await.is_ok(), "baseline must pass");
+    let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
     // V1 header auth: IV(12) + Tag(16) at the end of the header, before the body.
     // Tamper the last byte of the header (part of the auth tag).
-    // V1 header ends at: fixed(20) + AAD(variable) + EDKs(variable) + content_type(1)
-    //   + reserved(4) + iv_length(1) + frame_length(4) + header_auth_iv(12) + header_auth_tag(16)
-    // The auth tag's last byte is just before the body starts.
-    let body_start = find_body_start(&ct, 4096).expect("body start");
+    let body_start = find_body_start(&valid_ct, 4096).expect("body start");
     let auth_tag_last_byte = body_start - 1;
-    ct[auth_tag_last_byte] ^= 0xFF;
+    let mut tampered_ct = valid_ct.clone();
+    tampered_ct[auth_tag_last_byte] ^= 0xFF;
 
-    let mut dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    let mut valid_input = DecryptInput::from_encrypt(&valid_ct, &enc_input);
+    valid_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    let mut tampered_input = DecryptInput::from_encrypt(&tampered_ct, &enc_input);
+    tampered_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+
     //= spec/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //= reason=Tampered V1 auth tag byte causes tag verify failure, proving the tag was deserialized and used
+    //= reason=Untampered V1 message decrypts; tampered V1 auth tag byte → CryptographicError, proving the tag was deserialized and used
     //# - MUST deserialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
-    let err = decrypt(&dec_input).await.expect_err("tampered V1 auth tag must fail");
-    assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "valid V1 ct must decrypt");
+    assert_eq!(
+        decrypt(&tampered_input).await.unwrap_err().kind,
+        ErrorKind::CryptographicError,
+        "tampered V1 auth tag must produce CryptographicError"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -303,27 +307,30 @@ async fn test_v1_header_auth_iv_deserialized_and_used() {
         EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
     enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmIv12Tag16HkdfSha256);
     enc_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
-
-    // Baseline
-    let mut baseline_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    baseline_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    assert!(decrypt(&baseline_input).await.is_ok(), "baseline must pass");
+    let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
     // V1 header auth IV is 12 bytes immediately before the 16-byte auth tag, which
     // is immediately before the body. Tamper its first byte.
-    let body_start = find_body_start(&ct, 4096).expect("body start");
+    let body_start = find_body_start(&valid_ct, 4096).expect("body start");
     let iv_start = body_start - 16 - 12; // 16 bytes tag + 12 bytes IV before body
-    ct[iv_start] ^= 0xFF;
+    let mut tampered_ct = valid_ct.clone();
+    tampered_ct[iv_start] ^= 0xFF;
 
-    let mut dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    let mut valid_input = DecryptInput::from_encrypt(&valid_ct, &enc_input);
+    valid_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    let mut tampered_input = DecryptInput::from_encrypt(&tampered_ct, &enc_input);
+    tampered_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+
     //= spec/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //= reason=Tampered V1 header auth IV causes failure, proving IV was deserialized and used
+    //= reason=Untampered V1 message decrypts; tampered V1 header auth IV byte → CryptographicError, proving IV was deserialized and used
     //# - MUST deserialize the [IV](../data-format/message-header.md#iv).
-    let err = decrypt(&dec_input).await.expect_err("tampered V1 header auth IV must fail");
-    assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "valid V1 ct must decrypt");
+    assert_eq!(
+        decrypt(&tampered_input).await.unwrap_err().kind,
+        ErrorKind::CryptographicError,
+        "tampered V1 header auth IV must produce CryptographicError"
+    );
 }
 
 
@@ -585,25 +592,31 @@ async fn test_v2_header_body_fields_parsed_from_wire() {
     );
 
     // Now tamper the V2 auth tag byte (immediately after Algorithm Suite Data)
-    // and confirm decrypt fails with ValidationError — direct proof that the
-    // implementation deserialized the auth tag from the wire and used it for
-    // header verification. Baseline (untampered) ciphertext is verified above
-    // by read_header_body succeeding.
+    // and confirm decrypt fails with CryptographicError — direct proof that
+    // the implementation deserialized the auth tag from the wire and used it
+    // for header verification.
     let auth_tag_offset = sd_end;
     let auth_tag_end = auth_tag_offset + 16;
     assert!(
         auth_tag_end <= ct.len(),
         "auth tag bytes are present in wire after Algorithm Suite Data"
     );
-    let mut tampered = ct.clone();
-    tampered[auth_tag_offset] ^= 0xFF;
-    let dec_input = DecryptInput::with_legacy_keyring(&tampered, EncryptionContext::new(), keyring);
-    let err = decrypt(&dec_input)
-        .await
-        .expect_err("tampered V2 auth tag must fail");
+    let mut tampered_ct = ct.clone();
+    tampered_ct[auth_tag_offset] ^= 0xFF;
+
+    let valid_input =
+        DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone());
+    let tampered_input =
+        DecryptInput::with_legacy_keyring(&tampered_ct, EncryptionContext::new(), keyring);
+
     //= spec/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
-    //= reason=Tampered V2 auth tag byte → CryptographicError, proving the auth tag was deserialized and used
+    //= reason=Untampered ct decrypts; tampered V2 auth tag byte → CryptographicError, proving the auth tag was deserialized and used
     //# - MUST deserialize the [Authentication Tag](../data-format/message-header.md#authentication-tag).
-    assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "valid V2 ct must decrypt");
+    assert_eq!(
+        decrypt(&tampered_input).await.unwrap_err().kind,
+        ErrorKind::CryptographicError,
+        "tampered V2 auth tag must produce CryptographicError"
+    );
 }
