@@ -310,7 +310,8 @@ async fn internal_decrypt(
     //# Operations MUST NOT indicate completion or success until an end to the output has been indicated.
     //
     //= spec/client-apis/decrypt.md#verify-the-header
-    //= reason=Encryption context and suite released only after step_verify_header succeeded
+    //= type=exception
+    //= reason=DecryptStreamOutput is returned at end of operation; encryption_context and algorithm_suite_id are available to the caller only when the function returns Ok, not eagerly "as soon as tag verification succeeds"
     //# - A streamed Decrypt operation SHOULD release the parsed [encryption context](#encryption-context),
     //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id),
     //# and [other header information](#parsed-header)
@@ -412,6 +413,8 @@ async fn step_get_decryption_materials(
         header_auth::read_header_auth_tag(ciphertext, suite, &mut sig_digest)?;
 
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=implication
+    //= reason=Source literally passes dec_mat.plaintext_data_key as the PDK input to derive_keys
     //# The data key used as input for all decryption described below MUST be a data key derived from the plaintext data key
     //# included in the [decryption materials](../framework/structures.md#decryption-materials).
 
@@ -500,9 +503,13 @@ fn step_verify_header(
     let mut maybe_header_auth = aes_decrypt(
         body::get_alg_suite(&state.header.suite)?,
         //= spec/client-apis/decrypt.md#verify-the-header
+        //= type=implication
+        //= reason=Source literally passes derived_data_keys.data_key as the cipherkey argument
         //# - the cipherkey MUST be the derived data key
         &state.derived_data_keys.data_key,
         //= spec/client-apis/decrypt.md#verify-the-header
+        //= type=implication
+        //= reason=Source literally passes &[] (empty slice) as the ciphertext argument
         //# - the ciphertext MUST be an empty byte array
         &[],
         //= spec/client-apis/decrypt.md#verify-the-header
@@ -579,8 +586,18 @@ fn step_decrypt_body(
     let key = state.derived_data_keys.data_key.clone();
 
     //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=implication
+    //= reason=Body parsers read from the same `ciphertext` cursor passed to step_parse_header; cursor advances sequentially after the header parse
     //# Once the message header is successfully parsed, the next sequential bytes
     //# MUST be deserialized according to the [message body spec](../data-format/message-body.md).
+
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=implication
+    //= reason=SafeRead: std::io::Read is blocking; framed body reader loops calling read until EOF or completion, satisfying the wait/deserialize/decrypt branches
+    //# If there could still be message body left to deserialize and decrypt,
+    //# this operation MUST either wait for more of the encrypted message bytes to become consumable,
+    //# wait for the end to the encrypted message to be indicated,
+    //# or deserialize and/or decrypt the consumable bytes.
 
     //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //# The Decrypt operation MUST use the [content type](../data-format/message-header.md#content-type) field parsed from the

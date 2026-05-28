@@ -46,25 +46,15 @@ async fn test_verify_header_fails_on_tampered_header() {
     //
     //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
-    //= reason=Tag verify failure proves the cipherkey, tag, and AAD inputs are used
-    //# - the cipherkey MUST be the derived data key
-    //
-    //= spec/client-apis/decrypt.md#verify-the-header
-    //= type=test
-    //= reason=Tag verify failure proves tag from header is checked
-    //# - the tag MUST be the value serialized in the message header's
-    //# [authentication tag field](../data-format/message-header.md#authentication-tag)
-    //
-    //= spec/client-apis/decrypt.md#verify-the-header
-    //= type=test
     //= reason=Tampered header body would change AAD, causing tag verify failure
     //# - The AAD MUST be the concatenation of the serialized [message header body](../data-format/message-header.md#header-body)
     //# and the serialization of encryption context to only authenticate.
     //
     //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
-    //= reason=Tag verify uses empty ciphertext; if non-empty, decryption would produce unexpected output
-    //# - the ciphertext MUST be an empty byte array
+    //= reason=Tag verify failure proves tag from header is checked
+    //# - the tag MUST be the value serialized in the message header's
+    //# [authentication tag field](../data-format/message-header.md#authentication-tag)
     assert_eq!(err.kind, ErrorKind::ValidationError, "got: {err:?}");
 }
 
@@ -148,6 +138,11 @@ async fn test_streamed_signed_output_not_signed_until_complete() {
     assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
 }
 
+// Regression: streaming decrypt with a signing suite returns the parsed
+// encryption context and algorithm suite ID in DecryptStreamOutput. The
+// SHOULD requirement about releasing "as soon as tag verification succeeds"
+// is unobservable from the public API (DecryptStreamOutput is returned at end
+// of operation); see decrypt.rs `type=exception` annotation for the deviation.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streamed_release_parsed_header_after_verification() {
     let keyring = test_keyring().await;
@@ -167,13 +162,6 @@ async fn test_streamed_release_parsed_header_after_verification() {
         .await
         .unwrap();
     assert_eq!(output, plaintext);
-    //= spec/client-apis/decrypt.md#verify-the-header
-    //= type=test
-    //= reason=Streaming decrypt output includes EC and suite, proving release after verification
-    //# - A streamed Decrypt operation SHOULD release the parsed [encryption context](#encryption-context),
-    //# [algorithm suite ID](../data-format/message-header.md#algorithm-suite-id),
-    //# and [other header information](#parsed-header)
-    //# as soon as tag verification succeeds.
     assert_eq!(
         result.encryption_context.get("release-key").map(String::as_str),
         Some("release-value"),

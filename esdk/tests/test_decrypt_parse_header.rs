@@ -220,6 +220,7 @@ async fn test_max_encrypted_data_keys_enforcement() {
     let err = result.expect_err("decrypt must fail when EDK count exceeds max_encrypted_data_keys");
     //= spec/client-apis/decrypt.md#v2-header-deserialization
     //= type=test
+    //= reason=2 EDKs on wire + max=1 → SerializationError; proves the limit halts deserialization
     //# If the number of [encrypted data keys](../framework/structures.md#encrypted-data-keys)
     //# deserialized from the [message header](../data-format/message-header.md)
     //# is greater than the [maximum number of encrypted data keys](client.md#maximum-number-of-encrypted-data-keys) configured in the [client](client.md),
