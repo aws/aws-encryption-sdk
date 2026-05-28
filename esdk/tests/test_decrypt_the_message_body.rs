@@ -277,20 +277,6 @@ async fn test_decrypt_first_frame_sequence_number_is_one() {
     //= type=test
     //= reason=Wire parse extracts seq_num from first 4 bytes, proving deserialization
     //# - MUST deserialize the [Sequence Number](../data-format/message-body.md#regular-frame-sequence-number).
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Successful multi-frame decrypt proves body bytes follow header
-    //# Once the message header is successfully parsed, the next sequential bytes
-    //# MUST be deserialized according to the [message body spec](../data-format/message-body.md).
-    //
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Successful decrypt of all frames proves bytes were consumed as available
-    //# If there could still be message body left to deserialize and decrypt,
-    //# this operation MUST either wait for more of the encrypted message bytes to become consumable,
-    //# wait for the end to the encrypted message to be indicated,
-    //# or deserialize and/or decrypt the consumable bytes.
     assert_eq!(frames[0].seq_num, 1, "first frame sequence number must be 1 on the wire");
     // Round-trip corroboration
     let result = decrypt_ciphertext(&ct).await.plaintext;

@@ -94,10 +94,7 @@ async fn test_verify_signature_inputs_directly_verified() {
     // Parse the footer per Message Footer spec: [sig_len: UInt16 BE][signature: sig_len bytes].
     let (footer_offset, sig_len) = find_footer_offset(ct);
     let parsed_sig_len = u16::from_be_bytes([ct[footer_offset], ct[footer_offset + 1]]);
-    //= spec/client-apis/decrypt.md#verify-the-signature
-    //= type=test
-    //= reason=Footer parsed independently as [sig_len UInt16 BE][signature]; subsequent ECDSA verify against this parsing succeeds, proving decrypt's parser uses the same order
-    //# The order for message footer deserialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
+    // Sanity-check that the helper's reading agrees with our independent re-parse.
     assert_eq!(parsed_sig_len, sig_len, "sig_len at footer offset matches");
     let signature = &ct[footer_offset + 2..footer_offset + 2 + sig_len as usize];
     let signed_content = &ct[..footer_offset];
@@ -113,6 +110,11 @@ async fn test_verify_signature_inputs_directly_verified() {
         signature,
     )
     .expect("verify must not error");
+    //= spec/client-apis/decrypt.md#verify-the-signature
+    //= type=test
+    //= reason=Footer parsed independently as [sig_len UInt16 BE][signature]; ECDSA verify against this parsing succeeds, proving decrypt's parser uses the same order
+    //# The order for message footer deserialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
+    //
     //= spec/client-apis/decrypt.md#verify-the-signature
     //= type=test
     //= reason=Independent ECDSA-P384 verify with materials' verification key over header+body succeeds; P-256 negative below pins the algorithm
