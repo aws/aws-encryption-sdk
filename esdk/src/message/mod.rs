@@ -54,7 +54,7 @@ impl std::io::Write for NoopWriter {
 /// and accumulate them into the ECDSA signature digest, without buffering
 /// the entire header in memory.
 #[derive(Clone, Debug, Default)]
-pub(crate) struct DigestWriter {
+pub struct DigestWriter {
     pub(crate) context: Option<DigestContext>,
 }
 impl DigestWriter {

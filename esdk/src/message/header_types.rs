@@ -147,7 +147,7 @@ pub(crate) struct V2HeaderBody {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub(crate) enum HeaderBody {
+pub enum HeaderBody {
     V1Body(V1HeaderBody),
     V2Body(V2HeaderBody),
 }
@@ -165,7 +165,7 @@ impl HeaderBody {
             Self::V2Body(body) => body.content_type,
         }
     }
-    pub(crate) const fn message_id(&self) -> &[u8] {
+    pub const fn message_id(&self) -> &[u8] {
         match self {
             Self::V1Body(body) => body.message_id.as_slice(),
             Self::V2Body(body) => body.message_id.as_slice(),
@@ -183,7 +183,7 @@ impl HeaderBody {
             Self::V2Body(body) => body.encrypted_data_keys.as_slice(),
         }
     }
-    pub(crate) const fn algorithm_suite(&self) -> &AlgorithmSuite {
+    pub const fn algorithm_suite(&self) -> &AlgorithmSuite {
         match self {
             Self::V1Body(body) => &body.algorithm_suite,
             Self::V2Body(body) => &body.algorithm_suite,

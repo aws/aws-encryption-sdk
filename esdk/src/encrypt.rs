@@ -547,7 +547,7 @@ fn step_construct_signature(
     Ok(())
 }
 
-pub(crate) fn get_esdk_id(
+pub fn get_esdk_id(
     id: aws_mpl_legacy::suites::AlgorithmSuiteId,
 ) -> Result<aws_mpl_legacy::suites::EsdkAlgorithmSuiteId, Error> {
     match id {

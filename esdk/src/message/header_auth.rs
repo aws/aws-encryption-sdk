@@ -100,7 +100,7 @@ pub(crate) fn write_header_auth_tag_v2(
     }
 }
 
-pub(crate) fn read_header_auth_tag(
+pub fn read_header_auth_tag(
     r: &mut dyn SafeRead,
     suite: &AlgorithmSuite,
     raw: &mut dyn SafeWrite,

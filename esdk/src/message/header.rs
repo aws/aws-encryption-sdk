@@ -29,7 +29,7 @@ pub(crate) const NONFRAMED_SEQUENCE_NUMBER: u32 = 1;
 pub(crate) const SAFE_MAX_ENCRYPT: u64 = 0x000F_FFFF_FFE0;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub(crate) struct HeaderInfo {
+pub struct HeaderInfo {
     pub(crate) body: HeaderBody,
     pub(crate) raw_header: Vec<u8>,
     pub(crate) encryption_context: ESDKEncryptionContext,
@@ -64,7 +64,7 @@ pub(crate) fn write_header_body(w: &mut dyn SafeWrite, body: &HeaderBody) -> Res
     }
 }
 
-pub(crate) fn read_header_body(
+pub fn read_header_body(
     ciphertext: &mut dyn SafeRead,
     max_edks: Option<std::num::NonZeroUsize>,
     raw_header: &mut dyn SafeWrite,
@@ -160,7 +160,7 @@ pub(crate) fn validate_max_encrypted_data_keys(
     Ok(())
 }
 
-pub(crate) fn generate_message_id(suite: &AlgorithmSuite) -> Result<MessageId, Error> {
+pub fn generate_message_id(suite: &AlgorithmSuite) -> Result<MessageId, Error> {
     // Defense-in-depth: in practice every supported suite has message_version 1 or 2
     // (suites are sourced from the static algorithm-suites table), but match explicitly
     // so a hypothetical future or malformed value fails loudly instead of silently

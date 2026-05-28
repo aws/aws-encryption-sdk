@@ -11,9 +11,9 @@ use zeroize::Zeroizing;
 // Convenience container to hold both a data key and an optional commitment key
 // to support algorithm suites that provide commitment and those that do not
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub(crate) struct ExpandedKeyMaterial {
-    pub(crate) data_key: Zeroizing<Vec<u8>>,
-    pub(crate) commitment_key: Option<Zeroizing<Vec<u8>>>,
+pub struct ExpandedKeyMaterial {
+    pub data_key: Zeroizing<Vec<u8>>,
+    pub commitment_key: Option<Zeroizing<Vec<u8>>>,
 }
 
 fn get_kdf_outlen(suite: &AlgorithmSuite) -> Result<u32, Error> {
@@ -182,7 +182,7 @@ pub(crate) fn expand_key_material(
 
 // Derives key material for encryption/decryption. Delegates out to specific methods
 // based on the input algorithm suite.
-pub(crate) fn derive_keys(
+pub fn derive_keys(
     message_id: &[u8],
     plaintext_key: &[u8],
     suite: &AlgorithmSuite,

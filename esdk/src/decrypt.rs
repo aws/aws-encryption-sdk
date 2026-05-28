@@ -677,7 +677,7 @@ fn build_encryption_context_to_only_authenticate(
         .collect()
 }
 
-pub(crate) fn get_ecdsa_alg(
+pub fn get_ecdsa_alg(
     alg: aws_mpl_legacy::suites::SignatureAlgorithm,
 ) -> Result<EcdsaSignatureAlgorithm, Error> {
     match alg {
