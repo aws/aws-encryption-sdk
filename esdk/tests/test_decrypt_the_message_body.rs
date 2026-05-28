@@ -150,12 +150,6 @@ async fn test_decrypt_no_unauthenticated_plaintext_released() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_final_frame_held_until_signature_verification() {
-    //= spec/client-apis/decrypt.md#decrypt-the-message-body
-    //= type=test
-    //= reason=Tampered signature → Err; proves final frame plaintext was held back
-    //# Any plaintext decrypted from [nonframed data](../data-format/message-body.md#nonframed-data) or
-    //# a final frame in a streamed Decrypt operation MUST NOT be released until [signature verification](#verify-the-signature)
-    //# successfully completes.
     // Encrypt with a signing algorithm suite, then tamper with the signature.
     // Decrypt must fail, proving the final frame plaintext was held back
     // pending signature verification and never released.
@@ -176,14 +170,17 @@ async fn test_decrypt_final_frame_held_until_signature_verification() {
     let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     let result = decrypt(&dec_input).await;
     let err = result.expect_err("tampered signature must cause decrypt failure, proving final frame was held back");
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
+    //= type=test
+    //= reason=Tampered signature → Err; final frame plaintext never reaches caller
+    //# Any plaintext decrypted from [nonframed data](../data-format/message-body.md#nonframed-data) or
+    //# a final frame in a streamed Decrypt operation MUST NOT be released until [signature verification](#verify-the-signature)
+    //# successfully completes.
     assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_unframed_decrypt_fails_on_tampered_auth_tag() {
-    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
-    //= type=test
-    //# If this decryption fails, this operation MUST immediately halt and fail.
     // Tamper with the authentication tag in the external V2 nonframed vector. Decrypt must fail.
     let mut ct = EXTERNAL_V2_NONFRAMED_CT.to_vec();
     // Baseline: untampered vector decrypts successfully.
@@ -194,6 +191,10 @@ async fn test_unframed_decrypt_fails_on_tampered_auth_tag() {
     ct[last] ^= 0xFF;
     let result = try_decrypt_external_nonframed(Version::V2, &ct).await;
     let err = result.expect_err("tampered nonframed auth tag must cause immediate decryption failure");
+    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
+    //= type=test
+    //= reason=Tampered nonframed auth tag → CryptographicError, proving AEAD halts on failure
+    //# If this decryption fails, this operation MUST immediately halt and fail.
     assert_eq!(err.kind, ErrorKind::CryptographicError, "got: {err:?}");
 }
 
@@ -356,7 +357,7 @@ async fn test_nonframed_body_fields_deserialized_from_wire() {
     //# - The IV MUST be the [IV](../data-format/message-body.md#nonframed-data-iv) deserialized from the message body.
     assert_eq!(body.iv.len(), IV_LEN, "nonframed IV must be 12 bytes");
 
-    //= spec/client-apis/decrypt.md#nonframed-message-body-decryption
+    //= spec/client-apis/decrypt.md#decrypt-the-message-body
     //= type=test
     //= reason=Encrypted content length field equals expected plaintext length (10240)
     //# If this is nonframed data, this MUST be determined by using the [nonframed data encrypted content length](../data-format/message-body.md#nonframed-data-encrypted-content-length).

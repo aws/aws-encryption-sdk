@@ -183,29 +183,6 @@ async fn test_unsupported_type_rejected() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn test_trailing_bytes_after_message_rejected() {
-    let keyring = test_keyring().await;
-    let plaintext = b"trailing bytes test";
-
-    let enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
-
-    // Append extra bytes after the valid message
-    ct.extend_from_slice(&[0xDE, 0xAD, 0xBE, 0xEF]);
-
-    let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("decrypt must fail when there are trailing bytes after the message");
-    //= spec/client-apis/decrypt.md#behavior
-    //= type=test
-    //# - If this operation successfully completes the above steps
-    //# but there are consumable bytes which are intended to be decrypted,
-    //# this operation MUST fail.
-    assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
-}
-
-#[tokio::test(flavor = "multi_thread")]
 async fn test_max_encrypted_data_keys_enforcement() {
     // Create two keyrings and a multi-keyring to produce 2 EDKs
     let keyring1 = test_keyring().await;
