@@ -9,6 +9,12 @@ mod fixtures;
 use aws_esdk::*;
 use fixtures::*;
 
+// Regression: positive-path round-trip with KMS keyring and small EC. Behavioral
+// coverage that encrypt+decrypt with the same EC succeeds end-to-end. The
+// "Reproduced Encryption Context: This MUST be the input encryption context"
+// requirement is proven by the negative-path tests below — successful
+// round-trip alone doesn't prove reproduced-EC handling because the default
+// CMM with no required keys doesn't validate the reproduced EC.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encryption_context_on_decrypt() {
     let kms_key = KEY_ARN;
@@ -43,9 +49,6 @@ async fn test_encryption_context_on_decrypt() {
 
     let esdk_ciphertext = encrypt_output.ciphertext;
 
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
     let decrypt_output = decrypt(&DecryptInput::with_legacy_keyring(
         &esdk_ciphertext,
         encryption_context,
@@ -54,10 +57,7 @@ async fn test_encryption_context_on_decrypt() {
     .await
     .unwrap();
 
-    assert_eq!(
-        decrypt_output.plaintext, asdf,
-        "successful decrypt proves reproduced encryption context was correctly passed to CMM"
-    );
+    assert_eq!(decrypt_output.plaintext, asdf);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -141,21 +141,29 @@ async fn test_mismatched_encryption_context_on_decrypt() {
 
     let esdk_ciphertext = encrypt_output.ciphertext;
 
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
     let mut decrypt_input = DecryptInput::with_legacy_keyring(
         &esdk_ciphertext,
         bad_encryption_context,
         raw_aes_keyring,
     );
-    let decrypt_output = decrypt(&decrypt_input).await;
+    let err = decrypt(&decrypt_input)
+        .await
+        .expect_err("decrypt must fail when reproduced encryption context has mismatched values");
 
     // We expect to fail because although the same key is present on the ec,
-    // the value is different.
+    // the value is different. The MPL's reproduced-EC validation produces a
+    // pinned error message identifying the mechanism.
+    let ErrorKind::LegacyError(legacy) = &err.kind else {
+        panic!("expected LegacyError, got: {:?}", err.kind);
+    };
+    let inner = format!("{legacy:?}");
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=Mismatched reproduced EC value triggers MPL "does not match reproduced encryption context" error, proving the reproduced EC was used
+    //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
     assert!(
-        decrypt_output.is_err(),
-        "decrypt must fail when reproduced encryption context has mismatched values"
+        inner.contains("does not match reproduced encryption context"),
+        "expected reproduced-EC mismatch error, got: {inner}"
     );
 
     decrypt_input.encryption_context = encryption_context;
