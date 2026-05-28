@@ -22,6 +22,10 @@ async fn test_unsupported_version_rejected() {
         EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
     let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
+    // Valid value decrypts as expected
+    let dec_valid = DecryptInput::from_encrypt(&ct, &enc_input);
+    assert!(decrypt(&dec_valid).await.is_ok(), "valid version decrypts successfully");
+
     // Byte 0 is the version field — set to an unsupported value
     ct[0] = 0xFF;
 
@@ -75,6 +79,11 @@ async fn test_unsupported_content_type_v1_rejected() {
         original_content_type == 1 || original_content_type == 2,
         "sanity check: content type should be 1 or 2, got {original_content_type}"
     );
+    // Valid content type decrypts as expected
+    let mut dec_valid = DecryptInput::from_encrypt(&ct, &enc_input);
+    dec_valid.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    assert!(decrypt(&dec_valid).await.is_ok(), "valid content type decrypts successfully");
+
     ct[pos] = 0xFF; // unsupported content type
 
     let mut dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
@@ -126,6 +135,10 @@ async fn test_unsupported_content_type_v2_rejected() {
         original_content_type == 1 || original_content_type == 2,
         "sanity check: content type should be 1 or 2, got {original_content_type}"
     );
+    // Valid content type decrypts as expected
+    let dec_valid = DecryptInput::from_encrypt(&ct, &enc_input);
+    assert!(decrypt(&dec_valid).await.is_ok(), "valid content type decrypts successfully");
+
     ct[pos] = 0xFF; // unsupported content type
 
     let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
@@ -150,6 +163,11 @@ async fn test_unsupported_type_rejected() {
     let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
     // V1 layout: byte 0 = version (0x01), byte 1 = type (0x80)
+    // Valid value decrypts as expected
+    let mut dec_valid = DecryptInput::from_encrypt(&ct, &enc_input);
+    dec_valid.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    assert!(decrypt(&dec_valid).await.is_ok(), "valid type decrypts successfully");
+
     assert_eq!(ct[1], 0x80, "sanity check: V1 type should be 0x80");
     ct[1] = 0xFF; // unsupported type
 
