@@ -46,7 +46,6 @@ pub struct EsdkConfig {
     /// Commitment policy applied to every operation. Default is
     /// `EsdkCommitmentPolicy::RequireEncryptRequireDecrypt`.
     //= spec/client-apis/client.md#commitment-policy
-    //= type=implication
     //= reason=field type EsdkCommitmentPolicy is from aws_mpl_legacy::commitment (the MPL)
     //# The AWS Encryption SDK MUST use the ESDK [commitment policies](../framework/commitment-policy.md) defined in the Material Providers Library.
     pub commitment_policy: EsdkCommitmentPolicy,
@@ -263,7 +262,8 @@ impl EsdkBuilder {
         self
     }
 
-    /// Build the `Esdk`.
+    /// Build the `Esdk`. Unset fields use their defaults
+    /// (`RequireEncryptRequireDecrypt` commitment policy, no EDK cap).
     #[must_use]
     pub fn build(self) -> Esdk {
         Esdk {
