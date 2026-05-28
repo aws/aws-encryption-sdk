@@ -39,38 +39,9 @@ async fn test_decrypt_fails_with_wrong_keyring() {
     let inner = format!("{legacy:?}");
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //= type=test
-    //= reason=Wrong keyring fails because CMM can't unwrap EDKs
-    //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
-    //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
-    //
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=Wrong keyring proves the input source determines which CMM is used
-    //# The CMM used MUST be the input CMM, if supplied.
-    //
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=Wrong keyring's CMM call fails; proves the call was constructed with header data
-    //# The call to the CMM's [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) operation
-    //# MUST be constructed as follows:
-    //
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=CMM call includes header EC; wrong keyring still receives correct EC from header
-    //# - Encryption Context: This MUST be the parsed [encryption context](../data-format/message-header.md#aad)
-    //# from the message header.
-    //
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=Wrong keyring used → wrong CMM → fails; proves input keyring is used
+    //= reason=Wrong keyring → default CMM can't unwrap → proves input keyring determines CMM
     //# If a CMM is not supplied as the input, the decrypt operation MUST construct a [default CMM](../framework/default-cmm.md)
     //# from the input [keyring](../framework/keyring-interface.md).
-    //
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=Wrong keyring can't unwrap header EDKs → proves EDKs from header are passed
-    //# - Encrypted Data Keys: This MUST be the parsed [encrypted data keys](../data-format/message-header.md#encrypted-data-keys)
-    //# from the message header.
     assert!(inner.contains("CollectionOfErrors"), "expected CollectionOfErrors, got: {inner}");
 }
 
