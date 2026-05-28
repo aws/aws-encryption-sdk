@@ -223,21 +223,21 @@ async fn test_kdf_algorithm_from_materials_suite() {
     let mut raw = Vec::new();
     let header_body = read_header_body(&mut cursor, None, &mut raw).unwrap();
     let suite = header_body.algorithm_suite();
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=Wire-parsed suite uses HKDF; decrypt success confirms it was used
+    //# The algorithm suite used to derive a data key from the plaintext data key MUST be
+    //# the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
+    //# [algorithm suite](../framework/algorithm-suites.md) associated with
+    //# the returned decryption materials.
     assert!(
         matches!(suite.kdf, aws_mpl_legacy::suites::DerivationAlgorithm::Hkdf(_)),
         "parsed suite must use HKDF derivation, got: {:?}", suite.kdf
     );
 
-    // Decrypt proves the KDF from the materials' suite was actually used
+    // Decrypt corroborates: HKDF was actually used for key derivation
     let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=Wire-parsed suite uses HKDF; successful decrypt proves that KDF was used
-    //# The algorithm suite used to derive a data key from the plaintext data key MUST be
-    //# the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
-    //# [algorithm suite](../framework/algorithm-suites.md) associated with
-    //# the returned decryption materials.
     let result = decrypt(&dec_input).await.unwrap();
     assert_eq!(result.plaintext, pt);
 }

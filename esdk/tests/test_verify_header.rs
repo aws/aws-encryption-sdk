@@ -95,6 +95,7 @@ async fn test_verify_header_encryption_context_to_only_authenticate() {
 
     // Decrypt with the reproduced encryption context — proves the EC filtering is correct
     let dec_input = DecryptInput::with_legacy_keyring(&ct, reproduced_ec, keyring);
+    let result = decrypt(&dec_input).await.unwrap();
     //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
     //= reason=Decrypt with reproduced EC succeeds; wrong filtering would fail header auth
@@ -104,11 +105,7 @@ async fn test_verify_header_encryption_context_to_only_authenticate() {
     //# the [decryption material's](../framework/structures.md#decryption-materials)
     //# [required encryption context keys](../framework/structures.md#required-encryption-context-keys-1)
     //# serialized according to the [encryption context serialization specification](../framework/structures.md#serialization).
-    let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(
-        result.plaintext, plaintext,
-        "successful round-trip with required EC keys proves encryption context to only authenticate is correctly filtered and serialized"
-    );
+    assert_eq!(result.plaintext, plaintext);
 }
 
 #[tokio::test(flavor = "multi_thread")]
