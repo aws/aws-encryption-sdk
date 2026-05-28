@@ -12,8 +12,8 @@ use test_helpers::*;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_verify_signature_fails_on_tampered_footer() {
-    // Tampering with the footer signature bytes and asserting that decrypt fails proves
-    // that signature verification actually runs.
+    // Tampering with the footer signature bytes and asserting that decrypt fails
+    // proves that signature verification actually runs.
     let keyring = test_keyring().await;
     let plaintext = b"tamper footer test";
 
@@ -21,27 +21,26 @@ async fn test_verify_signature_fails_on_tampered_footer() {
         EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
     enc_input.algorithm_suite_id =
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    let footer_offset = find_footer_offset_only(&ct);
-    // Baseline: untampered ciphertext must decrypt successfully.
-    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
-    assert!(baseline.is_ok(), "baseline decrypt must succeed before tamper");
+    let footer_offset = find_footer_offset_only(&valid_ct);
+    let mut tampered_ct = valid_ct.clone();
+    tampered_ct[footer_offset + 3] ^= 0xFF;
 
-    ct[footer_offset + 3] ^= 0xFF;
+    let valid_input =
+        DecryptInput::with_legacy_keyring(&valid_ct, EncryptionContext::new(), keyring.clone());
+    let tampered_input =
+        DecryptInput::with_legacy_keyring(&tampered_ct, EncryptionContext::new(), keyring);
 
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("decrypt must fail when footer signature bytes are tampered");
     //= spec/client-apis/decrypt.md#verify-the-signature
     //= type=test
-    //= reason=Tampered footer signature bytes → ECDSA verify fails, proving footer is verified
+    //= reason=Untampered ct decrypts; tampered footer signature byte → Esdk("Signature verification failed"), proving footer is verified
     //# If the algorithm suite has a signature algorithm,
     //# the Decrypt operation MUST verify the message footer using the specified signature algorithm.
     //
     //= spec/client-apis/decrypt.md#verify-the-signature
     //= type=test
-    //= reason=Tampered signature → Err halts decrypt with no plaintext released
+    //= reason=Untampered → Ok; tampered → Err halts decrypt with no plaintext released
     //# If this verification is not successful, this operation MUST immediately halt and fail.
     //
     //= spec/client-apis/decrypt.md#verify-the-signature
@@ -49,10 +48,14 @@ async fn test_verify_signature_fails_on_tampered_footer() {
     //= reason=Tampering at footer offset (after body) causes signature error, proving footer was deserialized after body
     //# After deserializing the body, the Decrypt operation MUST deserialize the next encrypted message bytes
     //# as the [message footer](../data-format/message-footer.md).
+    assert!(decrypt(&valid_input).await.is_ok(), "valid ct must decrypt");
+    let err = decrypt(&tampered_input)
+        .await
+        .expect_err("tampered footer must fail");
     assert_eq!(
         err.kind,
         ErrorKind::Esdk,
-        "signature verification failure must be an Esdk error"
+        "tampered footer must produce Esdk error"
     );
     assert!(
         err.message.contains("Signature verification failed"),

@@ -19,21 +19,18 @@ async fn test_verify_header_fails_on_tampered_header() {
 
     let enc_input =
         EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
-    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // Tamper with a byte in the header body (byte 10 is safely within the header body)
-    // Baseline: untampered ciphertext must decrypt successfully.
-    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
-    assert!(baseline.is_ok(), "baseline decrypt must succeed before tamper");
+    // Tamper with a byte in the header body (byte 10 is safely within the header body).
+    let mut tampered_ct = valid_ct.clone();
+    tampered_ct[10] ^= 0xFF;
 
-    ct[10] ^= 0xFF;
+    let valid_input = DecryptInput::from_encrypt(&valid_ct, &enc_input);
+    let tampered_input = DecryptInput::from_encrypt(&tampered_ct, &enc_input);
 
-    let dec_input = DecryptInput::from_encrypt(&ct, &enc_input);
-    let result = decrypt(&dec_input).await;
-    let err = result.expect_err("decrypt must fail when header bytes are tampered (tag verification failure)");
     //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
-    //= reason=Tampered header byte → tag verify failure halts decrypt
+    //= reason=Untampered ct decrypts; tampered header byte → ValidationError, halting decrypt
     //# If this tag verification fails, this operation MUST immediately halt and fail.
     //
     //= spec/client-apis/decrypt.md#verify-the-header
@@ -55,7 +52,12 @@ async fn test_verify_header_fails_on_tampered_header() {
     //= reason=Tag verify failure proves tag from header is checked
     //# - the tag MUST be the value serialized in the message header's
     //# [authentication tag field](../data-format/message-header.md#authentication-tag)
-    assert_eq!(err.kind, ErrorKind::ValidationError, "got: {err:?}");
+    assert!(decrypt(&valid_input).await.is_ok(), "valid ct must decrypt");
+    assert_eq!(
+        decrypt(&tampered_input).await.unwrap_err().kind,
+        ErrorKind::ValidationError,
+        "tampered header byte must produce ValidationError"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -103,9 +105,9 @@ async fn test_verify_header_encryption_context_to_only_authenticate() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_streamed_signed_output_not_signed_until_complete() {
-    // Encrypt a multi-frame message with a signing suite, then tamper with the
-    // signature (footer). decrypt_stream must return Err, proving that output
-    // released before completion cannot be considered signed.
+    // Encrypt a multi-frame message with a signing suite, then tamper with
+    // the signature (footer). decrypt_stream must return Err, proving that
+    // output released before completion cannot be considered signed.
     let keyring = test_keyring().await;
     let plaintext = vec![0xBBu8; 30];
     let mut enc_input =
@@ -113,29 +115,35 @@ async fn test_streamed_signed_output_not_signed_until_complete() {
     enc_input.frame_length = FrameLength::new(10).unwrap();
     enc_input.algorithm_suite_id =
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
-    let mut ct = encrypt(&enc_input).await.unwrap().ciphertext;
+    let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // Tamper with the footer (signature) to cause verification failure
-    let len = ct.len();
-    // Baseline: untampered ciphertext must decrypt successfully.
-    let baseline = decrypt(&DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring.clone())).await;
-    assert!(baseline.is_ok(), "baseline decrypt must succeed before tamper");
+    let mut tampered_ct = valid_ct.clone();
+    let len = tampered_ct.len();
+    tampered_ct[len - 4] ^= 0xFF;
 
-    ct[len - 4] ^= 0xFF;
-
-    let mut cursor = std::io::Cursor::new(ct.as_slice());
-    let mut output = Vec::new();
+    let mut valid_cursor = std::io::Cursor::new(valid_ct.as_slice());
+    let mut valid_output = Vec::new();
+    let mut tampered_cursor = std::io::Cursor::new(tampered_ct.as_slice());
+    let mut tampered_output = Vec::new();
     let mut stream_input =
         DecryptStreamInput::with_legacy_keyring(EncryptionContext::new(), keyring);
     stream_input.unsafe_release_plaintext_before_verify = true;
+
     //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
+    //= reason=Untampered ct streams to Ok; tampered signature → Err, so any output released before signature verification cannot be considered signed
     //# However, if the streamed Decrypt operation is using an algorithm suite with a signature algorithm
     //# all released output MUST NOT be considered signed data until
     //# this operation successfully completes.
-    let result = decrypt_stream(&mut cursor, &mut output, &stream_input).await;
-    let err = result.expect_err("streaming decrypt must fail on tampered signature — output was not signed data");
-    assert_eq!(err.kind, ErrorKind::Esdk, "got: {err:?}");
+    assert!(
+        decrypt_stream(&mut valid_cursor, &mut valid_output, &stream_input).await.is_ok(),
+        "valid ct must stream to Ok"
+    );
+    assert_eq!(
+        decrypt_stream(&mut tampered_cursor, &mut tampered_output, &stream_input).await.unwrap_err().kind,
+        ErrorKind::Esdk,
+        "tampered signature must produce Esdk error"
+    );
 }
 
 // Regression: streaming decrypt with a signing suite returns the parsed
