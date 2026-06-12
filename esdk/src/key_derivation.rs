@@ -7,7 +7,7 @@
 //! key commitment value. V1 uses a single HKDF call; V2 uses one HKDF-extract
 //! followed by two HKDF-expands (encryption key and commitment key). The lengths
 //! and labels come from the algorithm suite definition in
-//! `framework/algorithm-suites.md` (outside ESDK review scope).
+//! `framework/algorithm-suites.md`.
 
 use super::{Error, val_err};
 use crate::message::serializable_types::get_encrypt_key_length;
@@ -186,7 +186,7 @@ pub(crate) fn expand_key_material(
     // as the salt) and the plaintext key yields one pseudo-random key, which is then
     // expanded twice with distinct info labels: `binary_id || DERIVEKEY` for the
     // message encryption key (binding it to the algorithm suite), and `COMMITKEY` for
-    // the commitment key. See `framework/algorithm-suites.md` (outside review scope).
+    // the commitment key. See `framework/algorithm-suites.md`.
     let pseudo_random_key =
         aws_mpl_legacy::primitives::hkdf_extract(alg, message_id, plaintext_key);
     let mut encrypt_key = vec![0u8; usize::try_from(get_kdf_outlen(suite)?).map_err(|_| val_err("KDF output_key_length exceeds usize"))?];
