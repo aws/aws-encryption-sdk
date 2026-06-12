@@ -210,15 +210,10 @@ pub(crate) async fn get_legacy_decryption_materials(
 
     let output = cmm
         .decrypt_materials()
-
         .algorithm_suite_id(convert_alg(algorithm_suite_id)?)
-
         .commitment_policy(convert_commit(commitment_policy)?)
-
         .encrypted_data_keys(convert_edks(header_body.encrypted_data_keys())?)
-
         .encryption_context(encryption_context)
-
         .reproduced_encryption_context(reproduced_encryption_context.clone())
         .send()
         .await?;
@@ -325,12 +320,9 @@ pub(crate) async fn get_legacy_encryption_materials(
         .map_err(|_| val_err("max_plaintext_length too large for i64"))?;
     let output = cmm
         .get_encryption_materials()
-
         .encryption_context(encryption_context)
         .commitment_policy(convert_commit(commitment_policy)?)
-
         .set_algorithm_suite_id(algorithm_suite_id.map(convert_alg).transpose()?)
-
         .set_max_plaintext_length(max_plaintext_length_i64)
         .send()
         .await?;
