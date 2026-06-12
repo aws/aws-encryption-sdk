@@ -10,7 +10,7 @@
     "@aws-crypto/client-browser": "4.2.2",
     "buffer": "6.0.3",
     "commander": "12.1.0",
-    "esbuild": "0.20.2",
+    "esbuild": "0.28.1",
     "js-yaml": "4.1.1",
     "puppeteer": "22.15.0"
   },
