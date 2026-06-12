@@ -52,30 +52,35 @@ async fn test_decrypt_output_includes_algorithm_suite() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_decrypt_no_unauthenticated_data_released() {
+    // Non-signing suite so the per-frame auth tag is the integrity layer under test:
+    // tampering it makes the body plaintext unauthenticated (on-point for this requirement,
+    // unlike tampering the post-authentication signature).
     let keyring = test_keyring().await;
-    let plaintext = b"tamper test data";
-    let enc_input =
-        EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring.clone());
+    let pt = vec![0xABu8; 20];
+    let mut enc_input =
+        EncryptInput::with_legacy_keyring(&pt, EncryptionContext::new(), keyring.clone());
+    enc_input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
+    enc_input.frame_length = FrameLength::new(10).unwrap();
     let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // Tamper with the ciphertext (flip a byte near the end, in the signature
-    // area for the default signing suite).
+    // Tamper the first regular frame's auth tag: [seq_num(4)][IV(12)][content(10)][tag(16)].
+    let body_start = find_body_start(&valid_ct, 10).expect("must find body");
+    let tag_end = body_start + 4 + IV_LEN + 10 + TAG_LEN - 1;
     let mut tampered_ct = valid_ct.clone();
-    let tamper_pos = tampered_ct.len() - 50;
-    tampered_ct[tamper_pos] ^= 0xFF;
+    tampered_ct[tag_end] ^= 0xFF;
 
     let valid_input = DecryptInput::from_encrypt(&valid_ct, &enc_input);
     let tampered_input = DecryptInput::from_encrypt(&tampered_ct, &enc_input);
 
     //= spec/client-apis/decrypt.md#authenticated-data
     //= type=test
-    //= reason=Untampered ct decrypts (Ok with plaintext); tampered ct → Err with no DecryptOutput, no plaintext released
+    //= reason=Untampered ct decrypts; tampered body auth tag → CryptographicError with no DecryptOutput, so unauthenticated plaintext is never released
     //# This operation MUST NOT release any unauthenticated plaintext or unauthenticated associated data.
     assert!(decrypt(&valid_input).await.is_ok(), "valid ct must decrypt");
     assert_eq!(
         decrypt(&tampered_input).await.unwrap_err().kind,
-        ErrorKind::Esdk,
-        "tampered ct must produce Esdk error, no plaintext"
+        ErrorKind::CryptographicError,
+        "tampered body auth tag must produce CryptographicError, no plaintext"
     );
 }
 
@@ -104,7 +109,7 @@ async fn test_streaming_callers_must_discard_on_failure() {
 
     //= spec/client-apis/decrypt.md#security-considerations
     //= type=test
-    //= reason=Untampered ct streams to Ok; tampered signature → Err signals callers to discard any released output
+    //= reason=SDK can only signal failure; tampered signature → Err is the discard trigger, the caller-side discard/rollback is not SDK-observable
     //# Additionally, if this operation fails, callers MUST discard the released plaintext and encryption context
     //# and MUST rollback any processing done due to the released plaintext or encryption context.
     assert!(
