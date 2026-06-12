@@ -25,7 +25,7 @@ pub struct ExpandedKeyMaterial {
 
 // Returns the HKDF-derived (output) key length defined by the algorithm suite.
 // Only HKDF suites carry this length; any other KDF reaching here is a config error.
-fn get_kdf_outlen(suite: &AlgorithmSuite) -> Result<u32, Error> {
+fn get_kdf_output_len(suite: &AlgorithmSuite) -> Result<u32, Error> {
     match suite.kdf {
         DerivationAlgorithm::Hkdf(x) => Ok(x.output_key_length),
         _ => Err(val_err(
@@ -36,7 +36,7 @@ fn get_kdf_outlen(suite: &AlgorithmSuite) -> Result<u32, Error> {
 
 // Returns the HKDF input (plaintext data key) length defined by the algorithm suite.
 // Only HKDF suites carry this length; any other KDF reaching here is a config error.
-fn get_kdf_inlen(suite: &AlgorithmSuite) -> Result<u32, Error> {
+fn get_kdf_input_len(suite: &AlgorithmSuite) -> Result<u32, Error> {
     match suite.kdf {
         DerivationAlgorithm::Hkdf(x) => Ok(x.input_key_length),
         _ => Err(val_err(
@@ -72,15 +72,15 @@ fn digest_length(alg: aws_mpl_legacy::primitives::DigestAlg) -> Result<usize, Er
     }
 }
 
-// Derives a single data key from an input plaintext data key, using "v1"-style
-// key derivation (that is, no key commitment).
-pub(crate) fn derive_key(
+// Derives the message encryption key for V1 suites: a single HKDF call, with no
+// key commitment.
+pub(crate) fn derive_key_v1(
     message_id: &[u8],
     plaintext_data_key: &[u8],
     suite: &AlgorithmSuite,
     on_net_v4_retry: bool,
 ) -> Result<ExpandedKeyMaterial, Error> {
-    // This should only be used for v1 algorithms
+    // This should only be used for V1 algorithms.
     debug_assert!(suite.message_version == 1);
     debug_assert!(valid_derivation_alg(
         &suite.kdf,
@@ -110,23 +110,14 @@ pub(crate) fn derive_key(
             let alg = hkdf.hmac;
             let salt = vec![0u8; digest_length(alg)?];
             let mut derived_key = vec![0u8; usize::try_from(hkdf.output_key_length).map_err(|_| val_err("HKDF output_key_length exceeds usize"))?];
-            if on_net_v4_retry {
-                aws_mpl_legacy::primitives::hkdf(
-                    alg,
-                    &salt,
-                    plaintext_data_key,
-                    &[message_id],
-                    &mut derived_key,
-                )?;
-            } else {
-                aws_mpl_legacy::primitives::hkdf(
-                    alg,
-                    &salt,
-                    plaintext_data_key,
-                    &[&suite.binary_id[..], message_id],
-                    &mut derived_key,
-                )?;
-            }
+
+            // The Net v4.0.0 retry path omits the suite's binary ID from the HKDF
+            // info; the standard path prefixes it.
+            let v4_info: [&[u8]; 1] = [message_id];
+            let standard_info: [&[u8]; 2] = [&suite.binary_id[..], message_id];
+            let info: &[&[u8]] = if on_net_v4_retry { &v4_info } else { &standard_info };
+
+            aws_mpl_legacy::primitives::hkdf(alg, &salt, plaintext_data_key, info, &mut derived_key)?;
 
             Ok(ExpandedKeyMaterial {
                 data_key: Zeroizing::new(derived_key),
@@ -143,19 +134,19 @@ pub(crate) fn derive_key(
 const COMMIT_LABEL: &str = "COMMITKEY";
 const KEY_LABEL: &str = "DERIVEKEY";
 
-// Derives keys from an input plaintext data key, using "v2"-style
-// key derivation (that is, including key commitment).
-pub(crate) fn expand_key_material(
+// Derives the message encryption key and key commitment value for V2 suites:
+// one HKDF-extract followed by two HKDF-expands.
+pub(crate) fn derive_key_v2(
     message_id: &[u8],
-    plaintext_key: &[u8],
+    plaintext_data_key: &[u8],
     suite: &AlgorithmSuite,
 ) -> Result<ExpandedKeyMaterial, Error> {
-    // This should only be used for v2 algorithms
+    // This should only be used for V2 algorithms.
     if suite.message_version != 2 {
-        return Err(val_err("expand_key_material requires message version 2"));
+        return Err(val_err("derive_key_v2 requires message version 2"));
     }
-    // For v2 algorithms, KDF can only be HKDF
-    if u32::from(get_encrypt_key_length(suite)) != get_kdf_outlen(suite)? {
+    // For V2 algorithms, the KDF can only be HKDF.
+    if u32::from(get_encrypt_key_length(suite)) != get_kdf_output_len(suite)? {
         return Err(val_err(
             "Encrypt key length must match KDF output key length",
         ));
@@ -163,13 +154,13 @@ pub(crate) fn expand_key_material(
     if message_id.is_empty() {
         return Err(val_err("Message ID must not be empty"));
     }
-    if plaintext_key.len() != usize::try_from(get_kdf_inlen(suite)?).map_err(|_| val_err("KDF input_key_length exceeds usize"))? {
+    if plaintext_data_key.len() != usize::try_from(get_kdf_input_len(suite)?).map_err(|_| val_err("KDF input_key_length exceeds usize"))? {
         return Err(val_err(
             "Plaintext key length must match KDF input key length",
         ));
     }
 
-    let (digest, commit_len) = match &suite.commitment {
+    let (alg, commit_len) = match &suite.commitment {
         DerivationAlgorithm::Hkdf(hkdf) => (hkdf.hmac, hkdf.output_key_length),
         DerivationAlgorithm::None => {
             return Err(val_err("None is not a valid Commitment Algorithm"));
@@ -178,7 +169,6 @@ pub(crate) fn expand_key_material(
             return Err(val_err("Unknown is not a valid Commitment Algorithm"));
         }
     };
-    let alg = digest;
     let info = [&suite.binary_id[..], KEY_LABEL.as_bytes()];
 
     // V2 key commitment derivation. A single HKDF-extract over the message ID (used
@@ -187,8 +177,8 @@ pub(crate) fn expand_key_material(
     // message encryption key (binding it to the algorithm suite), and `COMMITKEY` for
     // the commitment key. See `framework/algorithm-suites.md`.
     let pseudo_random_key =
-        aws_mpl_legacy::primitives::hkdf_extract(alg, message_id, plaintext_key);
-    let mut encrypt_key = vec![0u8; usize::try_from(get_kdf_outlen(suite)?).map_err(|_| val_err("KDF output_key_length exceeds usize"))?];
+        aws_mpl_legacy::primitives::hkdf_extract(alg, message_id, plaintext_data_key);
+    let mut encrypt_key = vec![0u8; usize::try_from(get_kdf_output_len(suite)?).map_err(|_| val_err("KDF output_key_length exceeds usize"))?];
     let mut commit_key = vec![0u8; usize::try_from(commit_len).map_err(|_| val_err("Commit key length exceeds usize"))?];
     aws_mpl_legacy::primitives::hkdf_expand(&pseudo_random_key, &info, &mut encrypt_key)?;
     aws_mpl_legacy::primitives::hkdf_expand(
@@ -203,22 +193,20 @@ pub(crate) fn expand_key_material(
     })
 }
 
-// Derives key material for encryption/decryption. Delegates out to specific methods
-// based on the input algorithm suite.
+// Derives key material for encryption/decryption. Delegates to the V1 or V2
+// routine based on the algorithm suite's message version.
 pub fn derive_keys(
     message_id: &[u8],
-    plaintext_key: &[u8],
+    plaintext_data_key: &[u8],
     suite: &AlgorithmSuite,
     on_net_v4_retry: bool,
 ) -> Result<ExpandedKeyMaterial, Error> {
     debug_assert!(!message_id.is_empty());
-    debug_assert!(usize::from(get_encrypt_key_length(suite)) == plaintext_key.len());
+    debug_assert!(usize::from(get_encrypt_key_length(suite)) == plaintext_data_key.len());
 
-    if suite.message_version == 2 {
-        expand_key_material(message_id, plaintext_key, suite)
-    } else if suite.message_version == 1 {
-        derive_key(message_id, plaintext_key, suite, on_net_v4_retry)
-    } else {
-        Err(val_err("Unknown Message Version"))
+    match suite.message_version {
+        1 => derive_key_v1(message_id, plaintext_data_key, suite, on_net_v4_retry),
+        2 => derive_key_v2(message_id, plaintext_data_key, suite),
+        _ => Err(val_err("Unknown Message Version")),
     }
 }
