@@ -370,18 +370,11 @@ async fn test_v1_header_body_fields_parsed_from_wire() {
 
     //= spec/client-apis/decrypt.md#v1-header-deserialization
     //= type=test
-    //= reason=AAD length field at offset 20 declares N; content_type_offset = 22 + N
+    //= reason=AAD length field (wire bytes 20..22) = 0 for empty EC; AAD section on wire is exactly the 2-byte length field
     //# - MUST deserialize the [AAD](../data-format/message-header.md#aad).
     let aad_declared_len = u16::from_be_bytes([ct[20], ct[21]]) as usize;
-    let aad_section_len = if aad_declared_len > 0 {
-        2 + aad_declared_len
-    } else {
-        2
-    };
-    assert!(
-        20 + aad_section_len <= content_type_offset,
-        "AAD section bytes (length 2 + declared {aad_declared_len}) consumed before EDKs and trailing fields"
-    );
+    assert_eq!(aad_declared_len, 0, "empty EC ⇒ AAD declared length is 0 on wire");
+    let aad_section_len = 2 + aad_declared_len; // 2-byte length field + declared bytes
 
     //= spec/client-apis/decrypt.md#v1-header-deserialization
     //= type=test

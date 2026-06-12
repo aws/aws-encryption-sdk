@@ -215,23 +215,23 @@ async fn test_kdf_algorithm_from_materials_suite() {
     let mut raw = Vec::new();
     let header_body = read_header_body(&mut cursor, None, &mut raw).unwrap();
     let suite = header_body.algorithm_suite();
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=Wire-parsed suite uses HKDF; decrypt success confirms it was used
-    //# The algorithm suite used to derive a data key from the plaintext data key MUST be
-    //# the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
-    //# [algorithm suite](../framework/algorithm-suites.md) associated with
-    //# the returned decryption materials.
+    // Sanity check: the suite parsed from the header declares HKDF derivation.
     assert!(
         matches!(suite.kdf, aws_mpl_legacy::suites::DerivationAlgorithm::Hkdf(_)),
         "parsed suite must use HKDF derivation, got: {:?}", suite.kdf
     );
 
-    // Decrypt corroborates: HKDF was actually used for key derivation
     let mut dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
     dec_input.commitment_policy = EsdkCommitmentPolicy::ForbidEncryptAllowDecrypt;
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=KDF is an invisible AEAD input; a wrong KDF derives a wrong key → AES-GCM tag fails, so decrypt success proves the suite's HKDF was used
+    //# The algorithm suite used to derive a data key from the plaintext data key MUST be
+    //# the [key derivation algorithm](../framework/algorithm-suites.md#key-derivation-algorithm) included in the
+    //# [algorithm suite](../framework/algorithm-suites.md) associated with
+    //# the returned decryption materials.
     let result = decrypt(&dec_input).await.unwrap();
-    assert_eq!(result.plaintext, pt);
+    assert_eq!(result.plaintext, pt, "HKDF-derived key must decrypt the body");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -347,6 +347,16 @@ async fn test_cmm_decrypt_call_receives_header_edks_and_ec() {
 
     let dec_input = DecryptInput::with_legacy_cmm(&ct, EncryptionContext::new(), spy_cmm);
     let result = decrypt(&dec_input).await.unwrap();
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=Decrypt succeeds only because the input spy CMM was called and returned valid materials
+    //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
+    //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
+    //
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=We passed spy_cmm as the input CMM; the spy observing the call proves the input CMM was used
+    //# The CMM used MUST be the input CMM, if supplied.
     assert_eq!(result.plaintext, pt);
 
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
@@ -364,15 +374,4 @@ async fn test_cmm_decrypt_call_receives_header_edks_and_ec() {
     //# from the message header.
     let ec_keys = observed_ec_keys.lock().unwrap().clone().unwrap();
     assert!(ec_keys.contains(&"spy-key".to_string()), "CMM must receive EC from header containing 'spy-key'");
-
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=Spy CMM was called and returned materials successfully
-    //# This operation MUST obtain this set of [decryption materials](../framework/structures.md#decryption-materials),
-    //# by calling [Decrypt Materials](../framework/cmm-interface.md#decrypt-materials) on a [CMM](../framework/cmm-interface.md).
-    //
-    //= spec/client-apis/decrypt.md#get-the-decryption-materials
-    //= type=test
-    //= reason=We passed spy_cmm as input; it was used
-    //# The CMM used MUST be the input CMM, if supplied.
 }
