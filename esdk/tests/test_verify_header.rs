@@ -88,19 +88,45 @@ async fn test_verify_header_encryption_context_to_only_authenticate() {
     let enc_input = EncryptInput::with_legacy_cmm(plaintext, encryption_context, req_cmm);
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
-    // Decrypt with the reproduced encryption context — proves the EC filtering is correct
-    let dec_input = DecryptInput::with_legacy_keyring(&ct, reproduced_ec, keyring);
-    let result = decrypt(&dec_input).await.unwrap();
+    // The required-EC CMM removed keyA from the header and listed it as required;
+    // decrypt must reconstruct the EC-to-only-authenticate from the reproduced EC
+    // and fold it into the header verification AAD. The filtered EC is an
+    // authenticated input that never appears on the wire, so it can't be parsed —
+    // a successful encrypt/decrypt agreement across the two independent paths
+    // (encrypt-side required-EC CMM vs decrypt-side filtering) is the observable.
+    let valid_input = DecryptInput::with_legacy_keyring(&ct, reproduced_ec, keyring.clone());
     //= spec/client-apis/decrypt.md#verify-the-header
     //= type=test
-    //= reason=Decrypt with reproduced EC succeeds; wrong filtering would fail header auth
+    //= reason=Filtered EC-to-only-authenticate is an off-wire authenticated input; encrypt and decrypt agree only if decrypt filters/serializes it to the required keys per spec
     //# The encryption context to only authenticate MUST be the [encryption context](../framework/structures.md#encryption-context)
     //# in the [decryption materials](../framework/structures.md#decryption-materials)
     //# filtered to only contain key value pairs listed in
     //# the [decryption material's](../framework/structures.md#decryption-materials)
     //# [required encryption context keys](../framework/structures.md#required-encryption-context-keys-1)
     //# serialized according to the [encryption context serialization specification](../framework/structures.md#serialization).
-    assert_eq!(result.plaintext, plaintext);
+    assert_eq!(
+        decrypt(&valid_input).await.unwrap().plaintext,
+        plaintext,
+        "correct reproduced EC must decrypt"
+    );
+
+    // Negative (regression): a wrong value for the required key is rejected, proving
+    // the reproduced required-key value is genuinely consumed as authenticated input
+    // and not silently ignored. The required-key value is bound into the keyring's
+    // wrapping AAD, so a wrong value fails at EDK unwrap before header verification.
+    let wrong_reproduced_ec =
+        small_mismatched_encryption_context(SmallEncryptionContextVariation::A);
+    let bad_input = DecryptInput::with_legacy_keyring(&ct, wrong_reproduced_ec, keyring);
+    let err = decrypt(&bad_input)
+        .await
+        .expect_err("wrong reproduced EC value must fail decryption");
+    let ErrorKind::LegacyError(legacy) = &err.kind else {
+        panic!("expected LegacyError, got: {:?}", err.kind);
+    };
+    assert!(
+        format!("{legacy:?}").contains("unable to decrypt any encrypted data key"),
+        "wrong reproduced required-key value must be rejected, got: {legacy:?}"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread")]
