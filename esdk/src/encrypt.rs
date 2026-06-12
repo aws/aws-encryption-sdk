@@ -270,7 +270,7 @@ async fn internal_encrypt(
         //# the Encrypt operation MUST NOT construct a signature.
     }
 
-    let suite_id = get_esdk_id(header.suite.id)?;
+    let suite_id = get_esdk_algorithm_suite_id(header.suite.id)?;
 
     //= spec/client-apis/encrypt.md#behavior
     //= reason=Ok follows the last write; no bytes appended after footer
@@ -547,7 +547,7 @@ fn step_construct_signature(
     Ok(())
 }
 
-pub fn get_esdk_id(
+pub fn get_esdk_algorithm_suite_id(
     id: aws_mpl_legacy::suites::AlgorithmSuiteId,
 ) -> Result<aws_mpl_legacy::suites::EsdkAlgorithmSuiteId, Error> {
     match id {

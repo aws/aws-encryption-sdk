@@ -144,5 +144,5 @@ pub mod __test_internals {
     pub use crate::message::header_types::HeaderBody;
     pub use crate::message::DigestWriter;
     pub use crate::decrypt::get_ecdsa_alg;
-    pub use crate::encrypt::get_esdk_id;
+    pub use crate::encrypt::get_esdk_algorithm_suite_id;
 }

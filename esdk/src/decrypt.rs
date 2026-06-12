@@ -5,7 +5,7 @@
 //! obtains decryption materials from a keyring/CMM, derives the data key,
 //! and decrypts the plaintext (handling both framed and nonframed formats).
 
-use crate::encrypt::get_esdk_id;
+use crate::encrypt::get_esdk_algorithm_suite_id;
 use crate::error::{Error, esdk_err, val_err};
 use crate::key_derivation;
 use crate::materials;
@@ -245,7 +245,7 @@ async fn internal_decrypt(
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
     //# decrypt MUST yield an error.
-    get_esdk_id(state.header.suite.id)?;
+    get_esdk_algorithm_suite_id(state.header.suite.id)?;
 
     //= spec/client-apis/decrypt.md#behavior
     //= reason=verification_key presence must match suite's signature algorithm; mismatch means misbehaving CMM
@@ -322,7 +322,7 @@ async fn internal_decrypt(
         encryption_context: ec,
         //= spec/client-apis/decrypt.md#algorithm-suite
         //# This algorithm suite MUST be [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum).
-        algorithm_suite_id: get_esdk_id(state.header.suite.id)?,
+        algorithm_suite_id: get_esdk_algorithm_suite_id(state.header.suite.id)?,
     })
 }
 
