@@ -87,9 +87,6 @@ async fn get_hierarchical_keyring(mpl: &MplClient) -> KeyringRef {
         .unwrap()
 }
 
-//= spec/client-apis/decrypt.md#get-the-decryption-materials
-//= type=test
-//# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_repr_encryption_context_with_same_ec_happy_case() {
     let asdf = "asdf".as_bytes();
@@ -125,6 +122,10 @@ async fn test_repr_encryption_context_with_same_ec_happy_case() {
         rsa_keyring.clone(),
     );
     let decrypt_output = decrypt(&decrypt_input).await.unwrap();
+    //= spec/client-apis/decrypt.md#get-the-decryption-materials
+    //= type=test
+    //= reason=Decrypt supplies the same EC used on encrypt and succeeds, proving the reproduced EC is the input EC
+    //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
     assert_eq!(decrypt_output.plaintext, asdf);
 
     // Test KMS
@@ -143,9 +144,6 @@ async fn test_repr_encryption_context_with_same_ec_happy_case() {
     assert_eq!(decrypt_output.plaintext, asdf);
 }
 
-//= spec/client-apis/encrypt.md#get-the-encryption-materials
-//= type=test
-//# The CMM used MUST be the input CMM, if supplied.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     let asdf = "asdf".as_bytes();

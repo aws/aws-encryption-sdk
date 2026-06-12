@@ -133,7 +133,7 @@ pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
 //
 //= spec/client-apis/encrypt.md#plaintext
 //= type=exception
-//= reason=Does not require holding input plaintext in memory
+//= reason=We stream without holding the full plaintext in memory, so this SHOULD-NOT antecedent does not apply
 //# If an implementation requires holding the input entire plaintext in memory in order to perform this operation,
 //# that implementation SHOULD NOT provide an API that allows this input to be streamed.
 pub async fn encrypt_stream(
