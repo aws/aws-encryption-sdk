@@ -23,9 +23,12 @@ async fn test_verify_signature_fails_on_tampered_footer() {
         Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKeyEcdsaP384);
     let valid_ct = encrypt(&enc_input).await.unwrap().ciphertext;
 
+    // Footer layout per the Message Footer spec: [signature length: UInt16 BE (2 bytes)][signature].
+    // Flip a byte inside the signature itself (past the 2-byte length prefix) so verification fails.
     let footer_offset = find_footer_offset_only(&valid_ct);
+    let signature_start = footer_offset + 2;
     let mut tampered_ct = valid_ct.clone();
-    tampered_ct[footer_offset + 3] ^= 0xFF;
+    tampered_ct[signature_start] ^= 0xFF;
 
     let valid_input =
         DecryptInput::with_legacy_keyring(&valid_ct, EncryptionContext::new(), keyring.clone());
