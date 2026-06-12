@@ -63,31 +63,6 @@ async fn test_no_extra_data_in_output_message() {
     //= type=test
     //# Any data that is not specified within the [message format](../data-format/message.md)
     //# MUST NOT be added to the output message.
-    //
-    //= spec/client-apis/encrypt.md#construct-a-frame
-    //= type=test
-    //= reason=parse_all_frames independently walks wire bytes verifying frame structure
-    //# The Encrypt operation MUST serialize a regular frame or final frame with the following specifics:
-    //
-    //= spec/client-apis/encrypt.md#construct-a-frame
-    //= type=test
-    //= reason=parse_all_frames validates seq_num/IV/content/tag layout matches regular frame spec
-    //# Regular frame serialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
-    //
-    //= spec/client-apis/encrypt.md#construct-a-frame
-    //= type=test
-    //= reason=parse_all_frames extracts each field from wire bytes at spec-defined offsets
-    //# For a regular frame, each field MUST be serialized according to its specification:
-    //
-    //= spec/client-apis/encrypt.md#construct-a-frame
-    //= type=test
-    //= reason=parse_all_frames detects ENDFRAME marker and validates final frame layout
-    //# Final frame serialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
-    //
-    //= spec/client-apis/encrypt.md#construct-a-frame
-    //= type=test
-    //= reason=parse_all_frames extracts each final frame field at spec-defined offsets
-    //# For a final frame, each field MUST be serialized according to its specification:
     assert_eq!(
         body_end, ct.len(),
         "V2 non-signing: ciphertext must end exactly at the final frame; trailing bytes = {}",
@@ -154,12 +129,10 @@ async fn test_obtain_materials_from_cmm() {
     let pt = b"obtain materials test";
     let output = encrypt_default(pt).await;
     assert!(!output.ciphertext.is_empty(), "encrypt must produce ciphertext from CMM-provided materials");
-    //= spec/client-apis/encrypt.md#get-the-encryption-materials
-    //= type=test
-    //= reason=encrypt_default passes a keyring; success proves default CMM was constructed
-    //# If instead the caller supplied a [keyring](../framework/keyring-interface.md),
-    //# this behavior MUST use a [default CMM](../framework/default-cmm.md)
-    //# constructed using the caller-supplied keyring as input.
+    // Regression coverage for the basic keyring->materials path. The "a supplied keyring
+    // MUST use a default CMM" requirement is proven by the cross-compat test in
+    // test_keyring_to_default_cmm.rs (test_keyring_constructs_default_cmm_for_encrypt);
+    // a bare encrypt-success here cannot distinguish a default CMM from any other CMM.
     // The output algorithm suite comes from encryption materials; verify it is a valid ESDK suite.
     // The default CMM selects AlgAes256GcmHkdfSha512CommitKeyEcdsaP384 when no suite is specified.
     assert_eq!(
@@ -171,25 +144,39 @@ async fn test_obtain_materials_from_cmm() {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_cmm_used_must_be_input_cmm() {
-    // Create a CMM from a keyring, then pass it as the CMM input.
-    // Decrypt with the same CMM succeeds, proving encrypt used the input CMM.
+    // Wrap a real CMM in a spy, pass the spy as the input CMM, and assert the spy's
+    // get_encryption_materials was invoked. This directly proves encrypt called the
+    // input CMM rather than constructing some other CMM internally.
     let keyring = test_keyring().await;
-    let cmm = mpl()
+    let inner_cmm = mpl()
         .create_default_cryptographic_materials_manager()
         .keyring(keyring.clone())
         .send()
         .await
         .unwrap();
+    let observed_suite = std::sync::Arc::new(std::sync::Mutex::new(None));
+    let observed_len = std::sync::Arc::new(std::sync::Mutex::new(None));
+    let spy = aws_mpl_legacy::dafny::types::cryptographic_materials_manager::CryptographicMaterialsManagerRef::from(SpyCmm {
+        inner: inner_cmm,
+        observed_algorithm_suite_id: observed_suite.clone(),
+        observed_max_plaintext_length: observed_len.clone(),
+    });
     let pt = b"input cmm test";
-    let enc_input = EncryptInput::with_legacy_cmm(pt, EncryptionContext::new(), cmm.clone());
+    let enc_input = EncryptInput::with_legacy_cmm(pt, EncryptionContext::new(), spy);
     let ct = encrypt(&enc_input).await.unwrap().ciphertext;
-    let dec_input = DecryptInput::with_legacy_cmm(&ct, EncryptionContext::new(), cmm);
-    let result = decrypt(&dec_input).await.unwrap();
+
     //= spec/client-apis/encrypt.md#get-the-encryption-materials
     //= type=test
-    //= reason=Decrypt with the same CMM succeeds; proves encrypt used it
+    //= reason=Spy wrapping the input CMM recorded its get_encryption_materials call, proving the input CMM was used
     //# The CMM used MUST be the input CMM, if supplied.
-    assert_eq!(result.plaintext, pt);
+    assert!(
+        observed_len.lock().unwrap().is_some(),
+        "encrypt must call get_encryption_materials on the input CMM"
+    );
+
+    // Round-trip corroboration.
+    let dec_input = DecryptInput::with_legacy_keyring(&ct, EncryptionContext::new(), keyring);
+    assert_eq!(decrypt(&dec_input).await.unwrap().plaintext, pt);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -700,15 +687,13 @@ async fn test_streaming_header_released_after_serialization() {
     let mut output = Vec::new();
     encrypt_stream(&mut reader, &mut output, &stream_input).await.unwrap();
 
-    //= spec/client-apis/encrypt.md#authentication-tag
-    //= type=test
-    //= reason=Streaming output starts with version byte, proving header was released
-    //# If this operation is streaming the encrypted message and
-    //# the entire message header has been serialized,
-    //# the serialized message header MUST be released.
+    // Regression coverage: streaming output begins with a valid header version byte. This
+    // does NOT prove the "header MUST be released" timing requirement (a buffer-everything
+    // implementation would pass identically), so it carries no type=test. The release
+    // behavior is annotated on the source side (write_header in encrypt.rs).
     assert!(
         output[0] == 0x01 || output[0] == 0x02,
-        "streaming output must begin with a valid version byte, proving header was released"
+        "streaming output must begin with a valid version byte"
     );
 }
 
@@ -728,10 +713,11 @@ async fn test_message_bodies_not_equal_must_fail() {
     let valid_input = DecryptInput::with_legacy_keyring(&valid_ct, EncryptionContext::new(), keyring.clone());
     let tampered_input = DecryptInput::with_legacy_keyring(&tampered_ct, EncryptionContext::new(), keyring);
 
-    //= spec/client-apis/encrypt.md#construct-the-body
-    //= type=test
-    //= reason=Untampered ct decrypts; tampered body content → CryptographicError, proving body integrity
-    //# If the message bodies are not equal, the Encrypt operation MUST fail.
+    // Regression coverage: the encrypted body is authenticated, so tampering ciphertext
+    // content is rejected on decrypt. NOTE: this does NOT prove the encrypt-side
+    // "message bodies not equal MUST fail" requirement (it observes decrypt-side AES-GCM
+    // auth, not an encrypt comparison). That requirement is annotated type=implication in
+    // encrypt.rs (the body is written directly to the output, so inequality is impossible).
     assert!(decrypt(&valid_input).await.is_ok(), "valid ct must decrypt");
     assert_eq!(
         decrypt(&tampered_input).await.unwrap_err().kind,
@@ -765,4 +751,63 @@ async fn test_must_not_encrypt_using_nonframed_content_type() {
             "{version:?}: content type must be 0x02 (Framed), not 0x01 (Non-framed)"
         );
     }
+}
+
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_frame_fields_serialized_per_spec() {
+    // A 25-byte plaintext at frame_length=10 under a non-signing suite yields a
+    // deterministic, footer-free structure: 2 regular frames (seq 1, 2; 10 bytes each)
+    // + 1 final frame (seq 3; 5 bytes). Each field below is read independently from the
+    // wire, so a mis-serialized frame field would change the observed value.
+    let pt: &[u8] = b"frame field serialization";
+    assert_eq!(pt.len(), 25, "test relies on a 25-byte plaintext");
+    let ct = encrypt_nonsigning_with_frame_length(pt, 10).await;
+
+    let frames = parse_all_frames(&ct, 10);
+    //= spec/client-apis/encrypt.md#construct-a-frame
+    //= type=test
+    //= reason=Walking the wire yields exactly the regular+final frames the framing requires
+    //# The Encrypt operation MUST serialize a regular frame or final frame with the following specifics:
+    assert_eq!(frames.len(), 3, "25 bytes / frame_length 10 must produce 3 frames");
+
+    // Frames 1-2 of 3: regular frames — sequence numbers read from the wire must be 1 then 2.
+    //= spec/client-apis/encrypt.md#construct-a-frame
+    //= type=test
+    //= reason=On-wire sequence numbers and per-frame layout match the Regular Frame spec
+    //# Regular frame serialization MUST conform to the [Regular Frame](../data-format/message-body.md#regular-frame) specification.
+    //
+    //= spec/client-apis/encrypt.md#construct-a-frame
+    //= type=test
+    //= reason=seq_num/IV/tag are read from wire offsets and checked against the regular-frame layout
+    //# For a regular frame, each field MUST be serialized according to its specification:
+    assert!(!frames[0].is_final && !frames[1].is_final, "first two frames must be regular");
+    assert_eq!(frames[0].seq_num, 1, "first regular frame sequence number must be 1");
+    assert_eq!(frames[1].seq_num, 2, "second regular frame sequence number must be 2");
+    assert_eq!(frames[0].iv.len(), IV_LEN, "regular frame IV must be IV_LEN bytes");
+    assert_eq!(frames[0].tag.len(), TAG_LEN, "regular frame tag must be TAG_LEN bytes");
+
+    // Frame 3 of 3: final frame — ENDFRAME marker and on-wire content length read from the wire.
+    let final_frame = &frames[2];
+    //= spec/client-apis/encrypt.md#construct-a-frame
+    //= type=test
+    //= reason=ENDFRAME sentinel and final-frame layout are read from the wire
+    //# Final frame serialization MUST conform to the [Final Frame](../data-format/message-body.md#final-frame) specification.
+    //
+    //= spec/client-apis/encrypt.md#construct-a-frame
+    //= type=test
+    //= reason=Final-frame seq num and on-wire content-length field are checked against the spec
+    //# For a final frame, each field MUST be serialized according to its specification:
+    assert!(final_frame.is_final, "third frame must be the final frame");
+    assert_eq!(
+        final_frame.endframe_marker_bytes,
+        Some(&ENDFRAME_MARKER[..]),
+        "final frame must carry the ENDFRAME sequence-number-end marker"
+    );
+    assert_eq!(final_frame.seq_num, 3, "final frame sequence number must be 3");
+    assert_eq!(final_frame.content_length, 5, "final frame on-wire content length must be 5");
+
+    // Round-trip corroboration.
+    let decrypted = decrypt_ciphertext(&ct).await.plaintext;
+    assert_eq!(decrypted, pt, "round-trip must recover the plaintext");
 }

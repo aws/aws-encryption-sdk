@@ -193,6 +193,17 @@ pub async fn encrypt_without_signing_suite(plaintext: &[u8]) -> Vec<u8> {
     encrypt(&input).await.unwrap().ciphertext
 }
 
+/// Encrypt under a non-signing committing suite with a given frame length.
+/// Returns ciphertext bytes. Produces deterministic, footer-free multi-frame
+/// messages for per-frame-field assertions.
+pub async fn encrypt_nonsigning_with_frame_length(plaintext: &[u8], frame_length: u32) -> Vec<u8> {
+    let keyring = test_keyring().await;
+    let mut input = EncryptInput::with_legacy_keyring(plaintext, EncryptionContext::new(), keyring);
+    input.algorithm_suite_id = Some(EsdkAlgorithmSuiteId::AlgAes256GcmHkdfSha512CommitKey);
+    input.frame_length = FrameLength::new(frame_length).unwrap();
+    encrypt(&input).await.unwrap().ciphertext
+}
+
 /// Encrypt a 30-byte 0xBB plaintext with frame_length=10 under a non-signing
 /// suite, returning `(plaintext, keyring, ciphertext)` for streaming decrypt
 /// tests that need a multi-frame unsigned payload.

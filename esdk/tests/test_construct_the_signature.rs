@@ -252,12 +252,12 @@ async fn test_footer_serialization() {
 
     //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
-    //= reason=The footer is present in the output as a complete unit (length + signature); partial release would produce a truncated or absent footer
+    //= reason=Length field matches the trailing signature bytes and the footer ends the message: the footer appears as one complete contiguous unit
     //# The above serialized bytes MUST NOT be released until the entire message footer has been serialized.
     assert_eq!(
         offset + 2 + sig_len as usize,
         ct.len(),
-        "footer must be the final complete component — proves it was released atomically"
+        "footer must be the final complete component, contiguous through the end of the message"
     );
 }
 
@@ -355,13 +355,13 @@ async fn test_footer_serialized_releases_all_bytes() {
     assert!(sig_len > 0, "footer must contain a signature");
     //= spec/client-apis/encrypt.md#construct-the-signature
     //= type=test
-    //= reason=Footer is at the end; all bytes released
+    //= reason=Output contains header, body, and footer ending exactly at ct end: every serialized byte was emitted
     //# Once the entire message footer has been serialized,
     //# this operation MUST release any previously unreleased serialized bytes from previous steps
     //# and MUST release the message footer.
     assert_eq!(
         footer_offset + 2 + sig_len as usize,
         ct.len(),
-        "all bytes must be released: footer ends exactly at the end of the ciphertext"
+        "every serialized byte is present: footer ends exactly at the end of the ciphertext"
     );
 }
