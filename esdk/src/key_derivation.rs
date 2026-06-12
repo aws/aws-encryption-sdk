@@ -78,7 +78,6 @@ pub(crate) fn derive_key(
     message_id: &[u8],
     plaintext_data_key: &[u8],
     suite: &AlgorithmSuite,
-    // TODO Post-#619: Refactor, breaking Net v4.0.0 logic out into independent method
     on_net_v4_retry: bool,
 ) -> Result<ExpandedKeyMaterial, Error> {
     // This should only be used for v1 algorithms
