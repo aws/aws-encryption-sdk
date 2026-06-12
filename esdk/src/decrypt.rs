@@ -136,7 +136,9 @@ pub async fn decrypt(input: &DecryptInput<'_>) -> Result<DecryptOutput, Error> {
     //= reason=decrypt() returns Result; caller cannot access output until Ok
     //# If the input encrypted message is not being [streamed](streaming.md) to this operation,
     //# all output MUST NOT be released until after these steps complete successfully.
-    let mut plaintext: Vec<u8> = Vec::with_capacity(input.ciphertext.len());
+    // Plaintext is always smaller than the ciphertext and grows as frames decrypt;
+    // pre-sizing to ciphertext.len() would over-allocate (badly so for small frames).
+    let mut plaintext: Vec<u8> = Vec::new();
 
     let out = internal_decrypt(
         &mut cursor,
@@ -243,7 +245,7 @@ async fn internal_decrypt(
     //= spec/client-apis/decrypt.md#get-the-decryption-materials
     //# If this algorithm suite is not [supported for the ESDK](../framework/algorithm-suites.md#supported-algorithm-suites-enum)
     //# decrypt MUST yield an error.
-    let _esdk_id = get_esdk_id(state.header.suite.id)?;
+    get_esdk_id(state.header.suite.id)?;
 
     //= spec/client-apis/decrypt.md#behavior
     //= reason=verification_key presence must match suite's signature algorithm; mismatch means misbehaving CMM
@@ -669,7 +671,7 @@ fn step_verify_signature(ciphertext: &mut dyn SafeRead, state: &DecryptState) ->
             //= spec/client-apis/decrypt.md#verify-the-signature
             //# - The verification key MUST be the [verification key](../framework/structures.md#verification-key)
             //# in the decryption materials.
-            state.dec_mat.clone(),
+            &state.dec_mat,
             &mut noop,
         )?;
     } else {
@@ -708,7 +710,7 @@ pub fn get_ecdsa_alg(
 fn verify_signature(
     r: &mut dyn SafeRead,
     context: DigestContext,
-    dec_mat: aws_mpl_legacy::DecryptionMaterials,
+    dec_mat: &aws_mpl_legacy::DecryptionMaterials,
     sig_digest: &mut dyn SafeWrite,
 ) -> Result<(), Error> {
     if dec_mat.verification_key.is_none() {
@@ -722,11 +724,12 @@ fn verify_signature(
     //# the Decrypt operation MUST wait for enough bytes to become consumable or for the caller
     //# to indicate an end to the encrypted message.
     let signature = footer::read_footer(r, sig_digest)?;
-    let ecdsa_params = get_ecdsa_alg(dec_mat.algorithm_suite.signature)?;
+    let ecdsa_params = get_ecdsa_alg(dec_mat.algorithm_suite.signature.clone())?;
 
     let valid = ecdsa_verify_context(
         ecdsa_params,
         &dec_mat.verification_key
+            .as_ref()
             .ok_or_else(|| val_err("Decryption materials must contain a verification key for signature verification"))?
             .0,
         context,

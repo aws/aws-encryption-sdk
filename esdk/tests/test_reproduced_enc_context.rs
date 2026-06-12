@@ -10,26 +10,20 @@ mod test_helpers;
 use aws_esdk::*;
 use fixtures::*;
 
-// Positive-path KMS round-trip with the same encryption context on encrypt
-// and decrypt.
+// Positive-path round-trip with the same encryption context on encrypt and
+// decrypt, using a local raw AES keyring (no network/credentials dependency).
 #[tokio::test(flavor = "multi_thread")]
 async fn test_encryption_context_on_decrypt() {
-    let kms_key = KEY_ARN;
     let asdf = "asdf".as_bytes();
 
+    let (namespace, name) = namespace_and_name(0);
     let mpl = mpl();
-    let supplier = mpl.create_default_client_supplier().send().await.unwrap();
-    let kms_client = supplier
-        .get_client()
-        .region("us-west-2")
-        .send()
-        .await
-        .unwrap();
-
-    let kms_keyring = mpl
-        .create_aws_kms_keyring()
-        .kms_key_id(kms_key)
-        .kms_client(kms_client)
+    let raw_aes_keyring = mpl
+        .create_raw_aes_keyring()
+        .key_namespace(namespace)
+        .key_name(name)
+        .wrapping_key(aws_smithy_types::Blob::new([0; 32]))
+        .wrapping_alg(aws_mpl_legacy::dafny::types::AesWrappingAlg::AlgAes256GcmIv12Tag16)
         .send()
         .await
         .unwrap();
@@ -39,7 +33,7 @@ async fn test_encryption_context_on_decrypt() {
     let encrypt_output = encrypt(&EncryptInput::with_legacy_keyring(
         asdf,
         encryption_context.clone(),
-        kms_keyring.clone(),
+        raw_aes_keyring.clone(),
     ))
     .await
     .unwrap();
@@ -49,7 +43,7 @@ async fn test_encryption_context_on_decrypt() {
     let decrypt_output = decrypt(&DecryptInput::with_legacy_keyring(
         &esdk_ciphertext,
         encryption_context,
-        kms_keyring,
+        raw_aes_keyring,
     ))
     .await
     .unwrap();
