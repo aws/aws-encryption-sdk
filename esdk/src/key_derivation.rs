@@ -1,6 +1,13 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-//! Key derivation for V1 (HKDF-extract) and V2 (HKDF-expand) algorithm suites.
+//! Key derivation for the ESDK message encryption key.
+//!
+//! The MPL produces the plaintext data key; this module derives the per-message
+//! encryption key from it (binding it to the message ID) and, for V2 suites, the
+//! key commitment value. V1 uses a single HKDF call; V2 uses one HKDF-extract
+//! followed by two HKDF-expands (encryption key and commitment key). The lengths
+//! and labels come from the algorithm suite definition in
+//! `framework/algorithm-suites.md` (outside ESDK review scope).
 
 use super::{Error, val_err};
 use crate::message::serializable_types::get_encrypt_key_length;
@@ -16,6 +23,8 @@ pub struct ExpandedKeyMaterial {
     pub commitment_key: Option<Zeroizing<Vec<u8>>>,
 }
 
+// Returns the HKDF-derived (output) key length defined by the algorithm suite.
+// Only HKDF suites carry this length; any other KDF reaching here is a config error.
 fn get_kdf_outlen(suite: &AlgorithmSuite) -> Result<u32, Error> {
     match suite.kdf {
         DerivationAlgorithm::Hkdf(x) => Ok(x.output_key_length),
@@ -25,6 +34,8 @@ fn get_kdf_outlen(suite: &AlgorithmSuite) -> Result<u32, Error> {
     }
 }
 
+// Returns the HKDF input (plaintext data key) length defined by the algorithm suite.
+// Only HKDF suites carry this length; any other KDF reaching here is a config error.
 fn get_kdf_inlen(suite: &AlgorithmSuite) -> Result<u32, Error> {
     match suite.kdf {
         DerivationAlgorithm::Hkdf(x) => Ok(x.input_key_length),
@@ -34,6 +45,10 @@ fn get_kdf_inlen(suite: &AlgorithmSuite) -> Result<u32, Error> {
     }
 }
 
+// Sanity-checks that a derivation algorithm is consistent with the suite and the
+// supplied key length. The identity KDF uses the input key verbatim, so its length
+// must already equal the suite's encryption key length. HKDF (and other) suites
+// validate their lengths at derivation time, so they pass here.
 const fn valid_derivation_alg(
     alg: &DerivationAlgorithm,
     suite: &AlgorithmSuite,
@@ -46,6 +61,8 @@ const fn valid_derivation_alg(
     }
 }
 
+// Output length in bytes of each supported hash. Used to size the all-zero HKDF
+// salt for V1 derivation (the salt length equals the hash output length, RFC 5869).
 fn digest_length(alg: aws_mpl_legacy::primitives::DigestAlg) -> Result<usize, Error> {
     match alg {
         aws_mpl_legacy::primitives::DigestAlg::Sha256 => Ok(32),
@@ -122,6 +139,8 @@ pub(crate) fn derive_key(
     }
 }
 
+// HKDF-expand info labels for V2 derivation: COMMITKEY produces the commitment
+// key, DERIVEKEY (prefixed with the suite's binary ID) produces the encryption key.
 const COMMIT_LABEL: &str = "COMMITKEY";
 const KEY_LABEL: &str = "DERIVEKEY";
 
@@ -163,6 +182,11 @@ pub(crate) fn expand_key_material(
     let alg = digest;
     let info = [&suite.binary_id[..], KEY_LABEL.as_bytes()];
 
+    // V2 key commitment derivation. A single HKDF-extract over the message ID (used
+    // as the salt) and the plaintext key yields one pseudo-random key, which is then
+    // expanded twice with distinct info labels: `binary_id || DERIVEKEY` for the
+    // message encryption key (binding it to the algorithm suite), and `COMMITKEY` for
+    // the commitment key. See `framework/algorithm-suites.md` (outside review scope).
     let pseudo_random_key =
         aws_mpl_legacy::primitives::hkdf_extract(alg, message_id, plaintext_key);
     let mut encrypt_key = vec![0u8; usize::try_from(get_kdf_outlen(suite)?).map_err(|_| val_err("KDF output_key_length exceeds usize"))?];
