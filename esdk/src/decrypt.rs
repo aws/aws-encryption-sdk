@@ -646,6 +646,8 @@ fn step_verify_signature(ciphertext: &mut dyn SafeRead, state: &DecryptState) ->
     //# the Decrypt operation MUST verify the message footer using the specified signature algorithm.
     //
     //= spec/client-apis/decrypt.md#verify-the-signature
+    //= type=implication
+    //= reason=step_verify_signature reads from the same SafeRead cursor the body decode left positioned past the body, so the next bytes read are the footer by construction
     //# After deserializing the body, the Decrypt operation MUST deserialize the next encrypted message bytes
     //# as the [message footer](../data-format/message-footer.md).
     if state.dec_mat.verification_key.is_some() {
