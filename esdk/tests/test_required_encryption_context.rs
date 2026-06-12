@@ -89,7 +89,7 @@ async fn get_hierarchical_keyring(mpl: &MplClient) -> KeyringRef {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_repr_encryption_context_with_same_ec_happy_case() {
-    let asdf = "asdf".as_bytes();
+    let plaintext = "asdf".as_bytes();
     let mpl = mpl();
 
     // get keyrings
@@ -111,7 +111,7 @@ async fn test_repr_encryption_context_with_same_ec_happy_case() {
     let encryption_context = small_encryption_context(SmallEncryptionContextVariation::AB);
 
     let encrypt_input =
-        EncryptInput::with_legacy_keyring(asdf, encryption_context.clone(), multi_keyring.clone());
+        EncryptInput::with_legacy_keyring(plaintext, encryption_context.clone(), multi_keyring.clone());
     let encrypt_output = encrypt(&encrypt_input).await.unwrap();
     let esdk_ciphertext = encrypt_output.ciphertext;
 
@@ -126,27 +126,27 @@ async fn test_repr_encryption_context_with_same_ec_happy_case() {
     //= type=test
     //= reason=Decrypt supplies the same EC used on encrypt and succeeds, proving the reproduced EC is the input EC
     //# - Reproduced Encryption Context: This MUST be the [input](#input) encryption context.
-    assert_eq!(decrypt_output.plaintext, asdf);
+    assert_eq!(decrypt_output.plaintext, plaintext);
 
     // Test KMS
     decrypt_input.source = Some(MaterialSource::LegacyKeyring(kms_keyring.clone()));
     let decrypt_output = decrypt(&decrypt_input).await.unwrap();
-    assert_eq!(decrypt_output.plaintext, asdf);
+    assert_eq!(decrypt_output.plaintext, plaintext);
 
     // Test AES
     decrypt_input.source = Some(MaterialSource::LegacyKeyring(aes_keyring.clone()));
     let decrypt_output = decrypt(&decrypt_input).await.unwrap();
-    assert_eq!(decrypt_output.plaintext, asdf);
+    assert_eq!(decrypt_output.plaintext, plaintext);
 
     // Test Hierarchy Keyring
     decrypt_input.source = Some(MaterialSource::LegacyKeyring(h_keyring.clone()));
     let decrypt_output = decrypt(&decrypt_input).await.unwrap();
-    assert_eq!(decrypt_output.plaintext, asdf);
+    assert_eq!(decrypt_output.plaintext, plaintext);
 }
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
-    let asdf = "asdf".as_bytes();
+    let plaintext = "asdf".as_bytes();
     let mpl = mpl();
 
     // get keyrings
@@ -164,9 +164,10 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
         .unwrap();
 
     // Happy Test Case 2
-    // On Encrypt we will only write one encryption context key value to the header
-    // we will then supply only what we didn't write wth no required ec cmm,
-    // This test case is checking that the default cmm is doing the correct filtering by using
+    // On encrypt we write only one encryption context key/value pair to the header.
+    // On decrypt we then supply the key that was not written, as a reproduced
+    // encryption context, so the default CMM must filter the encryption context
+    // correctly for message authentication to succeed.
     let encryption_context = small_encryption_context(SmallEncryptionContextVariation::AB);
     let reproduced_encryption_context =
         small_encryption_context(SmallEncryptionContextVariation::A);
@@ -193,7 +194,7 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
         .await
         .unwrap();
 
-    let encrypt_input = EncryptInput::with_legacy_cmm(asdf, encryption_context, req_cmm);
+    let encrypt_input = EncryptInput::with_legacy_cmm(plaintext, encryption_context, req_cmm);
     let encrypt_output = encrypt(&encrypt_input).await.unwrap();
     let esdk_ciphertext = encrypt_output.ciphertext;
 
@@ -215,20 +216,20 @@ async fn test_remove_on_encrypt_and_supply_on_decrypt_happy_case() {
     //# the [encryption material's](../framework/structures.md#encryption-materials)
     //# [required encryption context keys](../framework/structures.md#required-encryption-context-keys)
     //# serialized according to the [encryption context serialization specification](../framework/structures.md#serialization).
-    assert_eq!(decrypt_output.plaintext, asdf);
+    assert_eq!(decrypt_output.plaintext, plaintext);
 
     // Test KMS
     decrypt_input.source = Some(MaterialSource::LegacyKeyring(kms_keyring.clone()));
     let decrypt_output = decrypt(&decrypt_input).await.unwrap();
-    assert_eq!(decrypt_output.plaintext, asdf);
+    assert_eq!(decrypt_output.plaintext, plaintext);
 
     // Test AES
     decrypt_input.source = Some(MaterialSource::LegacyKeyring(aes_keyring.clone()));
     let decrypt_output = decrypt(&decrypt_input).await.unwrap();
-    assert_eq!(decrypt_output.plaintext, asdf);
+    assert_eq!(decrypt_output.plaintext, plaintext);
 
     // Test Hierarchy Keyring
     decrypt_input.source = Some(MaterialSource::LegacyKeyring(h_keyring.clone()));
     let decrypt_output = decrypt(&decrypt_input).await.unwrap();
-    assert_eq!(decrypt_output.plaintext, asdf);
+    assert_eq!(decrypt_output.plaintext, plaintext);
 }
