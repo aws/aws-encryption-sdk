@@ -42,12 +42,6 @@ async fn test_verify_signature_fails_on_tampered_footer() {
     //= type=test
     //= reason=Untampered → Ok; tampered → Err halts decrypt with no plaintext released
     //# If this verification is not successful, this operation MUST immediately halt and fail.
-    //
-    //= spec/client-apis/decrypt.md#verify-the-signature
-    //= type=test
-    //= reason=Tampering at footer offset (after body) causes signature error, proving footer was deserialized after body
-    //# After deserializing the body, the Decrypt operation MUST deserialize the next encrypted message bytes
-    //# as the [message footer](../data-format/message-footer.md).
     assert!(decrypt(&valid_input).await.is_ok(), "valid ct must decrypt");
     let err = decrypt(&tampered_input)
         .await
