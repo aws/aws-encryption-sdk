@@ -2,12 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Tests for spec/client-apis/encrypt.md#get-the-encryption-materials
-//! Key derivation requirements.
-//!
-//! These call `derive_keys` directly (via `__test_internals`) and assert on the
-//! derived key bytes. An encrypt/decrypt round-trip cannot prove these
-//! requirements: a wrong-but-consistent KDF on both sides still round-trips, so
-//! it shows neither which KDF was selected nor what the KDF produced.
 
 mod fixtures;
 mod test_helpers;
@@ -32,6 +26,9 @@ fn sample_key() -> Vec<u8> {
         .map(|i| u8::try_from(i).expect("index fits in u8"))
         .collect()
 }
+
+// These call `derive_keys` directly so the assertions observe the derived bytes; a
+// round-trip can't prove which KDF ran or what it produced (both sides would agree).
 
 // Identity KDF returns the plaintext data key unchanged (and no commitment key).
 #[test]

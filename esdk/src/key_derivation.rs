@@ -1,13 +1,6 @@
 // Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 //! Key derivation for the ESDK message encryption key.
-//!
-//! The MPL produces the plaintext data key; this module derives the per-message
-//! encryption key from it (binding it to the message ID) and, for V2 suites, the
-//! key commitment value. V1 uses a single HKDF call; V2 uses one HKDF-extract
-//! followed by two HKDF-expands (encryption key and commitment key). The lengths
-//! and labels come from the algorithm suite definition in
-//! `framework/algorithm-suites.md`.
 
 use super::{Error, val_err};
 use crate::message::serializable_types::get_encrypt_key_length;
