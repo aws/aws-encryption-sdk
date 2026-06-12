@@ -23,9 +23,11 @@ fn suite(binary_id: [u8; 2]) -> &'static AlgorithmSuite {
     get_algorithm_suite_info(binary_id).expect("known algorithm suite id")
 }
 
-// A deterministic 32-byte plaintext data key.
+// A deterministic plaintext data key of the AES-256 key length.
 fn sample_key() -> Vec<u8> {
-    (0u8..32).collect()
+    (0..AES_256_KEY_LEN)
+        .map(|i| u8::try_from(i).expect("index fits in u8"))
+        .collect()
 }
 
 // Identity KDF returns the plaintext data key unchanged (and no commitment key).
