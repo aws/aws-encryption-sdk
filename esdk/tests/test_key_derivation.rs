@@ -67,10 +67,12 @@ fn test_identity_kdf_derived_key_equals_plaintext_key() {
 }
 
 // The KDF that runs is the one named by the algorithm suite: the identity suite
-// returns the key verbatim, the HKDF suite transforms it. A second HKDF suite
-// that differs only in hash function (SHA-256 vs SHA-384) makes the hash-selection
-// requirement falsifiable — a hard-coded SHA-256 implementation would produce
-// identical bytes for both HKDF suites.
+// returns the key verbatim, the HKDF suite transforms it. The second HKDF suite
+// (SHA-384) is a supporting regression check that a *different* HKDF suite yields
+// different bytes; it does NOT isolate the hash function, because the two suites
+// also differ in their binary ID, which is mixed into the HKDF info. The
+// hash-function-from-suite requirement is proven falsifiably by the independent
+// SHA-256 known-answer vector in `test_hkdf_derivation_process`.
 #[test]
 fn test_kdf_algorithm_is_selected_from_suite() {
     let pdk = sample_key();
@@ -90,10 +92,10 @@ fn test_kdf_algorithm_is_selected_from_suite() {
     assert_eq!(identity.data_key.as_slice(), pdk.as_slice());
     assert_ne!(hkdf_sha256.data_key.as_slice(), pdk.as_slice());
 
-    //= spec/client-apis/key-derivation.md#hkdf-encryption-key
-    //= type=test
-    //= reason=Two HKDF suites that differ only in hash (SHA-256 vs SHA-384) over the same pdk and message id produce different derived keys; a hard-coded hash would yield identical bytes
-    //# - The hash function MUST be specified by the [algorithm suite key derivation settings](#algorithm-suites-encryption-key-derivation-settings).
+    // Supporting regression check: a different HKDF suite produces different bytes.
+    // This does not isolate the hash function (the suites also differ in binary ID,
+    // which is part of the HKDF info); the hash-from-suite requirement is proven by
+    // the known-answer vector in `test_hkdf_derivation_process`.
     assert_ne!(hkdf_sha256.data_key.as_slice(), hkdf_sha384.data_key.as_slice());
 }
 
@@ -138,6 +140,11 @@ fn test_hkdf_derivation_process() {
     //= reason=Derived key matches an independent OpenSSL HKDF-SHA256 computation over the same salt, ikm, and info
     //# - If the key derivation algorithm is [HKDF](../framework/algorithm-suites.md#hkdf),
     //# the derivation process used MUST be the process described in [HKDF Encryption Key](./key-derivation.md#hkdf-encryption-key).
+    //
+    //= spec/client-apis/key-derivation.md#hkdf-encryption-key
+    //= type=test
+    //= reason=The expected vector was computed with HKDF-SHA-256; no other hash would produce these bytes, proving the hash is taken from the suite
+    //# - The hash function MUST be specified by the [algorithm suite key derivation settings](#algorithm-suites-encryption-key-derivation-settings).
     //
     //= spec/client-apis/key-derivation.md#hkdf-encryption-key
     //= type=test
@@ -214,7 +221,7 @@ fn test_v2_hkdf_derivation_process() {
     hkdf_expand(&prk, &wrong_info, &mut wrong_info_key).expect("hkdf_expand");
     //= spec/client-apis/key-derivation.md#hkdf-encryption-key
     //= type=test
-    //= reason=The preceding assert_eq! pins info=binary_id||DERIVEKEY against an independent HKDF; this assert_ne! falsifies any other info label
+    //= reason=The preceding assert_eq! pins info=binary_id||DERIVEKEY against a recomputation with the underlying HKDF primitive; this assert_ne! falsifies any other info label
     //# - If [key commitment](#key-commitment) for the [algorithm suite encryption key derivation setting](#algorithm-suites-encryption-key-derivation-settings) is True,
     //# then the input info MUST be a concatenation of the [algorithm suite ID](#algorithm-suite-id) followed by the string `DERIVEKEY` as UTF8 encoded bytes.
     assert_ne!(derived.data_key.as_slice(), wrong_info_key.as_slice());
@@ -258,7 +265,7 @@ fn test_v2_hkdf_commit_key_derivation_process() {
     hkdf_expand(&prk, &[b"WRONGLABEL"], &mut wrong_info_commit_key).expect("hkdf_expand");
     //= spec/client-apis/key-derivation.md#hkdf-commit-key
     //= type=test
-    //= reason=The preceding assert_eq! pins info=COMMITKEY against an independent HKDF; this assert_ne! falsifies any other commit-key info label
+    //= reason=The preceding assert_eq! pins info=COMMITKEY against a recomputation with the underlying HKDF primitive; this assert_ne! falsifies any other commit-key info label
     //# - The input info MUST the string `COMMITKEY` as UTF8 encoded bytes by the algorithm suite commitment settings.
     assert_ne!(commit_key.as_slice(), wrong_info_commit_key.as_slice());
 
@@ -346,7 +353,7 @@ fn test_message_id_binds_derived_keys_v2() {
 
     //= spec/client-apis/key-derivation.md#hkdf-encryption-key
     //= type=test
-    //= reason=Holding pdk and suite constant, swapping the message ID changes the encryption key — proves message ID is the salt
+    //= reason=Swapping only the message ID changes the encryption key — proves the message ID is an input to derivation (its salt role is shown by the recomputation test above)
     //# - If salt length is defined for the [algorithm suite encryption key derivation commitment setting](#algorithm-suites-encryption-key-derivation-settings),
     //# the salt MUST be the [message ID](../data-format/message-header.md#message-id) with a length equal to the salt length.
     assert_ne!(a.data_key.as_slice(), b.data_key.as_slice());
@@ -355,7 +362,7 @@ fn test_message_id_binds_derived_keys_v2() {
     let b_commit = b.commitment_key.as_ref().unwrap();
     //= spec/client-apis/key-derivation.md#hkdf-commit-key
     //= type=test
-    //= reason=Holding pdk and suite constant, swapping the 32-byte message ID changes the commit key — proves message ID is the 256-bit salt
+    //= reason=Swapping only the 32-byte message ID changes the commit key — proves the message ID is an input to commit derivation
     //# - The salt MUST be the [message ID](../data-format/message-header.md#message-id) with a length of 256 bits.
     assert_ne!(a_commit.as_slice(), b_commit.as_slice());
 }
