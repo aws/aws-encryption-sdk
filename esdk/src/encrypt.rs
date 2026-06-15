@@ -57,15 +57,8 @@ pub async fn encrypt(input: &EncryptInput<'_>) -> Result<EncryptOutput, Error> {
 
     let mut cursor = std::io::Cursor::new(input.plaintext);
 
-    // Best-effort upper bound for ciphertext size, to minimize reallocations.
-    // The total encrypted content across all frames equals the plaintext length (never more,
-    // regardless of the configured frame length), so the content term is bounded by
-    // plaintext.len() — NOT frames * frame_length, which would massively over-allocate when a
-    // large frame length is paired with a small plaintext (e.g. frame_length = u32::MAX with a
-    // few bytes of plaintext would otherwise reserve ~4 GiB). Per-frame overhead is
-    // SeqNum(4) + IV(12) + AuthTag(16) = 32 bytes; the final frame adds an 8-byte
-    // sequence-number-end marker + content-length field. The 1024-byte header overhead absorbs
-    // a typical V2 header. Saturating arithmetic keeps this safe for pathological inputs.
+    // Best-effort capacity hint to minimize reallocations. Total encrypted content equals
+    // plaintext.len(), plus fixed per-frame and header overhead.
     let frame_length_usize = usize::try_from(input.frame_length.0.get()).unwrap_or(usize::MAX);
     let frames = input
         .plaintext
