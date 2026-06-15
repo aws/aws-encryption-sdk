@@ -8,13 +8,13 @@ use aws_mpl_legacy::suites::AlgorithmSuite;
 use aws_mpl_legacy::suites::DerivationAlgorithm;
 use zeroize::Zeroizing;
 
-/// Convenience container to hold both a data key and an optional commitment key
-/// to support algorithm suites that provide commitment and those that do not.
+// Holds a derived data key and an optional commitment key (the latter only for
+// committing algorithm suites). This is `pub` only so `derive_keys` is reachable
+// from integration tests via `__test_internals`; it is not supported public API.
+#[doc(hidden)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ExpandedKeyMaterial {
-    /// The derived data encryption key.
     pub data_key: Zeroizing<Vec<u8>>,
-    /// The derived commitment key, present only for committing algorithm suites.
     pub commitment_key: Option<Zeroizing<Vec<u8>>>,
 }
 
@@ -211,8 +211,11 @@ pub(crate) fn derive_key_v2(
     })
 }
 
-/// Derives key material for encryption/decryption. Delegates to the V1 or V2
-/// routine based on the algorithm suite's message version.
+// Derives key material for encryption/decryption. Delegates to the V1 or V2
+// routine based on the algorithm suite's message version. `pub` only so it is
+// reachable from integration tests via `__test_internals`; internal callers use
+// the crate path.
+#[doc(hidden)]
 pub fn derive_keys(
     message_id: &[u8],
     plaintext_data_key: &[u8],
