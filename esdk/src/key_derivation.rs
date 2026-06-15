@@ -12,6 +12,7 @@ use zeroize::Zeroizing;
 // committing algorithm suites). This is `pub` only so `derive_keys` is reachable
 // from integration tests via `__test_internals`; it is not supported public API.
 #[doc(hidden)]
+#[expect(clippy::exhaustive_structs, reason = "test-internal struct, not public API")]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ExpandedKeyMaterial {
     pub data_key: Zeroizing<Vec<u8>>,
@@ -71,6 +72,7 @@ pub(crate) fn derive_key_v1(
         //= spec/client-apis/encrypt.md#get-the-encryption-materials
         //# - If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
         //# then the derived data key MUST be the same as the plaintext data key.
+        //
         //= spec/client-apis/decrypt.md#get-the-decryption-materials
         //# If the key derivation algorithm is the [identity KDF](../framework/algorithm-suites.md#identity-kdf),
         //# then the derived data key MUST be the same as the plaintext data key.
