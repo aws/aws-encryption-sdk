@@ -123,8 +123,9 @@ pub(crate) fn read_content_type(
     }
 }
 
+/// Header body fields for a version 1.0 message format.
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub(crate) struct V1HeaderBody {
+pub struct V1HeaderBody {
     pub(crate) message_type: MessageType,
     pub(crate) algorithm_suite: AlgorithmSuite,
     pub(crate) message_id: MessageId,
@@ -135,8 +136,9 @@ pub(crate) struct V1HeaderBody {
     pub(crate) frame_length: u32,
 }
 
+/// Header body fields for a version 2.0 message format.
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub(crate) struct V2HeaderBody {
+pub struct V2HeaderBody {
     pub(crate) algorithm_suite: AlgorithmSuite,
     pub(crate) message_id: MessageId,
     pub(crate) encryption_context: ESDKCanonicalEncryptionContext,
@@ -146,9 +148,12 @@ pub(crate) struct V2HeaderBody {
     pub(crate) suite_data: Vec<u8>,
 }
 
+/// The body of a message header, parameterized by message format version.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum HeaderBody {
+    /// A version 1.0 header body.
     V1Body(V1HeaderBody),
+    /// A version 2.0 header body.
     V2Body(V2HeaderBody),
 }
 
@@ -165,6 +170,7 @@ impl HeaderBody {
             Self::V2Body(body) => body.content_type,
         }
     }
+    /// Returns the message id bytes from the header body.
     pub const fn message_id(&self) -> &[u8] {
         match self {
             Self::V1Body(body) => body.message_id.as_slice(),
@@ -183,6 +189,7 @@ impl HeaderBody {
             Self::V2Body(body) => body.encrypted_data_keys.as_slice(),
         }
     }
+    /// Returns the algorithm suite recorded in the header body.
     pub const fn algorithm_suite(&self) -> &AlgorithmSuite {
         match self {
             Self::V1Body(body) => &body.algorithm_suite,
@@ -197,10 +204,14 @@ impl HeaderBody {
     }
 }
 
+/// Header authentication data carried in a message header.
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub(crate) enum HeaderAuth {
+pub enum HeaderAuth {
+    /// AES-GCM header authentication: an IV and the computed authentication tag.
     AESMac {
+        /// The header initialization vector.
         header_iv: Vec<u8>,
+        /// The header authentication tag.
         header_auth_tag: Vec<u8>,
     },
 }

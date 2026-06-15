@@ -698,6 +698,8 @@ fn build_encryption_context_to_only_authenticate(
         .collect()
 }
 
+/// Extracts the ECDSA signature algorithm from a generic MPL signature
+/// algorithm, returning an error if the algorithm is not ECDSA.
 pub fn get_ecdsa_alg(
     alg: aws_mpl_legacy::suites::SignatureAlgorithm,
 ) -> Result<EcdsaSignatureAlgorithm, Error> {

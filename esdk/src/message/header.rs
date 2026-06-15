@@ -28,6 +28,8 @@ pub(crate) const NONFRAMED_SEQUENCE_NUMBER: u32 = 1;
 //# due to restrictions imposed by the [implemented algorithms](../framework/algorithm-suites.md).
 pub(crate) const SAFE_MAX_ENCRYPT: u64 = 0x000F_FFFF_FFE0;
 
+/// Parsed message header together with the raw header bytes, decrypted
+/// encryption context, resolved algorithm suite, and header authentication.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct HeaderInfo {
     pub(crate) body: HeaderBody,
@@ -64,6 +66,8 @@ pub(crate) fn write_header_body(w: &mut dyn SafeWrite, body: &HeaderBody) -> Res
     }
 }
 
+/// Deserializes a message header body from the ciphertext stream, writing the
+/// consumed raw header bytes to `raw_header` for later authentication.
 pub fn read_header_body(
     ciphertext: &mut dyn SafeRead,
     max_edks: Option<std::num::NonZeroUsize>,
@@ -160,6 +164,8 @@ pub(crate) fn validate_max_encrypted_data_keys(
     Ok(())
 }
 
+/// Generates a fresh message id of the size required by the algorithm suite's
+/// message format version.
 pub fn generate_message_id(suite: &AlgorithmSuite) -> Result<MessageId, Error> {
     // Defense-in-depth: in practice every supported suite has message_version 1 or 2
     // (suites are sourced from the static algorithm-suites table), but match explicitly

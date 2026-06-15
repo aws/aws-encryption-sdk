@@ -1,5 +1,4 @@
 use crate::types::*;
-use aws_mpl_legacy::suites::EsdkAlgorithmSuiteId;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 
