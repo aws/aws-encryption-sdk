@@ -5,6 +5,8 @@
 
 use aws_esdk::test_vectors::{decrypt_test_vectors, encrypt_test_vectors};
 
+// Decrypts the Java implementation's test-vector manifest, proving cross-implementation
+// decrypt interop against ciphertexts this crate did not produce.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_java_decrypt() {
     decrypt_test_vectors("test_vectors_java", "decrypt-manifest.json", "")
@@ -12,6 +14,7 @@ async fn test_java_decrypt() {
         .expect("Java decrypt test vectors must pass");
 }
 
+// Decrypts the Python implementation's test-vector manifest (independent producer).
 #[tokio::test(flavor = "multi_thread")]
 async fn test_python_decrypt() {
     decrypt_test_vectors("test_vectors_python", "decrypt_message.json", "")
@@ -19,6 +22,8 @@ async fn test_python_decrypt() {
         .expect("Python decrypt test vectors must pass");
 }
 
+// Round-trips this crate's own vectors through the harness: encrypt the Rust manifest,
+// then decrypt the generated manifest.
 #[tokio::test(flavor = "multi_thread")]
 async fn test_rust_encrypt_decrypt() {
     let manifest_path = "test_vectors_rust";
