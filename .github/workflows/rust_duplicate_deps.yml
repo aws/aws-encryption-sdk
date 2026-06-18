@@ -1,0 +1,52 @@
+# Fails CI if more than one version of the aws-lc native crates
+# (aws-lc-sys / aws-lc-fips-sys) resolves into the Rust dependency tree.
+# aws-lc-rs pulls one of these crates transitively; declaring a divergent
+# direct version causes a second copy to compile (~2x native C build time).
+name: Rust Duplicate aws-lc Dependency Check
+
+on:
+  pull_request: {}
+  push:
+    branches:
+      - mainline
+
+jobs:
+  duplicate-aws-lc:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Setup Rust Toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          cache: false
+
+      # The Rust sources under runtimes/rust are partially generated
+      # (gitignored), but `cargo tree` only needs a resolvable manifest.
+      # Stub any missing targets so dependency resolution succeeds without
+      # running codegen.
+      - name: Stub generated targets
+        shell: bash
+        working-directory: ./AwsEncryptionSDK/runtimes/rust
+        run: |
+          mkdir -p src examples
+          [ -f src/lib.rs ] || : > src/lib.rs
+          [ -f examples/main.rs ] || echo 'fn main() {}' > examples/main.rs
+
+      - name: Check for duplicate aws-lc-sys / aws-lc-fips-sys
+        shell: bash
+        working-directory: ./AwsEncryptionSDK/runtimes/rust
+        run: |
+          set -euo pipefail
+          fail=0
+          for args in "" "--no-default-features --features fips"; do
+            dupes=$(cargo tree -d $args 2>/dev/null | grep -E '^aws-lc-(sys|fips-sys) v' || true)
+            if [ -n "$dupes" ]; then
+              echo "::error::Duplicate aws-lc native crate detected (cargo tree -d $args):"
+              cargo tree -d $args || true
+              fail=1
+            fi
+          done
+          exit $fail
