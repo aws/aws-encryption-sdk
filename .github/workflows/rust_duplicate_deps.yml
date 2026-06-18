@@ -4,6 +4,9 @@
 # direct version causes a second copy to compile (~2x native C build time).
 name: Rust Duplicate aws-lc Dependency Check
 
+permissions:
+  contents: read
+
 on:
   pull_request: {}
   push:
