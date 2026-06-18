@@ -64,6 +64,19 @@ jobs:
           check_profile() {
             label="$1"
             args="$2"
+
+            # Liveness guard: a "no duplicates" result is only trustworthy if the
+            # tree actually resolved. This check intentionally ignores cargo
+            # errors below, so without this guard a resolution failure (broken
+            # stub, missing submodule, dropped feature, etc.) would pass silently.
+            # aws-lc-rs is a non-optional dependency, so it MUST appear; if it
+            # does not, fail loudly instead of reporting a false "all clear".
+            if ! cargo tree $args 2>/dev/null | grep -q 'aws-lc-rs v'; then
+              echo "::error::Duplicate check could not resolve the dependency tree ($label build) -- failing instead of passing silently. Run 'cargo tree $args' locally to debug."
+              status=1
+              return
+            fi
+
             dup=$(cargo tree -d $args 2>/dev/null || true)
             awslc=$(printf '%s\n' "$dup" | awk 'BEGIN{RS="";ORS="\n\n"} /^aws-lc-(sys|fips-sys) v/' || true)
             if [ -n "$(printf '%s' "$awslc" | tr -d '[:space:]')" ]; then
