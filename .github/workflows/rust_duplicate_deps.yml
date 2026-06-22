@@ -1,0 +1,111 @@
+# Fails CI if more than one version of the aws-lc native crates
+# (aws-lc-sys / aws-lc-fips-sys) resolves into the Rust dependency tree.
+#
+# aws-lc-rs pulls in one of these -sys crates transitively. Declaring a
+# DIRECT dependency on a different version forces a second copy of AWS-LC to
+# compile, which has real costs:
+#   * ~2x native C build time, and a larger binary (two libcrypto copies are
+#     statically linked).
+#   * The SDK's raw FFI calls (aws_lc_sys_impl::*) run against the version
+#     declared directly here, while aws-lc-rs's safe APIs run against the
+#     version aws-lc-rs pulls in. The two paths can therefore use different
+#     AWS-LC builds, and the raw-FFI path can stay on a stale or vulnerable
+#     version independently of aws-lc-rs. Only byte buffers cross between the
+#     two copies, so it is memory-safe -- but wasteful and a security-skew risk.
+#
+# The fix is always to pin the direct -sys version to match aws-lc-rs.
+name: Rust Duplicate aws-lc Dependency Check
+
+on:
+  # Invoked by pull.yml so this check is part of the required
+  # pr-ci-all-required gate (a failure must block merge). Also runs
+  # directly on push to the default branch.
+  workflow_call: {}
+  push:
+    branches:
+      - mainline
+
+permissions:
+  contents: read
+
+jobs:
+  duplicate-aws-lc:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Setup Rust Toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          cache: false
+
+      # The Rust sources under runtimes/rust are partially generated
+      # (gitignored), but `cargo tree` only needs a resolvable manifest.
+      # Stub any missing targets so dependency resolution succeeds without
+      # running codegen.
+      - name: Stub generated targets
+        shell: bash
+        working-directory: ./AwsEncryptionSDK/runtimes/rust
+        run: |
+          mkdir -p src examples
+          [ -f src/lib.rs ] || : > src/lib.rs
+          [ -f examples/main.rs ] || echo 'fn main() {}' > examples/main.rs
+
+      - name: Check for duplicate aws-lc-sys / aws-lc-fips-sys
+        shell: bash
+        working-directory: ./AwsEncryptionSDK/runtimes/rust
+        run: |
+          set -euo pipefail
+          status=0
+
+          # Print the duplicate aws-lc blocks for one feature profile, and if
+          # any exist, explain what to do. `cargo tree -d` lists each duplicated
+          # package followed by the reverse-dependency tree, so it shows exactly
+          # which package pulls in each version (e.g. the direct dep vs aws-lc-rs).
+          check_profile() {
+            label="$1"
+            args="$2"
+
+            # Liveness guard: a "no duplicates" result is only trustworthy if the
+            # tree actually resolved. This check intentionally ignores cargo
+            # errors below, so without this guard a resolution failure (broken
+            # stub, missing submodule, dropped feature, etc.) would pass silently.
+            # aws-lc-rs is a non-optional dependency, so it MUST appear; if it
+            # does not, fail loudly instead of reporting a false "all clear".
+            if ! cargo tree $args 2>/dev/null | grep -q 'aws-lc-rs v'; then
+              echo "::error::Duplicate check could not resolve the dependency tree ($label build) -- failing instead of passing silently. Run 'cargo tree $args' locally to debug."
+              status=1
+              return
+            fi
+
+            dup=$(cargo tree -d $args 2>/dev/null || true)
+            awslc=$(printf '%s\n' "$dup" | awk 'BEGIN{RS="";ORS="\n\n"} /^aws-lc-(sys|fips-sys) v/' || true)
+            if [ -n "$(printf '%s' "$awslc" | tr -d '[:space:]')" ]; then
+              status=1
+              echo "::error::Duplicate aws-lc native crate detected ($label build). See log for how to fix."
+              echo "------------------------------------------------------------------------"
+              echo "Duplicate aws-lc native crate(s) in the $label dependency tree."
+              echo "Each version below compiles a separate copy of AWS-LC. The tree shows"
+              echo "which package pulls in each version:"
+              echo ""
+              printf '%s\n' "$awslc" | sed 's/^/    /'
+              echo "Declared directly in this crate's Cargo.toml:"
+              grep -nE '^aws-lc-(sys|fips-sys)[[:space:]]' Cargo.toml | sed 's/^/    /' || true
+              echo ""
+              echo "Why this matters: a different DIRECT -sys version forces a second copy"
+              echo "of AWS-LC to compile (~2x native C build time + larger binary), and the"
+              echo "SDK's raw FFI (aws_lc_sys_impl::*) then uses the version YOU declared"
+              echo "while aws-lc-rs uses the one it pulls in -- so the raw path can stay on a"
+              echo "stale/vulnerable AWS-LC independently of aws-lc-rs."
+              echo ""
+              echo "How to fix: set the direct version to the SAME version aws-lc-rs resolves"
+              echo "to (shown above), then confirm locally with:  cargo tree -d"
+              echo "------------------------------------------------------------------------"
+            fi
+          }
+
+          check_profile "default" ""
+          check_profile "fips" "--no-default-features --features fips"
+          exit $status
