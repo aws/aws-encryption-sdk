@@ -9,6 +9,9 @@ on:
   pull_request:
     paths:
       - ".github/workflows/performance-benchmarks.yml"
+      # TEMP (DO NOT MERGE): run on PRs touching benchmark sources to validate
+      # the CloudWatch dashboard updates. Revert before merging.
+      - "esdk-performance-testing/**"
   schedule:
     - cron: "00 09 * * *"
 
