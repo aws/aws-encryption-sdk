@@ -17,7 +17,10 @@
 name: Rust Duplicate aws-lc Dependency Check
 
 on:
-  pull_request: {}
+  # Invoked by pull.yml so this check is part of the required
+  # pr-ci-all-required gate (a failure must block merge). Also runs
+  # directly on push to the default branch.
+  workflow_call: {}
   push:
     branches:
       - mainline
