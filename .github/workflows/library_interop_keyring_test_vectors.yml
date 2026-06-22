@@ -52,7 +52,7 @@ jobs:
           special-characters-workaround: "true" # Some environments (example: windowsOS) cannot tolerate special characters in a secret key.
           role-duration-seconds: 7200
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: "recursive"
 
@@ -73,7 +73,7 @@ jobs:
 
       - name: Checkout C-ESDK
         if: matrix.language == 'c'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: "aws/aws-encryption-sdk-c"
           path: ./${{ matrix.library }}/aws-encryption-sdk-c
@@ -81,7 +81,7 @@ jobs:
 
       - name: Checkout AWS C++ SDK
         if: matrix.language == 'c'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: "aws/aws-sdk-cpp"
           path: ./${{ matrix.library }}/aws-encryption-sdk-c/aws-sdk-cpp
@@ -347,7 +347,7 @@ jobs:
           special-characters-workaround: "true" # Some environments (example: windowsOS) cannot tolerate special characters in a secret key.
           role-duration-seconds: 7200
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: "recursive"
 
@@ -368,7 +368,7 @@ jobs:
 
       - name: Checkout C-ESDK
         if: matrix.decrypting_language == 'c'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: "aws/aws-encryption-sdk-c"
           path: ./${{ matrix.library }}/aws-encryption-sdk-c
@@ -376,7 +376,7 @@ jobs:
 
       - name: Checkout AWS C++ SDK
         if: matrix.decrypting_language == 'c'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: "aws/aws-sdk-cpp"
           path: ./${{ matrix.library }}/aws-encryption-sdk-c/aws-sdk-cpp
