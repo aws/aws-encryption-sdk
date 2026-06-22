@@ -52,6 +52,8 @@ jobs:
     uses: ./.github/workflows/library_rust_tests.yml
     with:
       dafny: ${{needs.getVersion.outputs.version}}
+  pr-ci-rust-duplicate-deps:
+    uses: ./.github/workflows/rust_duplicate_deps.yml
   pr-ci-go:
     needs: getVersion
     uses: ./.github/workflows/library_go_tests.yml
@@ -84,6 +86,7 @@ jobs:
       - pr-ci-verification
       - pr-ci-net
       - pr-ci-rust
+      - pr-ci-rust-duplicate-deps
       - pr-ci-go
       - pr-test-vectors
       - pr-dafny-keyring-test-vectors
