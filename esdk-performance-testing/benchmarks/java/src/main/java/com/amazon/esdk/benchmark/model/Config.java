@@ -3,6 +3,7 @@
 
 package com.amazon.esdk.benchmark.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -13,6 +14,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// Other languages share this config file and add keys Java doesn't model.
+@JsonIgnoreProperties(ignoreUnknown = true)
 public final class Config {
 
   private static final Logger logger = LoggerFactory.getLogger(Config.class);
