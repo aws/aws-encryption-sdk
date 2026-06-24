@@ -1,10 +1,36 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions"
-    directory: ".github/workflows"
+    directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+    groups:
+      all:
+        patterns: ["*"]
+
+  - package-ecosystem: "nuget"
+    directories:
+      - "*/runtimes/net"
+    schedule:
+      interval: "weekly"
+    groups:
+      all:
+        patterns: ["*"]
+
+  - package-ecosystem: "gomod"
+    directories:
+      - "*/runtimes/go/**"
+    schedule:
+      interval: "weekly"
+    groups:
+      all:
+        patterns: ["*"]
+
   - package-ecosystem: "cargo"
-    directory: "AwsEncryptionSDK/runtimes/rust"
+    directories:
+      - "*/runtimes/rust"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+    groups:
+      all:
+        patterns: ["*"]
