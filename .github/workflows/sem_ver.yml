@@ -15,7 +15,7 @@ jobs:
         run: |
           git config --global core.longpaths true
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
       # We need access to the role that is able to get CI Bot Creds
@@ -49,6 +49,6 @@ jobs:
 
       # Test to see if we can setup semantic release
       - name: Test Semantic Release Installation
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - run: |
           make setup_semantic_release
