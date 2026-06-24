@@ -9,6 +9,7 @@ replace (
 	github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives => ../../../../mpl/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go/
 	github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library => ../../../../mpl/StandardLibrary/runtimes/go/ImplementationFromDafny-go/
 	github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk => ../ImplementationFromDafny-go
+	github.com/dafny-lang/DafnyRuntimeGo/v4 => ../../../../DafnyRuntimeGo/v4/
 )
 
 require (

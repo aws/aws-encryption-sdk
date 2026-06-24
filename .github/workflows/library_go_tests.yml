@@ -94,6 +94,12 @@ jobs:
         run: |
           make purge_polymorph_code
 
+      - name: Go Vet (copylocks, atomic, etc.)
+        working-directory: ${{ matrix.library }}/runtimes/go
+        shell: bash
+        run: |
+          go vet ./...
+
       - name: Test Go
         working-directory: ${{ matrix.library }}
         shell: bash
@@ -106,3 +112,10 @@ jobs:
         shell: bash
         run: |
           go run main.go
+
+      - name: Race Detection Test for Go
+        if: matrix.library == 'AwsEncryptionSDK'
+        working-directory: ${{ matrix.library }}/runtimes/go/examples
+        shell: bash
+        run: |
+          go test -race -count=1 -timeout 5m ./multithreading/
