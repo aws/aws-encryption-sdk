@@ -89,7 +89,7 @@ jobs:
 
       - name: Build and install aws-sdk-cpp (with retry) for NOT ubuntu
         if: matrix.language == 'c' && matrix.os != 'ubuntu-22.04'
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           timeout_minutes: 30
           max_attempts: 3
@@ -108,7 +108,7 @@ jobs:
 
       - name: Build and install aws-sdk-cpp (with retry) for ubuntu
         if: matrix.os == 'ubuntu-22.04' && matrix.language == 'c'
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           timeout_minutes: 30
           max_attempts: 3
