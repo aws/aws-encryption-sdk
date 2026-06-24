@@ -33,7 +33,7 @@ duvet_report:
 		--html specification_compliance_report.html
 
 setup_semantic_release:
-	npm i --no-save semantic-release @semantic-release/changelog semantic-release-replace-plugin conventional-changelog-conventionalcommits @semantic-release/git
+	npm i --no-save semantic-release @semantic-release/changelog semantic-release-replace-plugin conventional-changelog-conventionalcommits @semantic-release/git @semantic-release/exec
 
 run_semantic_release:
 	npx semantic-release --no-ci
