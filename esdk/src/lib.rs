@@ -138,7 +138,7 @@ pub(crate) mod message;
 #[doc(hidden)]
 pub mod __test_internals {
     pub use crate::message::body::body_aad::{body_aad, BodyAADContent};
-    pub use crate::key_derivation::{derive_keys, ExpandedKeyMaterial};
+    pub use crate::key_derivation::{derive_key_v2, derive_keys, ExpandedKeyMaterial};
     pub use crate::message::header::{HeaderInfo, read_header_body, generate_message_id};
     pub use crate::message::header_auth::read_header_auth_tag;
     pub use crate::message::header_types::HeaderBody;
