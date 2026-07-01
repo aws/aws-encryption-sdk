@@ -30,7 +30,9 @@ public final class Program {
       );
       printSummary(results, options.outputPath());
     } catch (final Exception ex) {
-      System.out.println("Benchmark failed: " + ex.getMessage());
+      System.err.println("Benchmark failed: " + ex.getMessage());
+      ex.printStackTrace();
+      System.exit(1);
     }
   }
 
