@@ -3,6 +3,7 @@
 //! Key derivation for the ESDK message encryption key.
 
 use super::{Error, val_err};
+use crate::message::header_types::MESSAGE_ID_LEN_V2;
 use crate::message::serializable_types::get_encrypt_key_length;
 use aws_mpl_legacy::suites::AlgorithmSuite;
 use aws_mpl_legacy::suites::DerivationAlgorithm;
@@ -179,8 +180,11 @@ pub fn derive_key_v2(
             "Encryption key length {encrypt_key_len} does not match KDF output key length {kdf_output_len}"
         )));
     }
-    if message_id.is_empty() {
-        return Err(val_err("Message ID must not be empty"));
+    if message_id.len() != MESSAGE_ID_LEN_V2 {
+        return Err(val_err(format!(
+            "V2 message ID (HKDF salt) must be {MESSAGE_ID_LEN_V2} bytes, got {}",
+            message_id.len()
+        )));
     }
     let kdf_input_len = get_kdf_input_len(suite)?;
     let Ok(kdf_input_len) = usize::try_from(kdf_input_len) else {

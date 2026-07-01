@@ -85,7 +85,7 @@ pub(crate) async fn get_decryption_materials(
     };
     if !is_esdk_encryption_context(&materials.encryption_context) {
         return Err(val_err(
-            "CMM failed to return serializable encryption materials",
+            "CMM failed to return serializable decryption materials",
         ));
     }
     Ok(materials)
