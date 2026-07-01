@@ -337,6 +337,41 @@ fn test_kdf_input_length_validation_too_long() {
     );
 }
 
+// A V2 message ID that is not exactly 256 bits (32 bytes) must be rejected: it is
+// used verbatim as the HKDF salt, so a wrong length would otherwise HKDF-extract
+// cleanly and silently derive the wrong keys. Calls `derive_key_v2` directly so the
+// wrapper's debug_assert does not preempt the runtime check.
+#[test]
+fn test_v2_message_id_length_validation() {
+    let alg_suite = suite(HKDF_SHA512_COMMIT_AES_256);
+    let pdk = sample_key();
+
+    // Suite expects a 32-byte (256-bit) message ID; pass 31 bytes.
+    let short_message_id = [0x42u8; V2_MESSAGE_ID_LEN - 1];
+    let result = derive_key_v2(&short_message_id, &pdk, alg_suite);
+
+    //= spec/client-apis/key-derivation.md#hkdf-encryption-key
+    //= type=test
+    //= reason=A message ID that is not the suite salt length is rejected, enforcing the salt-length requirement
+    //# - If salt length is defined for the [algorithm suite encryption key derivation commitment setting](#algorithm-suites-encryption-key-derivation-settings),
+    //# the salt MUST be the [message ID](../data-format/message-header.md#message-id) with a length equal to the salt length.
+    //
+    //= spec/client-apis/key-derivation.md#hkdf-commit-key
+    //= type=test
+    //= reason=A message ID that is not 256 bits is rejected, enforcing the commit-key salt length
+    //# - The salt MUST be the [message ID](../data-format/message-header.md#message-id) with a length of 256 bits.
+    let err = result.expect_err("wrong-length V2 message ID must be rejected");
+    assert_eq!(
+        err.kind,
+        ErrorKind::ValidationError,
+        "wrong-length message ID must yield ErrorKind::ValidationError, got: {err:?}"
+    );
+    assert!(
+        err.to_string().contains("message ID"),
+        "error must name the message ID length problem, got: {err}"
+    );
+}
+
 // The message ID is mixed into the V2 derivation as the HKDF salt, so changing
 // only the message ID (with all other inputs held equal) must yield a different
 // encryption key AND a different commitment key. Falsifies any path that ignores
