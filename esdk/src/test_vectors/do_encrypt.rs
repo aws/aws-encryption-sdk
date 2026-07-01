@@ -46,7 +46,7 @@ pub(crate) fn make_plain_texts(
 }
 
 fn make_decrypt_json(test: &EncryptTest, ciphertext_result: &[u8], dir: &str) -> Result<JsonValue> {
-    let outname = format!("/ciphertexts/{}", test.name);
+    let outname = format!("ciphertexts/{}", test.name);
     write_file(&outname, ciphertext_result, dir)?;
     let mut inner_obj = serde_json::Map::new();
     inner_obj.insert("type".into(), JsonValue::from(test.kind.as_str()));
@@ -162,7 +162,7 @@ pub(crate) async fn run_encrypt_tests(
     });
     let client_json = serde_json::json!({
         "name": "aws-encryption-sdk-rust",
-        "version": "2.4.1"
+        "version": env!("CARGO_PKG_VERSION")
     });
     let mut out_tests = serde_json::json!({});
 

@@ -456,11 +456,11 @@ pub(crate) fn get_kms_ecdh_keyring_discovery(
 }
 
 #[cfg(any(feature = "kms", feature = "legacy"))]
-fn get_kms_enc_alg(s: &str) -> aws_sdk_kms::types::EncryptionAlgorithmSpec {
+fn get_kms_enc_alg(s: &str) -> Result<aws_sdk_kms::types::EncryptionAlgorithmSpec> {
     match s {
-        "RSAES_OAEP_SHA_256" => aws_sdk_kms::types::EncryptionAlgorithmSpec::RsaesOaepSha256,
-        "RSAES_OAEP_SHA_1" => aws_sdk_kms::types::EncryptionAlgorithmSpec::RsaesOaepSha1,
-        _ => panic!("Unknown KMS encryption algorithm: {s}"),
+        "RSAES_OAEP_SHA_256" => Ok(aws_sdk_kms::types::EncryptionAlgorithmSpec::RsaesOaepSha256),
+        "RSAES_OAEP_SHA_1" => Ok(aws_sdk_kms::types::EncryptionAlgorithmSpec::RsaesOaepSha1),
+        _ => anyhow::bail!("Unknown KMS encryption algorithm: {s}"),
     }
 }
 
@@ -475,7 +475,7 @@ pub(crate) async fn get_aws_kms_rsa_keyring_legacy(
         .create_aws_kms_rsa_keyring()
         .kms_key_id(key.key_id.clone())
         .public_key(key.material.clone())
-        .encryption_algorithm(get_kms_enc_alg(&keydesc.encryption_algorithm))
+        .encryption_algorithm(get_kms_enc_alg(&keydesc.encryption_algorithm)?)
         .kms_client(kms.clone())
         .send()
         .await?;
@@ -501,7 +501,7 @@ pub(crate) fn get_aws_kms_rsa_keyring(
     let keyring = CreateAwsKmsRsaKeyringInput::new(
         key.material.clone(),
         key.key_id.clone(),
-        get_kms_enc_alg(&keydesc.encryption_algorithm),
+        get_kms_enc_alg(&keydesc.encryption_algorithm)?,
         kms.clone(),
     )
     .go()?;
@@ -684,7 +684,7 @@ async fn get_raw_keyring_legacy(
             .key_name(key_name.clone())
             .padding_scheme(mode);
 
-        if key.material[..21] == b"-----BEGIN PUBLIC KEY"[..] {
+        if key.material.starts_with(b"-----BEGIN PUBLIC KEY") {
             keyring_builder = keyring_builder.public_key(key.material.clone());
         } else {
             keyring_builder = keyring_builder.private_key(key.material.clone());
@@ -729,7 +729,7 @@ fn get_raw_keyring(keydesc: &KeyDescription, key: &Key) -> Result<KeyringStatus>
         }
         let mut input =
             CreateRawRsaKeyringInput::new(key_namespace.clone(), key_name.clone(), mode);
-        if key.material[..21] == b"-----BEGIN PUBLIC KEY"[..] {
+        if key.material.starts_with(b"-----BEGIN PUBLIC KEY") {
             input.public_key.clone_from(&key.material);
         } else {
             input.private_key.clone_from(&key.material);

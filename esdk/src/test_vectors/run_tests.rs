@@ -1,6 +1,16 @@
 use crate::test_vectors::do_decrypt::read_json;
 use anyhow::{Error, Result};
 
+/// Remove a directory tree, treating a missing directory as success.
+/// Any other error (e.g. a permission problem) is surfaced.
+fn remove_dir_all_if_exists(path: &str) -> Result<()> {
+    match std::fs::remove_dir_all(path) {
+        Ok(()) => Ok(()),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(e.into()),
+    }
+}
+
 pub(crate) fn is_not_implemented(e: &Error) -> Option<String> {
     if let Some(mpl) = e.downcast_ref::<aws_mpl_legacy::error::Error>()
         && matches!(&mpl.kind, aws_mpl_legacy::error::ErrorKind::NotImplemented)
@@ -39,7 +49,7 @@ pub async fn decrypt_test_vectors(
         anyhow::bail!("Decrypt manifest '{manifest_name}' missing integer 'manifest.version'");
     };
     if manifest_version != 5 && manifest_version != 1 {
-        anyhow::bail!("Decrypt manifest version was {manifest_version} instead of 5");
+        anyhow::bail!("Decrypt manifest version was {manifest_version} instead of 5 or 1");
     }
 
     let Some(keys_file) = json_data["keys"].as_str() else {
@@ -79,8 +89,8 @@ pub async fn encrypt_test_vectors(
     decrypt_path: &str,
     _test_name: &str,
 ) -> Result<()> {
-    drop(std::fs::remove_dir_all(format!("{encrypt_path}/plaintexts")));
-    drop(std::fs::remove_dir_all(format!("{encrypt_path}/ciphertexts")));
+    remove_dir_all_if_exists(&format!("{encrypt_path}/plaintexts"))?;
+    remove_dir_all_if_exists(&format!("{encrypt_path}/ciphertexts"))?;
     let decrypt_manifest = format!("{encrypt_path}/decrypt-manifest.json");
     let json_data_base = read_json("encrypt-manifest.json", encrypt_path)?;
     let Some(json_data) = json_data_base.as_object() else {
