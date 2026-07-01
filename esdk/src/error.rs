@@ -50,7 +50,7 @@ impl std::fmt::Display for Error {
             ErrorKind::Esdk => write!(f, "Esdk Error {}", self.message),
             ErrorKind::SerializationError => write!(f, "Serialization Error {}", self.message),
             ErrorKind::CryptographicError => write!(f, "Cryptographic Error {}", self.message),
-            ErrorKind::MplError => write!(f, "MPL Error {:?} {}", self.cause, self.message),
+            ErrorKind::MplError => write!(f, "MPL Error {}", self.message),
             ErrorKind::LegacyError(e) => write!(f, "Legacy MPL Error {e} {}", self.message),
             ErrorKind::ValidationError => write!(f, "Validation Error {}", self.message),
         }
