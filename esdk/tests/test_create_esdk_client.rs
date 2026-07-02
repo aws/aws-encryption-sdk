@@ -125,6 +125,7 @@ fn test_default_max_encrypted_data_keys_is_none() {
 fn test_frame_length_rejects_zero() {
     //= spec/client-apis/encrypt.md#frame-length
     //= type=test
+    //= reason=FrameLength wraps NonZeroU32; this test proves the lower bound by rejecting 0, and the upper bound ("MUST NOT exceed 2^32 - 1") holds by construction because NonZeroU32's maximum value is u32::MAX = 2^32 - 1
     //# This value MUST be greater than 0 and MUST NOT exceed the value 2^32 - 1.
     let err = FrameLength::new(0).expect_err("FrameLength::new(0) must fail");
     assert!(
