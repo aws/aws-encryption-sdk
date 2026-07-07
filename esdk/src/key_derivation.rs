@@ -120,7 +120,7 @@ pub(crate) fn derive_key_v1(
             //# specified by the [algorithm suite encryption settings](#algorithm-suites-encryption-settings).
             let mut derived_key = vec![0u8; output_len];
 
-            // The Net v4.0.0 retry path omits the suite's binary ID from the HKDF
+            // The .NET v4.0.0 retry path omits the suite's binary ID from the HKDF
             // info; the standard path prefixes it.
             let v4_info: [&[u8]; 1] = [message_id];
             //= spec/client-apis/key-derivation.md#hkdf-encryption-key
