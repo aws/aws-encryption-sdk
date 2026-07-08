@@ -118,7 +118,7 @@ pub(crate) fn derive_key_v1(
             //= spec/client-apis/key-derivation.md#hkdf-encryption-key
             //# - The length of the output keying material MUST equal the [encryption key length](#encryption-key-length)
             //# specified by the [algorithm suite encryption settings](#algorithm-suites-encryption-settings).
-            let mut derived_key = vec![0u8; output_len];
+            let mut derived_key = Zeroizing::new(vec![0u8; output_len]);
 
             // The .NET v4.0.0 retry path omits the suite's binary ID from the HKDF
             // info; the standard path prefixes it.
@@ -134,10 +134,10 @@ pub(crate) fn derive_key_v1(
             //= type=implication
             //= reason=primitives::hkdf bundles HKDF-Extract and HKDF-Expand; the PRK input to expand is the extract output by construction of the helper
             //# - The input pseudorandom key MUST be the output from the extract step.
-            aws_mpl_legacy::primitives::hkdf(alg, &salt, plaintext_data_key, info, &mut derived_key)?;
+            aws_mpl_legacy::primitives::hkdf(alg, &salt, plaintext_data_key, info, &mut derived_key[..])?;
 
             Ok(ExpandedKeyMaterial {
-                data_key: Zeroizing::new(derived_key),
+                data_key: derived_key,
                 commitment_key: None,
             })
         }
@@ -257,7 +257,7 @@ pub fn derive_key_v2(
     //= spec/client-apis/key-derivation.md#hkdf-encryption-key
     //# - The length of the output keying material MUST equal the [encryption key length](#encryption-key-length)
     //# specified by the [algorithm suite encryption settings](#algorithm-suites-encryption-settings).
-    let mut encrypt_key = vec![0u8; encrypt_key_len];
+    let mut encrypt_key = Zeroizing::new(vec![0u8; encrypt_key_len]);
 
     let Ok(commit_len) = usize::try_from(commit_len) else {
         return Err(val_err(format!(
@@ -267,7 +267,7 @@ pub fn derive_key_v2(
     //= spec/client-apis/key-derivation.md#hkdf-commit-key
     //# - The length of the output keying material MUST equal the [algorithm suite data length](#algorithm-suite-data-length)
     //# specified by the [supported algorithm suites](#supported-algorithm-suites).
-    let mut commit_key = vec![0u8; commit_len];
+    let mut commit_key = Zeroizing::new(vec![0u8; commit_len]);
 
     //= spec/client-apis/key-derivation.md#hkdf-encryption-key
     //# - If [key commitment](#key-commitment) for the [algorithm suite encryption key derivation setting](#algorithm-suites-encryption-key-derivation-settings) is True,
@@ -278,7 +278,7 @@ pub fn derive_key_v2(
     //= type=implication
     //= reason=pseudo_random_key holds the hkdf_extract return value above and is the only PRK input threaded into hkdf_expand here by data dependency
     //# - The input pseudorandom key MUST be the output from the extract step.
-    aws_mpl_legacy::primitives::hkdf_expand(&pseudo_random_key, &info, &mut encrypt_key)?;
+    aws_mpl_legacy::primitives::hkdf_expand(&pseudo_random_key, &info, &mut encrypt_key[..])?;
 
     //= spec/client-apis/key-derivation.md#hkdf-commit-key
     //= type=implication
@@ -290,12 +290,12 @@ pub fn derive_key_v2(
     aws_mpl_legacy::primitives::hkdf_expand(
         &pseudo_random_key,
         &[COMMIT_LABEL.as_bytes()],
-        &mut commit_key,
+        &mut commit_key[..],
     )?;
 
     Ok(ExpandedKeyMaterial {
-        data_key: Zeroizing::new(encrypt_key),
-        commitment_key: Some(Zeroizing::new(commit_key)),
+        data_key: encrypt_key,
+        commitment_key: Some(commit_key),
     })
 }
 
@@ -316,6 +316,9 @@ pub fn derive_keys(
     match suite.message_version {
         1 => derive_key_v1(message_id, plaintext_data_key, suite, on_net_v4_retry),
         2 => derive_key_v2(message_id, plaintext_data_key, suite),
-        _ => Err(val_err("Unknown Message Version")),
+        _ => Err(val_err(format!(
+            "Unknown Message Version {}",
+            suite.message_version
+        ))),
     }
 }
