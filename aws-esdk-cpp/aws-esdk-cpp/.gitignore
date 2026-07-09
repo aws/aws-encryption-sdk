@@ -1,0 +1,19 @@
+# Cargo build output
+/target/
+
+# Compiled demo / test binaries (built via the Makefile)
+/main
+/main_release
+/main_idiomatic
+/test_esdk
+
+# Object files / archives
+*.o
+*.a
+
+# Agent tooling scratch / transcripts
+.agent-reports/
+
+# CMake build output
+/build/
+/build-cmake/

@@ -1,0 +1,16 @@
+target = "spec/shim/esdk-shim.md#maximum-encrypted-data-keys"
+
+# Maximum encrypted data keys
+#
+# - The target represents "no limit" as the value zero. The shim MUST translate zero
+#   to the core ESDK's "no limit" representation, and a positive value `n` to a
+#   limit of `n`.
+
+[[spec]]
+level = "MUST"
+quote = '''
+The shim MUST translate zero
+to the core ESDK's "no limit" representation, and a positive value `n` to a
+limit of `n`.
+'''
+

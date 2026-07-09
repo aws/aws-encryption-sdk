@@ -1,0 +1,24 @@
+target = "spec/shim/shim.md#operation-contracts"
+
+# Operation contracts
+#
+# - For each operation the shim exposes, its core-library-specific shim
+#   specification defines which inputs are required, how each input is handled,
+#   and how each output field is handled.
+# - Except where an input or output is passed through unmodified, each MUST be
+#   translated per [Type translation](#type-translation).
+# - Each operation MUST invoke the core library per [Delegation](#delegation).
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Except where an input or output is passed through unmodified, each MUST be
+translated per [Type translation](#type-translation).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Each operation MUST invoke the core library per [Delegation](#delegation).
+'''
+

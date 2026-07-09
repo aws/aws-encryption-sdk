@@ -1,0 +1,19 @@
+'$schema' = "https://awslabs.github.io/duvet/config/v0.4.0.json"
+
+[[source]]
+pattern = "./src/**/*.rs"
+
+[[source]]
+pattern = "./include/**/*.h"
+
+[[source]]
+pattern = "./*.cpp"
+
+[[specification]]
+source = "spec/shim/shim.md"
+
+[[specification]]
+source = "spec/shim/esdk-shim.md"
+
+[report.snapshot]
+enabled = true

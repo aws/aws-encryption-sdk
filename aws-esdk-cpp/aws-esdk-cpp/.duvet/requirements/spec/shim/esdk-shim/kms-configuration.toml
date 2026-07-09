@@ -1,0 +1,42 @@
+target = "spec/shim/esdk-shim.md#kms-configuration"
+
+# KMS configuration
+#
+# - The shim MUST translate a KMS key ARN configuration.
+# - The shim MUST translate a KMS multi-Region-key ARN configuration.
+# - The shim MUST translate a discovery configuration.
+# - The shim MUST translate a multi-Region-key discovery configuration.
+# - The shim MUST return an error when the target KMS configuration type is not a
+#   supported value.
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The shim MUST translate a KMS key ARN configuration.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The shim MUST translate a KMS multi-Region-key ARN configuration.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The shim MUST translate a discovery configuration.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The shim MUST translate a multi-Region-key discovery configuration.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The shim MUST return an error when the target KMS configuration type is not a
+supported value.
+'''
+

@@ -1,0 +1,66 @@
+target = "spec/shim/esdk-shim.md#service-client-configuration"
+
+# Service client configuration
+#
+# The shim configures each AWS service client it creates from a client
+# configuration supplied by the target. Any value the target supplies is passed
+# through to the service client; where the target omits a value, the shim may
+# apply a default.
+# 
+# - The shim MUST set a user-agent on each service client of the form
+#   `AwsEncryptionSdk-Shim-<target-language>-<core-language>-<version>`, where
+#   `<target-language>` is the target language, `<core-language>` is the core
+#   ESDK's implementation language, and `<version>` is the shim's published version.
+# - The shim MUST preserve any user-agent already present in the loaded
+#   configuration, appending its own rather than replacing it.
+# - If the target supplies a retry configuration, the shim MUST apply it to each
+#   service client.
+# - If the target does not supply a retry configuration, the shim MAY apply a
+#   default retry configuration.
+# - If the target supplies a region, the shim MUST apply it to each service client.
+# - The shim SHOULD allow one client configuration to be applied to multiple
+#   service clients.
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The shim MUST set a user-agent on each service client of the form
+`AwsEncryptionSdk-Shim-<target-language>-<core-language>-<version>`, where
+`<target-language>` is the target language, `<core-language>` is the core
+ESDK's implementation language, and `<version>` is the shim's published version.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The shim MUST preserve any user-agent already present in the loaded
+configuration, appending its own rather than replacing it.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- If the target supplies a retry configuration, the shim MUST apply it to each
+service client.
+'''
+
+[[spec]]
+level = "MAY"
+quote = '''
+- If the target does not supply a retry configuration, the shim MAY apply a
+default retry configuration.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- If the target supplies a region, the shim MUST apply it to each service client.
+'''
+
+[[spec]]
+level = "SHOULD"
+quote = '''
+- The shim SHOULD allow one client configuration to be applied to multiple
+service clients.
+'''
+

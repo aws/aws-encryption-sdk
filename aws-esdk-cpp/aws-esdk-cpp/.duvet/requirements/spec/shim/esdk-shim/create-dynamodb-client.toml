@@ -1,0 +1,23 @@
+target = "spec/shim/esdk-shim.md#create-dynamodb-client"
+
+# Create DynamoDB client
+#
+# - The shim MUST provide an operation that creates a DynamoDB service client
+#   backed by the core ESDK.
+# - Creating a DynamoDB client MUST apply the target-supplied client configuration,
+#   as defined in [Service client configuration](#service-client-configuration).
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The shim MUST provide an operation that creates a DynamoDB service client
+backed by the core ESDK.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Creating a DynamoDB client MUST apply the target-supplied client configuration,
+as defined in [Service client configuration](#service-client-configuration).
+'''
+

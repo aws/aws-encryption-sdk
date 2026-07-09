@@ -1,0 +1,49 @@
+target = "spec/shim/shim.md#delegation"
+
+# Delegation
+#
+# The shim implements none of the core library's behavior of its own; it forwards
+# each operation to the core library and lets the core library do the work and
+# enforce validity. These requirements pin down that forwarding.
+# 
+# - Each operation the shim exposes MUST produce its result by invoking the
+#   corresponding core-library operation.
+# - The shim MUST NOT validate operation or resource-creation input values itself;
+#   it MUST translate each input and defer its validation to the core library.
+# - When a core-library operation returns an error, the shim MUST return an error to
+#   the target and MUST NOT report the operation as successful.
+# - An error the shim returns for a failed core-library operation SHOULD include
+#   context identifying which operation failed.
+# 
+# Checking a target-supplied handle for presence before dereferencing it (see
+# [Handles and lifetimes](#handles-and-lifetimes)) is a memory-safety measure, not
+# input validation, and is not subject to the rule above.
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Each operation the shim exposes MUST produce its result by invoking the
+corresponding core-library operation.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The shim MUST NOT validate operation or resource-creation input values itself;
+it MUST translate each input and defer its validation to the core library.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- When a core-library operation returns an error, the shim MUST return an error to
+the target and MUST NOT report the operation as successful.
+'''
+
+[[spec]]
+level = "SHOULD"
+quote = '''
+- An error the shim returns for a failed core-library operation SHOULD include
+context identifying which operation failed.
+'''
+

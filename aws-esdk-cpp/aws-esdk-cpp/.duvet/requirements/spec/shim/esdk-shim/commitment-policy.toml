@@ -1,0 +1,23 @@
+target = "spec/shim/esdk-shim.md#commitment-policy"
+
+# Commitment policy
+#
+# - The shim MUST translate the target commitment policy to the core ESDK
+#   commitment policy of the same meaning.
+# - The shim MUST return an error when the target commitment policy is not a supported
+#   value.
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The shim MUST translate the target commitment policy to the core ESDK
+commitment policy of the same meaning.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The shim MUST return an error when the target commitment policy is not a supported
+value.
+'''
+

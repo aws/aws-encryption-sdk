@@ -1,0 +1,56 @@
+target = "spec/shim/esdk-shim.md#create-hierarchical-keyring"
+
+# Create hierarchical keyring
+#
+# - The shim MUST provide an operation that creates a hierarchical keyring backed
+#   by the core ESDK.
+# - Creating a hierarchical keyring MUST require a key store handle, checked as
+#   defined in
+#   [Shim Specification: Handles and lifetimes](./shim.md#handles-and-lifetimes),
+#   and MUST provide it to the core ESDK.
+# - Creating a hierarchical keyring MUST provide the target-supplied branch key id
+#   and time-to-live to the core ESDK.
+# - Creating a hierarchical keyring MUST provide the target-supplied cache
+#   configuration to the core ESDK, converted as defined in
+#   [Cache configuration](#cache-configuration).
+# - Creating a hierarchical keyring MUST provide the target-supplied partition id to
+#   the core ESDK when present; an unset value is omitted.
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The shim MUST provide an operation that creates a hierarchical keyring backed
+by the core ESDK.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Creating a hierarchical keyring MUST require a key store handle, checked as
+defined in
+[Shim Specification: Handles and lifetimes](./shim.md#handles-and-lifetimes),
+and MUST provide it to the core ESDK.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Creating a hierarchical keyring MUST provide the target-supplied branch key id
+and time-to-live to the core ESDK.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Creating a hierarchical keyring MUST provide the target-supplied cache
+configuration to the core ESDK, converted as defined in
+[Cache configuration](#cache-configuration).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Creating a hierarchical keyring MUST provide the target-supplied partition id to
+the core ESDK when present; an unset value is omitted.
+'''
+

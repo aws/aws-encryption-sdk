@@ -1,0 +1,23 @@
+target = "spec/shim/esdk-shim.md#materials-source"
+
+# Materials source
+#
+# - Each of `encrypt` and `decrypt` MUST be supplied with exactly one materials
+#   source (see [Resources](#resources)).
+# - The shim MUST return an error, and MUST NOT invoke the core ESDK, when no
+#   materials source is supplied.
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Each of `encrypt` and `decrypt` MUST be supplied with exactly one materials
+source (see [Resources](#resources)).
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The shim MUST return an error, and MUST NOT invoke the core ESDK, when no
+materials source is supplied.
+'''
+

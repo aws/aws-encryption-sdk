@@ -1,0 +1,16 @@
+target = "spec/shim/esdk-shim.md#frame-length"
+
+# Frame length
+#
+# - The shim MUST translate the target frame length using the core ESDK's frame
+#   length constructor, and MUST return an error when the core ESDK rejects the
+#   value.
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The shim MUST translate the target frame length using the core ESDK's frame
+length constructor, and MUST return an error when the core ESDK rejects the
+value.
+'''
+

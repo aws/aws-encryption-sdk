@@ -1,0 +1,45 @@
+target = "spec/shim/shim.md#owned-interface"
+
+# Owned interface
+#
+# The owned interface is the public surface the target programs against. Its purpose
+# is to decouple the target from the generator: because the target depends only on
+# types the shim defines — never on generator-produced types — the binding
+# generator can be changed or replaced without breaking target code. The following
+# requirements keep that boundary intact.
+# 
+# - The shim MUST define its own error type for its public surface.
+# - For each core-library enumeration it exposes, the shim MUST define its own
+#   corresponding enumeration type.
+# - Each public function the shim exposes MUST use only owned-interface types or
+#   standard-library types in its signature.
+# - Each owned interface that represents a core-library resource MUST hold the
+#   generated handle privately and MUST NOT expose it in its public API.
+
+[[spec]]
+level = "MUST"
+quote = '''
+- The shim MUST define its own error type for its public surface.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- For each core-library enumeration it exposes, the shim MUST define its own
+corresponding enumeration type.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Each public function the shim exposes MUST use only owned-interface types or
+standard-library types in its signature.
+'''
+
+[[spec]]
+level = "MUST"
+quote = '''
+- Each owned interface that represents a core-library resource MUST hold the
+generated handle privately and MUST NOT expose it in its public API.
+'''
+
