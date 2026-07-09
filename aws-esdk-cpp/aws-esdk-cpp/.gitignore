@@ -1,10 +1,9 @@
 # Cargo build output
 /target/
+Cargo.lock
 
 # Compiled demo / test binaries (built via the Makefile)
-/main
-/main_release
-/main_idiomatic
+/basic_hierarchical_keyring_example
 /test_esdk
 
 # Object files / archives
@@ -17,3 +16,8 @@
 # CMake build output
 /build/
 /build-cmake/
+
+# Duvet: generated requirement extraction, snapshot, and reports
+.duvet/requirements/
+.duvet/snapshot.txt
+.duvet/reports/
