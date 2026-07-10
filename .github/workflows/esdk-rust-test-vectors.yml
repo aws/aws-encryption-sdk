@@ -1,9 +1,7 @@
 name: ESDK Rust Test Vectors
 
 on:
-  push:
-    branches:
-      - aws-crypto-rust/unreviewed
+  pull_request:
 
 jobs:
   test-vectors:
