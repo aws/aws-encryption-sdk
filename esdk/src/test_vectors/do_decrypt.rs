@@ -316,7 +316,6 @@ pub(crate) async fn get_kms_ecdh_keyring_legacy(
     mpl: &mpl_client,
     kms: &KmsMap,
 ) -> Result<LegacyKeyring> {
-    //      = Need(curveSpec in KeyDescription.KmsKey2EccAlgorithmSpec, KeyVectorException(message = "Unknown curve spec"));
     match &keydesc.schema[..] {
         "static" => get_kms_ecdh_keyring_static_legacy(keydesc, keys, mpl, kms).await,
         "discovery" => get_kms_ecdh_keyring_discovery_legacy(keydesc, keys, mpl, kms).await,
@@ -354,16 +353,8 @@ pub(crate) async fn get_kms_ecdh_keyring_static_legacy(
     mpl: &mpl_client,
     kms: &KmsMap,
 ) -> Result<LegacyKeyring> {
-    // = Need(
-    //   && material.Some?
-    //   && (material.value.KMSEcdh?),
-    //   KeyVectorException( message = "Not type: KmsEcdh" ));
     let key = &keys[&keydesc.recipient];
     let sender_kms_key = key.sender_material.clone();
-    // = Need(
-    //   ComAmazonawsKmsTypes.IsValid_KeyIdType(sender_kms_key) &&
-    //   ComAmazonawsKmsTypes.IsValid_KeyIdType(recipientKmsKey),
-    //   KeyVectorException(message = "Not a valid Kms Key Id"));
     let kms_client = kms_from_arn(kms, &sender_kms_key);
 
     let sender_key = decode_base64(&key.sender_material_public_key)?;
@@ -417,10 +408,6 @@ pub(crate) async fn get_kms_ecdh_keyring_discovery_legacy(
 ) -> Result<LegacyKeyring> {
     let key = keys[&keydesc.recipient].clone();
     let kms_client = kms_from_arn(kms, &key.recipient_material);
-    //     = Need(
-    //       && recipientMaterial?.Some?
-    //       && (recipientMaterial?.value.KMSEcdh?),
-    //       KeyVectorException( message = "Not type: KmsEcdh" ));
 
     let schema = aws_mpl_legacy::dafny::types::KmsPublicKeyDiscoveryInput::builder()
         .recipient_kms_identifier(&key.recipient_material)
@@ -880,7 +867,6 @@ fn get_hierarchy_keyring(keydesc: &KeyDescription, keys: &KeyMap) -> Result<Keyr
     let key = &keys[&keydesc.key];
     let store = crate::test_vectors::static_keystore::StaticKeyStoreInformation {
         branch_key_version: key.branch_key_version.clone(),
-        // key_identifier: key.key_id.clone(),
         beacon_key: Secret(key.beacon_key.clone()),
         branch_key: Secret(key.branch_key.clone()),
     };
