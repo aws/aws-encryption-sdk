@@ -15,7 +15,7 @@ pub(crate) fn write_footer(w: &mut dyn SafeWrite, signature: &[u8]) -> Result<()
     //= specification/client-apis/encrypt.md#construct-the-signature
     //# The order for message footer serialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
     //
-    //= specification/data-format/message-footer.md#structure
+    //= spec/data-format/message-footer.md#structure
     //# The message footer MUST consist of, in order,
     //# Signature Length,
     //# and Signature.
@@ -34,10 +34,10 @@ pub(crate) fn write_footer(w: &mut dyn SafeWrite, signature: &[u8]) -> Result<()
     //= specification/client-apis/encrypt.md#construct-the-signature
     //# - MUST serialize the [Signature Length](../data-format/message-footer.md#signature-length).
     //
-    //= specification/data-format/message-footer.md#signature-length
+    //= spec/data-format/message-footer.md#signature-length
     //# The length of the signature length field MUST be 2 bytes.
     //
-    //= specification/data-format/message-footer.md#signature-length
+    //= spec/data-format/message-footer.md#signature-length
     //# The signature length value MUST be a UInt16.
     write_u16(w, len)?;
 
@@ -49,7 +49,7 @@ pub(crate) fn write_footer(w: &mut dyn SafeWrite, signature: &[u8]) -> Result<()
     //= specification/client-apis/encrypt.md#construct-the-signature
     //# The value MUST be the output of the signature calculation above.
     //
-    //= specification/data-format/message-footer.md#signature
+    //= spec/data-format/message-footer.md#signature
     //= type=implication
     //# The signature MUST be interpreted as bytes.
     write_bytes(w, signature)?;
@@ -62,26 +62,26 @@ pub(crate) fn write_footer(w: &mut dyn SafeWrite, signature: &[u8]) -> Result<()
 
 /// Read a message footer, returning the signature bytes.
 pub(crate) fn read_footer(r: &mut dyn SafeRead, raw: &mut dyn SafeWrite) -> Result<Vec<u8>, Error> {
-    //= specification/client-apis/decrypt.md#verify-the-signature
+    //= spec/client-apis/decrypt.md#verify-the-signature
     //# The order for message footer deserialization MUST conform to the [Message Footer](../data-format/message-footer.md) specification.
     //
-    //= specification/data-format/message-footer.md#structure
+    //= spec/data-format/message-footer.md#structure
     //# The message footer MUST consist of, in order,
     //# Signature Length,
     //# and Signature.
 
     // Signature Length
 
-    //= specification/data-format/message-footer.md#signature-length
+    //= spec/data-format/message-footer.md#signature-length
     //# The length of the signature length field MUST be 2 bytes.
     //
-    //= specification/data-format/message-footer.md#signature-length
+    //= spec/data-format/message-footer.md#signature-length
     //# The signature length value MUST be a UInt16.
     let len = read_u16(r, raw)?;
 
     // Signature
 
-    //= specification/data-format/message-footer.md#signature
+    //= spec/data-format/message-footer.md#signature
     //= type=implication
     //# The signature MUST be interpreted as bytes.
     read_vec(r, usize::from(len), raw)
