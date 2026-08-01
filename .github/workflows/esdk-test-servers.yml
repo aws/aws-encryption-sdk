@@ -1,0 +1,127 @@
+# Separate from the library CI so the test servers are not swept into the
+# library workflows; runs only when a server (or this file) changes.
+name: ESDK TestServers
+
+on:
+  pull_request:
+    paths:
+      - "esdk-test-servers/**"
+      - ".github/workflows/esdk-test-servers.yml"
+  push:
+    branches:
+      - mainline
+    paths:
+      - "esdk-test-servers/**"
+      - ".github/workflows/esdk-test-servers.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  go-language-server:
+    name: go — build + test (releases/go/encryption-sdk)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: esdk-test-servers/go
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: esdk-test-servers/go/go.mod
+          cache-dependency-path: esdk-test-servers/go/go.sum
+
+      - name: Format check
+        run: test -z "$(gofmt -l .)"
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build
+        run: make build-server
+
+      - name: Test
+        run: go test ./...
+
+  rust-dafny-language-server:
+    name: rust-dafny — build + test (releases/rust/esdk)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: esdk-test-servers/rust
+    steps:
+      - uses: actions/checkout@v6
+
+      # aws-lc-sys (via aws-esdk) needs Go to build its native code
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: esdk-test-servers/rust
+
+      - name: Format check
+        run: cargo fmt -- --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Test
+        run: cargo test
+
+  net-language-server:
+    name: net — transpile + build + test (runtimes/net)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Init Submodules
+        run: |
+          git submodule update --init libraries
+          git submodule update --init --recursive mpl
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            6.0.x
+            8.0.x
+
+      - name: Read Dafny version
+        id: dafny
+        run: echo "version=$(grep '^dafnyVersion=' project.properties | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Dafny
+        uses: ./mpl/.github/actions/setup_dafny
+        with:
+          dafny-version: ${{ steps.dafny.outputs.version }}
+
+      - name: Install Smithy-Dafny codegen dependencies
+        uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
+        with:
+          mpl-submodule-path: mpl/
+
+      - name: Download Dependencies
+        working-directory: AwsEncryptionSDK
+        run: make setup_net
+
+      - name: Transpile the library
+        working-directory: AwsEncryptionSDK
+        run: make transpile_net CORES=4
+
+      - name: Build
+        working-directory: esdk-test-servers/net
+        run: make build-server
+
+      - name: Test
+        working-directory: esdk-test-servers/net
+        run: make test
