@@ -20,10 +20,5 @@
     "aws-kms-rsa",
     "required-encryption-context"
   ],
-  "unsupportedFeatures": [
-    "streaming",
-    "raw-ecdh",
-    "aws-kms-ecdh",
-    "caching"
-  ]
+  "unsupportedFeatures": ["streaming", "raw-ecdh", "aws-kms-ecdh", "caching"]
 }
