@@ -21,6 +21,8 @@ import (
 	keystoretypes "github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl/awscryptographykeystoresmithygeneratedtypes"
 	mpl "github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl/awscryptographymaterialproviderssmithygenerated"
 	mpltypes "github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl/awscryptographymaterialproviderssmithygeneratedtypes"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/kms"
 )
@@ -106,15 +108,23 @@ func buildKeyring(ctx context.Context, matProv *mpl.Client, keyring *KeyringConf
 		})
 	case keyring.AwsKms != nil:
 		cfg := keyring.AwsKms
+		client, err := kmsClientForKey(ctx, cfg.KmsKeyID)
+		if err != nil {
+			return nil, err
+		}
 		return matProv.CreateAwsKmsKeyring(ctx, mpltypes.CreateAwsKmsKeyringInput{
-			KmsClient:   kmsClientForKey(cfg.KmsKeyID),
+			KmsClient:   client,
 			KmsKeyId:    cfg.KmsKeyID,
 			GrantTokens: cfg.GrantTokens,
 		})
 	case keyring.AwsKmsMrk != nil:
 		cfg := keyring.AwsKmsMrk
+		client, err := kmsClientForKey(ctx, cfg.KmsKeyID)
+		if err != nil {
+			return nil, err
+		}
 		return matProv.CreateAwsKmsMrkKeyring(ctx, mpltypes.CreateAwsKmsMrkKeyringInput{
-			KmsClient:   kmsClientForKey(cfg.KmsKeyID),
+			KmsClient:   client,
 			KmsKeyId:    cfg.KmsKeyID,
 			GrantTokens: cfg.GrantTokens,
 		})
@@ -132,15 +142,23 @@ func buildKeyring(ctx context.Context, matProv *mpl.Client, keyring *KeyringConf
 		})
 	case keyring.AwsKmsDiscovery != nil:
 		cfg := keyring.AwsKmsDiscovery
+		client, err := kmsClient(ctx, defaultRegion())
+		if err != nil {
+			return nil, err
+		}
 		return matProv.CreateAwsKmsDiscoveryKeyring(ctx, mpltypes.CreateAwsKmsDiscoveryKeyringInput{
-			KmsClient:       kmsClient(defaultRegion()),
+			KmsClient:       client,
 			DiscoveryFilter: discoveryFilter(cfg.DiscoveryFilter),
 			GrantTokens:     cfg.GrantTokens,
 		})
 	case keyring.AwsKmsMrkDiscovery != nil:
 		cfg := keyring.AwsKmsMrkDiscovery
+		client, err := kmsClient(ctx, cfg.Region)
+		if err != nil {
+			return nil, err
+		}
 		return matProv.CreateAwsKmsMrkDiscoveryKeyring(ctx, mpltypes.CreateAwsKmsMrkDiscoveryKeyringInput{
-			KmsClient:       kmsClient(cfg.Region),
+			KmsClient:       client,
 			Region:          cfg.Region,
 			DiscoveryFilter: discoveryFilter(cfg.DiscoveryFilter),
 			GrantTokens:     cfg.GrantTokens,
@@ -155,7 +173,10 @@ func buildKeyring(ctx context.Context, matProv *mpl.Client, keyring *KeyringConf
 }
 
 func buildAwsKmsRsaKeyring(ctx context.Context, matProv *mpl.Client, cfg *AwsKmsRsaKeyringConfig) (mpltypes.IKeyring, error) {
-	client := kmsClientForKey(cfg.KmsKeyID)
+	client, err := kmsClientForKey(ctx, cfg.KmsKeyID)
+	if err != nil {
+		return nil, err
+	}
 	publicKey := cfg.PublicKey
 	if publicKey == nil {
 		// Fetch the RSA public key from KMS so the keyring can OnEncrypt. KMS
@@ -179,13 +200,16 @@ func buildAwsKmsRsaKeyring(ctx context.Context, matProv *mpl.Client, cfg *AwsKms
 }
 
 func buildAwsKmsHierarchicalKeyring(ctx context.Context, matProv *mpl.Client, cfg *AwsKmsHierarchicalKeyringConfig) (mpltypes.IKeyring, error) {
-	region := defaultRegion()
+	awsCfg, err := awsConfigForRegion(ctx, defaultRegion())
+	if err != nil {
+		return nil, err
+	}
 	keyStore, err := keystore.NewClient(keystoretypes.KeyStoreConfig{
 		DdbTableName:        cfg.KeyStoreTableName,
 		LogicalKeyStoreName: cfg.LogicalKeyStoreName,
 		KmsConfiguration:    &keystoretypes.KMSConfigurationMemberkmsKeyArn{Value: cfg.KmsKeyArn},
-		DdbClient:           dynamodb.New(dynamodb.Options{Region: region}),
-		KmsClient:           kmsClient(region),
+		DdbClient:           dynamodb.NewFromConfig(awsCfg),
+		KmsClient:           kms.NewFromConfig(awsCfg),
 	})
 	if err != nil {
 		return nil, err
@@ -238,21 +262,32 @@ func defaultRegion() string {
 	return "us-west-2"
 }
 
-func kmsClient(region string) *kms.Client {
-	return kms.New(kms.Options{Region: region})
+// awsConfigForRegion loads the default AWS configuration (credential chain,
+// shared config) with the region overridden, so every KMS and DynamoDB
+// request the server makes is signed.
+func awsConfigForRegion(ctx context.Context, region string) (aws.Config, error) {
+	return awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(region))
+}
+
+func kmsClient(ctx context.Context, region string) (*kms.Client, error) {
+	cfg, err := awsConfigForRegion(ctx, region)
+	if err != nil {
+		return nil, err
+	}
+	return kms.NewFromConfig(cfg), nil
 }
 
 // kmsClientForKey builds a KMS client in the key's own region: KMS rejects an
 // ARN whose region differs from the client's region. Falls back to the default
 // region for a bare key id or alias that carries no region.
-func kmsClientForKey(kmsKeyID string) *kms.Client {
+func kmsClientForKey(ctx context.Context, kmsKeyID string) (*kms.Client, error) {
 	region := defaultRegion()
 	if strings.HasPrefix(kmsKeyID, "arn:") {
 		if parts := strings.Split(kmsKeyID, ":"); len(parts) > 3 && parts[3] != "" {
 			region = parts[3]
 		}
 	}
-	return kmsClient(region)
+	return kmsClient(ctx, region)
 }
 
 // derToPublicKeyPEM wraps DER (X.509 SubjectPublicKeyInfo) bytes as a PEM
