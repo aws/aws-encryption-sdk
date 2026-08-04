@@ -125,3 +125,126 @@ jobs:
       - name: Test
         working-directory: esdk-test-servers/net
         run: make test
+
+  # Cross-language TestServer runs: each server's `make test-server` clones the
+  # commons repo and orchestrates the full matrix with this working tree as the
+  # live server. Run on every trigger; need the CI_AWS_ROLE_ARN and
+  # COMMONS_REPO_TOKEN repo secrets.
+  go-test-server:
+    name: go — Cross-language TestServer run
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_REGION: us-west-2
+    defaults:
+      run:
+        working-directory: esdk-test-servers/go
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: esdk-test-servers/go/go.mod
+          cache-dependency-path: esdk-test-servers/go/go.sum
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Configure AWS credentials (branch-key-store account)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
+          aws-region: us-west-2
+      - name: Authenticate the commons clone
+        run: git config --global url."https://x-access-token:${{ secrets.COMMONS_REPO_TOKEN }}@github.com/".insteadOf "git@github.com:"
+      - name: Run the orchestrated TestServer
+        run: make test-server
+
+  rust-dafny-test-server:
+    name: rust-dafny — Cross-language TestServer run
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_REGION: us-west-2
+    defaults:
+      run:
+        working-directory: esdk-test-servers/rust
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: esdk-test-servers/rust
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Configure AWS credentials (branch-key-store account)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
+          aws-region: us-west-2
+      - name: Authenticate the commons clone
+        run: git config --global url."https://x-access-token:${{ secrets.COMMONS_REPO_TOKEN }}@github.com/".insteadOf "git@github.com:"
+      - name: Run the orchestrated TestServer
+        run: make test-server
+
+  net-test-server:
+    name: net — Cross-language TestServer run
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_REGION: us-west-2
+    steps:
+      - uses: actions/checkout@v6
+      - name: Init Submodules
+        run: |
+          git submodule update --init libraries
+          git submodule update --init --recursive mpl
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            6.0.x
+            8.0.x
+      - name: Read Dafny version
+        id: dafny
+        run: echo "version=$(grep '^dafnyVersion=' project.properties | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+      - name: Setup Dafny
+        uses: ./mpl/.github/actions/setup_dafny
+        with:
+          dafny-version: ${{ steps.dafny.outputs.version }}
+      - name: Install Smithy-Dafny codegen dependencies
+        uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
+        with:
+          mpl-submodule-path: mpl/
+      - name: Download Dependencies
+        working-directory: AwsEncryptionSDK
+        run: make setup_net
+      - name: Transpile the library
+        working-directory: AwsEncryptionSDK
+        run: make transpile_net CORES=4
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Configure AWS credentials (branch-key-store account)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.CI_AWS_ROLE_ARN }}
+          aws-region: us-west-2
+      - name: Authenticate the commons clone
+        run: git config --global url."https://x-access-token:${{ secrets.COMMONS_REPO_TOKEN }}@github.com/".insteadOf "git@github.com:"
+      - name: Run the orchestrated TestServer
+        working-directory: esdk-test-servers/net
+        run: make test-server
