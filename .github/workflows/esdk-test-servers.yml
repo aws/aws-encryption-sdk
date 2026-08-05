@@ -158,7 +158,7 @@ jobs:
           role-to-assume: ${{ vars.ESDK_TEST_SERVER_KMS_ROLE_ARN || 'arn:aws:iam::370957321024:role/esdk-test-server-ci-kms-role' }}
           aws-region: us-west-2
       - name: Authenticate the commons clone
-        run: git config --global url."https://x-access-token:${{ secrets.COMMONS_REPO_TOKEN }}@github.com/".insteadOf "git@github.com:"
+        run: git config --global url."https://x-access-token:${{ secrets.COMMONS_REPO_PAT }}@github.com/".insteadOf "git@github.com:"
       - name: Run the orchestrated TestServer
         run: make test-server
 
@@ -193,7 +193,7 @@ jobs:
           role-to-assume: ${{ vars.ESDK_TEST_SERVER_KMS_ROLE_ARN || 'arn:aws:iam::370957321024:role/esdk-test-server-ci-kms-role' }}
           aws-region: us-west-2
       - name: Authenticate the commons clone
-        run: git config --global url."https://x-access-token:${{ secrets.COMMONS_REPO_TOKEN }}@github.com/".insteadOf "git@github.com:"
+        run: git config --global url."https://x-access-token:${{ secrets.COMMONS_REPO_PAT }}@github.com/".insteadOf "git@github.com:"
       - name: Run the orchestrated TestServer
         run: make test-server
 
@@ -244,7 +244,7 @@ jobs:
           role-to-assume: ${{ vars.ESDK_TEST_SERVER_KMS_ROLE_ARN || 'arn:aws:iam::370957321024:role/esdk-test-server-ci-kms-role' }}
           aws-region: us-west-2
       - name: Authenticate the commons clone
-        run: git config --global url."https://x-access-token:${{ secrets.COMMONS_REPO_TOKEN }}@github.com/".insteadOf "git@github.com:"
+        run: git config --global url."https://x-access-token:${{ secrets.COMMONS_REPO_PAT }}@github.com/".insteadOf "git@github.com:"
       - name: Run the orchestrated TestServer
         working-directory: esdk-test-servers/net
         run: make test-server
