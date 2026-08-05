@@ -126,10 +126,12 @@ jobs:
         working-directory: esdk-test-servers/net
         run: make test
 
-  # Cross-language TestServer runs: each server's `make test-server` clones the
-  # commons repo and orchestrates the full matrix with this working tree as the
-  # live server. Run on every trigger; need the CI_AWS_ROLE_ARN and
-  # COMMONS_REPO_TOKEN repo secrets.
+  # The complete cross-language TestServer run: `make test-server` clones commons
+  # and the orchestrator materializes + builds + launches every configured
+  # Language_Server (this working tree is the live server), runs the full pairwise
+  # Tests matrix, and tears down. Because the orchestrated run builds EVERY
+  # language server, this job provisions the full cross-language toolchain matrix.
+  # Needs the COMMONS_REPO_PAT repo secret (read on commons + java + rust).
   go-test-server:
     name: go — Cross-language TestServer run
     runs-on: ubuntu-latest
@@ -138,43 +140,113 @@ jobs:
       contents: read
     env:
       AWS_REGION: us-west-2
-    defaults:
-      run:
-        working-directory: esdk-test-servers/go
+      GRADLE_OPTS: -Dorg.gradle.daemon=false
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-go@v5
         with:
-          go-version-file: esdk-test-servers/go/go.mod
-          cache-dependency-path: esdk-test-servers/go/go.sum
-      - name: Set up JDK 21 (Temurin)
+          persist-credentials: false
+
+      - name: Set up JDK 17 (Temurin) — exposes JAVA_HOME_17_X64 for the MPL stub jar
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up JDK 21 (Temurin) — the commons orchestrator (smithy-java) needs 21+
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
-      - name: Configure AWS credentials (branch-key-store account)
-        uses: aws-actions/configure-aws-credentials@v4
+
+      - name: Set up Python 3.11 (the materialized Python Language_Server needs >=3.11)
+        uses: actions/setup-python@v5
         with:
-          role-to-assume: ${{ vars.ESDK_TEST_SERVER_KMS_ROLE_ARN || 'arn:aws:iam::370957321024:role/esdk-test-server-ci-kms-role' }}
-          aws-region: us-west-2
-      - name: Authenticate the commons clone
-        run: git config --global url."https://x-access-token:${{ secrets.COMMONS_REPO_PAT }}@github.com/".insteadOf "git@github.com:"
+          python-version: "3.11"
+
+      - name: Set up Node.js 22 (the materialized JavaScript Language_Server build needs 17+)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Set up Go (Go Language_Server + the Rust servers' aws-lc-sys native builds)
+        uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
+      - name: Set up the Rust toolchain (Rust Language_Server builds)
+        run: |
+          set -euo pipefail
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          cargo --version
+
+      - name: Set up .NET (the materialized .NET Language_Server build)
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            6.0.x
+            8.0.x
+
+      - name: Install Dafny 4.9.0 (the .NET library transpile in the materialized clone)
+        run: |
+          set -euo pipefail
+          dotnet tool install --global dafny --version 4.9.0
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+          "$HOME/.dotnet/tools/dafny" --version
+
+      - name: Build aws-c-common (the materialized C Language_Server cmake requires it)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/awslabs/aws-c-common "$RUNNER_TEMP/aws-c-common"
+          cmake -S "$RUNNER_TEMP/aws-c-common" -B "$RUNNER_TEMP/aws-c-common-build" \
+            -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/.aws-c-common-install" \
+            -DBUILD_TESTING=OFF
+          cmake --build "$RUNNER_TEMP/aws-c-common-build" --target install -- -j
+          echo "CMAKE_PREFIX_PATH=${{ github.workspace }}/.aws-c-common-install" >> "$GITHUB_ENV"
+
       - name: Install stub for the unpublished MPL test-vectors artifact
-        # The java Language_Server build runs `mvn install`, which resolves a
-        # test-scope MPL artifact (TestAwsCryptographicMaterialProviders) that is
-        # not on Maven Central; a stub jar satisfies resolution (its tests skip).
+        # The materialized Java Language_Server build runs `mvn install`, which
+        # resolves a test-scope MPL artifact (TestAwsCryptographicMaterialProviders)
+        # that is not on Maven Central; a stub jar satisfies resolution (tests skip).
         run: |
           set -euo pipefail
           tmp="$(mktemp -d)"
           echo placeholder > "$tmp/README.txt"
-          "$JAVA_HOME/bin/jar" cf "$tmp/stub.jar" -C "$tmp" README.txt
+          "$JAVA_HOME_17_X64/bin/jar" cf "$tmp/stub.jar" -C "$tmp" README.txt
           mvn -q -e org.apache.maven.plugins:maven-install-plugin:3.1.1:install-file \
             -Dfile="$tmp/stub.jar" \
             -DgroupId=software.amazon.cryptography \
             -DartifactId=TestAwsCryptographicMaterialProviders \
             -Dversion=1.7.0 \
             -Dpackaging=jar
+
+      - name: Authenticate the private clones (commons, java, rust)
+        # `make test-server` clones commons and the orchestrator materializes the
+        # other language servers, several from private repos via git@ URLs; rewrite
+        # SSH to token HTTPS. COMMONS_REPO_PAT needs read on commons + java + rust.
+        env:
+          PAT: ${{ secrets.COMMONS_REPO_PAT }}
+        run: |
+          test -n "$PAT" || { echo "::error::COMMONS_REPO_PAT is empty/unset in this repo"; exit 1; }
+          git config --global url."https://x-access-token:${PAT}@github.com/".insteadOf "git@github.com:"
+
+      - name: Configure AWS credentials via OIDC (required KMS scenarios)
+        id: aws-credentials
+        continue-on-error: true
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ESDK_TEST_SERVER_KMS_ROLE_ARN || 'arn:aws:iam::370957321024:role/esdk-test-server-ci-kms-role' }}
+          aws-region: us-west-2
+
+      - name: Verify AWS credentials are active (gates the orchestrated run)
+        run: |
+          if ! aws sts get-caller-identity; then
+            echo "::error::No usable AWS credentials for the required KMS scenarios." >&2
+            exit 1
+          fi
+
       - name: Run the orchestrated TestServer
+        working-directory: esdk-test-servers/go
         run: make test-server
 
   rust-dafny-test-server:
@@ -185,46 +257,113 @@ jobs:
       contents: read
     env:
       AWS_REGION: us-west-2
-    defaults:
-      run:
-        working-directory: esdk-test-servers/rust
+      GRADLE_OPTS: -Dorg.gradle.daemon=false
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-go@v5
         with:
-          go-version: "stable"
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+          persist-credentials: false
+
+      - name: Set up JDK 17 (Temurin) — exposes JAVA_HOME_17_X64 for the MPL stub jar
+        uses: actions/setup-java@v4
         with:
-          workspaces: esdk-test-servers/rust
-      - name: Set up JDK 21 (Temurin)
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up JDK 21 (Temurin) — the commons orchestrator (smithy-java) needs 21+
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
-      - name: Configure AWS credentials (branch-key-store account)
-        uses: aws-actions/configure-aws-credentials@v4
+
+      - name: Set up Python 3.11 (the materialized Python Language_Server needs >=3.11)
+        uses: actions/setup-python@v5
         with:
-          role-to-assume: ${{ vars.ESDK_TEST_SERVER_KMS_ROLE_ARN || 'arn:aws:iam::370957321024:role/esdk-test-server-ci-kms-role' }}
-          aws-region: us-west-2
-      - name: Authenticate the commons clone
-        run: git config --global url."https://x-access-token:${{ secrets.COMMONS_REPO_PAT }}@github.com/".insteadOf "git@github.com:"
+          python-version: "3.11"
+
+      - name: Set up Node.js 22 (the materialized JavaScript Language_Server build needs 17+)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Set up Go (Go Language_Server + the Rust servers' aws-lc-sys native builds)
+        uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
+      - name: Set up the Rust toolchain (Rust Language_Server builds)
+        run: |
+          set -euo pipefail
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          cargo --version
+
+      - name: Set up .NET (the materialized .NET Language_Server build)
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            6.0.x
+            8.0.x
+
+      - name: Install Dafny 4.9.0 (the .NET library transpile in the materialized clone)
+        run: |
+          set -euo pipefail
+          dotnet tool install --global dafny --version 4.9.0
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+          "$HOME/.dotnet/tools/dafny" --version
+
+      - name: Build aws-c-common (the materialized C Language_Server cmake requires it)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/awslabs/aws-c-common "$RUNNER_TEMP/aws-c-common"
+          cmake -S "$RUNNER_TEMP/aws-c-common" -B "$RUNNER_TEMP/aws-c-common-build" \
+            -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/.aws-c-common-install" \
+            -DBUILD_TESTING=OFF
+          cmake --build "$RUNNER_TEMP/aws-c-common-build" --target install -- -j
+          echo "CMAKE_PREFIX_PATH=${{ github.workspace }}/.aws-c-common-install" >> "$GITHUB_ENV"
+
       - name: Install stub for the unpublished MPL test-vectors artifact
-        # The java Language_Server build runs `mvn install`, which resolves a
-        # test-scope MPL artifact (TestAwsCryptographicMaterialProviders) that is
-        # not on Maven Central; a stub jar satisfies resolution (its tests skip).
+        # The materialized Java Language_Server build runs `mvn install`, which
+        # resolves a test-scope MPL artifact (TestAwsCryptographicMaterialProviders)
+        # that is not on Maven Central; a stub jar satisfies resolution (tests skip).
         run: |
           set -euo pipefail
           tmp="$(mktemp -d)"
           echo placeholder > "$tmp/README.txt"
-          "$JAVA_HOME/bin/jar" cf "$tmp/stub.jar" -C "$tmp" README.txt
+          "$JAVA_HOME_17_X64/bin/jar" cf "$tmp/stub.jar" -C "$tmp" README.txt
           mvn -q -e org.apache.maven.plugins:maven-install-plugin:3.1.1:install-file \
             -Dfile="$tmp/stub.jar" \
             -DgroupId=software.amazon.cryptography \
             -DartifactId=TestAwsCryptographicMaterialProviders \
             -Dversion=1.7.0 \
             -Dpackaging=jar
+
+      - name: Authenticate the private clones (commons, java, rust)
+        # `make test-server` clones commons and the orchestrator materializes the
+        # other language servers, several from private repos via git@ URLs; rewrite
+        # SSH to token HTTPS. COMMONS_REPO_PAT needs read on commons + java + rust.
+        env:
+          PAT: ${{ secrets.COMMONS_REPO_PAT }}
+        run: |
+          test -n "$PAT" || { echo "::error::COMMONS_REPO_PAT is empty/unset in this repo"; exit 1; }
+          git config --global url."https://x-access-token:${PAT}@github.com/".insteadOf "git@github.com:"
+
+      - name: Configure AWS credentials via OIDC (required KMS scenarios)
+        id: aws-credentials
+        continue-on-error: true
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ESDK_TEST_SERVER_KMS_ROLE_ARN || 'arn:aws:iam::370957321024:role/esdk-test-server-ci-kms-role' }}
+          aws-region: us-west-2
+
+      - name: Verify AWS credentials are active (gates the orchestrated run)
+        run: |
+          if ! aws sts get-caller-identity; then
+            echo "::error::No usable AWS credentials for the required KMS scenarios." >&2
+            exit 1
+          fi
+
       - name: Run the orchestrated TestServer
+        working-directory: esdk-test-servers/rust
         run: make test-server
 
   net-test-server:
@@ -235,61 +374,131 @@ jobs:
       contents: read
     env:
       AWS_REGION: us-west-2
+      GRADLE_OPTS: -Dorg.gradle.daemon=false
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
       - name: Init Submodules
         run: |
           git submodule update --init libraries
           git submodule update --init --recursive mpl
+
+      - name: Set up JDK 17 (Temurin) — exposes JAVA_HOME_17_X64 for the MPL stub jar
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up JDK 21 (Temurin) — the commons orchestrator (smithy-java) needs 21+
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Python 3.11 (the materialized Python Language_Server needs >=3.11)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Node.js 22 (the materialized JavaScript Language_Server build needs 17+)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Set up Go (Go Language_Server + the Rust servers' aws-lc-sys native builds)
+        uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
+      - name: Set up the Rust toolchain (Rust Language_Server builds)
+        run: |
+          set -euo pipefail
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          cargo --version
+
+
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
             6.0.x
             8.0.x
+
       - name: Read Dafny version
         id: dafny
         run: echo "version=$(grep '^dafnyVersion=' project.properties | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: ${{ steps.dafny.outputs.version }}
+
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
         with:
           mpl-submodule-path: mpl/
+
       - name: Download Dependencies
         working-directory: AwsEncryptionSDK
         run: make setup_net
+
       - name: Transpile the library
         working-directory: AwsEncryptionSDK
         run: make transpile_net CORES=4
-      - name: Set up JDK 21 (Temurin)
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
-      - name: Configure AWS credentials (branch-key-store account)
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ vars.ESDK_TEST_SERVER_KMS_ROLE_ARN || 'arn:aws:iam::370957321024:role/esdk-test-server-ci-kms-role' }}
-          aws-region: us-west-2
-      - name: Authenticate the commons clone
-        run: git config --global url."https://x-access-token:${{ secrets.COMMONS_REPO_PAT }}@github.com/".insteadOf "git@github.com:"
+
+      - name: Build aws-c-common (the materialized C Language_Server cmake requires it)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/awslabs/aws-c-common "$RUNNER_TEMP/aws-c-common"
+          cmake -S "$RUNNER_TEMP/aws-c-common" -B "$RUNNER_TEMP/aws-c-common-build" \
+            -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}/.aws-c-common-install" \
+            -DBUILD_TESTING=OFF
+          cmake --build "$RUNNER_TEMP/aws-c-common-build" --target install -- -j
+          echo "CMAKE_PREFIX_PATH=${{ github.workspace }}/.aws-c-common-install" >> "$GITHUB_ENV"
+
       - name: Install stub for the unpublished MPL test-vectors artifact
-        # The java Language_Server build runs `mvn install`, which resolves a
-        # test-scope MPL artifact (TestAwsCryptographicMaterialProviders) that is
-        # not on Maven Central; a stub jar satisfies resolution (its tests skip).
+        # The materialized Java Language_Server build runs `mvn install`, which
+        # resolves a test-scope MPL artifact (TestAwsCryptographicMaterialProviders)
+        # that is not on Maven Central; a stub jar satisfies resolution (tests skip).
         run: |
           set -euo pipefail
           tmp="$(mktemp -d)"
           echo placeholder > "$tmp/README.txt"
-          "$JAVA_HOME/bin/jar" cf "$tmp/stub.jar" -C "$tmp" README.txt
+          "$JAVA_HOME_17_X64/bin/jar" cf "$tmp/stub.jar" -C "$tmp" README.txt
           mvn -q -e org.apache.maven.plugins:maven-install-plugin:3.1.1:install-file \
             -Dfile="$tmp/stub.jar" \
             -DgroupId=software.amazon.cryptography \
             -DartifactId=TestAwsCryptographicMaterialProviders \
             -Dversion=1.7.0 \
             -Dpackaging=jar
+
+      - name: Authenticate the private clones (commons, java, rust)
+        # `make test-server` clones commons and the orchestrator materializes the
+        # other language servers, several from private repos via git@ URLs; rewrite
+        # SSH to token HTTPS. COMMONS_REPO_PAT needs read on commons + java + rust.
+        env:
+          PAT: ${{ secrets.COMMONS_REPO_PAT }}
+        run: |
+          test -n "$PAT" || { echo "::error::COMMONS_REPO_PAT is empty/unset in this repo"; exit 1; }
+          git config --global url."https://x-access-token:${PAT}@github.com/".insteadOf "git@github.com:"
+
+      - name: Configure AWS credentials via OIDC (required KMS scenarios)
+        id: aws-credentials
+        continue-on-error: true
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ESDK_TEST_SERVER_KMS_ROLE_ARN || 'arn:aws:iam::370957321024:role/esdk-test-server-ci-kms-role' }}
+          aws-region: us-west-2
+
+      - name: Verify AWS credentials are active (gates the orchestrated run)
+        run: |
+          if ! aws sts get-caller-identity; then
+            echo "::error::No usable AWS credentials for the required KMS scenarios." >&2
+            exit 1
+          fi
+
       - name: Run the orchestrated TestServer
         working-directory: esdk-test-servers/net
         run: make test-server

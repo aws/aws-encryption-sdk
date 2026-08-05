@@ -9,6 +9,7 @@ description = "Hand-rolled rpcv2Cbor Language_Server for the ESDK TestServer, de
 # Standalone workspace root so this crate builds independently of any
 # surrounding workspace.
 [workspace]
+exclude = [".commons-clone"]
 
 [[bin]]
 name = "esdk-test-server"
