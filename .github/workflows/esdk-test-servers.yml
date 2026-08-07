@@ -583,11 +583,35 @@ jobs:
             exit 1
           fi
 
-      - name: Set up JDK 21 (Temurin) — restore default JAVA_HOME after the JDK-17 Dafny codegen setup
+      # The Dafny codegen setup (setup_dafny + install_smithy_dafny_codegen_dependencies)
+      # re-pins JDK (17) and Node for codegen; restore the matrix toolchains the
+      # orchestrated run needs to build every materialized Language_Server.
+      - name: Restore JDK 21 (Temurin)
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
+
+      - name: Restore Node.js 22 (materialized JavaScript Language_Server build needs 17+)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Restore Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Restore Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
+      - name: Restore the Rust toolchain
+        run: |
+          set -euo pipefail
+          rustup toolchain install stable --profile minimal
+          rustup default stable
 
       - name: Run the orchestrated TestServer
         working-directory: esdk-test-servers/net
