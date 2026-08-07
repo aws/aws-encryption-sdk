@@ -583,6 +583,12 @@ jobs:
             exit 1
           fi
 
+      - name: Set up JDK 21 (Temurin) — restore default JAVA_HOME after the JDK-17 Dafny codegen setup
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
       - name: Run the orchestrated TestServer
         working-directory: esdk-test-servers/net
         run: make test-server
