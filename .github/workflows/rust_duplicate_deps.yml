@@ -50,14 +50,20 @@ jobs:
 
             # aws-lc-rs is non-optional, so it must resolve; if it does not the
             # tree is broken and a "no duplicates" result would be a false pass.
-            if ! cargo tree $args 2>/dev/null | grep -q 'aws-lc-rs v'; then
-              echo "::error::Duplicate check could not resolve the dependency tree ($label build). Run 'cargo tree $args' locally to debug."
-              status=1
-              return
-            fi
+            tree=$(cargo tree $args 2>/dev/null || true)
+            case "$tree" in
+              *"aws-lc-rs v"*) : ;;
+              *)
+                echo "::error::Duplicate check could not resolve the dependency tree ($label build). Run 'cargo tree $args' locally to debug."
+                status=1
+                return 0
+                ;;
+            esac
 
             awslc=$(cargo tree -d $args 2>/dev/null | awk 'BEGIN{RS="";ORS="\n\n"} /^aws-lc-(sys|fips-sys) v/' || true)
-            [ -n "$(printf '%s' "$awslc" | tr -d '[:space:]')" ] || return
+            if [ -z "$(printf '%s' "$awslc" | tr -d '[:space:]')" ]; then
+              return 0
+            fi
 
             status=1
             crate=$(printf '%s\n' "$awslc" | grep -oE '^aws-lc-(fips-)?sys' | head -1 || true)
