@@ -1,0 +1,38 @@
+[package]
+name = "aws-esdk-dafny-test-server"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+description = "Hand-rolled rpcv2Cbor Language_Server for the ESDK TestServer, delegating to the Dafny-generated aws-esdk."
+
+# Standalone workspace root so this crate builds independently of any
+# surrounding workspace.
+[workspace]
+exclude = [".commons-clone"]
+
+[[bin]]
+name = "esdk-test-server"
+path = "src/main.rs"
+
+[dependencies]
+# The committed source of the published crates.io aws-esdk crate.
+aws-esdk = { path = "../../releases/rust/esdk" }
+
+# KMS/DynamoDB clients handed to keyrings; pinned to the versions aws-esdk
+# itself declares.
+aws-config = "1.8.12"
+aws-sdk-dynamodb = "1.103.0"
+aws-sdk-kms = "1.98.0"
+aws-smithy-types = "1.3.6"
+pem = "3.0.6"
+
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net"] }
+axum = "0.7"
+ciborium = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde_bytes = "0.11"
+uuid = { version = "1", features = ["v4"] }
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
