@@ -1,7 +1,7 @@
 # Fails CI if a direct aws-lc-sys / aws-lc-fips-sys version differs from the one
-# aws-lc-rs pulls in transitively. Two versions build two copies of AWS-LC, and
-# the raw FFI path (aws_lc_sys_impl::*) then runs a different AWS-LC than
-# aws-lc-rs's safe APIs. The fix is to match the direct -sys version to aws-lc-rs.
+# aws-lc-rs pulls in transitively. Two versions compile two separate copies of
+# AWS-LC -- roughly 2x the native build time and a larger binary for customers
+# building our code. The fix is to match the direct -sys version to aws-lc-rs.
 name: Rust Duplicate aws-lc Dependency Check
 
 on:
@@ -71,7 +71,7 @@ jobs:
             want=$(cargo tree $args -p aws-lc-rs 2>/dev/null | grep -oE "${crate} v[0-9]+(\.[0-9]+)+" | head -1 | sed 's/.* v//' || true)
 
             echo "::error::Duplicate ${crate} in the ${label} build: Cargo.toml declares \"${have}\", aws-lc-rs pulls v${want}."
-            echo "Why it matters: two versions compile two copies of AWS-LC, and the raw FFI path (aws_lc_sys_impl::*) runs the version you declare while aws-lc-rs runs its own -- so it can stay on a stale or vulnerable AWS-LC."
+            echo "Why it matters: two versions compile two separate copies of AWS-LC -- roughly 2x the native build time and a larger binary for customers building our code."
             echo "Fix: open a PR changing ${crate} in AwsEncryptionSDK/runtimes/rust/Cargo.toml from \"${have}\" to \"${want}\", then verify with: cargo tree -d${args:+ $args}"
           }
 
