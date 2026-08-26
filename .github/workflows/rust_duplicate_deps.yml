@@ -95,16 +95,20 @@ jobs:
               # The version aws-lc-rs actually pulls in -- this is the one to pin to.
               want=$(cargo tree $args -p aws-lc-rs 2>/dev/null \
                 | grep -oE "$crate v[0-9][0-9.]*" | head -1 | grep -oE '[0-9][0-9.]*')
-              # What Cargo.toml declares directly today, with its line number.
+              # The aws-lc-rs version doing the resolving.
+              rs_ver=$(cargo tree $args -p aws-lc-rs 2>/dev/null \
+                | grep -oE 'aws-lc-rs v[0-9][0-9.]*' | head -1 | grep -oE '[0-9][0-9.]*')
+              # Repo-relative path to the offending Cargo.toml, and the line to change.
+              cargo_path="$dir/Cargo.toml"
               cargo_line=$(grep -nE "^$crate[[:space:]]*=" Cargo.toml | head -1)
               cur=$(printf '%s' "$cargo_line" | grep -oE '[0-9][0-9.]+' | head -1)
               lineno=$(printf '%s' "$cargo_line" | cut -d: -f1)
 
-              echo "::error::$crate is duplicated in $dir ($label build). Fix: pin it to $want in Cargo.toml."
-              echo "$dir/Cargo.toml line $lineno:"
-              echo "    - $crate = \"$cur\""
-              echo "    + $crate = \"$want\""
-              echo "(aws-lc-rs resolves $crate to v$want; matching it collapses the two AWS-LC builds into one.)"
+              echo "::error::$crate versions aren't consistent. Fix: pin it to $want in $cargo_path."
+              echo "In $cargo_path line $lineno, change"
+              echo "- $crate = \"$cur\""
+              echo "+ $crate = \"$want\""
+              echo "(aws-lc-rs v$rs_ver resolves $crate to v$want; matching it avoids inconsistencies.)"
             fi
 
             popd >/dev/null
