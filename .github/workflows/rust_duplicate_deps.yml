@@ -47,15 +47,16 @@ jobs:
       # running codegen.
       - name: Stub generated targets
         shell: bash
-        working-directory: ./AwsEncryptionSDK/runtimes/rust
         run: |
-          mkdir -p src examples
-          [ -f src/lib.rs ] || : > src/lib.rs
-          [ -f examples/main.rs ] || echo 'fn main() {}' > examples/main.rs
+          for dir in AwsEncryptionSDK/runtimes/rust TestVectors/runtimes/rust; do
+            mkdir -p "$dir/src" "$dir/examples"
+            [ -f "$dir/src/lib.rs" ] || : > "$dir/src/lib.rs"
+            [ -f "$dir/src/main.rs" ] || echo 'fn main() {}' > "$dir/src/main.rs"
+            [ -f "$dir/examples/main.rs" ] || echo 'fn main() {}' > "$dir/examples/main.rs"
+          done
 
       - name: Check for duplicate aws-lc-sys / aws-lc-fips-sys
         shell: bash
-        working-directory: ./AwsEncryptionSDK/runtimes/rust
         run: |
           set -euo pipefail
           status=0
@@ -65,8 +66,11 @@ jobs:
           # package followed by the reverse-dependency tree, so it shows exactly
           # which package pulls in each version (e.g. the direct dep vs aws-lc-rs).
           check_profile() {
-            label="$1"
-            args="$2"
+            dir="$1"
+            label="$2"
+            args="$3"
+
+            pushd "$dir" >/dev/null
 
             # Liveness guard: a "no duplicates" result is only trustworthy if the
             # tree actually resolved. This check intentionally ignores cargo
@@ -75,8 +79,9 @@ jobs:
             # aws-lc-rs is a non-optional dependency, so it MUST appear; if it
             # does not, fail loudly instead of reporting a false "all clear".
             if ! cargo tree $args 2>/dev/null | grep -q 'aws-lc-rs v'; then
-              echo "::error::Duplicate check could not resolve the dependency tree ($label build) -- failing instead of passing silently. Run 'cargo tree $args' locally to debug."
+              echo "::error::Duplicate check could not resolve the dependency tree ($dir, $label build) -- failing instead of passing silently. Run 'cargo tree $args' in $dir locally to debug."
               status=1
+              popd >/dev/null
               return
             fi
 
@@ -84,9 +89,9 @@ jobs:
             awslc=$(printf '%s\n' "$dup" | awk 'BEGIN{RS="";ORS="\n\n"} /^aws-lc-(sys|fips-sys) v/' || true)
             if [ -n "$(printf '%s' "$awslc" | tr -d '[:space:]')" ]; then
               status=1
-              echo "::error::Duplicate aws-lc native crate detected ($label build). See log for how to fix."
+              echo "::error::Duplicate aws-lc native crate detected ($dir, $label build). See log for how to fix."
               echo "------------------------------------------------------------------------"
-              echo "Duplicate aws-lc native crate(s) in the $label dependency tree."
+              echo "Duplicate aws-lc native crate(s) in the $label dependency tree of $dir."
               echo "Each version below compiles a separate copy of AWS-LC. The tree shows"
               echo "which package pulls in each version:"
               echo ""
@@ -104,8 +109,14 @@ jobs:
               echo "to (shown above), then confirm locally with:  cargo tree -d"
               echo "------------------------------------------------------------------------"
             fi
+
+            popd >/dev/null
           }
 
-          check_profile "default" ""
-          check_profile "fips" "--no-default-features --features fips"
+          # Every Rust runtime crate that pins aws-lc-*-sys directly must be
+          # checked -- the ESDK library and the TestVectors binary each FIPS-build.
+          for dir in AwsEncryptionSDK/runtimes/rust TestVectors/runtimes/rust; do
+            check_profile "$dir" "default" ""
+            check_profile "$dir" "fips" "--no-default-features --features fips"
+          done
           exit $status
