@@ -38,7 +38,7 @@ jobs:
       # dafny-reportgenerator requires next6
       # but only 7.0 is installed on macos-15-large
       - name: Setup .NET Core SDK '6.0.x'
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: "9.0.x"
 
