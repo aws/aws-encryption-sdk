@@ -89,7 +89,7 @@ jobs:
 
       - name: Setup Python for running tests
         if: matrix.language == 'python_mkp' || matrix.language == 'python'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: 3.11
           architecture: x64
@@ -280,7 +280,7 @@ jobs:
 
       - name: Setup Python for running tests
         if: matrix.decrypting_language == 'python' || matrix.decrypting_language == 'python_mkp'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: 3.11
           architecture: x64
@@ -718,7 +718,7 @@ jobs:
 
       - name: Setup Python for running tests
         if: matrix.decrypting_language == 'python' || matrix.decrypting_language == 'python_mkp'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: 3.11
           architecture: x64
