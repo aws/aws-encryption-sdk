@@ -280,7 +280,7 @@ jobs:
           name: ${{matrix.os}}_mpl-${{inputs.mpl-dafny}}_esdk-${{inputs.esdk-dafny}}_vectors
           path: AwsEncryptionSDK/net41/vectors
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 17
 
