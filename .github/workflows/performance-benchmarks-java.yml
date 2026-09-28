@@ -42,7 +42,7 @@ jobs:
           special-characters-workaround: "true" # Some environments (example: windowsOS) cannot tolerate special characters in a secret key.
 
       - name: Setup Java Corretto ${{matrix.java}}
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: "corretto"
           java-version: ${{matrix.java}}
