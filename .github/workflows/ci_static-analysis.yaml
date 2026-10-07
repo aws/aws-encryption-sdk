@@ -5,6 +5,7 @@ on: ["pull_request"]
 
 jobs:
   not-grep:
+    # Docker container action; CodeBuild runners have no Docker.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6

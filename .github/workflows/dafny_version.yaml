@@ -12,6 +12,7 @@ on:
 
 jobs:
   getDafnyVersion:
+    # Docker container action; CodeBuild runners have no Docker.
     runs-on: ubuntu-22.04
     outputs:
       version: ${{ steps.read_property.outputs.dafnyVersion }}

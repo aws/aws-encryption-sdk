@@ -41,7 +41,10 @@ jobs:
           ]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-22.04
+            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
       contents: read
@@ -80,6 +83,12 @@ jobs:
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: ${{ inputs.dafny }}
+
+      # The CodeBuild image pins .NET 6 in a global.json above the workspace.
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       - name: Setup Python for running tests
         if: matrix.language == 'python'

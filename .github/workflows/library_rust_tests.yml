@@ -26,7 +26,10 @@ jobs:
             # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
             # macos-15,
           ]
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-22.04
+            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
       contents: read
@@ -54,10 +57,20 @@ jobs:
         with:
           components: rustfmt, clippy
 
+      - name: Install CMake
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y cmake
+
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: 4.10.0
+
+      # The CodeBuild image pins .NET 6 in a global.json above the workspace.
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       - name: Setup Java 17 for codegen
         uses: actions/setup-java@v5
@@ -128,7 +141,10 @@ jobs:
             # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
             # macos-15,
           ]
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-22.04
+            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
       contents: read
@@ -156,10 +172,20 @@ jobs:
         with:
           components: rustfmt
 
+      - name: Install CMake
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y cmake
+
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: 4.10.0
+
+      # The CodeBuild image pins .NET 6 in a global.json above the workspace.
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       - name: Setup Java 17 for codegen
         uses: actions/setup-java@v5

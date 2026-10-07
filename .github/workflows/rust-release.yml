@@ -36,7 +36,7 @@ permissions: {}
 jobs:
   publish:
     name: Publish aws-esdk to crates.io
-    runs-on: ubuntu-22.04
+    runs-on: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
     environment: crates-io-publish
     permissions:
       id-token: write
@@ -52,6 +52,10 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           components: rustfmt, clippy
+
+      - name: Install CMake
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y cmake
 
       - name: Read crate version from Cargo.toml
         id: cargo

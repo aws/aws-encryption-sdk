@@ -91,7 +91,7 @@ jobs:
       - pr-test-vectors
       - pr-dafny-keyring-test-vectors
       - pr-dafny-legacy-test-vectors
-    runs-on: ubuntu-22.04
+    runs-on: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Verify all required jobs passed
         uses: re-actors/alls-green@release/v1

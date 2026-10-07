@@ -37,7 +37,12 @@ jobs:
             # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
             # macos-15,
           ]
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: windows-latest
+            runner: windows-latest
+          - os: ubuntu-22.04
+            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
       contents: read
@@ -72,6 +77,12 @@ jobs:
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: ${{ inputs.dafny }}
+
+      # The CodeBuild image pins .NET 6 in a global.json above the workspace.
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
@@ -150,7 +161,10 @@ jobs:
             # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
             # macos-15,
           ]
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-22.04
+            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
       contents: read
@@ -185,6 +199,12 @@ jobs:
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: ${{ inputs.dafny }}
+
+      # The CodeBuild image pins .NET 6 in a global.json above the workspace.
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies

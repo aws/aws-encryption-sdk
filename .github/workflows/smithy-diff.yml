@@ -8,7 +8,7 @@ on:
 
 jobs:
   require-approvals:
-    runs-on: ubuntu-22.04
+    runs-on: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
     permissions:
       issues: write
       pull-requests: write
