@@ -12,8 +12,7 @@ on:
 
 jobs:
   getDafnyFormatVersion:
-    # Docker container action; CodeBuild runners have no Docker.
-    runs-on: ubuntu-22.04
+    runs-on: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
     outputs:
       version: ${{ steps.read_property.outputs.dafnyFormatVersion }}
     steps:

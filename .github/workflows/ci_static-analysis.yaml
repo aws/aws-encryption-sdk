@@ -5,8 +5,7 @@ on: ["pull_request"]
 
 jobs:
   not-grep:
-    # Docker container action; CodeBuild runners have no Docker.
-    runs-on: ubuntu-latest
+    runs-on: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@v6
       - name: not-grep
