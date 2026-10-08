@@ -67,7 +67,7 @@ jobs:
       esdk-dafny: ${{needs.getVersion.outputs.version}}
 
   cut-issue-on-failure:
-    runs-on: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ubuntu-22.04
     permissions:
       id-token: write
       contents: read
