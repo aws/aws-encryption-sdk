@@ -18,10 +18,7 @@ jobs:
             # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
             # macos-15,
           ]
-        include:
-          - os: ubuntu-22.04
-            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
-    runs-on: ${{ matrix.runner }}
+    runs-on: ${{ matrix.os }}
     permissions:
       id-token: write
       contents: read
