@@ -1,0 +1,5 @@
+bin/
+obj/
+.server.pid
+.server.log
+.commons-clone/
