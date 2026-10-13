@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   go-language-server:
-    name: go — build + test (releases/go/encryption-sdk)
+    name: go — transpile + build + test (runtimes/go)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -28,10 +28,36 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Init Submodules
+        working-directory: .
+        run: |
+          git submodule update --init libraries
+          git submodule update --init --recursive mpl
+
       - uses: actions/setup-go@v5
         with:
           go-version-file: esdk-test-servers/go/go.mod
           cache-dependency-path: esdk-test-servers/go/go.sum
+
+      - name: Read Dafny version
+        id: dafny
+        working-directory: .
+        run: echo "version=$(grep '^dafnyVersion=' project.properties | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Dafny
+        uses: ./mpl/.github/actions/setup_dafny
+        with:
+          dafny-version: ${{ steps.dafny.outputs.version }}
+
+      # Installs goimports, which the Dafny Go backend runs on its output.
+      - name: Install Smithy-Dafny codegen dependencies
+        uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
+        with:
+          mpl-submodule-path: mpl/
+
+      - name: Transpile the library
+        working-directory: AwsEncryptionSDK
+        run: make _no_extern_pre_transpile transpile_dependencies_go transpile_implementation_go _no_extern_post_transpile CORES=4
 
       - name: Format check
         run: test -z "$(gofmt -l .)"
@@ -46,13 +72,36 @@ jobs:
         run: go test ./...
 
   rust-dafny-language-server:
-    name: rust-dafny — build + test (releases/rust/esdk)
+    name: rust-dafny — transpile + build + test (runtimes/rust)
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: esdk-test-servers/rust
     steps:
       - uses: actions/checkout@v6
+
+      - name: Init Submodules
+        working-directory: .
+        run: |
+          git submodule update --init libraries
+          git submodule update --init --recursive mpl
+
+      # Rust codegen uses Dafny 4.10.0, as library_rust_tests.yml does (#824).
+      - name: Setup Dafny
+        uses: ./mpl/.github/actions/setup_dafny
+        with:
+          dafny-version: 4.10.0
+
+      - name: Install Smithy-Dafny codegen dependencies
+        uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
+        with:
+          mpl-submodule-path: mpl/
+
+      - name: Generate and transpile the library
+        working-directory: AwsEncryptionSDK
+        run: |
+          make polymorph_rust
+          make transpile_rust CORES=4
 
       # aws-lc-sys (via aws-esdk) needs Go to build its native code
       - uses: actions/setup-go@v5

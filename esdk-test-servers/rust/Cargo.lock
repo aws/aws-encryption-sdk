@@ -92,14 +92,14 @@ version = "1.2.4"
 dependencies = [
  "aws-config",
  "aws-lc-rs",
- "aws-lc-sys 0.39.1",
+ "aws-lc-sys",
  "aws-sdk-dynamodb",
  "aws-sdk-kms",
  "aws-smithy-runtime-api",
  "aws-smithy-types",
  "chrono",
  "cpu-time",
- "dafny-runtime",
+ "dafny_runtime",
  "dashmap",
  "pem",
  "rand",
@@ -128,32 +128,20 @@ dependencies = [
 
 [[package]]
 name = "aws-lc-rs"
-version = "1.17.3"
+version = "1.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00bdb5da18dac48ca2cc7cd4a98e533e8635a58e2361d13a1a4ee3888e0d72f1"
+checksum = "b281d307588d634de920874890732659e2e7672f72b5e10e81badc1a8a83621e"
 dependencies = [
- "aws-lc-sys 0.43.0",
+ "aws-lc-sys",
  "untrusted 0.7.1",
  "zeroize",
 ]
 
 [[package]]
 name = "aws-lc-sys"
-version = "0.39.1"
+version = "0.45.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83a25cf98105baa966497416dbd42565ce3a8cf8dbfd59803ec9ad46f3126399"
-dependencies = [
- "cc",
- "cmake",
- "dunce",
- "fs_extra",
-]
-
-[[package]]
-name = "aws-lc-sys"
-version = "0.43.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43103168cc76fe62678a375e722fc9cb3a0146159ac5828bc4f0dfd755c2224c"
+checksum = "9bff6c3b54fad79a2e60b8102caf565819711497c1f5f092f49508e2f5c31b27"
 dependencies = [
  "cc",
  "cmake",
@@ -835,10 +823,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "dafny-runtime"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00ff59e5bdeafe83af48ddf5c7cb8ff233253aea4161f650e91c3bb0277c8a47"
+name = "dafny_runtime"
+version = "0.1.0"
 dependencies = [
  "itertools",
  "num",

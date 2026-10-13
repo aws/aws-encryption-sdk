@@ -16,8 +16,9 @@ name = "esdk-test-server"
 path = "src/main.rs"
 
 [dependencies]
-# The committed source of the published crates.io aws-esdk crate.
-aws-esdk = { path = "../../releases/rust/esdk" }
+# The library transpiled from this checkout's Dafny source
+# (make -C AwsEncryptionSDK polymorph_rust transpile_rust).
+aws-esdk = { path = "../../AwsEncryptionSDK/runtimes/rust" }
 
 # KMS/DynamoDB clients handed to keyrings; pinned to the versions aws-esdk
 # itself declares.
