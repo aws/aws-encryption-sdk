@@ -17,6 +17,7 @@ import (
 	"fmt"
 
 	mpltypes "github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl/awscryptographymaterialproviderssmithygeneratedtypes"
+	primtypes "github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives/awscryptographyprimitivessmithygeneratedtypes"
 	kmstypes "github.com/aws/aws-sdk-go-v2/service/kms/types"
 	"github.com/aws/smithy-go/encoding/cbor"
 )
@@ -116,7 +117,37 @@ type KeyringConfig struct {
 	RawAes                *RawAesKeyringConfig
 	RawRsa                *RawRsaKeyringConfig
 	AwsKmsHierarchical    *AwsKmsHierarchicalKeyringConfig
+	RawEcdh               *RawEcdhKeyringConfig
+	AwsKmsEcdh            *AwsKmsEcdhKeyringConfig
 	Multi                 *MultiKeyringConfig
+}
+
+// RawEcdhKeyringConfig carries exactly one key agreement scheme.
+type RawEcdhKeyringConfig struct {
+	CurveSpec primtypes.ECDHCurveSpec
+	// RawPrivateKeyToStaticPublicKey
+	SenderStaticPrivateKey []byte
+	RecipientPublicKey     []byte
+	Static                 bool
+	// EphemeralPrivateKeyToStaticPublicKey (RecipientPublicKey)
+	Ephemeral bool
+	// PublicKeyDiscovery
+	RecipientStaticPrivateKey []byte
+	Discovery                 bool
+}
+
+// AwsKmsEcdhKeyringConfig carries exactly one key agreement scheme.
+type AwsKmsEcdhKeyringConfig struct {
+	CurveSpec   primtypes.ECDHCurveSpec
+	GrantTokens []string
+	// KmsPrivateKeyToStaticPublicKey
+	SenderKmsIdentifier string
+	SenderPublicKey     []byte
+	RecipientPublicKey  []byte
+	Static              bool
+	// KmsPublicKeyDiscovery
+	RecipientKmsIdentifier string
+	Discovery              bool
 }
 
 // AwsKmsKeyringConfig carries the AwsKms and AwsKmsMrk variants (same shape).
@@ -219,6 +250,13 @@ var aesWrappingAlgs = map[string]mpltypes.AesWrappingAlg{
 	"ALG_AES128_GCM_IV12_TAG16": mpltypes.AesWrappingAlgAlgAes128GcmIv12Tag16,
 	"ALG_AES192_GCM_IV12_TAG16": mpltypes.AesWrappingAlgAlgAes192GcmIv12Tag16,
 	"ALG_AES256_GCM_IV12_TAG16": mpltypes.AesWrappingAlgAlgAes256GcmIv12Tag16,
+}
+
+var ecdhCurveSpecs = map[string]primtypes.ECDHCurveSpec{
+	"ECC_NIST_P256": primtypes.ECDHCurveSpecEccNistP256,
+	"ECC_NIST_P384": primtypes.ECDHCurveSpecEccNistP384,
+	"ECC_NIST_P521": primtypes.ECDHCurveSpecEccNistP521,
+	"SM2":           primtypes.ECDHCurveSpecSm2,
 }
 
 var paddingSchemes = map[string]mpltypes.PaddingScheme{
@@ -611,12 +649,125 @@ func decodeKeyring(v cbor.Value) (*KeyringConfig, error) {
 			return nil, err
 		}
 	}
+	if kv, ok := member(m, "RawEcdh"); ok {
+		if keyring.RawEcdh, err = decodeRawEcdhKeyring(kv); err != nil {
+			return nil, err
+		}
+	}
+	if kv, ok := member(m, "AwsKmsEcdh"); ok {
+		if keyring.AwsKmsEcdh, err = decodeAwsKmsEcdhKeyring(kv); err != nil {
+			return nil, err
+		}
+	}
 	if kv, ok := member(m, "Multi"); ok {
 		if keyring.Multi, err = decodeMultiKeyring(kv); err != nil {
 			return nil, err
 		}
 	}
 	return keyring, nil
+}
+
+// decodeScheme returns the single member set in a key agreement scheme union.
+func decodeScheme(v cbor.Value, what string, variants ...string) (string, cbor.Map, error) {
+	m, err := asMap(v, what)
+	if err != nil {
+		return "", nil, err
+	}
+	name, set := "", 0
+	var body cbor.Value
+	for _, variant := range variants {
+		if bv, ok := member(m, variant); ok {
+			name, body = variant, bv
+			set++
+		}
+	}
+	if set != 1 {
+		return "", nil, fmt.Errorf("%s must set exactly one variant, found %d", what, set)
+	}
+	bm, err := asMap(body, name)
+	return name, bm, err
+}
+
+func decodeRawEcdhKeyring(v cbor.Value) (*RawEcdhKeyringConfig, error) {
+	m, err := asMap(v, "RawEcdh")
+	if err != nil {
+		return nil, err
+	}
+	config := &RawEcdhKeyringConfig{}
+	if config.CurveSpec, err = requireEnum(m, "curveSpec", ecdhCurveSpecs); err != nil {
+		return nil, err
+	}
+	sv, err := requireMember(m, "keyAgreementScheme")
+	if err != nil {
+		return nil, err
+	}
+	name, scheme, err := decodeScheme(sv, "RawEcdhKeyAgreementScheme",
+		"RawPrivateKeyToStaticPublicKey", "EphemeralPrivateKeyToStaticPublicKey", "PublicKeyDiscovery")
+	if err != nil {
+		return nil, err
+	}
+	switch name {
+	case "RawPrivateKeyToStaticPublicKey":
+		config.Static = true
+		if config.SenderStaticPrivateKey, err = requireBytes(scheme, "senderStaticPrivateKey"); err != nil {
+			return nil, err
+		}
+		if config.RecipientPublicKey, err = requireBytes(scheme, "recipientPublicKey"); err != nil {
+			return nil, err
+		}
+	case "EphemeralPrivateKeyToStaticPublicKey":
+		config.Ephemeral = true
+		if config.RecipientPublicKey, err = requireBytes(scheme, "recipientPublicKey"); err != nil {
+			return nil, err
+		}
+	default:
+		config.Discovery = true
+		if config.RecipientStaticPrivateKey, err = requireBytes(scheme, "recipientStaticPrivateKey"); err != nil {
+			return nil, err
+		}
+	}
+	return config, nil
+}
+
+func decodeAwsKmsEcdhKeyring(v cbor.Value) (*AwsKmsEcdhKeyringConfig, error) {
+	m, err := asMap(v, "AwsKmsEcdh")
+	if err != nil {
+		return nil, err
+	}
+	config := &AwsKmsEcdhKeyringConfig{}
+	if config.CurveSpec, err = requireEnum(m, "curveSpec", ecdhCurveSpecs); err != nil {
+		return nil, err
+	}
+	if config.GrantTokens, err = optionalStringList(m, "grantTokens"); err != nil {
+		return nil, err
+	}
+	sv, err := requireMember(m, "keyAgreementScheme")
+	if err != nil {
+		return nil, err
+	}
+	name, scheme, err := decodeScheme(sv, "KmsEcdhKeyAgreementScheme",
+		"KmsPrivateKeyToStaticPublicKey", "KmsPublicKeyDiscovery")
+	if err != nil {
+		return nil, err
+	}
+	if name == "KmsPrivateKeyToStaticPublicKey" {
+		config.Static = true
+		if config.SenderKmsIdentifier, err = requireString(scheme, "senderKmsIdentifier"); err != nil {
+			return nil, err
+		}
+		if config.SenderPublicKey, err = optionalBytes(scheme, "senderPublicKey"); err != nil {
+			return nil, err
+		}
+		if config.RecipientPublicKey, err = requireBytes(scheme, "recipientPublicKey"); err != nil {
+			return nil, err
+		}
+		return config, nil
+	}
+	config.Discovery = true
+	if config.RecipientKmsIdentifier, err = requireString(scheme, "recipientKmsIdentifier"); err != nil {
+		return nil, err
+	}
+	return config, nil
 }
 
 func decodeAwsKmsKeyring(v cbor.Value, what string) (*AwsKmsKeyringConfig, error) {

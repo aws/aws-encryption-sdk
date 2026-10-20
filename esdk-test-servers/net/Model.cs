@@ -98,7 +98,32 @@ internal sealed class KeyringConfig
     internal RawAesKeyringConfig RawAes;
     internal RawRsaKeyringConfig RawRsa;
     internal AwsKmsHierarchicalKeyringConfig AwsKmsHierarchical;
+    internal RawEcdhKeyringConfig RawEcdh;
+    internal AwsKmsEcdhKeyringConfig AwsKmsEcdh;
     internal MultiKeyringConfig Multi;
+}
+
+// Exactly one key agreement scheme member is expected to be set.
+internal sealed class RawEcdhKeyringConfig
+{
+    internal AWS.Cryptography.Primitives.ECDHCurveSpec CurveSpec;
+    internal int SchemesSet;
+    internal byte[] RawStaticSenderPrivateKey;
+    internal byte[] RawStaticRecipientPublicKey;
+    internal byte[] EphemeralRecipientPublicKey;
+    internal byte[] DiscoveryRecipientPrivateKey;
+}
+
+// Exactly one key agreement scheme member is expected to be set.
+internal sealed class AwsKmsEcdhKeyringConfig
+{
+    internal AWS.Cryptography.Primitives.ECDHCurveSpec CurveSpec;
+    internal List<string> GrantTokens;
+    internal int SchemesSet;
+    internal string StaticSenderKmsIdentifier;
+    internal byte[] StaticSenderPublicKey;
+    internal byte[] StaticRecipientPublicKey;
+    internal string DiscoveryRecipientKmsIdentifier;
 }
 
 // Carries the AwsKms and AwsKmsMrk variants (same shape).
@@ -210,6 +235,14 @@ internal static class Model
         ["ALG_AES128_GCM_IV12_TAG16"] = AesWrappingAlg.ALG_AES128_GCM_IV12_TAG16,
         ["ALG_AES192_GCM_IV12_TAG16"] = AesWrappingAlg.ALG_AES192_GCM_IV12_TAG16,
         ["ALG_AES256_GCM_IV12_TAG16"] = AesWrappingAlg.ALG_AES256_GCM_IV12_TAG16,
+    };
+
+    private static readonly Dictionary<string, AWS.Cryptography.Primitives.ECDHCurveSpec> EcdhCurveSpecs = new()
+    {
+        ["ECC_NIST_P256"] = AWS.Cryptography.Primitives.ECDHCurveSpec.ECC_NIST_P256,
+        ["ECC_NIST_P384"] = AWS.Cryptography.Primitives.ECDHCurveSpec.ECC_NIST_P384,
+        ["ECC_NIST_P521"] = AWS.Cryptography.Primitives.ECDHCurveSpec.ECC_NIST_P521,
+        ["SM2"] = AWS.Cryptography.Primitives.ECDHCurveSpec.SM2,
     };
 
     private static readonly Dictionary<string, PaddingScheme> PaddingSchemes = new()
@@ -379,6 +412,8 @@ internal static class Model
                 case "RawAes": keyring.RawAes = ReadRawAesKeyring(r); return true;
                 case "RawRsa": keyring.RawRsa = ReadRawRsaKeyring(r); return true;
                 case "AwsKmsHierarchical": keyring.AwsKmsHierarchical = ReadAwsKmsHierarchicalKeyring(r); return true;
+                case "RawEcdh": keyring.RawEcdh = ReadRawEcdhKeyring(r); return true;
+                case "AwsKmsEcdh": keyring.AwsKmsEcdh = ReadAwsKmsEcdhKeyring(r); return true;
                 case "Multi": keyring.Multi = ReadMultiKeyring(r); return true;
                 default: return false;
             }
@@ -523,6 +558,120 @@ internal static class Model
         Require(config.KeyNamespace != null, "keyNamespace");
         Require(config.KeyName != null, "keyName");
         Require(config.PaddingScheme != null, "paddingScheme");
+        return config;
+    }
+
+    private static RawEcdhKeyringConfig ReadRawEcdhKeyring(CborReader reader)
+    {
+        var config = new RawEcdhKeyringConfig();
+        var schemeRead = false;
+        ReadStructure(reader, "RawEcdh", (r, key) =>
+        {
+            switch (key)
+            {
+                case "curveSpec": config.CurveSpec = ReadEnum(r, key, EcdhCurveSpecs); return true;
+                case "keyAgreementScheme":
+                    schemeRead = true;
+                    ReadStructure(r, "RawEcdhKeyAgreementScheme", (s, member) =>
+                    {
+                        switch (member)
+                        {
+                            case "RawPrivateKeyToStaticPublicKey":
+                                config.SchemesSet++;
+                                ReadStructure(s, member, (f, field) =>
+                                {
+                                    switch (field)
+                                    {
+                                        case "senderStaticPrivateKey": config.RawStaticSenderPrivateKey = f.ReadByteString(); return true;
+                                        case "recipientPublicKey": config.RawStaticRecipientPublicKey = f.ReadByteString(); return true;
+                                        default: return false;
+                                    }
+                                });
+                                Require(config.RawStaticSenderPrivateKey != null, "senderStaticPrivateKey");
+                                Require(config.RawStaticRecipientPublicKey != null, "recipientPublicKey");
+                                return true;
+                            case "EphemeralPrivateKeyToStaticPublicKey":
+                                config.SchemesSet++;
+                                ReadStructure(s, member, (f, field) =>
+                                {
+                                    if (field != "recipientPublicKey") return false;
+                                    config.EphemeralRecipientPublicKey = f.ReadByteString();
+                                    return true;
+                                });
+                                Require(config.EphemeralRecipientPublicKey != null, "recipientPublicKey");
+                                return true;
+                            case "PublicKeyDiscovery":
+                                config.SchemesSet++;
+                                ReadStructure(s, member, (f, field) =>
+                                {
+                                    if (field != "recipientStaticPrivateKey") return false;
+                                    config.DiscoveryRecipientPrivateKey = f.ReadByteString();
+                                    return true;
+                                });
+                                Require(config.DiscoveryRecipientPrivateKey != null, "recipientStaticPrivateKey");
+                                return true;
+                            default: return false;
+                        }
+                    });
+                    return true;
+                default: return false;
+            }
+        });
+        Require(config.CurveSpec != null, "curveSpec");
+        Require(schemeRead, "keyAgreementScheme");
+        return config;
+    }
+
+    private static AwsKmsEcdhKeyringConfig ReadAwsKmsEcdhKeyring(CborReader reader)
+    {
+        var config = new AwsKmsEcdhKeyringConfig();
+        var schemeRead = false;
+        ReadStructure(reader, "AwsKmsEcdh", (r, key) =>
+        {
+            switch (key)
+            {
+                case "curveSpec": config.CurveSpec = ReadEnum(r, key, EcdhCurveSpecs); return true;
+                case "grantTokens": config.GrantTokens = ReadStringList(r, key); return true;
+                case "keyAgreementScheme":
+                    schemeRead = true;
+                    ReadStructure(r, "KmsEcdhKeyAgreementScheme", (s, member) =>
+                    {
+                        switch (member)
+                        {
+                            case "KmsPrivateKeyToStaticPublicKey":
+                                config.SchemesSet++;
+                                ReadStructure(s, member, (f, field) =>
+                                {
+                                    switch (field)
+                                    {
+                                        case "senderKmsIdentifier": config.StaticSenderKmsIdentifier = f.ReadTextString(); return true;
+                                        case "senderPublicKey": config.StaticSenderPublicKey = f.ReadByteString(); return true;
+                                        case "recipientPublicKey": config.StaticRecipientPublicKey = f.ReadByteString(); return true;
+                                        default: return false;
+                                    }
+                                });
+                                Require(config.StaticSenderKmsIdentifier != null, "senderKmsIdentifier");
+                                Require(config.StaticRecipientPublicKey != null, "recipientPublicKey");
+                                return true;
+                            case "KmsPublicKeyDiscovery":
+                                config.SchemesSet++;
+                                ReadStructure(s, member, (f, field) =>
+                                {
+                                    if (field != "recipientKmsIdentifier") return false;
+                                    config.DiscoveryRecipientKmsIdentifier = f.ReadTextString();
+                                    return true;
+                                });
+                                Require(config.DiscoveryRecipientKmsIdentifier != null, "recipientKmsIdentifier");
+                                return true;
+                            default: return false;
+                        }
+                    });
+                    return true;
+                default: return false;
+            }
+        });
+        Require(config.CurveSpec != null, "curveSpec");
+        Require(schemeRead, "keyAgreementScheme");
         return config;
     }
 
