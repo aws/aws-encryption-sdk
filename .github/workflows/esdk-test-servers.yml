@@ -196,9 +196,8 @@ jobs:
       contents: read
       actions: read
       id-token: write
-    uses: aws/aws-crypto-tools-commons/.github/workflows/esdk-test-server-reusable.yml@kessplas/ignore-submodule-build-output
+    uses: aws/aws-crypto-tools-commons/.github/workflows/esdk-test-server-reusable.yml@main
     with:
-      commons-ref: kessplas/ignore-submodule-build-output
       focus: net
       checkout-languages: net,rust-dafny,go
     secrets:
@@ -210,9 +209,8 @@ jobs:
       contents: read
       actions: read
       id-token: write
-    uses: aws/aws-crypto-tools-commons/.github/workflows/esdk-test-server-reusable.yml@kessplas/ignore-submodule-build-output
+    uses: aws/aws-crypto-tools-commons/.github/workflows/esdk-test-server-reusable.yml@main
     with:
-      commons-ref: kessplas/ignore-submodule-build-output
       focus: rust-dafny
       checkout-languages: net,rust-dafny,go
     secrets:
@@ -224,9 +222,8 @@ jobs:
       contents: read
       actions: read
       id-token: write
-    uses: aws/aws-crypto-tools-commons/.github/workflows/esdk-test-server-reusable.yml@kessplas/ignore-submodule-build-output
+    uses: aws/aws-crypto-tools-commons/.github/workflows/esdk-test-server-reusable.yml@main
     with:
-      commons-ref: kessplas/ignore-submodule-build-output
       focus: go
       checkout-languages: net,rust-dafny,go
     secrets:
