@@ -240,8 +240,132 @@ pub struct Keyring {
         skip_serializing_if = "Option::is_none"
     )]
     pub aws_kms_hierarchical: Option<AwsKmsHierarchicalKeyringConfig>,
+    #[serde(rename = "RawEcdh", default, skip_serializing_if = "Option::is_none")]
+    pub raw_ecdh: Option<RawEcdhKeyringConfig>,
+    #[serde(
+        rename = "AwsKmsEcdh",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub aws_kms_ecdh: Option<AwsKmsEcdhKeyringConfig>,
     #[serde(rename = "Multi", default, skip_serializing_if = "Option::is_none")]
     pub multi: Option<MultiKeyringConfig>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum EcdhCurveSpec {
+    #[serde(rename = "ECC_NIST_P256")]
+    EccNistP256,
+    #[serde(rename = "ECC_NIST_P384")]
+    EccNistP384,
+    #[serde(rename = "ECC_NIST_P521")]
+    EccNistP521,
+    #[serde(rename = "SM2")]
+    Sm2,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RawEcdhKeyringConfig {
+    #[serde(rename = "keyAgreementScheme")]
+    pub key_agreement_scheme: RawEcdhKeyAgreementScheme,
+    #[serde(rename = "curveSpec")]
+    pub curve_spec: EcdhCurveSpec,
+}
+
+/// Tagged union via optional members: exactly one is expected to be set.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct RawEcdhKeyAgreementScheme {
+    #[serde(
+        rename = "RawPrivateKeyToStaticPublicKey",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub raw_private_key_to_static_public_key: Option<RawPrivateKeyToStaticPublicKeyConfig>,
+    #[serde(
+        rename = "EphemeralPrivateKeyToStaticPublicKey",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub ephemeral_private_key_to_static_public_key:
+        Option<EphemeralPrivateKeyToStaticPublicKeyConfig>,
+    #[serde(
+        rename = "PublicKeyDiscovery",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub public_key_discovery: Option<PublicKeyDiscoveryConfig>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RawPrivateKeyToStaticPublicKeyConfig {
+    #[serde(rename = "senderStaticPrivateKey", with = "serde_bytes")]
+    pub sender_static_private_key: Vec<u8>,
+    #[serde(rename = "recipientPublicKey", with = "serde_bytes")]
+    pub recipient_public_key: Vec<u8>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EphemeralPrivateKeyToStaticPublicKeyConfig {
+    #[serde(rename = "recipientPublicKey", with = "serde_bytes")]
+    pub recipient_public_key: Vec<u8>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PublicKeyDiscoveryConfig {
+    #[serde(rename = "recipientStaticPrivateKey", with = "serde_bytes")]
+    pub recipient_static_private_key: Vec<u8>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AwsKmsEcdhKeyringConfig {
+    #[serde(rename = "keyAgreementScheme")]
+    pub key_agreement_scheme: KmsEcdhKeyAgreementScheme,
+    #[serde(rename = "curveSpec")]
+    pub curve_spec: EcdhCurveSpec,
+    #[serde(
+        rename = "grantTokens",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub grant_tokens: Option<Vec<String>>,
+}
+
+/// Tagged union via optional members: exactly one is expected to be set.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct KmsEcdhKeyAgreementScheme {
+    #[serde(
+        rename = "KmsPrivateKeyToStaticPublicKey",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub kms_private_key_to_static_public_key: Option<KmsPrivateKeyToStaticPublicKeyConfig>,
+    #[serde(
+        rename = "KmsPublicKeyDiscovery",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub kms_public_key_discovery: Option<KmsPublicKeyDiscoveryConfig>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KmsPrivateKeyToStaticPublicKeyConfig {
+    #[serde(rename = "senderKmsIdentifier")]
+    pub sender_kms_identifier: String,
+    #[serde(
+        rename = "senderPublicKey",
+        default,
+        skip_serializing_if = "Option::is_none",
+        with = "serde_bytes_opt"
+    )]
+    pub sender_public_key: Option<Vec<u8>>,
+    #[serde(rename = "recipientPublicKey", with = "serde_bytes")]
+    pub recipient_public_key: Vec<u8>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KmsPublicKeyDiscoveryConfig {
+    #[serde(rename = "recipientKmsIdentifier")]
+    pub recipient_kms_identifier: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

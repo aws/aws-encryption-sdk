@@ -58,6 +58,81 @@ internal static class KeyringFactory
 
     // Resolves a modeled Keyring to a real MPL keyring, recursing through Multi
     // variants.
+    private static IKeyring BuildRawEcdhKeyring(MaterialProviders materialProviders, RawEcdhKeyringConfig config)
+    {
+        if (config.SchemesSet != 1)
+        {
+            throw new ArgumentException(
+                $"RawEcdhKeyAgreementScheme must set exactly one variant, found {config.SchemesSet}");
+        }
+        var scheme = new RawEcdhStaticConfigurations();
+        if (config.RawStaticSenderPrivateKey != null)
+        {
+            scheme.RawPrivateKeyToStaticPublicKey = new RawPrivateKeyToStaticPublicKeyInput
+            {
+                SenderStaticPrivateKey = new MemoryStream(config.RawStaticSenderPrivateKey),
+                RecipientPublicKey = new MemoryStream(config.RawStaticRecipientPublicKey),
+            };
+        }
+        else if (config.EphemeralRecipientPublicKey != null)
+        {
+            scheme.EphemeralPrivateKeyToStaticPublicKey = new EphemeralPrivateKeyToStaticPublicKeyInput
+            {
+                RecipientPublicKey = new MemoryStream(config.EphemeralRecipientPublicKey),
+            };
+        }
+        else
+        {
+            scheme.PublicKeyDiscovery = new PublicKeyDiscoveryInput
+            {
+                RecipientStaticPrivateKey = new MemoryStream(config.DiscoveryRecipientPrivateKey),
+            };
+        }
+        return materialProviders.CreateRawEcdhKeyring(new CreateRawEcdhKeyringInput
+        {
+            KeyAgreementScheme = scheme,
+            CurveSpec = config.CurveSpec,
+        });
+    }
+
+    // The KMS client is in the region of the sender (static) or recipient
+    // (discovery) KMS key.
+    private static IKeyring BuildAwsKmsEcdhKeyring(MaterialProviders materialProviders, AwsKmsEcdhKeyringConfig config)
+    {
+        if (config.SchemesSet != 1)
+        {
+            throw new ArgumentException(
+                $"KmsEcdhKeyAgreementScheme must set exactly one variant, found {config.SchemesSet}");
+        }
+        var scheme = new KmsEcdhStaticConfigurations();
+        string keyId;
+        if (config.StaticSenderKmsIdentifier != null)
+        {
+            keyId = config.StaticSenderKmsIdentifier;
+            scheme.KmsPrivateKeyToStaticPublicKey = new KmsPrivateKeyToStaticPublicKeyInput
+            {
+                SenderKmsIdentifier = config.StaticSenderKmsIdentifier,
+                SenderPublicKey = config.StaticSenderPublicKey == null ? null : new MemoryStream(config.StaticSenderPublicKey),
+                RecipientPublicKey = new MemoryStream(config.StaticRecipientPublicKey),
+            };
+        }
+        else
+        {
+            keyId = config.DiscoveryRecipientKmsIdentifier;
+            scheme.KmsPublicKeyDiscovery = new KmsPublicKeyDiscoveryInput
+            {
+                RecipientKmsIdentifier = config.DiscoveryRecipientKmsIdentifier,
+            };
+        }
+        return materialProviders.CreateAwsKmsEcdhKeyring(new CreateAwsKmsEcdhKeyringInput
+        {
+            KeyAgreementScheme = scheme,
+            CurveSpec = config.CurveSpec,
+            KmsClient = KmsClientForKey(keyId),
+            GrantTokens = config.GrantTokens,
+        });
+    }
+
     internal static IKeyring BuildKeyring(MaterialProviders materialProviders, KeyringConfig keyring)
     {
         var set = new[]
@@ -72,6 +147,8 @@ internal static class KeyringFactory
             keyring.RawAes != null,
             keyring.RawRsa != null,
             keyring.AwsKmsHierarchical != null,
+            keyring.RawEcdh != null,
+            keyring.AwsKmsEcdh != null,
             keyring.Multi != null,
         }.Count(present => present);
         if (set != 1)
@@ -79,6 +156,14 @@ internal static class KeyringFactory
             throw new ArgumentException($"Keyring must set exactly one variant, found {set}");
         }
 
+        if (keyring.RawEcdh is { } rawEcdh)
+        {
+            return BuildRawEcdhKeyring(materialProviders, rawEcdh);
+        }
+        if (keyring.AwsKmsEcdh is { } awsKmsEcdh)
+        {
+            return BuildAwsKmsEcdhKeyring(materialProviders, awsKmsEcdh);
+        }
         if (keyring.RawAes is { } rawAes)
         {
             return materialProviders.CreateRawAesKeyring(new CreateRawAesKeyringInput

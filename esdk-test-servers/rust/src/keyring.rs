@@ -13,6 +13,7 @@
 use crate::error::{describe_key_store_error, describe_mpl_error, ServerError};
 use crate::model;
 use aws_config::{BehaviorVersion, Region};
+use aws_esdk::aws_cryptography_primitives::types::EcdhCurveSpec;
 use aws_esdk::key_store::client::Client as KeyStoreClient;
 use aws_esdk::key_store::types::key_store_config::KeyStoreConfig;
 use aws_esdk::key_store::types::KmsConfiguration;
@@ -21,7 +22,10 @@ use aws_esdk::material_providers::types::cryptographic_materials_manager::Crypto
 use aws_esdk::material_providers::types::keyring::KeyringRef;
 use aws_esdk::material_providers::types::material_providers_config::MaterialProvidersConfig;
 use aws_esdk::material_providers::types::{
-    AesWrappingAlg, CacheType, DefaultCache, DiscoveryFilter, PaddingScheme,
+    AesWrappingAlg, CacheType, DefaultCache, DiscoveryFilter,
+    EphemeralPrivateKeyToStaticPublicKeyInput, KmsEcdhStaticConfigurations,
+    KmsPrivateKeyToStaticPublicKeyInput, KmsPublicKeyDiscoveryInput, PaddingScheme,
+    PublicKeyDiscoveryInput, RawEcdhStaticConfigurations, RawPrivateKeyToStaticPublicKeyInput,
 };
 use aws_smithy_types::error::display::DisplayErrorContext;
 use std::future::Future;
@@ -109,6 +113,8 @@ fn keyring_for_config<'a>(
             keyring.raw_aes.is_some(),
             keyring.raw_rsa.is_some(),
             keyring.aws_kms_hierarchical.is_some(),
+            keyring.raw_ecdh.is_some(),
+            keyring.aws_kms_ecdh.is_some(),
             keyring.multi.is_some(),
         ]
         .iter()
@@ -149,6 +155,12 @@ fn keyring_for_config<'a>(
         }
         if let Some(config) = &keyring.aws_kms_hierarchical {
             return build_hierarchical(mpl, config).await;
+        }
+        if let Some(config) = &keyring.raw_ecdh {
+            return build_raw_ecdh(mpl, config).await;
+        }
+        if let Some(config) = &keyring.aws_kms_ecdh {
+            return build_aws_kms_ecdh(mpl, config).await;
         }
         let config = keyring.multi.as_ref().expect("one variant is set");
         build_multi(mpl, config).await
@@ -237,6 +249,135 @@ async fn build_raw_rsa(
         .send()
         .await
         .map_err(|e| construction_failure("the RawRsa keyring", &describe_mpl_error(&e)))
+}
+
+fn curve_spec(curve: model::EcdhCurveSpec) -> EcdhCurveSpec {
+    match curve {
+        model::EcdhCurveSpec::EccNistP256 => EcdhCurveSpec::EccNistP256,
+        model::EcdhCurveSpec::EccNistP384 => EcdhCurveSpec::EccNistP384,
+        model::EcdhCurveSpec::EccNistP521 => EcdhCurveSpec::EccNistP521,
+        model::EcdhCurveSpec::Sm2 => EcdhCurveSpec::Sm2,
+    }
+}
+
+fn scheme_failure(what: &str, e: impl std::fmt::Display) -> ServerError {
+    construction_failure(what, &e.to_string())
+}
+
+async fn build_raw_ecdh(
+    mpl: &MplClient,
+    config: &model::RawEcdhKeyringConfig,
+) -> Result<KeyringRef, ServerError> {
+    let scheme = &config.key_agreement_scheme;
+    let set = [
+        scheme.raw_private_key_to_static_public_key.is_some(),
+        scheme.ephemeral_private_key_to_static_public_key.is_some(),
+        scheme.public_key_discovery.is_some(),
+    ]
+    .iter()
+    .filter(|present| **present)
+    .count();
+    if set != 1 {
+        return Err(ServerError::generic(format!(
+            "RawEcdhKeyAgreementScheme must set exactly one variant, found {set}"
+        )));
+    }
+    let what = "the RawEcdh keyring";
+    let agreement = if let Some(s) = &scheme.raw_private_key_to_static_public_key {
+        RawEcdhStaticConfigurations::RawPrivateKeyToStaticPublicKey(
+            RawPrivateKeyToStaticPublicKeyInput::builder()
+                .sender_static_private_key(s.sender_static_private_key.clone())
+                .recipient_public_key(s.recipient_public_key.clone())
+                .build()
+                .map_err(|e| scheme_failure(what, e))?,
+        )
+    } else if let Some(s) = &scheme.ephemeral_private_key_to_static_public_key {
+        RawEcdhStaticConfigurations::EphemeralPrivateKeyToStaticPublicKey(
+            EphemeralPrivateKeyToStaticPublicKeyInput::builder()
+                .recipient_public_key(s.recipient_public_key.clone())
+                .build()
+                .map_err(|e| scheme_failure(what, e))?,
+        )
+    } else {
+        let s = scheme
+            .public_key_discovery
+            .as_ref()
+            .expect("one variant is set");
+        RawEcdhStaticConfigurations::PublicKeyDiscovery(
+            PublicKeyDiscoveryInput::builder()
+                .recipient_static_private_key(s.recipient_static_private_key.clone())
+                .build()
+                .map_err(|e| scheme_failure(what, e))?,
+        )
+    };
+    mpl.create_raw_ecdh_keyring()
+        .key_agreement_scheme(agreement)
+        .curve_spec(curve_spec(config.curve_spec))
+        .send()
+        .await
+        .map_err(|e| construction_failure(what, &describe_mpl_error(&e)))
+}
+
+/// The KMS client is in the region of the sender (static) or recipient
+/// (discovery) KMS key.
+async fn build_aws_kms_ecdh(
+    mpl: &MplClient,
+    config: &model::AwsKmsEcdhKeyringConfig,
+) -> Result<KeyringRef, ServerError> {
+    let scheme = &config.key_agreement_scheme;
+    let set = [
+        scheme.kms_private_key_to_static_public_key.is_some(),
+        scheme.kms_public_key_discovery.is_some(),
+    ]
+    .iter()
+    .filter(|present| **present)
+    .count();
+    if set != 1 {
+        return Err(ServerError::generic(format!(
+            "KmsEcdhKeyAgreementScheme must set exactly one variant, found {set}"
+        )));
+    }
+    let what = "the AwsKmsEcdh keyring";
+    let (key_id, agreement) = if let Some(s) = &scheme.kms_private_key_to_static_public_key {
+        let mut input = KmsPrivateKeyToStaticPublicKeyInput::builder()
+            .sender_kms_identifier(s.sender_kms_identifier.clone())
+            .recipient_public_key(s.recipient_public_key.clone());
+        if let Some(sender_public_key) = &s.sender_public_key {
+            input = input.sender_public_key(sender_public_key.clone());
+        }
+        (
+            s.sender_kms_identifier.clone(),
+            KmsEcdhStaticConfigurations::KmsPrivateKeyToStaticPublicKey(
+                input.build().map_err(|e| scheme_failure(what, e))?,
+            ),
+        )
+    } else {
+        let s = scheme
+            .kms_public_key_discovery
+            .as_ref()
+            .expect("one variant is set");
+        (
+            s.recipient_kms_identifier.clone(),
+            KmsEcdhStaticConfigurations::KmsPublicKeyDiscovery(
+                KmsPublicKeyDiscoveryInput::builder()
+                    .recipient_kms_identifier(s.recipient_kms_identifier.clone())
+                    .build()
+                    .map_err(|e| scheme_failure(what, e))?,
+            ),
+        )
+    };
+    let mut builder = mpl
+        .create_aws_kms_ecdh_keyring()
+        .key_agreement_scheme(agreement)
+        .curve_spec(curve_spec(config.curve_spec))
+        .kms_client(kms_client(region_for_key(&key_id)).await);
+    if let Some(grant_tokens) = &config.grant_tokens {
+        builder = builder.grant_tokens(grant_tokens.clone());
+    }
+    builder
+        .send()
+        .await
+        .map_err(|e| construction_failure(what, &describe_mpl_error(&e)))
 }
 
 async fn build_aws_kms(

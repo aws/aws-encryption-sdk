@@ -78,6 +78,8 @@ func buildKeyring(ctx context.Context, matProv *mpl.Client, keyring *KeyringConf
 		keyring.RawAes != nil,
 		keyring.RawRsa != nil,
 		keyring.AwsKmsHierarchical != nil,
+		keyring.RawEcdh != nil,
+		keyring.AwsKmsEcdh != nil,
 		keyring.Multi != nil,
 	} {
 		if present {
@@ -89,6 +91,10 @@ func buildKeyring(ctx context.Context, matProv *mpl.Client, keyring *KeyringConf
 	}
 
 	switch {
+	case keyring.RawEcdh != nil:
+		return buildRawEcdhKeyring(ctx, matProv, keyring.RawEcdh)
+	case keyring.AwsKmsEcdh != nil:
+		return buildAwsKmsEcdhKeyring(ctx, matProv, keyring.AwsKmsEcdh)
 	case keyring.RawAes != nil:
 		cfg := keyring.RawAes
 		return matProv.CreateRawAesKeyring(ctx, mpltypes.CreateRawAesKeyringInput{
@@ -219,6 +225,57 @@ func buildAwsKmsHierarchicalKeyring(ctx context.Context, matProv *mpl.Client, cf
 		BranchKeyId: &cfg.BranchKeyID,
 		TtlSeconds:  cfg.TTLSeconds,
 		Cache:       &mpltypes.CacheTypeMemberDefault{Value: mpltypes.DefaultCache{EntryCapacity: 100}},
+	})
+}
+
+func buildRawEcdhKeyring(ctx context.Context, matProv *mpl.Client, cfg *RawEcdhKeyringConfig) (mpltypes.IKeyring, error) {
+	var scheme mpltypes.RawEcdhStaticConfigurations
+	switch {
+	case cfg.Static:
+		scheme = &mpltypes.RawEcdhStaticConfigurationsMemberRawPrivateKeyToStaticPublicKey{
+			Value: mpltypes.RawPrivateKeyToStaticPublicKeyInput{
+				SenderStaticPrivateKey: cfg.SenderStaticPrivateKey,
+				RecipientPublicKey:     cfg.RecipientPublicKey,
+			}}
+	case cfg.Ephemeral:
+		scheme = &mpltypes.RawEcdhStaticConfigurationsMemberEphemeralPrivateKeyToStaticPublicKey{
+			Value: mpltypes.EphemeralPrivateKeyToStaticPublicKeyInput{RecipientPublicKey: cfg.RecipientPublicKey}}
+	default:
+		scheme = &mpltypes.RawEcdhStaticConfigurationsMemberPublicKeyDiscovery{
+			Value: mpltypes.PublicKeyDiscoveryInput{RecipientStaticPrivateKey: cfg.RecipientStaticPrivateKey}}
+	}
+	return matProv.CreateRawEcdhKeyring(ctx, mpltypes.CreateRawEcdhKeyringInput{
+		CurveSpec:          cfg.CurveSpec,
+		KeyAgreementScheme: scheme,
+	})
+}
+
+// buildAwsKmsEcdhKeyring builds the KMS ECDH keyring with a KMS client in the
+// region of its sender (static) or recipient (discovery) key.
+func buildAwsKmsEcdhKeyring(ctx context.Context, matProv *mpl.Client, cfg *AwsKmsEcdhKeyringConfig) (mpltypes.IKeyring, error) {
+	var scheme mpltypes.KmsEcdhStaticConfigurations
+	keyID := cfg.RecipientKmsIdentifier
+	if cfg.Static {
+		keyID = cfg.SenderKmsIdentifier
+		scheme = &mpltypes.KmsEcdhStaticConfigurationsMemberKmsPrivateKeyToStaticPublicKey{
+			Value: mpltypes.KmsPrivateKeyToStaticPublicKeyInput{
+				SenderKmsIdentifier: cfg.SenderKmsIdentifier,
+				SenderPublicKey:     cfg.SenderPublicKey,
+				RecipientPublicKey:  cfg.RecipientPublicKey,
+			}}
+	} else {
+		scheme = &mpltypes.KmsEcdhStaticConfigurationsMemberKmsPublicKeyDiscovery{
+			Value: mpltypes.KmsPublicKeyDiscoveryInput{RecipientKmsIdentifier: cfg.RecipientKmsIdentifier}}
+	}
+	client, err := kmsClientForKey(ctx, keyID)
+	if err != nil {
+		return nil, err
+	}
+	return matProv.CreateAwsKmsEcdhKeyring(ctx, mpltypes.CreateAwsKmsEcdhKeyringInput{
+		CurveSpec:          cfg.CurveSpec,
+		KeyAgreementScheme: scheme,
+		KmsClient:          client,
+		GrantTokens:        cfg.GrantTokens,
 	})
 }
 

@@ -33,4 +33,14 @@ require (
 	github.com/dafny-lang/DafnyRuntimeGo/v4 v4.11.3 // indirect
 )
 
-replace github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk => ../../releases/go/encryption-sdk
+// The library transpiled from this checkout's Dafny source
+// (make -C AwsEncryptionSDK transpile_go). Only the main module's replace
+// directives apply, so the MPL modules it replaces are repeated here.
+replace (
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/dynamodb => ../../mpl/ComAmazonawsDynamodb/runtimes/go/ImplementationFromDafny-go
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/kms => ../../mpl/ComAmazonawsKms/runtimes/go/ImplementationFromDafny-go
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/mpl => ../../mpl/AwsCryptographicMaterialProviders/runtimes/go/ImplementationFromDafny-go
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/primitives => ../../mpl/AwsCryptographyPrimitives/runtimes/go/ImplementationFromDafny-go
+	github.com/aws/aws-cryptographic-material-providers-library/releases/go/smithy-dafny-standard-library => ../../mpl/StandardLibrary/runtimes/go/ImplementationFromDafny-go
+	github.com/aws/aws-encryption-sdk/releases/go/encryption-sdk => ../../AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go
+)
