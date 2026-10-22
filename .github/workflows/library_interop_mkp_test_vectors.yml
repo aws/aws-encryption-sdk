@@ -49,7 +49,10 @@ jobs:
         language: [java, net, rust, python, python_mkp, java_mkp, go]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-22.04
+            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
       contents: read
@@ -104,6 +107,10 @@ jobs:
         with:
           components: rustfmt
 
+      - name: Install CMake
+        if: runner.os == 'Linux' && matrix.language == 'rust'
+        run: sudo apt-get update && sudo apt-get install -y cmake
+
       - name: Setup NASM for Windows in Rust (aws-lc-sys)
         if: matrix.language == 'rust' && matrix.os == 'windows-latest'
         uses: ilammy/setup-nasm@v1
@@ -113,6 +120,12 @@ jobs:
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: 4.10.0
+
+      # The CodeBuild image pins .NET 6 in a global.json above the workspace.
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       - name: Setup Dafny Not Rust
         if: matrix.language != 'rust'
@@ -239,7 +252,10 @@ jobs:
         decrypting_language: [java, net, rust, python, python_mkp, java_mkp, go]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-22.04
+            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
       contents: read
@@ -295,6 +311,10 @@ jobs:
         with:
           components: rustfmt
 
+      - name: Install CMake
+        if: runner.os == 'Linux' && matrix.decrypting_language == 'rust'
+        run: sudo apt-get update && sudo apt-get install -y cmake
+
       - name: Setup NASM for Windows in Rust (aws-lc-sys)
         if: matrix.decrypting_language == 'rust' && matrix.os == 'windows-latest'
         uses: ilammy/setup-nasm@v1
@@ -304,6 +324,12 @@ jobs:
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: 4.10.0
+
+      # The CodeBuild image pins .NET 6 in a global.json above the workspace.
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       - name: Setup Dafny Not Rust
         if: matrix.decrypting_language != 'rust'
@@ -543,7 +569,10 @@ jobs:
         encrypting_language: [java, net, rust, python, python_mkp, java_mkp, go]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-22.04
+            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
       contents: read
@@ -609,7 +638,10 @@ jobs:
           ]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-22.04
+            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
       contents: read
@@ -677,7 +709,10 @@ jobs:
         decrypting_language: [java, net, rust, python, python_mkp, java_mkp, go]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-22.04
+            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
       contents: read
@@ -733,6 +768,10 @@ jobs:
         with:
           components: rustfmt
 
+      - name: Install CMake
+        if: runner.os == 'Linux' && matrix.decrypting_language == 'rust'
+        run: sudo apt-get update && sudo apt-get install -y cmake
+
       - name: Setup NASM for Windows in Rust (aws-lc-sys)
         if: matrix.decrypting_language == 'rust' && matrix.os == 'windows-latest'
         uses: ilammy/setup-nasm@v1
@@ -742,6 +781,12 @@ jobs:
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: 4.10.0
+
+      # The CodeBuild image pins .NET 6 in a global.json above the workspace.
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       - name: Setup Dafny Not Rust
         if: matrix.decrypting_language != 'rust'
