@@ -75,7 +75,7 @@ jobs:
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
         if: matrix.language == 'net'
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
@@ -266,7 +266,7 @@ jobs:
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
         if: matrix.decrypting_language == 'net'
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
@@ -704,7 +704,7 @@ jobs:
       # Set up runtimes
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
         if: matrix.decrypting_language == 'net'
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
