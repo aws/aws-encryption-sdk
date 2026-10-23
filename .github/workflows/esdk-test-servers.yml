@@ -1,0 +1,230 @@
+# Separate from the library CI so the test servers are not swept into the
+# library workflows; runs when a server, a library it builds from, or this file changes.
+name: ESDK TestServers
+
+on:
+  pull_request:
+    paths:
+      - "esdk-test-servers/**"
+      - "AwsEncryptionSDK/**"
+      - "mpl"
+      - "libraries"
+      - "SharedMakefileV2.mk"
+      - "project.properties"
+      - ".github/workflows/esdk-test-servers.yml"
+  push:
+    branches:
+      - mainline
+    paths:
+      - "esdk-test-servers/**"
+      - "AwsEncryptionSDK/**"
+      - "mpl"
+      - "libraries"
+      - "SharedMakefileV2.mk"
+      - "project.properties"
+      - ".github/workflows/esdk-test-servers.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  go-language-server:
+    name: go — transpile + build + test (runtimes/go)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: esdk-test-servers/go
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Init Submodules
+        working-directory: .
+        run: |
+          git submodule update --init libraries
+          git submodule update --init --recursive mpl
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: esdk-test-servers/go/go.mod
+          cache-dependency-path: esdk-test-servers/go/go.sum
+
+      - name: Read Dafny version
+        id: dafny
+        working-directory: .
+        run: echo "version=$(grep '^dafnyVersion=' project.properties | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Dafny
+        uses: ./mpl/.github/actions/setup_dafny
+        with:
+          dafny-version: ${{ steps.dafny.outputs.version }}
+
+      # Installs goimports, which the Dafny Go backend runs on its output.
+      - name: Install Smithy-Dafny codegen dependencies
+        uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
+        with:
+          mpl-submodule-path: mpl/
+
+      - name: Transpile the library
+        working-directory: AwsEncryptionSDK
+        run: make _no_extern_pre_transpile transpile_dependencies_go transpile_implementation_go _no_extern_post_transpile CORES=4
+
+      - name: Format check
+        run: test -z "$(gofmt -l .)"
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build
+        run: make build-server
+
+      - name: Test
+        run: go test ./...
+
+  rust-dafny-language-server:
+    name: rust-dafny — transpile + build + test (runtimes/rust)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: esdk-test-servers/rust
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Init Submodules
+        working-directory: .
+        run: |
+          git submodule update --init libraries
+          git submodule update --init --recursive mpl
+
+      # Rust codegen uses Dafny 4.10.0, as library_rust_tests.yml does (#824).
+      - name: Setup Dafny
+        uses: ./mpl/.github/actions/setup_dafny
+        with:
+          dafny-version: 4.10.0
+
+      - name: Install Smithy-Dafny codegen dependencies
+        uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
+        with:
+          mpl-submodule-path: mpl/
+
+      - name: Generate and transpile the library
+        working-directory: AwsEncryptionSDK
+        run: |
+          make polymorph_rust
+          make transpile_rust CORES=4
+
+      # aws-lc-sys (via aws-esdk) needs Go to build its native code
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: esdk-test-servers/rust
+
+      - name: Format check
+        run: cargo fmt -- --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Test
+        run: cargo test
+
+  net-language-server:
+    name: net — transpile + build + test (runtimes/net)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Init Submodules
+        run: |
+          git submodule update --init libraries
+          git submodule update --init --recursive mpl
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            6.0.x
+            8.0.x
+
+      - name: Read Dafny version
+        id: dafny
+        run: echo "version=$(grep '^dafnyVersion=' project.properties | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Dafny
+        uses: ./mpl/.github/actions/setup_dafny
+        with:
+          dafny-version: ${{ steps.dafny.outputs.version }}
+
+      - name: Install Smithy-Dafny codegen dependencies
+        uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
+        with:
+          mpl-submodule-path: mpl/
+
+      - name: Download Dependencies
+        working-directory: AwsEncryptionSDK
+        run: make setup_net
+
+      - name: Transpile the library
+        working-directory: AwsEncryptionSDK
+        run: make transpile_net CORES=4
+
+      - name: Build
+        working-directory: esdk-test-servers/net
+        run: make build-server
+
+      - name: Test
+        working-directory: esdk-test-servers/net
+        run: make test
+
+  # The cross-language TestServer runs, from the shared commons workflow: one per
+  # server, each testing that server against every server. All three servers
+  # (and their libraries) build from this checkout; every other server comes from
+  # its configured branch. The full matrix runs in commons. repo-pat reads the
+  # private aws-crypto-tools-rust clones.
+  net-test-server:
+    name: TestServer (net)
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    uses: aws/aws-crypto-tools-commons/.github/workflows/esdk-test-server-reusable.yml@main
+    with:
+      focus: net
+      checkout-languages: net,rust-dafny,go
+    secrets:
+      repo-pat: ${{ secrets.COMMONS_REPO_PAT }}
+
+  rust-dafny-test-server:
+    name: TestServer (rust-dafny)
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    uses: aws/aws-crypto-tools-commons/.github/workflows/esdk-test-server-reusable.yml@main
+    with:
+      focus: rust-dafny
+      checkout-languages: net,rust-dafny,go
+    secrets:
+      repo-pat: ${{ secrets.COMMONS_REPO_PAT }}
+
+  go-test-server:
+    name: TestServer (go)
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    uses: aws/aws-crypto-tools-commons/.github/workflows/esdk-test-server-reusable.yml@main
+    with:
+      focus: go
+      checkout-languages: net,rust-dafny,go
+    secrets:
+      repo-pat: ${{ secrets.COMMONS_REPO_PAT }}
