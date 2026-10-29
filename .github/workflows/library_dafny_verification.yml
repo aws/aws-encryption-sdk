@@ -70,7 +70,7 @@ jobs:
         run: |
           # This works because `node` is installed by default on GHA runners
           CORES=$(node -e 'console.log(os.cpus().length)')
-          make verify CORES=$CORES VERIFY_TIMEOUT=300
+          make verify CORES=$CORES
 
       - name: Check solver resource use
         shell: bash
