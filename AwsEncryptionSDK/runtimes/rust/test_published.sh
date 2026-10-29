@@ -10,9 +10,8 @@ fi
 cd $( dirname ${BASH_SOURCE[0]} )
 
 # Check if the provided argument matches the version pattern
-REGEX_VERSION='^\d+\.\d+\.\d+$'
-echo "$1" | egrep -q $REGEX_VERSION
-if [ $? -ne 0 ]; then
+REGEX_VERSION='^[0-9]+\.[0-9]+\.[0-9]+$'
+if ! echo "$1" | grep -Eq "$REGEX_VERSION"; then
    echo 1>&2 "Version \"$1\" must be N.N.N"
    exit 1
 fi
