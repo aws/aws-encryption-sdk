@@ -31,7 +31,7 @@ permissions:
 jobs:
   go-language-server:
     name: go — transpile + build + test (runtimes/go)
-    runs-on: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: &codebuild-linux codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
     defaults:
       run:
         working-directory: esdk-test-servers/go
@@ -87,7 +87,7 @@ jobs:
 
   rust-dafny-language-server:
     name: rust-dafny — transpile + build + test (runtimes/rust)
-    runs-on: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: *codebuild-linux
     defaults:
       run:
         working-directory: esdk-test-servers/rust
@@ -155,7 +155,7 @@ jobs:
 
   net-language-server:
     name: net — transpile + build + test (runtimes/net)
-    runs-on: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: *codebuild-linux
     steps:
       - uses: actions/checkout@v6
 

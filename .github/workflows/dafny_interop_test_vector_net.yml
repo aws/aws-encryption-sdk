@@ -38,7 +38,7 @@ jobs:
           - os: windows-latest
             runner: windows-latest
           - os: ubuntu-22.04
-            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+            runner: &codebuild-linux codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
           - os: macos-15
             runner: macos-15
     runs-on: ${{ matrix.runner }}
@@ -157,7 +157,7 @@ jobs:
         os: [ubuntu-22.04, macos-15]
         include:
           - os: ubuntu-22.04
-            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+            runner: *codebuild-linux
           - os: macos-15
             runner: macos-15
     runs-on: ${{ matrix.runner }}
@@ -271,7 +271,7 @@ jobs:
         os: [ubuntu-22.04, macos-15]
         include:
           - os: ubuntu-22.04
-            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+            runner: *codebuild-linux
           - os: macos-15
             runner: macos-15
     runs-on: ${{ matrix.runner }}

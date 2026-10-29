@@ -51,7 +51,7 @@ jobs:
         dotnet-version: ["6.0.x"]
         include:
           - os: ubuntu-22.04
-            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+            runner: &codebuild-linux codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
     runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
@@ -254,7 +254,7 @@ jobs:
         dotnet-version: ["6.0.x"]
         include:
           - os: ubuntu-22.04
-            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+            runner: *codebuild-linux
     runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
@@ -571,7 +571,7 @@ jobs:
         dotnet-version: ["6.0.x"]
         include:
           - os: ubuntu-22.04
-            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+            runner: *codebuild-linux
     runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
@@ -640,7 +640,7 @@ jobs:
         dotnet-version: ["6.0.x"]
         include:
           - os: ubuntu-22.04
-            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+            runner: *codebuild-linux
     runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
@@ -711,7 +711,7 @@ jobs:
         dotnet-version: ["6.0.x"]
         include:
           - os: ubuntu-22.04
-            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+            runner: *codebuild-linux
     runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
