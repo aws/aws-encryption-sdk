@@ -101,8 +101,10 @@ jobs:
               # Repo-relative path to the offending Cargo.toml, and the line to change.
               cargo_path="$dir/Cargo.toml"
               cargo_line=$(grep -nE "^$crate[[:space:]]*=" Cargo.toml | head -1)
-              cur=$(printf '%s' "$cargo_line" | grep -oE '[0-9][0-9.]+' | head -1)
               lineno=$(printf '%s' "$cargo_line" | cut -d: -f1)
+              # Strip grep -n's "N:" line-number prefix before reading the
+              # version, otherwise the line number is misread as the version.
+              cur=$(printf '%s' "${cargo_line#*:}" | grep -oE '[0-9][0-9.]+' | head -1)
 
               echo "::error::$crate versions aren't consistent. Fix: pin it to $want in $cargo_path."
               echo "In $cargo_path line $lineno, change"
