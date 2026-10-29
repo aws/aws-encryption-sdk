@@ -136,7 +136,10 @@ jobs:
     strategy:
       matrix:
         platform: [
-            {os: ubuntu-22.04, runner: "codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}"},
+            {
+              os: ubuntu-22.04,
+              runner: "codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}",
+            },
             # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
             # macos-15,
           ]
@@ -246,7 +249,10 @@ jobs:
     strategy:
       matrix:
         platform: [
-            {os: ubuntu-22.04, runner: "codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}"},
+            {
+              os: ubuntu-22.04,
+              runner: "codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}",
+            },
             # https://t.corp.amazon.com/P205755286
             # macos-15
           ]
