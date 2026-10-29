@@ -31,7 +31,7 @@ permissions:
 jobs:
   go-language-server:
     name: go — transpile + build + test (runtimes/go)
-    runs-on: ubuntu-latest
+    runs-on: &codebuild-linux codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
     defaults:
       run:
         working-directory: esdk-test-servers/go
@@ -59,6 +59,10 @@ jobs:
         with:
           dafny-version: ${{ steps.dafny.outputs.version }}
 
+      - name: Use the latest installed .NET SDK
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       # Installs goimports, which the Dafny Go backend runs on its output.
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
@@ -83,7 +87,7 @@ jobs:
 
   rust-dafny-language-server:
     name: rust-dafny — transpile + build + test (runtimes/rust)
-    runs-on: ubuntu-latest
+    runs-on: *codebuild-linux
     defaults:
       run:
         working-directory: esdk-test-servers/rust
@@ -96,11 +100,22 @@ jobs:
           git submodule update --init libraries
           git submodule update --init --recursive mpl
 
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Install CMake
+        run: sudo apt-get update && sudo apt-get install -y cmake
+
       # Rust codegen uses Dafny 4.10.0, as library_rust_tests.yml does (#824).
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: 4.10.0
+
+      - name: Use the latest installed .NET SDK
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
@@ -140,7 +155,7 @@ jobs:
 
   net-language-server:
     name: net — transpile + build + test (runtimes/net)
-    runs-on: ubuntu-latest
+    runs-on: *codebuild-linux
     steps:
       - uses: actions/checkout@v6
 
@@ -163,6 +178,10 @@ jobs:
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: ${{ steps.dafny.outputs.version }}
+
+      - name: Use the latest installed .NET SDK
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies

@@ -17,10 +17,7 @@ jobs:
   format_projects:
     # Don't run the nightly build on forks
     if: github.event_name != 'schedule' || github.repository_owner == 'aws'
-    strategy:
-      matrix:
-        os: [macos-15]
-    runs-on: ${{ matrix.os }}
+    runs-on: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
     defaults:
       run:
         shell: bash
@@ -40,6 +37,10 @@ jobs:
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: ${{ inputs.dafny }}
+
+      - name: Use the latest installed .NET SDK
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       - name: Check format of Java code et al
         run: |
