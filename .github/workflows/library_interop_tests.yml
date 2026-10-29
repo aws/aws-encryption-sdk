@@ -8,6 +8,11 @@ on:
         description: "The Dafny version to run"
         required: true
         type: string
+      os:
+        description: "The runner OSes to test on"
+        required: false
+        default: '["windows-latest", "ubuntu-22.04"]'
+        type: string
 
 env:
   # Used in examples
@@ -24,18 +29,10 @@ jobs:
   decrypt_python_vectors:
     strategy:
       matrix:
-        os: [
-            windows-latest,
-            ubuntu-22.04,
-            # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
-            # macos-15,
-          ]
-        include:
-          - os: windows-latest
-            runner: windows-latest
-          - os: ubuntu-22.04
-            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
-    runs-on: ${{ matrix.runner }}
+        # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
+        # macos-15,
+        os: ${{ fromJSON(inputs.os) }}
+    runs-on: ${{ matrix.os == 'ubuntu-22.04' && format('codebuild-CryptoToolsCI-linux-aws-encryption-sdk-{0}-{1}', github.run_id, github.run_attempt) || matrix.os }}
     permissions:
       id-token: write
       contents: read
@@ -133,6 +130,7 @@ jobs:
           fi
 
   generate_vectors:
+    if: contains(fromJSON(inputs.os), 'ubuntu-22.04')
     strategy:
       matrix:
         os: [
@@ -245,6 +243,7 @@ jobs:
 
   decrypt_net_vectors_with_js:
     needs: generate_vectors
+    if: contains(fromJSON(inputs.os), 'ubuntu-22.04')
     strategy:
       matrix:
         os: [

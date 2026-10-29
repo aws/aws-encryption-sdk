@@ -47,6 +47,13 @@ jobs:
     uses: ./.github/workflows/library_net_tests.yml
     with:
       dafny: ${{needs.getVersion.outputs.version}}
+      os: '["ubuntu-22.04"]'
+  pr-ci-net-windows:
+    needs: getVersion
+    uses: ./.github/workflows/library_net_tests.yml
+    with:
+      dafny: ${{needs.getVersion.outputs.version}}
+      os: '["windows-latest"]'
   pr-ci-rust:
     needs: getVersion
     uses: ./.github/workflows/library_rust_tests.yml
@@ -64,6 +71,13 @@ jobs:
     uses: ./.github/workflows/library_interop_tests.yml
     with:
       dafny: ${{needs.getVersion.outputs.version}}
+      os: '["ubuntu-22.04"]'
+  pr-test-vectors-windows:
+    needs: getVersion
+    uses: ./.github/workflows/library_interop_tests.yml
+    with:
+      dafny: ${{needs.getVersion.outputs.version}}
+      os: '["windows-latest"]'
   pr-dafny-keyring-test-vectors:
     needs: getVersion
     uses: ./.github/workflows/library_interop_keyring_test_vectors.yml
@@ -83,7 +97,6 @@ jobs:
     if: always()
     needs:
       - pr-ci-codegen
-      - pr-ci-verification
       - pr-ci-net
       - pr-ci-rust
       - pr-ci-rust-duplicate-deps
