@@ -8,10 +8,12 @@ on:
         description: "The Dafny version to run"
         required: true
         type: string
-      os:
-        description: "The runner OSes to test on"
+      platforms:
+        description: "The platforms to test on"
         required: false
-        default: '["windows-latest", "ubuntu-22.04"]'
+        default: >-
+          [{"os": "windows-latest", "runner": "windows-latest"},
+           {"os": "ubuntu-22.04", "runner": "codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}"}]
         type: string
 
 env:
@@ -31,8 +33,8 @@ jobs:
       matrix:
         # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
         # macos-15,
-        os: ${{ fromJSON(inputs.os) }}
-    runs-on: ${{ matrix.os == 'ubuntu-22.04' && format('codebuild-CryptoToolsCI-linux-aws-encryption-sdk-{0}-{1}', github.run_id, github.run_attempt) || matrix.os }}
+        platform: ${{ fromJSON(inputs.platforms) }}
+    runs-on: ${{ matrix.platform.runner }}
     permissions:
       id-token: write
       contents: read
@@ -107,7 +109,7 @@ jobs:
 
       - name: Decrypt Python 2.3.0 Test Vectors on .net48 (Windows ONLY)
         working-directory: ./AwsEncryptionSDK/runtimes/net/TestVectorsNative/TestVectors
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform.os == 'windows-latest'
         shell: bash
         run: |
           PYTHON_23_VECTOR_PATH=$GITHUB_WORKSPACE/python23/vectors
@@ -116,7 +118,7 @@ jobs:
 
       - name: Decrypt Python 2.3.0 Test Vectors on .net6.0
         working-directory: ./AwsEncryptionSDK/runtimes/net/TestVectorsNative/TestVectors
-        if: matrix.os != 'windows-latest'
+        if: matrix.platform.os != 'windows-latest'
         shell: bash
         run: |
           PYTHON_23_VECTOR_PATH=$GITHUB_WORKSPACE/python23/vectors
@@ -130,18 +132,15 @@ jobs:
           fi
 
   generate_vectors:
-    if: contains(fromJSON(inputs.os), 'ubuntu-22.04')
+    if: contains(fromJSON(inputs.platforms).*.os, 'ubuntu-22.04')
     strategy:
       matrix:
-        os: [
-            ubuntu-22.04,
+        platform: [
+            {os: ubuntu-22.04, runner: "codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}"},
             # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
             # macos-15,
           ]
-        include:
-          - os: ubuntu-22.04
-            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
-    runs-on: ${{ matrix.runner }}
+    runs-on: ${{ matrix.platform.runner }}
     permissions:
       id-token: write
       contents: read
@@ -214,7 +213,7 @@ jobs:
 
       - name: Generate Test Vectors with .NET Framework net6.0
         # TODO Post-#619: Fix Zip file creation on Windows
-        if: matrix.os != 'windows-latest'
+        if: matrix.platform.os != 'windows-latest'
         working-directory: ./AwsEncryptionSDK
         shell: bash
         run: |
@@ -226,7 +225,7 @@ jobs:
             --output-dir $NET_41_VECTOR_PATH
 
       - name: Zip the Generated Test Vectors for ESDK-JS on Mac/Linux
-        if: matrix.os != 'windows-latest'
+        if: matrix.platform.os != 'windows-latest'
         working-directory: ./AwsEncryptionSDK
         shell: bash
         run: |
@@ -236,25 +235,22 @@ jobs:
 
       - name: Upload Zip File
         uses: actions/upload-artifact@v7
-        if: matrix.os != 'windows-latest'
+        if: matrix.platform.os != 'windows-latest'
         with:
-          name: ${{matrix.os}}_vector_artifact
+          name: ${{matrix.platform.os}}_vector_artifact
           path: AwsEncryptionSDK/net41/vectors/*.zip
 
   decrypt_net_vectors_with_js:
     needs: generate_vectors
-    if: contains(fromJSON(inputs.os), 'ubuntu-22.04')
+    if: contains(fromJSON(inputs.platforms).*.os, 'ubuntu-22.04')
     strategy:
       matrix:
-        os: [
-            ubuntu-22.04,
+        platform: [
+            {os: ubuntu-22.04, runner: "codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}"},
             # https://t.corp.amazon.com/P205755286
             # macos-15
           ]
-        include:
-          - os: ubuntu-22.04
-            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
-    runs-on: ${{ matrix.runner }}
+    runs-on: ${{ matrix.platform.runner }}
     permissions:
       id-token: write
       contents: read
@@ -286,7 +282,7 @@ jobs:
       - name: Download Encrypt Manifest Artifact
         uses: actions/download-artifact@v8
         with:
-          name: ${{matrix.os}}_vector_artifact
+          name: ${{matrix.platform.os}}_vector_artifact
           path: AwsEncryptionSDK/net41/vectors
 
       - uses: actions/setup-node@v6

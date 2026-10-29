@@ -13,10 +13,12 @@ on:
         required: false
         default: false
         type: boolean
-      os:
-        description: "The runner OSes to test on"
+      platforms:
+        description: "The platforms to test on"
         required: false
-        default: '["windows-latest", "ubuntu-22.04"]'
+        default: >-
+          [{"os": "windows-latest", "runner": "windows-latest"},
+           {"os": "ubuntu-22.04", "runner": "codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}"}]
         type: string
 
 env:
@@ -38,8 +40,8 @@ jobs:
         library: [AwsEncryptionSDK]
         # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
         # macos-15,
-        os: ${{ fromJSON(inputs.os) }}
-    runs-on: ${{ matrix.os == 'ubuntu-22.04' && format('codebuild-CryptoToolsCI-linux-aws-encryption-sdk-{0}-{1}', github.run_id, github.run_attempt) || matrix.os }}
+        platform: ${{ fromJSON(inputs.platforms) }}
+    runs-on: ${{ matrix.platform.runner }}
     permissions:
       id-token: write
       contents: read
@@ -131,7 +133,7 @@ jobs:
 
       - name: Test Examples on .NET Framework net48
         working-directory: ${{ matrix.library }}
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform.os == 'windows-latest'
         shell: bash
         run: |
           dotnet test \
@@ -153,22 +155,19 @@ jobs:
               --framework net6.0
           fi
   testVectors:
-    if: contains(fromJSON(inputs.os), 'ubuntu-22.04')
+    if: contains(fromJSON(inputs.platforms).*.os, 'ubuntu-22.04')
     strategy:
       fail-fast: false
       matrix:
         library: [TestVectors]
-        os: [
+        platform: [
             # Sed script doesn't work properly on windows
             # windows-latest,
-            ubuntu-22.04,
+            {os: ubuntu-22.04, runner: "codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}"},
             # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
             # macos-15,
           ]
-        include:
-          - os: ubuntu-22.04
-            runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
-    runs-on: ${{ matrix.runner }}
+    runs-on: ${{ matrix.platform.runner }}
     permissions:
       id-token: write
       contents: read
