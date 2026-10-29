@@ -97,6 +97,7 @@ jobs:
     if: always()
     needs:
       - pr-ci-codegen
+      - pr-ci-verification
       - pr-ci-net
       - pr-ci-rust
       - pr-ci-rust-duplicate-deps
