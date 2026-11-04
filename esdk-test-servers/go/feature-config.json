@@ -14,7 +14,8 @@
     "aws-kms-mrk-discovery",
     "aws-kms-rsa",
     "aws-kms-ecdh",
-    "required-encryption-context"
+    "required-encryption-context",
+    "default-cmm-reproduced-encryption-context"
   ],
   "unsupportedFeatures": ["streaming", "caching"]
 }
