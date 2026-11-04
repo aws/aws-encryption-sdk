@@ -112,8 +112,10 @@ jobs:
           set -euo pipefail
           # crates.io can take a few seconds to surface a freshly-published
           # version via the sparse index. Poll for up to 5 minutes.
+          # The crates.io API rejects curl's default User-Agent with a 403.
+          USER_AGENT="${GITHUB_REPOSITORY} release workflow (${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY})"
           for i in $(seq 1 60); do
-            if curl -fsSL "https://crates.io/api/v1/crates/${CRATE_NAME}/${CRATE_VERSION}" >/dev/null 2>&1; then
+            if curl -fsSL -A "${USER_AGENT}" "https://crates.io/api/v1/crates/${CRATE_NAME}/${CRATE_VERSION}" >/dev/null 2>&1; then
               echo "${CRATE_NAME} v${CRATE_VERSION} is available on crates.io"
               exit 0
             fi
