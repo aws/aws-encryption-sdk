@@ -1,6 +1,5 @@
 {
   "supportedFeatures": [
-    "MPL",
     "hierarchical",
     "raw-aes",
     "raw-rsa",
