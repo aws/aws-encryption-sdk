@@ -8,11 +8,16 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
+	"time"
 )
 
 func main() {
@@ -31,6 +36,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Return from main on SIGTERM: a binary built with -cover writes its
+	// coverage counters only on a normal exit.
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	addr := fmt.Sprintf("127.0.0.1:%d", port)
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -39,8 +49,15 @@ func main() {
 	}
 	fmt.Fprintf(os.Stderr, "listening at http://%s\n", addr)
 	server := &http.Server{Handler: newHandler(state)}
-	if err := server.Serve(listener); err != nil {
-		fmt.Fprintf(os.Stderr, "server error: %v\n", err)
-		os.Exit(1)
-	}
+	go func() {
+		if err := server.Serve(listener); !errors.Is(err, http.ErrServerClosed) {
+			fmt.Fprintf(os.Stderr, "server error: %v\n", err)
+			os.Exit(1)
+		}
+	}()
+
+	<-ctx.Done()
+	shutdown, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	server.Shutdown(shutdown)
 }
