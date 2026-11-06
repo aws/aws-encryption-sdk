@@ -104,11 +104,50 @@ jobs:
           cargo clippy
           cargo clippy --example main
 
+      # The test server dashboard merges the debug test run's line coverage,
+      # line by line, with the coverage the rust-dafny test server gives the
+      # same commit.
+      - name: Install cargo-llvm-cov
+        if: runner.os == 'Linux' && (github.event_name == 'pull_request' || github.event_name == 'push')
+        uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: Turn on line coverage
+        if: runner.os == 'Linux' && (github.event_name == 'pull_request' || github.event_name == 'push')
+        shell: bash
+        run: |
+          rustup component add llvm-tools-preview
+          mkdir -p "$RUNNER_TEMP/local-coverage"
+          echo "LOCAL_COVERAGE=esdk" >> "$GITHUB_ENV"
+
       - name: Test Rust
         working-directory: ${{ matrix.library }}
         shell: bash
         run: |
-          make test_rust test_rust_debug
+          make test_rust
+          if [ -n "${LOCAL_COVERAGE:-}" ]; then
+            source <(cd runtimes/rust && cargo llvm-cov show-env --sh)
+          fi
+          make test_rust_debug
+
+      # Paths are made relative to the repository so the two reports line up.
+      - name: Write the line coverage report
+        if: env.LOCAL_COVERAGE != ''
+        working-directory: ${{ matrix.library }}/runtimes/rust
+        shell: bash
+        run: |
+          source <(cargo llvm-cov show-env --sh)
+          cargo llvm-cov report --lcov --output-path "$RUNNER_TEMP/local-coverage/rust.lcov"
+          python3 "$GITHUB_WORKSPACE/.github/scripts/coverage_lcov.py" lcov \
+            "$RUNNER_TEMP/local-coverage/rust.lcov" "$RUNNER_TEMP/local-coverage/esdk-rust-dafny.lcov" \
+            --keep AwsEncryptionSDK/runtimes/rust/
+
+      - name: Upload the line coverage report
+        if: env.LOCAL_COVERAGE != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: local-coverage-esdk-rust-dafny
+          path: ${{ runner.temp }}/local-coverage/esdk-rust-dafny.lcov
+          if-no-files-found: warn
 
       - name: Test Examples for Rust
         working-directory: ${{ matrix.library }}/runtimes/rust
