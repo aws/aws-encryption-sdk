@@ -94,11 +94,46 @@ jobs:
         run: |
           make purge_polymorph_code
 
+      # The test server dashboard merges this run's line coverage, line by
+      # line, with the coverage the Go test server gives the same commit.
+      - name: Turn on line coverage
+        if: runner.os == 'Linux' && matrix.library == 'AwsEncryptionSDK' && matrix.go-version == '1.25' && (github.event_name == 'pull_request' || github.event_name == 'push')
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/local-coverage/gocover"
+          echo "LOCAL_COVERAGE=esdk" >> "$GITHUB_ENV"
+
       - name: Test Go
         working-directory: ${{ matrix.library }}
         shell: bash
         run: |
+          if [ -n "${LOCAL_COVERAGE:-}" ]; then
+            # `go run TestsFromDafny.go` names its main package
+            # command-line-arguments; a -cover binary whose main package is
+            # not covered writes no counters.
+            module=$(awk '/^module /{print $2}' runtimes/go/ImplementationFromDafny-go/go.mod)
+            export GOFLAGS="-cover -coverpkg=$module/...,command-line-arguments"
+            export GOCOVERDIR="$RUNNER_TEMP/local-coverage/gocover"
+          fi
           make test_go
+
+      # Paths are made relative to the repository so the two reports line up.
+      - name: Write the line coverage report
+        if: env.LOCAL_COVERAGE != ''
+        shell: bash
+        run: |
+          python3 .github/scripts/coverage_lcov.py go \
+            "$RUNNER_TEMP/local-coverage/gocover" "$RUNNER_TEMP/local-coverage/esdk-go.lcov" \
+            --module-dir AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go \
+            --keep AwsEncryptionSDK/runtimes/go/ImplementationFromDafny-go/
+
+      - name: Upload the line coverage report
+        if: env.LOCAL_COVERAGE != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: local-coverage-esdk-go
+          path: ${{ runner.temp }}/local-coverage/esdk-go.lcov
+          if-no-files-found: warn
 
       - name: Test Examples for Go
         if: matrix.library == 'AwsEncryptionSDK'

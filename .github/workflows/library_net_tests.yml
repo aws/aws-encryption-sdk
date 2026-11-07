@@ -105,15 +105,55 @@ jobs:
         run: |
           make test_net FRAMEWORK=net48
 
+      # The test server dashboard merges the net6.0 run's line coverage, line
+      # by line, with the coverage the .NET test server gives the same commit.
+      - name: Setup .NET 8 for dotnet-coverage
+        if: runner.os == 'Linux' && (github.event_name == 'pull_request' || github.event_name == 'push')
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Install dotnet-coverage
+        if: runner.os == 'Linux' && (github.event_name == 'pull_request' || github.event_name == 'push')
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/local-coverage"
+          dir="$RUNNER_TEMP/dotnet-coverage"
+          dotnet tool install dotnet-coverage --version 18.12.0 --tool-path "$dir"
+          echo "DOTNET_COVERAGE=$dir/dotnet-coverage" >> "$GITHUB_ENV"
+          echo "DOTNET_COVERAGE_TELEMETRY_OPTOUT=1" >> "$GITHUB_ENV"
+          echo "DOTNET_COVERAGE_NOLOGO=1" >> "$GITHUB_ENV"
+
       - name: Test .NET net6.0
         working-directory: ${{ matrix.library }}
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "macOS" ]; then
             make test_net_mac_intel FRAMEWORK=net6.0
+          elif [ -n "${DOTNET_COVERAGE:-}" ]; then
+            "$DOTNET_COVERAGE" collect --output-format cobertura \
+              --output "$RUNNER_TEMP/local-coverage/net.cobertura.xml" \
+              -- make test_net FRAMEWORK=net6.0
           else
             make test_net FRAMEWORK=net6.0
           fi
+
+      # Paths are made relative to the repository so the two reports line up.
+      - name: Write the line coverage report
+        if: env.DOTNET_COVERAGE != ''
+        shell: bash
+        run: |
+          python3 .github/scripts/coverage_lcov.py cobertura \
+            "$RUNNER_TEMP/local-coverage/net.cobertura.xml" "$RUNNER_TEMP/local-coverage/esdk-net.lcov" \
+            --keep AwsEncryptionSDK/runtimes/net/ --drop AwsEncryptionSDK/runtimes/net/tests/
+
+      - name: Upload the line coverage report
+        if: env.DOTNET_COVERAGE != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: local-coverage-esdk-net
+          path: ${{ runner.temp }}/local-coverage/esdk-net.lcov
+          if-no-files-found: warn
 
       - name: Test Examples on .NET Framework net48
         working-directory: ${{ matrix.library }}
