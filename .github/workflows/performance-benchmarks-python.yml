@@ -11,12 +11,12 @@ jobs:
       matrix:
         benchmark-dir: [esdk-performance-testing]
         python-version: ["3.11", "3.13"]
-        os: [ubuntu-22.04, macos-14]
+        os: [ubuntu-22.04, macos-15]
         include:
           - os: ubuntu-22.04
             runner: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
-          - os: macos-14
-            runner: macos-14
+          - os: macos-15
+            runner: macos-15
     runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write

@@ -217,6 +217,7 @@ jobs:
       id-token: write
     uses: aws/aws-crypto-tools-commons/.github/workflows/esdk-test-server-reusable.yml@main
     with:
+      runner: ubuntu-latest
       focus: net
       checkout-languages: net,rust-dafny,go
     secrets:
@@ -230,6 +231,7 @@ jobs:
       id-token: write
     uses: aws/aws-crypto-tools-commons/.github/workflows/esdk-test-server-reusable.yml@main
     with:
+      runner: ubuntu-latest
       focus: rust-dafny
       checkout-languages: net,rust-dafny,go
     secrets:
@@ -243,6 +245,7 @@ jobs:
       id-token: write
     uses: aws/aws-crypto-tools-commons/.github/workflows/esdk-test-server-reusable.yml@main
     with:
+      runner: ubuntu-latest
       focus: go
       checkout-languages: net,rust-dafny,go
     secrets:
