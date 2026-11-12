@@ -49,6 +49,12 @@ jobs:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       DOTNET_NOLOGO: 1
     steps:
+      # The CodeBuild image pins .NET 6 in a global.json above the workspace.
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
@@ -66,12 +72,6 @@ jobs:
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: ${{ inputs.mpl-dafny }}
-
-      # The CodeBuild image pins .NET 6 in a global.json above the workspace.
-      - name: Use the latest installed .NET SDK
-        if: runner.os == 'Linux'
-        shell: bash
-        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       - name: Update MPL submodule
         working-directory: mpl
@@ -168,6 +168,12 @@ jobs:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       DOTNET_NOLOGO: 1
     steps:
+      # The CodeBuild image pins .NET 6 in a global.json above the workspace.
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
@@ -185,12 +191,6 @@ jobs:
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: ${{ inputs.mpl-dafny }}
-
-      # The CodeBuild image pins .NET 6 in a global.json above the workspace.
-      - name: Use the latest installed .NET SDK
-        if: runner.os == 'Linux'
-        shell: bash
-        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       - name: Update MPL submodule
         working-directory: mpl
@@ -279,6 +279,11 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true

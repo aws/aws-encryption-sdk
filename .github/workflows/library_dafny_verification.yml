@@ -24,6 +24,10 @@ jobs:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       DOTNET_NOLOGO: 1
     steps:
+      - name: Use the latest installed .NET SDK
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - name: Support longpaths
         run: |
           git config --global core.longpaths true
@@ -45,10 +49,6 @@ jobs:
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: ${{ inputs.dafny }}
-
-      - name: Use the latest installed .NET SDK
-        shell: bash
-        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies

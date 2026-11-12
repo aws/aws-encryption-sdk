@@ -36,6 +36,11 @@ jobs:
       run:
         working-directory: esdk-test-servers/go
     steps:
+      - name: Use the latest installed .NET SDK
+        working-directory: .
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - uses: actions/checkout@v6
 
       - name: Init Submodules
@@ -58,10 +63,6 @@ jobs:
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: ${{ steps.dafny.outputs.version }}
-
-      - name: Use the latest installed .NET SDK
-        shell: bash
-        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       # Installs goimports, which the Dafny Go backend runs on its output.
       - name: Install Smithy-Dafny codegen dependencies
@@ -92,6 +93,11 @@ jobs:
       run:
         working-directory: esdk-test-servers/rust
     steps:
+      - name: Use the latest installed .NET SDK
+        working-directory: .
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - uses: actions/checkout@v6
 
       - name: Init Submodules
@@ -112,10 +118,6 @@ jobs:
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: 4.10.0
-
-      - name: Use the latest installed .NET SDK
-        shell: bash
-        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies
@@ -157,6 +159,10 @@ jobs:
     name: net — transpile + build + test (runtimes/net)
     runs-on: *codebuild-linux
     steps:
+      - name: Use the latest installed .NET SDK
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - uses: actions/checkout@v6
 
       - name: Init Submodules
@@ -178,10 +184,6 @@ jobs:
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: ${{ steps.dafny.outputs.version }}
-
-      - name: Use the latest installed .NET SDK
-        shell: bash
-        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       - name: Install Smithy-Dafny codegen dependencies
         uses: ./mpl/.github/actions/install_smithy_dafny_codegen_dependencies

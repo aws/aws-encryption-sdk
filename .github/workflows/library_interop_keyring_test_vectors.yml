@@ -41,6 +41,12 @@ jobs:
       id-token: write
       contents: read
     steps:
+      # The CodeBuild image pins .NET 6 in a global.json above the workspace.
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
@@ -204,12 +210,6 @@ jobs:
         with:
           dafny-version: 4.10.0
 
-      # The CodeBuild image pins .NET 6 in a global.json above the workspace.
-      - name: Use the latest installed .NET SDK
-        if: runner.os == 'Linux'
-        shell: bash
-        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
-
       - name: Setup Dafny Not Rust
         if: matrix.language != 'rust'
         uses: ./mpl/.github/actions/setup_dafny
@@ -349,6 +349,12 @@ jobs:
       contents: read
 
     steps:
+      # The CodeBuild image pins .NET 6 in a global.json above the workspace.
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
@@ -515,12 +521,6 @@ jobs:
         uses: ./mpl/.github/actions/setup_dafny
         with:
           dafny-version: 4.10.0
-
-      # The CodeBuild image pins .NET 6 in a global.json above the workspace.
-      - name: Use the latest installed .NET SDK
-        if: runner.os == 'Linux'
-        shell: bash
-        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
 
       - name: Setup Dafny Not Rust
         if: matrix.decrypting_language != 'rust'
