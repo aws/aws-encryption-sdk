@@ -8,5 +8,11 @@ jobs:
     runs-on: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      # not-grep 1.0.1 imports pkg_resources, which newer setuptools no longer ships.
       - name: not-grep
-        uses: mattsb42-meta/not-grep@1.0.1
+        run: |
+          pip install not-grep==1.0.1 "setuptools<81"
+          not-grep -c .github/not-grep.toml
