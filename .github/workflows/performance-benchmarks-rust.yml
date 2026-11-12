@@ -34,7 +34,8 @@ jobs:
       id-token: write
       contents: read
     steps:
-      # The CodeBuild image pins .NET 6 in a global.json above the workspace.
+      # The CodeBuild image's /codebuild/global.json asks for a .NET SDK that the image does not include.
+      # dotnet reads the global.json closest to the working directory, so it reads the one that this step writes.
       - name: Use the latest installed .NET SDK
         if: runner.os == 'Linux'
         shell: bash
