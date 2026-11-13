@@ -16,6 +16,7 @@ src/deps/
 src/digest.rs
 src/ecdh.rs
 src/ecdsa.rs
+src/escape.rs
 src/error/
 src/hmac.rs
 src/implementation_from_dafny.rs

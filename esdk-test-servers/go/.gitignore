@@ -1,0 +1,5 @@
+esdk-test-server
+/go
+.server.pid
+.server.log
+.commons-clone/
