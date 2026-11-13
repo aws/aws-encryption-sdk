@@ -10,9 +10,8 @@ fi
 cd $( dirname ${BASH_SOURCE[0]} )
 
 # Check if the provided argument matches the version pattern
-REGEX_VERSION='^\d+\.\d+\.\d+$'
-MATCHES=$(echo "$1" | egrep $REGEX_VERSION | wc -l)
-if [ $MATCHES -eq 0 ]; then
+REGEX_VERSION='^[0-9]+\.[0-9]+\.[0-9]+$'
+if ! echo "$1" | grep -Eq "$REGEX_VERSION"; then
    echo 1>&2 "Version \"$1\" must be N.N.N"
    exit 1
 fi
@@ -34,7 +33,7 @@ mv new_Cargo.toml Cargo.toml
 set -v
 
 # Remove all files and directories in src except for specified files
-find src -depth 1 | egrep -v '(lib.rs|README.md)' | xargs rm -rf
+find src -mindepth 1 -maxdepth 1 | grep -Ev '(lib.rs|README.md)' | xargs rm -rf
 
 # Change to the parent directory and run make polymorph and transpile commands
 cd ../..
