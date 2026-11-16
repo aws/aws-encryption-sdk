@@ -114,10 +114,6 @@ jobs:
         with:
           components: rustfmt
 
-      - name: Install CMake
-        if: runner.os == 'Linux' && matrix.language == 'rust'
-        run: sudo apt-get update && sudo apt-get install -y cmake
-
       - name: Setup NASM for Windows in Rust (aws-lc-sys)
         if: matrix.language == 'rust' && matrix.os == 'windows-latest'
         uses: ilammy/setup-nasm@v1
@@ -318,10 +314,6 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           components: rustfmt
-
-      - name: Install CMake
-        if: runner.os == 'Linux' && matrix.decrypting_language == 'rust'
-        run: sudo apt-get update && sudo apt-get install -y cmake
 
       - name: Setup NASM for Windows in Rust (aws-lc-sys)
         if: matrix.decrypting_language == 'rust' && matrix.os == 'windows-latest'
@@ -786,10 +778,6 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           components: rustfmt
-
-      - name: Install CMake
-        if: runner.os == 'Linux' && matrix.decrypting_language == 'rust'
-        run: sudo apt-get update && sudo apt-get install -y cmake
 
       - name: Setup NASM for Windows in Rust (aws-lc-sys)
         if: matrix.decrypting_language == 'rust' && matrix.os == 'windows-latest'

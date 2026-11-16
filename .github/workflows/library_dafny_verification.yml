@@ -19,15 +19,12 @@ jobs:
     strategy:
       matrix:
         library: [AwsEncryptionSDK, TestVectors]
-    runs-on: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+        os: [macos-15]
+    runs-on: ${{ matrix.os }}
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       DOTNET_NOLOGO: 1
     steps:
-      - name: Use the latest installed .NET SDK
-        shell: bash
-        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
-
       - name: Support longpaths
         run: |
           git config --global core.longpaths true

@@ -534,7 +534,7 @@ module {:options "/functionSyntax:4" } EncryptionContext {
       Success(SuccessfulRead(accumulator, nextPair))
   }
 
-  function {:vcs_split_on_every_assert} ReadAAD(
+  function ReadAAD(
     buffer: ReadableBuffer
   ):
     (res: ReadCorrect<ESDKCanonicalEncryptionContext>)

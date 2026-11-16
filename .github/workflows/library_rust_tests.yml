@@ -64,10 +64,6 @@ jobs:
         with:
           components: rustfmt, clippy
 
-      - name: Install CMake
-        if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y cmake
-
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
         with:
