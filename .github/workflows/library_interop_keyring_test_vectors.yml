@@ -167,7 +167,7 @@ jobs:
       # Setup Java 8
       - name: Setup Java 8
         if: matrix.language == 'java'
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: "corretto"
           java-version: 17
@@ -175,7 +175,7 @@ jobs:
       # Setup Java in Rust is needed for running polymorph
       - name: Setup Java 17
         if: matrix.language == 'java' || matrix.language == 'rust'
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: "corretto"
           java-version: 17
@@ -476,7 +476,7 @@ jobs:
       # Setup Java in Rust is needed for running polymorph
       - name: Setup Java 8
         if: matrix.decrypting_language == 'java'
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: "corretto"
           java-version: 8
@@ -484,7 +484,7 @@ jobs:
       # Setup Java in Rust is needed for running polymorph
       - name: Setup Java 17
         if: matrix.decrypting_language == 'java' || matrix.decrypting_language == 'rust'
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: "corretto"
           java-version: 17
