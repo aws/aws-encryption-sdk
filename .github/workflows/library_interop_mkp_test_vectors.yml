@@ -49,11 +49,21 @@ jobs:
         language: [java, net, rust, python, python_mkp, java_mkp, go]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-22.04
+            runner: &codebuild-linux codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
+    runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
       contents: read
     steps:
+      # The CodeBuild image's /codebuild/global.json asks for a .NET SDK that the image does not include.
+      # dotnet reads the global.json closest to the working directory, so it reads the one that this step writes.
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
@@ -239,12 +249,22 @@ jobs:
         decrypting_language: [java, net, rust, python, python_mkp, java_mkp, go]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-22.04
+            runner: *codebuild-linux
+    runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
       contents: read
 
     steps:
+      # The CodeBuild image's /codebuild/global.json asks for a .NET SDK that the image does not include.
+      # dotnet reads the global.json closest to the working directory, so it reads the one that this step writes.
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
@@ -543,12 +563,20 @@ jobs:
         encrypting_language: [java, net, rust, python, python_mkp, java_mkp, go]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-22.04
+            runner: *codebuild-linux
+    runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
       contents: read
 
     steps:
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
@@ -609,12 +637,20 @@ jobs:
           ]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-22.04
+            runner: *codebuild-linux
+    runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
       contents: read
 
     steps:
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
@@ -677,12 +713,22 @@ jobs:
         decrypting_language: [java, net, rust, python, python_mkp, java_mkp, go]
         # https://taskei.amazon.dev/tasks/CrypTool-5284
         dotnet-version: ["6.0.x"]
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-22.04
+            runner: *codebuild-linux
+    runs-on: ${{ matrix.runner }}
     permissions:
       id-token: write
       contents: read
 
     steps:
+      # The CodeBuild image's /codebuild/global.json asks for a .NET SDK that the image does not include.
+      # dotnet reads the global.json closest to the working directory, so it reads the one that this step writes.
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true

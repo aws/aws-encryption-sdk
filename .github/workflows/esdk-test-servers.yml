@@ -31,11 +31,16 @@ permissions:
 jobs:
   go-language-server:
     name: go — transpile + build + test (runtimes/go)
-    runs-on: ubuntu-latest
+    runs-on: &codebuild-linux codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
     defaults:
       run:
         working-directory: esdk-test-servers/go
     steps:
+      - name: Use the latest installed .NET SDK
+        working-directory: .
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - uses: actions/checkout@v6
 
       - name: Init Submodules
@@ -83,11 +88,16 @@ jobs:
 
   rust-dafny-language-server:
     name: rust-dafny — transpile + build + test (runtimes/rust)
-    runs-on: ubuntu-latest
+    runs-on: *codebuild-linux
     defaults:
       run:
         working-directory: esdk-test-servers/rust
     steps:
+      - name: Use the latest installed .NET SDK
+        working-directory: .
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - uses: actions/checkout@v6
 
       - name: Init Submodules
@@ -95,6 +105,10 @@ jobs:
         run: |
           git submodule update --init libraries
           git submodule update --init --recursive mpl
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
 
       # Rust codegen uses Dafny 4.10.0, as library_rust_tests.yml does (#824).
       - name: Setup Dafny
@@ -140,8 +154,12 @@ jobs:
 
   net-language-server:
     name: net — transpile + build + test (runtimes/net)
-    runs-on: ubuntu-latest
+    runs-on: *codebuild-linux
     steps:
+      - name: Use the latest installed .NET SDK
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - uses: actions/checkout@v6
 
       - name: Init Submodules

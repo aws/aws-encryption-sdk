@@ -12,14 +12,11 @@ on:
 
 jobs:
   getDafnyVerifyVersion:
-    runs-on: ubuntu-22.04
+    runs-on: codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}
     outputs:
       version: ${{ steps.read_property.outputs.dafnyVerifyVersion }}
     steps:
       - uses: actions/checkout@v6
       - name: Read version from Properties-file
         id: read_property
-        uses: christian-draeger/read-properties@1.1.1
-        with:
-          path: "./project.properties"
-          properties: "dafnyVerifyVersion"
+        run: echo "dafnyVerifyVersion=$(grep '^dafnyVerifyVersion=' project.properties | cut -d= -f2)" >> "$GITHUB_OUTPUT"
