@@ -12,7 +12,7 @@
     "commander": "12.1.0",
     "esbuild": "0.20.2",
     "js-yaml": "4.1.1",
-    "puppeteer": "22.15.0"
+    "puppeteer": "25.16.0"
   },
   "engines": {
     "node": ">=18.0.0"
