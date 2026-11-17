@@ -595,7 +595,7 @@ jobs:
           special-characters-workaround: "true" # Some environments (example: windowsOS) cannot tolerate special characters in a secret key.
           role-duration-seconds: 3600
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 17
 
@@ -669,7 +669,7 @@ jobs:
           special-characters-workaround: "true" # Some environments (example: windowsOS) cannot tolerate special characters in a secret key.
           role-duration-seconds: 3600
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 17
 
