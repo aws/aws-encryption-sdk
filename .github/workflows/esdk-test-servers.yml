@@ -206,8 +206,7 @@ jobs:
   # The cross-language TestServer runs, from the shared commons workflow: one per
   # server, each testing that server against every server. All three servers
   # (and their libraries) build from this checkout; every other server comes from
-  # its configured branch. The full matrix runs in commons. repo-pat reads the
-  # private aws-crypto-tools-rust clones.
+  # its configured branch. The full matrix runs in commons.
   net-test-server:
     name: TestServer (net)
     permissions:
@@ -219,8 +218,6 @@ jobs:
       runner: ubuntu-latest
       focus: net
       checkout-languages: net,rust-dafny,go
-    secrets:
-      repo-pat: ${{ secrets.COMMONS_REPO_PAT }}
 
   rust-dafny-test-server:
     name: TestServer (rust-dafny)
@@ -233,8 +230,6 @@ jobs:
       runner: ubuntu-latest
       focus: rust-dafny
       checkout-languages: net,rust-dafny,go
-    secrets:
-      repo-pat: ${{ secrets.COMMONS_REPO_PAT }}
 
   go-test-server:
     name: TestServer (go)
@@ -247,5 +242,3 @@ jobs:
       runner: ubuntu-latest
       focus: go
       checkout-languages: net,rust-dafny,go
-    secrets:
-      repo-pat: ${{ secrets.COMMONS_REPO_PAT }}
