@@ -43767,7 +43767,7 @@ pub mod software {
                             }
                             /// ../mpl/ComAmazonawsKms/src/Index.dfy(31,3)
                             pub fn DafnyUserAgentSuffix(runtime: &Sequence<DafnyCharUTF16>) -> Sequence<DafnyCharUTF16> {
-                                let mut version: Sequence<DafnyCharUTF16> = string_utf16_of("2.0.0");
+                                let mut version: Sequence<DafnyCharUTF16> = string_utf16_of("CI");
                                 string_utf16_of("AwsCryptographicMPL/").concat(runtime).concat(&string_utf16_of("/")).concat(&version)
                             }
                             /// ../mpl/ComAmazonawsKms/Model/ComAmazonawsKmsTypes.dfy(2006,3)
@@ -74083,7 +74083,6 @@ pub mod _Fixtures_Compile {
                                 if matches!((&_source0).as_ref(), C{ .. }) {
                                     encryptionContext = MaybePlacebo::from(map![(keyC.clone()) => (valC.clone())]);
                                 } else {
-                                    let mut CE: Arc<SmallEncryptionContextVariation> = v.clone();
                                     encryptionContext = MaybePlacebo::from(map![(keyC.clone()) => (valC.clone()), (keyD.clone()) => (valD.clone())]);
                                 }
                             }
@@ -74151,7 +74150,6 @@ pub mod _Fixtures_Compile {
                                 if matches!((&_source0).as_ref(), C{ .. }) {
                                     encryptionContextKeys = MaybePlacebo::from(seq![keyC.clone()]);
                                 } else {
-                                    let mut CE: Arc<SmallEncryptionContextVariation> = v.clone();
                                     encryptionContextKeys = MaybePlacebo::from(seq![keyC.clone(), keyD.clone()]);
                                 }
                             }
@@ -74223,7 +74221,6 @@ pub mod _Fixtures_Compile {
                                 if matches!((&_source0).as_ref(), C{ .. }) {
                                     encryptionContext = MaybePlacebo::from(map![(keyC.clone()) => (valA.clone())]);
                                 } else {
-                                    let mut CE: Arc<SmallEncryptionContextVariation> = v.clone();
                                     encryptionContext = MaybePlacebo::from(map![(keyC.clone()) => (valA.clone()), (keyD.clone()) => (valB.clone())]);
                                 }
                             }

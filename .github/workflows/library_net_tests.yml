@@ -13,6 +13,13 @@ on:
         required: false
         default: false
         type: boolean
+      platforms:
+        description: "The platforms to test on"
+        required: false
+        default: >-
+          [{"os": "windows-latest", "runner": "windows-latest"},
+           {"os": "ubuntu-22.04", "runner": "codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}"}]
+        type: string
 
 env:
   # Used in examples
@@ -31,13 +38,10 @@ jobs:
       fail-fast: false
       matrix:
         library: [AwsEncryptionSDK]
-        os: [
-            windows-latest,
-            ubuntu-22.04,
-            # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
-            # macos-15,
-          ]
-    runs-on: ${{ matrix.os }}
+        # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
+        # macos-15,
+        platform: ${{ fromJSON(inputs.platforms) }}
+    runs-on: ${{ matrix.platform.runner }}
     permissions:
       id-token: write
       contents: read
@@ -45,6 +49,13 @@ jobs:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       DOTNET_NOLOGO: 1
     steps:
+      # The CodeBuild image's /codebuild/global.json asks for a .NET SDK that the image does not include.
+      # dotnet reads the global.json closest to the working directory, so it reads the one that this step writes.
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
@@ -67,6 +78,12 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: "6.0.x"
+
+      # net48 tests run on Mono on Linux.
+      - name: Install Mono
+        if: runner.os == 'Linux'
+        shell: bash
+        run: sudo apt-get update && sudo apt-get install -y mono-complete
 
       - name: Setup Dafny
         uses: ./mpl/.github/actions/setup_dafny
@@ -117,7 +134,7 @@ jobs:
 
       - name: Test Examples on .NET Framework net48
         working-directory: ${{ matrix.library }}
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform.os == 'windows-latest'
         shell: bash
         run: |
           dotnet test \
@@ -139,18 +156,22 @@ jobs:
               --framework net6.0
           fi
   testVectors:
+    if: contains(fromJSON(inputs.platforms).*.os, 'ubuntu-22.04')
     strategy:
       fail-fast: false
       matrix:
         library: [TestVectors]
-        os: [
+        platform: [
             # Sed script doesn't work properly on windows
             # windows-latest,
-            ubuntu-22.04,
+            {
+              os: ubuntu-22.04,
+              runner: "codebuild-CryptoToolsCI-linux-aws-encryption-sdk-${{ github.run_id }}-${{ github.run_attempt }}",
+            },
             # TODO: Re-enable macOS after https://t.corp.amazon.com/P205755286
             # macos-15,
           ]
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.platform.runner }}
     permissions:
       id-token: write
       contents: read
@@ -158,6 +179,13 @@ jobs:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
       DOTNET_NOLOGO: 1
     steps:
+      # The CodeBuild image's /codebuild/global.json asks for a .NET SDK that the image does not include.
+      # dotnet reads the global.json closest to the working directory, so it reads the one that this step writes.
+      - name: Use the latest installed .NET SDK
+        if: runner.os == 'Linux'
+        shell: bash
+        run: echo '{"sdk":{"version":"6.0.100","rollForward":"latestMajor"}}' > "$RUNNER_WORKSPACE/global.json"
+
       - name: Support longpaths on Git checkout
         run: |
           git config --global core.longpaths true
